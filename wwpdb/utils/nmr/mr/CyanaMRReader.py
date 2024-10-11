@@ -226,6 +226,81 @@ if __name__ == "__main__":
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-daother-8946/2nd/D_1000288502_mr-upload_P1.cyana.V1',
+                     '../../tests-nmr/mock-data-daother-8946/2nd/D_800740_model_P1.cif.V3')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2mv8/2mv8-corrected.mr.1',
+                     '../../tests-nmr/mock-data-remediation/2mv8/2mv8.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2mv8/2mv8-corrected.mr.2',
+                     '../../tests-nmr/mock-data-remediation/2mv8/2mv8.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/7zex/D_1292113916_mr_P2.cyana.V1',
+                     '../../tests-nmr/mock-data-remediation/7zex/7zex.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/7zew/protein_renumb.upl',
+                     '../../tests-nmr/mock-data-remediation/7zew/7zew.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/7zew/protein_renumb.aco',
+                     '../../tests-nmr/mock-data-remediation/7zew/7zew.cif')
+
+    reader = CyanaMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/7dfe/TuSp2-RP-Cut.upl_2.txt',
+                     '../../tests-nmr/mock-data-remediation/7dfe/7dfe.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CyanaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/7dfe/TuSp2-RP-Cut.upl_2.txt',
+                 '../../tests-nmr/mock-data-remediation/7dfe/7dfe.cif')
+
+    reader = CyanaMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2rol/2rol-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2rol/2rol.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CyanaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2rol/2rol-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2rol/2rol.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/5lfh/P29_upl.txt',
+                     '../../tests-nmr/mock-data-remediation/5lfh/5lfh.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CyanaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5lfh/P29_upl.txt',
+                 '../../tests-nmr/mock-data-remediation/5lfh/5lfh.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6zpr/final.upl',
+                     '../../tests-nmr/mock-data-remediation/6zpr/6zpr.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2mhx/2mhx-corrected.mr',
                      '../../tests-nmr/mock-data-remediation/2mhx/2mhx.cif')
 

@@ -59,6 +59,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            # trueValue,
                                            monDict3,
+                                           emptyValue,
                                            protonBeginCode,
                                            pseProBeginCode,
                                            aminoProtonCode,
@@ -67,6 +68,7 @@ try:
                                            calciumIonCode,
                                            isReservedLigCode,
                                            updatePolySeqRst,
+                                           revertPolySeqRst,
                                            sortPolySeqRst,
                                            syncCompIdOfPolySeqRst,
                                            alignPolymerSequence,
@@ -129,6 +131,7 @@ except ImportError:
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                # trueValue,
                                monDict3,
+                               emptyValue,
                                protonBeginCode,
                                pseProBeginCode,
                                aminoProtonCode,
@@ -137,6 +140,7 @@ except ImportError:
                                calciumIonCode,
                                isReservedLigCode,
                                updatePolySeqRst,
+                               revertPolySeqRst,
                                sortPolySeqRst,
                                syncCompIdOfPolySeqRst,
                                alignPolymerSequence,
@@ -224,6 +228,7 @@ class AriaMRParserListener(ParseTreeListener):
     __splitLigand = None
 
     __offsetHolder = None
+    __shiftNonPosSeq = None
 
     __representativeModelId = REPRESENTATIVE_MODEL_ID
     __representativeAltId = REPRESENTATIVE_ALT_ID
@@ -463,14 +468,33 @@ class AriaMRParserListener(ParseTreeListener):
                                                 if ps['chain_id'] == test_chain_id)
 
                             seq_id_mapping = {}
+                            offset = None
                             for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
-                                if mid_code == '|' and test_seq_id is not None:
+                                if test_seq_id is None:
+                                    continue
+                                if mid_code == '|':
                                     try:
                                         seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
                                                                            in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
                                                                            if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
+                                        if offset is None:
+                                            offset = seq_id_mapping[test_seq_id] - test_seq_id
                                     except StopIteration:
                                         pass
+                                elif mid_code == ' ' and test_seq_id in poly_seq_rst['seq_id']:
+                                    idx = poly_seq_rst['seq_id'].index(test_seq_id)
+                                    if poly_seq_rst['comp_id'][idx] == '.' and poly_seq_rst['auth_comp_id'][idx] not in emptyValue:
+                                        seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
+                                                                           in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
+                                                                           if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
+
+                            if offset is not None and all(v - k == offset for k, v in seq_id_mapping.items()):
+                                test_seq_id_list = list(seq_id_mapping.keys())
+                                min_test_seq_id = min(test_seq_id_list)
+                                max_test_seq_id = max(test_seq_id_list)
+                                for test_seq_id in range(min_test_seq_id + 1, max_test_seq_id):
+                                    if test_seq_id not in seq_id_mapping:
+                                        seq_id_mapping[test_seq_id] = test_seq_id + offset
 
                             if ref_chain_id not in cyclicPolymer:
                                 cyclicPolymer[ref_chain_id] =\
@@ -571,7 +595,9 @@ class AriaMRParserListener(ParseTreeListener):
 
                                     seq_id_mapping = {}
                                     for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
-                                        if mid_code == '|' and test_seq_id is not None:
+                                        if test_seq_id is None:
+                                            continue
+                                        if mid_code == '|':
                                             try:
                                                 seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
                                                                                    in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
@@ -969,7 +995,7 @@ class AriaMRParserListener(ParseTreeListener):
                 break
         if refCompId is None and self.__hasNonPolySeq:
             for np in self.__nonPolySeq:
-                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId)
+                _, _, refCompId = self.getRealChainSeqId(np, seqId, _compId, False)
                 if refCompId is not None:
                     compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
                     break
@@ -977,7 +1003,7 @@ class AriaMRParserListener(ParseTreeListener):
             compId = translateToStdResName(_compId, ccU=self.__ccU)
         return compId
 
-    def getRealChainSeqId(self, ps, seqId, compId):
+    def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
         compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
         if len(_compId) == 2 and _compId.startswith('D'):
             _compId = compId[1]
@@ -994,7 +1020,10 @@ class AriaMRParserListener(ParseTreeListener):
                         return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
                     if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], ps['alt_comp_id'][idx], 'MTS', 'ORI'):
                         return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
-                if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
+                if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI')\
+                   or (isPolySeq and seqId == 1
+                       and ((compId.endswith('-N') and all(c in ps['comp_id'][idx] for c in compId.split('-')[0]))
+                            or (ps['comp_id'][idx] == 'PCA' and 'P' == compId[0] and ('GL' in compId or 'N' in compId)))):
                     return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
                 if compId != _compId and _compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx], 'MTS', 'ORI'):
                     return ps['auth_chain_id'], seqId, ps['comp_id'][idx]
@@ -1026,7 +1055,33 @@ class AriaMRParserListener(ParseTreeListener):
 
             resolved = False
 
-            if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
+            for np in self.__nonPoly:
+                if 'alt_comp_id' in np and 'alt_auth_seq_id' in np\
+                   and compId in np['alt_comp_id'] and seqId in np['alt_auth_seq_id']:
+                    npCompId = np['comp_id'][0]
+                    npSeqId = np['auth_seq_id'][0]
+                    for ps in self.__polySeq:
+                        if 'ambig_auth_seq_id' in ps and seqId in ps['ambig_auth_seq_id']:
+                            psCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(psCompId, atomId, leave_unmatched=True)
+                            if details is None:
+                                _, _coordAtomSite = self.getCoordAtomSiteOf(ps['auth_chain_id'], seqId, psCompId, cifCheck=self.__hasCoord)
+                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                    compId = _compId = psCompId
+                                    resolved = True
+                                    break
+                            _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], npSeqId, npCompId, cifCheck=self.__hasCoord)
+                            if self.__mrAtomNameMapping is not None:
+                                atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, npSeqId, npCompId, atomId, _coordAtomSite)
+                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(npCompId, atomId, leave_unmatched=True)
+                            if details is None:
+                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                    compId = _compId = npCompId
+                                    seqId = _seqId = npSeqId
+                                    preferNonPoly = resolved = True
+                                    break
+
+            if not resolved and compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
                and atomId in zincIonCode:
                 znCount = 0
                 znSeqId = None
@@ -1165,11 +1220,23 @@ class AriaMRParserListener(ParseTreeListener):
                 types = None
 
         def comp_id_unmatched_with(ps, cif_comp_id):
+            if 'alt_comp_id' in ps and self.__csStat.peptideLike(cif_comp_id) and compId.startswith('D') and len(compId) >= 3\
+               and self.__ccU.lastChemCompDict['_chem_comp.type'].upper() == 'D-PEPTIDE LINKING':
+                revertPolySeqRst(self.__polySeqRst, ps['chain_id'] if fixedChainId is None else fixedChainId, _seqId, compId)
+
             if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
                 return False
             if compId not in monDict3 and cif_comp_id not in monDict3:
                 return False
             return types != self.__csStat.getTypeOfCompId(cif_comp_id)
+
+        def comp_id_in_polymer(np):
+            return (_seqId == 1
+                    and ((compId.endswith('-N') and all(c in np['comp_id'][0] for c in compId.split('-')[0]))
+                         or (np['comp_id'][0] == 'PCA' and 'P' == compId[0] and ('GL' in compId or 'N' in compId))))\
+                or (compId in monDict3
+                    and any(compId in ps['comp_id'] for ps in self.__polySeq)
+                    and compId not in np['comp_id'])
 
         for ps in self.__polySeq:
             if preferNonPoly:
@@ -1183,6 +1250,8 @@ class AriaMRParserListener(ParseTreeListener):
                         seqId = fixedSeqId
                 elif fixedSeqId is not None:
                     seqId = fixedSeqId
+            if seqId <= 0 and self.__shiftNonPosSeq is not None and chainId in self.__shiftNonPosSeq:
+                seqId -= 1
             if seqId in ps['auth_seq_id'] or fixedCompId is not None:
                 if fixedCompId is not None:
                     cifCompId = origCompId = fixedCompId
@@ -1197,6 +1266,13 @@ class AriaMRParserListener(ParseTreeListener):
                     if comp_id_unmatched_with(ps, cifCompId):
                         continue
                 if cifCompId != compId:
+                    if (self.__shiftNonPosSeq is None or chainId not in self.__shiftNonPosSeq)\
+                       and seqId <= 0 and seqId - 1 in ps['auth_seq_id']\
+                       and compId == ps['comp_id'][ps['auth_seq_id'].index(seqId - 1)]:
+                        seqId -= 1
+                        if self.__shiftNonPosSeq is None:
+                            self.__shiftNonPosSeq = {}
+                        self.__shiftNonPosSeq[chainId] = True
                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                     if compId in compIds:
                         cifCompId = compId
@@ -1208,7 +1284,7 @@ class AriaMRParserListener(ParseTreeListener):
                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.add((chainId, seqId, cifCompId, True))
-                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                elif self.__nefT.get_valid_star_atom(cifCompId, atomId)[2] is None:
                     chainAssign.add((chainId, seqId, cifCompId, True))
 
             elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
@@ -1248,7 +1324,7 @@ class AriaMRParserListener(ParseTreeListener):
                                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
-                                    elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                    elif self.__nefT.get_valid_star_atom(cifCompId, atomId)[2] is None:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
                             except IndexError:
                                 pass
@@ -1287,7 +1363,7 @@ class AriaMRParserListener(ParseTreeListener):
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
             for np in self.__nonPolySeq:
-                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId)
+                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if self.__reasons is not None:
                     if fixedChainId is not None:
                         if fixedChainId != chainId:
@@ -1296,6 +1372,8 @@ class AriaMRParserListener(ParseTreeListener):
                             seqId = fixedSeqId
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
+                if comp_id_in_polymer(np):
+                    continue
                 if 'alt_auth_seq_id' in np and seqId not in np['auth_seq_id'] and seqId in np['alt_auth_seq_id']:
                     try:
                         seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _altSeqId_ == seqId)
@@ -1359,13 +1437,15 @@ class AriaMRParserListener(ParseTreeListener):
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                             if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
-                        elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        elif self.__nefT.get_valid_star_atom(cifCompId, atomId)[2] is None:
                             chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
 
             if self.__hasNonPolySeq:
                 for np in self.__nonPolySeq:
                     chainId = np['auth_chain_id']
                     if fixedChainId is not None and fixedChainId != chainId:
+                        continue
+                    if comp_id_in_polymer(np):
                         continue
                     seqKey = (chainId, _seqId)
                     if seqKey in self.__authToLabelSeq:
@@ -1544,7 +1624,33 @@ class AriaMRParserListener(ParseTreeListener):
 
             resolved = False
 
-            if compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
+            for np in self.__nonPoly:
+                if 'alt_comp_id' in np and 'alt_auth_seq_id' in np\
+                   and compId in np['alt_comp_id'] and seqId in np['alt_auth_seq_id']:
+                    npCompId = np['comp_id'][0]
+                    npSeqId = np['auth_seq_id'][0]
+                    for ps in self.__polySeq:
+                        if 'ambig_auth_seq_id' in ps and seqId in ps['ambig_auth_seq_id']:
+                            psCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
+                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(psCompId, atomId, leave_unmatched=True)
+                            if details is None:
+                                _, _coordAtomSite = self.getCoordAtomSiteOf(ps['auth_chain_id'], seqId, psCompId, cifCheck=self.__hasCoord)
+                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                    compId = _compId = psCompId
+                                    resolved = True
+                                    break
+                            _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], npSeqId, npCompId, cifCheck=self.__hasCoord)
+                            if self.__mrAtomNameMapping is not None:
+                                atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, npSeqId, npCompId, atomId, _coordAtomSite)
+                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(npCompId, atomId, leave_unmatched=True)
+                            if details is None:
+                                if _coordAtomSite is not None and all(_atomId_ in _coordAtomSite['atom_id'] for _atomId_ in _atomId):
+                                    compId = _compId = npCompId
+                                    seqId = _seqId = npSeqId
+                                    preferNonPoly = resolved = True
+                                    break
+
+            if not resolved and compId in ('CYSZ', 'CYZ', 'CYS', 'ION', 'ZN1', 'ZN2')\
                and atomId in zincIonCode:
                 znCount = 0
                 znSeqId = None
@@ -1691,11 +1797,23 @@ class AriaMRParserListener(ParseTreeListener):
                 types = None
 
         def comp_id_unmatched_with(ps, cif_comp_id):
+            if 'alt_comp_id' in ps and self.__csStat.peptideLike(cif_comp_id) and compId.startswith('D') and len(compId) >= 3\
+               and self.__ccU.lastChemCompDict['_chem_comp.type'].upper() == 'D-PEPTIDE LINKING':
+                revertPolySeqRst(self.__polySeqRst, str(refChainId), _seqId, compId)
+
             if types is None or ('alt_comp_id' in ps and _compId in ps['alt_comp_id']):
                 return False
             if compId not in monDict3 and cif_comp_id not in monDict3:
                 return False
             return types != self.__csStat.getTypeOfCompId(cif_comp_id)
+
+        def comp_id_in_polymer(np):
+            return (_seqId == 1
+                    and ((compId.endswith('-N') and all(c in np['comp_id'][0] for c in compId.split('-')[0]))
+                         or (np['comp_id'][0] == 'PCA' and 'P' == compId[0] and ('GL' in compId or 'N' in compId))))\
+                or (compId in monDict3
+                    and any(compId in ps['comp_id'] for ps in self.__polySeq)
+                    and compId not in np['comp_id'])
 
         if refChainId is not None or refChainId != _refChainId:
             if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _refChainId):
@@ -1719,6 +1837,8 @@ class AriaMRParserListener(ParseTreeListener):
                         seqId = fixedSeqId
                 elif fixedSeqId is not None:
                     seqId = fixedSeqId
+            if seqId <= 0 and self.__shiftNonPosSeq is not None and chainId in self.__shiftNonPosSeq:
+                seqId -= 1
             if seqId in ps['auth_seq_id'] or fixedCompId is not None:
                 if fixedCompId is not None:
                     cifCompId = origCompId = fixedCompId
@@ -1733,6 +1853,13 @@ class AriaMRParserListener(ParseTreeListener):
                     if comp_id_unmatched_with(ps, cifCompId):
                         continue
                 if cifCompId != compId:
+                    if (self.__shiftNonPosSeq is None or chainId not in self.__shiftNonPosSeq)\
+                       and seqId <= 0 and seqId - 1 in ps['auth_seq_id']\
+                       and compId == ps['comp_id'][ps['auth_seq_id'].index(seqId - 1)]:
+                        seqId -= 1
+                        if self.__shiftNonPosSeq is None:
+                            self.__shiftNonPosSeq = {}
+                        self.__shiftNonPosSeq[chainId] = True
                     compIds = [_compId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _seqId == seqId]
                     if compId in compIds:
                         cifCompId = compId
@@ -1827,7 +1954,7 @@ class AriaMRParserListener(ParseTreeListener):
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
             for np in self.__nonPolySeq:
-                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId)
+                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
                     if chainId != self.__chainNumberDict[refChainId]:
                         continue
@@ -1839,6 +1966,8 @@ class AriaMRParserListener(ParseTreeListener):
                             seqId = fixedSeqId
                     elif fixedSeqId is not None:
                         seqId = fixedSeqId
+                if comp_id_in_polymer(np):
+                    continue
                 if 'alt_auth_seq_id' in np and seqId not in np['auth_seq_id'] and seqId in np['alt_auth_seq_id']:
                     try:
                         seqId = next(_seqId_ for _seqId_, _altSeqId_ in zip(np['auth_seq_id'], np['alt_auth_seq_id']) if _altSeqId_ == seqId)
@@ -1923,6 +2052,8 @@ class AriaMRParserListener(ParseTreeListener):
                         if chainId != self.__chainNumberDict[refChainId]:
                             continue
                     if fixedChainId is not None and fixedChainId != chainId:
+                        continue
+                    if comp_id_in_polymer(np):
                         continue
                     seqKey = (chainId, _seqId)
                     if seqKey in self.__authToLabelSeq:
@@ -2330,7 +2461,9 @@ class AriaMRParserListener(ParseTreeListener):
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
                                       'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
 
-                _cifAtomId = self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+                _cifAtomId, asis = self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+                if asis:
+                    atomSelection[-1]['asis'] = True
                 if cifAtomId != _cifAtomId:
                     atomSelection[-1]['atom_id'] = _cifAtomId
                     if _cifAtomId.startswith('Ignorable'):
@@ -2340,8 +2473,9 @@ class AriaMRParserListener(ParseTreeListener):
             self.atomSelectionSet.append(atomSelection)
 
     def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite):
+        asis = False
         if not self.__hasCoord:
-            return atomId
+            return atomId, asis
 
         found = False
 
@@ -2463,7 +2597,7 @@ class AriaMRParserListener(ParseTreeListener):
         if found:
             if self.__preferAuthSeq:
                 self.__preferAuthSeqCount += 1
-            return atomId
+            return atomId, asis
 
         if chainId in self.__chainNumberDict.values():
 
@@ -2521,7 +2655,7 @@ class AriaMRParserListener(ParseTreeListener):
             if found:
                 if self.__preferAuthSeq:
                     self.__preferAuthSeqCount += 1
-                return atomId
+                return atomId, asis
 
         if self.__ccU.updateChemCompDict(compId):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
@@ -2551,9 +2685,9 @@ class AriaMRParserListener(ParseTreeListener):
                                     self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                     f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                     "Please re-upload the model file.")
-                                    return atomId
+                                    return atomId, asis
                             if bondedTo[0][0] == 'O':
-                                return 'Ignorable hydroxyl group'
+                                return 'Ignorable hydroxyl group', asis
                     if seqId == max_auth_seq_id\
                        or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
                         if coordAtomSite is not None and atomId in carboxylCode\
@@ -2561,7 +2695,7 @@ class AriaMRParserListener(ParseTreeListener):
                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                             "Please re-upload the model file.")
-                            return atomId
+                            return atomId, asis
 
                     ext_seq = False
                     if auth_seq_id_list is not None and len(auth_seq_id_list) > 0:
@@ -2573,17 +2707,18 @@ class AriaMRParserListener(ParseTreeListener):
                             ext_seq = True
                     if chainId in LARGE_ASYM_ID:
                         if ext_seq:
-                            return atomId
+                            return atomId, asis
                         if self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                             f"The residue '{chainId}:{seqId}:{compId}' is not present in polymer sequence "
                                             f"of chain {chainId} of the coordinates. "
                                             "Please update the sequence in the Macromolecules page.")
+                            asis = True
                         else:
                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                             updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
-        return atomId
+        return atomId, asis
 
     def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
         """ Return realistic bond constraint taking into account the current coordinates.

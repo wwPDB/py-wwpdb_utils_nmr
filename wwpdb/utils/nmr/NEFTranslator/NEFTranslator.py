@@ -2419,6 +2419,7 @@ class NEFTranslator:
                                 seq_key = (row[2], row[0])
                                 if seq_key in ch_set:
                                     loop.data[idx][comp_id_col] = 'CH'
+
                 elif 'Atom_ID' in loop.tags and 'Auth_comp_ID' in loop.tags\
                         and set(tags) & set(loop.tags) == set(tags):
                     pre_tags = copy.deepcopy(tags)
@@ -2451,6 +2452,18 @@ class NEFTranslator:
                                 seq_key = (row[2], row[0])
                                 if seq_key in ch_set:
                                     loop.data[idx][comp_id_col] = loop.data[idx][auth_comp_id_col] = 'CH'
+                    pre_tags = ['Comp_ID', 'Auth_comp_ID']
+                    pre_seq_data = get_lp_tag(loop, pre_tags)
+                    for idx, row in enumerate(pre_seq_data):
+                        _comp_id, _auth_comp_id = row
+                        if _comp_id not in emptyValue:
+                            __comp_id = _comp_id.upper()
+                            if __comp_id != _comp_id:
+                                loop.data[idx][comp_id_col] = __comp_id
+                        if _auth_comp_id not in emptyValue:
+                            __auth_comp_id = _auth_comp_id.upper()
+                            if __auth_comp_id != _auth_comp_id:
+                                loop.data[idx][auth_comp_id_col] = __auth_comp_id
 
             if lp_category == '_Atom_chem_shift' and self.__remediation_mode and has_auth_asym_id\
                and set(tags) & set(loop.tags) == set(tags) and set(tags__) & set(loop.tags) == set(tags__):
@@ -2468,6 +2481,7 @@ class NEFTranslator:
                         alt_seq_id_col = loop.tags.index('Seq_ID')
                         for r in loop.data:
                             r[seq_id_col] = r[alt_seq_id_col]
+
                     elif 'Auth_seq_ID' in loop.tags:
                         pre_tag = ['Auth_seq_ID']
                         pre_seq_data = get_lp_tag(loop, pre_tag)
@@ -2479,6 +2493,7 @@ class NEFTranslator:
                             alt_seq_id_col = loop.tags.index('Auth_seq_ID')
                             for r in loop.data:
                                 r[seq_id_col] = r[alt_seq_id_col]
+
                 if 'Entity_assembly_ID' in loop.tags and 'Auth_asym_ID' in loop.tags:
                     pre_tag = ['Entity_assembly_ID']
                     pre_chain_data = get_lp_tag(loop, pre_tag)
@@ -2491,7 +2506,10 @@ class NEFTranslator:
 
                         def resolve_entity_assembly(_loop, _alt_chain_id_list, sync_seq):
                             if 'Auth_seq_ID' in _loop.tags:
+                                comp_id_col = _loop.tags.index('Comp_ID')
                                 pre_tags = [alt_chain_id, 'Auth_seq_ID', 'Comp_ID']
+                                if 'Auth_comp_ID' in _loop.tags:
+                                    pre_tags.append('Auth_comp_ID')
                                 pre_seq_data = get_lp_tag(_loop, pre_tags)
                                 cif_ps = coord_assembly_checker['polymer_sequence']
                                 cif_np = coord_assembly_checker['non_polymer']
@@ -2500,12 +2518,32 @@ class NEFTranslator:
                                     nmr_ps.append({'chain_id': c, 'seq_id': [], 'comp_id': []})
                                 seq = set()
                                 valid = True
-                                for row in pre_seq_data:
+                                for idx, row in enumerate(pre_seq_data):
                                     if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue:
                                         valid = False
                                         break
                                     try:
-                                        seq.add((row[0], int(row[1]), row[2]))
+                                        _ref_comp_id = row[3] if len(row) > 3 else None
+                                        ref_comp_id = row[2].upper()
+                                        can_comp_id = translateToStdResName(ref_comp_id, refCompId=_ref_comp_id, ccU=self.__ccU)
+                                        seq.add((row[0], int(row[1]), can_comp_id))
+                                        if ref_comp_id != can_comp_id:  # 7zew, 7zex
+                                            ref_comp_id_not_found, can_comp_id_found = True, False
+                                            for ps in cif_ps:
+                                                if can_comp_id in ps['comp_id']:
+                                                    can_comp_id_found = True
+                                                if ref_comp_id in ps['comp_id'] or ref_comp_id in ps['auth_comp_id']:
+                                                    ref_comp_id_not_found = False
+                                                    break
+                                            if cif_np is not None and ref_comp_id_not_found:
+                                                for np in cif_np:
+                                                    if can_comp_id in np['comp_id']:
+                                                        can_comp_id_found = True
+                                                    if ref_comp_id in np['comp_id'] or ref_comp_id in np['auth_comp_id']:
+                                                        ref_comp_id_not_found = False
+                                                        break
+                                            if ref_comp_id_not_found and can_comp_id_found:  # 6alt
+                                                _loop.data[idx][comp_id_col] = can_comp_id
                                     except ValueError:
                                         valid = False
                                         break
@@ -2528,7 +2566,6 @@ class NEFTranslator:
                                         chain_id_col = _loop.tags.index('Entity_assembly_ID')
                                         alt_chain_id_col = _loop.tags.index('Auth_asym_ID')
                                         auth_seq_id_col = _loop.tags.index('Auth_seq_ID')
-                                        comp_id_col = _loop.tags.index('Comp_ID')
                                         entity_id_col = _loop.tags.index('Entity_ID') if 'Entity_ID' in _loop.tags else -1
                                         seq_id_col = _loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in _loop.tags else -1
                                         alt_seq_id_col = _loop.tags.index('Seq_ID') if 'Seq_ID' in _loop.tags else -1
@@ -2537,16 +2574,21 @@ class NEFTranslator:
                                         auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
 
                                         rev_seq = {}
-                                        _entity_assembly_id = _entity_id = _offset = None
+                                        _offset = {}
+                                        _entity_assembly_id = _entity_id = None
+
                                         for ca in chain_assign:
                                             if ca['matched'] == 0 or ca['conflict'] > 0:
                                                 continue
+                                            _entity_assembly_id = _entity_id = None
                                             ref_chain_id = ca['ref_chain_id']
                                             test_chain_id = ca['test_chain_id']
                                             sa = next(sa for sa in seq_align
                                                       if sa['ref_chain_id'] == ref_chain_id
                                                       and sa['test_chain_id'] == test_chain_id)
                                             ps = next(ps for ps in cif_ps if ps['auth_chain_id'] == ref_chain_id)
+                                            if 'identical_auth_chain_id' in ps:
+                                                continue
                                             for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                                                 if mid_code == '|' and test_seq_id is not None:
                                                     rev_seq_key = (test_chain_id, test_seq_id)
@@ -2558,16 +2600,17 @@ class NEFTranslator:
                                                              next(auth_seq_id for auth_seq_id, _seq_id
                                                                   in zip(ps['auth_seq_id'], ps['seq_id'])
                                                                   if _seq_id == ref_seq_id and isinstance(auth_seq_id, int)))
-                                                        if _offset is None:
+                                                        if _entity_assembly_id is None:
                                                             auth_seq_id = rev_seq[rev_seq_key][1]
                                                             _rev_seq = rev_seq[rev_seq_key]
                                                             _k = (ps['auth_chain_id'], auth_seq_id, ps['comp_id'][ps['auth_seq_id'].index(auth_seq_id)])
                                                             if _k in auth_to_star_seq:
-                                                                _entity_assembly_id, _offset, _entity_id, _ = auth_to_star_seq[_k]
-                                                                _offset -= auth_seq_id
+                                                                _entity_assembly_id, _offset_, _entity_id, _ = auth_to_star_seq[_k]
+                                                                _offset_ -= auth_seq_id
+                                                                _offset[_entity_assembly_id] = _offset_
                                                     except StopIteration:
                                                         rev_seq[rev_seq_key] = (ps['auth_chain_id'], ref_seq_id)
-                                        if _offset is not None and _offset != 0:
+                                        if any(_offset_ for _offset_ in _offset.values() if _offset_ != 0):
                                             sync_seq = True
                                         for r in _loop.data:
                                             k = (r[alt_chain_id_col], int(r[auth_seq_id_col]))
@@ -2589,24 +2632,26 @@ class NEFTranslator:
                                                             r[seq_id_col] = str(_seq_id)
                                                         if alt_seq_id_col != -1:
                                                             r[alt_seq_id_col] = str(_seq_id)
-                                                elif _offset is not None:
+                                                elif _entity_assembly_id in _offset:
+                                                    _offset_ = _offset[_entity_assembly_id]
                                                     r[chain_id_col], r[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
                                                     if sync_seq:
-                                                        if int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset:
+                                                        if int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset_:
                                                             continue
                                                         if seq_id_col != -1:
-                                                            r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset)
+                                                            r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
                                                         if alt_seq_id_col != -1:
-                                                            r[alt_seq_id_col] = str(int(r[auth_seq_id_col]) + _offset)
-                                            elif _offset is not None:  # 2k7b
+                                                            r[alt_seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
+                                            elif _entity_assembly_id in _offset:  # 2k7b
+                                                _offset_ = _offset[_entity_assembly_id]
                                                 r[chain_id_col], r[entity_id_col] = str(_entity_assembly_id), str(_entity_id)
                                                 if sync_seq:
-                                                    if int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset:
+                                                    if int(r[seq_id_col]) - int(r[auth_seq_id_col]) == _offset_:
                                                         continue
                                                     if seq_id_col != -1:
-                                                        r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset)
+                                                        r[seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
                                                     if alt_seq_id_col != -1:
-                                                        r[alt_seq_id_col] = str(int(r[auth_seq_id_col]) + _offset)
+                                                        r[alt_seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
                                     # 2ksi
                                     if cif_np is not None:
                                         seq_align, _ = alignPolymerSequence(pa, cif_np, nmr_ps)
@@ -2677,33 +2722,40 @@ class NEFTranslator:
                                 sync_seq = False
                             resolve_entity_assembly(_loop, _alt_chain_id_list, sync_seq)  # pylint: disable=cell-var-from-loop
 
+                        def sync_entity_assembly_with_entity(_loop, _chain_id_set, _alt_chain_id_set):
+                            if len(_chain_id_set) == 0 and 'Entity_ID' in _loop.tags:
+                                _pre_tag = ['Entity_ID']
+                                _pre_chain_data = get_lp_tag(_loop, _pre_tag)
+                                entity_id_set = set()
+                                for _row in _pre_chain_data:
+                                    if _row not in emptyValue:
+                                        entity_id_set.add(_row)
+                                if len(entity_id_set) > 0 and len(entity_id_set) == len(_alt_chain_id_set):
+                                    chain_id_col = _loop.tags.index('Entity_assembly_ID')
+                                    entity_id_col = _loop.tags.index('Entity_ID')
+                                    for r in _loop.data:
+                                        r[chain_id_col] = r[entity_id_col]
+                                    return True
+                            return False
+
                         if len(alt_chain_id_set) > 0 and (len(chain_id_set) > LEN_LARGE_ASYM_ID or len(chain_id_set) == 0):
                             if 'UNMAPPED' in alt_chain_id_set:  # 2c34, 2ksi
                                 resolve_entity_assembly(loop, list(alt_chain_id_set), True)
+
                             else:  # 2lpk, 2lnh
-                                chain_id_col = loop.tags.index('Entity_assembly_ID')
-                                alt_chain_id_col = loop.tags.index('Auth_asym_ID')
-                                for r in loop.data:
-                                    r[chain_id_col] = r[alt_chain_id_col]
-                                if len(alt_chain_id_set) == 1:
-                                    refresh_entity_assembly(loop, list(alt_chain_id_set))
-                        elif len(chain_id_set) == 0 and 'Entity_ID' in loop.tags:
-                            pre_tag = ['Entity_ID']
-                            pre_chain_data = get_lp_tag(loop, pre_tag)
-                            entity_id_set = set()
-                            for row in pre_chain_data:
-                                if row not in emptyValue:
-                                    entity_id_set.add(row)
-                            if len(entity_id_set) > 0 and len(entity_id_set) == len(alt_chain_id_set):  # 2kxc
-                                entity_id_col = loop.tags.index('Entity_ID')
-                                chain_id_col = loop.tags.index('Entity_assembly_ID')
-                                for r in loop.data:
-                                    r[chain_id_col] = r[entity_id_col]
-                                if len(alt_chain_id_set) == 1:
-                                    refresh_entity_assembly(loop, list(alt_chain_id_set))
-                        elif (len(alt_chain_id_set) == 1 and len(chain_id_set) == 1)\
-                                or (len(alt_chain_id_set) > len(chain_id_set)):  # 5xv8, 2n7k
-                            refresh_entity_assembly(loop, list(alt_chain_id_set))
+                                if not sync_entity_assembly_with_entity(loop, chain_id_set, alt_chain_id_set):  # 2rqz
+                                    chain_id_col = loop.tags.index('Entity_assembly_ID')
+                                    alt_chain_id_col = loop.tags.index('Auth_asym_ID')
+                                    for r in loop.data:
+                                        r[chain_id_col] = r[alt_chain_id_col]
+                                    # if len(alt_chain_id_set) == 1:
+                                    if len(chain_id_set) <= len(alt_chain_id_set):
+                                        refresh_entity_assembly(loop, list(alt_chain_id_set))
+
+                        elif not sync_entity_assembly_with_entity(loop, chain_id_set, alt_chain_id_set):  # 2kxc
+                            if (len(alt_chain_id_set) == 1 and len(chain_id_set) == 1)\
+                               or (len(alt_chain_id_set) > len(chain_id_set)):  # 5xv8, 2n7k
+                                refresh_entity_assembly(loop, list(alt_chain_id_set))
 
                 if 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags and coord_assembly_checker is not None:
                     pre_comp_data = get_lp_tag(loop, ['Auth_asym_ID', 'Auth_seq_ID', 'Comp_ID'])
@@ -2737,26 +2789,27 @@ class NEFTranslator:
                         alt_chain_id_col = loop.tags.index('Auth_asym_ID')
                         auth_seq_id_col = loop.tags.index('Auth_seq_ID')
                         auth_comp_id_col = loop.tags.index('Auth_comp_ID')
-                        chain_id_col = loop.tags.index('Entity_assembly_ID') if 'Entity_assembly_ID' in loop.tags else -1
-                        seq_id_col = loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in loop.tags else -1
-                        alt_seq_id_col = loop.tags.index('Seq_ID') if 'Seq_ID' in loop.tags else -1
-                        entity_id_col = loop.tags.index('Entity_ID') if 'Entity_ID' in loop.tags else -1
 
-                        def fill_ligand(idx, np):
+                        def fill_ligand(_loop, idx, np):
                             try:
                                 seq_key = (np['auth_chain_id'], np['auth_seq_id'][0], np['comp_id'][0])
                                 if seq_key in coord_assembly_checker['auth_to_star_seq']:
+                                    chain_id_col = _loop.tags.index('Entity_assembly_ID') if 'Entity_assembly_ID' in _loop.tags else -1
+                                    seq_id_col = _loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in _loop.tags else -1
+                                    alt_seq_id_col = _loop.tags.index('Seq_ID') if 'Seq_ID' in _loop.tags else -1
+                                    entity_id_col = _loop.tags.index('Entity_ID') if 'Entity_ID' in _loop.tags else -1
+
                                     _entity_assembly_id, _seq_id, _entity_id, _ = coord_assembly_checker['auth_to_star_seq'][seq_key]
-                                    row = loop.data[idx]  # pylint: disable=cell-var-from-loop
-                                    if chain_id_col != -1:  # pylint: disable=cell-var-from-loop
-                                        row[chain_id_col] = str(_entity_assembly_id)  # pylint: disable=cell-var-from-loop
-                                    if seq_id_col != -1:  # pylint: disable=cell-var-from-loop
-                                        row[seq_id_col] = str(_seq_id)  # pylint: disable=cell-var-from-loop
-                                    if alt_seq_id_col != -1:  # pylint: disable=cell-var-from-loop
-                                        row[alt_seq_id_col] = str(_seq_id)  # pylint: disable=cell-var-from-loop
-                                    if entity_id_col != -1:  # pylint: disable=cell-var-from-loop
-                                        row[entity_id_col] = str(_entity_id)  # pylint: disable=cell-var-from-loop
-                                    row[alt_chain_id_col], row[auth_seq_id_col], row[comp_id_col], row[auth_comp_id_col] =\
+                                    _row = _loop.data[idx]
+                                    if chain_id_col != -1:
+                                        _row[chain_id_col] = str(_entity_assembly_id)
+                                    if seq_id_col != -1:
+                                        _row[seq_id_col] = str(_seq_id)
+                                    if alt_seq_id_col != -1:
+                                        _row[alt_seq_id_col] = str(_seq_id)
+                                    if entity_id_col != -1:
+                                        _row[entity_id_col] = str(_entity_id)
+                                    _row[alt_chain_id_col], _row[auth_seq_id_col], _row[comp_id_col], _row[auth_comp_id_col] =\
                                         seq_key[0], str(seq_key[1]), seq_key[2], seq_key[2]  # pylint: disable=cell-var-from-loop
                             except (KeyError, TypeError):
                                 pass
@@ -2796,19 +2849,19 @@ class NEFTranslator:
                                     if np is not None:
                                         if auth_comp_id in np['comp_id']:
                                             ligands = 1
-                                            fill_ligand(idx, np)
+                                            fill_ligand(loop, idx, np)
                                     if ligands == 0:
                                         for np in cif_np:
                                             ligands += np['comp_id'].count(auth_comp_id)
                                         if ligands == 1:
                                             for np in cif_np:
                                                 if auth_comp_id in np['comp_id']:
-                                                    fill_ligand(idx, np)
+                                                    fill_ligand(loop, idx, np)
                                                     break
                                         elif ligands > 1:
                                             for np in cif_np:
                                                 if auth_comp_id in np['comp_id'] and auth_seq_id in np['auth_seq_id']:
-                                                    fill_ligand(idx, np)
+                                                    fill_ligand(loop, idx, np)
                                                     break
                                     if ligands == 0:
                                         for np in cif_np:
@@ -2817,12 +2870,12 @@ class NEFTranslator:
                                         if ligands == 1:
                                             for np in cif_np:
                                                 if 'alt_comp_id' in np and auth_comp_id in np['alt_comp_id']:
-                                                    fill_ligand(idx, np)
+                                                    fill_ligand(loop, idx, np)
                                                     break
                                         elif ligands > 1:
                                             for np in cif_np:
                                                 if 'alt_comp_id' in np and auth_comp_id in np['alt_comp_id'] and auth_seq_id in np['auth_seq_id']:
-                                                    fill_ligand(idx, np)
+                                                    fill_ligand(loop, idx, np)
                                                     break
 
                 seq_data = get_lp_tag(loop, tags)
@@ -7039,6 +7092,10 @@ class NEFTranslator:
                             atom_list, ambiguity_code, details = nh[0], 1, None
                             return (atom_list, ambiguity_code, details)
 
+                if atom_id == 'HY' and comp_id == 'ILE':  # 2l9i, AMBER
+                    atom_list, ambiguity_code, details = ['HB', 'HG12', 'HG13'], 4, None
+                    return (atom_list, ambiguity_code, details)
+
                 if atom_id[-1] == '+' and atom_id[1].isdigit() and len(atom_id) > 2 and self.__ccU.updateChemCompDict(comp_id):
                     if self.__ccU.lastChemCompDict['_chem_comp.type'] in ('DNA LINKING', 'RNA LINKING'):  # DAOTHER-9198
                         _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, 'HN' + atom_id[1:-1], details, leave_unmatched, methyl_only)
@@ -7097,17 +7154,35 @@ class NEFTranslator:
                                         root.extend(_root)
                                 protons = []
                                 aliphatic = True
-                                for k, v in collections.Counter(root).most_common():
-                                    if v != 2:
-                                        continue
-                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == k and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
-                                    if cca is not None:
-                                        if cca[self.__ccU.ccaAromaticFlag] == 'Y':
-                                            aliphatic = False
-                                    branch = [branch for branch in self.__ccU.getBondedAtoms(comp_id, k, exclProton=True) if branch in _branch]
-                                    if len(branch) == 2:
-                                        for b in branch:
-                                            protons.extend(self.__ccU.getBondedAtoms(comp_id, b, onlyProton=True))
+                                if len(root) > 0:
+                                    aliphatic = True
+                                    for k, v in collections.Counter(root).most_common():
+                                        if v != 2:
+                                            continue
+                                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == k and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
+                                        if cca is not None:
+                                            if cca[self.__ccU.ccaAromaticFlag] == 'Y':
+                                                aliphatic = False
+                                        branch = [branch for branch in self.__ccU.getBondedAtoms(comp_id, k, exclProton=True) if branch in _branch]
+                                        if len(branch) == 2:
+                                            for b in branch:
+                                                protons.extend(self.__ccU.getBondedAtoms(comp_id, b, onlyProton=True))
+                                else:  # 2mlm
+                                    for cca in self.__ccU.lastAtomList:
+                                        if cca[self.__ccU.ccaTypeSymbol] in ('C', 'N'):
+                                            _root = cca[self.__ccU.ccaAtomId]
+                                            for proton in self.__ccU.getBondedAtoms(comp_id, _root, onlyProton=True):
+                                                if proton.startswith('H' + atom_id[2:]):
+                                                    root.append(_root)
+                                                    break
+                                    for k, v in collections.Counter(root).most_common():
+                                        if v != 1:
+                                            continue
+                                        cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == k and cca[self.__ccU.ccaLeavingAtomFlag] == 'N'), None)
+                                        if cca is not None:
+                                            if cca[self.__ccU.ccaAromaticFlag] == 'Y':
+                                                aliphatic = False
+                                            protons.extend(self.__ccU.getBondedAtoms(comp_id, k, onlyProton=True))
                                 len_protons = len(protons)
                                 if len_protons in (4, 6):
                                     atom_list, ambiguity_code, details = protons, 2 if aliphatic else 3, None

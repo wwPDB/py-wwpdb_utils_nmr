@@ -3454,7 +3454,42 @@ class CnsMRParserListener(ParseTreeListener):
             offsets = [seq_id - seq_id_3 for seq_id in seq_ids]
             atom_ids = [atom_id_1, atom_id_2, atom_id_3, atom_id_4, atom_id_5]
 
+            ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_3), None)
+
+            if ps is not None and chain_ids == [chain_id_1] * 5 and atom_ids == ['C', 'N', 'CA', 'C', 'N']\
+               and offsets != [-1, 0, 0, 0, 1]:
+
+                try:
+                    _seq_ids = [ps['seq_id'][ps['auth_seq_id'].index(seq_id)] for seq_id in seq_ids]
+                    _seq_id_3 = _seq_ids[2]
+                    offsets = [seq_id - _seq_id_3 for seq_id in _seq_ids]
+                except (IndexError, ValueError):
+                    pass
+
             if chain_ids != [chain_id_1] * 5 or offsets != [-1, 0, 0, 0, 1] or atom_ids != ['C', 'N', 'CA', 'C', 'N']:
+
+                if ps is not None:
+
+                    if ps['auth_seq_id'][0] == seq_id_3 and atom_ids[0] == 'C':
+                        hint = f"'{seq_id_3 - 1}'"
+                        if ps['seq_id'][0] != seq_id_3:
+                            hint += f" (or '{ps['seq_id'][0] - 1}' in label sequence scheme)"
+                        self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                        f"The residue number {hint} is not present in polymer sequence "
+                                        f"of chain {chain_id_3} of the coordinates. "
+                                        "Please update the sequence in the Macromolecules page.")
+                        return
+
+                    if ps['auth_seq_id'][-1] == seq_id_3 and atom_ids[-1] == 'N':
+                        hint = f"'{seq_id_3 + 1}'"
+                        if ps['seq_id'][-1] != seq_id_3:
+                            hint += f" (or '{ps['seq_id'][-1] + 1}' in label sequence scheme)"
+                        self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                        f"The residue number {hint} is not present in polymer sequence "
+                                        f"of chain {chain_id_3} of the coordinates. "
+                                        "Please update the sequence in the Macromolecules page.")
+                        return
+
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                 "The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].")
                 return
@@ -7293,7 +7328,7 @@ class CnsMRParserListener(ParseTreeListener):
                     if len(self.__fibril_chain_ids) > 0 and not self.__hasNonPoly:
                         if chainId[0] in self.__fibril_chain_ids:
                             self.factor['chain_id'] = [chainId[0]]
-                    elif len(self.__polySeq) == 1 and not self.__hasNonPoly:
+                    elif len(self.__polySeq) == 1 and not self.__branched and not self.__hasNonPoly:
                         self.factor['chain_id'] = self.__polySeq[0]['chain_id']
                         self.factor['auth_chain_id'] = chainId
                     elif self.__reasons is not None:
@@ -8708,7 +8743,7 @@ class CnsMRParserListener(ParseTreeListener):
                         if len(self.__fibril_chain_ids) > 0 and not self.__hasNonPoly:
                             if chainId[0] in self.__fibril_chain_ids:
                                 self.factor['chain_id'] = [chainId[0]]
-                        elif len(self.__polySeq) == 1 and not self.__hasNonPoly:
+                        elif len(self.__polySeq) == 1 and not self.__branched and not self.__hasNonPoly:
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']
                             self.factor['auth_chain_id'] = chainId
                         elif self.__reasons is not None:

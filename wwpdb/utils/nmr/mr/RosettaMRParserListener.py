@@ -1835,7 +1835,9 @@ class RosettaMRParserListener(ParseTreeListener):
                 atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
                                       'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
 
-                _cifAtomId = self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+                _cifAtomId, asis = self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite)
+                if asis:
+                    atomSelection[-1]['asis'] = True
                 if cifAtomId != _cifAtomId:
                     atomSelection[-1]['atom_id'] = _cifAtomId
 
@@ -1856,8 +1858,9 @@ class RosettaMRParserListener(ParseTreeListener):
             self.atomSelectionSet.append(atomSelection)
 
     def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite):
+        asis = False
         if not self.__hasCoord:
-            return atomId
+            return atomId, asis
 
         found = False
 
@@ -1979,7 +1982,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if found:
             if self.__preferAuthSeq:
                 self.__preferAuthSeqCount += 1
-            return atomId
+            return atomId, asis
 
         if self.__preferAuthSeq:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
@@ -2036,7 +2039,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if found:
             if self.__preferAuthSeq:
                 self.__preferAuthSeqCount += 1
-            return atomId
+            return atomId, asis
 
         if self.__ccU.updateChemCompDict(compId):
             cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
@@ -2066,9 +2069,9 @@ class RosettaMRParserListener(ParseTreeListener):
                                     self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                     f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                     "Please re-upload the model file.")
-                                    return atomId
+                                    return atomId, asis
                             if bondedTo[0][0] == 'O':
-                                return 'Ignorable hydroxyl group'
+                                return 'Ignorable hydroxyl group', asis
                     if seqId == max_auth_seq_id\
                        or (chainId, seqId + 1) in self.__coordUnobsRes and self.__csStat.peptideLike(compId):
                         if coordAtomSite is not None and atomId in carboxylCode\
@@ -2076,7 +2079,7 @@ class RosettaMRParserListener(ParseTreeListener):
                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                             "Please re-upload the model file.")
-                            return atomId
+                            return atomId, asis
 
                     ext_seq = False
                     if auth_seq_id_list is not None and len(auth_seq_id_list) > 0:
@@ -2088,17 +2091,18 @@ class RosettaMRParserListener(ParseTreeListener):
                             ext_seq = True
                     if chainId in LARGE_ASYM_ID:
                         if ext_seq:
-                            return atomId
+                            return atomId, asis
                         if self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                             f"The residue '{seqId}:{compId}' is not present in polymer sequence "
                                             f"of chain {chainId} of the coordinates. "
                                             "Please update the sequence in the Macromolecules page.")
+                            asis = True
                         else:
                             warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' else 'Atom not found'
                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
-        return atomId
+        return atomId, asis
 
     def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
         """ Return realistic bond constraint taking into account the current coordinates.
@@ -4820,6 +4824,192 @@ class RosettaMRParserListener(ParseTreeListener):
 
         finally:
             self.atomSelectionSet.clear()
+
+    # Enter a parse tree produced by RosettaMRParser#atom_pair_w_chain_restraints.
+    def enterAtom_pair_w_chain_restraints(self, ctx: RosettaMRParser.Atom_pair_w_chain_restraintsContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'dist'
+
+        self.__cur_comment_inlined = True
+
+    # Exit a parse tree produced by RosettaMRParser#atom_pair_w_chain_restraints.
+    def exitAtom_pair_w_chain_restraints(self, ctx: RosettaMRParser.Atom_pair_w_chain_restraintsContext):  # pylint: disable=unused-argument
+        self.__cur_comment_inlined = False
+
+    # Enter a parse tree produced by RosettaMRParser#atom_pair_w_chain_restraint.
+    def enterAtom_pair_w_chain_restraint(self, ctx: RosettaMRParser.Atom_pair_w_chain_restraintContext):  # pylint: disable=unused-argument
+        self.distRestraints += 1
+
+        self.stackFuncs.clear()
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by RosettaMRParser#atom_pair_w_chain_restraint.
+    def exitAtom_pair_w_chain_restraint(self, ctx: RosettaMRParser.Atom_pair_w_chain_restraintContext):
+
+        try:
+
+            seqId1 = int(str(ctx.Integer(0)))
+            atomId1 = str(ctx.Simple_name(0)).upper()
+            chainId1 = str(ctx.Simple_name(1))
+            seqId2 = int(str(ctx.Integer(1)))
+            atomId2 = str(ctx.Simple_name(2)).upper()
+            chainId2 = str(ctx.Simple_name(3))
+
+            if len(self.atomSelectionInComment) == 2:
+                matched = True
+                for atomSel in self.atomSelectionInComment:
+                    if atomSel['atom_id'] not in (atomId1, atomId2):
+                        matched = False
+                        break
+                if matched:
+                    for idx, atomSel in enumerate(self.atomSelectionInComment):
+                        if idx == 0:
+                            seqId1 = atomSel['seq_id']
+                            atomId1 = atomSel['atom_id']
+                        else:
+                            seqId2 = atomSel['seq_id']
+                            atomId2 = atomSel['atom_id']
+
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                return
+
+            self.__retrieveLocalSeqScheme()
+
+            chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1, fixedChainId=chainId1)
+            chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2, fixedChainId=chainId2)
+
+            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            self.__allowZeroUpperLimit = False
+            if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+               and len(self.atomSelectionSet[0]) > 0\
+               and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                   and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                    self.__allowZeroUpperLimit = True
+            self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+
+            dstFunc = self.validateDistanceRange(1.0)
+
+            if dstFunc is None:
+                return
+
+            isNested = len(self.stackNest) > 0
+            isMulti = isNested and self.stackNest[-1]['type'] == 'multi'
+
+            if self.__createSfDict:
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
+                                                                       self.__csStat, self.__originalFileName),
+                                  potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                if not isNested or self.__is_first_nest:
+                    sf['id'] += 1
+                memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 or isNested else '.'
+
+            if isNested:
+                if self.__debug:
+                    print(f"NESTED: {self.stackNest}")
+
+            has_intra_chain, rep_chain_id_set = hasIntraChainRestraint(self.atomSelectionSet)
+
+            combinationId = '.'
+            if isNested and self.__nest_combination_id > 0:
+                combinationId = self.__nest_combination_id
+
+            memberId = '.'
+            if self.__createSfDict:
+                if memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1 and not isNested:
+                    if self.atomSelectionSet[0][0]['auth_atom_id'] != 'CEN' and self.atomSelectionSet[1][0]['auth_atom_id'] != 'CEN':
+                        memberLogicCode = '.'
+
+                if memberLogicCode == 'OR':
+                    if isNested:
+                        memberId = self.__nest_member_id
+                        _atom1 = _atom2 = None
+                    elif len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
+                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                                 or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                        memberId = 0
+                        _atom1 = _atom2 = None
+
+                combinationId = '.'
+                if isNested and self.__nest_combination_id > 0:
+                    combinationId = self.__nest_combination_id
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if isIdenticalRestraint([atom1, atom2], self.__nefT):
+                    continue
+                if self.__createSfDict and isinstance(memberId, int):
+                    star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                    star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
+                    if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                        continue
+                if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
+                    continue
+                if self.__createSfDict and memberLogicCode == '.':
+                    altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
+                    if altAtomId1 is not None or altAtomId2 is not None:
+                        atom1, atom2 =\
+                            self.selectRealisticBondConstraint(atom1, atom2,
+                                                               altAtomId1, altAtomId2,
+                                                               dstFunc)
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.distRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    if isinstance(memberId, int):
+                        if isNested:
+                            memberId += 1
+                            self.__nest_member_id = memberId
+                            _atom1, _atom2 = atom1, atom2
+                        elif _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                                or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                            memberId += 1
+                            _atom1, _atom2 = atom1, atom2
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 combinationId, memberId, 'AND' if isMulti else memberLogicCode,
+                                 sf['list_id'], self.__entryId, dstFunc,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                 atom1, atom2)
+                    sf['loop'].add_data(row)
+
+                    if sf['constraint_subsubtype'] == 'ambi':
+                        continue
+
+                    if memberLogicCode == 'OR'\
+                       and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                            or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                        sf['constraint_subsubtype'] = 'ambi'
+                    if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
+                        upperLimit = float(dstFunc['upper_limit'])
+                        if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
+                            sf['constraint_subsubtype'] = 'ambi'
+
+            if self.__createSfDict and sf is not None:
+                if isinstance(memberId, int) and memberId == 1:
+                    sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
+                    memberId = '.'
+                if isinstance(memberId, str) and isinstance(combinationId, int) and combinationId == 1:
+                    sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
+        finally:
+            self.atomSelectionInComment.clear()
 
     # Enter a parse tree produced by RosettaMRParser#number.
     def enterNumber(self, ctx: RosettaMRParser.NumberContext):  # pylint: disable=unused-argument

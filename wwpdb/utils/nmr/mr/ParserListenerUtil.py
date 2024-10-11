@@ -8,6 +8,7 @@
 # 24-Jan-2024  M. Yokochi - reconstruct polymer/non-polymer sequence based on pdb_mon_id, instead of auth_mon_id (D_1300043061)
 # 04-Apr-2024  M. Yokochi - permit dihedral angle restraint across entities due to ligand split (DAOTHER-9063)
 # 20-Aug-2024  M. Yokochi - support truncated loop sequence in the model (DAOTHER-9644)
+# 10-Sep-2024  M. Yokochi - ignore identical polymer sequence extensions within polynucleotide multiplexes (DAOTHER-9674)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -1827,12 +1828,12 @@ CARTN_DATA_ITEMS = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
 
 AUTH_ATOM_DATA_ITEMS = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                        {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                        {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                        {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                        {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
                         ]
 
-ATOM_NAME_DATA_ITEMS = [{'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                        {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+ATOM_NAME_DATA_ITEMS = [{'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                        {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
                         ]
 
 AUTH_ATOM_CARTN_DATA_ITEMS = CARTN_DATA_ITEMS
@@ -1840,14 +1841,14 @@ AUTH_ATOM_CARTN_DATA_ITEMS.extend(AUTH_ATOM_DATA_ITEMS)
 
 PTNR1_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                               {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                              {'name': 'ptnr1_label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                              {'name': 'ptnr1_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                              {'name': 'ptnr1_label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                              {'name': 'ptnr1_label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
                               ]
 
 PTNR2_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                               {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                              {'name': 'ptnr2_label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                              {'name': 'ptnr2_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                              {'name': 'ptnr2_label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                              {'name': 'ptnr2_label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
                               ]
 
 
@@ -2548,8 +2549,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
         if atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit():  # DAOTHER-9198: DNR(DC):H3+ -> HN3
             if 'HN' + atomId[1] in refAtomIdList:
                 return 'HN' + atomId[1]
-        if atomId.startswith("HN'")\
-           and refCompId in ('DA', 'DT', 'DG', 'DC', 'DI', 'DU', 'DNR', 'A', 'T', 'G', 'C', 'U', 'CH'):
+        if atomId.startswith("HN'") and ccU.getTypeOfCompId(refCompId)[1]:
             nh2 = ccU.getRepAminoProtons(refCompId)
             if len(nh2) == 1:
                 if atomId.endswith("''"):
@@ -3156,7 +3156,7 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
 
         compId3 = compId[1:]  # 1e8e
 
-        if compId3 in monDict3:
+        if compId3 in monDict3 and compId[0] != 'P':  # 2lyw: PGLU -> PCA
             return compId3
 
     if compId[-1] in ('5', '3'):
@@ -3357,21 +3357,21 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         # key items of loop
         _keyItems = {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                  {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                  {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
                      'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                  {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                  {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
                                   ],
                      'branched': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                   {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                  {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                  {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                   {'name': 'pdb_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                   {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                   {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'}
@@ -3381,7 +3381,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                     {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                     {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
                                     {'name': 'auth_comp_id', 'type': 'int', 'alt_name': 'auth_comp_id'},
-                                    {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                    {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'}
                                     ],
                      'mis_poly_link': [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id'},
                                        {'name': 'auth_seq_id_1', 'type': 'int'},
@@ -3393,7 +3393,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id', 'default-from': 'auth_seq_id'},
                                      {'name': 'parent_comp_id', 'type': 'str', 'alt_name': 'auth_comp_id'},
-                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'}]
+                                     {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'}]
                      }
 
         contentSubtype = 'mis_poly_link'
@@ -3651,7 +3651,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                             CARTN_DATA_ITEMS,
                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                              {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_1},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'value': BEG_ATOM},
+                                                             {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': BEG_ATOM},
                                                              {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': representativeModelId},
                                                              {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                              ])
@@ -3660,7 +3660,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                             CARTN_DATA_ITEMS,
                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                              {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id_2},
-                                                             {'name': 'label_atom_id', 'type': 'str', 'value': END_ATOM},
+                                                             {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'value': END_ATOM},
                                                              {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': representativeModelId},
                                                              {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                                              ])
@@ -3683,6 +3683,10 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                                 continue
                                             pos = idx
                                             break
+
+                                    # DAOTHER-9674
+                                    if 'unmapped_auth_seq_id' in ps and auth_seq_id_ in ps['unmapped_auth_seq_id']:
+                                        continue
 
                                     ps['auth_seq_id'].insert(pos, auth_seq_id_)
                                     ps['comp_id'].insert(pos, '.')  # DAOTHER-9644: comp_id must be specified at Macromelucule page
@@ -3814,7 +3818,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                          {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
                          {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
                          {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'alt_comp_id'},
+                         {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'alt_comp_id'},
                          {'name': authAtomId, 'type': 'str', 'alt_name': 'atom_id'}
                          ]
 
@@ -3990,6 +3994,13 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                     for idx, br in enumerate(branched):
                         if (internal_conflict or conflict_per_chain[idx]) and 'alt_auth_seq_id' in br:
                             br['auth_seq_id'], br['alt_auth_seq_id'] = br['alt_auth_seq_id'], br['auth_seq_id']
+
+                else:
+                    for br in branched:
+                        orderedAuthSeqIds = sorted(br['auth_seq_id'])
+                        altSeqIds = [br['seq_id'][br['auth_seq_id'].index(authSeqId)] for authSeqId in orderedAuthSeqIds]
+                        if br['seq_id'] != altSeqIds:
+                            br['alt_auth_seq_id'] = altSeqIds
 
             except KeyError:
                 branched = None
@@ -4539,7 +4550,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'seq_id', 'type': 'int'},
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                     {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                     {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                      {'name': polySeqAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'},  # DAOTHER-8817
                                      {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
                                      ]
@@ -4560,7 +4571,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'auth_seq_id', 'type': 'int'},
                                      {'name': 'pdbx_auth_seq_id' if cR.hasItem('atom_site', 'pdbx_auth_seq_id') else 'auth_seq_id',
                                       'type': 'int', 'alt_name': 'alt_seq_id'},
-                                     {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                     {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                      {'name': 'pdbx_auth_comp_id' if cR.hasItem('atom_site', 'pdbx_auth_comp_id') else 'auth_comp_id',
                                       'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'label_comp_id'},
                                      {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'label_comp_id'},
@@ -4634,6 +4645,26 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         if item['label_asym_id'] not in labelAsymIds:
                             labelAsymIds.append(item['label_asym_id'])
                         compIds.add(item['comp_id'])
+
+                    # DAOTHER-9674
+                    delIdx = []
+                    for chainId in labelAsymIds:
+                        ps = next(ps for ps in polySeq if ps['chain_id'] == chainId)
+                        if 'unmapped_seq_id' not in ps:
+                            continue
+                        for seqId in ps['unmapped_seq_id']:
+                            try:
+                                item = next(item for item in mappings
+                                            if item['label_asym_id'] == chainId
+                                            and item['seq_id'] == seqId)
+                                delIdx.append(mappings.index(item))
+                            except StopIteration:
+                                pass
+
+                    if len(delIdx) > 0:
+                        for idx in reversed(delIdx):
+                            del mappings[idx]
+
                     for extSeq in nmrExtPolySeq:
                         if extSeq['auth_chain_id'] not in authAsymIds:
                             continue
@@ -4892,7 +4923,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                     {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                     {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                      {'name': branchedAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id'},  # DAOTHER-8817
                                      {'name': branchedPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id'}
                                      ]
@@ -5001,7 +5032,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                      {'name': 'ndb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
-                                     {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                     {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                                      {'name': nonPolyAuthMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id', 'default-from': 'mon_id'},  # DAOTHER-8817
                                      {'name': nonPolyPdbMonIdName, 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'}
                                      ]
@@ -6943,6 +6974,8 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
     ins_code1, ins_code2, ins_code3, ins_code4, ins_code5 = None, None, None, None, None
 
     if atom1 is not None:
+        if 'asis' in atom1:
+            asis1 = True
         star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, atom2, asis=asis1)
         if star_atom1 is None:
             star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, asis=asis1)
@@ -6952,6 +6985,8 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             ins_code1 = getInsCode(authToInsCode, offsetHolder, atom1)
 
     if atom2 is not None:
+        if 'asis' in atom2:
+            asis2 = True
         star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, atom1, asis=asis2)
         if star_atom2 is None:
             star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, asis=asis2)
@@ -6961,6 +6996,8 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             ins_code2 = getInsCode(authToInsCode, offsetHolder, atom2)
 
     if atom3 is not None:
+        if 'asis' in atom3:
+            asis3 = True
         star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, atom1, asis=asis3)
         if star_atom3 is None:
             star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, asis=asis3)
@@ -6970,6 +7007,8 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             ins_code3 = getInsCode(authToInsCode, offsetHolder, atom3)
 
     if atom4 is not None:
+        if 'asis' in atom4:
+            asis4 = True
         star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, atom1, asis=asis4)
         if star_atom4 is None:
             star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, asis=asis4)
@@ -6979,6 +7018,8 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
             ins_code4 = getInsCode(authToInsCode, offsetHolder, atom4)
 
     if atom5 is not None:
+        if 'asis' in atom5:
+            asis5 = True
         star_atom5 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom5, atom1, asis=asis5)
         if star_atom5 is None:
             star_atom5 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom5, asis=asis5)
@@ -8991,12 +9032,50 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, hint='.'):
     if 'lower_limit' in dstFunc and dstFunc['lower_limit'] is not None:
         lowerLimit = float(dstFunc['lower_limit'])
 
+    atom_id_1_ = atom_id_1[0]
+    atom_id_2_ = atom_id_2[0]
+
+    def is_like_hbond():
+        if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
+            return True
+
+        if (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+            return True
+
+        if (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
+            return True
+
+        if (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
+            return True
+
+        if (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+            return True
+
+        if (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
+            return True
+
+        if (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+            return True
+
+        return False
+
     if atom1['chain_id'] == atom2['chain_id'] and atom1['seq_id'] == atom2['seq_id']:
+        if upperLimit == 0.0 and 0.0 < lowerLimit <= 1.8\
+           and atom_id_1_ not in protonBeginCode and atom_id_2_ not in protonBeginCode:
+            return 'covalent bond'
         if upperLimit >= DIST_AMBIG_UP or lowerLimit >= DIST_AMBIG_UP:
+            if is_like_hbond():
+                return 'ambiguous hydrogen bond'
             return 'general distance'
         return None
 
     _hint = hint.lower()
+
+    def is_like_sebond():
+        return (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _hint
+
+    def is_like_ssbond():
+        return (atom_id_1 == 'SG' and atom_id_2 == 'SG') or ('disulfide' in _hint or ('ss' in _hint and 'bond' in _hint))
 
     ambig = len(atomSelectionSet[0]) * len(atomSelectionSet[1]) > 1\
         and (isAmbigAtomSelection(atomSelectionSet[0], csStat)
@@ -9029,72 +9108,45 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, hint='.'):
         return 'ROE'
 
     if upperLimit >= DIST_AMBIG_UP or lowerLimit >= DIST_AMBIG_UP:
-        return 'general distance'
 
-    atom_id_1_ = atom_id_1[0]
-    atom_id_2_ = atom_id_2[0]
+        if upperLimit > DIST_AMBIG_BND or (atom1['chain_id'] == atom2['chain_id'] and atom1['seq_id'] == atom2['seq_id']):
+
+            if is_like_sebond():
+                return 'ambiguous diselenide bond'
+
+            if is_like_ssbond():
+                return 'ambiguous disulfide bond'
+
+            if is_like_hbond():
+                return 'ambiguous hydrogen bond'
+
+        return 'general distance'
 
     if upperLimit <= DIST_AMBIG_LOW or upperLimit > DIST_AMBIG_BND or ambig:
 
-        if upperLimit > DIST_AMBIG_BND:
+        if upperLimit > DIST_AMBIG_BND or (atom1['chain_id'] == atom2['chain_id'] and atom1['seq_id'] == atom2['seq_id']):
 
-            if (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _hint:
-                return 'general distance'
+            if is_like_sebond():
+                return 'ambiguous diselenide bond'
 
-            if (atom_id_1 == 'SG' and atom_id_2 == 'SG') or ('disulfide' in _hint or ('ss' in _hint and 'bond' in _hint)):
-                return 'general distance'
+            if is_like_ssbond():
+                return 'ambiguous disufide bond'
 
-            if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
-                return 'general distance'
-
-            if (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
-                return 'general distance'
-
-            if (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
-                return 'general distance'
-
-            if (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
-                return 'general distance'
-
-            if (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
-                return 'general distance'
-
-            if (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
-                return 'general distance'
-
-            if (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
-                return 'general distance'
+            if is_like_hbond():
+                return 'ambiguous hydrogen bond'
 
         if upperLimit >= DIST_AMBIG_MED and lowerLimit <= 0.0:
             return 'general distance'
 
         return None
 
-    if (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _hint:
+    if is_like_sebond():
         return 'diselenide bond'
 
-    if (atom_id_1 == 'SG' and atom_id_2 == 'SG') or ('disulfide' in _hint or ('ss' in _hint and 'bond' in _hint)):
+    if is_like_ssbond():
         return 'disulfide bond'
 
-    if (atom_id_1_ == 'F' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'F' and atom_id_1_ in protonBeginCode):
-        return 'hydrogen bond'
-
-    if (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
-        return 'hydrogen bond'
-
-    if (atom_id_1_ == 'O' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'O' and atom_id_1_ in protonBeginCode):
-        return 'hydrogen bond'
-
-    if (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
-        return 'hydrogen bond'
-
-    if (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
-        return 'hydrogen bond'
-
-    if (atom_id_1_ == 'N' and atom_id_2_ in protonBeginCode) or (atom_id_2_ == 'N' and atom_id_1_ in protonBeginCode):
-        return 'hydrogen bond'
-
-    if (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+    if is_like_hbond():
         return 'hydrogen bond'
 
     return None

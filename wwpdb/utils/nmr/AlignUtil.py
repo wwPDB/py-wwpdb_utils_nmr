@@ -677,6 +677,28 @@ def updatePolySeqRst(polySeqRst, chainId, seqId, compId: str, authCompId=None):
         ps['auth_comp_id'].append(compId if authCompId in emptyValue else authCompId)
 
 
+def revertPolySeqRst(polySeqRst, chainId, seqId, authCompId):
+    """ Revert polymer sequence of the current MR file.
+    """
+
+    if seqId is None or authCompId in emptyValue:
+        return
+
+    ps = next((ps for ps in polySeqRst if ps['chain_id'] == chainId), None)
+    if ps is None:
+        polySeqRst.append({'chain_id': chainId, 'seq_id': [], 'comp_id': [], 'auth_comp_id': []})
+        ps = polySeqRst[-1]
+
+    if seqId in ps['seq_id']:
+        idx = ps['seq_id'].index(seqId)
+        ps['comp_id'][idx] = '.'
+        ps['auth_comp_id'][idx] = authCompId
+    else:
+        ps['seq_id'].append(seqId)
+        ps['comp_id'].append('.')
+        ps['auth_comp_id'].append(authCompId)
+
+
 def updatePolySeqRstAmbig(polySeqRstAmb, chainId, seqId, compIds: list):
     """ Update polymer sequence of the current MR file.
     """
@@ -2159,6 +2181,9 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
 
         return seqId, compId, atomId
 
+    if elemName not in protonBeginCode and coordAtomSite is not None and atomId in coordAtomSite['atom_id']:
+        return seqId, compId, atomId
+
     _atomId = 'H' + atomId[1:]
 
     item = next((item for item in mapping
@@ -2419,6 +2444,9 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
         if item is not None and item['auth_atom_id'][-1] == '2':
             return item['auth_atom_id'][:-1] + '%'
 
+        return atomId
+
+    if elemName not in protonBeginCode and coordAtomSite is not None and atomId in coordAtomSite['atom_id']:
         return atomId
 
     _atomId = 'H' + atomId[1:]

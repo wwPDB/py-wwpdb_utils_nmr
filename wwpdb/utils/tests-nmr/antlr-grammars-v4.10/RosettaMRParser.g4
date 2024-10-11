@@ -33,7 +33,8 @@ rosetta_mr:
 	big_bin_restraints |
 	nested_restraints |
 	rdc_restraints |			// used only in CS-ROSETTA
-	disulfide_bond_linkages			// used only in CS-ROSETTA
+	disulfide_bond_linkages |		// used only in CS-ROSETTA
+	atom_pair_w_chain_restraints		// wwpdb.utils.nmr's format extension for restraint remediation
 	)*
 	EOF;
 
@@ -171,6 +172,14 @@ disulfide_bond_linkages:
 
 disulfide_bond_linkage:
 	Integer Integer;
+
+/* wwpdb.utils.nmr's format extension for restraint remediation
+*/
+atom_pair_w_chain_restraints:
+	atom_pair_w_chain_restraint+;
+
+atom_pair_w_chain_restraint:
+	(AtomPair | NamedAtomPair | AmbiguousNMRDistance) Simple_name Integer Simple_name Simple_name Integer Simple_name func_type_def;
 
 /* number expression in restrains */
 number:	Float | Integer;

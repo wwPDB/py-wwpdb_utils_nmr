@@ -4,7 +4,7 @@
 - python 3.6 or later
 
 - pip packages:
-	- pynmrstar
+	- pynmrstar (3.2.0 or later)
 	- munkres
 	- mmcif
 	- numpy

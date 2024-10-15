@@ -3,6 +3,7 @@
 NmrDpUtility is backend tool of OneDep system utilized for NMR deposition and validation. It accepts a coordinate file and various NMR data files, and generates combined NMR data file in either NEF or NMR-STAR format. Data processing status is reported through a JSON file. The software package can run outside of the OneDep system, called as standalone mode, for which see [instruction](../tests-nmr/README.md) for details.
 
 ## How to use
+
 1. Instantiate NmrDpUtility class
 
 ```python
@@ -71,7 +72,7 @@ rmsd_overlaid_exactly|param|Positive floating-potnt value. Criterion for detecti
 NmrDpUtility outputs processed data source file as primary output. The primary output file path /should be specified by *setDestination()* method. When you select NEF The other output file path and parameters should be set through *addOutput()* method:
 
 ```python
-    addOutput(self, name=None, value=None, type='file')
+    def addOutput(self, name=None, value=None, type='file')
 
 ```
 
@@ -184,27 +185,30 @@ Conventional NMR deposition to OneDep system accepts assigned chemical shift fil
 
 ```python
     model_file_path = 'D_1000259961_model-upload_P1.cif.V1'
-    cs_file_path = 'D_1000259961_cs-upload_P1.str.V1'
+    cs_path_list = [{'file_name': 'D_1000259961_cs-upload_P1.str.V1', 'file_type': 'nmr-star', 'original_file_name': 'TGM1D3.str'}]
     mr_file_type = ['nm-res-xpl', 'nm-res-xpl', 'nm-res-xpl', 'nm-res-xpl', 'nm-res-xpl']
     mr_file_path = ['HBDA-5.tbl', 'jhnhacoup3.tbl', 'tgmd3_rdc_caco_ave_v3.tbl', 'tgmd3_rdc_caha_ave_v4.tbl', 'tgmd3_rdc_nh_CHB.tbl']
-    util.addInput(name='chem_shift_file_path_list', value=[{'file_name': cs_file_path, 'file_type': 'nmr-star', 'original_file_name': 'TGM1D3.str'}], type='file_dict_list')
     ar_path_list = []
     for i, ar_path in enumerate(mr_file_path):
         ar_path_list.append({'file_name': data_dir_path + ar_path, 'file_type': mr_file_type[i], 'original_file_name': ar_path})
+
+    util.addInput(name='chem_shift_file_path_list', value=cs_path_list, type='file_dict_list')
     util.addInput(name='atypical_restraint_file_path_list', value=ar_path_list, type='file_dict_list')
     util.addInput(name='coordinate_file_path', value=data_dir_path + model_file_path, type='file')
     util.addInput(name='nonblk_anomalous_cs', value=True, type='param')
     util.addInput(name='nonblk_bad_nterm', value=True, type='param')
     util.addInput(name='resolve_conflict', value=True, type='param')
     util.addInput(name='check_mandatory_tag', value=False, type='param')
-    util.addInput(name='remediation', value=True, type='param')
+    util.addInput(name='remediation', value=True, type='param')  # turn on remediation mode
     util.setLog(data_dir_path + entry_id + '-cs-str-consistency-log.json')
     util.setDestination(data_dir_path + entry_id + '_cs_mr_merged.str')  # combined NMR-STAR file
     util.setVerbose(False)
 
+    util.op('nmr-cs-mr-merge')
+
 ```
 
-The obtained NMR-STAR file will be validated as NMR unified data file using 'nmr-str-consistency-check' and 'nmr-str2cif-deposit' workflow operations in OneDep system.
+The result combined NMR-STAR file will be validated as NMR unified data file using 'nmr-str-consistency-check' and 'nmr-str2cif-deposit' workflow operations in OneDep system.
 
 ### Appendix
 
@@ -216,7 +220,7 @@ nmr-star|nm-shi or nm-uni-str|NMR data in NMR-STAR format
 nef|nm-uni-nef|NMR data in NEF (NMR Exchange Format)
 pdbx|co-cif|Coordinates in PDBx/mmCIF format
 nm-res-amb|nm-res-amb|Restraint file in AMBER format
-nm-aux-amb|nm-res-amb|Topology file in AMBER format
+nm-aux-amb|nm-aux-amb|Topology file in AMBER format
 nm-res-ari|nm-res-ari|Restraint file in ARIA format
 nm-res-bio|nm-res-bio|Restraint file in BIOSYM format
 nm-res-cha|nm-res-cha|Restraint file in CHARMM format

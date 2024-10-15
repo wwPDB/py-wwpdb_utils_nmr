@@ -57,3 +57,6 @@
    python test_ChemCompUtil.py
    python test_BMRBChemShiftStat.py  # Run twice test_BMRBChemShiftStat.py just in case.
 ```
+
+Please see [instruction](../nmr/README.md) about NmrDpUtility class for details.
+

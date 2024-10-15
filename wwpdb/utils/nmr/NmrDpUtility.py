@@ -1186,7 +1186,7 @@ class NmrDpUtility:
         self.__retain_original = True
         # whether to leave internal commentary note in processed NMR-STAR file
         self.__leave_intl_note = True
-        # whether to use reduced atom notation
+        # whether to use reduced atom notation in warning/error message
         self.__reduced_atom_notation = True
 
         # whether entity category exists (nmr-star specific)

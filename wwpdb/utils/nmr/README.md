@@ -219,8 +219,8 @@ The codes used for specifying each file type in NmrDpUtility are compatible with
 
 NmrDpUtility|OneDep (content type/format)|description
 ------------|------|-----------
-nmr-star|nmr-chemical-shifts/[nmr-star|pdbx] or nmr-data-str/[nmr-star|pdbx]|NMR data in NMR-STAR format
-nef|nmr-data-nef/[nmr-star|pdbx]|NMR data in NEF (NMR Exchange Format)
+nmr-star|nmr-chemical-shifts/(nmr-star\|pdbx) or nmr-data-str/(nmr-star\|pdbx)|NMR data in NMR-STAR format
+nef|nmr-data-nef/(nmr-star\|pdbx)|NMR data in NEF (NMR Exchange Format)
 pdbx|model/pdbx|Coordinates in PDBx/mmCIF format
 nm-res-amb|nmr-restraints/amber|Restraint file in AMBER format
 nm-aux-amb|nmr-restraints/any|Topology file in AMBER format

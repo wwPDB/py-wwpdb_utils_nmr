@@ -1,6 +1,6 @@
 ﻿# NmrDpUtility - NMR data processing utility for OneDep system
 
-NmrDpUtility is backend tool of OneDep system utilized for NMR deposition and validation. It accepts a coordinate file and various NMR data files, and generates combined NMR data file in either NEF or NMR-STAR format. Data processing status is reported through a JSON file. The software package can run outside of the OneDep system, called as standalone mode, for which see [instruction](../tests-nmr/README.md) for details.
+[NmrDpUtility](NmrDpUtility.py) is backend tool of OneDep system utilized for NMR deposition and validation. It accepts a coordinate file and various NMR data files, and generates combined NMR data file in either NEF or NMR-STAR format. Data processing status is reported through a JSON file. The software package can run outside of the OneDep system, called as standalone mode, for which see [instruction](../tests-nmr/README.md) for details.
 
 ## How to use
 
@@ -41,6 +41,7 @@ Any input file paths and parameters should be set through *addInput()* method:
 name|effective type|description
 ----|--------------|-----------
 coordinate_file_path|file|Set a PDBx/mmCIF coordinate file. The file type is 'pdbx' by default.
+proc_coord_file_path|file|Set spare coordinate file for the case 'coordinate_file_path' is not accessible. Otherwise, it is unnecessary,
 chem_shift_path_list|file_list, file_dict_list|Set chemical shift file(s), formally we accepted multiple chemical shift files. The file type is 'nmr-star'.
 restraint_file_path_list|file_list, file_dict_list|Set NMR restraint files in NMR-STAR format so that the file type is 'nmr-star'.
 atypical_restraint_file_path_list|file_dict_list|Set software-native formatted NMR restraint files or spectral peak list files. The file types are set by the dictionary as described above.
@@ -210,7 +211,11 @@ Conventional NMR deposition to OneDep system accepts assigned chemical shift fil
 
 The result combined NMR-STAR file will be validated as NMR unified data file using 'nmr-str-consistency-check' and 'nmr-str2cif-deposit' workflow operations in OneDep system.
 
-### Appendix
+## Structure of JSON report file
+
+Structure of NmrDpUtility’s report file is declared in [JSON Schema file](../tests-nmr/json-schema/nmr-restraints-report-schema.json). [NmrDpReport class](NmrDpReport.py) handles writing and reading the report file. 
+
+## Appendix
 
 The codes used for specifying each file type in NmrDpUtility are compatible with OneDep system as follows:
 

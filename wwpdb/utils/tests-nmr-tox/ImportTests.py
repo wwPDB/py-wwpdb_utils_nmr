@@ -21,7 +21,7 @@ from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 # NmrStarToCif class has been deprecated
-# from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
+from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
 from wwpdb.utils.nmr.rci.RCI import RCI
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
@@ -31,7 +31,7 @@ class ImportTests(unittest.TestCase):
         _c = NEFTranslator()  # noqa: F841
         _npu = NmrDpUtility()  # noqa: F841
         _ndp = NmrDpReport()  # noqa: F841
-        # _nstc = NmrStarToCif()  # noqa: F841
+        _nstc = NmrStarToCif()  # noqa: F841
         _rci = RCI()  # noqa: F841
         _bmrb = BMRBChemShiftStat()  # noqa: F841
 

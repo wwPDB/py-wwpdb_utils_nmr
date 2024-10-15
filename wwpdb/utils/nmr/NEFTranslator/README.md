@@ -3,7 +3,7 @@
 This script translates NMR Exchange Format(NEF) file into NMR-STAR file. Both data formats are basically STAR format and
 'pynmrstar' package from BMRB is used to read and write both file types. 
 
-###Dependency 
+### Dependency 
 NEFTranslator require 'pynmrstar v 2.6' package which is available via pip installation
 
 ### Usage

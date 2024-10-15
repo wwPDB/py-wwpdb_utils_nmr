@@ -61,7 +61,7 @@ check_auth_seq|param|Boolean value. False for OneDep system.
 validation_server|param|Boolean value. False for OneDep system. True for standalone validation server.
 transl_pseudo_name|param|Boolean value. False for OneDep system. Whether to convert pseudo atom nomenclature in NMR unified data file.
 tolerant_seq_align|param|Boolean value. Set True for 'nmr-str-consistency-check', 'nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2nef-release', and 'nmr-str2cif-annotate' workflow operations. Whether to ignore sequence alignment error due to residue variant.
-fix_format_issue|param|Boolean value. True for legacy separated file data file deposition or release mode. 
+fix_format_issue|param|Boolean value. True for legacy separated file data file deposition or release mode.
 excl_missing_data|param|Boolean value. True for legacy separated file data file deposition. Whether to exclude missing mandatory data.
 cmpl_missing_data|param|Boolean value. True for legacy separated file data file deposition. Whether to complement missing data. (add missing pseudo atoms in NMR restraints in actual)
 trust_pdbx_nmr_ens|param|Boolean value. True for release mode. Whether to trust pdbx_nmr_ensemble to get total number of models.
@@ -89,7 +89,7 @@ leave_intl_note|param|Boolean value. True by default. Whether to leave internal 
 reduced_atom_notation|param|Boolean value. True by default. Whether to use reduced atom notation in warning/error message.
 
 5. Invoke defined workflow operation
-   
+
 After the input and output resources are complete, calling **op()** for a particular workflow operation performs a series of data processing.
 
 workflow operation|role
@@ -168,8 +168,8 @@ As for NMR-STAR (NMR unified data) to CIF formatted NMR-STAR file conversion
     util.addInput(name='nonblk_bad_nterm', value=True, type='param')
     util.addInput(name='resolve_conflict', value=True, type='param')
     util.addInput(name='check_mandatory_tag', value=True, type='param')
-    util.setLog(data_dir_path + entry_id '-str2cif-deposit-log.json')  # report file for data conversion 
-    util.setDestination(data_dir_path + entry_id '-next.str')  # the primary destination is the converted NMR-STAR file of the original data source 
+    util.setLog(data_dir_path + entry_id '-str2cif-deposit-log.json')  # report file for data conversion
+    util.setDestination(data_dir_path + entry_id '-next.str')  # the primary destination is the converted NMR-STAR file of the original data source
     util.addOutput(name='nmr_cif_file_path', value=data_dir_path + entry_id + '-str2cif.cif', type='file')  # converted CIF formatted NMR-STAR file
     util.addOutput(name='report_file_path', value=data_dir_path + entry_id + '-str2cif-str-deposit-log.json', type='file')  # report file for the obtained NMR-STAR file
     util.addOutput(name='entry_id', value=entry_id, type='param')
@@ -217,24 +217,26 @@ Structure of NmrDpUtility’s report file is defined in [JSON Schema file](../te
 
 The codes used for specifying each file type in NmrDpUtility are compatible with OneDep system as follows:
 
-NmrDpUtility|OneDep|description
+NmrDpUtility|OneDep (content type/format)|description
 ------------|------|-----------
-nmr-star|nm-shi or nm-uni-str|NMR data in NMR-STAR format
-nef|nm-uni-nef|NMR data in NEF (NMR Exchange Format)
-pdbx|co-cif|Coordinates in PDBx/mmCIF format
-nm-res-amb|nm-res-amb|Restraint file in AMBER format
-nm-aux-amb|nm-aux-amb|Topology file in AMBER format
-nm-res-ari|nm-res-ari|Restraint file in ARIA format
-nm-res-bio|nm-res-bio|Restraint file in BIOSYM format
-nm-res-cha|nm-res-cha|Restraint file in CHARMM format
-nm-res-cns|nm-res-cns|Restraint file in CNS format
-nm-res-cya|nm-res-cya|Restraint file in CYANA format
-nm-res-dyn|nm-res-dyn|Restraint file in DYNAMO/PALES/TALOS format
-nm-res-gro|nm-res-gro|Restraint file in GROMACS format
-nm-aux-gro|nm-aux-gro|Topology file in GROMACS format
-nm-res-isd|nm-res-isd|Restraint file in ISD format
-nm-res-ros|nm-res-ros|Restraint file in ROSETTA format
-nm-res-syb|nm-res-syb|Restraint file in SYBYL format
-nm-res-xpl|nm-res-xpl|Restraint file in XPLOR-NIH format
-nm-res-oth|nm-res-oth|Restraint file in other format
-nm-pea-any|nm-pea-any|Any spectral peak list file
+nmr-star|nmr-chemical-shifts/[nmr-star|pdbx] or nmr-data-str/[nmr-star|pdbx]|NMR data in NMR-STAR format
+nef|nmr-data-nef/[nmr-star|pdbx]|NMR data in NEF (NMR Exchange Format)
+pdbx|model/pdbx|Coordinates in PDBx/mmCIF format
+nm-res-amb|nmr-restraints/amber|Restraint file in AMBER format
+nm-aux-amb|nmr-restraints/any|Topology file in AMBER format
+nm-res-ari|nmr-restraints/aria|Restraint file in ARIA format
+nm-res-bio|nmr-restraints/biosym|Restraint file in BIOSYM format
+nm-res-cha|nmr-restraints/charmm|Restraint file in CHARMM format
+nm-res-cns|nmr-restraints/cns|Restraint file in CNS format
+nm-res-cya|nmr-restraints/cyana|Restraint file in CYANA format
+nm-res-dyn|nmr-restraints/dynamo|Restraint file in DYNAMO/PALES/TALOS format
+nm-res-gro|nmr-restraints/gromacs|Restraint file in GROMACS format
+nm-aux-gro|nmr-restraints/any|Topology file in GROMACS format
+nm-res-isd|nmr-restraints/isd|Restraint file in ISD format
+nm-res-ros|nmr-restraints/rosetta|Restraint file in ROSETTA format
+nm-res-syb|nmr-restraints/sybyl|Restraint file in SYBYL format
+nm-res-xpl|nmr-restraints/xplor-nih|Restraint file in XPLOR-NIH format
+nm-res-oth|nmr-restraints/any|Restraint file in other format
+nm-res-mr|nmr-restraints/pdb-mr|Restraint file in PDB-MR format
+nm-res-sax|nmr-restraints/any|SAX CSV file
+nm-pea-any|nmr-peaks/any|Any spectral peak list file

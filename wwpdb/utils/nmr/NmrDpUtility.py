@@ -6612,8 +6612,13 @@ class NmrDpUtility:
         if op not in self.__workFlowOps:
             raise KeyError(f"+NmrDpUtility.op() ++ Error  - Unknown workflow operation {op}.")
 
-        if 'cif' in op and 'nmr_cif_file_path' not in self.__outputParamDict:
-            raise KeyError("+NmrDpUtility.op() ++ Error  - Could not find 'nmr_cif_file_path' output parameter.")
+        if 'cif' in op:
+            if 'nmr_cif_file_path' not in self.__outputParamDict:
+                raise KeyError("+NmrDpUtility.op() ++ Error  - Could not find 'nmr_cif_file_path' output parameter.")
+            if self.__dstPath is None:
+                self.__dstPath = self.__outputParamDict['nmr_cif_file_path'] + '.tmp'
+                self.__dstPath__ = copy.copy(self.__dstPath)
+                self.__tmpPath = self.__dstPath__
 
         if has_key_value(self.__inputParamDict, 'bmrb_only'):
             if isinstance(self.__inputParamDict['bmrb_only'], bool):
@@ -6825,43 +6830,52 @@ class NmrDpUtility:
 
         self.__dumpDpReport()
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+        try:
 
-        if ((self.__op == 'nmr-cs-mr-merge'
-             and self.report.error.getValueList('missing_mandatory_content',
-                                                input_source_dic['file_name'],
-                                                key='_Atom_chem_shift') is not None)
-            or (self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2cif-annotate') and self.__remediation_mode))\
-           and self.report.isError() and self.__dstPath is not None:
+            input_source = self.report.input_sources[0]
+            input_source_dic = input_source.get()
 
-            dir_path = os.path.dirname(self.__dstPath)
+            if ((self.__op == 'nmr-cs-mr-merge'
+                 and self.report.error.getValueList('missing_mandatory_content',
+                                                    input_source_dic['file_name'],
+                                                    key='_Atom_chem_shift') is not None)
+                or (self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2cif-annotate') and self.__remediation_mode))\
+               and self.report.isError() and self.__dstPath is not None:
 
-            rem_dir = os.path.join(dir_path, 'remediation')
+                dir_path = os.path.dirname(self.__dstPath)
 
-            if os.path.isdir(rem_dir):
+                rem_dir = os.path.join(dir_path, 'remediation')
 
-                for link_file in os.listdir(rem_dir):
+                if os.path.isdir(rem_dir):
 
-                    link_path = os.path.join(rem_dir, link_file)
+                    for link_file in os.listdir(rem_dir):
 
-                    if os.path.islink(link_path):
-                        os.remove(link_path)
+                        link_path = os.path.join(rem_dir, link_file)
 
-                os.removedirs(rem_dir)
+                        if os.path.islink(link_path):
+                            os.remove(link_path)
 
-            pk_dir = os.path.join(dir_path, 'nmr_peak_lists')
+                    os.removedirs(rem_dir)
 
-            if os.path.isdir(pk_dir):
+                pk_dir = os.path.join(dir_path, 'nmr_peak_lists')
 
-                for link_file in os.listdir(pk_dir):
+                if os.path.isdir(pk_dir):
 
-                    link_path = os.path.join(pk_dir, link_file)
+                    for link_file in os.listdir(pk_dir):
 
-                    if os.path.islink(link_path):
-                        os.remove(link_path)
+                        link_path = os.path.join(pk_dir, link_file)
 
-                os.removedirs(pk_dir)
+                        if os.path.islink(link_path):
+                            os.remove(link_path)
+
+                    os.removedirs(pk_dir)
+
+            if (self.__annotation_mode or self.__release_mode) and self.__tmpPath is not None:
+                os.remove(self.__tmpPath)
+                self.__tmpPath = None
+
+        except OSError:
+            pass
 
         return not self.report.isError()
 
@@ -9914,7 +9928,9 @@ class NmrDpUtility:
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
-        if not self.__combined_mode and self.__remediation_mode and file_list_id == 0 and file_type == 'nmr-star':
+        if not self.__combined_mode and self.__remediation_mode\
+           and not self.__annotation_mode and not self.__release_mode\
+           and file_list_id == 0 and file_type == 'nmr-star':
 
             content_subtype = 'chem_shift_ref'
 
@@ -25602,7 +25618,7 @@ class NmrDpUtility:
 
                     resolved = True
 
-                    if has_auth_seq:
+                    if has_auth_seq and len(auth_to_star_seq) > 0:
                         auth_asym_id = row[auth_asym_id_col]
                         auth_seq_id = row[auth_seq_id_col]
                         auth_comp_id = row[auth_comp_id_col]
@@ -29852,10 +29868,11 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
+                                    eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
                                     for c in containerList:
                                         c.setType('data')
 
-                                    myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+                                    myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                             except Exception as e:
                                 self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Error  - {str(e)}\n")
@@ -34064,10 +34081,11 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
+                                eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
                                 for c in containerList:
                                     c.setType('data')
 
-                                myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+                                myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                         except Exception as e:
                             self.__lfh.write(f"+NmrDpUtility.__validateStrPk() ++ Error  - {str(e)}\n")
@@ -44889,7 +44907,7 @@ class NmrDpUtility:
 
         if 'report_file_path' not in self.__inputParamDict or self.__annotation_mode:
             self.__initializeDpReport()
-            self.__dstPath = self.__srcPath
+            self.__dstPath = self.__dstPath__
 
             return False
 
@@ -45195,7 +45213,7 @@ class NmrDpUtility:
         """ Delete skipped saveframes.
         """
 
-        if not self.__combined_mode:
+        if not self.__combined_mode or self.__annotation_mode or self.__release_mode:
             return True
 
         if len(self.__star_data) == 0:
@@ -45490,7 +45508,8 @@ class NmrDpUtility:
         if not has_poly_seq:
             return False
 
-        self.__cleanUpSf()
+        if not self.__release_mode and not self.__annotation_mode:
+            self.__cleanUpSf()
 
         master_entry = self.__star_data[0]
 
@@ -52231,7 +52250,8 @@ class NmrDpUtility:
         if file_type == 'nef':
             return True
 
-        self.__c2S.set_entry_id(self.__star_data[0], self.__entry_id)
+        if self.__c2S.set_entry_id(self.__star_data[0], self.__entry_id):
+            self.__depositNmrData()
 
         return True
 
@@ -52440,6 +52460,12 @@ class NmrDpUtility:
 
         if 'nef' not in self.__op and ('deposit' in self.__op or 'annotate' in self.__op) and 'nmr_cif_file_path' in self.__outputParamDict:
 
+            if self.__dstPath != self.__dstPath__:
+                if __pynmrstar_v3__:
+                    master_entry.write_to_file(self.__dstPath__, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
+                else:
+                    master_entry.write_to_file(self.__dstPath__)
+
             try:
 
                 myIo = IoAdapterPy(False, sys.stderr)
@@ -52450,10 +52476,11 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
+                    eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
                     for c in containerList:
                         c.setType('data')
 
-                    myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+                    myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
             except Exception as e:
                 self.__lfh.write(f"+NmrDpUtility.__depositNmrData() ++ Error  - {str(e)}\n")
@@ -52496,10 +52523,11 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
+                    eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
                     for c in containerList:
                         c.setType('data')
 
-                    myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+                    myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                     return True
 
@@ -55957,10 +55985,11 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
+                        eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
                         for c in containerList:
                             c.setType('data')
 
-                        myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+                        myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                 except Exception as e:
                     self.__lfh.write(f"+NmrDpUtility.__translateNef2Str() ++ Error  - {str(e)}\n")

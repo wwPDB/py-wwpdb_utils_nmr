@@ -70,7 +70,7 @@ rmsd_overlaid_exactly|param|Positive floating-potnt value. Criterion for detecti
 
 4. Add primary output file path, other output file path and parameters
 
-NmrDpUtility outputs processed data source file as primary output. The primary output file path should be specified by **setDestination()** method. When you select NEF The other output file path and parameters should be set through **addOutput()** method:
+NmrDpUtility outputs processed primary input data source set by **setSource()** as primary output file, which is specified by **setDestination()** method. When you select NEF as the input resource, the primary output should be converted NEF file. The other output file paths (e.g. NMR-STAR and CIF formatted NMR-STAR) and parameters should be set through **addOutput()** method:
 
 ```python
     def addOutput(self, name=None, value=None, type='file')
@@ -181,7 +181,7 @@ As for NMR-STAR (NMR unified data) to CIF formatted NMR-STAR file conversion
 
 ### (b) Separated NMR data file deposition
 
-Conventional NMR deposition requires assigned chemical shift file and software native restraint files. The OneDep system can combine these NMR data into an NMR unified data file that is achived by running 'nmr-cs-mr-merge' workflow operation.
+Conventional NMR deposition requires assigned chemical shift file and software native formatted restraint files. The OneDep system can combine these NMR data into an NMR unified data file that is achived by running 'nmr-cs-mr-merge' workflow operation.
 
 ```python
     model_file_path = 'D_1000259961_model-upload_P1.cif.V1'

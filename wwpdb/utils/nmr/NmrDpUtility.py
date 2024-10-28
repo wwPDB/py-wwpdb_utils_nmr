@@ -6620,6 +6620,11 @@ class NmrDpUtility:
                 self.__dstPath__ = copy.copy(self.__dstPath)
                 self.__tmpPath = self.__dstPath__
 
+        if self.__release_mode and self.__dstPath is None:
+            self.__dstPath = self.__srcPath + '.tmp'
+            self.__dstPath__ = copy.copy(self.__dstPath)
+            self.__tmpPath = self.__dstPath__
+
         if has_key_value(self.__inputParamDict, 'bmrb_only'):
             if isinstance(self.__inputParamDict['bmrb_only'], bool):
                 self.__bmrb_only = self.__inputParamDict['bmrb_only']

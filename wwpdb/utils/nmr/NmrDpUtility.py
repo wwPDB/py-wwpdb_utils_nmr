@@ -44912,7 +44912,7 @@ class NmrDpUtility:
 
         if 'report_file_path' not in self.__inputParamDict or self.__annotation_mode:
             self.__initializeDpReport()
-            self.__dstPath = self.__dstPath__
+            self.__dstPath = self.__dstPath__ if self.__cifPath is None else self.__srcPath
 
             return False
 
@@ -52465,7 +52465,7 @@ class NmrDpUtility:
 
         if 'nef' not in self.__op and ('deposit' in self.__op or 'annotate' in self.__op) and 'nmr_cif_file_path' in self.__outputParamDict:
 
-            if self.__dstPath != self.__dstPath__:
+            if self.__cifPath is None:
                 if __pynmrstar_v3__:
                     master_entry.write_to_file(self.__dstPath__, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
                 else:

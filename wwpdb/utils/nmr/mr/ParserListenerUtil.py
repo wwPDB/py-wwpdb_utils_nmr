@@ -2067,7 +2067,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return 'H7' + atomId[-1]
                 if atomId in 'H5':
                     return 'H7'
-            elif refCompId in ('DT', 'T') and atomId.startswith('C5'):  # 7dju
+            elif refCompId in ('DT', 'T') and (atomId.startswith('C5') or atomId == 'CM'):  # 7dju, 7pdu
                 return 'C7'
             elif refCompId == 'THM' and refAtomIdList is not None and 'HM51' in refAtomIdList:
                 if atomId.startswith('Q7'):
@@ -2077,7 +2077,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                         return 'HM5' + atomId[-1]
                     if atomId in 'H7':
                         return 'HM5'
-                if atomId == 'C7':  # 7png
+                if atomId in ('C7', 'CM'):  # 7png, 7pdu
                     return 'C5M'
             elif refCompId in ('DA', 'A') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
                 return 'H6' + atomId[-1]

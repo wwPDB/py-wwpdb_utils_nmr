@@ -11431,26 +11431,26 @@ class NmrDpUtility:
             self.report = None
             self.report_prev = None
 
-            self.__star_data_type = []
-            self.__star_data = []
-            self.__sf_name_corr = []
+            self.__star_data_type.clear()
+            self.__star_data.clear()
+            self.__sf_name_corr.clear()
 
-            self.__original_error_message = []
+            self.__original_error_message.clear()
 
-            self.__sf_category_list = []
-            self.__lp_category_list = []
+            self.__sf_category_list.clear()
+            self.__lp_category_list.clear()
 
-            self.__suspended_errors_for_lazy_eval = []
-            self.__suspended_warnings_for_lazy_eval = []
+            self.__suspended_errors_for_lazy_eval.clear()
+            self.__suspended_warnings_for_lazy_eval.clear()
 
-            for content_subtype in self.__lp_data:
-                self.__lp_data[content_subtype] = []
+            for v in self.__lp_data.values():
+                v.clear()
 
-            for content_subtype in self.__aux_data:
-                self.__aux_data[content_subtype] = []
+            for v in self.__aux_data.values():
+                v.clear()
 
-            for content_subtype in self.__sf_tag_data:
-                self.__sf_tag_data[content_subtype] = []
+            for v in self.__sf_tag_data.values():
+                v.clear()
 
             self.__inputParamDict = copy.deepcopy(self.__inputParamDictCopy)
 
@@ -32537,9 +32537,25 @@ class NmrDpUtility:
 
         reasons_dict = {}
 
+        suspended_errors_for_lazy_eval = suspended_warnings_for_lazy_eval = []
+
         def deal_res_warn_message(listener):
 
             if listener.warningMessage is not None:
+
+                if len(suspended_errors_for_lazy_eval) > 0:
+                    for msg in suspended_errors_for_lazy_eval:
+                        for k, v in msg.items():
+                            self.report.error.appendDescription(k, v)
+                            self.report.setError()
+                    suspended_errors_for_lazy_eval.clear()
+
+                if len(suspended_warnings_for_lazy_eval) > 0:
+                    for msg in suspended_warnings_for_lazy_eval:
+                        for k, v in msg.items():
+                            self.report.warning.appendDescription(k, v)
+                            self.report.setWarning()
+                    suspended_warnings_for_lazy_eval.clear()
 
                 for warn in listener.warningMessage:
 
@@ -32734,6 +32750,100 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
 
+        def deal_res_warn_message_for_lazy_eval(listener):
+
+            if listener.warningMessage is not None:
+
+                for warn in listener.warningMessage:
+
+                    if warn.startswith('[Concatenated sequence]'):
+                        suspended_warnings_for_lazy_eval.append({'concatenated_sequence':
+                                                                 {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Sequence mismatch]'):
+                        suspended_errors_for_lazy_eval.append({'sequence_mismatch':
+                                                               {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Atom not found]'):
+                        if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                            suspended_errors_for_lazy_eval.append({'atom_not_found':
+                                                                   {'file_name': file_name, 'description': warn}})
+                        else:
+                            suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
+                                                                     {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Hydrogen not instantiated]'):
+                        if self.__remediation_mode:
+                            suspended_warnings_for_lazy_eval.append({'hydrogen_not_instantiated':
+                                                                     {'file_name': file_name, 'description': warn}})
+                        else:
+                            suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated':
+                                                                   {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Coordinate issue]'):
+                        suspended_errors_for_lazy_eval.append({'coordinate_issue':
+                                                               {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Invalid atom nomenclature]'):
+                        suspended_errors_for_lazy_eval.append({'invalid_atom_nomenclature':
+                                                               {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                        suspended_errors_for_lazy_eval.append({'invalid_data':
+                                                               {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Sequence mismatch warning]'):
+                        suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
+                                                                 {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Missing data]'):
+                        suspended_errors_for_lazy_eval.append({'missing_data':
+                                                               {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Enum mismatch]'):
+                        suspended_warnings_for_lazy_eval.append({'enum_mismatch':
+                                                                 {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Enum mismatch ignorable]'):
+                        suspended_warnings_for_lazy_eval.append({'enum_mismatch_ignorable':
+                                                                 {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Unmatched atom type]'):
+                        suspended_warnings_for_lazy_eval.append({'inconsistent_mr_data':
+                                                                 {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Range value error]') and not self.__remediation_mode:
+                        suspended_errors_for_lazy_eval.append({'anomalous_data':
+                                                               {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
+                        suspended_warnings_for_lazy_eval.append({'inconsistent_mr_data':
+                                                                 {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Insufficient atom selection]') or warn.startswith('[Insufficient angle selection]'):
+                        suspended_warnings_for_lazy_eval.append({'insufficient_mr_data':
+                                                                 {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Redundant data]'):
+                        suspended_warnings_for_lazy_eval.append({'redundant_mr_data':
+                                                                 {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Ambiguous dihedral angle]'):
+                        suspended_warnings_for_lazy_eval.append({'ambiguous_dihedral_angle':
+                                                                 {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Anomalous RDC vector]'):
+                        suspended_warnings_for_lazy_eval.append({'anomalous_rdc_vector':
+                                                                 {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Anomalous data]'):
+                        suspended_warnings_for_lazy_eval.append({'anomalous_data':
+                                                                 {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Unsupported data]'):
+                        suspended_warnings_for_lazy_eval.append({'unsupported_mr_data':
+                                                                 {'file_name': file_name, 'description': warn}})
+
         for input_source, ar, _ in ar_file_order:
 
             file_path = ar['file_name']
@@ -32804,6 +32914,9 @@ class NmrDpUtility:
 
             reasons = _reasons
 
+            suspended_errors_for_lazy_eval.clear()
+            suspended_warnings_for_lazy_eval.clear()
+
             if file_type == 'nm-res-xpl':
                 reader = XplorMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
@@ -32843,6 +32956,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -32936,6 +33050,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -33008,6 +33123,7 @@ class NmrDpUtility:
                     reasons = reader.getReasons()
 
                     if reasons is not None and _reasons is not None and listener.warningMessage is not None and len(listener.warningMessage) > 0:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         reader = AmberMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
@@ -33127,6 +33243,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -33222,6 +33339,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -33293,6 +33411,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -33356,7 +33475,6 @@ class NmrDpUtility:
                                               listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
-
                     deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
@@ -33406,6 +33524,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -33473,6 +33592,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -33540,6 +33660,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -33626,6 +33747,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -33696,6 +33818,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -41416,14 +41539,14 @@ class NmrDpUtility:
                                     with open(touch_file, 'w') as ofh:
                                         ofh.write('')
 
-                    self.__suspended_errors_for_lazy_eval = []
+                    self.__suspended_errors_for_lazy_eval.clear()
 
                 if len(self.__suspended_warnings_for_lazy_eval) > 0:
                     for msg in self.__suspended_warnings_for_lazy_eval:
                         for k, v in msg.items():
                             self.report.warning.appendDescription(k, v)
                             self.report.setWarning()
-                    self.__suspended_warnings_for_lazy_eval = []
+                    self.__suspended_warnings_for_lazy_eval.clear()
 
             for ps in poly_seq:
 
@@ -41441,14 +41564,14 @@ class NmrDpUtility:
                                     for k, v in msg.items():
                                         self.report.error.appendDescription(k, v)
                                         self.report.setError()
-                                self.__suspended_errors_for_lazy_eval = []
+                                self.__suspended_errors_for_lazy_eval.clear()
 
                             if len(self.__suspended_warnings_for_lazy_eval) > 0:
                                 for msg in self.__suspended_warnings_for_lazy_eval:
                                     for k, v in msg.items():
                                         self.report.warning.appendDescription(k, v)
                                         self.report.setWarning()
-                                self.__suspended_warnings_for_lazy_eval = []
+                                self.__suspended_warnings_for_lazy_eval.clear()
 
                     elif 'ribonucleotide' in poly_type:
                         rmsd_label = 'p_rmsd'
@@ -43392,7 +43515,7 @@ class NmrDpUtility:
                                     del v['ca_idx']
                                 self.report.error.appendDescription(k, v)
                                 self.report.setError()
-                        self.__suspended_errors_for_lazy_eval = []
+                        self.__suspended_errors_for_lazy_eval.clear()
 
                     if len(self.__suspended_warnings_for_lazy_eval) > 0:
                         for msg in self.__suspended_warnings_for_lazy_eval:
@@ -43401,7 +43524,7 @@ class NmrDpUtility:
                                     del v['ca_idx']
                                 self.report.warning.appendDescription(k, v)
                                 self.report.setWarning()
-                        self.__suspended_warnings_for_lazy_eval = []
+                        self.__suspended_warnings_for_lazy_eval.clear()
 
                 # from model to nmr (final)
 
@@ -43925,7 +44048,7 @@ class NmrDpUtility:
                                     del v['ca_idx']
                                 self.report.error.appendDescription(k, v)
                                 self.report.setError()
-                        self.__suspended_errors_for_lazy_eval = []
+                        self.__suspended_errors_for_lazy_eval.clear()
 
                     if len(self.__suspended_warnings_for_lazy_eval) > 0:
                         for msg in self.__suspended_warnings_for_lazy_eval:
@@ -43934,7 +44057,7 @@ class NmrDpUtility:
                                     del v['ca_idx']
                                 self.report.warning.appendDescription(k, v)
                                 self.report.setWarning()
-                        self.__suspended_warnings_for_lazy_eval = []
+                        self.__suspended_warnings_for_lazy_eval.clear()
 
                 chain_assign_dic = self.report.chain_assignment.get()
 

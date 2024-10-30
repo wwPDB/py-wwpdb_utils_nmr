@@ -32537,25 +32537,28 @@ class NmrDpUtility:
 
         reasons_dict = {}
 
-        suspended_errors_for_lazy_eval = suspended_warnings_for_lazy_eval = []
+        suspended_errors_for_lazy_eval = []
+        suspended_warnings_for_lazy_eval = []
+
+        def consume_suspended_message():
+
+            if len(suspended_errors_for_lazy_eval) > 0:
+                for msg in suspended_errors_for_lazy_eval:
+                    for k, v in msg.items():
+                        self.report.error.appendDescription(k, v)
+                        self.report.setError()
+                suspended_errors_for_lazy_eval.clear()
+
+            if len(suspended_warnings_for_lazy_eval) > 0:
+                for msg in suspended_warnings_for_lazy_eval:
+                    for k, v in msg.items():
+                        self.report.warning.appendDescription(k, v)
+                        self.report.setWarning()
+                suspended_warnings_for_lazy_eval.clear()
 
         def deal_res_warn_message(listener):
 
             if listener.warningMessage is not None:
-
-                if len(suspended_errors_for_lazy_eval) > 0:
-                    for msg in suspended_errors_for_lazy_eval:
-                        for k, v in msg.items():
-                            self.report.error.appendDescription(k, v)
-                            self.report.setError()
-                    suspended_errors_for_lazy_eval.clear()
-
-                if len(suspended_warnings_for_lazy_eval) > 0:
-                    for msg in suspended_warnings_for_lazy_eval:
-                        for k, v in msg.items():
-                            self.report.warning.appendDescription(k, v)
-                            self.report.setWarning()
-                    suspended_warnings_for_lazy_eval.clear()
 
                 for warn in listener.warningMessage:
 
@@ -32568,6 +32571,8 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
+                        consume_suspended_message()
+
                         self.report.error.appendDescription('sequence_mismatch',
                                                             {'file_name': file_name, 'description': warn})
                         self.report.setError()
@@ -32577,6 +32582,8 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Atom not found]'):
                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                            consume_suspended_message()
+
                             self.report.error.appendDescription('atom_not_found',
                                                                 {'file_name': file_name, 'description': warn})
                             self.report.setError()
@@ -32600,6 +32607,8 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
                         else:
+                            consume_suspended_message()
+
                             self.report.error.appendDescription('hydrogen_not_instantiated',
                                                                 {'file_name': file_name, 'description': warn})
                             self.report.setError()
@@ -32608,6 +32617,8 @@ class NmrDpUtility:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Coordinate issue]'):
+                        consume_suspended_message()
+
                         self.report.error.appendDescription('coordinate_issue',
                                                             {'file_name': file_name, 'description': warn})
                         self.report.setError()
@@ -32616,6 +32627,8 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
+                        consume_suspended_message()
+
                         self.report.error.appendDescription('invalid_atom_nomenclature',
                                                             {'file_name': file_name, 'description': warn})
                         self.report.setError()
@@ -32624,6 +32637,8 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                        consume_suspended_message()
+
                         self.report.error.appendDescription('invalid_data',
                                                             {'file_name': file_name, 'description': warn})
                         self.report.setError()
@@ -32648,6 +32663,8 @@ class NmrDpUtility:
                                 self.__nmr_ext_poly_seq.append(d)
 
                     elif warn.startswith('[Missing data]'):
+                        consume_suspended_message()
+
                         self.report.error.appendDescription('missing_data',
                                                             {'file_name': file_name, 'description': warn})
                         self.report.setError()
@@ -32680,6 +32697,8 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Range value error]') and not self.__remediation_mode:
+                        consume_suspended_message()
+
                         self.report.error.appendDescription('anomalous_data',
                                                             {'file_name': file_name, 'description': warn})
                         self.report.setError()

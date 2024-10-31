@@ -32538,7 +32538,6 @@ class NmrDpUtility:
         reasons_dict = {}
 
         suspended_errors_for_lazy_eval = []
-        suspended_warnings_for_lazy_eval = []
 
         def consume_suspended_message():
 
@@ -32548,13 +32547,6 @@ class NmrDpUtility:
                         self.report.error.appendDescription(k, v)
                         self.report.setError()
                 suspended_errors_for_lazy_eval.clear()
-
-            if len(suspended_warnings_for_lazy_eval) > 0:
-                for msg in suspended_warnings_for_lazy_eval:
-                    for k, v in msg.items():
-                        self.report.warning.appendDescription(k, v)
-                        self.report.setWarning()
-                suspended_warnings_for_lazy_eval.clear()
 
         def deal_res_warn_message(listener):
 
@@ -32775,11 +32767,7 @@ class NmrDpUtility:
 
                 for warn in listener.warningMessage:
 
-                    if warn.startswith('[Concatenated sequence]'):
-                        suspended_warnings_for_lazy_eval.append({'concatenated_sequence':
-                                                                 {'file_name': file_name, 'description': warn}})
-
-                    elif warn.startswith('[Sequence mismatch]'):
+                    if warn.startswith('[Sequence mismatch]'):
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch':
                                                                {'file_name': file_name, 'description': warn}})
 
@@ -32787,21 +32775,17 @@ class NmrDpUtility:
                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                             suspended_errors_for_lazy_eval.append({'atom_not_found':
                                                                    {'file_name': file_name, 'description': warn}})
-                        else:
-                            suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
-                                                                     {'file_name': file_name, 'description': warn}})
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
                         if self.__remediation_mode:
-                            suspended_warnings_for_lazy_eval.append({'hydrogen_not_instantiated':
-                                                                     {'file_name': file_name, 'description': warn}})
+                            pass
                         else:
                             suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated':
                                                                    {'file_name': file_name, 'description': warn}})
 
-                    elif warn.startswith('[Coordinate issue]'):
-                        suspended_errors_for_lazy_eval.append({'coordinate_issue':
-                                                               {'file_name': file_name, 'description': warn}})
+                    # elif warn.startswith('[Coordinate issue]'):
+                    #     suspended_errors_for_lazy_eval.append({'coordinate_issue':
+                    #                                            {'file_name': file_name, 'description': warn}})
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         suspended_errors_for_lazy_eval.append({'invalid_atom_nomenclature':
@@ -32811,57 +32795,13 @@ class NmrDpUtility:
                         suspended_errors_for_lazy_eval.append({'invalid_data':
                                                                {'file_name': file_name, 'description': warn}})
 
-                    elif warn.startswith('[Sequence mismatch warning]'):
-                        suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
-                                                                 {'file_name': file_name, 'description': warn}})
+                    # elif warn.startswith('[Missing data]'):
+                    #     suspended_errors_for_lazy_eval.append({'missing_data':
+                    #                                            {'file_name': file_name, 'description': warn}})
 
-                    elif warn.startswith('[Missing data]'):
-                        suspended_errors_for_lazy_eval.append({'missing_data':
-                                                               {'file_name': file_name, 'description': warn}})
-
-                    elif warn.startswith('[Enum mismatch]'):
-                        suspended_warnings_for_lazy_eval.append({'enum_mismatch':
-                                                                 {'file_name': file_name, 'description': warn}})
-
-                    elif warn.startswith('[Enum mismatch ignorable]'):
-                        suspended_warnings_for_lazy_eval.append({'enum_mismatch_ignorable':
-                                                                 {'file_name': file_name, 'description': warn}})
-
-                    elif warn.startswith('[Unmatched atom type]'):
-                        suspended_warnings_for_lazy_eval.append({'inconsistent_mr_data':
-                                                                 {'file_name': file_name, 'description': warn}})
-
-                    elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                        suspended_errors_for_lazy_eval.append({'anomalous_data':
-                                                               {'file_name': file_name, 'description': warn}})
-
-                    elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                        suspended_warnings_for_lazy_eval.append({'inconsistent_mr_data':
-                                                                 {'file_name': file_name, 'description': warn}})
-
-                    elif warn.startswith('[Insufficient atom selection]') or warn.startswith('[Insufficient angle selection]'):
-                        suspended_warnings_for_lazy_eval.append({'insufficient_mr_data':
-                                                                 {'file_name': file_name, 'description': warn}})
-
-                    elif warn.startswith('[Redundant data]'):
-                        suspended_warnings_for_lazy_eval.append({'redundant_mr_data':
-                                                                 {'file_name': file_name, 'description': warn}})
-
-                    elif warn.startswith('[Ambiguous dihedral angle]'):
-                        suspended_warnings_for_lazy_eval.append({'ambiguous_dihedral_angle':
-                                                                 {'file_name': file_name, 'description': warn}})
-
-                    elif warn.startswith('[Anomalous RDC vector]'):
-                        suspended_warnings_for_lazy_eval.append({'anomalous_rdc_vector':
-                                                                 {'file_name': file_name, 'description': warn}})
-
-                    elif warn.startswith('[Anomalous data]'):
-                        suspended_warnings_for_lazy_eval.append({'anomalous_data':
-                                                                 {'file_name': file_name, 'description': warn}})
-
-                    elif warn.startswith('[Unsupported data]'):
-                        suspended_warnings_for_lazy_eval.append({'unsupported_mr_data':
-                                                                 {'file_name': file_name, 'description': warn}})
+                    # elif warn.startswith('[Range value error]') and not self.__remediation_mode:
+                    #     suspended_errors_for_lazy_eval.append({'anomalous_data':
+                    #                                            {'file_name': file_name, 'description': warn}})
 
         for input_source, ar, _ in ar_file_order:
 
@@ -32934,7 +32874,6 @@ class NmrDpUtility:
             reasons = _reasons
 
             suspended_errors_for_lazy_eval.clear()
-            suspended_warnings_for_lazy_eval.clear()
 
             if file_type == 'nm-res-xpl':
                 reader = XplorMRReader(self.__verbose, self.__lfh,

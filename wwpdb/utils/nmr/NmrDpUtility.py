@@ -32787,9 +32787,9 @@ class NmrDpUtility:
                     #     suspended_errors_for_lazy_eval.append({'coordinate_issue':
                     #                                            {'file_name': file_name, 'description': warn}})
 
-                    elif warn.startswith('[Invalid atom nomenclature]'):
-                        suspended_errors_for_lazy_eval.append({'invalid_atom_nomenclature':
-                                                               {'file_name': file_name, 'description': warn}})
+                    # elif warn.startswith('[Invalid atom nomenclature]'):
+                    #     suspended_errors_for_lazy_eval.append({'invalid_atom_nomenclature':
+                    #                                            {'file_name': file_name, 'description': warn}})
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         suspended_errors_for_lazy_eval.append({'invalid_data':

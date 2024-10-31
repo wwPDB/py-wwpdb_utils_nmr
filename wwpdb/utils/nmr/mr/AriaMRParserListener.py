@@ -2388,7 +2388,7 @@ class AriaMRParserListener(ParseTreeListener):
             lenAtomId = len(_atomId)
             if compId != cifCompId and __compId == cifCompId:
                 compId = cifCompId
-            if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
+            if self.__reasons is not None and compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
                 multiChain = insCode = False
                 if len(chainAssign) > 0:
                     chainIds = [ca[0] for ca in chainAssign]

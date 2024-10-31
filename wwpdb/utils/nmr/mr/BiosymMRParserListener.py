@@ -1952,7 +1952,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     _atomId = [_atomId_ for _atomId_ in _atomId if _atomId_ in atomSiteAtomId]
 
             lenAtomId = len(_atomId)
-            if compId != cifCompId and __compId == cifCompId:
+            if self.__reasons is not None and compId != cifCompId and __compId == cifCompId:
                 compId = cifCompId
             if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
                 multiChain = insCode = False

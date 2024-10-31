@@ -520,7 +520,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         set_label_seq_scheme()
 
                     if self.__reasons is None and any(f for f in self.__f
-                                                      if '[Atom not found]' in f or '[Sequence mismatch]' in f or 'Invalid atom nomenclature' in f):
+                                                      if '[Atom not found]' in f or 'Invalid atom nomenclature' in f):
 
                         seqIdRemap = []
 
@@ -842,10 +842,6 @@ class RosettaMRParserListener(ParseTreeListener):
                 elif 'ext_chain_seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
 
-            if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-                if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
-                    del self.reasonsForReParsing['seq_id_remap']
-
             label_seq_scheme = 'label_seq_scheme' in self.reasonsForReParsing\
                 and all(t for t in self.reasonsForReParsing['label_seq_scheme'].values())
 
@@ -924,12 +920,6 @@ class RosettaMRParserListener(ParseTreeListener):
 
                     if len(self.reasonsForReParsing) > 0:
                         self.reasonsForReParsing = {}
-
-                    if any(f for f in self.__f if '[Sequence mismatch]' in f):
-                        __f = copy.copy(self.__f)
-                        for f in __f:
-                            if '[Sequence mismatch]' in f:
-                                self.__f.remove(f)
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)

@@ -5682,8 +5682,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.numberSelection.clear()
 
-        if self.__createSfDict:
-            self.__addSf(constraintType='RDC', orientationId=orientation, cyanaParameter=self.rdcParameterDict[orientation])
+        # if self.__createSfDict:
+        #     self.__addSf(constraintType='RDC', orientationId=orientation, cyanaParameter=self.rdcParameterDict[orientation])
 
     # Enter a parse tree produced by CyanaMRParser#rdc_restraint.
     def enterRdc_restraint(self, ctx: CyanaMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
@@ -5837,9 +5837,10 @@ class CyanaMRParserListener(ParseTreeListener):
 
             combinationId = '.'
             if self.__createSfDict:
+                cyanaParameter = None if orientation not in self.rdcParameterDict else self.rdcParameterDict[orientation]
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]),
-                                  orientationId=orientation)
+                                  orientationId=orientation, cyanaParameter=cyanaParameter)
                 sf['id'] += 1
                 if len(self.atomSelectionSet[0]) > 1 or len(self.atomSelectionSet[1]) > 1:
                     combinationId = 0
@@ -6015,8 +6016,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.numberSelection.clear()
 
-        if self.__createSfDict:
-            self.__addSf(orientationId=orientation, cyanaParameter=self.pcsParameterDict[orientation])
+        # if self.__createSfDict:
+        #     self.__addSf(orientationId=orientation, cyanaParameter=self.pcsParameterDict[orientation])
 
     # Enter a parse tree produced by CyanaMRParser#pcs_restraint.
     def enterPcs_restraint(self, ctx: CyanaMRParser.Pcs_restraintContext):  # pylint: disable=unused-argument
@@ -6088,7 +6089,8 @@ class CyanaMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf(orientationId=orientation)
+                cyanaParameter = None if orientation not in self.pcsParameterDict else self.pcsParameterDict[orientation]
+                sf = self.__getSf(orientationId=orientation, cyanaParameter=cyanaParameter)
                 sf['id'] += 1
 
             for atom in self.atomSelectionSet[0]:

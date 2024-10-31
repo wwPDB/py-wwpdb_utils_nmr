@@ -32571,7 +32571,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
-                        consume_suspended_message()
+                        # consume_suspended_message()
 
                         self.report.error.appendDescription('sequence_mismatch',
                                                             {'file_name': file_name, 'description': warn})
@@ -32617,7 +32617,7 @@ class NmrDpUtility:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Coordinate issue]'):
-                        consume_suspended_message()
+                        # consume_suspended_message()
 
                         self.report.error.appendDescription('coordinate_issue',
                                                             {'file_name': file_name, 'description': warn})
@@ -32663,7 +32663,7 @@ class NmrDpUtility:
                                 self.__nmr_ext_poly_seq.append(d)
 
                     elif warn.startswith('[Missing data]'):
-                        consume_suspended_message()
+                        # consume_suspended_message()
 
                         self.report.error.appendDescription('missing_data',
                                                             {'file_name': file_name, 'description': warn})
@@ -32697,7 +32697,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Range value error]') and not self.__remediation_mode:
-                        consume_suspended_message()
+                        # consume_suspended_message()
 
                         self.report.error.appendDescription('anomalous_data',
                                                             {'file_name': file_name, 'description': warn})

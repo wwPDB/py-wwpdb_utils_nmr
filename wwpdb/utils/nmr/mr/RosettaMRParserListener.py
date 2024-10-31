@@ -1384,6 +1384,20 @@ class RosettaMRParserListener(ParseTreeListener):
         return dstFunc
 
     def getRealChainSeqId(self, ps, seqId, isPolySeq=True):
+        if self.__reasons is not None and ('seq_id_remap' in self.__reasons
+                                           or 'chain_seq_id_remap' in self.__reasons
+                                           or 'ext_chain_seq_id_remap' in self.__reasons):
+            fixedSeqId = None
+            if 'ext_chain_seq_id_remap' in self.__reasons:
+                _, fixedSeqId, _ =\
+                    retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], None, seqId)
+            if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], None, seqId)
+            if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
+                _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
+            if fixedSeqId is not None:
+                seqId = fixedSeqId
+
         offset = 0
         if not self.__preferAuthSeq:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\

@@ -972,6 +972,23 @@ class SybylMRParserListener(ParseTreeListener):
         compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
         if len(_compId) == 2 and _compId.startswith('D'):
             _compId = compId[1]
+
+        if self.__reasons is not None and ('seq_id_remap' in self.__reasons
+                                           or 'chain_seq_id_remap' in self.__reasons
+                                           or 'ext_chain_seq_id_remap' in self.__reasons):
+            fixedSeqId = None
+            if 'ext_chain_seq_id_remap' in self.__reasons:
+                _, fixedSeqId, _ =\
+                    retrieveRemappedSeqIdAndCompId(self.__reasons['ext_chain_seq_id_remap'], None, seqId,
+                                                   compId if compId in monDict3 else None)
+            if fixedSeqId is None and 'chain_seq_id_remap' in self.__reasons:
+                _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['chain_seq_id_remap'], None, seqId,
+                                                      compId if compId in monDict3 else None)
+            if fixedSeqId is None and 'seq_id_remap' in self.__reasons:
+                _, fixedSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], None, seqId)
+            if fixedSeqId is not None:
+                seqId = fixedSeqId
+
         if not self.__preferAuthSeq:
             seqKey = (ps['auth_chain_id'], seqId)
             if seqKey in self.__labelToAuthSeq:

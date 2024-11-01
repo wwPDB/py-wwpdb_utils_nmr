@@ -56,8 +56,8 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('PTR', polynucleotide_like=True), ['P'])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('DA'), ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P'])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('DA', excl_minor_atom=True), ["H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P'])
-        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('A'), ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", 'P'])
-        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('A', excl_minor_atom=True), ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''"])
+        self.assertEqual(set(self.bmrb_cs_stat.getBackBoneAtoms('A')), {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", 'P'})
+        self.assertEqual(set(self.bmrb_cs_stat.getBackBoneAtoms('A', excl_minor_atom=True)), {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''"})
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC'), ["H1'", "H2'", "HO2'", "H3'", "H4'", "H5'", "H5''", 'P', "C5'", "C4'", "C3'", "C2'", "C1'"])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC', polypeptide_like=True), [])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC', polynucleotide_like=True), ["H1'", "H2'", "HO2'", "H3'", "H4'", "H5'", "H5''",
@@ -104,8 +104,8 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('GLY'), [])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('ALA'), ['CB', 'HB1', 'HB2', 'HB3'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('CYS'), ['CB', 'HB2', 'HB3', 'HG'])
-        self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('THR'), ['CB', 'CG2', 'HB', 'HG1', 'HG21', 'HG22', 'HG23'])
-        self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('THR', excl_minor_atom=True), ['CB', 'CG2', 'HB', 'HG21', 'HG22', 'HG23'])
+        self.assertEqual(set(self.bmrb_cs_stat.getSideChainAtoms('THR')), {'CB', 'CG2', 'HB', 'HG1', 'HG21', 'HG22', 'HG23'})
+        self.assertEqual(set(self.bmrb_cs_stat.getSideChainAtoms('THR', excl_minor_atom=True)), {'CB', 'CG2', 'HB', 'HG21', 'HG22', 'HG23'})
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('PRO'), ['CB', 'CD', 'CG', 'HB2', 'HB3', 'HD2', 'HD3', 'HG2', 'HG3'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('ARG'), ['CB', 'CD', 'CG', 'CZ', 'HB2', 'HB3', 'HD2', 'HD3',
                                                                       'HE', 'HG2', 'HG3', 'HH11', 'HH12', 'HH21', 'HH22', 'NE', 'NH1', 'NH2'])

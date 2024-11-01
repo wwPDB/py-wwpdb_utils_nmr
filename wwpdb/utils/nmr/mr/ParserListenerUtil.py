@@ -172,7 +172,7 @@ DIST_AMBIG_UNCERT = 0.1
 KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           'PSI': ['N', 'CA', 'C', 'N'],  # i, i, i, i+1
                           'OMEGA': ['CA', 'C', 'N', 'CA'],  # i, i, i+1, i+1; modified CYANA definition [O C N (H or CD for Proline residue)]
-                          'CHI1': ['N', 'CA', 'CB', re.compile(r'^[COS]G1?$')],
+                          'CHI1': ['N', 'CA', re.compile(r'CB1?'), re.compile(r'^[COS]G1?$')],  # DIV: [N, CA, CB1, CG1]
                           'CHI2': ['CA', 'CB', re.compile(r'^CG1?$'), re.compile(r'^[CNOS]D1?$')],
                           'CHI3': ['CB', 'CG', re.compile(r'^[CS]D$'), re.compile(r'^[CNO]E1?|N$')],
                           'CHI4': ['CG', 'CD', re.compile(r'^[CN]E$'), re.compile(r'^[CN]Z$')],

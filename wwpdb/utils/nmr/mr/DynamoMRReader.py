@@ -212,6 +212,11 @@ class DynamoMRReader:
 if __name__ == "__main__":
     reader = DynamoMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6o8t/6o8t-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/6o8t/6o8t.cif')
+
+    reader = DynamoMRReader(True)
+    reader.setDebugMode(True)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/6ry9/WF1a-1-noes.tab-corrected',
                      '../../tests-nmr/mock-data-remediation/6ry9/6ry9.cif')

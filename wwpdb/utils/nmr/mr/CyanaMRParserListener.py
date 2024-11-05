@@ -2822,10 +2822,14 @@ class CyanaMRParserListener(ParseTreeListener):
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
                     if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            if ligands == 1 and any(a[3] for a in chainAssign):
+                                chainAssign.clear()
                             chainAssign.add((chainId, seqId, cifCompId, False))
                     else:
                         _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
                         if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                            if ligands == 1 and any(a[3] for a in chainAssign):
+                                chainAssign.clear()
                             chainAssign.add((chainId, seqId, cifCompId, False))
 
         if len(chainAssign) == 0:
@@ -3464,12 +3468,16 @@ class CyanaMRParserListener(ParseTreeListener):
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
                     if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            if ligands == 1 and any(a[3] for a in chainAssign):
+                                chainAssign.clear()
                             chainAssign.add((chainId, seqId, cifCompId, False))
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
                     else:
                         _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
                         if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                            if ligands == 1 and any(a[3] for a in chainAssign):
+                                chainAssign.clear()
                             chainAssign.add((chainId, seqId, cifCompId, False))
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                 self.__chainNumberDict[refChainId] = chainId
@@ -4309,7 +4317,6 @@ class CyanaMRParserListener(ParseTreeListener):
                         _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(cifCompId, atomId[:-1], leave_unmatched=True)
                         if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                             _atomId = [_atomId[int(atomId[-1]) - 1]]
-
             if details is not None or atomId.endswith('"'):
                 _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
                 if _atomId_ != atomId:

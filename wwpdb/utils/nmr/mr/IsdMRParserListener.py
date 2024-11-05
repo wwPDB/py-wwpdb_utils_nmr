@@ -1364,10 +1364,14 @@ class IsdMRParserListener(ParseTreeListener):
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
                     if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            if ligands == 1 and any(a[3] for a in chainAssign):
+                                chainAssign.clear()
                             chainAssign.add((chainId, seqId, cifCompId, False))
                     else:
                         _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
                         if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                            if ligands == 1 and any(a[3] for a in chainAssign):
+                                chainAssign.clear()
                             chainAssign.add((chainId, seqId, cifCompId, False))
 
         if len(chainAssign) == 0:

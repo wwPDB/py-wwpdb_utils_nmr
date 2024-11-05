@@ -44906,14 +44906,20 @@ class NmrDpUtility:
                             if (self.__remediation_mode or self.__combined_mode) and checked:
                                 continue
 
-                            if not checked and err.endswith("not present in the coordinates.") and atom_id_[0] in protonBeginCode:
-                                bonded_to = self.__ccU.getBondedAtoms(comp_id, atom_id_)
-                                if len(bonded_to) > 0 and coord_atom_site_ is not None and bonded_to[0] not in coord_atom_site_['atom_id']:
-                                    err += " Additionally, the attached atom ("\
-                                        + self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
-                                                                        comp_id_names[j], comp_id, atom_id_names[j], bonded_to[0])\
-                                        + ") is not instantiated in the coordinates. Please re-upload the model file."
-                                    coord_issue = True
+                            if not checked and err.endswith("not present in the coordinates."):
+
+                                if atom_id_[0] in protonBeginCode:
+                                    bonded_to = self.__ccU.getBondedAtoms(comp_id, atom_id_)
+                                    if len(bonded_to) > 0 and coord_atom_site_ is not None and bonded_to[0] not in coord_atom_site_['atom_id']:
+                                        err += " Additionally, the attached atom ("\
+                                            + self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
+                                                                            comp_id_names[j], comp_id, atom_id_names[j], bonded_to[0])\
+                                            + ") is not instantiated in the coordinates. Please re-upload the model file."
+                                        coord_issue = True
+
+                                elif 'coord_unobs_atom' in self.__caC:
+                                    if seq_key in self.__caC['coord_unobs_atom'] and atom_id_ in self.__caC['coord_unobs_atom'][seq_key]['atom_ids']:
+                                        coord_issue = True
 
                             self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'coordinate_issue' if coord_issue else 'atom_not_found',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,

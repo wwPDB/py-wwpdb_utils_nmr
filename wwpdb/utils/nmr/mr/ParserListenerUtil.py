@@ -4061,6 +4061,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
     coordAtomSite = None if prevResult is None else prevResult.get('coord_atom_site')
     coordUnobsRes = None if prevResult is None else prevResult.get('coord_unobs_res')
+    coordUnobsAtom = None if prevResult is None else prevResult.get('coord_unobs_atom')
     labelToAuthSeq = None if prevResult is None else prevResult.get('label_to_auth_seq')
     authToLabelSeq = None if prevResult is None else prevResult.get('auth_to_label_seq')
     authToStarSeq = None if prevResult is None else prevResult.get('auth_to_star_seq')
@@ -4349,6 +4350,34 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         authAtomNameToIdExt[_compId][c['alt_atom_id']] = c['atom_id']
 
             authToLabelSeq = {v: k for k, v in labelToAuthSeq.items()}
+
+        if coordUnobsAtom is None:
+            coordUnobsAtom = {}
+
+            if cR.hasCategory('pdbx_unobs_or_zero_occ_atoms'):
+
+                filterItemByRepModelId = [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId}]
+
+                unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_atoms',
+                                                 [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                  {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                  {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                  {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                  ],
+                                                 filterItemByRepModelId)
+
+                if len(unobs) > 0:
+                    chainIds = set(u['chain_id'] for u in unobs)
+                    for chainId in chainIds:
+                        seqIds = set(int(u['seq_id']) for u in unobs if u['chain_id'] == chainId and u['seq_id'] is not None)
+                        for seqId in seqIds:
+                            seqKey = (chainId, seqId)
+                            compId = next(u['comp_id'] for u in unobs
+                                          if u['chain_id'] == chainId and u['seq_id'] is not None and int(u['seq_id']) == seqId)
+                            atomIds = [u['atom_id'] for u in unobs
+                                       if u['chain_id'] == chainId and u['seq_id'] is not None and int(u['seq_id']) == seqId]
+                            if len(atomIds) > 0:
+                                coordUnobsAtom[seqKey] = {'comp_id': compId, 'atom_ids': atomIds}
 
         if coordUnobsRes is None:
             changed = True
@@ -5206,6 +5235,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'nmr_ext_poly_seq': nmrExtPolySeq,
             'mod_residue': modResidue,
             'coord_atom_site': coordAtomSite,
+            'coord_unobs_atom': coordUnobsAtom,
             'coord_unobs_res': coordUnobsRes,
             'label_to_auth_seq': labelToAuthSeq,
             'auth_to_label_seq': authToLabelSeq,

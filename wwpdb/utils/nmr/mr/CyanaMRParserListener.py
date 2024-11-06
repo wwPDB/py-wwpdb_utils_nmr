@@ -76,7 +76,8 @@ try:
                                                        KNOWN_ANGLE_CARBO_ATOM_NAMES,
                                                        KNOWN_ANGLE_CARBO_SEQ_OFFSET,
                                                        CYANA_MR_FILE_EXTS,
-                                                       CARTN_DATA_ITEMS)
+                                                       CARTN_DATA_ITEMS,
+                                                       HEME_LIKE_RES_NAMES)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -174,7 +175,8 @@ except ImportError:
                                            KNOWN_ANGLE_CARBO_ATOM_NAMES,
                                            KNOWN_ANGLE_CARBO_SEQ_OFFSET,
                                            CYANA_MR_FILE_EXTS,
-                                           CARTN_DATA_ITEMS)
+                                           CARTN_DATA_ITEMS,
+                                           HEME_LIKE_RES_NAMES)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -2822,13 +2824,13 @@ class CyanaMRParserListener(ParseTreeListener):
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
                     if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            if ligands == 1 and any(a[3] for a in chainAssign):
+                            if (ligands == 1 or cifCompId in HEME_LIKE_RES_NAMES) and any(a[3] for a in chainAssign):
                                 chainAssign.clear()
                             chainAssign.add((chainId, seqId, cifCompId, False))
                     else:
                         _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
                         if len(_atomId) > 0 and (details is None or _compId not in monDict3):
-                            if ligands == 1 and any(a[3] for a in chainAssign):
+                            if (ligands == 1 or cifCompId in HEME_LIKE_RES_NAMES) and any(a[3] for a in chainAssign):
                                 chainAssign.clear()
                             chainAssign.add((chainId, seqId, cifCompId, False))
 
@@ -3468,7 +3470,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
                     if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            if ligands == 1 and any(a[3] for a in chainAssign):
+                            if (ligands == 1 or cifCompId in HEME_LIKE_RES_NAMES) and any(a[3] for a in chainAssign):
                                 chainAssign.clear()
                             chainAssign.add((chainId, seqId, cifCompId, False))
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
@@ -3476,7 +3478,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     else:
                         _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
                         if len(_atomId) > 0 and (details is None or _compId not in monDict3):
-                            if ligands == 1 and any(a[3] for a in chainAssign):
+                            if (ligands == 1 or cifCompId in HEME_LIKE_RES_NAMES) and any(a[3] for a in chainAssign):
                                 chainAssign.clear()
                             chainAssign.add((chainId, seqId, cifCompId, False))
                             if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
@@ -4318,7 +4320,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
                             _atomId = [_atomId[int(atomId[-1]) - 1]]
             if details is not None or atomId.endswith('"'):
-                _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU)
+                _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)
                 if _atomId_ != atomId:
                     if atomId.startswith('HT') and len(_atomId_) == 2:
                         _atomId_ = 'H'

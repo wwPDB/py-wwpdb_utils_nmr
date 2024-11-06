@@ -53,7 +53,8 @@ try:
                                                        DIST_AMBIG_UP,
                                                        DIST_AMBIG_MED,
                                                        DIST_AMBIG_UNCERT,
-                                                       CARTN_DATA_ITEMS)
+                                                       CARTN_DATA_ITEMS,
+                                                       HEME_LIKE_RES_NAMES)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -125,7 +126,8 @@ except ImportError:
                                            DIST_AMBIG_UP,
                                            DIST_AMBIG_MED,
                                            DIST_AMBIG_UNCERT,
-                                           CARTN_DATA_ITEMS)
+                                           CARTN_DATA_ITEMS,
+                                           HEME_LIKE_RES_NAMES)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -1364,13 +1366,13 @@ class IsdMRParserListener(ParseTreeListener):
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
                     if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            if ligands == 1 and any(a[3] for a in chainAssign):
+                            if (ligands == 1 or cifCompId in HEME_LIKE_RES_NAMES) and any(a[3] for a in chainAssign):
                                 chainAssign.clear()
                             chainAssign.add((chainId, seqId, cifCompId, False))
                     else:
                         _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
                         if len(_atomId) > 0 and (details is None or _compId not in monDict3):
-                            if ligands == 1 and any(a[3] for a in chainAssign):
+                            if (ligands == 1 or cifCompId in HEME_LIKE_RES_NAMES) and any(a[3] for a in chainAssign):
                                 chainAssign.clear()
                             chainAssign.add((chainId, seqId, cifCompId, False))
 

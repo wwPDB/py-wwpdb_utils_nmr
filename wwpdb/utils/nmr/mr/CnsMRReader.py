@@ -217,6 +217,34 @@ if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/5kp0/cterm_ab_noe.tbl-corrected',
+                     '../../tests-nmr/mock-data-remediation/5kp0/5kp0.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6xmn/6xmn-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/6xmn/6xmn.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6xmn/6xmn-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/6xmn/6xmn.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2k3c/2k3c-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2k3c/2k3c.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2k3c/2k3c-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2k3c/2k3c.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2rvb/2rvb-corrected.mr',
                      '../../tests-nmr/mock-data-remediation/2rvb/2rvb.cif')
     print(reader_listener.getReasonsForReparsing())

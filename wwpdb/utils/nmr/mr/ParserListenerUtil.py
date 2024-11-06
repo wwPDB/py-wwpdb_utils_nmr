@@ -269,6 +269,8 @@ XPLOR_NITROXIDE_NAMES = ('NO', 'NX', 'NR', 'NAI', 'OS1', 'NS1')
 
 NITROOXIDE_ANCHOR_RES_NAMES = ('CYS', 'SER', 'GLU', 'ASP', 'GLN', 'ASN', 'LYS', 'THR', 'HIS', 'R1A')
 
+HEME_LIKE_RES_NAMES = ('HEM', 'HEB', 'HEC', 'MH0')
+
 LEGACY_PDB_RECORDS = ['HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND', 'SOURCE', 'KEYWDS', 'EXPDTA',
                       'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL', 'REMARK',
                       'DBREF', 'DBREF1', 'DBREF2', 'SEQADV', 'SEQRES', 'MODRES',
@@ -2266,12 +2268,15 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
             if atomId == 'CA':
                 return 'CH3'
 
-        elif refCompId in ('HEB', 'HEC'):
+        elif refCompId in ('HEB', 'HEC', 'MH0'):
+            is_mh0 = refCompId == 'MH0'  # 2n3y
             if atomId[0] in pseProBeginCode:
                 if atomId == 'QM1':
-                    return 'HMB'
+                    return 'QMB' if is_mh0 else 'HMB'
                 if atomId == 'QT2':
-                    return 'HBB'
+                    return 'QBB' if is_mh0 else 'HBB'
+                if atomId.startswith('HT2') and is_mh0:
+                    return 'QAB'
                 if atomId.startswith('HT2') and refCompId == 'HEC':
                     return 'HAB'
                 if atomId in ('HT2', 'HA2', 'HA21', 'HA22') and refCompId == 'HEB':
@@ -2279,13 +2284,13 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 if atomId == 'HA23' and refCompId == 'HEB':
                     return 'HAB2'
                 if atomId == 'QM3':
-                    return 'HMC'
+                    return 'QMC' if is_mh0 else 'HMC'
                 if atomId == 'QT4':
                     return 'HBC'
                 if atomId.startswith('HT4'):
-                    return 'HAC'
+                    return 'QAC' if is_mh0 else 'HAC'
                 if atomId == 'QM5':
-                    return 'HMD'
+                    return 'QMD' if is_mh0 else 'HMD'
                 if atomId == 'HA62':
                     return 'HAD1'
                 if atomId == 'HA63':
@@ -2294,10 +2299,30 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return 'HBD1'
                 if atomId == 'HB63':
                     return 'HBD2'
+                if atomId == 'HA71' and is_mh0:
+                    return 'H8'
+                if atomId == 'HA72' and is_mh0:
+                    return 'H9'
                 if atomId == 'HA72':
                     return 'HAA1'
                 if atomId == 'HA73':
                     return 'HAA2'
+                if atomId == 'HB73' and is_mh0:
+                    return 'H10'
+                if atomId == 'HB74' and is_mh0:
+                    return 'H11'
+                if atomId == 'HB2' and is_mh0:
+                    return 'H16'
+                if atomId == 'HB3' and is_mh0:
+                    return 'H17'
+                if atomId == 'HD1' and is_mh0:
+                    return 'H32'
+                if atomId == 'HD2' and is_mh0:
+                    return 'H33'
+                if atomId == 'HE1' and is_mh0:
+                    return 'H34'
+                if atomId == 'HE2' and is_mh0:
+                    return 'H35'
                 if atomId == 'HB72':
                     return 'HBA1'
                 if atomId == 'HB73':
@@ -2311,7 +2336,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 if atomId == 'HB7':
                     return 'HBA'
                 if atomId == 'QM8':
-                    return 'HMA'
+                    return 'QMA' if is_mh0 else 'HMA'
                 if atomId == 'HAM':
                     return 'HHA'
                 if atomId == 'HBM':

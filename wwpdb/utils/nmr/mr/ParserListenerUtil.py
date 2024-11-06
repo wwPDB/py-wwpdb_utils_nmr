@@ -2244,10 +2244,10 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
             if atomId == 'HNE':
                 return 'HE2'
 
-        elif refCompId == 'HIS':
+        elif refCompId in ('HIS', 'OUH'):
             if atomId == 'HNE':  # 2k4w
                 return 'HE2'
-            if atomId == 'HND':
+            if atomId == 'HND':  # 5n14 OUH:HND
                 return 'HD1'
             if atomId == 'HE':
                 return 'HE1'
@@ -2345,6 +2345,12 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return 'HHC'
                 if atomId == 'HDM':
                     return 'HHD'
+
+        if refCompId in ('OUD', 'OUE', 'OUH', 'OUI', 'OUK', 'OUR'):  # 5n14
+            if atomId == 'QPA':
+                return 'HM'
+            if atomId == 'QPG' and refCompId == 'OUI':
+                return 'HG1'
 
         if len(refCompId) == 3 and refCompId in monDict3:
             if atomId in ('O1', 'OT1'):

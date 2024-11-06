@@ -241,6 +241,7 @@ class BiosymMRParserListener(ParseTreeListener):
     __nonPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
+    __coordUnobsAtom = None
     __labelToAuthSeq = None
     __authToLabelSeq = None
     __authToStarSeq = None
@@ -332,6 +333,7 @@ class BiosymMRParserListener(ParseTreeListener):
             self.__branched = ret['branched']
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
+            self.__coordUnobsAtom = ret['coord_unobs_atom'] if 'coord_unobs_atom' in ret else {}
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
             self.__authToStarSeq = ret['auth_to_star_seq']
@@ -2289,6 +2291,11 @@ class BiosymMRParserListener(ParseTreeListener):
                                             "Please update the sequence in the Macromolecules page.")
                             asis = True
                         else:
+                            if atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                               and atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                                return atomId, asis
                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                             updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)

@@ -309,6 +309,7 @@ class AmberMRParserListener(ParseTreeListener):
     __nonPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
+    __coordUnobsAtom = None
     __labelToAuthSeq = None
     __authToLabelSeq = None
     __authToStarSeq = None
@@ -534,6 +535,7 @@ class AmberMRParserListener(ParseTreeListener):
             self.__branched = ret['branched']
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
+            self.__coordUnobsAtom = ret['coord_unobs_atom'] if 'coord_unobs_atom' in ret else {}
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
             self.__authToStarSeq = ret['auth_to_star_seq']
@@ -5364,6 +5366,11 @@ class AmberMRParserListener(ParseTreeListener):
                                     if not checked:
                                         if chainId in LARGE_ASYM_ID:
                                             if enableWarning:
+                                                if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                                                   and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                                    self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                    return factor
                                                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                             if 'auth_seq_scheme' not in self.reasonsForReParsing:
@@ -5372,6 +5379,11 @@ class AmberMRParserListener(ParseTreeListener):
                                 return factor
                             if chainId in LARGE_ASYM_ID:
                                 if enableWarning:
+                                    if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                                       and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                        self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                        return factor
                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                 if 'auth_seq_scheme' not in self.reasonsForReParsing:
@@ -5550,6 +5562,11 @@ class AmberMRParserListener(ParseTreeListener):
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
                                                     if enableWarning:
+                                                        if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                                                           and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                                            self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                            return factor
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                     if 'auth_seq_scheme' not in self.reasonsForReParsing:
@@ -5558,6 +5575,11 @@ class AmberMRParserListener(ParseTreeListener):
                                         return factor
                                     if chainId in LARGE_ASYM_ID:
                                         if enableWarning:
+                                            if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                                               and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                                self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                return factor
                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                         if 'auth_seq_scheme' not in self.reasonsForReParsing:
@@ -5889,8 +5911,13 @@ class AmberMRParserListener(ParseTreeListener):
 
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
-                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                    if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                                                       and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                                        self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                    else:
+                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                         return True
 
                     elif 'igr' in factor:
@@ -6024,8 +6051,13 @@ class AmberMRParserListener(ParseTreeListener):
 
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
-                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                    if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                                                       and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                                        self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                    else:
+                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
 
                         if found:
                             return True
@@ -6250,8 +6282,13 @@ class AmberMRParserListener(ParseTreeListener):
 
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
-                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                    if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                                                       and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                                        self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                    else:
+                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                         return True
 
                     elif 'igr' in factor:
@@ -6378,8 +6415,13 @@ class AmberMRParserListener(ParseTreeListener):
 
                                             if not checked:
                                                 if chainId in LARGE_ASYM_ID:
-                                                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                    if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                                                       and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                                        self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                    else:
+                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
 
                         if found:
                             return True
@@ -6689,8 +6731,13 @@ class AmberMRParserListener(ParseTreeListener):
 
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
-                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                        if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                                                           and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                                            self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                        else:
+                                                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                             break
 
                         elif 'igr' in factor:
@@ -6816,8 +6863,13 @@ class AmberMRParserListener(ParseTreeListener):
 
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
-                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                        if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                                                           and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                                            self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                        else:
+                                                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
 
                 elif _useDefault:
                     _ps = next((_ps for _ps in self.__polySeq if _ps['chain_id'] == chainId), None)
@@ -6964,8 +7016,13 @@ class AmberMRParserListener(ParseTreeListener):
 
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
-                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                        if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                                                           and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                                            self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                        else:
+                                                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                             break
 
                         elif 'igr' in factor:
@@ -7092,8 +7149,13 @@ class AmberMRParserListener(ParseTreeListener):
 
                                                 if not checked:
                                                     if chainId in LARGE_ASYM_ID:
-                                                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                        if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                                                           and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                                            self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                        else:
+                                                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
 
             if not found:
                 allFound = False
@@ -10949,20 +11011,20 @@ class AmberMRParserListener(ParseTreeListener):
                 if atomId is not None and atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1')
             if atomId is not None and (('-' in atomId and ':' in atomId) or '.' in atomId):
-                self.__f.append(f"[Atom not found] "
+                self.__f.append("[Atom not found] "
                                 f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                 "Please attach ambiguous atom name mapping information generated "
                                 "by 'makeDIST_RST' to the AMBER restraint file.")
             else:
                 if len(self.__polySeq) == 1 and seqId < 1:
                     refAuthChainId = self.__polySeq[0]['auth_chain_id']
-                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                    self.__f.append("[Atom not found] "
                                     f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                     f"The residue number '{_seqId}' is not present in polymer sequence "
                                     f"of chain {refAuthChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                 else:
-                    self.__f.append(f"[Atom not found] "
+                    self.__f.append("[Atom not found] "
                                     f"{_seqId}:{atomId} is not present in the coordinates.")
 
         return list(chainAssign)
@@ -11022,12 +11084,12 @@ class AmberMRParserListener(ParseTreeListener):
                     self.selectCoordAtoms(chainAssign, seqId, compId, atomId, allowAmbig, enableWarning, offset=1)
                     return
                 if enableWarning:
-                    self.__f.append(f"[Invalid atom nomenclature] "
+                    self.__f.append("[Invalid atom nomenclature] "
                                     f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.")
                 continue
             if lenAtomId > 1 and not allowAmbig:
                 if enableWarning:
-                    self.__f.append(f"[Invalid atom selection] "
+                    self.__f.append("[Invalid atom selection] "
                                     f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.")
                 continue
 
@@ -11148,7 +11210,7 @@ class AmberMRParserListener(ParseTreeListener):
                                        and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
                                        and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
                                     if enableWarning:
-                                        self.__f.append(f"[Hydrogen not instantiated] "
+                                        self.__f.append("[Hydrogen not instantiated] "
                                                         f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                         "Please re-upload the model file.")
                                         return
@@ -11157,8 +11219,13 @@ class AmberMRParserListener(ParseTreeListener):
 
                     if enableWarning:
                         if chainId in LARGE_ASYM_ID:
-                            self.__f.append(f"[Atom not found] "
-                                            f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                            if atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                               and atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                self.__f.append("[Coordinate issue] "
+                                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                            else:
+                                self.__f.append("[Atom not found] "
+                                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
 
     def __getCurrentRestraint(self, dataset=None, n=None):
         if self.__cur_subtype == 'dist':

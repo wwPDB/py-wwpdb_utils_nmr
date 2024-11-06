@@ -378,6 +378,7 @@ class XplorMRParserListener(ParseTreeListener):
     __nonPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
+    __coordUnobsAtom = None
     __labelToAuthSeq = None
     __authToLabelSeq = None
     __authToStarSeq = None
@@ -620,6 +621,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.__branched = ret['branched']
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
+            self.__coordUnobsAtom = ret['coord_unobs_atom'] if 'coord_unobs_atom' in ret else {}
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
             self.__authToStarSeq = ret['auth_to_star_seq']
@@ -10680,8 +10682,14 @@ class XplorMRParserListener(ParseTreeListener):
                                                             warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                                 and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
                                                                 else 'Atom not found'
+                                                            if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                                                               and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                                                warn_title = 'Coordinate issue'
                                                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates.")
+                                                            if warn_title == 'Coordinate issue':
+                                                                _atomSelection.append(selection)
+                                                                continue
                                                             if 'alt_chain_id' in _factor:
                                                                 self.__failure_chain_ids.append(chainId)
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
@@ -10811,8 +10819,13 @@ class XplorMRParserListener(ParseTreeListener):
                                                     warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                         and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
                                                         else 'Atom not found'
+                                                    if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                                        warn_title = 'Coordinate issue'
                                                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates.")
+                                                    if warn_title == 'Coordinate issue':
+                                                        _atomSelection.append(selection)
+                                                        continue
                                                     if self.__cur_subtype == 'dist' and isPolySeq and isChainSpecified and compId in monDict3 and self.__csStat.peptideLike(compId):
                                                         self.checkDistSequenceOffset(chainId, seqId, compId, origAtomId0)
                                                     if 'alt_chain_id' in _factor:

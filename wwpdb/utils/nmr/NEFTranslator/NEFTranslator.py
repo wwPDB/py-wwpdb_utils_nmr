@@ -7128,6 +7128,8 @@ class NEFTranslator:
                                     if len(_root) > 0:
                                         _branch.append('C' + atom_id[2:] + e)
                                         root.extend(_root)
+                                if len(_root) == 0 and len(_branch) == 0:
+                                    _branch = [c for c in self.__ccU.getMethylAtoms(comp_id) if c[0] == 'C']  # 2jnp:QQM
                                 if len(_root) == 0 and len(_branch) > 1:
                                     __branch = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
                                                 if cca[self.__ccU.ccaTypeSymbol] in ('C', 'N')
@@ -7276,6 +7278,8 @@ class NEFTranslator:
                         if len(_root) > 0:
                             _branch.append('C' + atom_id[2:] + e)
                             root.extend(_root)
+                    if len(_root) == 0 and len(_branch) == 0:
+                        _branch = [c for c in self.__ccU.getMethylAtoms(comp_id) if c[0] == 'C']  # 2jnp:QQM
                     if len(_root) == 0 and len(_branch) > 1:
                         __branch = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
                                     if cca[self.__ccU.ccaTypeSymbol] in ('C', 'N')

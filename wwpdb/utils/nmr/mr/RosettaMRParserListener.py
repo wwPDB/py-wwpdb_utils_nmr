@@ -255,6 +255,7 @@ class RosettaMRParserListener(ParseTreeListener):
     __nonPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
+    __coordUnobsAtom = None
     __labelToAuthSeq = None
     __authToLabelSeq = None
     __authToStarSeq = None
@@ -358,6 +359,7 @@ class RosettaMRParserListener(ParseTreeListener):
             self.__branched = ret['branched']
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
+            self.__coordUnobsAtom = ret['coord_unobs_atom'] if 'coord_unobs_atom' in ret else {}
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
             self.__authToStarSeq = ret['auth_to_star_seq']
@@ -520,7 +522,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         set_label_seq_scheme()
 
                     if self.__reasons is None and any(f for f in self.__f
-                                                      if '[Atom not found]' in f or '[Sequence mismatch]' in f or 'Invalid atom nomenclature' in f):
+                                                      if '[Atom not found]' in f or 'Invalid atom nomenclature' in f):
 
                         seqIdRemap = []
 
@@ -842,10 +844,6 @@ class RosettaMRParserListener(ParseTreeListener):
                 elif 'ext_chain_seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
 
-            if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-                if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
-                    del self.reasonsForReParsing['seq_id_remap']
-
             label_seq_scheme = 'label_seq_scheme' in self.reasonsForReParsing\
                 and all(t for t in self.reasonsForReParsing['label_seq_scheme'].values())
 
@@ -924,12 +922,6 @@ class RosettaMRParserListener(ParseTreeListener):
 
                     if len(self.reasonsForReParsing) > 0:
                         self.reasonsForReParsing = {}
-
-                    if any(f for f in self.__f if '[Sequence mismatch]' in f):
-                        __f = copy.copy(self.__f)
-                        for f in __f:
-                            if '[Sequence mismatch]' in f:
-                                self.__f.remove(f)
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
@@ -1927,7 +1919,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 elif not self.__extendAuthSeq:
                     self.__preferAuthSeq = False
 
-        elif self.__preferAuthSeq:
+        elif self.__preferAuthSeq and seqKey not in self.__coordUnobsRes:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
             if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId and not self.__extendAuthSeq:
                 if atomId in _coordAtomSite['atom_id']:
@@ -1952,7 +1944,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
 
-        else:
+        elif not self.__preferAuthSeq:
             self.__preferAuthSeq = True
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
             if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
@@ -1984,7 +1976,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 self.__preferAuthSeqCount += 1
             return atomId, asis
 
-        if self.__preferAuthSeq:
+        if self.__preferAuthSeq and seqKey not in self.__coordUnobsRes:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, asis=False)
             if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId and not self.__extendAuthSeq:
                 if atomId in _coordAtomSite['atom_id']:
@@ -2009,7 +2001,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
 
-        else:
+        elif not self.__preferAuthSeq:
             self.__preferAuthSeq = True
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId)
             if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
@@ -2099,6 +2091,11 @@ class RosettaMRParserListener(ParseTreeListener):
                                             "Please update the sequence in the Macromolecules page.")
                             asis = True
                         else:
+                            if atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                               and atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                                return atomId, asis
                             warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' else 'Atom not found'
                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")

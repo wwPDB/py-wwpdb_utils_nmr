@@ -221,9 +221,44 @@ class XplorMRReader:
 if __name__ == "__main__":
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2nci/2nci-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2nci/2nci.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
     reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/5t1n/PCS_HN.tbl',
-                     '../../tests-nmr/mock-data-remediation/5t1n/5t1n.cif')
+        reader.parse('../../tests-nmr/mock-data-remediation/7wnr/D_1300027046_mr_P2.xplor-nih.V1-corrected',
+                     '../../tests-nmr/mock-data-remediation/7wnr/7wnr.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/7wnr/D_1300027046_mr_P1.xplor-nih.V1-corrected',
+                     '../../tests-nmr/mock-data-remediation/7wnr/7wnr.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2knf/2knf-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2knf/2knf.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = XplorMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2knf/2knf-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2knf/2knf.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2nbj/2nbj-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2nbj/2nbj.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5t1n/PCS_HN.tbl',
+                 '../../tests-nmr/mock-data-remediation/5t1n/5t1n.cif')
 
     reader = XplorMRReader(True)
     reader.setDebugMode(True)

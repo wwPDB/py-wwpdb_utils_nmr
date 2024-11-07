@@ -1186,7 +1186,7 @@ class NmrDpUtility:
         self.__retain_original = True
         # whether to leave internal commentary note in processed NMR-STAR file
         self.__leave_intl_note = True
-        # whether to use reduced atom notation
+        # whether to use reduced atom notation in warning/error message
         self.__reduced_atom_notation = True
 
         # whether entity category exists (nmr-star specific)
@@ -6612,8 +6612,18 @@ class NmrDpUtility:
         if op not in self.__workFlowOps:
             raise KeyError(f"+NmrDpUtility.op() ++ Error  - Unknown workflow operation {op}.")
 
-        if 'cif' in op and 'nmr_cif_file_path' not in self.__outputParamDict:
-            raise KeyError("+NmrDpUtility.op() ++ Error  - Could not find 'nmr_cif_file_path' output parameter.")
+        if 'cif' in op:
+            if 'nmr_cif_file_path' not in self.__outputParamDict:
+                raise KeyError("+NmrDpUtility.op() ++ Error  - Could not find 'nmr_cif_file_path' output parameter.")
+            if self.__dstPath is None:
+                self.__dstPath = self.__outputParamDict['nmr_cif_file_path'] + '.tmp'
+                self.__dstPath__ = copy.copy(self.__dstPath)
+                self.__tmpPath = self.__dstPath__
+
+        if self.__release_mode and self.__dstPath is None:
+            self.__dstPath = self.__srcPath + '.tmp'
+            self.__dstPath__ = copy.copy(self.__dstPath)
+            self.__tmpPath = self.__dstPath__
 
         if has_key_value(self.__inputParamDict, 'bmrb_only'):
             if isinstance(self.__inputParamDict['bmrb_only'], bool):
@@ -6825,43 +6835,52 @@ class NmrDpUtility:
 
         self.__dumpDpReport()
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+        try:
 
-        if ((self.__op == 'nmr-cs-mr-merge'
-             and self.report.error.getValueList('missing_mandatory_content',
-                                                input_source_dic['file_name'],
-                                                key='_Atom_chem_shift') is not None)
-            or (self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2cif-annotate') and self.__remediation_mode))\
-           and self.report.isError() and self.__dstPath is not None:
+            input_source = self.report.input_sources[0]
+            input_source_dic = input_source.get()
 
-            dir_path = os.path.dirname(self.__dstPath)
+            if ((self.__op == 'nmr-cs-mr-merge'
+                 and self.report.error.getValueList('missing_mandatory_content',
+                                                    input_source_dic['file_name'],
+                                                    key='_Atom_chem_shift') is not None)
+                or (self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2cif-annotate') and self.__remediation_mode))\
+               and self.report.isError() and self.__dstPath is not None:
 
-            rem_dir = os.path.join(dir_path, 'remediation')
+                dir_path = os.path.dirname(self.__dstPath)
 
-            if os.path.isdir(rem_dir):
+                rem_dir = os.path.join(dir_path, 'remediation')
 
-                for link_file in os.listdir(rem_dir):
+                if os.path.isdir(rem_dir):
 
-                    link_path = os.path.join(rem_dir, link_file)
+                    for link_file in os.listdir(rem_dir):
 
-                    if os.path.islink(link_path):
-                        os.remove(link_path)
+                        link_path = os.path.join(rem_dir, link_file)
 
-                os.removedirs(rem_dir)
+                        if os.path.islink(link_path):
+                            os.remove(link_path)
 
-            pk_dir = os.path.join(dir_path, 'nmr_peak_lists')
+                    os.removedirs(rem_dir)
 
-            if os.path.isdir(pk_dir):
+                pk_dir = os.path.join(dir_path, 'nmr_peak_lists')
 
-                for link_file in os.listdir(pk_dir):
+                if os.path.isdir(pk_dir):
 
-                    link_path = os.path.join(pk_dir, link_file)
+                    for link_file in os.listdir(pk_dir):
 
-                    if os.path.islink(link_path):
-                        os.remove(link_path)
+                        link_path = os.path.join(pk_dir, link_file)
 
-                os.removedirs(pk_dir)
+                        if os.path.islink(link_path):
+                            os.remove(link_path)
+
+                    os.removedirs(pk_dir)
+
+            if (self.__annotation_mode or self.__release_mode) and self.__tmpPath is not None:
+                os.remove(self.__tmpPath)
+                self.__tmpPath = None
+
+        except OSError:
+            pass
 
         return not self.report.isError()
 
@@ -9914,7 +9933,9 @@ class NmrDpUtility:
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
-        if not self.__combined_mode and self.__remediation_mode and file_list_id == 0 and file_type == 'nmr-star':
+        if not self.__combined_mode and self.__remediation_mode\
+           and not self.__annotation_mode and not self.__release_mode\
+           and file_list_id == 0 and file_type == 'nmr-star':
 
             content_subtype = 'chem_shift_ref'
 
@@ -11410,26 +11431,26 @@ class NmrDpUtility:
             self.report = None
             self.report_prev = None
 
-            self.__star_data_type = []
-            self.__star_data = []
-            self.__sf_name_corr = []
+            self.__star_data_type.clear()
+            self.__star_data.clear()
+            self.__sf_name_corr.clear()
 
-            self.__original_error_message = []
+            self.__original_error_message.clear()
 
-            self.__sf_category_list = []
-            self.__lp_category_list = []
+            self.__sf_category_list.clear()
+            self.__lp_category_list.clear()
 
-            self.__suspended_errors_for_lazy_eval = []
-            self.__suspended_warnings_for_lazy_eval = []
+            self.__suspended_errors_for_lazy_eval.clear()
+            self.__suspended_warnings_for_lazy_eval.clear()
 
-            for content_subtype in self.__lp_data:
-                self.__lp_data[content_subtype] = []
+            for v in self.__lp_data.values():
+                v.clear()
 
-            for content_subtype in self.__aux_data:
-                self.__aux_data[content_subtype] = []
+            for v in self.__aux_data.values():
+                v.clear()
 
-            for content_subtype in self.__sf_tag_data:
-                self.__sf_tag_data[content_subtype] = []
+            for v in self.__sf_tag_data.values():
+                v.clear()
 
             self.__inputParamDict = copy.deepcopy(self.__inputParamDictCopy)
 
@@ -25602,7 +25623,7 @@ class NmrDpUtility:
 
                     resolved = True
 
-                    if has_auth_seq:
+                    if has_auth_seq and len(auth_to_star_seq) > 0:
                         auth_asym_id = row[auth_asym_id_col]
                         auth_seq_id = row[auth_seq_id_col]
                         auth_comp_id = row[auth_comp_id_col]
@@ -29852,10 +29873,11 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
+                                    eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
                                     for c in containerList:
                                         c.setType('data')
 
-                                    myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+                                    myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                             except Exception as e:
                                 self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Error  - {str(e)}\n")
@@ -32515,6 +32537,17 @@ class NmrDpUtility:
 
         reasons_dict = {}
 
+        suspended_errors_for_lazy_eval = []
+
+        def consume_suspended_message():
+
+            if len(suspended_errors_for_lazy_eval) > 0:
+                for msg in suspended_errors_for_lazy_eval:
+                    for k, v in msg.items():
+                        self.report.error.appendDescription(k, v)
+                        self.report.setError()
+                suspended_errors_for_lazy_eval.clear()
+
         def deal_res_warn_message(listener):
 
             if listener.warningMessage is not None:
@@ -32530,6 +32563,8 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
+                        # consume_suspended_message()
+
                         self.report.error.appendDescription('sequence_mismatch',
                                                             {'file_name': file_name, 'description': warn})
                         self.report.setError()
@@ -32539,6 +32574,8 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Atom not found]'):
                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                            consume_suspended_message()
+
                             self.report.error.appendDescription('atom_not_found',
                                                                 {'file_name': file_name, 'description': warn})
                             self.report.setError()
@@ -32562,6 +32599,8 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
                         else:
+                            consume_suspended_message()
+
                             self.report.error.appendDescription('hydrogen_not_instantiated',
                                                                 {'file_name': file_name, 'description': warn})
                             self.report.setError()
@@ -32570,6 +32609,8 @@ class NmrDpUtility:
                                 self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Coordinate issue]'):
+                        # consume_suspended_message()
+
                         self.report.error.appendDescription('coordinate_issue',
                                                             {'file_name': file_name, 'description': warn})
                         self.report.setError()
@@ -32578,6 +32619,8 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
+                        consume_suspended_message()
+
                         self.report.error.appendDescription('invalid_atom_nomenclature',
                                                             {'file_name': file_name, 'description': warn})
                         self.report.setError()
@@ -32586,6 +32629,8 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                        consume_suspended_message()
+
                         self.report.error.appendDescription('invalid_data',
                                                             {'file_name': file_name, 'description': warn})
                         self.report.setError()
@@ -32610,6 +32655,8 @@ class NmrDpUtility:
                                 self.__nmr_ext_poly_seq.append(d)
 
                     elif warn.startswith('[Missing data]'):
+                        # consume_suspended_message()
+
                         self.report.error.appendDescription('missing_data',
                                                             {'file_name': file_name, 'description': warn})
                         self.report.setError()
@@ -32642,6 +32689,8 @@ class NmrDpUtility:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Range value error]') and not self.__remediation_mode:
+                        # consume_suspended_message()
+
                         self.report.error.appendDescription('anomalous_data',
                                                             {'file_name': file_name, 'description': warn})
                         self.report.setError()
@@ -32711,6 +32760,48 @@ class NmrDpUtility:
 
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+
+        def deal_res_warn_message_for_lazy_eval(listener):
+
+            if listener.warningMessage is not None:
+
+                for warn in listener.warningMessage:
+
+                    if warn.startswith('[Sequence mismatch]'):
+                        suspended_errors_for_lazy_eval.append({'sequence_mismatch':
+                                                               {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Atom not found]'):
+                        if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                            suspended_errors_for_lazy_eval.append({'atom_not_found':
+                                                                   {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Hydrogen not instantiated]'):
+                        if self.__remediation_mode:
+                            pass
+                        else:
+                            suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated':
+                                                                   {'file_name': file_name, 'description': warn}})
+
+                    # elif warn.startswith('[Coordinate issue]'):
+                    #     suspended_errors_for_lazy_eval.append({'coordinate_issue':
+                    #                                            {'file_name': file_name, 'description': warn}})
+
+                    # elif warn.startswith('[Invalid atom nomenclature]'):
+                    #     suspended_errors_for_lazy_eval.append({'invalid_atom_nomenclature':
+                    #                                            {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                        suspended_errors_for_lazy_eval.append({'invalid_data':
+                                                               {'file_name': file_name, 'description': warn}})
+
+                    # elif warn.startswith('[Missing data]'):
+                    #     suspended_errors_for_lazy_eval.append({'missing_data':
+                    #                                            {'file_name': file_name, 'description': warn}})
+
+                    # elif warn.startswith('[Range value error]') and not self.__remediation_mode:
+                    #     suspended_errors_for_lazy_eval.append({'anomalous_data':
+                    #                                            {'file_name': file_name, 'description': warn}})
 
         for input_source, ar, _ in ar_file_order:
 
@@ -32782,6 +32873,8 @@ class NmrDpUtility:
 
             reasons = _reasons
 
+            suspended_errors_for_lazy_eval.clear()
+
             if file_type == 'nm-res-xpl':
                 reader = XplorMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
@@ -32821,6 +32914,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -32914,6 +33008,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -32986,6 +33081,7 @@ class NmrDpUtility:
                     reasons = reader.getReasons()
 
                     if reasons is not None and _reasons is not None and listener.warningMessage is not None and len(listener.warningMessage) > 0:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         reader = AmberMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
@@ -33105,6 +33201,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -33200,6 +33297,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -33271,6 +33369,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -33334,7 +33433,6 @@ class NmrDpUtility:
                                               listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
-
                     deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
@@ -33384,6 +33482,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -33451,6 +33550,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -33518,6 +33618,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -33604,6 +33705,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -33674,6 +33776,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -34064,10 +34167,11 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
+                                eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
                                 for c in containerList:
                                     c.setType('data')
 
-                                myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+                                myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                         except Exception as e:
                             self.__lfh.write(f"+NmrDpUtility.__validateStrPk() ++ Error  - {str(e)}\n")
@@ -41393,14 +41497,14 @@ class NmrDpUtility:
                                     with open(touch_file, 'w') as ofh:
                                         ofh.write('')
 
-                    self.__suspended_errors_for_lazy_eval = []
+                    self.__suspended_errors_for_lazy_eval.clear()
 
                 if len(self.__suspended_warnings_for_lazy_eval) > 0:
                     for msg in self.__suspended_warnings_for_lazy_eval:
                         for k, v in msg.items():
                             self.report.warning.appendDescription(k, v)
                             self.report.setWarning()
-                    self.__suspended_warnings_for_lazy_eval = []
+                    self.__suspended_warnings_for_lazy_eval.clear()
 
             for ps in poly_seq:
 
@@ -41418,14 +41522,14 @@ class NmrDpUtility:
                                     for k, v in msg.items():
                                         self.report.error.appendDescription(k, v)
                                         self.report.setError()
-                                self.__suspended_errors_for_lazy_eval = []
+                                self.__suspended_errors_for_lazy_eval.clear()
 
                             if len(self.__suspended_warnings_for_lazy_eval) > 0:
                                 for msg in self.__suspended_warnings_for_lazy_eval:
                                     for k, v in msg.items():
                                         self.report.warning.appendDescription(k, v)
                                         self.report.setWarning()
-                                self.__suspended_warnings_for_lazy_eval = []
+                                self.__suspended_warnings_for_lazy_eval.clear()
 
                     elif 'ribonucleotide' in poly_type:
                         rmsd_label = 'p_rmsd'
@@ -43369,7 +43473,7 @@ class NmrDpUtility:
                                     del v['ca_idx']
                                 self.report.error.appendDescription(k, v)
                                 self.report.setError()
-                        self.__suspended_errors_for_lazy_eval = []
+                        self.__suspended_errors_for_lazy_eval.clear()
 
                     if len(self.__suspended_warnings_for_lazy_eval) > 0:
                         for msg in self.__suspended_warnings_for_lazy_eval:
@@ -43378,7 +43482,7 @@ class NmrDpUtility:
                                     del v['ca_idx']
                                 self.report.warning.appendDescription(k, v)
                                 self.report.setWarning()
-                        self.__suspended_warnings_for_lazy_eval = []
+                        self.__suspended_warnings_for_lazy_eval.clear()
 
                 # from model to nmr (final)
 
@@ -43902,7 +44006,7 @@ class NmrDpUtility:
                                     del v['ca_idx']
                                 self.report.error.appendDescription(k, v)
                                 self.report.setError()
-                        self.__suspended_errors_for_lazy_eval = []
+                        self.__suspended_errors_for_lazy_eval.clear()
 
                     if len(self.__suspended_warnings_for_lazy_eval) > 0:
                         for msg in self.__suspended_warnings_for_lazy_eval:
@@ -43911,7 +44015,7 @@ class NmrDpUtility:
                                     del v['ca_idx']
                                 self.report.warning.appendDescription(k, v)
                                 self.report.setWarning()
-                        self.__suspended_warnings_for_lazy_eval = []
+                        self.__suspended_warnings_for_lazy_eval.clear()
 
                 chain_assign_dic = self.report.chain_assignment.get()
 
@@ -44802,14 +44906,20 @@ class NmrDpUtility:
                             if (self.__remediation_mode or self.__combined_mode) and checked:
                                 continue
 
-                            if not checked and err.endswith("not present in the coordinates.") and atom_id_[0] in protonBeginCode:
-                                bonded_to = self.__ccU.getBondedAtoms(comp_id, atom_id_)
-                                if len(bonded_to) > 0 and coord_atom_site_ is not None and bonded_to[0] not in coord_atom_site_['atom_id']:
-                                    err += " Additionally, the attached atom ("\
-                                        + self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
-                                                                        comp_id_names[j], comp_id, atom_id_names[j], bonded_to[0])\
-                                        + ") is not instantiated in the coordinates. Please re-upload the model file."
-                                    coord_issue = True
+                            if not checked and err.endswith("not present in the coordinates."):
+
+                                if atom_id_[0] in protonBeginCode:
+                                    bonded_to = self.__ccU.getBondedAtoms(comp_id, atom_id_)
+                                    if len(bonded_to) > 0 and coord_atom_site_ is not None and bonded_to[0] not in coord_atom_site_['atom_id']:
+                                        err += " Additionally, the attached atom ("\
+                                            + self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id,
+                                                                            comp_id_names[j], comp_id, atom_id_names[j], bonded_to[0])\
+                                            + ") is not instantiated in the coordinates. Please re-upload the model file."
+                                        coord_issue = True
+
+                                elif 'coord_unobs_atom' in self.__caC:
+                                    if seq_key in self.__caC['coord_unobs_atom'] and atom_id_ in self.__caC['coord_unobs_atom'][seq_key]['atom_ids']:
+                                        coord_issue = True
 
                             self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'coordinate_issue' if coord_issue else 'atom_not_found',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -44889,7 +44999,7 @@ class NmrDpUtility:
 
         if 'report_file_path' not in self.__inputParamDict or self.__annotation_mode:
             self.__initializeDpReport()
-            self.__dstPath = self.__srcPath
+            self.__dstPath = self.__dstPath__ if self.__cifPath is None else self.__srcPath
 
             return False
 
@@ -45195,7 +45305,7 @@ class NmrDpUtility:
         """ Delete skipped saveframes.
         """
 
-        if not self.__combined_mode:
+        if not self.__combined_mode or self.__annotation_mode or self.__release_mode:
             return True
 
         if len(self.__star_data) == 0:
@@ -45490,7 +45600,8 @@ class NmrDpUtility:
         if not has_poly_seq:
             return False
 
-        self.__cleanUpSf()
+        if not self.__release_mode and not self.__annotation_mode:
+            self.__cleanUpSf()
 
         master_entry = self.__star_data[0]
 
@@ -52231,7 +52342,8 @@ class NmrDpUtility:
         if file_type == 'nef':
             return True
 
-        self.__c2S.set_entry_id(self.__star_data[0], self.__entry_id)
+        if self.__c2S.set_entry_id(self.__star_data[0], self.__entry_id):
+            self.__depositNmrData()
 
         return True
 
@@ -52440,6 +52552,12 @@ class NmrDpUtility:
 
         if 'nef' not in self.__op and ('deposit' in self.__op or 'annotate' in self.__op) and 'nmr_cif_file_path' in self.__outputParamDict:
 
+            if self.__cifPath is None:
+                if __pynmrstar_v3__:
+                    master_entry.write_to_file(self.__dstPath__, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
+                else:
+                    master_entry.write_to_file(self.__dstPath__)
+
             try:
 
                 myIo = IoAdapterPy(False, sys.stderr)
@@ -52450,10 +52568,11 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
+                    eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
                     for c in containerList:
                         c.setType('data')
 
-                    myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+                    myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
             except Exception as e:
                 self.__lfh.write(f"+NmrDpUtility.__depositNmrData() ++ Error  - {str(e)}\n")
@@ -52496,10 +52615,11 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
+                    eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
                     for c in containerList:
                         c.setType('data')
 
-                    myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+                    myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                     return True
 
@@ -55957,10 +56077,11 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
+                        eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
                         for c in containerList:
                             c.setType('data')
 
-                        myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[1:])
+                        myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                 except Exception as e:
                     self.__lfh.write(f"+NmrDpUtility.__translateNef2Str() ++ Error  - {str(e)}\n")

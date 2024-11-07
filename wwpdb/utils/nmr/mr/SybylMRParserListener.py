@@ -53,7 +53,8 @@ try:
                                                        DIST_AMBIG_UP,
                                                        DIST_AMBIG_MED,
                                                        DIST_AMBIG_UNCERT,
-                                                       CARTN_DATA_ITEMS)
+                                                       CARTN_DATA_ITEMS,
+                                                       HEME_LIKE_RES_NAMES)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -125,7 +126,8 @@ except ImportError:
                                            DIST_AMBIG_UP,
                                            DIST_AMBIG_MED,
                                            DIST_AMBIG_UNCERT,
-                                           CARTN_DATA_ITEMS)
+                                           CARTN_DATA_ITEMS,
+                                           HEME_LIKE_RES_NAMES)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -218,6 +220,7 @@ class SybylMRParserListener(ParseTreeListener):
     __nonPolySeq = None
     __coordAtomSite = None
     __coordUnobsRes = None
+    __coordUnobsAtom = None
     __labelToAuthSeq = None
     __authToLabelSeq = None
     __authToStarSeq = None
@@ -306,6 +309,7 @@ class SybylMRParserListener(ParseTreeListener):
             self.__branched = ret['branched']
             self.__coordAtomSite = ret['coord_atom_site']
             self.__coordUnobsRes = ret['coord_unobs_res']
+            self.__coordUnobsAtom = ret['coord_unobs_atom'] if 'coord_unobs_atom' in ret else {}
             self.__labelToAuthSeq = ret['label_to_auth_seq']
             self.__authToLabelSeq = ret['auth_to_label_seq']
             self.__authToStarSeq = ret['auth_to_star_seq']
@@ -1372,10 +1376,14 @@ class SybylMRParserListener(ParseTreeListener):
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
                     if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                         if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            if (ligands == 1 or cifCompId in HEME_LIKE_RES_NAMES) and any(a[3] for a in chainAssign):
+                                chainAssign.clear()
                             chainAssign.add((chainId, seqId, cifCompId, False))
                     else:
                         _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
                         if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                            if (ligands == 1 or cifCompId in HEME_LIKE_RES_NAMES) and any(a[3] for a in chainAssign):
+                                chainAssign.clear()
                             chainAssign.add((chainId, seqId, cifCompId, False))
 
         if len(chainAssign) == 0:
@@ -1720,6 +1728,8 @@ class SybylMRParserListener(ParseTreeListener):
                     _atomId = [_atomId_ for _atomId_ in _atomId if _atomId_ in atomSiteAtomId]
 
             lenAtomId = len(_atomId)
+            if self.__reasons is not None and compId != cifCompId and __compId == cifCompId:
+                compId = cifCompId
             if compId != cifCompId and compId in monDict3 and cifCompId in monDict3:
                 multiChain = insCode = False
                 if len(chainAssign) > 0:
@@ -1877,7 +1887,7 @@ class SybylMRParserListener(ParseTreeListener):
                 elif not self.__extendAuthSeq:
                     self.__preferAuthSeq = False
 
-        elif self.__preferAuthSeq:
+        elif self.__preferAuthSeq and seqKey not in self.__coordUnobsRes:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, asis=False)
             if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId and not self.__extendAuthSeq:
                 if atomId in _coordAtomSite['atom_id']:
@@ -1902,7 +1912,7 @@ class SybylMRParserListener(ParseTreeListener):
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
 
-        else:
+        elif not self.__preferAuthSeq:
             self.__preferAuthSeq = True
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId)
             if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
@@ -1934,7 +1944,7 @@ class SybylMRParserListener(ParseTreeListener):
                 self.__preferAuthSeqCount += 1
             return atomId, asis
 
-        if self.__preferAuthSeq:
+        if self.__preferAuthSeq and seqKey not in self.__coordUnobsRes:
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, asis=False)
             if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId and not self.__extendAuthSeq:
                 if atomId in _coordAtomSite['atom_id']:
@@ -1959,7 +1969,7 @@ class SybylMRParserListener(ParseTreeListener):
                     seqKey = _seqKey
                     self.__setLocalSeqScheme()
 
-        else:
+        elif not self.__preferAuthSeq:
             self.__preferAuthSeq = True
             _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId)
             if _coordAtomSite is not None and _coordAtomSite['comp_id'] == compId:
@@ -2049,6 +2059,11 @@ class SybylMRParserListener(ParseTreeListener):
                                             "Please update the sequence in the Macromolecules page.")
                             asis = True
                         else:
+                            if atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
+                               and atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                                return atomId, asis
                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                             updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)

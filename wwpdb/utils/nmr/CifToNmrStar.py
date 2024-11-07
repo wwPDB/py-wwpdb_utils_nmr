@@ -475,8 +475,10 @@ class CifToNmrStar:
             @see: pynmrstar.entry
         """
 
+        modified = False
+
         if strData is None:
-            return
+            return modified
 
         entryId = entryId.strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 
@@ -504,6 +506,7 @@ class CifToNmrStar:
                     try:
                         if self.schema[fqtn]['entryIdFlg'] == 'Y':
                             sf.add_tag(entry_id_tag, entryId)
+                        modified = True
                     except KeyError:
                         pass
 
@@ -528,6 +531,8 @@ class CifToNmrStar:
 
                         for row in lp:
                             row.append(entryId)
+
+                        modified = True
 
         elif isinstance(strData, pynmrstar.Saveframe):
 
@@ -554,6 +559,7 @@ class CifToNmrStar:
                 try:
                     if self.schema[fqtn]['entryIdFlg'] == 'Y':
                         sf.add_tag(entry_id_tag, entryId)
+                        modified = True
                 except KeyError:
                     pass
 
@@ -579,6 +585,8 @@ class CifToNmrStar:
                     for row in lp:
                         row.append(entryId)
 
+                    modified = True
+
         elif isinstance(strData, pynmrstar.Loop):
 
             lp = strData
@@ -603,6 +611,10 @@ class CifToNmrStar:
 
                 for row in lp:
                     row.append(entryId)
+
+                modified = True
+
+        return modified
 
     def set_local_sf_id(self, strData, listId):
         """ Set list ID for a given saveframe or loop.

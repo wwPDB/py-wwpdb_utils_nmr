@@ -2046,6 +2046,38 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
     if len(mapping) == 0:
         return seqId, compId, atomId
 
+    if atomId.startswith('QQ') and len(atomId) > 2 and atomId not in ('QQR', 'QQM'):
+        item = next((item for item in mapping
+                     if item['original_atom_id'] in ('H' + atomId[2:] + '22',
+                                                     '2H' + atomId[2:] + '2')), None)
+        if item is not None:
+            _branch = [c for c in ccU.getMethylAtoms(compId if cifCompId is None else cifCompId) if c[0] == 'C']
+            if len(_branch) > 1:
+                __branch = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList
+                            if cca[ccU.ccaTypeSymbol] in ('C', 'N')
+                            and cca[ccU.ccaLeavingAtomFlag] == 'N']
+                total = 0
+                for k in __branch:
+                    c = ccU.getBondedAtoms(compId if cifCompId is None else cifCompId, k, exclProton=True)
+                    if len([b for b in _branch if b in c]) == 2:
+                        total += 1
+                if total == 1:
+                    return item['auth_seq_id'], item['auth_comp_id'], 'QQM'
+
+    if atomId.startswith('QQ') and atomId not in ('QQR', 'QQM'):
+        _branch = [c for c in ccU.getMethylAtoms(compId if cifCompId is None else cifCompId) if c[0] == 'C']
+        if len(_branch) > 1:
+            __branch = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList
+                        if cca[ccU.ccaTypeSymbol] in ('C', 'N')
+                        and cca[ccU.ccaLeavingAtomFlag] == 'N']
+            total = 0
+            for k in __branch:
+                c = ccU.getBondedAtoms(compId if cifCompId is None else cifCompId, k, exclProton=True)
+                if len([b for b in _branch if b in c]) == 2:
+                    total += 1
+            if total == 1:
+                return seqId, compId, 'QQM'
+
     if elemName in ('Q', 'M'):
 
         item = next((item for item in mapping
@@ -2311,6 +2343,24 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
                 _item['original_atom_id'] = item['original_atom_id'][1:] + item['original_atom_id'][0]
                 _mapping.append(_item)
         mapping = _mapping
+
+    if atomId.startswith('QQ') and len(atomId) > 2 and atomId not in ('QQR', 'QQM'):
+        item = next((item for item in mapping
+                     if item['original_atom_id'] in ('H' + atomId[2:] + '22',
+                                                     '2H' + atomId[2:] + '2')), None)
+        if item is not None:
+            _branch = [c for c in ccU.getMethylAtoms(cifCompId) if c[0] == 'C']
+            if len(_branch) > 1:
+                __branch = [cca[ccU.ccaAtomId] for cca in ccU.lastAtomList
+                            if cca[ccU.ccaTypeSymbol] in ('C', 'N')
+                            and cca[ccU.ccaLeavingAtomFlag] == 'N']
+                total = 0
+                for k in __branch:
+                    c = ccU.getBondedAtoms(cifCompId, k, exclProton=True)
+                    if len([b for b in _branch if b in c]) == 2:
+                        total += 1
+                if total == 1:
+                    return 'QQM'
 
     if elemName in ('Q', 'M'):
 

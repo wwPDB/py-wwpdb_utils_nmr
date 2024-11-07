@@ -110,8 +110,8 @@ DIST_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 101.0}
 DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}
 
 
-ANGLE_RESTRAINT_RANGE = {'min_inclusive': -355.0, 'max_inclusive': 355.0}
-ANGLE_RESTRAINT_ERROR = {'min_exclusive': -375.0, 'max_exclusive': 375.0}
+ANGLE_RESTRAINT_RANGE = {'min_inclusive': -375.0, 'max_inclusive': 375.0}  # 2n96
+ANGLE_RESTRAINT_ERROR = {'min_exclusive': -400.0, 'max_exclusive': 400.0}
 
 
 RDC_RESTRAINT_RANGE = {'min_inclusive': -150.0, 'max_inclusive': 150.0}
@@ -172,7 +172,7 @@ DIST_AMBIG_UNCERT = 0.1
 KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           'PSI': ['N', 'CA', 'C', 'N'],  # i, i, i, i+1
                           'OMEGA': ['CA', 'C', 'N', 'CA'],  # i, i, i+1, i+1; modified CYANA definition [O C N (H or CD for Proline residue)]
-                          'CHI1': ['N', 'CA', 'CB', re.compile(r'^[COS]G1?$')],
+                          'CHI1': ['N', 'CA', re.compile(r'CB1?'), re.compile(r'^[COS]G1?$')],  # DIV: [N, CA, CB1, CG1]
                           'CHI2': ['CA', 'CB', re.compile(r'^CG1?$'), re.compile(r'^[CNOS]D1?$')],
                           'CHI3': ['CB', 'CG', re.compile(r'^[CS]D$'), re.compile(r'^[CNO]E1?|N$')],
                           'CHI4': ['CG', 'CD', re.compile(r'^[CN]E$'), re.compile(r'^[CN]Z$')],
@@ -268,6 +268,8 @@ XPLOR_ORIGIN_AXIS_COLS = [0, 1, 2, 3]
 XPLOR_NITROXIDE_NAMES = ('NO', 'NX', 'NR', 'NAI', 'OS1', 'NS1')
 
 NITROOXIDE_ANCHOR_RES_NAMES = ('CYS', 'SER', 'GLU', 'ASP', 'GLN', 'ASN', 'LYS', 'THR', 'HIS', 'R1A')
+
+HEME_LIKE_RES_NAMES = ('HEM', 'HEB', 'HEC', 'MH0')
 
 LEGACY_PDB_RECORDS = ['HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND', 'SOURCE', 'KEYWDS', 'EXPDTA',
                       'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL', 'REMARK',
@@ -2067,7 +2069,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return 'H7' + atomId[-1]
                 if atomId in 'H5':
                     return 'H7'
-            elif refCompId in ('DT', 'T') and atomId.startswith('C5'):  # 7dju
+            elif refCompId in ('DT', 'T') and (atomId.startswith('C5') or atomId == 'CM'):  # 7dju, 7pdu
                 return 'C7'
             elif refCompId == 'THM' and refAtomIdList is not None and 'HM51' in refAtomIdList:
                 if atomId.startswith('Q7'):
@@ -2077,7 +2079,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                         return 'HM5' + atomId[-1]
                     if atomId in 'H7':
                         return 'HM5'
-                if atomId == 'C7':  # 7png
+                if atomId in ('C7', 'CM'):  # 7png, 7pdu
                     return 'C5M'
             elif refCompId in ('DA', 'A') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
                 return 'H6' + atomId[-1]
@@ -2242,10 +2244,10 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
             if atomId == 'HNE':
                 return 'HE2'
 
-        elif refCompId == 'HIS':
+        elif refCompId in ('HIS', 'OUH'):
             if atomId == 'HNE':  # 2k4w
                 return 'HE2'
-            if atomId == 'HND':
+            if atomId == 'HND':  # 5n14 OUH:HND
                 return 'HD1'
             if atomId == 'HE':
                 return 'HE1'
@@ -2266,12 +2268,15 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
             if atomId == 'CA':
                 return 'CH3'
 
-        elif refCompId in ('HEB', 'HEC'):
+        elif refCompId in ('HEB', 'HEC', 'MH0'):
+            is_mh0 = refCompId == 'MH0'  # 2n3y
             if atomId[0] in pseProBeginCode:
                 if atomId == 'QM1':
-                    return 'HMB'
+                    return 'QMB' if is_mh0 else 'HMB'
                 if atomId == 'QT2':
-                    return 'HBB'
+                    return 'QBB' if is_mh0 else 'HBB'
+                if atomId.startswith('HT2') and is_mh0:
+                    return 'QAB'
                 if atomId.startswith('HT2') and refCompId == 'HEC':
                     return 'HAB'
                 if atomId in ('HT2', 'HA2', 'HA21', 'HA22') and refCompId == 'HEB':
@@ -2279,13 +2284,13 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 if atomId == 'HA23' and refCompId == 'HEB':
                     return 'HAB2'
                 if atomId == 'QM3':
-                    return 'HMC'
+                    return 'QMC' if is_mh0 else 'HMC'
                 if atomId == 'QT4':
                     return 'HBC'
                 if atomId.startswith('HT4'):
-                    return 'HAC'
+                    return 'QAC' if is_mh0 else 'HAC'
                 if atomId == 'QM5':
-                    return 'HMD'
+                    return 'QMD' if is_mh0 else 'HMD'
                 if atomId == 'HA62':
                     return 'HAD1'
                 if atomId == 'HA63':
@@ -2294,10 +2299,30 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return 'HBD1'
                 if atomId == 'HB63':
                     return 'HBD2'
+                if atomId == 'HA71' and is_mh0:
+                    return 'H8'
+                if atomId == 'HA72' and is_mh0:
+                    return 'H9'
                 if atomId == 'HA72':
                     return 'HAA1'
                 if atomId == 'HA73':
                     return 'HAA2'
+                if atomId == 'HB73' and is_mh0:
+                    return 'H10'
+                if atomId == 'HB74' and is_mh0:
+                    return 'H11'
+                if atomId == 'HB2' and is_mh0:
+                    return 'H16'
+                if atomId == 'HB3' and is_mh0:
+                    return 'H17'
+                if atomId == 'HD1' and is_mh0:
+                    return 'H32'
+                if atomId == 'HD2' and is_mh0:
+                    return 'H33'
+                if atomId == 'HE1' and is_mh0:
+                    return 'H34'
+                if atomId == 'HE2' and is_mh0:
+                    return 'H35'
                 if atomId == 'HB72':
                     return 'HBA1'
                 if atomId == 'HB73':
@@ -2311,7 +2336,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 if atomId == 'HB7':
                     return 'HBA'
                 if atomId == 'QM8':
-                    return 'HMA'
+                    return 'QMA' if is_mh0 else 'HMA'
                 if atomId == 'HAM':
                     return 'HHA'
                 if atomId == 'HBM':
@@ -2320,6 +2345,12 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return 'HHC'
                 if atomId == 'HDM':
                     return 'HHD'
+
+        if refCompId in ('OUD', 'OUE', 'OUH', 'OUI', 'OUK', 'OUR'):  # 5n14
+            if atomId == 'QPA':
+                return 'HM'
+            if atomId == 'QPG' and refCompId == 'OUI':
+                return 'HG1'
 
         if len(refCompId) == 3 and refCompId in monDict3:
             if atomId in ('O1', 'OT1'):
@@ -4061,6 +4092,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
     coordAtomSite = None if prevResult is None else prevResult.get('coord_atom_site')
     coordUnobsRes = None if prevResult is None else prevResult.get('coord_unobs_res')
+    coordUnobsAtom = None if prevResult is None else prevResult.get('coord_unobs_atom')
     labelToAuthSeq = None if prevResult is None else prevResult.get('label_to_auth_seq')
     authToLabelSeq = None if prevResult is None else prevResult.get('auth_to_label_seq')
     authToStarSeq = None if prevResult is None else prevResult.get('auth_to_star_seq')
@@ -4349,6 +4381,34 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                         authAtomNameToIdExt[_compId][c['alt_atom_id']] = c['atom_id']
 
             authToLabelSeq = {v: k for k, v in labelToAuthSeq.items()}
+
+        if coordUnobsAtom is None:
+            coordUnobsAtom = {}
+
+            if cR.hasCategory('pdbx_unobs_or_zero_occ_atoms'):
+
+                filterItemByRepModelId = [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId}]
+
+                unobs = cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_atoms',
+                                                 [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                  {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                  {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                  {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                  ],
+                                                 filterItemByRepModelId)
+
+                if len(unobs) > 0:
+                    chainIds = set(u['chain_id'] for u in unobs)
+                    for chainId in chainIds:
+                        seqIds = set(int(u['seq_id']) for u in unobs if u['chain_id'] == chainId and u['seq_id'] is not None)
+                        for seqId in seqIds:
+                            seqKey = (chainId, seqId)
+                            compId = next(u['comp_id'] for u in unobs
+                                          if u['chain_id'] == chainId and u['seq_id'] is not None and int(u['seq_id']) == seqId)
+                            atomIds = [u['atom_id'] for u in unobs
+                                       if u['chain_id'] == chainId and u['seq_id'] is not None and int(u['seq_id']) == seqId]
+                            if len(atomIds) > 0:
+                                coordUnobsAtom[seqKey] = {'comp_id': compId, 'atom_ids': atomIds}
 
         if coordUnobsRes is None:
             changed = True
@@ -5206,6 +5266,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'nmr_ext_poly_seq': nmrExtPolySeq,
             'mod_residue': modResidue,
             'coord_atom_site': coordAtomSite,
+            'coord_unobs_atom': coordUnobsAtom,
             'coord_unobs_res': coordUnobsRes,
             'label_to_auth_seq': labelToAuthSeq,
             'auth_to_label_seq': authToLabelSeq,

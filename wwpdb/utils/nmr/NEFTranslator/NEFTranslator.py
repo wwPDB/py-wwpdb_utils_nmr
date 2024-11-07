@@ -7016,7 +7016,7 @@ class NEFTranslator:
         if comp_id in emptyValue:
             return [], None, None
 
-        methyl_only = atom_id[0] == 'M'
+        methyl_only = atom_id[0] == 'M' or atom_id.startswith('QM') or atom_id.startswith('QQM')
 
         key = (comp_id, atom_id, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForValidStarAtomInXplor:
@@ -7115,6 +7115,40 @@ class NEFTranslator:
                         atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
                         # 2l8r, comp_id=APR, atom_id=Q5D -> ['H5R1', 'H5R2']
                         if details is not None and atom_id[0] in ('Q', 'M'):
+
+                            if atom_id.startswith('QQM'):  # 2n06, comp_id=CM8, atom_id=QQM -> ['HM2%', HM3%']
+                                root = []
+                                _branch = []
+                                _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:], exclProton=True)
+                                if len(_root) > 0:
+                                    _branch.append('C' + atom_id[2:])
+                                    root.extend(_root)
+                                for e in '1234ABCD':
+                                    _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:] + e, exclProton=True)
+                                    if len(_root) > 0:
+                                        _branch.append('C' + atom_id[2:] + e)
+                                        root.extend(_root)
+                                if len(_root) == 0 and len(_branch) == 0:
+                                    _branch = [c for c in self.__ccU.getMethylAtoms(comp_id) if c[0] == 'C']  # 2jnp:QQM
+                                if len(_root) == 0 and len(_branch) > 1:
+                                    __branch = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
+                                                if cca[self.__ccU.ccaTypeSymbol] in ('C', 'N')
+                                                and cca[self.__ccU.ccaLeavingAtomFlag] == 'N']
+                                    if len(__branch) > 0:
+                                        _atom_list = []
+                                        for k in __branch:
+                                            c = self.__ccU.getBondedAtoms(comp_id, k, exclProton=True)
+                                            if any(b in c for b in _branch):
+                                                protons = []
+                                                for b in _branch:
+                                                    if b in c:
+                                                        protons.extend(self.__ccU.getBondedAtoms(comp_id, b, onlyProton=True))
+                                                if len(protons) == 6:
+                                                    _atom_list.extend(protons)
+                                        if len(_atom_list) > 0:
+                                            atom_list, ambiguity_code, details = _atom_list, 2, None
+                                            return (atom_list, ambiguity_code, details)
+
                             protons = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[1:], onlyProton=True)
                             resolved = False
                             len_protons = len(protons)
@@ -7211,7 +7245,7 @@ class NEFTranslator:
         if comp_id in emptyValue:
             return [], None, None
 
-        methyl_only |= atom_id[0] == 'M'
+        methyl_only |= atom_id[0] == 'M' or atom_id.startswith('QM') or atom_id.startswith('QQM')
 
         key = (comp_id, atom_id, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForValidStarAtom:
@@ -7231,6 +7265,39 @@ class NEFTranslator:
                 return (atom_list, ambiguity_code, details)
 
             if atom_id[0] == 'M' or (atom_id[0] == 'Q' and self.__remediation_mode):  # DAOTHER-8663, 8751
+
+                if atom_id.startswith('QQM'):  # 2n06, comp_id=CM8, atom_id=QQM -> ['HM2%', HM3%']
+                    root = []
+                    _branch = []
+                    _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:], exclProton=True)
+                    if len(_root) > 0:
+                        _branch.append('C' + atom_id[2:])
+                        root.extend(_root)
+                    for e in '1234ABCD':
+                        _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:] + e, exclProton=True)
+                        if len(_root) > 0:
+                            _branch.append('C' + atom_id[2:] + e)
+                            root.extend(_root)
+                    if len(_root) == 0 and len(_branch) == 0:
+                        _branch = [c for c in self.__ccU.getMethylAtoms(comp_id) if c[0] == 'C']  # 2jnp:QQM
+                    if len(_root) == 0 and len(_branch) > 1:
+                        __branch = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
+                                    if cca[self.__ccU.ccaTypeSymbol] in ('C', 'N')
+                                    and cca[self.__ccU.ccaLeavingAtomFlag] == 'N']
+                        if len(__branch) > 0:
+                            _atom_list = []
+                            for k in __branch:
+                                c = self.__ccU.getBondedAtoms(comp_id, k, exclProton=True)
+                                if any(b in c for b in _branch):
+                                    protons = []
+                                    for b in _branch:
+                                        if b in c:
+                                            protons.extend(self.__ccU.getBondedAtoms(comp_id, b, onlyProton=True))
+                                    if len(protons) == 6:
+                                        _atom_list.extend(protons)
+                            if len(_atom_list) > 0:
+                                atom_list, ambiguity_code, details = _atom_list, 2, None
+                                return (atom_list, ambiguity_code, details)
 
                 if atom_id.startswith('QQ'):
                     atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[2:] + '*', details, leave_unmatched, methyl_only)

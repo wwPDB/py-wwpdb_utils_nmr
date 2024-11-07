@@ -230,25 +230,30 @@ def dist_error(lower_bound, upper_bound, dist):
     """
     error = 0.0
 
-    if lower_bound is not None and upper_bound is not None:
-        if lower_bound <= dist <= upper_bound:
-            pass
-        elif dist > upper_bound:
-            error = abs(dist - upper_bound)
-        else:
-            error = abs(dist - lower_bound)
+    try:
 
-    elif upper_bound is not None:
-        if dist <= upper_bound:
-            pass
-        elif dist > upper_bound:
-            error = abs(dist - upper_bound)
+        if lower_bound is not None and upper_bound is not None:
+            if lower_bound <= dist <= upper_bound:
+                pass
+            elif dist > upper_bound:
+                error = abs(dist - upper_bound)
+            else:
+                error = abs(dist - lower_bound)
 
-    elif lower_bound is not None:
-        if lower_bound <= dist:
-            pass
-        else:
-            error = abs(dist - lower_bound)
+        elif upper_bound is not None:
+            if dist <= upper_bound:
+                pass
+            elif dist > upper_bound:
+                error = abs(dist - upper_bound)
+
+        elif lower_bound is not None:
+            if lower_bound <= dist:
+                pass
+            else:
+                error = abs(dist - lower_bound)
+
+    except TypeError:
+        pass
 
     return error
 
@@ -288,38 +293,43 @@ def angle_target_values(target_value, target_value_uncertainty,
         has_valid_lower_linear_limit = lower_bound is not None and lower_linear_limit is not None and lower_bound != lower_linear_limit
         has_valid_upper_linear_limit = upper_bound is not None and upper_linear_limit is not None and upper_bound != upper_linear_limit
 
-        target_value_aclock = (lower_bound + upper_bound) / 2.0
-        target_value_clock = target_value_aclock + 180.0
-        if target_value_clock >= 360.0:
-            target_value_clock -= 360.0
+        try:
 
-        if has_valid_lower_linear_limit or has_valid_upper_linear_limit:  # decide target value from upper/lower_limit and upper/lower_linear_limit (AMBER)
-            target_value_vote_aclock = target_value_vote_clock = 0
+            target_value_aclock = (lower_bound + upper_bound) / 2.0
+            target_value_clock = target_value_aclock + 180.0
+            if target_value_clock >= 360.0:
+                target_value_clock -= 360.0
 
-            if has_valid_lower_linear_limit:
-                if angle_diff(lower_bound, target_value_aclock) < angle_diff(lower_linear_limit, target_value_aclock):
-                    target_value_vote_aclock += 1
-                elif angle_diff(lower_bound, target_value_clock) < angle_diff(lower_linear_limit, target_value_clock):
-                    target_value_vote_clock += 1
-            if has_valid_upper_linear_limit:
-                if angle_diff(upper_bound, target_value_aclock) < angle_diff(upper_linear_limit, target_value_aclock):
-                    target_value_vote_aclock += 1
-                elif angle_diff(upper_bound, target_value_clock) < angle_diff(upper_linear_limit, target_value_clock):
-                    target_value_vote_clock += 1
+            if has_valid_lower_linear_limit or has_valid_upper_linear_limit:  # decide target value from upper/lower_limit and upper/lower_linear_limit (AMBER)
+                target_value_vote_aclock = target_value_vote_clock = 0
 
-            if target_value_vote_aclock + target_value_vote_clock == 0 or target_value_vote_aclock * target_value_vote_clock != 0:
-                if angle_diff(upper_bound, target_value_aclock) > angle_diff(upper_bound, target_value_clock)\
-                   and angle_diff(lower_bound, target_value_aclock) > angle_diff(lower_bound, target_value_clock):
-                    return target_value_aclock, lower_bound, upper_bound
-                if angle_diff(upper_bound, target_value_clock) > angle_diff(upper_bound, target_value_aclock)\
-                   and angle_diff(lower_bound, target_value_clock) > angle_diff(lower_bound, target_value_aclock):
-                    return target_value_clock, lower_bound, upper_bound
-                return None, lower_bound, upper_bound
+                if has_valid_lower_linear_limit:
+                    if angle_diff(lower_bound, target_value_aclock) < angle_diff(lower_linear_limit, target_value_aclock):
+                        target_value_vote_aclock += 1
+                    elif angle_diff(lower_bound, target_value_clock) < angle_diff(lower_linear_limit, target_value_clock):
+                        target_value_vote_clock += 1
+                if has_valid_upper_linear_limit:
+                    if angle_diff(upper_bound, target_value_aclock) < angle_diff(upper_linear_limit, target_value_aclock):
+                        target_value_vote_aclock += 1
+                    elif angle_diff(upper_bound, target_value_clock) < angle_diff(upper_linear_limit, target_value_clock):
+                        target_value_vote_clock += 1
 
-            target_value = target_value_aclock if target_value_vote_aclock > target_value_vote_clock else target_value_clock
+                if target_value_vote_aclock + target_value_vote_clock == 0 or target_value_vote_aclock * target_value_vote_clock != 0:
+                    if angle_diff(upper_bound, target_value_aclock) > angle_diff(upper_bound, target_value_clock)\
+                       and angle_diff(lower_bound, target_value_aclock) > angle_diff(lower_bound, target_value_clock):
+                        return target_value_aclock, lower_bound, upper_bound
+                    if angle_diff(upper_bound, target_value_clock) > angle_diff(upper_bound, target_value_aclock)\
+                       and angle_diff(lower_bound, target_value_clock) > angle_diff(lower_bound, target_value_aclock):
+                        return target_value_clock, lower_bound, upper_bound
+                    return None, lower_bound, upper_bound
 
-        else:  # estimate target value by comparing lower_limit and upper_limit value, CYANA)
-            target_value = target_value_aclock if lower_bound <= upper_bound else target_value_clock
+                target_value = target_value_aclock if target_value_vote_aclock > target_value_vote_clock else target_value_clock
+
+            else:  # estimate target value by comparing lower_limit and upper_limit value, CYANA)
+                target_value = target_value_aclock if lower_bound <= upper_bound else target_value_clock
+
+        except TypeError:
+            return None, lower_bound, upper_bound
 
     return target_value, lower_bound, upper_bound
 
@@ -359,11 +369,16 @@ def angle_error(lower_bound, upper_bound, target_value, angle):
 
         return abs(g - (l + r)) < t
 
-    ld = angle_diff(lower_bound, target_value)
-    rd = angle_diff(upper_bound, target_value)
+    try:
 
-    if check_angle_range_overlap(lower_bound, target_value, angle, ld, 0.5)\
-       or check_angle_range_overlap(upper_bound, target_value, angle, rd, 0.5):
+        ld = angle_diff(lower_bound, target_value)
+        rd = angle_diff(upper_bound, target_value)
+
+        if check_angle_range_overlap(lower_bound, target_value, angle, ld, 0.5)\
+           or check_angle_range_overlap(upper_bound, target_value, angle, rd, 0.5):
+            return 0.0
+
+    except TypeError:
         return 0.0
 
     return min(angle_diff(upper_bound, angle), angle_diff(lower_bound, angle))
@@ -418,25 +433,30 @@ def rdc_error(lower_bound, upper_bound, rdc):
     """
     error = 0.0
 
-    if lower_bound is not None and upper_bound is not None:
-        if lower_bound <= rdc <= upper_bound:
-            pass
-        elif rdc > upper_bound:
-            error = abs(rdc - upper_bound)
-        else:
-            error = abs(rdc - lower_bound)
+    try:
 
-    elif upper_bound is not None:
-        if rdc <= upper_bound:
-            pass
-        elif rdc > upper_bound:
-            error = abs(rdc - upper_bound)
+        if lower_bound is not None and upper_bound is not None:
+            if lower_bound <= rdc <= upper_bound:
+                pass
+            elif rdc > upper_bound:
+                error = abs(rdc - upper_bound)
+            else:
+                error = abs(rdc - lower_bound)
 
-    elif lower_bound is not None:
-        if lower_bound <= rdc:
-            pass
-        else:
-            error = abs(rdc - lower_bound)
+        elif upper_bound is not None:
+            if rdc <= upper_bound:
+                pass
+            elif rdc > upper_bound:
+                error = abs(rdc - upper_bound)
+
+        elif lower_bound is not None:
+            if lower_bound <= rdc:
+                pass
+            else:
+                error = abs(rdc - lower_bound)
+
+    except TypeError:
+        pass
 
     return error
 

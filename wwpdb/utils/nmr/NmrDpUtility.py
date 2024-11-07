@@ -9982,7 +9982,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if file_type in ('nm-res-mr', 'nm-res-sax', 'nm-pea-any'):
+            if file_type in ('nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
                 if file_type == 'nm-res-mr':
                     md5_list.append(None)
                 else:
@@ -11322,7 +11322,7 @@ class NmrDpUtility:
 
                 fileListId += 1
 
-                if file_type in ('nmr-star', 'nm-res-mr', 'nm-res-oth', 'nm-res-sax', 'nm-pea-any'):
+                if file_type in ('nmr-star', 'nm-res-mr', 'nm-res-oth', 'nm-res-sax') or file_type.startswith('nm-peak'):
                     continue
 
                 if (content_subtype is not None and 'dist_restraint' in content_subtype) or file_type in ('nm-aux-amb', 'nm-aux-gro'):
@@ -11495,7 +11495,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if file_type != 'nm-pea-any':
+            if not file_type.startswith('nm-pea'):
                 continue
 
             content_subtype = input_source_dic['content_subtype']
@@ -32402,7 +32402,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax', 'nm-pea-any'):
+            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
                 continue
 
             if self.__remediation_mode and os.path.exists(file_path + '-ignored'):
@@ -32812,7 +32812,7 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
             content_subtype = input_source_dic['content_subtype']
 
-            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax', 'nm-pea-any'):
+            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
                 continue
 
             if self.__remediation_mode and os.path.exists(file_path + '-ignored'):

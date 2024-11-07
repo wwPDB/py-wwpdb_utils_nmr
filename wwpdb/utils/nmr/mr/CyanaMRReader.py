@@ -223,6 +223,31 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    __mrAtomNameMapping__ = [{'auth_atom_id': 'H4', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HP3', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H5', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HP2', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H1', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HP6', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H2', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HP5', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H12', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HG', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'HN1', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HNA', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H71', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HM3', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H72', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HM1', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H73', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HM2', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H91', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HB2', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H92', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HB3', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H101', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HA1', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H102', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HA2', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H131', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HD11', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H132', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HD12', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H133', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HD13', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H141', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HD21', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H142', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HD22', 'original_comp_id': 'NGH', 'original_seq_id': 253},
+                             {'auth_atom_id': 'H143', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HD23', 'original_comp_id': 'NGH', 'original_seq_id': 253}
+                             ]
+    reader = CyanaMRReader(True, mrAtomNameMapping=__mrAtomNameMapping__)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2jnp/test.mr',
+                 '../../tests-nmr/mock-data-remediation/2jnp/2jnp.cif')
+
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2n3y/2n3y-trimmed.mr',

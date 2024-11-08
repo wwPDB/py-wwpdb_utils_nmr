@@ -1571,6 +1571,8 @@ class BiosymMRParserListener(ParseTreeListener):
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
                     seqId = np['auth_seq_id'][idx]
+                    if cifCompId in ('ZN', 'CA') and atomId[0] in protonBeginCode:  # 2loa
+                        continue
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)

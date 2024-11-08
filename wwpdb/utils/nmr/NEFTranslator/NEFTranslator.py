@@ -2587,8 +2587,8 @@ class NEFTranslator:
                                                       if sa['ref_chain_id'] == ref_chain_id
                                                       and sa['test_chain_id'] == test_chain_id)
                                             ps = next(ps for ps in cif_ps if ps['auth_chain_id'] == ref_chain_id)
-                                            if 'identical_auth_chain_id' in ps:
-                                                continue
+                                            # if 'identical_auth_chain_id' in ps:
+                                            #    continue
                                             for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
                                                 if mid_code == '|' and test_seq_id is not None:
                                                     rev_seq_key = (test_chain_id, test_seq_id)

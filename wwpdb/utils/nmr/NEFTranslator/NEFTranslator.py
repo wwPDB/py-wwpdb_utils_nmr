@@ -3313,6 +3313,37 @@ class NEFTranslator:
 
                 asm = []  # assembly of a loop
 
+                valid_gap_seq_key = []
+
+                if coord_assembly_checker is not None:
+                    cif_ps = coord_assembly_checker['polymer_sequence']
+                    nmr_ps = []
+                    for c in chain_ids:
+                        nmr_ps.append({'chain_id': c, 'seq_id': seq_dict[c], 'comp_id': cmp_dict[c]})
+
+                    pa = PairwiseAlign()
+                    seq_align, _ = alignPolymerSequence(pa, cif_ps, nmr_ps)
+                    chain_assign, _ = assignPolymerSequence(pa, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
+                    valid = True
+                    for ca in chain_assign:
+                        if ca['matched'] == 0 or ca['conflict'] > 0:
+                            break
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
+                        sa = next(sa for sa in seq_align
+                                  if sa['ref_chain_id'] == ref_chain_id
+                                  and sa['test_chain_id'] == test_chain_id)
+
+                        _test_seq_id = None
+                        for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                            if mid_code == '|' and test_seq_id is not None:
+                                if _test_seq_id is not None and test_seq_id - _test_seq_id != -1:
+                                    for _test_seq_id_ in range(_test_seq_id + 1, test_seq_id):
+                                        valid_gap_seq_key.append((c, _test_seq_id_))
+                                _test_seq_id = test_seq_id
+                            else:
+                                _test_seq_id = None
+
                 for c in chain_ids:
                     ent = {}  # entity
 
@@ -3331,6 +3362,8 @@ class NEFTranslator:
 
                             if _seq_id_ is not None and _seq_id_ + 1 != _seq_id and _seq_id_ + 20 > _seq_id:
                                 for s in range(_seq_id_ + 1, _seq_id):
+                                    if (c, s) in valid_gap_seq_key:
+                                        continue
                                     ent['seq_id'].append(s)
                                     ent['comp_id'].append('.')
                                     if has_alt_comp_id:

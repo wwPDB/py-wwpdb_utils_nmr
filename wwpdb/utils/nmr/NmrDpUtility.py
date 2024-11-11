@@ -534,6 +534,9 @@ possible_typo_for_comment_out_pattern = re.compile(r'\s*([13])$')
 
 comment_code_mixed_set = {'#', '!'}
 
+default_coord_properties = {'tautomer': {}, 'rotamer': {}, 'near_ring': {}, 'near_para_ring': {}, 'bond_length': {},
+                            'tautomer_per_model': []}
+
 
 def detect_bom(fPath, default='utf-8'):
     """ Detect BOM of input file.
@@ -1236,6 +1239,9 @@ class NmrDpUtility:
 
         # cache path of coordinate assembly check
         self.__asmChkCachePath = None
+
+        # cache path of coordinate properties
+        self.__coordPropCachePath = None
 
         # auxiliary input resource
         self.__inputParamDict = {}
@@ -6338,15 +6344,15 @@ class NmrDpUtility:
         # conversion dictionary from label_seq_id to auth_seq_id of the coordinates
         self.__label_to_auth_seq = None
         # tautomeric state in model
-        self.__coord_tautomer = {}
+        # self.__coord_tautomer = {} -> self.__cpC['tautomer']
         # rotamer state in model
-        self.__coord_rotamer = {}
+        # self.__coord_rotamer = {} -> self.__cpC['rotamer']
         # nearest aromatic ring in model
-        self.__coord_near_ring = {}
+        # self.__coord_near_ring = {} -> self.__cpC['near_ring']
         # nearest paramagnetic/ferromagnetic atom in model
-        self.__coord_near_para_ferro = {}
+        # self.__coord_near_para_ferro = {} -> self.__cpC['near_para_ferro']
         # bond length in model
-        self.__coord_bond_length = {}
+        # self.__coord_bond_length = {} -> self.__cpC['bond_length']
 
         # sub-directory name for cache file
         self.__sub_dir_name_for_cache = 'utils_nmr'
@@ -6358,6 +6364,12 @@ class NmrDpUtility:
 
         # ParserListerUtil.coordAssemblyChecker()
         self.__caC = None
+
+        # coordinate properties cache
+        self.__cpC = copy.copy(default_coord_properties)
+
+        # hash value of coordinate properties cache
+        self.__cpC_hash = None
 
         # set of entity_assembly_id having experimental data
         self.__ent_asym_id_with_exptl_data = set()
@@ -16142,7 +16154,7 @@ class NmrDpUtility:
                                         allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')),
                                         allow_gap=(content_subtype not in ('poly_seq', 'entity')),
                                         check_identity=check_identity,
-                                        coord_assembly_checker=self.__caC)
+                                        coord_assembly_checker=self.__caC if self.__native_combined or not self.__combined_mode else None)
 
     def __extractPolymerSequence(self):
         """ Extract reference polymer sequence.
@@ -29207,8 +29219,8 @@ class NmrDpUtility:
 
         seq_key = (nmr_chain_id_1, nmr_seq_id_1, nmr_atom_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_atom_id_2)
 
-        if seq_key in self.__coord_bond_length:
-            return self.__coord_bond_length[seq_key]
+        if seq_key in self.__cpC['bond_length']:
+            return self.__cpC['bond_length'][seq_key]
 
         result_1 = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                          if seq_align['ref_chain_id'] == nmr_chain_id_1 and seq_align['test_chain_id'] == cif_chain_id_1), None)
@@ -29221,24 +29233,24 @@ class NmrDpUtility:
                                  in zip(result_1['ref_seq_id'], result_1['test_seq_id']) if ref_seq_id == nmr_seq_id_1), None)
 
             if cif_seq_id_1 is None:
-                self.__coord_bond_length[seq_key] = None
+                self.__cpC['bond_length'][seq_key] = None
                 return None
 
             cif_seq_id_2 = next((test_seq_id for ref_seq_id, test_seq_id
                                  in zip(result_2['ref_seq_id'], result_2['test_seq_id']) if ref_seq_id == nmr_seq_id_2), None)
 
             if cif_seq_id_2 is None:
-                self.__coord_bond_length[seq_key] = None
+                self.__cpC['bond_length'][seq_key] = None
                 return None
 
             bond = self.__getCoordBondLength(cif_chain_id_1, cif_seq_id_1, nmr_atom_id_1, cif_chain_id_2, cif_seq_id_2, nmr_atom_id_2)
 
             if bond is not None:
-                self.__coord_bond_length[seq_key] = bond
+                self.__cpC['bond_length'][seq_key] = bond
 
                 return bond
 
-        self.__coord_bond_length[seq_key] = None
+        self.__cpC['bond_length'][seq_key] = None
 
         return None
 
@@ -29745,7 +29757,11 @@ class NmrDpUtility:
         if self.__cifHashCode is not None:
 
             self.__asmChkCachePath = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}{hash_code_ext}_asm_chk.pkl")
+            self.__coordPropCachePath = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}{hash_code_ext}_coord_prop.pkl")
+
             self.__caC = load_from_pickle(self.__asmChkCachePath)
+            self.__cpC = load_from_pickle(self.__coordPropCachePath, default=copy.copy(default_coord_properties))
+            self.__cpC_hash = hash(str(self.__cpC))
 
             # DAOTHER-8817
             if self.__caC is not None and 'chem_comp_atom' in self.__caC\
@@ -41275,12 +41291,13 @@ class NmrDpUtility:
                 self.__coord_unobs_res = None
                 self.__auth_to_label_seq = None
                 self.__label_to_auth_seq = None
-                self.__coord_tautomer = {}
-                self.__coord_rotamer = {}
-                self.__coord_near_ring = {}
-                self.__coord_near_para_ferro = {}
-                self.__coord_bond_length = {}
+                # self.__coord_tautomer = {}
+                # self.__coord_rotamer = {}
+                # self.__coord_near_ring = {}
+                # self.__coord_near_para_ferro = {}
+                # self.__coord_bond_length = {}
                 self.__caC = None
+                self.__cpC = copy.copy(default_coord_properties)
                 self.__ent_asym_id_with_exptl_data = set()
                 self.__label_asym_id_with_exptl_data = set()
                 self.__auth_asym_ids_with_chem_exch = {}
@@ -46021,9 +46038,22 @@ class NmrDpUtility:
         if has_entry_id:
             loop.add_tag(lp_category + '.Entry_ID')
 
+        cif_polymer_sequence = self.__caC['polymer_sequence']
         entity_assembly = self.__caC['entity_assembly'] if self.__caC is not None else []
         auth_to_star_seq = self.__caC['auth_to_star_seq'] if self.__caC is not None else {}
         auth_to_orig_seq = self.__caC['auth_to_orig_seq'] if self.__caC is not None else {}
+        asym_to_orig_seq = {}
+        if self.__caC is not None:
+            if 'asym_to_orig_seq' in self.__caC:
+                asym_to_orig_seq = self.__caC['asym_to_orig_seq']
+            else:
+                for ps in cif_polymer_sequence:
+                    asym_to_orig_seq[ps['auth_chain_id']] = {}
+                for _k, _v in auth_to_orig_seq.items():
+                    asym_to_orig_seq[_k[0]][(_k[1], _k[2])] = _v
+                self.__caC['asym_to_orig_seq'] = asym_to_orig_seq
+                if self.__asmChkCachePath is not None:
+                    write_as_pickle(self.__caC, self.__asmChkCachePath)
 
         # DAOTHER-9644: sort by Entity_assembly_ID and Comp_index_ID due to inserted sequence for truncated loop
         _auth_to_star_seq = dict(sorted(auth_to_star_seq.items(), key=lambda item: item[1]))
@@ -46084,7 +46114,7 @@ class NmrDpUtility:
                             nef_index += 1
                             index += 1
 
-                auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == k), comp_id)
+                auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (auth_seq_id, comp_id)), comp_id)
 
                 row = [None] * len(loop.tags)
 
@@ -46095,7 +46125,7 @@ class NmrDpUtility:
                 row[comp_id_col] = auth_comp_id
 
                 if entity_type == 'polymer':
-                    ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
+                    ps = next(ps for ps in cif_polymer_sequence if ps['auth_chain_id'] == auth_asym_id)
                     nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id, label_scheme=False)
                     if nmr_ps is None and 'identical_auth_chain_id' in ps:
                         nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0], label_scheme=False)
@@ -46342,7 +46372,7 @@ class NmrDpUtility:
                             nef_index += 1
                             index += 1
 
-                auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == k), comp_id)
+                auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (auth_seq_id, comp_id)), comp_id)
 
                 row = [None] * len(loop.tags)
 
@@ -46355,7 +46385,7 @@ class NmrDpUtility:
                 row[comp_id_col], row[auth_asym_id_col], row[auth_seq_id_col], row[auth_comp_id_col] = auth_comp_id, auth_asym_id, auth_seq_id, auth_comp_id
 
                 if entity_type == 'polymer':
-                    ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
+                    ps = next(ps for ps in cif_polymer_sequence if ps['auth_chain_id'] == auth_asym_id)
                     nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id, label_scheme=False)
                     if nmr_ps is None and 'identical_auth_chain_id' in ps:
                         nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0], label_scheme=False)
@@ -46696,7 +46726,7 @@ class NmrDpUtility:
                                     seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                     if seq_key in auth_to_star_seq:
-                                        auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == seq_key), comp_id)
+                                        auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
 
                                         row = [None] * len(tags)
 
@@ -46742,7 +46772,7 @@ class NmrDpUtility:
                                         seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                         if seq_key in auth_to_star_seq:
-                                            auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == seq_key), comp_id)
+                                            auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
 
                                             row = [None] * len(tags)
 
@@ -46779,7 +46809,7 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                 if seq_key in auth_to_star_seq:
-                                    auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == seq_key), comp_id)
+                                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
 
                                     row = [None] * len(tags)
 
@@ -46814,7 +46844,7 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                 if seq_key in auth_to_star_seq:
-                                    auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == seq_key), comp_id)
+                                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
 
                                     row = [None] * len(tags)
 
@@ -46849,7 +46879,7 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                 if seq_key in auth_to_star_seq:
-                                    auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == seq_key), comp_id)
+                                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
 
                                     row = [None] * len(tags)
 
@@ -46884,7 +46914,7 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                 if seq_key in auth_to_star_seq:
-                                    auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == seq_key), comp_id)
+                                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
 
                                     row = [None] * len(tags)
 
@@ -47174,7 +47204,7 @@ class NmrDpUtility:
                 one_letter_code = item['one_letter_code']
                 if self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
                    and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] in auth_asym_ids):
-                    ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] in auth_asym_ids)
+                    ps = next(ps for ps in cif_polymer_sequence if ps['auth_chain_id'] in auth_asym_ids)
                     auth_seq_ids = list(filter(None, ps['auth_seq_id']))
                     min_auth_seq_id = min(auth_seq_ids)
                     max_auth_seq_id = max(auth_seq_ids)
@@ -47217,7 +47247,7 @@ class NmrDpUtility:
             label_asym_ids = set(item[_label_asym_id].split(','))
             for chain_id in label_asym_ids:
                 if entity_type == 'polymer':
-                    ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)
+                    ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id)
                     cys_total += ps['comp_id'].count('CYS') + ps['comp_id'].count('DCY')
 
             if cys_total > 0:
@@ -47409,7 +47439,7 @@ class NmrDpUtility:
 
             for chain_id in label_asym_ids:
                 if entity_type == 'polymer':
-                    ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)
+                    ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id)
                     auth_seq_ids = list(filter(None, ps['auth_seq_id']))
                     seq_ids = list(filter(None, ps['seq_id']))
                     min_auth_seq_id = min(auth_seq_ids)
@@ -47515,7 +47545,7 @@ class NmrDpUtility:
                 label_asym_ids = list(set(item['label_asym_id'].split(',')))
                 for chain_id in sorted(sorted(label_asym_ids), key=len):
                     if entity_type == 'polymer':
-                        ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)
+                        ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id)
                         auth_seq_ids = list(filter(None, ps['auth_seq_id']))
                         seq_ids = list(filter(None, ps['seq_id']))
                         min_auth_seq_id = min(auth_seq_ids)
@@ -47955,6 +47985,33 @@ class NmrDpUtility:
         file_name = cif_input_source_dic['file_name']
         cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
 
+        if len(self.__cpC['tautomer_per_model']) > 0:
+
+            for inst in self.__cpC['tautomer_per_model']:
+                tautomer_per_model = inst['tautomer_per_model']
+                rep_tautomer = tautomer_per_model[self.__representative_model_id]
+
+                if any(tautomer != rep_tautomer for tautomer in tautomer_per_model.values()):
+                    chain_id, auth_chain_id = inst['chain_id'], inst['auth_chain_id']
+                    seq_id, auth_seq_id = inst['seq_id'], inst['auth_seq_id']
+                    comp_id = inst['comp_id']
+                    cif_seq_code = f"{chain_id}:{seq_id}:{comp_id}"
+                    if chain_id != auth_chain_id or seq_id != auth_seq_id:
+                        cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{comp_id} in author sequence scheme)"
+
+                    err = f'{cif_seq_code} has been instantiated with different tautomeric states across models, {tautomer_per_model}. '\
+                        'Please re-upload the model file.'
+
+                    self.report.error.appendDescription('coordinate_issue',
+                                                        {'file_name': file_name, 'category': 'atom_site',
+                                                         'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__testTautomerOfHistidinePerModel() ++ Error  - {err}\n")
+
+            return True
+
         model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
 
         for ps in cif_polymer_sequence:
@@ -48043,6 +48100,10 @@ class NmrDpUtility:
 
                     rep_tautomer = tautomer_per_model[self.__representative_model_id]
 
+                    self.__cpC['tautomer_per_model'].append({'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id,
+                                                             'auth_chain_id': auth_chain_id, 'auth_seq_id': auth_seq_id,
+                                                             'tautomer_per_model': tautomer_per_model})
+
                     if any(tautomer != rep_tautomer for tautomer in tautomer_per_model.values()):
                         cif_seq_code = f"{chain_id}:{seq_id}:{comp_id}"
                         if chain_id != auth_chain_id or seq_id != auth_seq_id:
@@ -48058,6 +48119,12 @@ class NmrDpUtility:
 
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__testTautomerOfHistidinePerModel() ++ Error  - {err}\n")
+
+        if self.__coordPropCachePath is not None:
+            hash_value = hash(str(self.__cpC))
+            if hash_value != self.__cpC_hash:
+                write_as_pickle(self.__cpC, self.__coordPropCachePath)
+                self.__cpC_hash = hash_value
 
         return True
 
@@ -48080,8 +48147,8 @@ class NmrDpUtility:
 
         seq_key = (nmr_chain_id, nmr_seq_id)
 
-        if seq_key in self.__coord_tautomer:
-            return self.__coord_tautomer[seq_key]
+        if seq_key in self.__cpC['tautomer']:
+            return self.__cpC['tautomer'][seq_key]
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                        if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -48093,7 +48160,7 @@ class NmrDpUtility:
                                if ref_seq_id == nmr_seq_id and ref_code == 'H'), None)
 
             if cif_seq_id is None:
-                self.__coord_tautomer[seq_key] = 'unknown'
+                self.__cpC['tautomer'][seq_key] = 'unknown'
                 return 'unknown'
 
             try:
@@ -48133,18 +48200,18 @@ class NmrDpUtility:
                         has_he2 = True
 
                 if has_hd1 and has_he2:
-                    self.__coord_tautomer[seq_key] = 'biprotonated'
+                    self.__cpC['tautomer'][seq_key] = 'biprotonated'
                     return 'biprotonated'
 
                 if has_hd1:
-                    self.__coord_tautomer[seq_key] = 'pi-tautomer'
+                    self.__cpC['tautomer'][seq_key] = 'pi-tautomer'
                     return 'pi-tautomer'
 
                 if has_he2:
-                    self.__coord_tautomer[seq_key] = 'tau-tautomer'
+                    self.__cpC['tautomer'][seq_key] = 'tau-tautomer'
                     return 'tau-tautomer'
 
-        self.__coord_tautomer[seq_key] = 'unknown'
+        self.__cpC['tautomer'][seq_key] = 'unknown'
         return 'unknown'
 
     def __getRotamerOfValine(self, nmr_chain_id, nmr_seq_id):
@@ -48168,8 +48235,8 @@ class NmrDpUtility:
 
         seq_key = (nmr_chain_id, nmr_seq_id, 'VAL')
 
-        if seq_key in self.__coord_rotamer:
-            return self.__coord_rotamer[seq_key]
+        if seq_key in self.__cpC['rotamer']:
+            return self.__cpC['rotamer'][seq_key]
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                        if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -48181,7 +48248,7 @@ class NmrDpUtility:
                                if ref_seq_id == nmr_seq_id and ref_code == 'V'), None)
 
             if cif_seq_id is None:
-                self.__coord_rotamer[seq_key] = none
+                self.__cpC['rotamer'][seq_key] = none
                 return none
 
             try:
@@ -48237,7 +48304,7 @@ class NmrDpUtility:
                     rot1['unknown'] += 1.0
 
             if rot1['unknown'] == total_models:
-                self.__coord_rotamer[seq_key] = none
+                self.__cpC['rotamer'][seq_key] = none
                 return none
 
             if rot1['unknown'] == 0.0:
@@ -48250,10 +48317,10 @@ class NmrDpUtility:
                     continue
                 rot1[k] = float(f"{v/total_models:.3f}")
 
-            self.__coord_rotamer[seq_key] = [rot1]
+            self.__cpC['rotamer'][seq_key] = [rot1]
             return [rot1]
 
-        self.__coord_rotamer[seq_key] = none
+        self.__cpC['rotamer'][seq_key] = none
         return none
 
     def __getRotamerOfLeucine(self, nmr_chain_id, nmr_seq_id):
@@ -48277,8 +48344,8 @@ class NmrDpUtility:
 
         seq_key = (nmr_chain_id, nmr_seq_id, 'LEU')
 
-        if seq_key in self.__coord_rotamer:
-            return self.__coord_rotamer[seq_key]
+        if seq_key in self.__cpC['rotamer']:
+            return self.__cpC['rotamer'][seq_key]
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                        if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -48290,7 +48357,7 @@ class NmrDpUtility:
                                if ref_seq_id == nmr_seq_id and ref_code == 'L'), None)
 
             if cif_seq_id is None:
-                self.__coord_rotamer[seq_key] = none
+                self.__cpC['rotamer'][seq_key] = none
                 return none
 
             try:
@@ -48359,7 +48426,7 @@ class NmrDpUtility:
                     rot2['unknown'] += 1.0
 
             if rot1['unknown'] == total_models:
-                self.__coord_rotamer[seq_key] = none
+                self.__cpC['rotamer'][seq_key] = none
                 return none
 
             if rot1['unknown'] == 0.0:
@@ -48380,10 +48447,10 @@ class NmrDpUtility:
                     continue
                 rot2[k] = float(f"{v/total_models:.3f}")
 
-            self.__coord_rotamer[seq_key] = [rot1, rot2]
+            self.__cpC['rotamer'][seq_key] = [rot1, rot2]
             return [rot1, rot2]
 
-        self.__coord_rotamer[seq_key] = none
+        self.__cpC['rotamer'][seq_key] = none
         return none
 
     def __getRotamerOfIsoleucine(self, nmr_chain_id, nmr_seq_id):
@@ -48407,8 +48474,8 @@ class NmrDpUtility:
 
         seq_key = (nmr_chain_id, nmr_seq_id, 'ILE')
 
-        if seq_key in self.__coord_rotamer:
-            return self.__coord_rotamer[seq_key]
+        if seq_key in self.__cpC['rotamer']:
+            return self.__cpC['rotamer'][seq_key]
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                        if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -48420,7 +48487,7 @@ class NmrDpUtility:
                                if ref_seq_id == nmr_seq_id and ref_code == 'I'), None)
 
             if cif_seq_id is None:
-                self.__coord_rotamer[seq_key] = none
+                self.__cpC['rotamer'][seq_key] = none
                 return none
 
             try:
@@ -48489,7 +48556,7 @@ class NmrDpUtility:
                     rot2['unknown'] += 1.0
 
             if rot1['unknown'] == total_models:
-                self.__coord_rotamer[seq_key] = none
+                self.__cpC['rotamer'][seq_key] = none
                 return none
 
             if rot1['unknown'] == 0.0:
@@ -48510,10 +48577,10 @@ class NmrDpUtility:
                     continue
                 rot2[k] = float(f"{v/total_models:.3f}")
 
-            self.__coord_rotamer[seq_key] = [rot1, rot2]
+            self.__cpC['rotamer'][seq_key] = [rot1, rot2]
             return [rot1, rot2]
 
-        self.__coord_rotamer[seq_key] = none
+        self.__cpC['rotamer'][seq_key] = none
         return none
 
     def __extractCoordDisulfideBond(self):
@@ -49324,8 +49391,8 @@ class NmrDpUtility:
 
         seq_key = (nmr_chain_id, nmr_seq_id, nmr_atom_id)
 
-        if seq_key in self.__coord_near_ring:
-            return self.__coord_near_ring[seq_key]
+        if seq_key in self.__cpC['near_ring']:
+            return self.__cpC['near_ring'][seq_key]
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                        if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -49337,7 +49404,7 @@ class NmrDpUtility:
                                if ref_seq_id == nmr_seq_id), None)
 
             if cif_seq_id is None:
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             try:
@@ -49367,7 +49434,7 @@ class NmrDpUtility:
                 return None
 
             if len(_origin) != 1:
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             o = to_np_array(_origin[0])
@@ -49405,7 +49472,7 @@ class NmrDpUtility:
                 return None
 
             if len(_neighbor) == 0:
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             neighbor = [n for n in _neighbor
@@ -49415,11 +49482,11 @@ class NmrDpUtility:
                         and n['atom_id'] in self.__csStat.getAromaticAtoms(n['comp_id'])]
 
             if len(neighbor) == 0:
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             if not has_key_value(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq'):
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             atom_list = []
@@ -49460,7 +49527,7 @@ class NmrDpUtility:
             na_atom_id = na['atom_id']
 
             if not self.__ccU.updateChemCompDict(na['comp_id']):
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             # matches with comp_id in CCD
@@ -49514,7 +49581,7 @@ class NmrDpUtility:
             len_half_ring_traces = len(half_ring_traces)
 
             if len_half_ring_traces < 2:
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             ring_traces = []
@@ -49536,7 +49603,7 @@ class NmrDpUtility:
                         ring_traces.append(half_ring_traces[i] + ':' + half_ring_trace_2[1])
 
             if len(ring_traces) == 0:
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             ring_atoms = None
@@ -49587,7 +49654,7 @@ class NmrDpUtility:
                 return None
 
             if len(_na) == 0:
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             model_ids = set(a['model_id'] for a in _na)
@@ -49641,10 +49708,10 @@ class NmrDpUtility:
             na['ring_distance'] = float(f"{ring_dist / len_model_ids:.1f}")
             na['ring_angle'] = float(f"{numpy.degrees(ring_angle / len_model_ids):.1f}")
 
-            self.__coord_near_ring[seq_key] = na
+            self.__cpC['near_ring'][seq_key] = na
             return na
 
-        self.__coord_near_ring[seq_key] = None
+        self.__cpC['near_ring'][seq_key] = None
         return None
 
     def __getNearestParaFerroMagneticAtom(self, nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
@@ -49669,8 +49736,8 @@ class NmrDpUtility:
 
         seq_key = (nmr_chain_id, nmr_seq_id, nmr_atom_id)
 
-        if seq_key in self.__coord_near_para_ferro:
-            return self.__coord_near_para_ferro[seq_key]
+        if seq_key in self.__cpC['near_para_ferro']:
+            return self.__cpC['near_para_ferro'][seq_key]
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                        if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -49682,7 +49749,7 @@ class NmrDpUtility:
                                if ref_seq_id == nmr_seq_id), None)
 
             if cif_seq_id is None:
-                self.__coord_near_para_ferro[seq_key] = None
+                self.__cpC['near_para_ferro'][seq_key] = None
                 return None
 
             try:
@@ -49712,7 +49779,7 @@ class NmrDpUtility:
                 return None
 
             if len(_origin) != 1:
-                self.__coord_near_para_ferro[seq_key] = None
+                self.__cpC['near_para_ferro'][seq_key] = None
                 return None
 
             o = to_np_array(_origin[0])
@@ -49750,7 +49817,7 @@ class NmrDpUtility:
                 return None
 
             if len(_neighbor) == 0:
-                self.__coord_near_para_ferro[seq_key] = None
+                self.__cpC['near_para_ferro'][seq_key] = None
                 return None
 
             neighbor = [n for n in _neighbor
@@ -49760,7 +49827,7 @@ class NmrDpUtility:
                              or n['type_symbol'] in FERROMAGNETIC_ELEMENTS)]
 
             if len(neighbor) == 0:
-                self.__coord_near_para_ferro[seq_key] = None
+                self.__cpC['near_para_ferro'][seq_key] = None
                 return None
 
             atom_list = []
@@ -49799,7 +49866,7 @@ class NmrDpUtility:
                 return None
 
             if len(_p) == 0:
-                self.__coord_near_para_ferro[seq_key] = None
+                self.__cpC['near_para_ferro'][seq_key] = None
                 return None
 
             dist = 0.0
@@ -49809,10 +49876,10 @@ class NmrDpUtility:
 
             p['distance'] = float(f"{dist / len(_p):.1f}")
 
-            self.__coord_near_para_ferro[seq_key] = p
+            self.__cpC['near_para_ferro'][seq_key] = p
             return p
 
-        self.__coord_near_para_ferro[seq_key] = None
+        self.__cpC['near_para_ferro'][seq_key] = None
         return None
 
     def __appendElemAndIsoNumOfNefCsLoop(self):

@@ -3324,7 +3324,7 @@ class NEFTranslator:
                     pa = PairwiseAlign()
                     seq_align, _ = alignPolymerSequence(pa, cif_ps, nmr_ps)
                     chain_assign, _ = assignPolymerSequence(pa, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
-                    valid = True
+                    valid = False
                     for ca in chain_assign:
                         if ca['matched'] == 0 or ca['conflict'] > 0:
                             break
@@ -3336,8 +3336,9 @@ class NEFTranslator:
 
                         _test_seq_id = None
                         for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                            valid = _test_seq_id is not None and test_seq_id - _test_seq_id == 1
                             if mid_code == '|' and test_seq_id is not None:
-                                if _test_seq_id is not None and test_seq_id - _test_seq_id != -1:
+                                if not valid and _test_seq_id is not None and test_seq_id - _test_seq_id != -1:
                                     for _test_seq_id_ in range(_test_seq_id + 1, test_seq_id):
                                         valid_gap_seq_key.append((c, _test_seq_id_))
                                 _test_seq_id = test_seq_id

@@ -718,16 +718,17 @@ class CifToNmrStar:
 
         try:
             strData.frame_list.sort(key=sf_key)
+
+            for sf in strData.frame_list:
+                sf.sort_tags()
+                if len(sf.loops) > 1:
+                    sf.loops.sort(key=lp_key)
+                # Iterate through the loops
+                for lp in sf:
+                    lp.sort_tags()
+
         except Exception as e:
             self.__lfh.write(f"+ERROR- CifToNmrStar.normalize() {str(e)}\n")
-
-        for sf in strData.frame_list:
-            sf.sort_tags()
-            if len(sf.loops) > 1:
-                sf.loops.sort(key=lp_key)
-            # Iterate through the loops
-            for lp in sf:
-                lp.sort_tags()
 
         return strData
 

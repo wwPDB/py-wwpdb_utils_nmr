@@ -534,7 +534,7 @@ possible_typo_for_comment_out_pattern = re.compile(r'\s*([13])$')
 
 comment_code_mixed_set = {'#', '!'}
 
-default_coord_properties = {'tautomer': {}, 'rotamer': {}, 'near_ring': {}, 'near_para_ring': {}, 'bond_length': {},
+default_coord_properties = {'tautomer': {}, 'rotamer': {}, 'near_ring': {}, 'near_para_ferro': {}, 'bond_length': {},
                             'tautomer_per_model': []}
 
 
@@ -6343,16 +6343,6 @@ class NmrDpUtility:
         self.__auth_to_label_seq = None
         # conversion dictionary from label_seq_id to auth_seq_id of the coordinates
         self.__label_to_auth_seq = None
-        # tautomeric state in model
-        # self.__coord_tautomer = {} -> self.__cpC['tautomer']
-        # rotamer state in model
-        # self.__coord_rotamer = {} -> self.__cpC['rotamer']
-        # nearest aromatic ring in model
-        # self.__coord_near_ring = {} -> self.__cpC['near_ring']
-        # nearest paramagnetic/ferromagnetic atom in model
-        # self.__coord_near_para_ferro = {} -> self.__cpC['near_para_ferro']
-        # bond length in model
-        # self.__coord_bond_length = {} -> self.__cpC['bond_length']
 
         # sub-directory name for cache file
         self.__sub_dir_name_for_cache = 'utils_nmr'
@@ -7347,8 +7337,6 @@ class NmrDpUtility:
                 if self.__op == 'nmr-cs-mr-merge' and not os.path.basename(csPath).startswith('bmr'):
 
                     _csPath = csPath + '.cif2str'
-
-                    # if not os.path.exists(_csPath):
 
                     if not self.__c2S.convert(csPath, _csPath):
                         _csPath = csPath
@@ -8686,6 +8674,7 @@ class NmrDpUtility:
                         if onedep_file_pattern.match(srcPath):
                             g = onedep_file_pattern.search(srcPath).groups()
                             srcPath = g[0] + '.V' + str(int(g[1]) + 1)
+
                     if __pynmrstar_v3__:
                         self.__star_data[file_list_id].write_to_file(srcPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
                     else:
@@ -25595,7 +25584,10 @@ class NmrDpUtility:
                                 _row[13] = None
 
                     if occupancy_col != -1:
-                        occupancy = row[occupancy_col]
+                        try:
+                            occupancy = row[occupancy_col]
+                        except IndexError:
+                            occupancy = '.'
                         if occupancy not in emptyValue:
                             try:
                                 occupancy = float(occupancy)
@@ -30033,7 +30025,7 @@ class NmrDpUtility:
                 br_seq_align = br_chain_assign = None
                 np_seq_align = np_chain_assign = None
 
-                if content_subtype in polymer_sequence_in_loop:
+                if has_poly_seq_in_loop and content_subtype in polymer_sequence_in_loop:
                     ps_in_loop = next((ps for ps in polymer_sequence_in_loop[content_subtype] if ps['sf_framecode'] == _sf_framecode), None)
 
                     if ps_in_loop is not None:
@@ -46047,10 +46039,11 @@ class NmrDpUtility:
             if 'asym_to_orig_seq' in self.__caC:
                 asym_to_orig_seq = self.__caC['asym_to_orig_seq']
             else:
-                for ps in cif_polymer_sequence:
-                    asym_to_orig_seq[ps['auth_chain_id']] = {}
                 for _k, _v in auth_to_orig_seq.items():
-                    asym_to_orig_seq[_k[0]][(_k[1], _k[2])] = _v
+                    auth_asym_id = _k[0]
+                    if auth_asym_id not in asym_to_orig_seq:
+                        asym_to_orig_seq[auth_asym_id] = {}
+                    asym_to_orig_seq[auth_asym_id][(_k[1], _k[2])] = _v
                 self.__caC['asym_to_orig_seq'] = asym_to_orig_seq
                 if self.__asmChkCachePath is not None:
                     write_as_pickle(self.__caC, self.__asmChkCachePath)
@@ -46726,7 +46719,10 @@ class NmrDpUtility:
                                     seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                     if seq_key in auth_to_star_seq:
-                                        auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
+                                        if auth_asym_id in asym_to_orig_seq:
+                                            auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
+                                        else:
+                                            auth_comp_id = comp_id
 
                                         row = [None] * len(tags)
 
@@ -46772,7 +46768,10 @@ class NmrDpUtility:
                                         seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                         if seq_key in auth_to_star_seq:
-                                            auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
+                                            if auth_asym_id in asym_to_orig_seq:
+                                                auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
+                                            else:
+                                                auth_comp_id = comp_id
 
                                             row = [None] * len(tags)
 
@@ -46844,7 +46843,10 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                 if seq_key in auth_to_star_seq:
-                                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
+                                    if auth_asym_id in asym_to_orig_seq:
+                                        auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
+                                    else:
+                                        auth_comp_id = comp_id
 
                                     row = [None] * len(tags)
 
@@ -46879,7 +46881,10 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                 if seq_key in auth_to_star_seq:
-                                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
+                                    if auth_asym_id in asym_to_orig_seq:
+                                        auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
+                                    else:
+                                        auth_comp_id = comp_id
 
                                     row = [None] * len(tags)
 
@@ -46914,7 +46919,10 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                 if seq_key in auth_to_star_seq:
-                                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
+                                    if auth_asym_id in asym_to_orig_seq:
+                                        auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
+                                    else:
+                                        auth_comp_id = comp_id
 
                                     row = [None] * len(tags)
 
@@ -52588,6 +52596,7 @@ class NmrDpUtility:
         master_entry = self.__c2S.normalize(master_entry)
 
         if not self.__annotation_mode or self.__dstPath != self.__srcPath:
+
             if __pynmrstar_v3__:
                 master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
             else:
@@ -52620,6 +52629,7 @@ class NmrDpUtility:
         if 'nef' not in self.__op and ('deposit' in self.__op or 'annotate' in self.__op) and 'nmr_cif_file_path' in self.__outputParamDict:
 
             if self.__cifPath is None:
+
                 if __pynmrstar_v3__:
                     master_entry.write_to_file(self.__dstPath__, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
                 else:
@@ -52663,12 +52673,15 @@ class NmrDpUtility:
         self.__c2S.set_entry_id(master_entry, self.__entry_id)
         self.__c2S.normalize(master_entry)
 
-        master_entry = self.__c2S.normalize_str(master_entry)
+        try:
 
-        if __pynmrstar_v3__:
-            master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
-        else:
-            master_entry.write_to_file(self.__dstPath)
+            if __pynmrstar_v3__:
+                master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
+            else:
+                master_entry.write_to_file(self.__dstPath)
+
+        except Exception:
+            return False
 
         if 'nmr_cif_file_path' in self.__outputParamDict:
 
@@ -52731,8 +52744,6 @@ class NmrDpUtility:
 
         self.__c2S.set_entry_id(master_entry, self.__entry_id)
         self.__c2S.normalize(master_entry)
-
-        master_entry = self.__c2S.normalize_str(master_entry)
 
         if self.__remediation_mode and self.__internal_mode:
 

@@ -2381,11 +2381,13 @@ class NEFTranslator:
                 # fix wrong biocuration seen in 8ofc_cs.str
                 if set(tags) & set(loop.tags) == set(tags):
                     pre_seq_data = get_lp_tag(loop, tags)
-                    if all(not row[0].isdigit() and row[1].isdigit() for row in pre_seq_data if row[0] not in emptyValue and row[1] not in emptyValue):
-                        col0 = loop.tags.index(tags[0])
-                        col1 = loop.tags.index(tags[1])
-                        for row in loop:
-                            row[col0], row[col1] = row[col1], row[col0]
+                    if not isinstance(pre_seq_data[0][0], int):
+                        if all(not row[0].isdigit() and row[1].isdigit() for row in pre_seq_data
+                               if row[0] not in emptyValue and row[1] not in emptyValue):
+                            col0 = loop.tags.index(tags[0])
+                            col1 = loop.tags.index(tags[1])
+                            for row in loop:
+                                row[col0], row[col1] = row[col1], row[col0]
 
                 # convert protonated DC -> DNR, protonated C -> CH
                 if 'Atom_ID' in loop.tags and 'Auth_comp_ID' not in loop.tags\
@@ -2879,6 +2881,9 @@ class NEFTranslator:
                                                     break
 
                 seq_data = get_lp_tag(loop, tags)
+                if isinstance(seq_data[0][2], int):
+                    for row in seq_data:
+                        row[2] = str(row[2])
                 has_valid_chain_id = True
                 for row in seq_data:
                     if row[2] in emptyValue:
@@ -3183,6 +3188,9 @@ class NEFTranslator:
                 seq_data = get_lp_tag(loop, tags_)
                 for row in seq_data:
                     row.append(def_chain_id)
+                for row in loop:
+                    row.append(def_chain_id)
+                loop.add_tag(chain_id)
             else:
                 _tags_exist = False
                 for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
@@ -3336,7 +3344,7 @@ class NEFTranslator:
 
                         _test_seq_id = None
                         for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
-                            valid = _test_seq_id is not None and test_seq_id - _test_seq_id == 1
+                            valid = _test_seq_id is not None and test_seq_id is not None and test_seq_id - _test_seq_id == 1
                             if mid_code == '|' and test_seq_id is not None:
                                 if not valid and _test_seq_id is not None and test_seq_id - _test_seq_id != -1:
                                     for _test_seq_id_ in range(_test_seq_id + 1, test_seq_id):
@@ -3515,6 +3523,9 @@ class NEFTranslator:
                 seq_data = get_lp_tag(loop, tags_)
                 for row in seq_data:
                     row.append('1')
+                for row in loop:
+                    row.append('1')
+                loop.add_tag(chain_id)
                 seq_id_col = 4
             else:
                 _tags_exist = False
@@ -11896,6 +11907,8 @@ class NEFTranslator:
 
         is_ok, data_type, nef_data = self.read_input_file(nef_file)
 
+        nef_data = self.__c2S.normalize_nef(nef_data)
+
         self.resolve_sf_names_for_cif(nef_data)  # DAOTHER-7389, issue #4
 
         try:
@@ -12424,6 +12437,8 @@ class NEFTranslator:
             nef_file = file_path + '/' + file_name.split('.')[0] + '.nef'
 
         is_ok, data_type, star_data = self.read_input_file(star_file)
+
+        star_data = self.__c2S.normalize_str(star_data)
 
         self.resolve_sf_names_for_cif(star_data)  # DAOTHER-7389, issue #4
 

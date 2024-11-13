@@ -3321,7 +3321,8 @@ class NEFTranslator:
 
                 asm = []  # assembly of a loop
 
-                valid_gap_seq_key = []
+                valid_gap_key = []
+                valid_spacer_key = []
 
                 if coord_assembly_checker is not None:
                     cif_ps = coord_assembly_checker['polymer_sequence']
@@ -3348,10 +3349,26 @@ class NEFTranslator:
                             if mid_code == '|' and test_seq_id is not None:
                                 if not valid and _test_seq_id is not None and test_seq_id - _test_seq_id != -1:
                                     for _test_seq_id_ in range(_test_seq_id + 1, test_seq_id):
-                                        valid_gap_seq_key.append((c, _test_seq_id_))
+                                        valid_gap_key.append((c, _test_seq_id_))
                                 _test_seq_id = test_seq_id
                             else:
                                 _test_seq_id = None
+
+                        if 'ref_auth_seq_id' in sa\
+                           and any(ref_auth_seq_id == test_seq_id
+                                   for ref_auth_seq_id, mid_code, test_seq_id
+                                   in zip(sa['ref_auth_seq_id'], sa['mid_code'], sa['test_seq_id'])
+                                   if mid_code == '|' and test_seq_id is not None)\
+                           and not all(ref_auth_seq_id == test_seq_id
+                                       for ref_auth_seq_id, mid_code, test_seq_id
+                                       in zip(sa['ref_auth_seq_id'], sa['mid_code'], sa['test_seq_id'])
+                                       if mid_code == '|' and test_seq_id is not None)\
+                           and 'unmapped_sequence' in ca:
+                            unmapped_ref_seq_ids = [unmap['ref_seq_id'] for unmap in ca['unmapped_sequence']]
+                            for ref_auth_seq_id, mid_code, test_seq_id in zip(sa['ref_auth_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                if mid_code != '|' and test_seq_id is None:
+                                    if ref_auth_seq_id in unmapped_ref_seq_ids:
+                                        valid_spacer_key.append((c, ref_auth_seq_id))
 
                 for c in chain_ids:
                     ent = {}  # entity
@@ -3369,14 +3386,23 @@ class NEFTranslator:
 
                         for _seq_id, _comp_id in zip(seq_dict[c], cmp_dict[c]):
 
-                            if _seq_id_ is not None and _seq_id_ + 1 != _seq_id and _seq_id_ + 20 > _seq_id:
-                                for s in range(_seq_id_ + 1, _seq_id):
-                                    if (c, s) in valid_gap_seq_key:
-                                        continue
-                                    ent['seq_id'].append(s)
-                                    ent['comp_id'].append('.')
-                                    if has_alt_comp_id:
-                                        ent['alt_comp_id'].append('.')
+                            if _seq_id_ is not None and _seq_id_ + 1 != _seq_id:
+                                if _seq_id_ + 20 > _seq_id:
+                                    for s in range(_seq_id_ + 1, _seq_id):
+                                        if (c, s) in valid_gap_key:
+                                            continue
+                                        ent['seq_id'].append(s)
+                                        ent['comp_id'].append('.')
+                                        if has_alt_comp_id:
+                                            ent['alt_comp_id'].append('.')
+                                if any((c, s) in valid_spacer_key for s in range(_seq_id_ + 1, _seq_id)):
+                                    for s in range(_seq_id_ + 1, _seq_id):
+                                        if s not in ent['seq_id']:
+                                            ent['seq_id'].append(s)
+                                            ent['comp_id'].append('.')
+                                            if has_alt_comp_id:
+                                                ent['alt_comp_id'].append('.')
+
                             ent['seq_id'].append(_seq_id)
                             ent['comp_id'].append(_comp_id)
                             if has_alt_comp_id:

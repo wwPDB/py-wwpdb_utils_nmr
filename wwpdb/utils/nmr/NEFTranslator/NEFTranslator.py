@@ -1491,6 +1491,10 @@ class NEFTranslator:
         self.star2NefChainMapping = None
         self.star2CifChainMapping = None
 
+        # Pairwise align
+        self.__pA = PairwiseAlign()
+        self.__pA.setVerbose(self.__verbose)
+
         # CCD accessing utility
         self.__ccU = ChemCompUtil(self.__verbose, self.__lfh) if ccU is None else ccU
 
@@ -2556,10 +2560,9 @@ class NEFTranslator:
                                         _nmr_ps = nmr_ps[_alt_chain_id_list.index(row[0])]
                                         _nmr_ps['seq_id'].append(row[1])
                                         _nmr_ps['comp_id'].append(row[2])
-                                    pa = PairwiseAlign()
                                     # 2c34
-                                    seq_align, _ = alignPolymerSequence(pa, cif_ps, nmr_ps)
-                                    chain_assign, _ = assignPolymerSequence(pa, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
+                                    seq_align, _ = alignPolymerSequence(self.__pA, cif_ps, nmr_ps)
+                                    chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
                                     for ca in chain_assign:
                                         if ca['matched'] == 0 or ca['conflict'] > 0:
                                             valid = False
@@ -2656,8 +2659,8 @@ class NEFTranslator:
                                                         r[alt_seq_id_col] = str(int(r[auth_seq_id_col]) + _offset_)
                                     # 2ksi
                                     if cif_np is not None:
-                                        seq_align, _ = alignPolymerSequence(pa, cif_np, nmr_ps)
-                                        chain_assign, _ = assignPolymerSequence(pa, self.__ccU, 'nmr-star', cif_np, nmr_ps, seq_align)
+                                        seq_align, _ = alignPolymerSequence(self.__pA, cif_np, nmr_ps)
+                                        chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_np, nmr_ps, seq_align)
                                         for ca in chain_assign:
                                             if ca['matched'] == 0 or ca['conflict'] > 0:
                                                 valid = False
@@ -2982,10 +2985,9 @@ class NEFTranslator:
                             _nmr_ps = nmr_ps[0]
                             _nmr_ps['seq_id'].append(row[1])
                             _nmr_ps['comp_id'].append(row[2])
-                        pa = PairwiseAlign()
                         # 2c34
-                        seq_align, _ = alignPolymerSequence(pa, cif_ps, nmr_ps)
-                        chain_assign, _ = assignPolymerSequence(pa, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
+                        seq_align, _ = alignPolymerSequence(self.__pA, cif_ps, nmr_ps)
+                        chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
                         for ca in chain_assign:
                             if ca['matched'] == 0 or ca['conflict'] > 0:
                                 valid = False
@@ -3048,9 +3050,9 @@ class NEFTranslator:
 
                                 valid = False
                                 for c in range(1, 5):
-                                    seq_align, _ = alignPolymerSequenceWithConflicts(pa, cif_ps, nmr_ps, c)
+                                    seq_align, _ = alignPolymerSequenceWithConflicts(self.__pA, cif_ps, nmr_ps, c)
                                     if len(seq_align) > 0:
-                                        chain_assign, _ = assignPolymerSequence(pa, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
+                                        chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
                                         for ca in chain_assign:
                                             if ca['matched'] > 0 and ca['conflict'] <= c and ca['sequence_coverage'] >= LOW_SEQ_COVERAGE:
                                                 valid = True
@@ -3329,10 +3331,9 @@ class NEFTranslator:
                     nmr_ps = []
                     for c in chain_ids:
                         nmr_ps.append({'chain_id': c, 'seq_id': seq_dict[c], 'comp_id': cmp_dict[c]})
+                    seq_align, _ = alignPolymerSequence(self.__pA, cif_ps, nmr_ps)
+                    chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
 
-                    pa = PairwiseAlign()
-                    seq_align, _ = alignPolymerSequence(pa, cif_ps, nmr_ps)
-                    chain_assign, _ = assignPolymerSequence(pa, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
                     valid = False
                     for ca in chain_assign:
                         if ca['matched'] == 0 or ca['conflict'] > 0:

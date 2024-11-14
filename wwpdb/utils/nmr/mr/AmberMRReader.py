@@ -7,6 +7,7 @@
 """
 import sys
 import os
+import copy
 
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMode
 
@@ -195,7 +196,7 @@ class AmberMRReader:
                     if originalFileName is not None:
                         listener.setOriginaFileName(originalFileName)
                     if listIdCounter is not None:
-                        listener.setListIdCounter(listIdCounter)
+                        listener.setListIdCounter(copy.copy(listIdCounter))
                     if entryId is not None:
                         listener.setEntryId(entryId)
                 walker.walk(listener, tree)
@@ -291,7 +292,7 @@ class AmberMRReader:
                         if originalFileName is not None:
                             listener.setOriginaFileName(originalFileName)
                         if listIdCounter is not None:
-                            listener.setListIdCounter(listIdCounter)
+                            listener.setListIdCounter(copy.copy(listIdCounter))
                         if entryId is not None:
                             listener.setEntryId(entryId)
                     walker.walk(listener, tree)
@@ -343,6 +344,12 @@ class AmberMRReader:
 
 
 if __name__ == "__main__":
+    reader = AmberMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5o4d/ang.rst',
+                 '../../tests-nmr/mock-data-remediation/5o4d/5o4d.cif',
+                 None)
+
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6but/final.rst',

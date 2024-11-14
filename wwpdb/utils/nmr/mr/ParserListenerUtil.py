@@ -110,8 +110,8 @@ DIST_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 101.0}
 DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}
 
 
-ANGLE_RESTRAINT_RANGE = {'min_inclusive': -375.0, 'max_inclusive': 375.0}  # 2n96
-ANGLE_RESTRAINT_ERROR = {'min_exclusive': -400.0, 'max_exclusive': 400.0}
+ANGLE_RESTRAINT_RANGE = {'min_inclusive': -400.0, 'max_inclusive': 400.0}  # 2n96, 5o4d
+ANGLE_RESTRAINT_ERROR = {'min_exclusive': -450.0, 'max_exclusive': 450.0}
 
 
 RDC_RESTRAINT_RANGE = {'min_inclusive': -150.0, 'max_inclusive': 150.0}

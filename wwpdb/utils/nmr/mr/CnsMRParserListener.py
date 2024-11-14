@@ -11,6 +11,7 @@ import re
 import itertools
 import copy
 import numpy
+import collections
 
 from antlr4 import ParseTreeListener
 from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
@@ -929,22 +930,31 @@ class CnsMRParserListener(ParseTreeListener):
                                                     self.reasonsForReParsing['global_auth_sequence_offset'] = {}
                                                 self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offset
                                             else:
-                                                seq_id_mapping = {}
-                                                for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
-                                                    if mid_code == '|' and test_seq_id is not None:
-                                                        seq_id_mapping[test_seq_id] = ref_seq_id
-
-                                                for k, v in seq_id_mapping.items():
-                                                    offset = v - k
-                                                    break
-
-                                                if offset != 0 and not any(v - k != offset for k, v in seq_id_mapping.items()):
-                                                    offsets = {}
-                                                    for ref_auth_seq_id, auth_seq_id in zip(sa['ref_auth_seq_id'], sa['ref_seq_id']):
-                                                        offsets[auth_seq_id - offset] = ref_auth_seq_id - auth_seq_id
+                                                offsets = [v - k for k, v in seq_id_mapping.items()]
+                                                common_offsets = collections.Counter(offsets).most_common()
+                                                if common_offsets[0][1] > 1 and common_offsets[0][1] > common_offsets[1][1]\
+                                                   and abs(common_offsets[0][0] - common_offsets[1][0]) == 1:
+                                                    offset = common_offsets[0][0]
                                                     if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
                                                         self.reasonsForReParsing['global_auth_sequence_offset'] = {}
-                                                    self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offsets
+                                                    self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offset
+                                                else:
+                                                    seq_id_mapping = {}
+                                                    for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                                        if mid_code == '|' and test_seq_id is not None:
+                                                            seq_id_mapping[test_seq_id] = ref_seq_id
+
+                                                    for k, v in seq_id_mapping.items():
+                                                        offset = v - k
+                                                        break
+
+                                                    if offset != 0 and not any(v - k != offset for k, v in seq_id_mapping.items()):
+                                                        offsets = {}
+                                                        for ref_auth_seq_id, auth_seq_id in zip(sa['ref_auth_seq_id'], sa['ref_seq_id']):
+                                                            offsets[auth_seq_id - offset] = ref_auth_seq_id - auth_seq_id
+                                                        if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
+                                                            self.reasonsForReParsing['global_auth_sequence_offset'] = {}
+                                                        self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offsets
 
                                 if len(chainAssignFailed) == 0:
                                     valid_auth_seq = valid_label_seq = True

@@ -628,6 +628,8 @@ def getRestraintFormatName(fileType, ambig=False):
         return 'SYBYL restraint'
     if fileType == 'nm-res-isd':
         return 'ISD restraint'
+    if fileType == 'nm-aux-cha':
+        return 'CHARMM topology'
     if fileType == 'nm-res-cha':
         return 'CHARMM restraint'
     if fileType == 'nm-res-ari':
@@ -1286,8 +1288,8 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                         if has_auth_comp_id2:
                             auth_comp_id2.append('.')
 
-                # handle improper position of open-gap by PairwiseAlign()
-                # 5ydy:        123456                123456
+                # handle improper position of open-gap introduced by PairwiseAlign()
+                # 5ydy:         123456                123456
                 # model PRGGGGNRQPPPPYPLTA    PRGGGGNRQPPPPYPLTA
                 #       ||    ||||| |||||| vs ||    ||| |||||||
                 # cs    PR....NRQPP.PYPLTA    PR....NRQ.PPPYPLTA

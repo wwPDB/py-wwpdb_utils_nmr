@@ -228,16 +228,17 @@ NmrDpUtility|OneDep (DepUI)|OneDep (content type/format)|description
 nmr-star|nm-shi or nm-uni-str|nmr-chemical-shifts/(nmr-star\|pdbx) or nmr-data-str/(nmr-star\|pdbx)|NMR data in NMR-STAR format
 nef|nm-uni-nef|nmr-data-nef/(nmr-star\|pdbx)|NMR data in NEF (NMR Exchange Format)
 pdbx|co-cif|model/pdbx|Coordinates in PDBx/mmCIF format
-nm-res-amb|nm-res-amb|nmr-restraints/amber|Restraint file in AMBER format
 nm-aux-amb|nm-aux-amb|nmr-restraints/any|Topology file in AMBER format
+nm-res-amb|nm-res-amb|nmr-restraints/amber|Restraint file in AMBER format
 nm-res-ari|nm-res-ari|nmr-restraints/aria|Restraint file in ARIA format
 nm-res-bio|nm-res-bio|nmr-restraints/biosym|Restraint file in BIOSYM format
+nm-aux-cha|nm-aux-cha|nmr-restraints/any|Topology file in CHARMM format (aka. CHARMM extended CRD)
 nm-res-cha|nm-res-cha|nmr-restraints/charmm|Restraint file in CHARMM format
 nm-res-cns|nm-res-cns|nmr-restraints/cns|Restraint file in CNS format
 nm-res-cya|nm-res-cya|nmr-restraints/cyana|Restraint file in CYANA format
 nm-res-dyn|nm-res-dyn|nmr-restraints/dynamo|Restraint file in DYNAMO/PALES/TALOS format
-nm-res-gro|nm-res-gro|nmr-restraints/gromacs|Restraint file in GROMACS format
 nm-aux-gro|nm-aux-gro|nmr-restraints/any|Topology file in GROMACS format
+nm-res-gro|nm-res-gro|nmr-restraints/gromacs|Restraint file in GROMACS format
 nm-res-isd|nm-res-isd|nmr-restraints/isd|Restraint file in ISD format
 nm-res-ros|nm-res-ros|nmr-restraints/rosetta|Restraint file in ROSETTA format
 nm-res-syb|nm-res-syb|nmr-restraints/sybyl|Restraint file in SYBYL format

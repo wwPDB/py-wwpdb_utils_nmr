@@ -3224,7 +3224,7 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
         if 'Z' in compId and compId[0] == refCompId[0]:  # 2n6j: GZC, GZL -> GLU + ZN,
             return refCompId
 
-    if compId in ('HID', 'HIE', 'HIF', 'HIP', 'HIZ'):
+    if compId in ('HID', 'HIE', 'HIF', 'HIP', 'HIZ', 'HSD', 'HSE'):
         return 'HIS'
 
     if compId.startswith('CY'):

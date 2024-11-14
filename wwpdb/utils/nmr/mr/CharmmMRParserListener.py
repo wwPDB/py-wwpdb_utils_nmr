@@ -232,6 +232,9 @@ class CharmmMRParserListener(ParseTreeListener):
     # Pairwise align
     __pA = None
 
+    # CharmmCRDParserListener.getAtomNumberDict()
+    __atomNumberDict = None
+
     # reasons for re-parsing request from the previous trial
     __reasons = None
 
@@ -389,7 +392,7 @@ class CharmmMRParserListener(ParseTreeListener):
                  representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 reasons=None):
+                 atomNumberDict=None, reasons=None):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -466,6 +469,9 @@ class CharmmMRParserListener(ParseTreeListener):
         self.__preferLabelSeqCount = 0
 
         self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
+
+        if atomNumberDict is not None:
+            self.__atomNumberDict = atomNumberDict
 
         self.__cachedDictForAtomIdList = {}
         self.__cachedDictForFactor = {}
@@ -1955,9 +1961,19 @@ class CharmmMRParserListener(ParseTreeListener):
             pass
 
         elif ctx.ByNumber():
-            self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
-                            "The 'bynumber' clause has no effect "
-                            "because the internal atom number is not included in the coordinate file.")
+            if self.__atomNumberDict is None:
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                "The 'bynumber' clause has no effect "
+                                "because CHARMM CRD file is not provided.")
+            else:
+                for col in range(4):
+                    ai = int(str(ctx.Integer(col)))
+                    if ai in self.__atomNumberDict:
+                        atomSelection = [copy.copy(self.__atomNumberDict[ai])]
+                        self.atomSelectionSet.append(atomSelection)
+                    else:
+                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                        f"'{ai}' is not defined in the CHARMM CRD file.")
 
         elif ctx.Simple_name(0) and ctx.Integer(0):
             if ctx.Simple_name(4):
@@ -2690,7 +2706,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
                 self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                 "The 'bynumber' clause has no effect "
-                                "because the internal atom number is not included in the coordinate file.")
+                                "because CHARMM CRD file is not provided.")
 
                 return _factor
 
@@ -5904,6 +5920,33 @@ class CharmmMRParserListener(ParseTreeListener):
                     else:
                         self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                         f"The symbol {symbol_name!r} is not defined.")
+
+                if 'atom_num' in self.factor and self.__atomNumberDict is not None:
+                    for ai in self.factor['atom_num']:
+                        if ai in self.__atomNumberDict:
+                            _factor = copy.copy(self.__atomNumberDict[ai])
+                            if 'chain_id' not in self.factor:
+                                self.factor['chain_id'] = []
+                            if _factor['chain_id'] not in self.factor['chain_id']:
+                                self.factor['chain_id'].append(_factor['chain_id'])
+                            if 'seq_id' not in self.factor:
+                                self.factor['seq_id'] = []
+                            if _factor['seq_id'] not in self.factor['seq_id']:
+                                self.factor['seq_id'].append(_factor['seq_id'])
+                            if 'comp_id' not in self.factor:
+                                self.factor['comp_id'] = []
+                            if _factor['comp_id'] not in self.factor['comp_id']:
+                                self.factor['comp_id'].append(_factor['comp_id'])
+                            if 'atom_id' not in self.factor:
+                                self.factor['atom_id'] = []
+                            if _factor['atom_id'] not in self.factor['atom_id']:
+                                self.factor['atom_id'].append(_factor['atom_id'])
+                            self.factor['atom_num'].remove(ai)
+                            if len(self.factor['atom_num']) == 0:
+                                del self.factor['atom_num']
+                        else:
+                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                            f"'{ai}' is not defined in the CHARMM CRD file.")
 
             elif ctx.IRes():
                 if self.__sel_expr_debug:

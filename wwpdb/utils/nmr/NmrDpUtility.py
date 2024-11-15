@@ -33029,12 +33029,8 @@ class NmrDpUtility:
 
                 err = f"CHARMM CRD file must be uploaded to verify CHARMM restraint file {file_name!r}."
 
-                self.report.error.appendDescription('missing_mandatory_content',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
+                                                       {'file_name': file_name, 'description': err}})
 
                 continue
 

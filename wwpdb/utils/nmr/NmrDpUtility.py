@@ -7171,6 +7171,47 @@ class NmrDpUtility:
 
                         arPath = _arPath
 
+                    if ar['file_type'] == 'nm-res-oth':
+
+                        has_ext = in_atoms = False
+                        atom_names = 0
+
+                        three_letter_codes = monDict3.keys()
+                        atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
+
+                        with open(arPath, 'r', encoding='utf-8') as ifh:
+
+                            for line in ifh:
+
+                                if 'EXT' in line:
+                                    l_split = line.split()
+                                    _line = ' '.join(l_split)
+
+                                    if len(_line) > 1 and _line[0].isdigit() and _line[1] == 'EXT':
+                                        has_ext = in_atoms = True
+                                        continue
+
+                                elif in_atoms:
+                                    l_split = line.split()
+                                    _line = ' '.join(l_split)
+
+                                    if len(_line) == 0 or _line.startswith('#') or _line.startswith('!') or _line.startswith(';'):
+                                        continue
+
+                                    if len(l_split) >= 10:
+                                        try:
+                                            atom_num = int(l_split[0])
+                                            seq_id = int(l_split[8])
+                                            comp_id = l_split[2]
+                                            atom_id = l_split[3]
+                                            if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                                atom_names += 1
+                                        except ValueError:
+                                            pass
+
+                        if has_ext and atom_names > 0:
+                            ar['file_type'] = 'nm-aux-cha'
+
                     input_source.setItemValue('file_name', os.path.basename(arPath))
                     input_source.setItemValue('file_type', ar['file_type'])
                     input_source.setItemValue('content_type', 'nmr-restraints')
@@ -33031,8 +33072,6 @@ class NmrDpUtility:
 
                 suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
                                                        {'file_name': file_name, 'description': err}})
-
-                continue
 
             if content_subtype is None or len(content_subtype) == 0:
                 continue

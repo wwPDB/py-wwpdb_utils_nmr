@@ -1742,7 +1742,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    self.__cR, self.__ccU,
                                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
-                            if angleName.startswith('pseudo'):
+                            if angleName is not None and angleName.startswith('pseudo'):
                                 angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
                                                                                              [atom1, atom2, atom3, atom4])
 
@@ -3987,7 +3987,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                                    self.__cR, self.__ccU,
                                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
-                            if angleName.startswith('pseudo'):
+                            if angleName is not None and angleName.startswith('pseudo'):
                                 angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
                                                                                              [atom1, atom2, atom3, atom4])
 

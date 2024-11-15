@@ -5390,7 +5390,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                     [atom1, atom2, atom3, atom4],
                                                                     'plane_like' in dstFunc)
 
-                            if _angleName.startswith('pseudo'):
+                            if _angleName is not None and _angleName.startswith('pseudo'):
                                 _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
                                                                                               [atom1, atom2, atom3, atom4])
 
@@ -5414,7 +5414,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                 [atom1, atom2, atom3, atom4],
                                                                 'plane_like' in dstFunc)
 
-                        if _angleName.startswith('pseudo'):
+                        if _angleName is not None and _angleName.startswith('pseudo'):
                             _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
                                                                                           [atom1, atom2, atom3, atom4])
 
@@ -9165,7 +9165,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                     [atom1, atom2, atom3, atom4],
                                                                     'plane_like' in dstFunc)
 
-                            if _angleName.startswith('pseudo'):
+                            if _angleName is not None and _angleName.startswith('pseudo'):
                                 _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
                                                                                               [atom1, atom2, atom3, atom4])
 
@@ -9189,7 +9189,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                 [atom1, atom2, atom3, atom4],
                                                                 'plane_like' in dstFunc)
 
-                        if _angleName.startswith('pseudo'):
+                        if _angleName is not None and _angleName.startswith('pseudo'):
                             _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
                                                                                           [atom1, atom2, atom3, atom4])
 

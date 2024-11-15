@@ -6207,9 +6207,9 @@ def remediateBackboneDehedralRestraint(angleName, atoms):
                 if idx == 2:
                     continue
                 if a['seq_id'] == seq_id2:
-                    atoms[1]['chain_id'] = a['chain_id']
-                    atoms[1]['seq_id'] = a['seq_id']
-                    atoms[1]['comp_id'] = a['comp_id']
+                    atoms[2]['chain_id'] = a['chain_id']
+                    atoms[2]['seq_id'] = a['seq_id']
+                    atoms[2]['comp_id'] = a['comp_id']
                     break
 
     return angleName, atoms[1], atoms[2]

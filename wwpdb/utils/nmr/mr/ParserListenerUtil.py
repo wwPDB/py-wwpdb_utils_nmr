@@ -105,6 +105,9 @@ UNREAL_AUTH_SEQ_NUM = -10000
 
 THRESHHOLD_FOR_CIRCULAR_SHIFT = 355.0
 
+PLANE_LIKE_LOWER_LIMIT = -10.0
+PLANE_LIKE_UPPER_LIMIT = 10.0
+
 
 DIST_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 101.0}
 DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}
@@ -5760,7 +5763,7 @@ def isAmbigAtomSelection(atoms, csStat):
     return False
 
 
-def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms, cR=None, ccU=None,
+def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms, planeLike, cR=None, ccU=None,
                                representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
                                modelNumName='PDB_model_num'):
     """ Return type of dihedral angle restraint.
@@ -5791,7 +5794,11 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                 return False
         return True
 
-    if len(collections.Counter(chainIds).most_common()) > 1:
+    commonChainId = collections.Counter(chainIds).most_common()
+
+    lenCommonChainId = len(commonChainId)
+
+    if lenCommonChainId > 1 and not planeLike:
         return None  # '.' if is_connected() else None
 
     commonSeqId = collections.Counter(seqIds).most_common()
@@ -6088,6 +6095,52 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
 
             if found:
                 return '.' if is_connected() else None
+
+    if planeLike:
+
+        if lenCommonChainId == 1 and lenCommonSeqId == 1:
+            ring = True
+            for a in atoms:
+                cca = next((cca for cca in ccU.lastAtomList if cca[ccU.ccaAtomId] == a['atom_id']), None)
+                if cca is None or cca[ccU.ccaAromaticFlag] != 'Y':
+                    ring = False
+                    break
+            if ring:
+                return 'RING'
+
+        if atoms[0]['chain_id'] == atoms[1]['chain_id'] and atoms[0]['seq_id'] == atoms[1]['seq_id']\
+           and atoms[2]['chain_id'] == atoms[3]['chain_id'] and atoms[2]['seq_id'] == atoms[3]['seq_id']:
+
+            if all(a['atom_id'][0] not in protonBeginCode for a in atoms):
+                aroma = True
+                for a in atoms:
+                    compId = a['comp_id']
+                    atomId = a['atom_id']
+                    if ccU.updateChemCompDict(compId):
+                        cca = next((cca for cca in ccU.lastAtomList if cca[ccU.ccaAtomId] == atomId), None)
+                        if cca is None:
+                            aroma = False
+                            break
+                        if cca[ccU.ccaAromaticFlag] != 'Y':
+                            if ccU.getTypeOfCompId(compId)[1] and atomId[0] in ('C', 'N') and not atomId.endswith("'"):
+                                continue
+                            bonded = ccU.getBondedAtoms(compId, atomId, exclProton=False)
+                            attach = False
+                            for b in bonded:
+                                _cca = next((_cca for _cca in ccU.lastAtomList if _cca[ccU.ccaAtomId] == b), None)
+                                if _cca is not None:
+                                    if _cca[ccU.ccaAromaticFlag] == 'Y':
+                                        attach = True
+                            if not attach:
+                                aroma = False
+                                break
+
+                if aroma:
+                    return 'PLANE'
+
+            if ccU.hasBond(atoms[0]['comp_id'], atoms[0]['atom_id'], atoms[1]['atom_id'])\
+               and ccU.hasBond(atoms[2]['comp_id'], atoms[2]['atom_id'], atoms[3]['atom_id']):
+                return 'ALIGN'
 
     return '.' if is_connected() else None
 

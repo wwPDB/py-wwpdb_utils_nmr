@@ -49,6 +49,8 @@ try:
                                                        REPRESENTATIVE_ALT_ID,
                                                        MAX_OFFSET_ATTEMPT,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                                       PLANE_LIKE_LOWER_LIMIT,
+                                                       PLANE_LIKE_UPPER_LIMIT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
@@ -70,6 +72,7 @@ try:
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
+                                           emptyValue,
                                            protonBeginCode,
                                            pseProBeginCode,
                                            aminoProtonCode,
@@ -120,6 +123,8 @@ except ImportError:
                                            REPRESENTATIVE_ALT_ID,
                                            MAX_OFFSET_ATTEMPT,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                           PLANE_LIKE_LOWER_LIMIT,
+                                           PLANE_LIKE_UPPER_LIMIT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
@@ -141,6 +146,7 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
+                               emptyValue,
                                protonBeginCode,
                                pseProBeginCode,
                                aminoProtonCode,
@@ -1722,16 +1728,21 @@ class AmberMRParserListener(ParseTreeListener):
 
                         first_item = True
 
+                        atomSelTotal = sum(len(s) for s in self.atomSelectionSet)
+
                         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                             self.atomSelectionSet[1],
                                                                             self.atomSelectionSet[2],
                                                                             self.atomSelectionSet[3]):
                             angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                                    [atom1, atom2, atom3, atom4],
+                                                                   'plane_like' in dstFunc,
                                                                    self.__cR, self.__ccU,
                                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-                            # if angleName is None:  # no need to check angle name because of planality restraints
-                            #     continue
+
+                            if angleName in emptyValue and atomSelTotal != 4:
+                                continue
+
                             if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
                                 dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                                   dstFunc)
@@ -3958,16 +3969,21 @@ class AmberMRParserListener(ParseTreeListener):
 
                         first_item = True
 
+                        atomSelTotal = sum(len(s) for s in self.atomSelectionSet)
+
                         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                             self.atomSelectionSet[1],
                                                                             self.atomSelectionSet[2],
                                                                             self.atomSelectionSet[3]):
                             angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                                    [atom1, atom2, atom3, atom4],
+                                                                   'plane_like' in dstFunc,
                                                                    self.__cR, self.__ccU,
                                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-                            # if angleName is None:  # no need to check angle name because of planality restraints
-                            #     continue
+
+                            if angleName in emptyValue and atomSelTotal != 4:
+                                continue
+
                             if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
                                 dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                                   dstFunc)
@@ -4987,6 +5003,12 @@ class AmberMRParserListener(ParseTreeListener):
         if self.lowerLimit is None and self.upperLimit is None and self.lowerLinearLimit is None and self.upperLinearLimit is None:
             self.lastComment = None
             return None
+
+        if self.upperLimit is not None and self.lowerLimit is not None\
+           and (PLANE_LIKE_LOWER_LIMIT <= self.lowerLimit < 0.0 < self.upperLimit <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= self.lowerLimit - 180.0 < 0.0 < self.upperLimit - 180.0 <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= self.lowerLimit - 360.0 < 0.0 < self.upperLimit - 360.0 <= PLANE_LIKE_UPPER_LIMIT):
+            dstFunc['plane_like'] = True
 
         return dstFunc
 

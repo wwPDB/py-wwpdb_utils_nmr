@@ -29,7 +29,7 @@ comment:
 	COMMENT Any_name* (RETURN_CM | EOF);
 
 coordinates:
-	Integer Simple_name
+	Integer Ext
 	atom_coordinate+;
 
 atom_coordinate:

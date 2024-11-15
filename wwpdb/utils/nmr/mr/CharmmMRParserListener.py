@@ -50,6 +50,8 @@ try:
                                                        REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                                       PLANE_LIKE_LOWER_LIMIT,
+                                                       PLANE_LIKE_UPPER_LIMIT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
@@ -132,6 +134,8 @@ except ImportError:
                                            REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                           PLANE_LIKE_LOWER_LIMIT,
+                                           PLANE_LIKE_UPPER_LIMIT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
@@ -1399,6 +1403,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                      allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
             combinationId = '.' if len_f == len(self.__f) else 0
 
+            atomSelTotal = sum(len(s) for s in self.atomSelectionSet)
+
             if isinstance(combinationId, int):
                 fixedAngleName = '.'
                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -1407,10 +1413,13 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[3]):
                     angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                            [atom1, atom2, atom3, atom4],
+                                                           'plane_like' in dstFunc,
                                                            self.__cR, self.__ccU,
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-                    if angleName in emptyValue:
+
+                    if angleName in emptyValue and atomSelTotal != 4:
                         continue
+
                     fixedAngleName = angleName
                     break
 
@@ -1426,10 +1435,13 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[3]):
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4],
+                                                       'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-                if angleName is None:
+
+                if angleName in emptyValue and atomSelTotal != 4:
                     continue
+
                 if isinstance(combinationId, int):
                     if angleName != fixedAngleName:
                         continue
@@ -2120,6 +2132,12 @@ class CharmmMRParserListener(ParseTreeListener):
 
         if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
             return None
+
+        if upper_limit is not None and lower_limit is not None\
+           and (PLANE_LIKE_LOWER_LIMIT <= lower_limit < 0.0 < upper_limit <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 180.0 < 0.0 < upper_limit - 180.0 <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 360.0 < 0.0 < upper_limit - 360.0 <= PLANE_LIKE_UPPER_LIMIT):
+            dstFunc['plane_like'] = True
 
         return dstFunc
 

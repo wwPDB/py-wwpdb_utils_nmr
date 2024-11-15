@@ -58,6 +58,8 @@ try:
                                                        MAX_ALLOWED_EXT_SEQ,
                                                        UNREAL_AUTH_SEQ_NUM,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                                       PLANE_LIKE_LOWER_LIMIT,
+                                                       PLANE_LIKE_UPPER_LIMIT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
@@ -157,6 +159,8 @@ except ImportError:
                                            MAX_ALLOWED_EXT_SEQ,
                                            UNREAL_AUTH_SEQ_NUM,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                           PLANE_LIKE_LOWER_LIMIT,
+                                           PLANE_LIKE_UPPER_LIMIT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
@@ -5372,6 +5376,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                              allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
                     combinationId = '.' if len_f == len(self.__f) else 0
 
+                    atomSelTotal = sum(len(s) for s in self.atomSelectionSet)
+
                     if isinstance(combinationId, int):
                         fixedAngleName = '.'
                         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -5379,9 +5385,12 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                             self.atomSelectionSet[2],
                                                                             self.atomSelectionSet[3]):
                             _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                                    [atom1, atom2, atom3, atom4])
-                            if _angleName in emptyValue:
+                                                                    [atom1, atom2, atom3, atom4],
+                                                                    'plane_like' in dstFunc)
+
+                            if _angleName in emptyValue and atomSelTotal != 4:
                                 continue
+
                             fixedAngleName = _angleName
                             break
 
@@ -5396,7 +5405,12 @@ class CyanaMRParserListener(ParseTreeListener):
                         if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                             continue
                         _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                                [atom1, atom2, atom3, atom4])
+                                                                [atom1, atom2, atom3, atom4],
+                                                                'plane_like' in dstFunc)
+
+                        if _angleName in emptyValue and atomSelTotal != 4:
+                            continue
+
                         if isinstance(combinationId, int):
                             if _angleName != fixedAngleName:
                                 continue
@@ -5532,9 +5546,12 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                             self.atomSelectionSet[2],
                                                                             self.atomSelectionSet[3]):
                             _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                                    [atom1, atom2, atom3, atom4])
+                                                                    [atom1, atom2, atom3, atom4],
+                                                                    False)
+
                             if _angleName in emptyValue:
                                 continue
+
                             fixedAngleName = _angleName
                             break
 
@@ -5550,7 +5567,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5], self.__polySeq if self.__gapInAuthSeq else None):
                             continue
                         _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                                [atom1, atom2, atom3, atom4])
+                                                                [atom1, atom2, atom3, atom4],
+                                                                False)
+
                         if isinstance(combinationId, int):
                             if _angleName != fixedAngleName:
                                 continue
@@ -5653,6 +5672,12 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if target_value is None and lower_limit is None and upper_limit is None:
             return None
+
+        if upper_limit is not None and lower_limit is not None\
+           and (PLANE_LIKE_LOWER_LIMIT <= lower_limit < 0.0 < upper_limit <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 180.0 < 0.0 < upper_limit - 180.0 <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 360.0 < 0.0 < upper_limit - 360.0 <= PLANE_LIKE_UPPER_LIMIT):
+            dstFunc['plane_like'] = True
 
         return dstFunc
 
@@ -9118,6 +9143,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                              allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
                     combinationId = '.' if len_f == len(self.__f) else 0
 
+                    atomSelTotal = sum(len(s) for s in self.atomSelectionSet)
+
                     if isinstance(combinationId, int):
                         fixedAngleName = '.'
                         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -9125,9 +9152,12 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                             self.atomSelectionSet[2],
                                                                             self.atomSelectionSet[3]):
                             _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                                    [atom1, atom2, atom3, atom4])
-                            if _angleName in emptyValue:
+                                                                    [atom1, atom2, atom3, atom4],
+                                                                    'plane_like' in dstFunc)
+
+                            if _angleName in emptyValue and atomSelTotal != 4:
                                 continue
+
                             fixedAngleName = _angleName
                             break
 
@@ -9142,7 +9172,12 @@ class CyanaMRParserListener(ParseTreeListener):
                         if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
                             continue
                         _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                                [atom1, atom2, atom3, atom4])
+                                                                [atom1, atom2, atom3, atom4],
+                                                                'plane_like' in dstFunc)
+
+                        if _angleName in emptyValue and atomSelTotal != 4:
+                            continue
+
                         if isinstance(combinationId, int):
                             if _angleName != fixedAngleName:
                                 continue
@@ -9278,9 +9313,12 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                             self.atomSelectionSet[2],
                                                                             self.atomSelectionSet[3]):
                             _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                                    [atom1, atom2, atom3, atom4])
+                                                                    [atom1, atom2, atom3, atom4],
+                                                                    False)
+
                             if _angleName in emptyValue:
                                 continue
+
                             fixedAngleName = _angleName
                             break
 
@@ -9296,7 +9334,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         if isLongRangeRestraint([atom1, atom2, atom3, atom4, atom5], self.__polySeq if self.__gapInAuthSeq else None):
                             continue
                         _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                                [atom1, atom2, atom3, atom4])
+                                                                [atom1, atom2, atom3, atom4],
+                                                                False)
+
                         if isinstance(combinationId, int):
                             if _angleName != fixedAngleName:
                                 continue

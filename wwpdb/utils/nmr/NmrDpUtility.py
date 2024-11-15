@@ -311,7 +311,10 @@ try:
                                                        MAX_OFFSET_ATTEMPT,
                                                        CYANA_MR_FILE_EXTS,
                                                        NMR_STAR_LP_KEY_ITEMS,
-                                                       NMR_STAR_LP_DATA_ITEMS)
+                                                       NMR_STAR_LP_DATA_ITEMS,
+                                                       THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                                       PLANE_LIKE_LOWER_LIMIT,
+                                                       PLANE_LIKE_UPPER_LIMIT)
     from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
     from wwpdb.utils.nmr.mr.AmberMRReader import AmberMRReader
     from wwpdb.utils.nmr.mr.BiosymMRReader import BiosymMRReader
@@ -417,7 +420,10 @@ except ImportError:
                                            MAX_OFFSET_ATTEMPT,
                                            CYANA_MR_FILE_EXTS,
                                            NMR_STAR_LP_KEY_ITEMS,
-                                           NMR_STAR_LP_DATA_ITEMS)
+                                           NMR_STAR_LP_DATA_ITEMS,
+                                           THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                           PLANE_LIKE_LOWER_LIMIT,
+                                           PLANE_LIKE_UPPER_LIMIT)
     from nmr.mr.AmberPTReader import AmberPTReader
     from nmr.mr.AmberMRReader import AmberMRReader
     from nmr.mr.BiosymMRReader import BiosymMRReader
@@ -1115,6 +1121,34 @@ def get_number_of_dimensions_of_peak_list(file_format, line):
                 return 2
 
     return None
+
+
+def is_like_planality_boundary(row, lower_limit_name, upper_limit_name):
+    """ Return whether boundary conditions like planality restraint.
+    """
+
+    try:
+
+        upper_limit = float(row[upper_limit_name])
+        lower_limit = float(row[lower_limit_name])
+
+        _array = numpy.array([upper_limit, lower_limit], dtype=float)
+
+        shift = None
+        if numpy.nanmin(_array) >= THRESHHOLD_FOR_CIRCULAR_SHIFT:
+            shift = -(numpy.nanmax(_array) // 360) * 360
+        elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
+            shift = -(numpy.nanmin(_array) // 360) * 360
+        if shift is not None:
+            upper_limit += shift
+            lower_limit += shift
+
+        return PLANE_LIKE_LOWER_LIMIT <= lower_limit < 0.0 < upper_limit <= PLANE_LIKE_UPPER_LIMIT\
+            or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 180.0 < 0.0 < upper_limit - 180.0 <= PLANE_LIKE_UPPER_LIMIT\
+            or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 360.0 < 0.0 < upper_limit - 360.0 <= PLANE_LIKE_UPPER_LIMIT
+
+    except (ValueError, TypeError):
+        return False
 
 
 class NmrDpUtility:
@@ -21033,6 +21067,8 @@ class NmrDpUtility:
             atom_id_3_name = dh_item_names['atom_id_3']
             atom_id_4_name = dh_item_names['atom_id_4']
             angle_type_name = dh_item_names['angle_type']
+            lower_limit_name = dh_item_names['lower_limit']
+            upper_limit_name = dh_item_names['upper_limit']
 
         elif content_subtype == 'rdc_restraint':
             max_inclusive = RDC_UNCERT_MAX
@@ -21128,10 +21164,12 @@ class NmrDpUtility:
                                 data_type = row_1[angle_type_name]
 
                                 peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                                plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
 
                                 data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
                                                                               chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                                                              chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)[0]
+                                                                              chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4,
+                                                                              plane_like)[0]
 
                                 if not data_type.startswith('phi') and not data_type.startswith('psi') and not data_type.startswith('omega'):
                                     continue
@@ -39251,11 +39289,13 @@ class NmrDpUtility:
                 set_id.add(row[id_tag])
 
                 peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                plane_like = is_like_planality_boundary(row, lower_limit_name, upper_limit_name)
 
                 data_type =\
                     self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
                                                       chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                                      chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)
+                                                      chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4,
+                                                      plane_like)
 
                 if data_type in count:
                     count[data_type] += 1
@@ -39630,10 +39670,12 @@ class NmrDpUtility:
                             data_type = row_1[angle_type_name]
 
                             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                            plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
 
                             data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
                                                                           chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                                                          chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)[0]
+                                                                          chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4,
+                                                                          plane_like)[0]
 
                             if data_type.startswith('phi') or data_type.startswith('psi') or data_type.startswith('omega'):
 
@@ -39785,10 +39827,12 @@ class NmrDpUtility:
                                     atom_id_4 = row_1[atom_id_4_name]
 
                                     peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                                    plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
 
                                     data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
                                                                                   chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                                                                  chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)[0]
+                                                                                  chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4,
+                                                                                  plane_like)[0]
 
                                     if data_type in _count:
                                         _count[data_type] += 1
@@ -39812,10 +39856,12 @@ class NmrDpUtility:
                                 atom_id_4 = row_1[atom_id_4_name]
 
                                 peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                                plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
 
                                 data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
                                                                               chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                                                              chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)[0]
+                                                                              chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4,
+                                                                              plane_like)[0]
 
                                 if data_type in _count:
                                     _count[data_type] += 1
@@ -39848,7 +39894,8 @@ class NmrDpUtility:
 
     def __getTypeOfDihedralRestraint(self, data_type, peptide, nucleotide, carbohydrate,  # pylint: disable=no-self-use
                                      chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                     chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4):
+                                     chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4,
+                                     plane_like):
         """ Return type of dihedral angle restraint.
         """
 
@@ -39866,7 +39913,8 @@ class NmrDpUtility:
                      'seq_id': seq_id_4,
                      'atom_id': atom_id_4}
 
-            data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate, [atom1, atom2, atom3, atom4])
+            data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                   [atom1, atom2, atom3, atom4], plane_like)
 
             if data_type is not None:
                 data_type = data_type.lower()
@@ -50426,6 +50474,8 @@ class NmrDpUtility:
             atom_id_3_name = item_names['atom_id_3']
             atom_id_4_name = item_names['atom_id_4']
             angle_type_name = item_names['angle_type']
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
 
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
@@ -50493,8 +50543,10 @@ class NmrDpUtility:
                                      'atom_id': atom_id_4}
 
                             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                            plane_like = is_like_planality_boundary(row, lower_limit_name, upper_limit_name)
 
-                            data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate, [atom1, atom2, atom3, atom4])
+                            data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                   [atom1, atom2, atom3, atom4], plane_like)
 
                             if data_type in emptyValue:
                                 continue
@@ -51549,6 +51601,8 @@ class NmrDpUtility:
         atom_id_3_name = item_names['atom_id_3']
         atom_id_4_name = item_names['atom_id_4']
         angle_type_name = item_names['angle_type']
+        lower_limit_name = item_names['lower_limit']
+        upper_limit_name = item_names['upper_limit']
 
         dh_chain_ids = set()
         dh_seq_ids = {}
@@ -51599,7 +51653,10 @@ class NmrDpUtility:
                 if not peptide:
                     return False
 
-                data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate, [atom1, atom2, atom3, atom4])
+                plane_like = is_like_planality_boundary(row, lower_limit_name, upper_limit_name)
+
+                data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4], plane_like)
 
                 if data_type is None or data_type.lower() not in ('phi', 'psi'):
                     return False

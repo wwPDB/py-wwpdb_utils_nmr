@@ -29,7 +29,9 @@ fragment DECIMAL:	DEC_DIGIT+;
 
 COMMENT:		('*' | '#' | '!')+ -> mode(COMMENT_MODE);
 
-Simple_name:		SIMPLE_NAME;
+Ext:			'EXT';
+
+Simple_name:		SIMPLE_NAME | Ext;
 
 fragment ALPHA:		[A-Z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;

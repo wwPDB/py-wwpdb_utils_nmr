@@ -53,6 +53,8 @@ try:
                                                        MAX_ALLOWED_EXT_SEQ,
                                                        UNREAL_AUTH_SEQ_NUM,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                                       PLANE_LIKE_LOWER_LIMIT,
+                                                       PLANE_LIKE_UPPER_LIMIT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
@@ -135,6 +137,8 @@ except ImportError:
                                            MAX_ALLOWED_EXT_SEQ,
                                            UNREAL_AUTH_SEQ_NUM,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                           PLANE_LIKE_LOWER_LIMIT,
+                                           PLANE_LIKE_UPPER_LIMIT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
@@ -2673,6 +2677,12 @@ class RosettaMRParserListener(ParseTreeListener):
         if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
             return None
 
+        if upper_limit is not None and lower_limit is not None\
+           and (PLANE_LIKE_LOWER_LIMIT <= lower_limit < 0.0 < upper_limit <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 180.0 < 0.0 < upper_limit - 180.0 <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 360.0 < 0.0 < upper_limit - 360.0 <= PLANE_LIKE_UPPER_LIMIT):
+            dstFunc['plane_like'] = True
+
         return dstFunc
 
     # Enter a parse tree produced by RosettaMRParser#dihedral_restraints.
@@ -2740,6 +2750,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                  allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
         combinationId = '.' if len_f == len(self.__f) else 0
 
+        atomSelTotal = sum(len(s) for s in self.atomSelectionSet)
+
         if isinstance(combinationId, int):
             fixedAngleName = '.'
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -2748,10 +2760,13 @@ class RosettaMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[3]):
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4],
+                                                       'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-                if angleName in emptyValue:
+
+                if angleName in emptyValue and atomSelTotal != 4:
                     continue
+
                 fixedAngleName = angleName
                 break
 
@@ -2773,10 +2788,13 @@ class RosettaMRParserListener(ParseTreeListener):
                                                             self.atomSelectionSet[3]):
             angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                    [atom1, atom2, atom3, atom4],
+                                                   'plane_like' in dstFunc,
                                                    self.__cR, self.__ccU,
                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-            if angleName is None:
+
+            if angleName in emptyValue and atomSelTotal != 4:
                 continue
+
             if isinstance(combinationId, int):
                 if angleName != fixedAngleName:
                     continue
@@ -2892,16 +2910,21 @@ class RosettaMRParserListener(ParseTreeListener):
 
         first_item = True
 
+        atomSelTotal = sum(len(s) for s in self.atomSelectionSet[0:4])
+
         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                             self.atomSelectionSet[1],
                                                             self.atomSelectionSet[2],
                                                             self.atomSelectionSet[3]):
             angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                    [atom1, atom2, atom3, atom4],
+                                                   'plane_like' in dstFunc,
                                                    self.__cR, self.__ccU,
                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-            if angleName is None:
+
+            if angleName in emptyValue and atomSelTotal != 4:
                 continue
+
             if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
                 dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                   dstFunc)
@@ -2923,16 +2946,21 @@ class RosettaMRParserListener(ParseTreeListener):
         compId = self.atomSelectionSet[4][0]['comp_id']
         peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
+        atomSelTotal = sum(len(s) for s in self.atomSelectionSet[4:8])
+
         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[4],
                                                             self.atomSelectionSet[5],
                                                             self.atomSelectionSet[6],
                                                             self.atomSelectionSet[7]):
             angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                    [atom1, atom2, atom3, atom4],
+                                                   'plane_like' in dstFunc,
                                                    self.__cR, self.__ccU,
                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-            if angleName is None:
+
+            if angleName in emptyValue and atomSelTotal != 4:
                 continue
+
             if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
                 dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                   dstFunc)

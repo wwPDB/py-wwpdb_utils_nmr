@@ -11445,9 +11445,11 @@ class NmrDpUtility:
                 if len(subtype_name) > 0:
                     subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
 
-                hint = " Tips for CHARMM topology: '{Number of atoms} EXT' lines must be present in the file."
+                hint = " Tips for CHARMM topology: '{Number of atoms} EXT' header line must be present in the file. "\
+                    "Then, it is followed by '{atom_number} {label_seq_id} {label_comp_id} {label_atom_id} {Cartn_x} {Cartn_y} {Cartn_z} "\
+                    "{segment_id} {auth_seq_id} {B_iso_or_equiv}' lines."
 
-                err = f"{file_name} is not CHARMM topology {subtype_name}."\
+                err = f"{file_name} is not CHARMM topology (aka. CRD or CHARM CARD file) {subtype_name}."\
                     + hint + " Did you accidentally select the wrong format? Please re-upload the GROMACS topology file."
 
                 self.report.error.appendDescription('content_mismatch',
@@ -33068,7 +33070,7 @@ class NmrDpUtility:
 
             if file_type == 'nm-res-cha' and not has_nm_aux_cha_file:
 
-                err = f"CHARMM CRD file must be uploaded to verify CHARMM restraint file {file_name!r}."
+                err = f"CHARMM topology file (aka. CRD or CHARM CARD) must be uploaded to verify CHARMM restraint file {file_name!r}."
 
                 suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
                                                        {'file_name': file_name, 'description': err}})

@@ -2078,6 +2078,7 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
 
     if atomId.endswith('"'):
         atomId = atomId[:-1] + "''"
+    lenAtomId = len(atomId)
 
     elemName = atomId[0]
 
@@ -2089,7 +2090,7 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
     if len(mapping) == 0:
         return seqId, compId, atomId
 
-    if atomId.startswith('QQ') and len(atomId) > 2 and atomId not in ('QQR', 'QQM'):
+    if atomId.startswith('QQ') and lenAtomId > 2 and atomId not in ('QQR', 'QQM'):
         item = next((item for item in mapping
                      if item['original_atom_id'] in ('H' + atomId[2:] + '22',
                                                      '2H' + atomId[2:] + '2')), None)
@@ -2140,7 +2141,7 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
 
             return item['auth_seq_id'], item['auth_comp_id'], authAtomId
 
-        if len(atomId) > 1:
+        if lenAtomId > 1:
 
             item = next((item for item in mapping
                          if item['original_atom_id'] == '2H' + atomId[1:]), None)
@@ -2159,7 +2160,7 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
 
                 return item['auth_seq_id'], item['auth_comp_id'], authAtomId
 
-            if atomId[1] == 'H' and len(atomId) > 2:
+            if atomId[1] == 'H' and lenAtomId > 2:
 
                 item = next((item for item in mapping if item['original_atom_id'] == atomId[1:] + '2'), None)
 
@@ -2168,7 +2169,7 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
                     if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                         return seqId, compId, atomId
 
-                    authAtomId = item['auth_atom_id'][:len(atomId)] + '%'
+                    authAtomId = item['auth_atom_id'][:lenAtomId] + '%'
                     methyl = ccU.getMethylAtoms(item['auth_comp_id'])
                     if item['auth_atom_id'] in methyl:
                         authAtomId = 'M' + authAtomId[1:-1]
@@ -2207,7 +2208,7 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
 
                     return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id']
 
-    if elemName == 'H' or (elemName in ('1', '2', '3') and len(atomId) > 1 and atomId[1] == 'H'):
+    if elemName == 'H' or (elemName in ('1', '2', '3') and lenAtomId > 1 and atomId[1] == 'H'):
 
         item = next((item for item in mapping
                      if item['original_atom_id'] == atomId), None)
@@ -2337,7 +2338,7 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
 
                 return seqId, compId, candidate[order]
 
-    if len(atomId) == 1:
+    if lenAtomId == 1:
 
         if coordAtomSite is not None and atomId not in coordAtomSite['atom_id']:
 
@@ -2363,6 +2364,7 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
 
     if atomId.endswith('"'):
         atomId = atomId[:-1] + "''"
+    lenAtomId = len(atomId)
 
     elemName = atomId[0]
 
@@ -2387,7 +2389,7 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
                 _mapping.append(_item)
         mapping = _mapping
 
-    if atomId.startswith('QQ') and len(atomId) > 2 and atomId not in ('QQR', 'QQM'):
+    if atomId.startswith('QQ') and lenAtomId > 2 and atomId not in ('QQR', 'QQM'):
         item = next((item for item in mapping
                      if item['original_atom_id'] in ('H' + atomId[2:] + '22',
                                                      '2H' + atomId[2:] + '2')), None)
@@ -2424,7 +2426,7 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
 
             return authAtomId
 
-        if len(atomId) > 1:
+        if lenAtomId > 1:
 
             item = next((item for item in mapping
                          if item['original_atom_id'] == '2H' + atomId[1:]), None)
@@ -2443,7 +2445,7 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
 
                 return authAtomId
 
-            if atomId[1] == 'H' and len(atomId) > 2:
+            if atomId[1] == 'H' and lenAtomId > 2:
 
                 item = next((item for item in mapping if item['original_atom_id'] == atomId[1:] + '2'), None)
 
@@ -2452,7 +2454,7 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
                     if coordAtomSite is not None and item['auth_atom_id'] not in coordAtomSite['atom_id']:
                         return atomId
 
-                    authAtomId = item['auth_atom_id'][:len(atomId)] + '%'
+                    authAtomId = item['auth_atom_id'][:lenAtomId] + '%'
 
                     methyl = ccU.getMethylAtoms(item['auth_comp_id'])
                     if item['auth_atom_id'] in methyl:
@@ -2492,7 +2494,7 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
 
                     return item['auth_atom_id']
 
-    if elemName == 'H' or (elemName in ('1', '2', '3') and len(atomId) > 1 and atomId[1] == 'H'):
+    if elemName == 'H' or (elemName in ('1', '2', '3') and lenAtomId > 1 and atomId[1] == 'H'):
 
         item = next((item for item in mapping
                      if item['original_atom_id'] == atomId), None)
@@ -2613,7 +2615,7 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
             if order < len(candidate):
                 return candidate[order]
 
-    if len(atomId) == 1:
+    if lenAtomId == 1:
 
         if coordAtomSite is not None and atomId not in coordAtomSite['atom_id']:
 

@@ -6599,9 +6599,11 @@ class NEFTranslator:
             if atom_id in self.__csStat.getMethylAtoms(comp_id):
                 methyl_only = True
 
+        len_atom_id = len(atom_id)
+
         if atom_id[0] in ('H', 'Q', 'M'):
 
-            if atom_id[-1] == '+' and atom_id[1].isdigit() and len(atom_id) > 2 and self.__ccU.updateChemCompDict(comp_id):
+            if atom_id[-1] == '+' and atom_id[1].isdigit() and len_atom_id > 2 and self.__ccU.updateChemCompDict(comp_id):
                 if self.__ccU.lastChemCompDict['_chem_comp.type'] in ('DNA LINKING', 'RNA LINKING'):  # DAOTHER-9198
                     _atom_list, _ambiguity_code, _details = self.get_valid_star_atom_for_ligand_remap(comp_id, 'HN' + atom_id[1:-1], coord_atom_site, methyl_only)
                     if _details is None:
@@ -6614,7 +6616,7 @@ class NEFTranslator:
             _atom_list, _ambiguity_code, _details = self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id + '%', coord_atom_site, methyl_only)
             if _details is None:
                 atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
-            elif atom_id[0] in protonBeginCode or len(atom_id) > 1:
+            elif atom_id[0] in protonBeginCode or len_atom_id > 1:
                 atom_list, ambiguity_code, details = self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id + '*', coord_atom_site, methyl_only)
                 if details is not None:
                     atom_list, ambiguity_code, details = self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id, coord_atom_site, methyl_only)
@@ -6706,6 +6708,8 @@ class NEFTranslator:
             atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, atom_id, details, coord_atom_site, methyl_only)
             return (atom_list, ambiguity_code, details)
 
+        len_atom_id = len(atom_id)
+
         if atom_id[0] in ('M', 'Q'):
 
             if atom_id.startswith('QQ'):
@@ -6741,7 +6745,7 @@ class NEFTranslator:
                 min_len = 4 if atom_id.startswith('QQ') else 1  # ILE/LEU/THR:QB -> HB (2m6i), MG -> Magnesium (2n3r)
                 if atom_id[-1].isalnum():
                     atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[1:] + '%', details, coord_atom_site, methyl_only)
-                    if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and len(atom_id) > 1\
+                    if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and len_atom_id > 1\
                        and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
                         grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[1])
                         if len(grk_atoms) > 0:
@@ -6762,7 +6766,7 @@ class NEFTranslator:
                 if len(atom_list) >= min_len:
                     return (atom_list, ambiguity_code, details)
 
-        if len(atom_id) > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
+        if len_atom_id > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
             atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, atom_id + '%', details, coord_atom_site, methyl_only)
             return (atom_list, ambiguity_code, details)
 
@@ -6774,7 +6778,7 @@ class NEFTranslator:
                 atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
 
         if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and atom_id[0] in ('H', 'C', 'N', 'O', 'P')\
-           and len(atom_id) > 1 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H')\
+           and len_atom_id > 1 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H')\
            and (atom_id[0] != 'H' or (atom_id[0] == 'H' and atom_id[-1] not in ('%', '#'))):
             grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, atom_id)
             if len(grk_atoms) > 0:
@@ -7114,6 +7118,8 @@ class NEFTranslator:
                 if atom_id in self.__csStat.getMethylAtoms(comp_id):
                     methyl_only = True
 
+            len_atom_id = len(atom_id)
+
             if atom_id[0] in ('H', 'Q', 'M') and (self.__remediation_mode or atom_id[0] in ('H', 'M')):  # DAOTHER-8663, 8751
 
                 if atom_id.endswith('1') and not self.validate_comp_atom(comp_id, atom_id):
@@ -7168,7 +7174,7 @@ class NEFTranslator:
                     atom_list, ambiguity_code, details = ['HB', 'HG12', 'HG13'], 4, None
                     return (atom_list, ambiguity_code, details)
 
-                if atom_id[-1] == '+' and atom_id[1].isdigit() and len(atom_id) > 2 and self.__ccU.updateChemCompDict(comp_id):
+                if atom_id[-1] == '+' and atom_id[1].isdigit() and len_atom_id > 2 and self.__ccU.updateChemCompDict(comp_id):
                     if self.__ccU.lastChemCompDict['_chem_comp.type'] in ('DNA LINKING', 'RNA LINKING'):  # DAOTHER-9198
                         _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, 'HN' + atom_id[1:-1], details, leave_unmatched, methyl_only)
                         if _details is None:
@@ -7181,7 +7187,7 @@ class NEFTranslator:
                 _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, atom_id + '%', details, leave_unmatched, methyl_only)
                 if _details is None:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
-                elif atom_id[0] in protonBeginCode or len(atom_id) > 1:
+                elif atom_id[0] in protonBeginCode or len_atom_id > 1:
                     atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id + '*', details, leave_unmatched, methyl_only)
                     if details is not None:
                         atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
@@ -7336,6 +7342,8 @@ class NEFTranslator:
                 atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
                 return (atom_list, ambiguity_code, details)
 
+            len_atom_id = len(atom_id)
+
             if atom_id[0] == 'M' or (atom_id[0] == 'Q' and self.__remediation_mode):  # DAOTHER-8663, 8751
 
                 if atom_id.startswith('QQM'):  # 2n06, comp_id=CM8, atom_id=QQM -> ['HM2%', HM3%']
@@ -7410,7 +7418,7 @@ class NEFTranslator:
                     min_len = 4 if atom_id.startswith('QQ') else 1  # ILE/LEU/THR:QB -> HB (2m6i), MG -> Magnesium (2n3r)
                     if atom_id[-1].isalnum():
                         atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched, methyl_only)
-                        if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and len(atom_id) > 1\
+                        if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and len_atom_id > 1\
                            and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
                             grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[1])
                             if len(grk_atoms) > 0:
@@ -7431,7 +7439,7 @@ class NEFTranslator:
                     if len(atom_list) >= min_len:
                         return (atom_list, ambiguity_code, details)
 
-            if len(atom_id) > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
+            if len_atom_id > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
                 atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id + '%', details, leave_unmatched, methyl_only)
                 return (atom_list, ambiguity_code, details)
 
@@ -7443,7 +7451,7 @@ class NEFTranslator:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
 
             if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and atom_id[0] in ('H', 'C', 'N', 'O', 'P')\
-               and len(atom_id) > 1 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H')\
+               and len_atom_id > 1 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H')\
                and (atom_id[0] != 'H' or (atom_id[0] == 'H' and atom_id[-1] not in ('%', '#'))):
                 grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, atom_id)
                 if len(grk_atoms) > 0:

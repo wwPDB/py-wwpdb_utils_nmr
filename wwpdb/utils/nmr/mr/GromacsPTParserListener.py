@@ -96,6 +96,7 @@ class GromacsPTParserListener(ParseTreeListener):
     __hasPolySeqModel = False
     __hasNonPolyModel = False
     __hasBranchedModel = False
+    __noWaterMol = True
 
     # polymer sequence of GROMACS parameter/topology file
     __polySeqPrmTop = None
@@ -145,6 +146,7 @@ class GromacsPTParserListener(ParseTreeListener):
         self.__hasPolySeqModel = self.__polySeqModel is not None and len(self.__polySeqModel) > 0
         self.__hasNonPolyModel = self.__nonPolyModel is not None and len(self.__nonPolyModel) > 0
         self.__hasBranchedModel = self.__branchedModel is not None and len(self.__branchedModel) > 0
+        self.__noWaterMol = not self.__hasNonPolyModel or not any(np['comp_id'][0] == 'HOH' for np in self.__nonPolyModel)
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -275,6 +277,8 @@ class GromacsPTParserListener(ParseTreeListener):
                 atomType = atom['atom_type']
                 _seqId = atom['auth_seq_id']
                 compId = atom['auth_comp_id']
+                if self.__noWaterMol and (compId in ('HOH', 'H2O', 'WAT') or (len(compId) > 3 and compId[:3] in ('HOH', 'H2O', 'WAT'))):
+                    break
                 if not hasSegCompId and (compId.endswith('5') or compId.endswith('3')):
                     hasSegCompId = True
                 if not hasSegCompId and compId not in monDict3 and self.__mrAtomNameMapping is not None and atomName[0] in protonBeginCode:

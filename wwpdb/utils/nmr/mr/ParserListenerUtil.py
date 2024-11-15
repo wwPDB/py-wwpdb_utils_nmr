@@ -1908,6 +1908,8 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
     """
 
     atomId = atomId.upper()
+    lenAtomId = len(atomId)
+    lenRefCompId = 0 if refCompId is None else len(refCompId)
 
     if refAtomIdList is not None:
         if atomId in refAtomIdList:
@@ -2084,13 +2086,13 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                         return 'HM5'
                 if atomId in ('C7', 'CM'):  # 7png, 7pdu
                     return 'C5M'
-            elif refCompId in ('DA', 'A') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
+            elif refCompId in ('DA', 'A') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
                 return 'H6' + atomId[-1]
-            elif refCompId in ('DG', 'G') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):  # 6g99
+            elif refCompId in ('DG', 'G') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):  # 6g99
                 return 'H2' + atomId[-1]
-            elif refCompId in ('DC', 'C') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
+            elif refCompId in ('DC', 'C') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
                 return 'H4' + atomId[-1]
-            elif refCompId == 'U' and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] == '1':  # 6g99
+            elif refCompId == 'U' and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] == '1':  # 6g99
                 return 'H3'
             elif refAtomIdList is not None and ((atomId[0] + 'N' + atomId[1:] in refAtomIdList) or (atomId[0] + 'N' + atomId[1:] + '1' in refAtomIdList)):  # 5CM
                 return atomId[0] + 'N' + atomId[1:]
@@ -2140,7 +2142,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                         return "H4'"
                 if "H4'" in _refAtomIdList:
                     return "H4'"
-            if atomId[0] == 'R' and len(atomId) > 1:  # 2lkk
+            if atomId[0] == 'R' and lenAtomId > 1:  # 2lkk
                 _atomId = 'H' + atomId[1:]
                 if _atomId in _refAtomIdList:
                     return _atomId
@@ -2152,9 +2154,9 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 if len(candidates) == 1:
                     return candidates[0]
 
-            if len(refCompId) == 3 and refCompId in monDict3 and len(atomId) > 1:
+            if lenRefCompId == 3 and refCompId in monDict3 and lenAtomId > 1:
                 candidates = [_atomId for _atomId in _refAtomIdList if _atomId.startswith(atomId)]
-                if len(candidates) == 1 and len(candidates[0]) == len(atomId) + 1 and candidates[0][-1].isdigit():
+                if len(candidates) == 1 and len(candidates[0]) == lenAtomId + 1 and candidates[0][-1].isdigit():
                     return candidates[0]
 
             if not unambig:
@@ -2228,7 +2230,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'CD1'
 
         elif refCompId in ('SER', 'THR', 'TYR'):
-            if atomId.startswith('HO') and len(atomId) > 2:  # 2n6j
+            if atomId.startswith('HO') and lenAtomId > 2:  # 2n6j
                 return 'H' + atomId[2:]
 
         elif refCompId == 'ASN' and atomId.startswith('HND'):  # 2kg1
@@ -2355,12 +2357,12 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
             if atomId == 'QPG' and refCompId == 'OUI':
                 return 'HG1'
 
-        if len(refCompId) == 3 and refCompId in monDict3:
+        if lenRefCompId == 3 and refCompId in monDict3:
             if atomId in ('O1', 'OT1'):
                 return 'O'
             if atomId == 'O2' or atomId.startswith('OT'):
                 return 'OXT'
-            if atomId.startswith('HT') and len(atomId) > 2:
+            if atomId.startswith('HT') and lenAtomId > 2:
                 return 'H' + atomId[2:]
             if atomId == 'NH':  # 2jwu
                 return 'N'
@@ -2373,7 +2375,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return 'HE1'
 
         # BIOSYM atom nomenclature
-        if (atomId[-1] in ('R', 'S', 'Z', 'E') or (len(atomId) > 2 and atomId[-1] in ('*', '%') and atomId[-2] in ('R', 'S'))):
+        if (atomId[-1] in ('R', 'S', 'Z', 'E') or (lenAtomId > 2 and atomId[-1] in ('*', '%') and atomId[-2] in ('R', 'S'))):
             if refCompId in ('CYS', 'ASP', 'HIS', 'SER'):
                 if atomId == 'HBR':
                     return 'HB3'
@@ -2508,17 +2510,17 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return 'CG2'
 
     if atomId.endswith("O'1"):
-        atomId = atomId[:len(atomId) - 3] + "O1'"
+        atomId = atomId[:lenAtomId - 3] + "O1'"
     elif atomId.endswith("O'2"):
-        atomId = atomId[:len(atomId) - 3] + "O2'"
+        atomId = atomId[:lenAtomId - 3] + "O2'"
     elif atomId.endswith("O'3"):
-        atomId = atomId[:len(atomId) - 3] + "O3'"
+        atomId = atomId[:lenAtomId - 3] + "O3'"
     elif atomId.endswith("O'4"):
-        atomId = atomId[:len(atomId) - 3] + "O4'"
+        atomId = atomId[:lenAtomId - 3] + "O4'"
     elif atomId.endswith("O'5"):
-        atomId = atomId[:len(atomId) - 3] + "O5'"
+        atomId = atomId[:lenAtomId - 3] + "O5'"
     elif atomId.endswith("O'6"):
-        atomId = atomId[:len(atomId) - 3] + "O6'"
+        atomId = atomId[:lenAtomId - 3] + "O6'"
     elif atomId.endswith("'1") and not atomId.endswith("''1"):
         atomId = atomId.rstrip('1')
     elif atomId.endswith("'2") and not atomId.endswith("''2"):
@@ -2535,9 +2537,9 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
         atomId = 'HOP2'
     elif atomId.endswith("''"):
         if atomId[0] in ('C', 'O') and atomId[1].isdigit():
-            atomId = atomId[:len(atomId) - 1]
+            atomId = atomId[:lenAtomId - 1]
     elif atomId.endswith('"'):
-        atomId = atomId[:len(atomId) - 1] + "''"
+        atomId = atomId[:lenAtomId - 1] + "''"
 
     if refAtomIdList is not None and atomId not in refAtomIdList:
         if not atomId.endswith("'") and (atomId + "'") in refAtomIdList:
@@ -2574,13 +2576,13 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return "H5'1"
         if atomId.endswith("''") and atomId[:-1] in refAtomIdList:
             return atomId[:-1]
-        if atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[2] in ('1', '2'):
+        if atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[2] in ('1', '2'):
             n = atomId[1]
             if atomId.endswith('1') and ('HN' + n) in refAtomIdList:
                 return 'HN' + n
             if atomId.endswith('2') and ('HN' + n + 'A') in refAtomIdList:
                 return 'HN' + n + 'A'
-        if atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit():  # DAOTHER-9198: DNR(DC):H3+ -> HN3
+        if atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit():  # DAOTHER-9198: DNR(DC):H3+ -> HN3
             if 'HN' + atomId[1] in refAtomIdList:
                 return 'HN' + atomId[1]
         if atomId.startswith("HN'") and ccU.getTypeOfCompId(refCompId)[1]:
@@ -2597,7 +2599,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 if len(nh) == 1:
                     if nh[0] in refAtomIdList:
                         return nh[0]
-        if len(atomId) > 1 and atomId[-1] not in ('*', '%') and refCompId not in monDict3:
+        if lenAtomId > 1 and atomId[-1] not in ('*', '%') and refCompId not in monDict3:
             canAtomIdList = [_atomId for _atomId in refAtomIdList if _atomId[0] == atomId[0]]
             if len(canAtomIdList) > 0:
                 pA = PairwiseAlign()
@@ -2641,9 +2643,10 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
     """
 
     atomId = atomId.upper()
+    lenAtomId = len(atomId)
 
     if dmpcNameSystemId == 1:  # 2mzi
-        if atomId.startswith('CN') and len(atomId) == 3:
+        if atomId.startswith('CN') and lenAtomId == 3:
             if atomId[-1] == '1':
                 return 'C3'
             if atomId[-1] == '2':
@@ -2675,7 +2678,7 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
             return 'O7'
         if atomId == 'OF':
             return 'O8'
-        if atomId.startswith('C2') and len(atomId) == 3:
+        if atomId.startswith('C2') and lenAtomId == 3:
             if atomId[-1] == 'A':
                 return 'C8'
             if atomId[-1] == 'B':
@@ -2713,7 +2716,7 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
             return 'O5'
         if atomId == 'OH':
             return 'O6'
-        if atomId.startswith('C1') and len(atomId) == 3:
+        if atomId.startswith('C1') and lenAtomId == 3:
             if atomId[-1] == 'A':
                 return 'C23'
             if atomId[-1] == 'B':
@@ -2838,7 +2841,7 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
             return 'N1'
         if atomId == 'C13':
             return 'C3'
-        if atomId.startswith('H13') and len(atomId) == 3:
+        if atomId.startswith('H13') and lenAtomId == 3:
             if atomId[-1] == 'A':
                 return 'H5'
             if atomId[-1] == 'B':
@@ -2847,7 +2850,7 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
                 return 'H7'
         if atomId == 'C14':
             return 'C4'
-        if atomId.startswith('H14') and len(atomId) == 3:
+        if atomId.startswith('H14') and lenAtomId == 3:
             if atomId[-1] == 'A':
                 return 'H8'
             if atomId[-1] == 'B':
@@ -2856,7 +2859,7 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
                 return 'H10'
         if atomId == 'C15':
             return 'C5'
-        if atomId.startswith('H15') and len(atomId) == 3:
+        if atomId.startswith('H15') and lenAtomId == 3:
             if atomId[-1] == 'A':
                 return 'H11'
             if atomId[-1] == 'B':
@@ -2865,14 +2868,14 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
                 return 'H13'
         if atomId == 'C12':
             return 'C2'
-        if atomId.startswith('H12') and len(atomId) == 3:
+        if atomId.startswith('H12') and lenAtomId == 3:
             if atomId[-1] == 'A':
                 return 'H3'
             if atomId[-1] == 'B':
                 return 'H4'
         if atomId == 'C11':
             return 'C1'
-        if atomId.startswith('H11') and len(atomId) == 3:
+        if atomId.startswith('H11') and lenAtomId == 3:
             if atomId[-1] == 'A':
                 return 'H1'
             if atomId[-1] == 'B':
@@ -3182,7 +3185,10 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
     """ Translate software specific residue name to standard residue name of CCD.
     """
 
-    if len(compId) > 3:
+    lenCompId = len(compId)
+    lenRefCompId = 0 if refCompId is None else len(refCompId)
+
+    if lenCompId > 3:
         compId3 = compId[:3]
 
         if compId3 in monDict3:
@@ -3209,20 +3215,20 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
         if _compId == 'HC':
             return 'CH' if refCompId == 'C' else 'DNR'
 
-    if compId.startswith('R') and len(compId) > 1 and compId[1] in ('A', 'C', 'G', 'U'):
+    if compId.startswith('R') and lenCompId > 1 and compId[1] in ('A', 'C', 'G', 'U'):
         _compId = compId[1:]
 
         if _compId in monDict3:
             return _compId
 
-        if refCompId is not None and len(refCompId) == 1 and _compId[-1] in ('5', '3'):
+        if refCompId is not None and lenRefCompId == 1 and _compId[-1] in ('5', '3'):
             _compId = _compId[:-1]
 
             if _compId in monDict3:
                 return _compId
 
-    if refCompId is not None and refCompId in monDict3 and len(refCompId) == 3:
-        if len(compId) >= 3 and compId[:2] == refCompId[:2]:  # 1e8e: HID/HIE/HIF/HIP/HIZ -> HIS, PR. -> PRO, 2k4w: ASM -> ASP + ZN, 2n6j: TYZ -> TYR
+    if refCompId is not None and refCompId in monDict3 and lenRefCompId == 3:
+        if lenCompId >= 3 and compId[:2] == refCompId[:2]:  # 1e8e: HID/HIE/HIF/HIP/HIZ -> HIS, PR. -> PRO, 2k4w: ASM -> ASP + ZN, 2n6j: TYZ -> TYR
             return refCompId
         if 'Z' in compId and compId[0] == refCompId[0]:  # 2n6j: GZC, GZL -> GLU + ZN,
             return refCompId
@@ -3241,7 +3247,7 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
     if compId in ('CYO', 'CYX', 'CYZ', 'CZN'):
         return 'CYS'
 
-    if len(compId) == 3:
+    if lenCompId == 3:
         if compId.startswith('DA'):
             return 'DA'
         if compId.startswith('DC'):
@@ -3281,7 +3287,7 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
         if compId == 'HCY':
             return 'CH' if refCompId == 'C' else 'DNR'
 
-    if len(compId) == 2 and compId[1] == 'P':
+    if lenCompId == 2 and compId[1] == 'P':
         if compId == 'AP':
             return 'A' if refCompId == 'A' else 'DA'
         if compId == 'CP':
@@ -3314,10 +3320,10 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
     if compId == 'HEMC':
         return 'HEC'
 
-    if len(compId) > 3 and compId[:3] in ('H2O', 'WAT'):
+    if lenCompId >= 3 and compId[:3] in ('H2O', 'WAT'):
         return 'HOH'
 
-    if len(compId) > 3 and compId[3] in ('_', '+', '-'):  # 1e8e
+    if lenCompId > 3 and compId[3] in ('_', '+', '-'):  # 1e8e
         if ccU is not None and ccU.updateChemCompDict(compId[:3]):
             return compId[:3]
 

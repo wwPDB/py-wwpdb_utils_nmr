@@ -105,6 +105,7 @@ class AmberPTParserListener(ParseTreeListener):
     __hasPolySeqModel = False
     __hasNonPolyModel = False
     __hasBranchedModel = False
+    __noWaterMol = True
 
     # polymer sequence of AMBER parameter/topology file
     __polySeqPrmTop = None
@@ -172,6 +173,7 @@ class AmberPTParserListener(ParseTreeListener):
         self.__hasPolySeqModel = self.__polySeqModel is not None and len(self.__polySeqModel) > 0
         self.__hasNonPolyModel = self.__nonPolyModel is not None and len(self.__nonPolyModel) > 0
         self.__hasBranchedModel = self.__branchedModel is not None and len(self.__branchedModel) > 0
+        self.__noWaterMol = not self.__hasNonPolyModel or not any(np['comp_id'][0] == 'HOH' for np in self.__nonPolyModel)
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
@@ -333,6 +335,8 @@ class AmberPTParserListener(ParseTreeListener):
                               in enumerate(zip(self.__residuePointer, residuePointer2), start=1)
                               if atomNumBegin <= atomNum <= atomNumEnd)
                 compId = self.__residueLabel[_seqId - 1]
+                if self.__noWaterMol and (compId in ('HOH', 'H2O', 'WAT') or (len(compId) > 3 and compId[:3] in ('HOH', 'H2O', 'WAT'))):
+                    break
                 if not hasSegCompId and (compId.endswith('5') or compId.endswith('3')):
                     hasSegCompId = True
                 if not hasSegCompId and compId not in monDict3 and self.__mrAtomNameMapping is not None and atomName[0] in protonBeginCode:
@@ -1204,8 +1208,10 @@ class AmberPTParserListener(ParseTreeListener):
                 atomTypeList = []
                 i = 0
                 while ctx.Simple_name(i):
-                    chunk = chunk_string(str(ctx.Simple_name(i)).upper(), self.__cur_word_len)
-                    atomTypeList.extend(chunk)
+                    atomTypeList += chunk_string(str(ctx.Simple_name(i)).upper(), self.__cur_word_len)
+                    if self.__noWaterMol and set(atomTypeList[-2:]) == {'OW', 'HW'}:
+                        break
+                    # atomTypeList.extend(chunk_string(str(ctx.Simple_name(i)).upper(), self.__cur_word_len))
                     i += 1
                 self.__amberAtomType = atomTypeList
             return
@@ -1272,8 +1278,10 @@ class AmberPTParserListener(ParseTreeListener):
                 atomIdList = []
                 i = 0
                 while ctx.Simple_name(i):
-                    chunk = chunk_string(str(ctx.Simple_name(i)).upper(), self.__cur_word_len)
-                    atomIdList.extend(chunk)
+                    atomIdList += chunk_string(str(ctx.Simple_name(i)).upper(), self.__cur_word_len)
+                    if self.__noWaterMol and set(atomIdList[-3:]) == {'O', 'H1', 'H2'}:
+                        break
+                    # atomIdList.extend(chunk_string(str(ctx.Simple_name(i)).upper(), self.__cur_word_len))
                     i += 1
                 self.__atomName = atomIdList
             return
@@ -1608,8 +1616,11 @@ class AmberPTParserListener(ParseTreeListener):
             if self.__hasCoord:
                 i = 0
                 while ctx.Simple_name(i):
-                    chunk = chunk_string(str(ctx.Simple_name(i)).upper(), self.__cur_word_len)
-                    self.__residueLabel.extend(chunk)
+                    self.__residueLabel += chunk_string(str(ctx.Simple_name(i)).upper(), self.__cur_word_len)
+                    if self.__noWaterMol and (self.__residueLabel[-1] in ('HOH', 'H2O', 'WAT')
+                                              or (len(self.__residueLabel[-1]) > 3 and self.__residueLabel[:3] in ('HOH', 'H2O', 'WAT'))):
+                        break
+                    # self.__residueLabel.extend(chunk_string(str(ctx.Simple_name(i)).upper(), self.__cur_word_len))
                     i += 1
             return
         self.residueLabelStatements -= 1

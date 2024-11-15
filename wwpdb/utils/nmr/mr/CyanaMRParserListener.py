@@ -35,6 +35,7 @@ try:
                                                        getAltProtonIdInBondConstraint,
                                                        guessCompIdFromAtomId,
                                                        getTypeOfDihedralRestraint,
+                                                       remediateBackboneDehedralRestraint,
                                                        isLikePheOrTyr,
                                                        getMetalCoordOf,
                                                        getRestraintName,
@@ -136,6 +137,7 @@ except ImportError:
                                            getAltProtonIdInBondConstraint,
                                            guessCompIdFromAtomId,
                                            getTypeOfDihedralRestraint,
+                                           remediateBackboneDehedralRestraint,
                                            isLikePheOrTyr,
                                            getMetalCoordOf,
                                            getRestraintName,
@@ -5388,6 +5390,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                     [atom1, atom2, atom3, atom4],
                                                                     'plane_like' in dstFunc)
 
+                            if _angleName.startswith('pseudo'):
+                                _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
+                                                                                              [atom1, atom2, atom3, atom4])
+
                             if _angleName in emptyValue and atomSelTotal != 4:
                                 continue
 
@@ -5407,6 +5413,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                                 [atom1, atom2, atom3, atom4],
                                                                 'plane_like' in dstFunc)
+
+                        if _angleName.startswith('pseudo'):
+                            _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
+                                                                                          [atom1, atom2, atom3, atom4])
 
                         if _angleName in emptyValue and atomSelTotal != 4:
                             continue
@@ -9155,6 +9165,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                     [atom1, atom2, atom3, atom4],
                                                                     'plane_like' in dstFunc)
 
+                            if _angleName.startswith('pseudo'):
+                                _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
+                                                                                              [atom1, atom2, atom3, atom4])
+
                             if _angleName in emptyValue and atomSelTotal != 4:
                                 continue
 
@@ -9174,6 +9188,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                                 [atom1, atom2, atom3, atom4],
                                                                 'plane_like' in dstFunc)
+
+                        if _angleName.startswith('pseudo'):
+                            _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
+                                                                                          [atom1, atom2, atom3, atom4])
 
                         if _angleName in emptyValue and atomSelTotal != 4:
                             continue

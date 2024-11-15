@@ -22,6 +22,7 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
                                                        getTypeOfDihedralRestraint,
+                                                       remediateBackboneDehedralRestraint,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        translateToLigandName,
@@ -103,6 +104,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
                                            getTypeOfDihedralRestraint,
+                                           remediateBackboneDehedralRestraint,
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            translateToLigandName,
@@ -2740,6 +2742,10 @@ class BiosymMRParserListener(ParseTreeListener):
                                                            self.__cR, self.__ccU,
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
+                    if angleName.startswith('pseudo'):
+                        angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
+                                                                                     [atom1, atom2, atom3, atom4])
+
                     if angleName in emptyValue and atomSelTotal != 4:
                         continue
 
@@ -2761,6 +2767,10 @@ class BiosymMRParserListener(ParseTreeListener):
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+
+                if angleName.startswith('pseudo'):
+                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
+                                                                                 [atom1, atom2, atom3, atom4])
 
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue
@@ -2928,6 +2938,10 @@ class BiosymMRParserListener(ParseTreeListener):
                                                            self.__cR, self.__ccU,
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
+                    if angleName.startswith('pseudo'):
+                        angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
+                                                                                     [atom1, atom2, atom3, atom4])
+
                     if angleName in emptyValue and atomSelTotal != 4:
                         continue
 
@@ -2949,6 +2963,10 @@ class BiosymMRParserListener(ParseTreeListener):
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+
+                if angleName.startswith('pseudo'):
+                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
+                                                                                 [atom1, atom2, atom3, atom4])
 
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue

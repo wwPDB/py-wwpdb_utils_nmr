@@ -34,6 +34,7 @@ try:
                                                        getAltProtonIdInBondConstraint,
                                                        guessCompIdFromAtomId,
                                                        getTypeOfDihedralRestraint,
+                                                       remediateBackboneDehedralRestraint,
                                                        isLikePheOrTyr,
                                                        getRdcCode,
                                                        isCyclicPolymer,
@@ -150,6 +151,7 @@ except ImportError:
                                            getAltProtonIdInBondConstraint,
                                            guessCompIdFromAtomId,
                                            getTypeOfDihedralRestraint,
+                                           remediateBackboneDehedralRestraint,
                                            isLikePheOrTyr,
                                            getRdcCode,
                                            isCyclicPolymer,
@@ -2883,6 +2885,10 @@ class XplorMRParserListener(ParseTreeListener):
                                                            self.__cR, self.__ccU,
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
+                    if angleName.startswith('pseudo'):
+                        angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
+                                                                                     [atom1, atom2, atom3, atom4])
+
                     if angleName in emptyValue and atomSelTotal != 4:
                         continue
 
@@ -2904,6 +2910,10 @@ class XplorMRParserListener(ParseTreeListener):
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+
+                if angleName.startswith('pseudo'):
+                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
+                                                                                 [atom1, atom2, atom3, atom4])
 
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue

@@ -1856,6 +1856,8 @@ PTNR2_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt
                               {'name': 'ptnr2_label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
                               ]
 
+REMEDIATE_BACKBONE_ANGLE_NAME_PAT = re.compile(r'pseudo (PHI|PSI|OMEGA) \(0, (0|1|\-1), (0|1|\-1), 0\)')
+
 
 def toRegEx(string):
     """ Return regular expression for a given string including XPLOR-NIH wildcard format.
@@ -5842,6 +5844,14 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         if atomIds == phiPsiCommonAtomIds:
                             return 'PSI'
 
+            if atomIds == ['C', 'N', 'CA', 'C']:  # i-1, i, i, i
+                if seqIds[0] + 1 == seqIds[3] and (abs(seqIds[1] - seqIds[3]) == 1 or abs(seqIds[2] - seqIds[3]) == 1):
+                    return f'pseudo PHI (0, {seqIds[3] - seqIds[1]}, {seqIds[3] - seqIds[2]}, 0)'
+
+            if atomIds == ['N', 'CA', 'C', 'N']:  # i, i, i, i+1
+                if seqIds[0] + 1 == seqIds[3] and (abs(seqIds[1] - seqIds[0]) == 1 or abs(seqIds[2] - seqIds[0]) == 1):
+                    return f'pseudo PSI (0, {seqIds[0] - seqIds[1]}, {seqIds[0] - seqIds[2]}, 0)'
+
             # OMEGA
             if atomIds[0] == 'CA' and atomIds[1] == 'N' and atomIds[2] == 'C' and atomIds[3] == 'CA'\
                and seqIds[0] == seqIds[1] and seqIds[1] - 1 == seqIds[2] and seqIds[2] == seqIds[3]:
@@ -5851,11 +5861,19 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                and seqIds[0] == seqIds[1] and seqIds[1] + 1 == seqIds[2] and seqIds[2] == seqIds[3]:
                 return 'OMEGA'
 
+            if atomIds in (['CA', 'N', 'C', 'CA'], ['CA', 'C', 'N', 'CA']):  # i, i, i+1, i+1
+                if abs(seqIds[0] - seqIds[3]) == 1 and (abs(seqIds[1] - seqIds[0]) == 1 or abs(seqIds[2] - seqIds[3]) == 1):
+                    return f'pseudo OMEGA (0, {seqIds[0] - seqIds[1]}, {seqIds[3] - seqIds[2]}, 0)'
+
             # OMEGA - modified CYANA definition
             if atomIds[0] == 'O' and atomIds[1] == 'C' and atomIds[2] == 'N'\
                and (atomIds[3] == 'H' or atomIds[3] == 'CD')\
                and seqIds[0] == seqIds[1] and seqIds[1] + 1 == seqIds[2] and seqIds[2] == seqIds[3]:
                 return 'OMEGA'
+
+            if atomIds in (['O', 'C', 'N', 'H'], ['O', 'C', 'N', 'CD']):  # i, i, i+1, i+1
+                if seqIds[0] + 1 == seqIds[3] and (abs(seqIds[1] - seqIds[0]) == 1 or abs(seqIds[2] - seqIds[3]) == 1):
+                    return f'pseudo OMEGA (0, {seqIds[0] - seqIds[1]}, {seqIds[3] - seqIds[2]}, 0)'
 
         elif lenCommonSeqId == 1:
 
@@ -5901,7 +5919,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         found = False
                         break
 
-            if found:
+            if found and not planeLike:
                 return '.' if is_connected() else None
 
     elif polynucleotide:
@@ -6017,7 +6035,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         found = False
                         break
 
-            if found:
+            if found and not planeLike:
                 return '.' if is_connected() else None
 
         if 'N1' in atomIds:
@@ -6030,7 +6048,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                     found = False
                     break
 
-            if found:
+            if found and not planeLike:
                 return '.' if is_connected() else None
 
         elif 'N9' in atomIds:
@@ -6043,7 +6061,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                     found = False
                     break
 
-            if found:
+            if found and not planeLike:
                 return '.' if is_connected() else None
 
     elif carbohydrates:
@@ -6099,20 +6117,31 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         found = False
                         break
 
-            if found:
+            if found and not planeLike:
                 return '.' if is_connected() else None
 
     if planeLike:
 
         if lenCommonChainId == 1 and lenCommonSeqId == 1:
-            ring = True
-            for a in atoms:
-                cca = next((cca for cca in ccU.lastAtomList if cca[ccU.ccaAtomId] == a['atom_id']), None)
-                if cca is None or cca[ccU.ccaAromaticFlag] != 'Y':
-                    ring = False
-                    break
-            if ring:
-                return 'RING'
+            compId = atoms[0]['comp_id']
+            if ccU.updateChemCompDict(compId):
+                ring = True
+                for a in atoms:
+                    atomId = a['atom_id']
+                    cca = next((cca for cca in ccU.lastAtomList if cca[ccU.ccaAtomId] == atomId), None)
+                    if cca is None or cca[ccU.ccaAromaticFlag] != 'Y':
+                        bonded = ccU.getBondedAtoms(compId, atomId, exclProton=True)
+                        attach = False
+                        for b in bonded:
+                            _cca = next((_cca for _cca in ccU.lastAtomList if _cca[ccU.ccaAtomId] == b), None)
+                            if _cca is not None:
+                                if _cca[ccU.ccaAromaticFlag] == 'Y':
+                                    attach = True
+                        if not attach:
+                            ring = False
+                            break
+                if ring:
+                    return 'RING'
 
         if atoms[0]['chain_id'] == atoms[1]['chain_id'] and atoms[0]['seq_id'] == atoms[1]['seq_id']\
            and atoms[2]['chain_id'] == atoms[3]['chain_id'] and atoms[2]['seq_id'] == atoms[3]['seq_id']:
@@ -6130,7 +6159,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         if cca[ccU.ccaAromaticFlag] != 'Y':
                             if ccU.getTypeOfCompId(compId)[1] and atomId[0] in ('C', 'N') and not atomId.endswith("'"):
                                 continue
-                            bonded = ccU.getBondedAtoms(compId, atomId, exclProton=False)
+                            bonded = ccU.getBondedAtoms(compId, atomId, exclProton=True)
                             attach = False
                             for b in bonded:
                                 _cca = next((_cca for _cca in ccU.lastAtomList if _cca[ccU.ccaAtomId] == b), None)
@@ -6140,7 +6169,6 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                             if not attach:
                                 aroma = False
                                 break
-
                 if aroma:
                     return 'PLANE'
 
@@ -6149,6 +6177,42 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                 return 'ALIGN'
 
     return '.' if is_connected() else None
+
+
+def remediateBackboneDehedralRestraint(angleName, atoms):
+    """ Return valid angle name and remediated backbone atoms.
+    """
+
+    if REMEDIATE_BACKBONE_ANGLE_NAME_PAT.match(angleName):
+        g = REMEDIATE_BACKBONE_ANGLE_NAME_PAT.search(angleName).groups()
+
+        angleName = g[0]
+        offset1 = int(g[1])
+        offset2 = int(g[2])
+
+        if offset1 != 0:
+            seq_id1 = atoms[1]['seq_id'] + offset1
+            for idx, a in enumerate(atoms):
+                if idx == 1:
+                    continue
+                if a['seq_id'] == seq_id1:
+                    atoms[1]['chain_id'] = a['chain_id']
+                    atoms[1]['seq_id'] = a['seq_id']
+                    atoms[1]['comp_id'] = a['comp_id']
+                    break
+
+        if offset2 != 0:
+            seq_id2 = atoms[2]['seq_id'] + offset2
+            for idx, a in enumerate(atoms):
+                if idx == 2:
+                    continue
+                if a['seq_id'] == seq_id2:
+                    atoms[1]['chain_id'] = a['chain_id']
+                    atoms[1]['seq_id'] = a['seq_id']
+                    atoms[1]['comp_id'] = a['comp_id']
+                    break
+
+    return angleName, atoms[1], atoms[2]
 
 
 def isLikePheOrTyr(compId, ccU):

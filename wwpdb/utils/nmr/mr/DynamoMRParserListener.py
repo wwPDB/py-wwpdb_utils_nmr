@@ -28,6 +28,7 @@ try:
                                                        isAmbigAtomSelection,
                                                        getAltProtonIdInBondConstraint,
                                                        getTypeOfDihedralRestraint,
+                                                       remediateBackboneDehedralRestraint,
                                                        isLikePheOrTyr,
                                                        getRdcCode,
                                                        translateToStdResName,
@@ -118,6 +119,7 @@ except ImportError:
                                            isAmbigAtomSelection,
                                            getAltProtonIdInBondConstraint,
                                            getTypeOfDihedralRestraint,
+                                           remediateBackboneDehedralRestraint,
                                            isLikePheOrTyr,
                                            getRdcCode,
                                            translateToStdResName,
@@ -3112,6 +3114,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                            self.__cR, self.__ccU,
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
+                    if angleName.startswith('pseudo'):
+                        angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
+                                                                                     [atom1, atom2, atom3, atom4])
+
                     if angleName in emptyValue and atomSelTotal != 4:
                         continue
 
@@ -3135,6 +3141,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+
+                if angleName.startswith('pseudo'):
+                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
+                                                                                 [atom1, atom2, atom3, atom4])
 
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue
@@ -3271,6 +3281,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                            self.__cR, self.__ccU,
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
+                    if angleName.startswith('pseudo'):
+                        angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
+                                                                                     [atom1, atom2, atom3, atom4])
+
                     if angleName in emptyValue and atomSelTotal != 4:
                         continue
 
@@ -3294,6 +3308,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+
+                if angleName.startswith('pseudo'):
+                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
+                                                                                 [atom1, atom2, atom3, atom4])
 
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue
@@ -3430,6 +3448,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                            self.__cR, self.__ccU,
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
+                    if angleName.startswith('pseudo'):
+                        angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
+                                                                                     [atom1, atom2, atom3, atom4])
+
                     if angleName in emptyValue and atomSelTotal != 4:
                         continue
 
@@ -3453,6 +3475,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+
+                if angleName.startswith('pseudo'):
+                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
+                                                                                 [atom1, atom2, atom3, atom4])
 
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue
@@ -4525,6 +4551,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
+                if angleName.startswith('pseudo'):
+                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
+                                                                                 [atom1, atom2, atom3, atom4])
+
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue
 
@@ -4678,6 +4708,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
+                if angleName.startswith('pseudo'):
+                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
+                                                                                 [atom1, atom2, atom3, atom4])
+
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue
 
@@ -4830,6 +4864,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+
+                if angleName.startswith('pseudo'):
+                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
+                                                                                 [atom1, atom2, atom3, atom4])
 
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue
@@ -5145,6 +5183,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                     [atom1, atom2, atom3, atom4],
                                                                     'plane_like' in dstFunc)
 
+                            if _angleName.startswith('pseudo'):
+                                _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
+                                                                                              [atom1, atom2, atom3, atom4])
+
                             if _angleName in emptyValue and atomSelTotal != 4:
                                 continue
 
@@ -5166,6 +5208,10 @@ class DynamoMRParserListener(ParseTreeListener):
                         _angleName = getTypeOfDihedralRestraint(True, False, False,
                                                                 [atom1, atom2, atom3, atom4],
                                                                 'plane_like' in dstFunc)
+
+                        if _angleName.startswith('pseudo'):
+                            _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
+                                                                                          [atom1, atom2, atom3, atom4])
 
                         if _angleName in emptyValue and atomSelection != 4:
                             continue
@@ -5386,6 +5432,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                     [atom1, atom2, atom3, atom4],
                                                                     'plane_like' in dstFunc)
 
+                            if _angleName.startswith('pseudo'):
+                                _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
+                                                                                              [atom1, atom2, atom3, atom4])
+
                             if _angleName in emptyValue and atomSelTotal != 4:
                                 continue
 
@@ -5407,6 +5457,10 @@ class DynamoMRParserListener(ParseTreeListener):
                         _angleName = getTypeOfDihedralRestraint(True, False, False,
                                                                 [atom1, atom2, atom3, atom4],
                                                                 'plane_like' in dstFunc)
+
+                        if _angleName.startswith('pseudo'):
+                            _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
+                                                                                          [atom1, atom2, atom3, atom4])
 
                         if _angleName in emptyValue and atomSelTotal != 4:
                             continue

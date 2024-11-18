@@ -6148,7 +6148,6 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
 
             if all(a['atom_id'][0] not in protonBeginCode for a in atoms):
                 aroma = True
-                print(atoms)
                 for a in atoms:
                     compId = a['comp_id']
                     atomId = a['atom_id']

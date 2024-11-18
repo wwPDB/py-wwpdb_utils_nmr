@@ -24926,6 +24926,7 @@ class NmrDpUtility:
             auth_to_ins_code = self.__caC['auth_to_ins_code'] if self.__caC is not None else {}
             auth_to_star_seq_ann = self.__caC['auth_to_star_seq_ann'] if self.__caC is not None else {}
             coord_atom_site = self.__caC['coord_atom_site'] if self.__caC is not None else {}
+            coord_unobs_res = self.__caC['coord_unobs_res'] if self.__caC is not None else {}
             auth_atom_name_to_id = self.__caC['auth_atom_name_to_id'] if self.__caC is not None else {}
             auth_atom_name_to_id_ext = self.__caC['auth_atom_name_to_id_ext'] if self.__caC is not None else {}
             mis_poly_link = self.__caC['missing_polymer_linkage'] if self.__caC is not None else []
@@ -25099,7 +25100,10 @@ class NmrDpUtility:
                         _row[24] = 'UNMAPPED'
                     seq_key = (_seq_key[0], _seq_key[1], comp_id)
                     _seq_key = seq_key if seq_key in coord_atom_site else _seq_key
-                if _seq_key in coord_atom_site:
+                if _seq_key in coord_atom_site\
+                   and (coord_atom_site[_seq_key]['comp_id'] == comp_id
+                        or _seq_key not in coord_unobs_res
+                        or coord_unobs_res[_seq_key]['comp_id'] != comp_id):  # 8b9r: A:24:VAL (unobserved), A:24:CU
                     _coord_atom_site = coord_atom_site[_seq_key]
                     _atom_site_atom_id = _coord_atom_site['atom_id']
                     # DAOTHER-8817

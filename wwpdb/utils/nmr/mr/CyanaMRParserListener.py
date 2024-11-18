@@ -5391,8 +5391,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                     'plane_like' in dstFunc)
 
                             if _angleName is not None and _angleName.startswith('pseudo'):
-                                _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
-                                                                                              [atom1, atom2, atom3, atom4])
+                                _angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(_angleName,
+                                                                                                   [atom1, atom2, atom3, atom4],
+                                                                                                   self.__getCurrentRestraint())
+                                self.__f.append(err)
 
                             if _angleName in emptyValue and atomSelTotal != 4:
                                 continue
@@ -5415,8 +5417,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                 'plane_like' in dstFunc)
 
                         if _angleName is not None and _angleName.startswith('pseudo'):
-                            _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
-                                                                                          [atom1, atom2, atom3, atom4])
+                            _angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(_angleName,
+                                                                                               [atom1, atom2, atom3, atom4],
+                                                                                               self.__getCurrentRestraint())
+                            self.__f.append(err)
 
                         if _angleName in emptyValue and atomSelTotal != 4:
                             continue
@@ -9166,8 +9170,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                     'plane_like' in dstFunc)
 
                             if _angleName is not None and _angleName.startswith('pseudo'):
-                                _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
-                                                                                              [atom1, atom2, atom3, atom4])
+                                _angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(_angleName,
+                                                                                                   [atom1, atom2, atom3, atom4],
+                                                                                                   self.__getCurrentRestraint())
+                                self.__f.append(err)
 
                             if _angleName in emptyValue and atomSelTotal != 4:
                                 continue
@@ -9190,8 +9196,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                                                 'plane_like' in dstFunc)
 
                         if _angleName is not None and _angleName.startswith('pseudo'):
-                            _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
-                                                                                          [atom1, atom2, atom3, atom4])
+                            _angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(_angleName,
+                                                                                               [atom1, atom2, atom3, atom4],
+                                                                                               self.__getCurrentRestraint())
+                            self.__f.append(err)
 
                         if _angleName in emptyValue and atomSelTotal != 4:
                             continue

@@ -3115,8 +3115,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                     if angleName is not None and angleName.startswith('pseudo'):
-                        angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
-                                                                                     [atom1, atom2, atom3, atom4])
+                        angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                          [atom1, atom2, atom3, atom4],
+                                                                                          self.__getCurrentRestraint(n=index))
+                        self.__f.append(err)
 
                     if angleName in emptyValue and atomSelTotal != 4:
                         continue
@@ -3143,8 +3145,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
-                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
-                                                                                 [atom1, atom2, atom3, atom4])
+                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                      [atom1, atom2, atom3, atom4],
+                                                                                      self.__getCurrentRestraint(n=index))
+                    self.__f.append(err)
 
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue
@@ -3282,8 +3286,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                     if angleName is not None and angleName.startswith('pseudo'):
-                        angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
-                                                                                     [atom1, atom2, atom3, atom4])
+                        angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                          [atom1, atom2, atom3, atom4],
+                                                                                          self.__getCurrentRestraint(n=index))
+                        self.__f.append(err)
 
                     if angleName in emptyValue and atomSelTotal != 4:
                         continue
@@ -3310,8 +3316,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
-                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
-                                                                                 [atom1, atom2, atom3, atom4])
+                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                      [atom1, atom2, atom3, atom4],
+                                                                                      self.__getCurrentRestraint(n=index))
+                    self.__f.append(err)
 
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue
@@ -3449,8 +3457,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                     if angleName is not None and angleName.startswith('pseudo'):
-                        angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
-                                                                                     [atom1, atom2, atom3, atom4])
+                        angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                          [atom1, atom2, atom3, atom4],
+                                                                                          self.__getCurrentRestraint(n=index))
+                        self.__f.append(err)
 
                     if angleName in emptyValue and atomSelTotal != 4:
                         continue
@@ -3477,8 +3487,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
-                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
-                                                                                 [atom1, atom2, atom3, atom4])
+                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                      [atom1, atom2, atom3, atom4],
+                                                                                      self.__getCurrentRestraint(n=index))
+                    self.__f.append(err)
 
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue
@@ -4552,8 +4564,9 @@ class DynamoMRParserListener(ParseTreeListener):
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
-                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
-                                                                                 [atom1, atom2, atom3, atom4])
+                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                      [atom1, atom2, atom3, atom4],
+                                                                                      )
 
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue
@@ -4709,8 +4722,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
-                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
-                                                                                 [atom1, atom2, atom3, atom4])
+                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                      [atom1, atom2, atom3, atom4],
+                                                                                      self.__getCurrentRestraint(n=index))
+                    self.__f.append(err)
 
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue
@@ -4866,8 +4881,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
-                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
-                                                                                 [atom1, atom2, atom3, atom4])
+                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                      [atom1, atom2, atom3, atom4],
+                                                                                      self.__getCurrentRestraint(n=index))
+                    self.__f.append(err)
 
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue
@@ -5184,8 +5201,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                     'plane_like' in dstFunc)
 
                             if _angleName is not None and _angleName.startswith('pseudo'):
-                                _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
-                                                                                              [atom1, atom2, atom3, atom4])
+                                _angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(_angleName,
+                                                                                                   [atom1, atom2, atom3, atom4],
+                                                                                                   self.__getCurrentRestraint())
+                                self.__f.append(err)
 
                             if _angleName in emptyValue and atomSelTotal != 4:
                                 continue
@@ -5210,8 +5229,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                 'plane_like' in dstFunc)
 
                         if _angleName is not None and _angleName.startswith('pseudo'):
-                            _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
-                                                                                          [atom1, atom2, atom3, atom4])
+                            _angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(_angleName,
+                                                                                               [atom1, atom2, atom3, atom4],
+                                                                                               self.__getCurrentRestraint())
+                            self.__f.append(err)
 
                         if _angleName in emptyValue and atomSelection != 4:
                             continue
@@ -5433,8 +5454,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                     'plane_like' in dstFunc)
 
                             if _angleName is not None and _angleName.startswith('pseudo'):
-                                _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
-                                                                                              [atom1, atom2, atom3, atom4])
+                                _angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(_angleName,
+                                                                                                   [atom1, atom2, atom3, atom4],
+                                                                                                   self.__getCurrentRestraint())
+                                self.__f.append(err)
 
                             if _angleName in emptyValue and atomSelTotal != 4:
                                 continue
@@ -5459,8 +5482,10 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                 'plane_like' in dstFunc)
 
                         if _angleName is not None and _angleName.startswith('pseudo'):
-                            _angleName, atom2, atom3 = remediateBackboneDehedralRestraint(_angleName,
-                                                                                          [atom1, atom2, atom3, atom4])
+                            _angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(_angleName,
+                                                                                               [atom1, atom2, atom3, atom4],
+                                                                                               self.__getCurrentRestraint())
+                            self.__f.append(err)
 
                         if _angleName in emptyValue and atomSelTotal != 4:
                             continue

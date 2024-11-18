@@ -32902,6 +32902,14 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
+                    elif warn.startswith('[Inconsistent dihedral angle atoms]'):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
                     elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                         # consume_suspended_message()
 
@@ -39953,11 +39961,10 @@ class NmrDpUtility:
             data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                    [atom1, atom2, atom3, atom4], plane_like)
 
-            if data_type is not None:
-                data_type = data_type.lower()
-
-            if data_type in emptyValue:
+            if data_type in emptyValue or data_type.startswith('pseudo'):
                 data_type = 'undefined'
+            else:
+                data_type = data_type.lower()
 
         else:
             data_type = data_type.lower()
@@ -50585,7 +50592,7 @@ class NmrDpUtility:
                             data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                                    [atom1, atom2, atom3, atom4], plane_like)
 
-                            if data_type in emptyValue:
+                            if data_type in emptyValue or data_type.startswith('pseudo'):
                                 continue
 
                             update = True

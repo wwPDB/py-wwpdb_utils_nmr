@@ -1420,8 +1420,10 @@ class CharmmMRParserListener(ParseTreeListener):
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                     if angleName is not None and angleName.startswith('pseudo'):
-                        angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
-                                                                                     [atom1, atom2, atom3, atom4])
+                        angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                          [atom1, atom2, atom3, atom4],
+                                                                                          self.__getCurrentRestraint())
+                        self.__f.append(err)
 
                     if angleName in emptyValue and atomSelTotal != 4:
                         continue
@@ -1446,8 +1448,10 @@ class CharmmMRParserListener(ParseTreeListener):
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
-                    angleName, atom2, atom3 = remediateBackboneDehedralRestraint(angleName,
-                                                                                 [atom1, atom2, atom3, atom4])
+                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                      [atom1, atom2, atom3, atom4],
+                                                                                      self.__getCurrentRestraint())
+                    self.__f.append(err)
 
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue

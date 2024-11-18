@@ -6179,9 +6179,11 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
     return '.' if is_connected() else None
 
 
-def remediateBackboneDehedralRestraint(angleName, atoms):
+def remediateBackboneDehedralRestraint(angleName, atoms, currentRestraint):
     """ Return valid angle name and remediated backbone atoms.
     """
+
+    msg = ''
 
     if REMEDIATE_BACKBONE_ANGLE_NAME_PAT.match(angleName):
         g = REMEDIATE_BACKBONE_ANGLE_NAME_PAT.search(angleName).groups()
@@ -6189,6 +6191,15 @@ def remediateBackboneDehedralRestraint(angleName, atoms):
         angleName = g[0]
         offset1 = int(g[1])
         offset2 = int(g[2])
+
+        atomName0 = f"{atoms[0]['seq_id']}:{atoms[0]['comp_id']}:{atoms[0]['atom_id']}"
+        atomName1 = f"{atoms[1]['seq_id']}:{atoms[1]['comp_id']}:{atoms[1]['atom_id']}"
+        atomName2 = f"{atoms[2]['seq_id']}:{atoms[2]['comp_id']}:{atoms[2]['atom_id']}"
+        atomName3 = f"{atoms[3]['seq_id']}:{atoms[3]['comp_id']}:{atoms[3]['atom_id']}"
+
+        msg = f"[Inconsistent dihedral angle atoms] {currentRestraint}"\
+              f"The original dihedral angle irregularly composed of "\
+              f"{atomName0}-{atomName1}-{atomName2}-{atomName3} was "
 
         if offset1 != 0:
             seq_id1 = atoms[1]['seq_id'] + offset1
@@ -6199,6 +6210,7 @@ def remediateBackboneDehedralRestraint(angleName, atoms):
                     atoms[1]['chain_id'] = a['chain_id']
                     atoms[1]['seq_id'] = a['seq_id']
                     atoms[1]['comp_id'] = a['comp_id']
+                    atomName1 = f"{atoms[1]['seq_id']}:{atoms[1]['comp_id']}:{atoms[1]['atom_id']}"
                     break
 
         if offset2 != 0:
@@ -6210,9 +6222,13 @@ def remediateBackboneDehedralRestraint(angleName, atoms):
                     atoms[2]['chain_id'] = a['chain_id']
                     atoms[2]['seq_id'] = a['seq_id']
                     atoms[2]['comp_id'] = a['comp_id']
+                    atomName2 = f"{atoms[2]['seq_id']}:{atoms[2]['comp_id']}:{atoms[2]['atom_id']}"
                     break
 
-    return angleName, atoms[1], atoms[2]
+        msg += f"translated to well-known {angleName!r} angle composed of "\
+               f"{atomName0}-{atomName1}-{atomName2}-{atomName3}."
+
+    return angleName, atoms[1], atoms[2], msg
 
 
 def isLikePheOrTyr(compId, ccU):

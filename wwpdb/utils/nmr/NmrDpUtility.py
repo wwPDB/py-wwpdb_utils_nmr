@@ -21105,6 +21105,9 @@ class NmrDpUtility:
             seq_id_3_name = dh_item_names['seq_id_3']
             seq_id_4_name = dh_item_names['seq_id_4']
             comp_id_1_name = dh_item_names['comp_id_1']
+            comp_id_2_name = dh_item_names['comp_id_2']
+            comp_id_3_name = dh_item_names['comp_id_3']
+            comp_id_4_name = dh_item_names['comp_id_4']
             atom_id_1_name = dh_item_names['atom_id_1']
             atom_id_2_name = dh_item_names['atom_id_2']
             atom_id_3_name = dh_item_names['atom_id_3']
@@ -21200,19 +21203,25 @@ class NmrDpUtility:
                                 seq_id_3 = row_1[seq_id_3_name]
                                 seq_id_4 = row_1[seq_id_4_name]
                                 comp_id_1 = row_1[comp_id_1_name]
+                                comp_id_2 = row_1[comp_id_2_name]
+                                comp_id_3 = row_1[comp_id_3_name]
+                                comp_id_4 = row_1[comp_id_4_name]
                                 atom_id_1 = row_1[atom_id_1_name]
                                 atom_id_2 = row_1[atom_id_2_name]
                                 atom_id_3 = row_1[atom_id_3_name]
                                 atom_id_4 = row_1[atom_id_4_name]
                                 data_type = row_1[angle_type_name]
 
-                                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_2)
                                 plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
 
+                                atom1 = {'chain_id': chain_id_1, 'seq_id': seq_id_1, 'comp_id': comp_id_1, 'atom_id': atom_id_1}
+                                atom2 = {'chain_id': chain_id_2, 'seq_id': seq_id_2, 'comp_id': comp_id_2, 'atom_id': atom_id_2}
+                                atom3 = {'chain_id': chain_id_3, 'seq_id': seq_id_3, 'comp_id': comp_id_3, 'atom_id': atom_id_3}
+                                atom4 = {'chain_id': chain_id_4, 'seq_id': seq_id_4, 'comp_id': comp_id_4, 'atom_id': atom_id_4}
+
                                 data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
-                                                                              chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                                                              chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4,
-                                                                              plane_like)[0]
+                                                                              [atom1, atom2, atom3, atom4], plane_like)[0]
 
                                 if not data_type.startswith('phi') and not data_type.startswith('psi') and not data_type.startswith('omega'):
                                     continue
@@ -39333,14 +39342,17 @@ class NmrDpUtility:
                 weight = row.get(weight_name)
                 set_id.add(row[id_tag])
 
-                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_2)
                 plane_like = is_like_planality_boundary(row, lower_limit_name, upper_limit_name)
+
+                atom1 = {'chain_id': chain_id_1, 'seq_id': seq_id_1, 'comp_id': comp_id_1, 'atom_id': atom_id_1}
+                atom2 = {'chain_id': chain_id_2, 'seq_id': seq_id_2, 'comp_id': comp_id_2, 'atom_id': atom_id_2}
+                atom3 = {'chain_id': chain_id_3, 'seq_id': seq_id_3, 'comp_id': comp_id_3, 'atom_id': atom_id_3}
+                atom4 = {'chain_id': chain_id_4, 'seq_id': seq_id_4, 'comp_id': comp_id_4, 'atom_id': atom_id_4}
 
                 data_type =\
                     self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
-                                                      chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                                      chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4,
-                                                      plane_like)
+                                                      [atom1, atom2, atom3, atom4], plane_like)
 
                 if data_type in count:
                     count[data_type] += 1
@@ -39708,19 +39720,25 @@ class NmrDpUtility:
                             seq_id_3 = row_1[seq_id_3_name]
                             seq_id_4 = row_1[seq_id_4_name]
                             comp_id_1 = row_1[comp_id_1_name]
+                            comp_id_2 = row_1[comp_id_2_name]
+                            comp_id_3 = row_1[comp_id_3_name]
+                            comp_id_4 = row_1[comp_id_4_name]
                             atom_id_1 = row_1[atom_id_1_name]
                             atom_id_2 = row_1[atom_id_2_name]
                             atom_id_3 = row_1[atom_id_3_name]
                             atom_id_4 = row_1[atom_id_4_name]
                             data_type = row_1[angle_type_name]
 
-                            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_2)
                             plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
 
+                            atom1 = {'chain_id': chain_id_1, 'seq_id': seq_id_1, 'comp_id': comp_id_1, 'atom_id': atom_id_1}
+                            atom2 = {'chain_id': chain_id_2, 'seq_id': seq_id_2, 'comp_id': comp_id_2, 'atom_id': atom_id_2}
+                            atom3 = {'chain_id': chain_id_3, 'seq_id': seq_id_3, 'comp_id': comp_id_3, 'atom_id': atom_id_3}
+                            atom4 = {'chain_id': chain_id_4, 'seq_id': seq_id_4, 'comp_id': comp_id_4, 'atom_id': atom_id_4}
+
                             data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
-                                                                          chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                                                          chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4,
-                                                                          plane_like)[0]
+                                                                          [atom1, atom2, atom3, atom4], plane_like)[0]
 
                             if data_type.startswith('phi') or data_type.startswith('psi') or data_type.startswith('omega'):
 
@@ -39866,18 +39884,24 @@ class NmrDpUtility:
                                     seq_id_3 = row_1[seq_id_3_name]
                                     seq_id_4 = row_1[seq_id_4_name]
                                     comp_id_1 = row_1[comp_id_1_name]
+                                    comp_id_2 = row_1[comp_id_2_name]
+                                    comp_id_3 = row_1[comp_id_3_name]
+                                    comp_id_4 = row_1[comp_id_4_name]
                                     atom_id_1 = row_1[atom_id_1_name]
                                     atom_id_2 = row_1[atom_id_2_name]
                                     atom_id_3 = row_1[atom_id_3_name]
                                     atom_id_4 = row_1[atom_id_4_name]
 
-                                    peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                                    peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_2)
                                     plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
 
+                                    atom1 = {'chain_id': chain_id_1, 'seq_id': seq_id_1, 'comp_id': comp_id_1, 'atom_id': atom_id_1}
+                                    atom2 = {'chain_id': chain_id_2, 'seq_id': seq_id_2, 'comp_id': comp_id_2, 'atom_id': atom_id_2}
+                                    atom3 = {'chain_id': chain_id_3, 'seq_id': seq_id_3, 'comp_id': comp_id_3, 'atom_id': atom_id_3}
+                                    atom4 = {'chain_id': chain_id_4, 'seq_id': seq_id_4, 'comp_id': comp_id_4, 'atom_id': atom_id_4}
+
                                     data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
-                                                                                  chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                                                                  chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4,
-                                                                                  plane_like)[0]
+                                                                                  [atom1, atom2, atom3, atom4], plane_like)[0]
 
                                     if data_type in _count:
                                         _count[data_type] += 1
@@ -39895,18 +39919,24 @@ class NmrDpUtility:
                                 seq_id_3 = row_1[seq_id_3_name]
                                 seq_id_4 = row_1[seq_id_4_name]
                                 comp_id_1 = row_1[comp_id_1_name]
+                                comp_id_2 = row_1[comp_id_2_name]
+                                comp_id_3 = row_1[comp_id_3_name]
+                                comp_id_4 = row_1[comp_id_4_name]
                                 atom_id_1 = row_1[atom_id_1_name]
                                 atom_id_2 = row_1[atom_id_2_name]
                                 atom_id_3 = row_1[atom_id_3_name]
                                 atom_id_4 = row_1[atom_id_4_name]
 
-                                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_2)
                                 plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
 
+                                atom1 = {'chain_id': chain_id_1, 'seq_id': seq_id_1, 'comp_id': comp_id_1, 'atom_id': atom_id_1}
+                                atom2 = {'chain_id': chain_id_2, 'seq_id': seq_id_2, 'comp_id': comp_id_2, 'atom_id': atom_id_2}
+                                atom3 = {'chain_id': chain_id_3, 'seq_id': seq_id_3, 'comp_id': comp_id_3, 'atom_id': atom_id_3}
+                                atom4 = {'chain_id': chain_id_4, 'seq_id': seq_id_4, 'comp_id': comp_id_4, 'atom_id': atom_id_4}
+
                                 data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
-                                                                              chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                                                              chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4,
-                                                                              plane_like)[0]
+                                                                              [atom1, atom2, atom3, atom4], plane_like)[0]
 
                                 if data_type in _count:
                                     _count[data_type] += 1
@@ -39938,28 +39968,13 @@ class NmrDpUtility:
                 self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfDihedralRestraint() ++ Error  - {str(e)}\n")
 
     def __getTypeOfDihedralRestraint(self, data_type, peptide, nucleotide, carbohydrate,  # pylint: disable=no-self-use
-                                     chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                     chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4,
-                                     plane_like):
+                                     atoms, plane_like):
         """ Return type of dihedral angle restraint.
         """
 
         if data_type in emptyValue:
-            atom1 = {'chain_id': chain_id_1,
-                     'seq_id': seq_id_1,
-                     'atom_id': atom_id_1}
-            atom2 = {'chain_id': chain_id_2,
-                     'seq_id': seq_id_2,
-                     'atom_id': atom_id_2}
-            atom3 = {'chain_id': chain_id_3,
-                     'seq_id': seq_id_3,
-                     'atom_id': atom_id_3}
-            atom4 = {'chain_id': chain_id_4,
-                     'seq_id': seq_id_4,
-                     'atom_id': atom_id_4}
-
             data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                   [atom1, atom2, atom3, atom4], plane_like)
+                                                   atoms, plane_like)
 
             if data_type in emptyValue or data_type.startswith('pseudo'):
                 data_type = 'undefined'

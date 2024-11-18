@@ -5787,7 +5787,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
 
     # DAOTHER-9063: Permit dihedral angle restraint across entities due to ligand split
     def is_connected():
-        if cR is None:
+        if cR is None or ccU is None:
             return False
         for idx, atom2 in enumerate(atoms):
             if idx == 0:
@@ -6120,7 +6120,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
             if found and not planeLike:
                 return '.' if is_connected() else None
 
-    if planeLike:
+    if planeLike and ccU is not None:
 
         if lenCommonChainId == 1 and lenCommonSeqId == 1:
             compId = atoms[0]['comp_id']
@@ -6148,6 +6148,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
 
             if all(a['atom_id'][0] not in protonBeginCode for a in atoms):
                 aroma = True
+                print(atoms)
                 for a in atoms:
                     compId = a['comp_id']
                     atomId = a['atom_id']

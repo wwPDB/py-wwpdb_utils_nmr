@@ -4566,7 +4566,8 @@ class DynamoMRParserListener(ParseTreeListener):
                 if angleName is not None and angleName.startswith('pseudo'):
                     angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
                                                                                       [atom1, atom2, atom3, atom4],
-                                                                                      )
+                                                                                      self.__getCurrentRestraint(n=index))
+                    self.__f.append(err)
 
                 if angleName in emptyValue and atomSelTotal != 4:
                     continue

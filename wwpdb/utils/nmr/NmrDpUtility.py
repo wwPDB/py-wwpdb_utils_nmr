@@ -46355,7 +46355,10 @@ class NmrDpUtility:
                             nef_index += 1
                             index += 1
 
-                auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (auth_seq_id, comp_id)), comp_id)
+                if auth_asym_id in asym_to_orig_seq:
+                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (auth_seq_id, comp_id)), comp_id)
+                else:
+                    auth_comp_id = comp_id
 
                 row = [None] * len(loop.tags)
 
@@ -46613,7 +46616,10 @@ class NmrDpUtility:
                             nef_index += 1
                             index += 1
 
-                auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (auth_seq_id, comp_id)), comp_id)
+                if auth_asym_id in asym_to_orig_seq:
+                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (auth_seq_id, comp_id)), comp_id)
+                else:
+                    auth_comp_id = comp_id
 
                 row = [None] * len(loop.tags)
 

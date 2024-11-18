@@ -608,6 +608,15 @@ class CharmmCRDParserListener(ParseTreeListener):
                         if ref_seq_id in ps_cif['auth_seq_id']:
                             idx = ps_cif['auth_seq_id'].index(ref_seq_id)
                             atomNum['comp_id'] = ps_cif['comp_id'][idx]
+                            if 'atom_id' not in atomNum:
+                                compId = atomNum['comp_id']
+                                atomId = atomNum['auth_atom_id']
+                                if self.__ccU.updateChemCompDict(compId):
+                                    chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+                                    atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
+                                    if atomId in chemCompAtomIds:
+                                        atomNum['atom_id'] = atomId
+                                        continue
 
                         if orphan and test_seq_id == first_seq_id\
                            and self.__csStat.peptideLike(translateToStdResName(atomNum['comp_id'], ccU=self.__ccU)):

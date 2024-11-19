@@ -16,8 +16,6 @@ limitations under the License.
 
 lexer grammar CharmmCRDLexer;
 
-options { caseInsensitive=true; }
-
 /* Numbers and Strings - Syntax
 */
 Integer:		'-'? DECIMAL;
@@ -33,7 +31,7 @@ Ext:			'EXT';
 
 Simple_name:		SIMPLE_NAME | Ext;
 
-fragment ALPHA:		[A-Z];
+fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_';
 fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"';

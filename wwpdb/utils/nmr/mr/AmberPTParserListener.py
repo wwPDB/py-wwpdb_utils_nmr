@@ -1076,6 +1076,24 @@ class AmberPTParserListener(ParseTreeListener):
                             seq_key = (atomNum['chain_id'], atomNum['seq_id'])
                             if seq_key in cmap:
                                 atomNum['chain_id'], atomNum['comp_id'] = cmap[seq_key]
+                                if 'atom_id' not in atomNum:
+                                    compId = atomNum['comp_id']
+                                    atomId = atomNum['auth_atom_id']
+                                    if self.__ccU.updateChemCompDict(compId):
+                                        chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+                                        atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
+                                        if atomId in chemCompAtomIds:
+                                            atomNum['atom_id'] = atomId
+                                            continue
+                                        if self.__chemCompAtom is not None:
+                                            if 'comp_id' in atomNum and atomNum['comp_id'] in self.__chemCompAtom:
+                                                if atomId in self.__chemCompAtom[atomNum['comp_id']]:
+                                                    atomNum['atom_id'] = atomId
+                                                    continue
+                                            if 'cif_comp_id' in atomNum and atomNum['cif_comp_id'] in self.__chemCompAtom:
+                                                if atomId in self.__chemCompAtom[atomNum['cif_comp_id']]:
+                                                    atomNum['atom_id'] = atomId
+                                                    continue
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)

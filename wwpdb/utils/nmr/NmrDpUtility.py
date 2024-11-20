@@ -15270,7 +15270,7 @@ class NmrDpUtility:
 
                 remediated = False
 
-            if os.path.exists(cor_str_file):
+            if os.path.exists(cor_str_file) and os.path.exists(cor_dst_file):
                 mrPath = cor_str_file
 
                 mr_file_path_list = 'restraint_file_path_list'

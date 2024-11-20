@@ -9,6 +9,7 @@
 # 04-Apr-2024  M. Yokochi - permit dihedral angle restraint across entities due to ligand split (DAOTHER-9063)
 # 20-Aug-2024  M. Yokochi - support truncated loop sequence in the model (DAOTHER-9644)
 # 10-Sep-2024  M. Yokochi - ignore identical polymer sequence extensions within polynucleotide multiplexes (DAOTHER-9674)
+# 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -307,6 +308,8 @@ NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
                             'heteronucl_t2_data': '_Heteronucl_T2_list',
                             'heteronucl_t1r_data': '_Heteronucl_T1rho_list',
                             'order_param_data': '_Order_parameter_list',
+                            'ph_titr_data': '_PH_titration_list',
+                            'ph_param_data': '_PH_param_list',
                             'ccr_d_csa_restraint': '_Cross_correlation_D_CSA_list',
                             'ccr_dd_restraint': '_Cross_correlation_DD_list',
                             'fchiral_restraint': '_Floating_chirality_assign',
@@ -331,6 +334,8 @@ NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
                           'heteronucl_t2_data': 'heteronucl_T2_relaxation',
                           'heteronucl_t1r_data': 'heteronucl_T1rho_relaxation',
                           'order_param_data': 'order_parameters',
+                          'ph_titr_data': 'pH_titration',
+                          'ph_param_data': 'pH_param_list',
                           'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
                           'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
                           'fchiral_restraint': 'floating_chiral_stereo_assign',
@@ -556,6 +561,24 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                               {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                               ],
+                         'ph_titr_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                          {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                          {'name': 'Expt_observed_param', 'type': 'enum', 'mandatory': True,
+                                           'enum': ('chemical shift', 'coupling constant', 'peak height', 'peak volume')},
+                                          {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                          {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                          {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                          ],
+                         'ph_param_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Observed_NMR_param', 'type': 'enum', 'mondatory': True,
+                                            'enum': ('chemical shift', 'coupling constant', 'peak height', 'peak volume')},
+                                           {'name': 'PH_titration_list_ID', 'type': 'positive-int', 'mandatory': True,
+                                            'default': '1'},
+                                           {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
                          'ccr_d_csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                  {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
@@ -616,6 +639,8 @@ NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
                           'heteronucl_t2_data': '_T2',
                           'heteronucl_t1r_data': '_T1rho',
                           'order_param_data': '_Order_param',
+                          'ph_titr_data': '_PH_titr_result',
+                          'ph_param_data': '_PH_param',
                           'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
                           'ccr_dd_restraint': '_Cross_correlation_DD',
                           'fchiral_restraint': '_Floating_chirality',
@@ -822,6 +847,20 @@ NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int
                                               {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                               {'name': 'Atom_ID', 'type': 'str'}
                                               ],
+                         'ph_titr_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                          {'name': 'Atm_obs_entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                          {'name': 'Atm_obs_entity_ID', 'type': 'positive-int'},
+                                          {'name': 'Atm_obs_comp_index_ID', 'type': 'int', 'default-from': 'Atm_obs_seq_ID'},
+                                          {'name': 'Atm_obs_comp_ID', 'type': 'str', 'uppercase': True},
+                                          {'name': 'Atm_obs_atom_ID', 'type': 'str'},
+                                          {'name': 'Atm_titr_entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                          {'name': 'Atm_titr_entity_ID', 'type': 'positive-int'},
+                                          {'name': 'Atm_titr_comp_index_ID', 'type': 'int', 'default-from': 'Atm_titr_seq_ID'},
+                                          {'name': 'Atm_titr_comp_ID', 'type': 'str', 'uppercase': True},
+                                          {'name': 'Atm_titr_atom_ID', 'type': 'str'}
+                                          ],
+                         'ph_param_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True}
+                                           ],
                          'ccr_d_csa_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                  {'name': 'Dipole_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
                                                  {'name': 'Dipole_entity_ID_1', 'type': 'positive-int'},
@@ -1637,6 +1676,59 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                 'default': '1', 'default-from': 'parent'},
                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                ],
+                          'ph_titr_data': [{'name': 'Atm_obs_atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atm_obs_atom_ID',
+                                            'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                            'enforce-enum': True},
+                                           {'name': 'Atm_obs_atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atm_obs_atom_ID',
+                                            'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                            'enforce-enum': True},
+                                           {'name': 'Atm_titr_atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atm_titr_atom_ID',
+                                            'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                            'enforce-enum': True},
+                                           {'name': 'Atm_titr_atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atm_titr_atom_ID',
+                                            'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                            'enforce-enum': True},
+                                           {'name': 'Hill_coeff_val', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'Hill_coeff_val_fit_err', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'High_PH_param_fit_val', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'High_PH_param_fit_val_err', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'Low_PH_param_fit_val', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'Low_PH_param_fit_val_err', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'PKa_val', 'type': 'positive-float', 'mandatory': True,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'PKa_val_fit_err', 'type': 'positive-float', 'mandatory': True,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'PHmid_val', 'type': 'positive-float', 'mandatory': True,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'PHmid_val_fit_err', 'type': 'positive-float', 'mandatory': True,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'Atm_obs_auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Atm_obs_auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                           {'name': 'Atm_obs_auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Atm_obs_auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Atm_titr_auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Atm_titr_auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                           {'name': 'Atm_titr_auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Atm_titr_auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'PH_titration_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                            'default': '1', 'default-from': 'parent'},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
+                          'ph_param_data': [{'name': 'PH_titr_result_ID', 'type': 'positive-int', 'mandatory': True},
+                                            {'name': 'PH_val', 'type': 'positive-float', 'mandatory': True},
+                                            {'name': 'PH_val_err', 'type': 'positive-float', 'mandatory': False},
+                                            {'name': 'Observed_NMR_param_val', 'type': 'positive-float', 'mandatory': True},
+                                            {'name': 'Observed_NMR_param_val_err', 'type': 'positive-float', 'mandatory': False},
+                                            {'name': 'PH_param_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                             'default': '1', 'default-from': 'parent'},
+                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                            ],
                           'ccr_d_csa_restraint': [{'name': 'Dipole_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_atom_ID_1',
                                                    'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                    'enforce-enum': True},
@@ -6688,7 +6780,11 @@ def getRestraintName(mrSubtype, title=False):
     if mrSubtype == 'heteronucl_t1r_data':
         return "Heteronuclear T1rho relaxation data" if title else "heteronuclear T1rho relaxation data"
     if mrSubtype == 'order_param_data':
-        return "Order parameters" if title else "order parameters"
+        return "Order parameter data" if title else "order parameter data"
+    if mrSubtype == 'ph_titr_data':
+        return "pKa value data"
+    if mrSubtype == 'ph_param_data':
+        return "pH titration data"
 
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
@@ -6746,6 +6842,8 @@ def incListIdCounter(mrSubtype, listIdCounter, reduced=True):
                          'heteronucl_t2_data': 0,
                          'heteronucl_t1r_data': 0,
                          'order_param_data': 0,
+                         'ph_titr_data': 0,
+                         'ph_param_data': 0,
                          'ccr_d_csa_restraint': 0,
                          'ccr_dd_restraint': 0,
                          'fchiral_restraint': 0,
@@ -6785,6 +6883,8 @@ def decListIdCounter(mrSubtype, listIdCounter, reduced=True):
                          'heteronucl_t2_data': 0,
                          'heteronucl_t1r_data': 0,
                          'order_param_data': 0,
+                         'ph_titr_data': 0,
+                         'ph_param_data': 0,
                          'ccr_d_csa_restraint': 0,
                          'ccr_dd_restraint': 0,
                          'fchiral_restraint': 0,
@@ -8554,6 +8654,83 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if atom1 is not None:
             row[key_size + 22], row[key_size + 23], row[key_size + 24], row[key_size + 25] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+
+    elif contentSubtype == 'ph_titr_data':
+        if atom1 is not None:
+            row[key_size] = atomType = atom1['atom_id'][0]
+            row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom2 is not None:
+            row[key_size + 2] = atomType = atom2['atom_id'][0]
+            row[key_size + 3] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        val = getRowValue('Hill_coeff_val')
+        if val is not None:
+            row[key_size + 4] = val
+            float_row_idx.append(key_size + 4)
+        val = getRowValue('Hill_coeff_val_fit_err')
+        if val is not None:
+            row[key_size + 5] = val
+            float_row_idx.append(key_size + 5)
+        val = getRowValue('High_PH_param_val')
+        if val is not None:
+            row[key_size + 6] = val
+            float_row_idx.append(key_size + 6)
+        val = getRowValue('High_PH_param_val_fit_err')
+        if val is not None:
+            row[key_size + 7] = val
+            float_row_idx.append(key_size + 7)
+        val = getRowValue('Low_PH_param_val')
+        if val is not None:
+            row[key_size + 8] = val
+            float_row_idx.append(key_size + 8)
+        val = getRowValue('Low_PH_param_val_fit_err')
+        if val is not None:
+            row[key_size + 9] = val
+            float_row_idx.append(key_size + 9)
+        val = getRowValue('PKa_val')
+        if val is not None:
+            row[key_size + 10] = val
+            float_row_idx.append(key_size + 10)
+        val = getRowValue('PKa_val_fit_err')
+        if val is not None:
+            row[key_size + 11] = val
+            float_row_idx.append(key_size + 11)
+        val = getRowValue('PHmid_val')
+        if val is not None:
+            row[key_size + 12] = val
+            float_row_idx.append(key_size + 12)
+        val = getRowValue('PHmid_val_fit_err')
+        if val is not None:
+            row[key_size + 13] = val
+            float_row_idx.append(key_size + 13)
+
+        if atom1 is not None:
+            row[key_size + 14], row[key_size + 15], row[key_size + 16], row[key_size + 17] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+
+        if atom2 is not None:
+            row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+
+    elif contentSubtype == 'ph_param_data':
+        val = getRowValue('PH_titr_result_ID')
+        if val is not None:
+            row[key_size] = val
+        val = getRowValue('PH_val')
+        if val is not None:
+            row[key_size + 1] = val
+            float_row_idx.append(key_size + 1)
+        val = getRowValue('PH_val_err')
+        if val is not None:
+            row[key_size + 2] = val
+            float_row_idx.append(key_size + 2)
+        val = getRowValue('Observed_NMR_param_val')
+        if val is not None:
+            row[key_size + 3] = val
+            float_row_idx.append(key_size + 3)
+        val = getRowValue('Observed_NMR_param_val_err')
+        if val is not None:
+            row[key_size + 4] = val
+            float_row_idx.append(key_size + 4)
 
     elif contentSubtype.startswith('ccr'):
         if star_atom3 is not None:

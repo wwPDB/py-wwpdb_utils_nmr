@@ -194,6 +194,16 @@
               "type": "integer",
               "minimum": 1
             },
+            "ph_titr_data": {
+              "description": "The number of lists associated with pH titration anlysis.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "ph_param_data": {
+              "description": "The number of lists associated with pH titration data.",
+              "type": "integer",
+              "minimum": 1
+            },
             "ccr_d_csa_restraint": {
               "description": "The number of lists associated with dipolar-CSA cross-correlation experimental data.",
               "type": "integer",

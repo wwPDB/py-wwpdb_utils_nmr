@@ -1760,6 +1760,7 @@ class NEFTranslator:
                                               '_CS_anisotropy', '_Dipolar_coupling',
                                               '_CA_CB_constraint', '_H_chem_shift_constraint',
                                               '_Chem_shift_perturbation', '_Auto_relaxation',
+                                              '_Heteronucl_NOE', '_T1', '_T2', '_T1rho', '_Order_param', '_PH_titr_result',
                                               '_Cross_correlation_D_CSA', '_Cross_correlation_DD',
                                               '_Other_data']
 
@@ -1775,6 +1776,8 @@ class NEFTranslator:
                                               'chem_shift_anisotropy', 'dipolar_couplings',
                                               'CA_CB_chem_shift_constraints', 'H_chem_shift_constraints',
                                               'chem_shift_perturbation', 'auto_relaxation',
+                                              'heteronucl_NOEs', 'heteronucl_T1_relaxation', 'heteronucl_T2_relaxation',
+                                              'heteronucl_T1rho_relaxation', 'order_parameters', 'pH_titration',
                                               'dipole_CSA_cross_correlations', 'dipole_dipole_cross_correlations',
                                               'other_data_types']
 
@@ -12889,9 +12892,3 @@ class NEFTranslator:
         info.append(f"File {nef_file} successfully written.")
 
         return True, {'info': info, 'error': error}
-
-
-if __name__ == "__main__":
-    _nefT = NEFTranslator()
-    _nefT.nef_to_nmrstar('data/2l9r.nef')
-    print(_nefT.validate_file('data/2l9r.str', 'A'))

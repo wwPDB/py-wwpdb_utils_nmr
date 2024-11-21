@@ -13,8 +13,9 @@ import numpy
 
 from antlr4 import ParseTreeListener
 
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+
 try:
-    from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.GromacsMRParser import GromacsMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        isIdenticalRestraint,
@@ -22,6 +23,7 @@ try:
                                                        isAmbigAtomSelection,
                                                        getAltProtonIdInBondConstraint,
                                                        getTypeOfDihedralRestraint,
+                                                       remediateBackboneDehedralRestraint,
                                                        isLikePheOrTyr,
                                                        getRdcCode,
                                                        getRestraintName,
@@ -39,6 +41,8 @@ try:
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                                       PLANE_LIKE_LOWER_LIMIT,
+                                                       PLANE_LIKE_UPPER_LIMIT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
@@ -51,7 +55,8 @@ try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import (rdcBbPairCode,
+    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
+                                           rdcBbPairCode,
                                            updatePolySeqRstFromAtomSelectionSet,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -60,7 +65,6 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
-    from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.GromacsMRParser import GromacsMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            isIdenticalRestraint,
@@ -68,6 +72,7 @@ except ImportError:
                                            isAmbigAtomSelection,
                                            getAltProtonIdInBondConstraint,
                                            getTypeOfDihedralRestraint,
+                                           remediateBackboneDehedralRestraint,
                                            isLikePheOrTyr,
                                            getRdcCode,
                                            getRestraintName,
@@ -85,6 +90,8 @@ except ImportError:
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                           PLANE_LIKE_LOWER_LIMIT,
+                                           PLANE_LIKE_UPPER_LIMIT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
@@ -97,7 +104,8 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import (rdcBbPairCode,
+    from nmr.AlignUtil import (emptyValue,
+                               rdcBbPairCode,
                                updatePolySeqRstFromAtomSelectionSet,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -997,16 +1005,27 @@ class GromacsMRParserListener(ParseTreeListener):
 
             first_item = True
 
+            atomSelTotal = sum(len(s) for s in self.atomSelectionSet)
+
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4],
+                                                       'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-                if angleName is None:
+
+                if angleName is not None and angleName.startswith('pseudo'):
+                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                      [atom1, atom2, atom3, atom4],
+                                                                                      self.__getCurrentRestraint())
+                    self.__f.append(err)
+
+                if angleName in emptyValue and atomSelTotal != 4:
                     continue
+
                 if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
                     dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                       dstFunc)
@@ -1108,6 +1127,12 @@ class GromacsMRParserListener(ParseTreeListener):
 
         if target_value is None and lower_limit is None and upper_limit is None:
             return None
+
+        if upper_limit is not None and lower_limit is not None\
+           and (PLANE_LIKE_LOWER_LIMIT <= lower_limit < 0.0 < upper_limit <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 180.0 < 0.0 < upper_limit - 180.0 <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 360.0 < 0.0 < upper_limit - 360.0 <= PLANE_LIKE_UPPER_LIMIT):
+            dstFunc['plane_like'] = True
 
         return dstFunc
 

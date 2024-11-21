@@ -11,13 +11,15 @@ import re
 import itertools
 import copy
 import numpy
+import collections
 
 from antlr4 import ParseTreeListener
 from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
 from operator import itemgetter
 
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+
 try:
-    from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
     from wwpdb.utils.nmr.mr.CharmmMRParser import CharmmMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx, toNefEx,
@@ -31,6 +33,7 @@ try:
                                                        getAltProtonIdInBondConstraint,
                                                        guessCompIdFromAtomId,
                                                        getTypeOfDihedralRestraint,
+                                                       remediateBackboneDehedralRestraint,
                                                        isLikePheOrTyr,
                                                        isCyclicPolymer,
                                                        getRestraintName,
@@ -49,6 +52,8 @@ try:
                                                        REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                                       PLANE_LIKE_LOWER_LIMIT,
+                                                       PLANE_LIKE_UPPER_LIMIT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
@@ -99,7 +104,6 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
-    from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.io.CifReader import SYMBOLS_ELEMENT
     from nmr.mr.CharmmMRParser import CharmmMRParser
     from nmr.mr.ParserListenerUtil import (toRegEx, toNefEx,
@@ -113,6 +117,7 @@ except ImportError:
                                            getAltProtonIdInBondConstraint,
                                            guessCompIdFromAtomId,
                                            getTypeOfDihedralRestraint,
+                                           remediateBackboneDehedralRestraint,
                                            isLikePheOrTyr,
                                            getRestraintName,
                                            isCyclicPolymer,
@@ -131,6 +136,8 @@ except ImportError:
                                            REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                           PLANE_LIKE_LOWER_LIMIT,
+                                           PLANE_LIKE_UPPER_LIMIT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
@@ -230,6 +237,9 @@ class CharmmMRParserListener(ParseTreeListener):
 
     # Pairwise align
     __pA = None
+
+    # CharmmCRDParserListener.getAtomNumberDict()
+    __atomNumberDict = None
 
     # reasons for re-parsing request from the previous trial
     __reasons = None
@@ -388,7 +398,7 @@ class CharmmMRParserListener(ParseTreeListener):
                  representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 reasons=None):
+                 atomNumberDict=None, reasons=None):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -465,6 +475,9 @@ class CharmmMRParserListener(ParseTreeListener):
         self.__preferLabelSeqCount = 0
 
         self.reasonsForReParsing = {}  # reset to prevent interference from the previous run
+
+        if atomNumberDict is not None:
+            self.__atomNumberDict = atomNumberDict
 
         self.__cachedDictForAtomIdList = {}
         self.__cachedDictForFactor = {}
@@ -728,9 +741,13 @@ class CharmmMRParserListener(ParseTreeListener):
                                         continue
                                     ref_chain_id = ca['ref_chain_id']
                                     test_chain_id = ca['test_chain_id']
-                                    sa = next(sa for sa in seqAlignFailed
-                                              if sa['ref_chain_id'] == ref_chain_id
-                                              and sa['test_chain_id'] == test_chain_id)
+
+                                    sa = next((sa for sa in seqAlignFailed
+                                               if sa['ref_chain_id'] == ref_chain_id
+                                               and sa['test_chain_id'] == test_chain_id), None)
+
+                                    if sa is None:
+                                        continue
 
                                     poly_seq_model = next(ps for ps in self.__polySeq
                                                           if ps['auth_chain_id'] == ref_chain_id)
@@ -772,22 +789,31 @@ class CharmmMRParserListener(ParseTreeListener):
                                                     self.reasonsForReParsing['global_auth_sequence_offset'] = {}
                                                 self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offset
                                             else:
-                                                seq_id_mapping = {}
-                                                for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
-                                                    if mid_code == '|' and test_seq_id is not None:
-                                                        seq_id_mapping[test_seq_id] = ref_seq_id
-
-                                                for k, v in seq_id_mapping.items():
-                                                    offset = v - k
-                                                    break
-
-                                                if offset != 0 and not any(v - k != offset for k, v in seq_id_mapping.items()):
-                                                    offsets = {}
-                                                    for ref_auth_seq_id, auth_seq_id in zip(sa['ref_auth_seq_id'], sa['ref_seq_id']):
-                                                        offsets[auth_seq_id - offset] = ref_auth_seq_id - auth_seq_id
+                                                offsets = [v - k for k, v in seq_id_mapping.items()]
+                                                common_offsets = collections.Counter(offsets).most_common()
+                                                if common_offsets[0][1] > 1 and common_offsets[0][1] > common_offsets[1][1]\
+                                                   and abs(common_offsets[0][0] - common_offsets[1][0]) == 1:
+                                                    offset = common_offsets[0][0]
                                                     if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
                                                         self.reasonsForReParsing['global_auth_sequence_offset'] = {}
-                                                    self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offsets
+                                                    self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offset
+                                                else:
+                                                    seq_id_mapping = {}
+                                                    for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                                        if mid_code == '|' and test_seq_id is not None:
+                                                            seq_id_mapping[test_seq_id] = ref_seq_id
+
+                                                    for k, v in seq_id_mapping.items():
+                                                        offset = v - k
+                                                        break
+
+                                                    if offset != 0 and not any(v - k != offset for k, v in seq_id_mapping.items()):
+                                                        offsets = {}
+                                                        for ref_auth_seq_id, auth_seq_id in zip(sa['ref_auth_seq_id'], sa['ref_seq_id']):
+                                                            offsets[auth_seq_id - offset] = ref_auth_seq_id - auth_seq_id
+                                                        if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
+                                                            self.reasonsForReParsing['global_auth_sequence_offset'] = {}
+                                                        self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offsets
 
                                 if len(chainAssignFailed) == 0:
                                     valid_auth_seq = valid_label_seq = True
@@ -1379,6 +1405,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                      allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
             combinationId = '.' if len_f == len(self.__f) else 0
 
+            atomSelTotal = sum(len(s) for s in self.atomSelectionSet)
+
             if isinstance(combinationId, int):
                 fixedAngleName = '.'
                 for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -1387,10 +1415,19 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[3]):
                     angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                            [atom1, atom2, atom3, atom4],
+                                                           'plane_like' in dstFunc,
                                                            self.__cR, self.__ccU,
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-                    if angleName in emptyValue:
+
+                    if angleName is not None and angleName.startswith('pseudo'):
+                        angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                          [atom1, atom2, atom3, atom4],
+                                                                                          self.__getCurrentRestraint())
+                        self.__f.append(err)
+
+                    if angleName in emptyValue and atomSelTotal != 4:
                         continue
+
                     fixedAngleName = angleName
                     break
 
@@ -1406,10 +1443,19 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[3]):
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4],
+                                                       'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-                if angleName is None:
+
+                if angleName is not None and angleName.startswith('pseudo'):
+                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                      [atom1, atom2, atom3, atom4],
+                                                                                      self.__getCurrentRestraint())
+                    self.__f.append(err)
+
+                if angleName in emptyValue and atomSelTotal != 4:
                     continue
+
                 if isinstance(combinationId, int):
                     if angleName != fixedAngleName:
                         continue
@@ -1941,9 +1987,19 @@ class CharmmMRParserListener(ParseTreeListener):
             pass
 
         elif ctx.ByNumber():
-            self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
-                            "The 'bynumber' clause has no effect "
-                            "because the internal atom number is not included in the coordinate file.")
+            if self.__atomNumberDict is None:
+                self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
+                                "The 'bynumber' clause has no effect "
+                                "because CHARMM CRD file is not provided.")
+            else:
+                for col in range(4):
+                    ai = int(str(ctx.Integer(col)))
+                    if ai in self.__atomNumberDict:
+                        atomSelection = [copy.copy(self.__atomNumberDict[ai])]
+                        self.atomSelectionSet.append(atomSelection)
+                    else:
+                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                        f"'{ai}' is not defined in the CHARMM CRD file.")
 
         elif ctx.Simple_name(0) and ctx.Integer(0):
             if ctx.Simple_name(4):
@@ -2090,6 +2146,12 @@ class CharmmMRParserListener(ParseTreeListener):
 
         if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
             return None
+
+        if upper_limit is not None and lower_limit is not None\
+           and (PLANE_LIKE_LOWER_LIMIT <= lower_limit < 0.0 < upper_limit <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 180.0 < 0.0 < upper_limit - 180.0 <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 360.0 < 0.0 < upper_limit - 360.0 <= PLANE_LIKE_UPPER_LIMIT):
+            dstFunc['plane_like'] = True
 
         return dstFunc
 
@@ -2676,7 +2738,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
                 self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                 "The 'bynumber' clause has no effect "
-                                "because the internal atom number is not included in the coordinate file.")
+                                "because CHARMM CRD file is not provided.")
 
                 return _factor
 
@@ -5890,6 +5952,33 @@ class CharmmMRParserListener(ParseTreeListener):
                     else:
                         self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                         f"The symbol {symbol_name!r} is not defined.")
+
+                if 'atom_num' in self.factor and self.__atomNumberDict is not None:
+                    for ai in self.factor['atom_num']:
+                        if ai in self.__atomNumberDict:
+                            _factor = copy.copy(self.__atomNumberDict[ai])
+                            if 'chain_id' not in self.factor:
+                                self.factor['chain_id'] = []
+                            if _factor['chain_id'] not in self.factor['chain_id']:
+                                self.factor['chain_id'].append(_factor['chain_id'])
+                            if 'seq_id' not in self.factor:
+                                self.factor['seq_id'] = []
+                            if _factor['seq_id'] not in self.factor['seq_id']:
+                                self.factor['seq_id'].append(_factor['seq_id'])
+                            if 'comp_id' not in self.factor:
+                                self.factor['comp_id'] = []
+                            if _factor['comp_id'] not in self.factor['comp_id']:
+                                self.factor['comp_id'].append(_factor['comp_id'])
+                            if 'atom_id' not in self.factor:
+                                self.factor['atom_id'] = []
+                            if _factor['atom_id'] not in self.factor['atom_id']:
+                                self.factor['atom_id'].append(_factor['atom_id'])
+                            self.factor['atom_num'].remove(ai)
+                            if len(self.factor['atom_num']) == 0:
+                                del self.factor['atom_num']
+                        else:
+                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
+                                            f"'{ai}' is not defined in the CHARMM CRD file.")
 
             elif ctx.IRes():
                 if self.__sel_expr_debug:

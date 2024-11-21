@@ -10,13 +10,14 @@ import sys
 import re
 import copy
 import itertools
-import collections
 import numpy
+import collections
 
 from antlr4 import ParseTreeListener
 
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+
 try:
-    from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -28,6 +29,7 @@ try:
                                                        getAltProtonIdInBondConstraint,
                                                        guessCompIdFromAtomId,
                                                        getTypeOfDihedralRestraint,
+                                                       remediateBackboneDehedralRestraint,
                                                        isLikePheOrTyr,
                                                        getRdcCode,
                                                        translateToStdAtomName,
@@ -53,6 +55,8 @@ try:
                                                        MAX_ALLOWED_EXT_SEQ,
                                                        UNREAL_AUTH_SEQ_NUM,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                                       PLANE_LIKE_LOWER_LIMIT,
+                                                       PLANE_LIKE_UPPER_LIMIT,
                                                        DIST_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_ERROR,
                                                        ANGLE_RESTRAINT_RANGE,
@@ -98,7 +102,6 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
-    from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.RosettaMRParser import RosettaMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
@@ -110,6 +113,7 @@ except ImportError:
                                            getAltProtonIdInBondConstraint,
                                            guessCompIdFromAtomId,
                                            getTypeOfDihedralRestraint,
+                                           remediateBackboneDehedralRestraint,
                                            isLikePheOrTyr,
                                            getRdcCode,
                                            translateToStdAtomName,
@@ -135,6 +139,8 @@ except ImportError:
                                            MAX_ALLOWED_EXT_SEQ,
                                            UNREAL_AUTH_SEQ_NUM,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                           PLANE_LIKE_LOWER_LIMIT,
+                                           PLANE_LIKE_UPPER_LIMIT,
                                            DIST_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_ERROR,
                                            ANGLE_RESTRAINT_RANGE,
@@ -665,9 +671,13 @@ class RosettaMRParserListener(ParseTreeListener):
                                         continue
                                     ref_chain_id = ca['ref_chain_id']
                                     test_chain_id = ca['test_chain_id']
-                                    sa = next(sa for sa in seqAlignFailed
-                                              if sa['ref_chain_id'] == ref_chain_id
-                                              and sa['test_chain_id'] == test_chain_id)
+
+                                    sa = next((sa for sa in seqAlignFailed
+                                               if sa['ref_chain_id'] == ref_chain_id
+                                               and sa['test_chain_id'] == test_chain_id), None)
+
+                                    if sa is None:
+                                        continue
 
                                     poly_seq_model = next(ps for ps in self.__polySeq
                                                           if ps['auth_chain_id'] == ref_chain_id)
@@ -689,22 +699,31 @@ class RosettaMRParserListener(ParseTreeListener):
                                                     self.reasonsForReParsing['global_auth_sequence_offset'] = {}
                                                 self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offset
                                             else:
-                                                seq_id_mapping = {}
-                                                for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
-                                                    if mid_code == '|' and test_seq_id is not None:
-                                                        seq_id_mapping[test_seq_id] = ref_seq_id
-
-                                                for k, v in seq_id_mapping.items():
-                                                    offset = v - k
-                                                    break
-
-                                                if offset != 0 and not any(v - k != offset for k, v in seq_id_mapping.items()):
-                                                    offsets = {}
-                                                    for ref_auth_seq_id, auth_seq_id in zip(sa['ref_auth_seq_id'], sa['ref_seq_id']):
-                                                        offsets[auth_seq_id - offset] = ref_auth_seq_id - auth_seq_id
+                                                offsets = [v - k for k, v in seq_id_mapping.items()]
+                                                common_offsets = collections.Counter(offsets).most_common()
+                                                if common_offsets[0][1] > 1 and common_offsets[0][1] > common_offsets[1][1]\
+                                                   and abs(common_offsets[0][0] - common_offsets[1][0]) == 1:
+                                                    offset = common_offsets[0][0]
                                                     if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
                                                         self.reasonsForReParsing['global_auth_sequence_offset'] = {}
-                                                    self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offsets
+                                                    self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offset
+                                                else:
+                                                    seq_id_mapping = {}
+                                                    for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                                                        if mid_code == '|' and test_seq_id is not None:
+                                                            seq_id_mapping[test_seq_id] = ref_seq_id
+
+                                                    for k, v in seq_id_mapping.items():
+                                                        offset = v - k
+                                                        break
+
+                                                    if offset != 0 and not any(v - k != offset for k, v in seq_id_mapping.items()):
+                                                        offsets = {}
+                                                        for ref_auth_seq_id, auth_seq_id in zip(sa['ref_auth_seq_id'], sa['ref_seq_id']):
+                                                            offsets[auth_seq_id - offset] = ref_auth_seq_id - auth_seq_id
+                                                        if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
+                                                            self.reasonsForReParsing['global_auth_sequence_offset'] = {}
+                                                        self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offsets
 
                                 if len(chainAssignFailed) == 0:
                                     valid_auth_seq = valid_label_seq = True
@@ -2660,6 +2679,12 @@ class RosettaMRParserListener(ParseTreeListener):
         if target_value is None and lower_limit is None and upper_limit is None and lower_linear_limit is None and upper_linear_limit is None:
             return None
 
+        if upper_limit is not None and lower_limit is not None\
+           and (PLANE_LIKE_LOWER_LIMIT <= lower_limit < 0.0 < upper_limit <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 180.0 < 0.0 < upper_limit - 180.0 <= PLANE_LIKE_UPPER_LIMIT
+                or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 360.0 < 0.0 < upper_limit - 360.0 <= PLANE_LIKE_UPPER_LIMIT):
+            dstFunc['plane_like'] = True
+
         return dstFunc
 
     # Enter a parse tree produced by RosettaMRParser#dihedral_restraints.
@@ -2727,6 +2752,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                  allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
         combinationId = '.' if len_f == len(self.__f) else 0
 
+        atomSelTotal = sum(len(s) for s in self.atomSelectionSet)
+
         if isinstance(combinationId, int):
             fixedAngleName = '.'
             for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
@@ -2735,10 +2762,19 @@ class RosettaMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[3]):
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        [atom1, atom2, atom3, atom4],
+                                                       'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-                if angleName in emptyValue:
+
+                if angleName is not None and angleName.startswith('pseudo'):
+                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                      [atom1, atom2, atom3, atom4],
+                                                                                      self.__getCurrentRestraint())
+                    self.__f.append(err)
+
+                if angleName in emptyValue and atomSelTotal != 4:
                     continue
+
                 fixedAngleName = angleName
                 break
 
@@ -2760,10 +2796,19 @@ class RosettaMRParserListener(ParseTreeListener):
                                                             self.atomSelectionSet[3]):
             angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                    [atom1, atom2, atom3, atom4],
+                                                   'plane_like' in dstFunc,
                                                    self.__cR, self.__ccU,
                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-            if angleName is None:
+
+            if angleName is not None and angleName.startswith('pseudo'):
+                angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                  [atom1, atom2, atom3, atom4],
+                                                                                  self.__getCurrentRestraint())
+                self.__f.append(err)
+
+            if angleName in emptyValue and atomSelTotal != 4:
                 continue
+
             if isinstance(combinationId, int):
                 if angleName != fixedAngleName:
                     continue
@@ -2879,16 +2924,27 @@ class RosettaMRParserListener(ParseTreeListener):
 
         first_item = True
 
+        atomSelTotal = sum(len(s) for s in self.atomSelectionSet[0:4])
+
         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
                                                             self.atomSelectionSet[1],
                                                             self.atomSelectionSet[2],
                                                             self.atomSelectionSet[3]):
             angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                    [atom1, atom2, atom3, atom4],
+                                                   'plane_like' in dstFunc,
                                                    self.__cR, self.__ccU,
                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-            if angleName is None:
+
+            if angleName is not None and angleName.startswith('pseudo'):
+                angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                  [atom1, atom2, atom3, atom4],
+                                                                                  self.__getCurrentRestraint())
+                self.__f.append(err)
+
+            if angleName in emptyValue and atomSelTotal != 4:
                 continue
+
             if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
                 dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                   dstFunc)
@@ -2910,16 +2966,27 @@ class RosettaMRParserListener(ParseTreeListener):
         compId = self.atomSelectionSet[4][0]['comp_id']
         peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
+        atomSelTotal = sum(len(s) for s in self.atomSelectionSet[4:8])
+
         for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[4],
                                                             self.atomSelectionSet[5],
                                                             self.atomSelectionSet[6],
                                                             self.atomSelectionSet[7]):
             angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                    [atom1, atom2, atom3, atom4],
+                                                   'plane_like' in dstFunc,
                                                    self.__cR, self.__ccU,
                                                    self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
-            if angleName is None:
+
+            if angleName is not None and angleName.startswith('pseudo'):
+                angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
+                                                                                  [atom1, atom2, atom3, atom4],
+                                                                                  self.__getCurrentRestraint())
+                self.__f.append(err)
+
+            if angleName in emptyValue and atomSelTotal != 4:
                 continue
+
             if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
                 dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
                                                                   dstFunc)

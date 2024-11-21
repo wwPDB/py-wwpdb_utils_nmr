@@ -84,6 +84,9 @@
 # 29-Jan-2024  M. Yokochi - add 'ambiguous_dihedral_angle' warning type (NMR restraint remediation, 6sy2)
 # 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
 # 01-May-2024  M. Yokochi - merge cs/mr sequence extensions containing unknown residues (e.g UNK, DN, N) if necessary (NMR restraint remediation, 6fw4)
+# 07-Nov-2024  M. Yokochi - add 'nm-pea-ccp', 'nm-pea-pip', 'nm-pea-vie', 'nm-pea-spa', 'nm-pea-top', and 'nm-pea-xea' file types for NMR spectral peak remediation
+# 14-Nov-2024  M. Yokochi - add 'nm-aux-cha' file type for CHARMM extended CRD (CARD) file acting as CHARMM topology definition
+# 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1758,10 +1761,12 @@ class NmrDpReportInputSource:
                       'stats_of_exptl_data')
         self.file_types = ('pdbx',
                            'nef', 'nmr-star',
-                           'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl', 'nm-res-oth',
-                           'nm-aux-amb', 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro',
-                           'nm-res-dyn', 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari',
-                           'nm-res-sax', 'nm-res-mr', 'nm-pea-any')
+                           'nm-aux-amb', 'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl',
+                           'nm-res-oth', 'nm-res-ros', 'nm-res-bio', 'nm-aux-gro', 'nm-res-gro',
+                           'nm-res-dyn', 'nm-res-syb', 'nm-res-isd', 'nm-aux-cha', 'nm-res-cha',
+                           'nm-res-ari', 'nm-res-sax', 'nm-res-mr',
+                           'nm-pea-ccp', 'nm-pea-pip', 'nm-pea-vie', 'nm-pea-spa', 'nm-pea-top',
+                           'nm-pea-xea', 'nm-pea-any')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',
                               'nmr-chemical-shifts', 'nmr-restraints', 'nmr-peaks')
@@ -1776,7 +1781,7 @@ class NmrDpReportInputSource:
                                  'rdc_raw_data', 'ddc_restraint', 'csp_restraint', 'auto_relax_restraint',
                                  'heteronucl_noe_data', 'heteronucl_t1_data',
                                  'heteronucl_t2_data', 'heteronucl_t1r_data',
-                                 'order_param_data',
+                                 'order_param_data', 'ph_titr_data', 'ph_param_data',
                                  'ccr_d_csa_restraint', 'ccr_dd_restraint',
                                  'fchiral_restraint', 'saxs_restraint', 'other_restraint',
                                  'spectral_peak', 'spectral_peak_alt', 'topology')

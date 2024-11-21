@@ -14,8 +14,9 @@ import collections
 
 from antlr4 import ParseTreeListener
 
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+
 try:
-    from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
     from wwpdb.utils.nmr.mr.AriaMRParser import AriaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
@@ -88,7 +89,6 @@ try:
                                            retrieveOriginalSeqIdFromMRMap)
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error)
 except ImportError:
-    from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.io.CifReader import SYMBOLS_ELEMENT
     from nmr.mr.AriaMRParser import AriaMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
@@ -590,9 +590,13 @@ class AriaMRParserListener(ParseTreeListener):
                                         continue
                                     ref_chain_id = ca['ref_chain_id']
                                     test_chain_id = ca['test_chain_id']
-                                    sa = next(sa for sa in seqAlignFailed
-                                              if sa['ref_chain_id'] == ref_chain_id
-                                              and sa['test_chain_id'] == test_chain_id)
+
+                                    sa = next((sa for sa in seqAlignFailed
+                                               if sa['ref_chain_id'] == ref_chain_id
+                                               and sa['test_chain_id'] == test_chain_id), None)
+
+                                    if sa is None:
+                                        continue
 
                                     poly_seq_model = next(ps for ps in self.__polySeq
                                                           if ps['auth_chain_id'] == ref_chain_id)
@@ -1402,6 +1406,8 @@ class AriaMRParserListener(ParseTreeListener):
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
                     seqId = np['auth_seq_id'][idx]
+                    if cifCompId in ('ZN', 'CA') and atomId[0] in protonBeginCode:  # 2loa
+                        continue
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)
@@ -2000,6 +2006,8 @@ class AriaMRParserListener(ParseTreeListener):
                     cifCompId = np['comp_id'][idx]
                     origCompId = np['auth_comp_id'][idx]
                     seqId = np['auth_seq_id'][idx]
+                    if cifCompId in ('ZN', 'CA') and atomId[0] in protonBeginCode:  # 2loa
+                        continue
                     if self.__mrAtomNameMapping is not None and origCompId not in monDict3:
                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCompId, cifCheck=self.__hasCoord)
                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, origCompId, atomId, coordAtomSite)

@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://bmrbpub.pdbj.org/archive/combined_restraints/nmr-restraints-report-schema.json",
-  "title": "JSON Schema for NMR restraints report v3",
-  "description": "The NMR restraints report provides restraint statistics and diagnostic information for NMR restraints with reference to associated atomic coordinates.",
+  "$id": "https://bmrb-extract.pdbj.org/schema/nmr-data-processing-report-schema.json",
+  "title": "JSON Schema for NMR data processing report v4",
+  "description": "The NMR data processing report provides statistics and diagnostic information for NMR data with reference to associated atomic coordinates.",
   "definitions": {
     "input_source": {
       "type": "object",
@@ -32,11 +32,17 @@
             "nm-res-dyn",
             "nm-res-syb",
             "nm-res-isd",
-            "nm-res-cha",
             "nm-aux-cha",
+            "nm-res-cha",
             "nm-res-ari",
             "nm-res-sax",
             "nm-res-mr",
+            "nm-pea-ccp",
+            "nm-pea-pip",
+            "nm-pea-vie",
+            "nm-pea-spa",
+            "nm-pea-top",
+            "nm-pea-xea",
             "nm-pea-any"
           ]
         },
@@ -324,7 +330,8 @@
             "null"
           ],
           "items": {
-            "$ref": "#/definitions/polymer_sequence"
+            "$ref": "#/definitions/polymer_sequence",
+            "minItems": 1
           }
         },
         "polymer_sequence_in_loop": {
@@ -638,7 +645,8 @@
             "null"
           ],
           "items": {
-            "$ref": "#/definitions/non_standard_residue"
+            "$ref": "#/definitions/non_standard_residue",
+            "minItems": 1
           }
         },
         "disulfide_bond": {
@@ -2618,6 +2626,17 @@
               "s2"
             ]
           }
+        },
+        "atom_name_mapping": {
+          "description": "Atom name mapping information from author-provided names to cannonical names during data conversion.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/atom_name_mapping",
+            "minItems": 1
+          }
         }
       }
     },
@@ -2672,7 +2691,8 @@
             "null"
           ],
           "items": {
-            "$ref": "#/definitions/excluded_comp_id"
+            "$ref": "#/definitions/excluded_comp_id",
+            "minItems": 1
           }
         },
         "excluded_atom_id_in_statistics": {
@@ -2682,7 +2702,8 @@
             "null"
           ],
           "items": {
-            "$ref": "#/definitions/excluded_atom_id"
+            "$ref": "#/definitions/excluded_atom_id",
+            "minItems": 1
           }
         }
       },
@@ -3209,6 +3230,17 @@
             "number_of_values",
             "annotations"
           ]
+        },
+        "atom_name_mapping": {
+          "description": "Atom name mapping information from author-provided names to cannonical names during data conversion.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/atom_name_mapping",
+            "minItems": 1
+          }
         }
       }
     },
@@ -3904,6 +3936,47 @@
         "encoding_code",
         "encoded_source_dimension_id",
         "magnetization_linkage_id"
+      ]
+    },
+    "atom_name_mapping": {
+      "description": "Template for atom name mapping information from author-provided names to cannonical names during data conversion.",
+      "type": "object",
+      "properties": {
+        "comp_id": {
+          "type": "string",
+          "minimum": 1
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "atom_name": {
+                "type": "string",
+                "minimum": 1
+              },
+              "atom_id": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minimum": 1
+                },
+                "minItems": 1
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "atom_name",
+              "atom_id"
+            ]
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "comp_id",
+        "history"
       ]
     },
     "common_sequence_alignment": {
@@ -4981,7 +5054,8 @@
                 "null"
               ],
               "items": {
-                "$ref": "#/definitions/chain_assignment"
+                "$ref": "#/definitions/chain_assignment",
+                "minItems": 1
               }
             },
             "nmr_poly_seq_vs_model_poly_seq": {
@@ -4990,7 +5064,8 @@
                 "null"
               ],
               "items": {
-                "$ref": "#/definitions/chain_assignment"
+                "$ref": "#/definitions/chain_assignment",
+                "minItems": 1
               }
             }
           },

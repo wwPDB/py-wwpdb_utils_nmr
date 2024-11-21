@@ -195,6 +195,8 @@
 # 28-Jun-2024  M. Yokochi - convert conventional NMR name of carbonyl carbon 'CO' to valid one 'C' (DAOTHER-9520, 2nd case)
 # 19-Aug-2024  M. Yokochi - fill 'Data_file_name' saveframe tag by default (DAOTHER-9520, 4th case)
 # 20-Aug-2024  M. Yokochi - support truncated loop sequence in the model (DAOTHER-9644)
+# 14-Nov-2024  M. Yokochi - add support for CHARMM extended CRD (topology) file. file type: 'nm-aux-cha'
+# 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -220,9 +222,9 @@ from operator import itemgetter
 from striprtf.striprtf import rtf_to_text
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                              NEF_VERSION,
                                                              altDistanceConstraintType,
@@ -310,24 +312,27 @@ try:
                                                        MAX_OFFSET_ATTEMPT,
                                                        CYANA_MR_FILE_EXTS,
                                                        NMR_STAR_LP_KEY_ITEMS,
-                                                       NMR_STAR_LP_DATA_ITEMS)
+                                                       NMR_STAR_LP_DATA_ITEMS,
+                                                       THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                                       PLANE_LIKE_LOWER_LIMIT,
+                                                       PLANE_LIKE_UPPER_LIMIT)
+    from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
     from wwpdb.utils.nmr.mr.AmberMRReader import AmberMRReader
     from wwpdb.utils.nmr.mr.BiosymMRReader import BiosymMRReader
     from wwpdb.utils.nmr.mr.CnsMRReader import CnsMRReader
     from wwpdb.utils.nmr.mr.CyanaMRReader import CyanaMRReader
+    from wwpdb.utils.nmr.mr.GromacsPTReader import GromacsPTReader
     from wwpdb.utils.nmr.mr.GromacsMRReader import GromacsMRReader
     from wwpdb.utils.nmr.mr.RosettaMRReader import RosettaMRReader
     from wwpdb.utils.nmr.mr.XplorMRReader import XplorMRReader
-    from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
-    from wwpdb.utils.nmr.mr.GromacsPTReader import GromacsPTReader
     from wwpdb.utils.nmr.mr.DynamoMRReader import DynamoMRReader
     from wwpdb.utils.nmr.mr.SybylMRReader import SybylMRReader
     from wwpdb.utils.nmr.mr.IsdMRReader import IsdMRReader
+    from wwpdb.utils.nmr.mr.CharmmCRDReader import CharmmCRDReader
     from wwpdb.utils.nmr.mr.CharmmMRReader import CharmmMRReader
     from wwpdb.utils.nmr.mr.AriaMRReader import AriaMRReader
 
 except ImportError:
-    from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                  NEF_VERSION,
                                                  altDistanceConstraintType,
@@ -415,19 +420,23 @@ except ImportError:
                                            MAX_OFFSET_ATTEMPT,
                                            CYANA_MR_FILE_EXTS,
                                            NMR_STAR_LP_KEY_ITEMS,
-                                           NMR_STAR_LP_DATA_ITEMS)
+                                           NMR_STAR_LP_DATA_ITEMS,
+                                           THRESHHOLD_FOR_CIRCULAR_SHIFT,
+                                           PLANE_LIKE_LOWER_LIMIT,
+                                           PLANE_LIKE_UPPER_LIMIT)
+    from nmr.mr.AmberPTReader import AmberPTReader
     from nmr.mr.AmberMRReader import AmberMRReader
     from nmr.mr.BiosymMRReader import BiosymMRReader
     from nmr.mr.CnsMRReader import CnsMRReader
     from nmr.mr.CyanaMRReader import CyanaMRReader
+    from nmr.mr.GromacsPTReader import GromacsPTReader
     from nmr.mr.GromacsMRReader import GromacsMRReader
     from nmr.mr.RosettaMRReader import RosettaMRReader
     from nmr.mr.XplorMRReader import XplorMRReader
-    from nmr.mr.AmberPTReader import AmberPTReader
-    from nmr.mr.GromacsPTReader import GromacsPTReader
     from nmr.mr.DynamoMRReader import DynamoMRReader
     from nmr.mr.SybylMRReader import SybylMRReader
     from nmr.mr.IsdMRReader import IsdMRReader
+    from nmr.mr.CharmmCRDReader import CharmmCRDReader
     from nmr.mr.CharmmMRReader import CharmmMRReader
     from nmr.mr.AriaMRReader import AriaMRReader
 
@@ -533,6 +542,9 @@ expecting_l_paren = "expecting L_paren"  # NOTICE: depends on ANTLR v4 and (Xplo
 possible_typo_for_comment_out_pattern = re.compile(r'\s*([13])$')
 
 comment_code_mixed_set = {'#', '!'}
+
+default_coord_properties = {'tautomer': {}, 'rotamer': {}, 'near_ring': {}, 'near_para_ferro': {}, 'bond_length': {},
+                            'tautomer_per_model': []}
 
 
 def detect_bom(fPath, default='utf-8'):
@@ -1111,6 +1123,34 @@ def get_number_of_dimensions_of_peak_list(file_format, line):
     return None
 
 
+def is_like_planality_boundary(row, lower_limit_name, upper_limit_name):
+    """ Return whether boundary conditions like planality restraint.
+    """
+
+    try:
+
+        upper_limit = float(row[upper_limit_name])
+        lower_limit = float(row[lower_limit_name])
+
+        _array = numpy.array([upper_limit, lower_limit], dtype=float)
+
+        shift = None
+        if numpy.nanmin(_array) >= THRESHHOLD_FOR_CIRCULAR_SHIFT:
+            shift = -(numpy.nanmax(_array) // 360) * 360
+        elif numpy.nanmax(_array) <= -THRESHHOLD_FOR_CIRCULAR_SHIFT:
+            shift = -(numpy.nanmin(_array) // 360) * 360
+        if shift is not None:
+            upper_limit += shift
+            lower_limit += shift
+
+        return PLANE_LIKE_LOWER_LIMIT <= lower_limit < 0.0 < upper_limit <= PLANE_LIKE_UPPER_LIMIT\
+            or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 180.0 < 0.0 < upper_limit - 180.0 <= PLANE_LIKE_UPPER_LIMIT\
+            or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 360.0 < 0.0 < upper_limit - 360.0 <= PLANE_LIKE_UPPER_LIMIT
+
+    except (ValueError, TypeError):
+        return False
+
+
 class NmrDpUtility:
     """ Wrapper class for data processing for NMR data.
     """
@@ -1236,6 +1276,9 @@ class NmrDpUtility:
 
         # cache path of coordinate assembly check
         self.__asmChkCachePath = None
+
+        # cache path of coordinate properties
+        self.__coordPropCachePath = None
 
         # auxiliary input resource
         self.__inputParamDict = {}
@@ -1492,7 +1535,7 @@ class NmrDpUtility:
                                      'csp_restraint', 'auto_relax_restraint',
                                      'heteronucl_noe_data', 'heteronucl_t1_data',
                                      'heteronucl_t2_data', 'heteronucl_t1r_data',
-                                     'order_param_data',
+                                     'order_param_data', 'ph_titr_data', 'ph_param_data',
                                      'ccr_d_csa_restraint', 'ccr_dd_restraint',
                                      'fchiral_restraint', 'saxs_restraint', 'other_restraint')
 
@@ -1503,7 +1546,7 @@ class NmrDpUtility:
                                     'csp_restraint', 'auto_relax_restraint',
                                     'heteronucl_noe_data', 'heteronucl_t1_data',
                                     'heteronucl_t2_data', 'heteronucl_t1r_data',
-                                    'order_param_data',
+                                    'order_param_data', 'ph_titr_data', 'ph_param_data',
                                     'ccr_d_csa_restraint', 'ccr_dd_restraint',
                                     'fchiral_restraint', 'saxs_restraint', 'other_restraint']
 
@@ -1558,6 +1601,8 @@ class NmrDpUtility:
                                       'heteronucl_t2_data': None,
                                       'heteronucl_t1r_data': None,
                                       'order_param_data': None,
+                                      'ph_titr_data': None,
+                                      'ph_param_data': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'fchiral_restraint': None,
@@ -1588,6 +1633,8 @@ class NmrDpUtility:
                                            'heteronucl_t2_data': 'heteronucl_T2_relaxation',
                                            'heteronucl_t1r_data': 'heteronucl_T1rho_relaxation',
                                            'order_param_data': 'order_parameters',
+                                           'ph_titr_data': 'pH_titration',
+                                           'ph_param_data': 'pH_param_list',
                                            'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
                                            'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
                                            'fchiral_restraint': 'floating_chiral_stereo_assign',
@@ -1621,6 +1668,8 @@ class NmrDpUtility:
                                       'heteronucl_t2_data': None,
                                       'heteronucl_t1r_data': None,
                                       'order_param_data': None,
+                                      'ph_titr_data': None,
+                                      'ph_param_data': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'fchiral_restraint': None,
@@ -1651,6 +1700,8 @@ class NmrDpUtility:
                                            'heteronucl_t2_data': '_T2',
                                            'heteronucl_t1r_data': '_T1rho',
                                            'order_param_data': '_Order_param',
+                                           'ph_titr_data': '_PH_titr_result',
+                                           'ph_param_data': '_PH_param',
                                            'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
                                            'ccr_dd_restraint': '_Cross_correlation_DD',
                                            'fchiral_restraint': '_Floating_chirality',
@@ -1733,6 +1784,8 @@ class NmrDpUtility:
                                    'heteronucl_t2_data': None,
                                    'heteronucl_t1r_data': None,
                                    'order_param_data': None,
+                                   'ph_titr_data': None,
+                                   'ph_param_data': None,
                                    'ccr_d_csa_restraint': None,
                                    'ccr_dd_restraint': None,
                                    'fchiral_restraint': None,
@@ -1763,6 +1816,8 @@ class NmrDpUtility:
                                         'heteronucl_t2_data': None,
                                         'heteronucl_t1r_data': None,
                                         'order_param_data': None,
+                                        'ph_titr_data': None,
+                                        'ph_param_data': None,
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
                                         'fchiral_restraint': None,
@@ -1801,6 +1856,8 @@ class NmrDpUtility:
                                     'heteronucl_t2_data': None,
                                     'heteronucl_t1r_data': None,
                                     'order_param_data': None,
+                                    'ph_titr_data': None,
+                                    'ph_param_data': None,
                                     'ccr_d_csa_restraint': None,
                                     'ccr_dd_restraint': None,
                                     'fchiral_restraint': None,
@@ -1831,6 +1888,8 @@ class NmrDpUtility:
                                          'heteronucl_t2_data': None,
                                          'heteronucl_t1r_data': None,
                                          'order_param_data': None,
+                                         'ph_titr_data': None,
+                                         'ph_param_data': None,
                                          'ccr_d_csa_restraint': None,
                                          'ccr_dd_restraint': None,
                                          'fchiral_restraint': None,
@@ -1869,6 +1928,8 @@ class NmrDpUtility:
                                         'heteronucl_t2_data': None,
                                         'heteronucl_t1r_data': None,
                                         'order_param_data': None,
+                                        'ph_titr_data': None,
+                                        'ph_param_data': None,
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
                                         'fchiral_restraint': None,
@@ -1894,6 +1955,8 @@ class NmrDpUtility:
                                              'heteronucl_t2_data': 'ID',
                                              'heteronucl_t1r_data': 'ID',
                                              'order_param_data': 'ID',
+                                             'ph_titr_data': 'ID',
+                                             'ph_param_data': 'ID',
                                              'ccr_d_csa_restraint': 'ID',
                                              'ccr_dd_restraint': 'ID',
                                              'fchiral_restraint': 'ID',
@@ -1998,6 +2061,8 @@ class NmrDpUtility:
                                   'heteronucl_t2_data': None,
                                   'heteronucl_t1r_data': None,
                                   'order_param_data': None,
+                                  'ph_titr_data': None,
+                                  'ph_param_data': None,
                                   'ccr_d_csa_restraint': None,
                                   'ccr_dd_restraint': None,
                                   'fchiral_restraint': None,
@@ -2194,6 +2259,18 @@ class NmrDpUtility:
                                                             {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                                             {'name': 'Atom_ID', 'type': 'str'}
                                                             ],
+                                       'ph_titr_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                        {'name': 'Atm_obs_entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                                        {'name': 'Atm_obs_comp_index_ID', 'type': 'int', 'default-from': 'Atm_obs_seq_ID'},
+                                                        {'name': 'Atm_obs_comp_ID', 'type': 'str', 'uppercase': True},
+                                                        {'name': 'Atm_obs_atom_ID', 'type': 'str'},
+                                                        {'name': 'Atm_titr_entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                                        {'name': 'Atm_titr_comp_index_ID', 'type': 'int', 'default-from': 'Atm_titr_seq_ID'},
+                                                        {'name': 'Atm_titr_comp_ID', 'type': 'str', 'uppercase': True},
+                                                        {'name': 'Atm_titr_atom_ID', 'type': 'str'}
+                                                        ],
+                                       'ph_param_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True}
+                                                         ],
                                        'ccr_d_csa_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                                {'name': 'Dipole_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
                                                                {'name': 'Dipole_comp_index_ID_1', 'type': 'int', 'default-from': 'Dipole_seq_ID_1'},
@@ -2356,6 +2433,8 @@ class NmrDpUtility:
                                           'heteronucl_t2_data': None,
                                           'heteronucl_t1r_data': None,
                                           'order_param_data': None,
+                                          'ph_titr_data': None,
+                                          'ph_param_data': None,
                                           'ccr_d_csa_restraint': None,
                                           'ccr_dd_restraint': None,
                                           'fchiral_restraint': None,
@@ -2548,29 +2627,39 @@ class NmrDpUtility:
                                                                       {'name': 'Comp_index_ID', 'type': 'int',
                                                                        'default-from': 'Seq_ID'},
                                                                       {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
-                                                                      {'name': 'Atom_ID', 'type': 'str'},
+                                                                      {'name': 'Atom_ID', 'type': 'str'}
                                                                       ],
                                                'heteronucl_t2_data': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str',
                                                                        'default': '1'},
                                                                       {'name': 'Comp_index_ID', 'type': 'int',
                                                                        'default-from': 'Seq_ID'},
                                                                       {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
-                                                                      {'name': 'Atom_ID', 'type': 'str'},
+                                                                      {'name': 'Atom_ID', 'type': 'str'}
                                                                       ],
                                                'heteronucl_t1r_data': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str',
                                                                         'default': '1'},
                                                                        {'name': 'Comp_index_ID', 'type': 'int',
                                                                         'default-from': 'Seq_ID'},
                                                                        {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
-                                                                       {'name': 'Atom_ID', 'type': 'str'},
+                                                                       {'name': 'Atom_ID', 'type': 'str'}
                                                                        ],
                                                'order_param_data': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str',
                                                                      'default': '1'},
                                                                     {'name': 'Comp_index_ID', 'type': 'int',
                                                                      'default-from': 'Seq_ID'},
                                                                     {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
-                                                                    {'name': 'Atom_ID', 'type': 'str'},
+                                                                    {'name': 'Atom_ID', 'type': 'str'}
                                                                     ],
+                                               'ph_titr_data': [{'name': 'Atm_obs_entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                                                {'name': 'Atm_obs_comp_index_ID', 'type': 'int', 'default-from': 'Atm_obs_seq_ID'},
+                                                                {'name': 'Atm_obs_comp_ID', 'type': 'str', 'uppercase': True},
+                                                                {'name': 'Atm_obs_atom_ID', 'type': 'str'},
+                                                                {'name': 'Atm_titr_entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                                                {'name': 'Atm_titr_comp_index_ID', 'type': 'int', 'default-from': 'Atm_titr_seq_ID'},
+                                                                {'name': 'Atm_titr_comp_ID', 'type': 'str', 'uppercase': True},
+                                                                {'name': 'Atm_titr_atom_ID', 'type': 'str'}
+                                                                ],
+                                               'ph_param_data': None,
                                                'ccr_d_csa_restraint': [{'name': 'Dipole_entity_assembly_ID_1', 'type': 'positive-int-as-str',
                                                                         'default': '1'},
                                                                        {'name': 'Dipole_comp_index_ID_1', 'type': 'int',
@@ -2855,6 +2944,8 @@ class NmrDpUtility:
                                    'heteronucl_t2_data': None,
                                    'heteronucl_t1r_data': None,
                                    'order_param_data': None,
+                                   'ph_titr_data': None,
+                                   'ph_param_data': None,
                                    'ccr_d_csa_restraint': None,
                                    'ccr_dd_restraint': None,
                                    'fchiral_restraint': None,
@@ -3686,6 +3777,45 @@ class NmrDpUtility:
                                                              {'name': 'Order_parameter_list_ID', 'type': 'pointer-index', 'mandatory': True,
                                                               'default': '1', 'default-from': 'parent'}
                                                              ],
+                                        'ph_titr_data': [{'name': 'Atm_obs_atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atm_obs_atom_ID',
+                                                          'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                          'enforce-enum': True},
+                                                         {'name': 'Atm_obs_atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atm_obs_atom_ID',
+                                                          'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                          'enforce-enum': True},
+                                                         {'name': 'Atm_titr_atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atm_titr_atom_ID',
+                                                          'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                          'enforce-enum': True},
+                                                         {'name': 'Atm_titr_atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atm_titr_atom_ID',
+                                                          'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                          'enforce-enum': True},
+                                                         {'name': 'Hill_coeff_val', 'type': 'positive-float', 'mandatory': False,
+                                                          'clear-bad-pattern': True},
+                                                         {'name': 'Hill_coeff_val_fit_err', 'type': 'positive-float', 'mandatory': False,
+                                                          'clear-bad-pattern': True},
+                                                         {'name': 'High_PH_param_fit_val', 'type': 'positive-float', 'mandatory': False,
+                                                          'clear-bad-pattern': True},
+                                                         {'name': 'High_PH_param_fit_val_err', 'type': 'positive-float', 'mandatory': False,
+                                                          'clear-bad-pattern': True},
+                                                         {'name': 'Low_PH_param_fit_val', 'type': 'positive-float', 'mandatory': False,
+                                                          'clear-bad-pattern': True},
+                                                         {'name': 'Low_PH_param_fit_val_err', 'type': 'positive-float', 'mandatory': False,
+                                                          'clear-bad-pattern': True},
+                                                         {'name': 'PKa_val', 'type': 'positive-float', 'mandatory': True,
+                                                          'clear-bad-pattern': True},
+                                                         {'name': 'PKa_val_fit_err', 'type': 'positive-float', 'mandatory': True,
+                                                          'clear-bad-pattern': True},
+                                                         {'name': 'PHmid_val', 'type': 'positive-float', 'mandatory': True,
+                                                          'clear-bad-pattern': True},
+                                                         {'name': 'PHmid_val_fit_err', 'type': 'positive-float', 'mandatory': True,
+                                                          'clear-bad-pattern': True}
+                                                         ],
+                                        'ph_param_data': [{'name': 'PH_titr_result_ID', 'type': 'positive-int', 'mandatory': True},
+                                                          {'name': 'PH_val', 'type': 'positive-float', 'mandatory': True},
+                                                          {'name': 'PH_val_err', 'type': 'positive-float', 'mandatory': False},
+                                                          {'name': 'Observed_NMR_param_val', 'type': 'positive-float', 'mandatory': True},
+                                                          {'name': 'Observed_NMR_param_val_err', 'type': 'positive-float', 'mandatory': False}
+                                                          ],
                                         'ccr_d_csa_restraint': [{'name': 'Dipole_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_atom_ID_1',
                                                                  'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                                  'enforce-enum': True},
@@ -3956,6 +4086,8 @@ class NmrDpUtility:
                                            'heteronucl_t2_data': None,
                                            'heteronucl_t1r_data': None,
                                            'order_param_data': None,
+                                           'ph_titr_data': None,
+                                           'ph_param_data': None,
                                            'ccr_d_csa_restraint': None,
                                            'ccr_dd_restraint': None,
                                            'fchiral_restraint': None,
@@ -4146,6 +4278,8 @@ class NmrDpUtility:
                                                 'heteronucl_t2_data': None,
                                                 'heteronucl_t1r_data': None,
                                                 'order_param_data': None,
+                                                'ph_titr_data': None,
+                                                'ph_param_data': None,
                                                 'ccr_d_csa_restraint': None,
                                                 'ccr_dd_restraint': None,
                                                 'fchiral_restraint': None,
@@ -4299,6 +4433,8 @@ class NmrDpUtility:
                                      'heteronucl_t2_data': None,
                                      'heteronucl_t1r_data': None,
                                      'order_param_data': None,
+                                     'ph_titr_data': None,
+                                     'ph_param_data': None,
                                      'ccr_d_csa_restraint': None,
                                      'ccr_dd_restraint': None,
                                      'fchiral_restraint': None,
@@ -4580,6 +4716,18 @@ class NmrDpUtility:
                                                                'SH2_val', 'SH2_val_fit_err', 'SN2_val', 'SN2_val_fit_err',
                                                                'Resonance_ID', 'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
                                                                'Sf_ID', 'Entry_ID', 'Order_parameter_list_ID'],
+                                          'ph_titr_data': ['ID', 'Atm_obs_assembly_atom_ID', 'Atm_obs_entity_assembly_ID', 'Atm_obs_entity_ID',
+                                                           'Atm_obs_comp_index_ID', 'Atm_obs_seq_ID', 'Atm_obs_comp_ID', 'Atm_obs_atom_ID',
+                                                           'Atm_obs_atom_type', 'Atm_obs_atom_isotope_number', 'Atm_obs_auth_entity_assembly_ID',
+                                                           'Atm_obs_auth_seq_ID', 'Atm_obs_auth_comp_ID', 'Atm_obs_auth_atom_ID', 'Atm_titr_assembly_atom_ID',
+                                                           'Atm_titr_entity_assembly_ID', 'Atm_titr_entity_ID', 'Atm_titr_comp_index_ID', 'Atm_titr_seq_ID',
+                                                           'Atm_titr_comp_ID', 'Atm_titr_atom_ID', 'Atm_titr_atom_type', 'Atm_titr_atom_isotope_number',
+                                                           'Atm_titr_auth_entity_assembly_ID', 'Atm_titr_auth_seq_ID', 'Atm_titr_auth_comp_ID', 'Atm_titr_auth_atom_ID',
+                                                           'Hill_coeff_val', 'Hill_coeff_val_fit_err', 'High_PH_param_fit_val', 'High_PH_param_fit_val_err',
+                                                           'Low_PH_param_fit_val', 'Low_PH_param_fit_val_err', 'PKa_val', 'PKa_val_fit_err', 'PHmid_val', 'PHmid_val_fit_err',
+                                                           'Sf_ID', 'Entry_ID', 'PH_titration_list_ID'],
+                                          'ph_param_data': ['ID', 'PH_titr_result_ID', 'PH_val', 'PH_val_err', 'Observed_NMR_param_val', 'Observed_NMR_param_val_err',
+                                                            'Sf_ID', 'Entry_ID', 'PH_param_list_ID'],
                                           'ccr_d_csa_restraint': ['ID', 'Dipole_assembly_atom_ID_1', 'Dipole_entity_assembly_ID_1', 'Dipole_entity_ID_1', 'Dipole_comp_index_ID_1',
                                                                   'Dipole_seq_ID_1', 'Dipole_comp_ID_1', 'Dipole_atom_ID_1', 'Dipole_atom_type_1', 'Dipole_atom_isotope_number_1',
                                                                   'Dipole_assembly_atom_ID_2', 'Dipole_entity_assembly_ID_2', 'Dipole_entity_ID_2', 'Dipole_comp_index_ID_2',
@@ -4674,6 +4822,8 @@ class NmrDpUtility:
                                         'heteronucl_t2_data': None,
                                         'heteronucl_t1r_data': None,
                                         'order_param_data': None,
+                                        'ph_titr_data': None,
+                                        'ph_param_data': None,
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
                                         'fchiral_restraint': None,
@@ -4704,6 +4854,8 @@ class NmrDpUtility:
                                              'heteronucl_t2_data': '_Heteronucl_T2_list',
                                              'heteronucl_t1r_data': '_Heteronucl_T1rho_list',
                                              'order_param_data': '_Order_parameter_list',
+                                             'ph_titr_data': '_PH_titration_list',
+                                             'ph_param_data': '_PH_param_list',
                                              'ccr_d_csa_restraint': '_Cross_correlation_D_CSA_list',
                                              'ccr_dd_restraint': '_Cross_correlation_DD_list',
                                              'fchiral_restraint': '_Floating_chirality_assign',
@@ -4805,6 +4957,8 @@ class NmrDpUtility:
                                      'heteronucl_t2_data': None,
                                      'heteronucl_t1r_data': None,
                                      'order_param_data': None,
+                                     'ph_titr_data': None,
+                                     'ph_param_data': None,
                                      'ccr_d_csa_restraint': None,
                                      'ccr_dd_restraint': None,
                                      'fchiral_restraint': None,
@@ -5043,6 +5197,18 @@ class NmrDpUtility:
                                                                {'name': 'Rex_field_strength', 'type': 'positive-float', 'mandatory': False,
                                                                 'enforce-non-zero': True}
                                                                ],
+                                          'ph_titr_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                           {'name': 'Expt_observed_param', 'type': 'enum', 'mandatory': True,
+                                                            'enum': ('chemical shift', 'coupling constant', 'peak height', 'peak volume')}
+                                                           ],
+                                          'ph_param_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                            {'name': 'Observed_NMR_param', 'type': 'enum', 'mondatory': True,
+                                                             'enum': ('chemical shift', 'coupling constant', 'peak height', 'peak volume')},
+                                                            {'name': 'PH_titration_list_ID', 'type': 'positive-int', 'mandatory': True,
+                                                             'default': '1'}
+                                                            ],
                                           'ccr_d_csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                                   {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                                   {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
@@ -5097,6 +5263,8 @@ class NmrDpUtility:
                                       'heteronucl_t2_data': None,
                                       'heteronucl_t1r_data': None,
                                       'order_param_data': None,
+                                      'ph_titr_data': None,
+                                      'ph_param_data': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'fchiral_restraint': None,
@@ -5127,6 +5295,8 @@ class NmrDpUtility:
                                            'heteronucl_t2_data': None,
                                            'heteronucl_t1r_data': None,
                                            'order_param_data': None,
+                                           'ph_titr_data': None,
+                                           'ph_param_data': None,
                                            'ccr_d_csa_restraint': None,
                                            'ccr_dd_restraint': None,
                                            'fchiral_restraint': None,
@@ -5164,6 +5334,8 @@ class NmrDpUtility:
                                         'heteronucl_t2_data': None,
                                         'heteronucl_t1r_data': None,
                                         'order_param_data': None,
+                                        'ph_titr_data': None,
+                                        'ph_param_data': None,
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
                                         'fchiral_restraint': None,
@@ -5294,6 +5466,11 @@ class NmrDpUtility:
                                                                   'Sample_condition_list_ID', 'Sample_condition_list_label',
                                                                   'Tau_e_val_units', 'Tau_f_val_units', 'Tau_s_val_units',
                                                                   'Rex_field_strength', 'Rex_val_units', 'Details', 'Text_data_format', 'Text_data'],
+                                             'ph_titr_data': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                              'Sample_condition_list_ID', 'Sample_condition_list_label', 'Expt_observed_param', 'Details',
+                                                              'Text_data_format', 'Text_data'],
+                                             'ph_param_data': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'PH_titration_list_ID', 'PH_titration_list_label',
+                                                               'Observed_NMR_param', 'Data_file_name', 'Details', 'Text_data_format', 'Text_data'],
                                              'ccr_d_csa_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
                                                                      'Sample_condition_list_ID', 'Sample_condition_list_label', 'Spectrometer_frequency_1H',
                                                                      'Val_units', 'Details', 'Text_data_format', 'Text_data'],
@@ -5337,6 +5514,8 @@ class NmrDpUtility:
                                           'heteronucl_t2_data': None,
                                           'heteronucl_t1r_data': None,
                                           'order_param_data': None,
+                                          'ph_titr_data': None,
+                                          'ph_param_data': None,
                                           'ccr_d_csa_restraint': None,
                                           'ccr_dd_restraint': None,
                                           'fchiral_restraint': None,
@@ -5367,6 +5546,8 @@ class NmrDpUtility:
                                                'heteronucl_t2_data': None,
                                                'heteronucl_t1r_data': None,
                                                'order_param_data': None,
+                                               'ph_titr_data': None,
+                                               'ph_param_data': None,
                                                'ccr_d_csa_restraint': None,
                                                'ccr_dd_restraint': None,
                                                'fchiral_restraint': None,
@@ -5400,6 +5581,8 @@ class NmrDpUtility:
                                              'heteronucl_t2_data': [],
                                              'heteronucl_t1r_data': [],
                                              'order_param_data': [],
+                                             'ph_titr_data': [],
+                                             'ph_param_data': [],
                                              'ccr_d_csa_restraint': [],
                                              'ccr_dd_restraint': [],
                                              'fchiral_restraint': [],
@@ -5561,6 +5744,8 @@ class NmrDpUtility:
                                                   'heteronucl_t2_data': ['Heteronucl_T2_experiment', 'Heteronucl_T2_software', 'T2'],
                                                   'heteronucl_t1r_data': ['Heteronucl_T1rho_experiment', 'Heteronucl_T1rho_software', 'T1rho'],
                                                   'order_param_data': ['Order_parameter_experiment', 'Order_parameter_software', 'Order_param'],
+                                                  'ph_titr_data': ['PH_titration_experiment', 'PH_titration_software', 'PH_titr_result'],
+                                                  'ph_param_data': ['PH_param_list'],
                                                   'ccr_d_csa_restraint': ['Cross_correlation_D_CSA_experiment', 'Cross_correlation_D_CSA_software',
                                                                           'Cross_correlation_D_CSA'],
                                                   'ccr_dd_restraint': ['Cross_correlation_DD_experiment', 'Cross_correlation_DD_software', 'Cross_correlation_DD'],
@@ -5615,6 +5800,8 @@ class NmrDpUtility:
                                       'heteronucl_t2_data': None,
                                       'heteronucl_t1r_data': None,
                                       'order_param_data': None,
+                                      'ph_titr_data': None,
+                                      'ph_param_data': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'fchiral_restraint': None,
@@ -5693,6 +5880,8 @@ class NmrDpUtility:
                                            'heteronucl_t2_data': None,
                                            'heteronucl_t1r_data': None,
                                            'order_param_data': None,
+                                           'ph_titr_data': None,
+                                           'ph_param_data': None,
                                            'ccr_d_csa_restraint': None,
                                            'ccr_dd_restraint': None,
                                            'fchiral_restraint': None,
@@ -5754,6 +5943,8 @@ class NmrDpUtility:
                                        'heteronucl_t2_data': None,
                                        'heteronucl_t1r_data': None,
                                        'order_param_data': None,
+                                       'ph_titr_data': None,
+                                       'ph_param_data': None,
                                        'ccr_d_csa_restraint': None,
                                        'ccr_dd_restraint': None,
                                        'fchiral_restraint': None,
@@ -5902,6 +6093,8 @@ class NmrDpUtility:
                                             'heteronucl_t2_data': None,
                                             'heteronucl_t1r_data': None,
                                             'order_param_data': None,
+                                            'ph_titr_data': None,
+                                            'ph_param_data': None,
                                             'ccr_d_csa_restraint': None,
                                             'ccr_dd_restraint': None,
                                             'fchiral_restraint': None,
@@ -5945,6 +6138,8 @@ class NmrDpUtility:
                                          'heteronucl_t2_data': None,
                                          'heteronucl_t1r_data': None,
                                          'order_param_data': None,
+                                         'ph_titr_data': None,
+                                         'ph_param_data': None,
                                          'ccr_d_csa_restraint': None,
                                          'ccr_dd_restraint': None,
                                          'fchiral_restraint': None,
@@ -6024,6 +6219,8 @@ class NmrDpUtility:
                                               'heteronucl_t2_data': None,
                                               'heteronucl_t1r_data': None,
                                               'order_param_data': None,
+                                              'ph_titr_data': None,
+                                              'ph_param_data': None,
                                               'ccr_d_csa_restraint': None,
                                               'ccr_dd_restraint': None,
                                               'fchiral_restraint': None,
@@ -6237,6 +6434,8 @@ class NmrDpUtility:
                           'heteronucl_t2_data': [],
                           'heteronucl_t1r_data': [],
                           'order_param_data': [],
+                          'ph_titr_data': [],
+                          'ph_param_data': [],
                           'ccr_d_csa_restraint': [],
                           'ccr_dd_restraint': [],
                           'fchiral_restraint': [],
@@ -6269,6 +6468,8 @@ class NmrDpUtility:
                            'heteronucl_t2_data': [],
                            'heteronucl_t1r_data': [],
                            'order_param_data': [],
+                           'ph_titr_data': [],
+                           'ph_param_data': [],
                            'ccr_d_csa_restraint': [],
                            'ccr_dd_restraint': [],
                            'fchiral_restraint': [],
@@ -6301,6 +6502,8 @@ class NmrDpUtility:
                               'heteronucl_t2_data': [],
                               'heteronucl_t1r_data': [],
                               'order_param_data': [],
+                              'ph_titr_data': [],
+                              'ph_param_data': [],
                               'ccr_d_csa_restraint': [],
                               'ccr_dd_restraint': [],
                               'fchiral_restraint': [],
@@ -6337,16 +6540,6 @@ class NmrDpUtility:
         self.__auth_to_label_seq = None
         # conversion dictionary from label_seq_id to auth_seq_id of the coordinates
         self.__label_to_auth_seq = None
-        # tautomeric state in model
-        self.__coord_tautomer = {}
-        # rotamer state in model
-        self.__coord_rotamer = {}
-        # nearest aromatic ring in model
-        self.__coord_near_ring = {}
-        # nearest paramagnetic/ferromagnetic atom in model
-        self.__coord_near_para_ferro = {}
-        # bond length in model
-        self.__coord_bond_length = {}
 
         # sub-directory name for cache file
         self.__sub_dir_name_for_cache = 'utils_nmr'
@@ -6358,6 +6551,12 @@ class NmrDpUtility:
 
         # ParserListerUtil.coordAssemblyChecker()
         self.__caC = None
+
+        # coordinate properties cache
+        self.__cpC = copy.copy(default_coord_properties)
+
+        # hash value of coordinate properties cache
+        self.__cpC_hash = None
 
         # set of entity_assembly_id having experimental data
         self.__ent_asym_id_with_exptl_data = set()
@@ -7132,6 +7331,47 @@ class NmrDpUtility:
 
                         arPath = _arPath
 
+                    if ar['file_type'] == 'nm-res-oth':
+
+                        has_ext = in_atoms = False
+                        atom_names = 0
+
+                        three_letter_codes = monDict3.keys()
+                        atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
+
+                        with open(arPath, 'r', encoding='utf-8') as ifh:
+
+                            for line in ifh:
+
+                                if 'EXT' in line:
+                                    l_split = line.split()
+                                    _line = ' '.join(l_split)
+
+                                    if len(_line) > 1 and _line[0].isdigit() and _line[1] == 'EXT':
+                                        has_ext = in_atoms = True
+                                        continue
+
+                                elif in_atoms:
+                                    l_split = line.split()
+                                    _line = ' '.join(l_split)
+
+                                    if len(_line) == 0 or _line.startswith('#') or _line.startswith('!') or _line.startswith(';'):
+                                        continue
+
+                                    if len(l_split) >= 10:
+                                        try:
+                                            atom_num = int(l_split[0])
+                                            seq_id = int(l_split[8])
+                                            comp_id = l_split[2]
+                                            atom_id = l_split[3]
+                                            if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                                atom_names += 1
+                                        except ValueError:
+                                            pass
+
+                        if has_ext and atom_names > 0:
+                            ar['file_type'] = 'nm-aux-cha'
+
                     input_source.setItemValue('file_name', os.path.basename(arPath))
                     input_source.setItemValue('file_type', ar['file_type'])
                     input_source.setItemValue('content_type', 'nmr-restraints')
@@ -7335,8 +7575,6 @@ class NmrDpUtility:
                 if self.__op == 'nmr-cs-mr-merge' and not os.path.basename(csPath).startswith('bmr'):
 
                     _csPath = csPath + '.cif2str'
-
-                    # if not os.path.exists(_csPath):
 
                     if not self.__c2S.convert(csPath, _csPath):
                         _csPath = csPath
@@ -8674,6 +8912,7 @@ class NmrDpUtility:
                         if onedep_file_pattern.match(srcPath):
                             g = onedep_file_pattern.search(srcPath).groups()
                             srcPath = g[0] + '.V' + str(int(g[1]) + 1)
+
                     if __pynmrstar_v3__:
                         self.__star_data[file_list_id].write_to_file(srcPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
                     else:
@@ -9982,7 +10221,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if file_type in ('nm-res-mr', 'nm-res-sax', 'nm-pea-any'):
+            if file_type in ('nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
                 if file_type == 'nm-res-mr':
                     md5_list.append(None)
                 else:
@@ -10004,6 +10243,7 @@ class NmrDpUtility:
 
             is_aux_amb = file_type == 'nm-aux-amb'
             is_aux_gro = file_type == 'nm-aux-gro'
+            is_aux_cha = file_type == 'nm-aux-cha'
 
             _mr_format_name = getRestraintFormatName(file_type)
             mr_format_name = _mr_format_name.split()[0]
@@ -10011,7 +10251,7 @@ class NmrDpUtility:
 
             atom_like_names =\
                 self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
-                                                                                 'nm-res-isd', 'nm-res-ari', 'nm-res-oth') or is_aux_amb or is_aux_gro else 1))
+                                                                                 'nm-res-isd', 'nm-res-ari', 'nm-res-oth') or is_aux_amb or is_aux_gro or is_aux_cha else 1))
             cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))  # DAOTHER-7491
 
             has_chem_shift = False
@@ -10429,7 +10669,7 @@ class NmrDpUtility:
                                     in_igr2 = False
 
             elif file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
-                               'nm-res-isd', 'nm-res-ari', 'nm-res-oth') or is_aux_amb or is_aux_gro:
+                               'nm-res-isd', 'nm-res-ari', 'nm-res-oth') or is_aux_amb or is_aux_gro or is_aux_cha:
 
                 if is_aux_amb:
 
@@ -10465,6 +10705,14 @@ class NmrDpUtility:
 
                     system_names = 0
                     molecule_names = 0
+                    atom_names = 0
+
+                elif is_aux_cha:
+
+                    has_ext = False
+
+                    in_atoms = False
+
                     atom_names = 0
 
                 atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
@@ -10672,6 +10920,34 @@ class NmrDpUtility:
                                         except ValueError:
                                             pass
 
+                        elif is_aux_cha:
+
+                            if 'EXT' in line:
+                                l_split = line.split()
+                                _line = ' '.join(l_split)
+
+                                if len(_line) > 1 and _line[0].isdigit() and _line[1] == 'EXT':
+                                    has_ext = in_atoms = True
+                                    continue
+
+                            elif in_atoms:
+                                l_split = line.split()
+                                _line = ' '.join(l_split)
+
+                                if len(_line) == 0 or _line.startswith('#') or _line.startswith('!') or _line.startswith(';'):
+                                    continue
+
+                                if len(l_split) >= 10:
+                                    try:
+                                        atom_num = int(l_split[0])
+                                        seq_id = int(l_split[8])
+                                        comp_id = l_split[2]
+                                        atom_id = l_split[3]
+                                        if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                            atom_names += 1
+                                    except ValueError:
+                                        pass
+
                         _line = ' '.join(line.split())
 
                         if len(_line) == 0 or _line.startswith('#') or _line.startswith('!') or _line.startswith(';'):
@@ -10864,6 +11140,11 @@ class NmrDpUtility:
                        system_names > 0 and molecule_names > 0 and atom_names > 0:
                         has_topology = True
 
+                elif is_aux_cha:
+
+                    if has_ext and atom_names > 0:
+                        has_topology = True
+
             if file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
                              'nm-res-isd', 'nm-res-ari', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
 
@@ -10930,7 +11211,7 @@ class NmrDpUtility:
 
                 if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
                                  'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn',
-                                 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari'):
+                                 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-aux-cha', 'nm-res-ari'):
                     sll_pred = False
                     if file_path in self.__sll_pred_holder and file_type in self.__sll_pred_holder[file_path]:
                         sll_pred = self.__sll_pred_holder[file_path][file_type]
@@ -10956,7 +11237,7 @@ class NmrDpUtility:
                     content_subtype = listener.getContentSubtype() if listener is not None else None
                     if content_subtype is not None and len(content_subtype) == 0:
                         content_subtype = None
-                    elif file_type in ('nm-aux-amb', 'nm-aux-gro'):
+                    elif file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-aux-cha'):
                         has_topology = True
                         content_subtype = {'topology': 1}
 
@@ -11114,7 +11395,7 @@ class NmrDpUtility:
             if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
                     and not has_plane_restraint and not has_hbond_restraint and not has_ssbond_restraint:
 
-                if not is_aux_amb and not is_aux_gro:
+                if not is_aux_amb and not is_aux_gro and not is_aux_cha:
                     err = f"The {mr_format_name} restraint file includes coordinates. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
                 else:
@@ -11153,7 +11434,7 @@ class NmrDpUtility:
 
                 elif valid:
 
-                    if not is_aux_amb and not is_aux_gro:
+                    if not is_aux_amb and not is_aux_gro and not is_aux_cha:
                         err = f"The {mr_format_name} restraint file includes assigned chemical shifts. "\
                             "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
                     else:
@@ -11206,7 +11487,7 @@ class NmrDpUtility:
                 if 'ssbond_restraint' in content_subtype:
                     has_ssbond_restraint = True
 
-            if not is_aux_amb and not is_aux_gro and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
+            if not is_aux_amb and not is_aux_gro and not is_aux_cha and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
                and not has_plane_restraint and not has_hbond_restraint and not has_ssbond_restraint and not valid:
 
                 hint = ""
@@ -11303,6 +11584,41 @@ class NmrDpUtility:
                 if self.__verbose:
                     self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
+            elif is_aux_cha and not has_topology:
+
+                subtype_name = ""
+                if has_chem_shift:
+                    subtype_name += "Assigned chemical shifts, "
+                if has_dist_restraint:
+                    subtype_name += "Distance restraints, "
+                if has_dihed_restraint:
+                    subtype_name += "Dihedral angle restraints, "
+                if has_rdc_restraint:
+                    subtype_name += "RDC restraints, "
+                if has_plane_restraint:
+                    subtype_name += "Planarity restraints, "
+                if has_hbond_restraint:
+                    subtype_name += "Hydrogen bond restraints, "
+                if has_ssbond_restraint:
+                    subtype_name += "Disulfide bond restraints, "
+
+                if len(subtype_name) > 0:
+                    subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
+
+                hint = " Tips for CHARMM topology: '{Number of atoms} EXT' header line must be present in the file. "\
+                    "Then, it is followed by '{atom_number} {label_seq_id} {label_comp_id} {label_atom_id} {Cartn_x} {Cartn_y} {Cartn_z} "\
+                    "{segment_id} {auth_seq_id} {B_iso_or_equiv}' lines."
+
+                err = f"{file_name} is not CHARMM topology (aka. CRD or CHARM CARD file) {subtype_name}."\
+                    + hint + " Did you accidentally select the wrong format? Please re-upload the GROMACS topology file."
+
+                self.report.error.appendDescription('content_mismatch',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+
             self.__legacy_dist_restraint_uploaded |= has_dist_restraint
 
             input_source.setItemValue('content_subtype', content_subtype)
@@ -11322,10 +11638,11 @@ class NmrDpUtility:
 
                 fileListId += 1
 
-                if file_type in ('nmr-star', 'nm-res-mr', 'nm-res-oth', 'nm-res-sax', 'nm-pea-any'):
+                if file_type in ('nmr-star', 'nm-res-mr', 'nm-res-oth', 'nm-res-sax') or file_type.startswith('nm-peak'):
                     continue
 
-                if (content_subtype is not None and 'dist_restraint' in content_subtype) or file_type in ('nm-aux-amb', 'nm-aux-gro'):
+                if (content_subtype is not None and 'dist_restraint' in content_subtype)\
+                   or file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-aux-cha'):
                     continue
 
                 if content_subtype is None:
@@ -11495,7 +11812,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if file_type != 'nm-pea-any':
+            if not file_type.startswith('nm-pea'):
                 continue
 
             content_subtype = input_source_dic['content_subtype']
@@ -11937,6 +12254,9 @@ class NmrDpUtility:
                                     reasons)
             reader.setSllPredMode(sll_pred)
             return reader
+        if file_type == 'nm-aux-cha':
+            return CharmmCRDReader(verbose, self.__lfh, None, None, None, None, None,
+                                   self.__ccU, self.__csStat)
         if file_type == 'nm-res-ari':
             reader = AriaMRReader(verbose, self.__lfh, None, None, None, None, None,
                                   self.__ccU, self.__csStat, self.__nefT,
@@ -11994,7 +12314,7 @@ class NmrDpUtility:
             pass
         elif file_type == 'nm-res-isd':
             pass
-        elif file_type == 'nm-res-cha':
+        elif file_type in ('nm-res-cha', 'nm-aux-cha'):
             pass
         elif file_type == 'nm-res-ari':
             pass
@@ -12989,7 +13309,7 @@ class NmrDpUtility:
 
             for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
                                    'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn',
-                                   'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari']:
+                                   'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-aux-cha', 'nm-res-ari']:
 
                 if test_file_type == file_type:
                     continue
@@ -13311,7 +13631,7 @@ class NmrDpUtility:
             pass
         elif file_type == 'nm-res-isd':
             pass
-        elif file_type == 'nm-res-cha':
+        elif file_type in ('nm-res-cha', 'nm-aux-cha'):
             pass
         elif file_type == 'nm-res-ari':
             pass
@@ -14327,6 +14647,7 @@ class NmrDpUtility:
             header_file = src_basename + '-header.mr'
             footer_file = src_basename + '-footer.mr'
             cor_dst_file = src_basename + '-corrected.mr'
+            cor_str_file = src_basename + '-corrected.str'
             ign_dst_file = src_basename + '-ignored.mr'
 
             if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
@@ -14948,6 +15269,130 @@ class NmrDpUtility:
 
                 remediated = False
 
+            if os.path.exists(cor_str_file) and os.path.exists(cor_dst_file) and has_content:
+                mrPath = cor_str_file
+
+                mr_file_path_list = 'restraint_file_path_list'
+
+                item = {'file_name': mrPath,
+                        'file_type': 'nmr-star',
+                        'original_file_name': os.path.basename(src_basename) + '.mr'}
+
+                if mr_file_path_list not in self.__inputParamDict:
+                    self.__inputParamDict[mr_file_path_list] = [item]
+                else:
+                    self.__inputParamDict[mr_file_path_list].append(item)
+
+                insert_index = self.__file_path_list_len
+
+                if insert_index > len(self.__star_data):
+                    self.__star_data.append(None)
+                    self.__star_data_type.append(None)
+
+                self.report.insertInputSource(insert_index)
+
+                self.__file_path_list_len += 1
+
+                input_source = self.report.input_sources[insert_index]
+
+                file_type = 'nmr-star'
+                file_name = os.path.basename(mrPath)
+
+                input_source.setItemValue('file_name', file_name)
+                input_source.setItemValue('file_type', file_type)
+                input_source.setItemValue('content_type', 'nmr-restraints')
+                input_source.setItemValue('original_file_name', os.path.basename(src_basename) + '.mr')
+
+                codec = detect_bom(mrPath, 'utf-8')
+
+                _mrPath = None
+
+                if codec != 'utf-8':
+                    _mrPath = mrPath + '~'
+                    convert_codec(mrPath, _mrPath, codec, 'utf-8')
+                    mrPath = _mrPath
+
+                if is_rtf_file(mrPath):
+                    _mrPath = mrPath + '.rtf2txt'
+                    convert_rtf_to_ascii(mrPath, _mrPath)
+                    mrPath = _mrPath
+
+                file_subtype = 'O'
+
+                is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
+
+                if not is_valid or not self.__has_star_chem_shift:
+                    _is_valid, _ = self.__nefT.validate_file(mrPath, 'S')
+                    if _is_valid:
+                        has_cs_str = True
+
+                self.__original_error_message.append(message)
+
+                _file_type = message['file_type']  # nef/nmr-star/unknown
+
+                if is_valid:
+
+                    if _file_type != file_type:
+
+                        err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
+                            f"but recognized as {self.readable_file_type[_file_type]} file."
+                        # DAOTHER-5673
+                        err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef' else " Please re-upload the file."
+
+                        if len(message['error']) > 0:
+                            for err_message in message['error']:
+                                if 'No such file or directory' not in err_message:
+                                    err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+
+                        self.report.error.appendDescription('content_mismatch',
+                                                            {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+
+                    else:
+
+                        # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                        _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+
+                        self.__has_legacy_sf_issue = False
+
+                        if star_data_type == 'Saveframe':
+                            self.__has_legacy_sf_issue = True
+                            self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message)
+                            _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath)
+
+                        if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+
+                            if len(self.__star_data_type) == self.__file_path_list_len:
+                                del self.__star_data_type[-1]
+                                del self.__star_data[-1]
+
+                            self.__star_data_type.append(star_data_type)
+                            self.__star_data.append(star_data)
+
+                            self.__rescueFormerNef(insert_index)
+                            self.__rescueImmatureStr(insert_index)
+
+                        if _is_done:
+                            self.__detectContentSubType__(insert_index, input_source, dir_path)
+                            input_source_dic = input_source.get()
+                            if 'content_subtype' in input_source_dic:
+                                content_subtype = input_source_dic['content_subtype']
+                                if any(mr_content_subtype for mr_content_subtype in self.mr_content_subtypes if mr_content_subtype in content_subtype):
+                                    has_mr_str = True
+                                    mr_part_paths.append({'nmr-star': mrPath})
+
+                elif not self.__fixFormatIssueOfInputSource(insert_index, file_name, file_type, mrPath, file_subtype, message):
+                    pass
+
+                if _mrPath is not None:
+                    try:
+                        os.remove(_mrPath)
+                    except OSError:
+                        pass
+
             if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
                 dst_file = cor_dst_file
 
@@ -15457,10 +15902,14 @@ class NmrDpUtility:
 
                             mr_file_path_list = 'restraint_file_path_list'
 
+                            item = {'file_name': mrPath,
+                                    'file_type': 'nmr-star',
+                                    'original_file_name': os.path.basename(src_basename) + '.mr'}
+
                             if mr_file_path_list not in self.__inputParamDict:
-                                self.__inputParamDict[mr_file_path_list] = [mrPath]
+                                self.__inputParamDict[mr_file_path_list] = [item]
                             else:
-                                self.__inputParamDict[mr_file_path_list].append(mrPath)
+                                self.__inputParamDict[mr_file_path_list].append(item)
 
                             insert_index = self.__file_path_list_len
 
@@ -15480,6 +15929,7 @@ class NmrDpUtility:
                             input_source.setItemValue('file_name', file_name)
                             input_source.setItemValue('file_type', file_type)
                             input_source.setItemValue('content_type', 'nmr-restraints')
+                            input_source.setItemValue('original_file_name', os.path.basename(src_basename) + '.mr')
 
                             codec = detect_bom(mrPath, 'utf-8')
 
@@ -15586,10 +16036,14 @@ class NmrDpUtility:
 
                             mr_file_path_list = 'restraint_file_path_list'
 
+                            item = {'file_name': mrPath,
+                                    'file_type': 'nmr-star',
+                                    'original_file_name': os.path.basename(src_basename) + '.mr'}
+
                             if mr_file_path_list not in self.__inputParamDict:
-                                self.__inputParamDict[mr_file_path_list] = [mrPath]
+                                self.__inputParamDict[mr_file_path_list] = [item]
                             else:
-                                self.__inputParamDict[mr_file_path_list].append(mrPath)
+                                self.__inputParamDict[mr_file_path_list].append(item)
 
                             insert_index = self.__file_path_list_len
 
@@ -15609,6 +16063,7 @@ class NmrDpUtility:
                             input_source.setItemValue('file_name', file_name)
                             input_source.setItemValue('file_type', file_type)
                             input_source.setItemValue('content_type', 'nmr-restraints')
+                            input_source.setItemValue('original_file_name', os.path.basename(src_basename) + '.mr')
 
                             codec = detect_bom(mrPath, 'utf-8')
 
@@ -16034,10 +16489,10 @@ class NmrDpUtility:
                         continue
 
                     for file_type in ['nmr-star',
-                                      'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl', 'nm-res-oth',
-                                      'nm-aux-amb', 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro',
-                                      'nm-res-dyn', 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari',
-                                      'nm-res-sax']:
+                                      'nm-res-amb', 'nm-aux-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl',
+                                      'nm-res-oth', 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro',
+                                      'nm-res-dyn', 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-aux-cha',
+                                      'nm-res-ari', 'nm-res-sax']:
                         if file_type in mr_part_path:
                             file_path = mr_part_path[file_type]
                             if 'original_file_name' in mr_part_path and mr_part_path['original_file_name'] is not None:
@@ -16142,7 +16597,7 @@ class NmrDpUtility:
                                         allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')),
                                         allow_gap=(content_subtype not in ('poly_seq', 'entity')),
                                         check_identity=check_identity,
-                                        coord_assembly_checker=self.__caC)
+                                        coord_assembly_checker=self.__caC if self.__native_combined or not self.__combined_mode else None)
 
     def __extractPolymerSequence(self):
         """ Extract reference polymer sequence.
@@ -16379,7 +16834,8 @@ class NmrDpUtility:
 
             for content_subtype in self.nmr_content_subtypes:
 
-                if content_subtype in ('entry_info', 'poly_seq', 'entity') or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
+                if content_subtype in ('entry_info', 'poly_seq', 'entity', 'ph_param_data')\
+                   or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
                     continue
 
                 poly_seq_list_set[content_subtype] = []
@@ -20945,11 +21401,16 @@ class NmrDpUtility:
             seq_id_3_name = dh_item_names['seq_id_3']
             seq_id_4_name = dh_item_names['seq_id_4']
             comp_id_1_name = dh_item_names['comp_id_1']
+            comp_id_2_name = dh_item_names['comp_id_2']
+            comp_id_3_name = dh_item_names['comp_id_3']
+            comp_id_4_name = dh_item_names['comp_id_4']
             atom_id_1_name = dh_item_names['atom_id_1']
             atom_id_2_name = dh_item_names['atom_id_2']
             atom_id_3_name = dh_item_names['atom_id_3']
             atom_id_4_name = dh_item_names['atom_id_4']
             angle_type_name = dh_item_names['angle_type']
+            lower_limit_name = dh_item_names['lower_limit']
+            upper_limit_name = dh_item_names['upper_limit']
 
         elif content_subtype == 'rdc_restraint':
             max_inclusive = RDC_UNCERT_MAX
@@ -21038,17 +21499,25 @@ class NmrDpUtility:
                                 seq_id_3 = row_1[seq_id_3_name]
                                 seq_id_4 = row_1[seq_id_4_name]
                                 comp_id_1 = row_1[comp_id_1_name]
+                                comp_id_2 = row_1[comp_id_2_name]
+                                comp_id_3 = row_1[comp_id_3_name]
+                                comp_id_4 = row_1[comp_id_4_name]
                                 atom_id_1 = row_1[atom_id_1_name]
                                 atom_id_2 = row_1[atom_id_2_name]
                                 atom_id_3 = row_1[atom_id_3_name]
                                 atom_id_4 = row_1[atom_id_4_name]
                                 data_type = row_1[angle_type_name]
 
-                                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_2)
+                                plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
+
+                                atom1 = {'chain_id': chain_id_1, 'seq_id': seq_id_1, 'comp_id': comp_id_1, 'atom_id': atom_id_1}
+                                atom2 = {'chain_id': chain_id_2, 'seq_id': seq_id_2, 'comp_id': comp_id_2, 'atom_id': atom_id_2}
+                                atom3 = {'chain_id': chain_id_3, 'seq_id': seq_id_3, 'comp_id': comp_id_3, 'atom_id': atom_id_3}
+                                atom4 = {'chain_id': chain_id_4, 'seq_id': seq_id_4, 'comp_id': comp_id_4, 'atom_id': atom_id_4}
 
                                 data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
-                                                                              chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                                                              chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)[0]
+                                                                              [atom1, atom2, atom3, atom4], plane_like)[0]
 
                                 if not data_type.startswith('phi') and not data_type.startswith('psi') and not data_type.startswith('omega'):
                                     continue
@@ -24753,6 +25222,7 @@ class NmrDpUtility:
             auth_to_ins_code = self.__caC['auth_to_ins_code'] if self.__caC is not None else {}
             auth_to_star_seq_ann = self.__caC['auth_to_star_seq_ann'] if self.__caC is not None else {}
             coord_atom_site = self.__caC['coord_atom_site'] if self.__caC is not None else {}
+            coord_unobs_res = self.__caC['coord_unobs_res'] if self.__caC is not None else {}
             auth_atom_name_to_id = self.__caC['auth_atom_name_to_id'] if self.__caC is not None else {}
             auth_atom_name_to_id_ext = self.__caC['auth_atom_name_to_id_ext'] if self.__caC is not None else {}
             mis_poly_link = self.__caC['missing_polymer_linkage'] if self.__caC is not None else []
@@ -24926,7 +25396,10 @@ class NmrDpUtility:
                         _row[24] = 'UNMAPPED'
                     seq_key = (_seq_key[0], _seq_key[1], comp_id)
                     _seq_key = seq_key if seq_key in coord_atom_site else _seq_key
-                if _seq_key in coord_atom_site:
+                if _seq_key in coord_atom_site\
+                   and (coord_atom_site[_seq_key]['comp_id'] == comp_id
+                        or _seq_key not in coord_unobs_res
+                        or coord_unobs_res[_seq_key]['comp_id'] != comp_id):  # 8b9r: A:24:VAL (unobserved), A:24:CU
                     _coord_atom_site = coord_atom_site[_seq_key]
                     _atom_site_atom_id = _coord_atom_site['atom_id']
                     # DAOTHER-8817
@@ -25583,7 +26056,10 @@ class NmrDpUtility:
                                 _row[13] = None
 
                     if occupancy_col != -1:
-                        occupancy = row[occupancy_col]
+                        try:
+                            occupancy = row[occupancy_col]
+                        except IndexError:
+                            occupancy = '.'
                         if occupancy not in emptyValue:
                             try:
                                 occupancy = float(occupancy)
@@ -29207,8 +29683,8 @@ class NmrDpUtility:
 
         seq_key = (nmr_chain_id_1, nmr_seq_id_1, nmr_atom_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_atom_id_2)
 
-        if seq_key in self.__coord_bond_length:
-            return self.__coord_bond_length[seq_key]
+        if seq_key in self.__cpC['bond_length']:
+            return self.__cpC['bond_length'][seq_key]
 
         result_1 = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                          if seq_align['ref_chain_id'] == nmr_chain_id_1 and seq_align['test_chain_id'] == cif_chain_id_1), None)
@@ -29221,24 +29697,24 @@ class NmrDpUtility:
                                  in zip(result_1['ref_seq_id'], result_1['test_seq_id']) if ref_seq_id == nmr_seq_id_1), None)
 
             if cif_seq_id_1 is None:
-                self.__coord_bond_length[seq_key] = None
+                self.__cpC['bond_length'][seq_key] = None
                 return None
 
             cif_seq_id_2 = next((test_seq_id for ref_seq_id, test_seq_id
                                  in zip(result_2['ref_seq_id'], result_2['test_seq_id']) if ref_seq_id == nmr_seq_id_2), None)
 
             if cif_seq_id_2 is None:
-                self.__coord_bond_length[seq_key] = None
+                self.__cpC['bond_length'][seq_key] = None
                 return None
 
             bond = self.__getCoordBondLength(cif_chain_id_1, cif_seq_id_1, nmr_atom_id_1, cif_chain_id_2, cif_seq_id_2, nmr_atom_id_2)
 
             if bond is not None:
-                self.__coord_bond_length[seq_key] = bond
+                self.__cpC['bond_length'][seq_key] = bond
 
                 return bond
 
-        self.__coord_bond_length[seq_key] = None
+        self.__cpC['bond_length'][seq_key] = None
 
         return None
 
@@ -29745,7 +30221,11 @@ class NmrDpUtility:
         if self.__cifHashCode is not None:
 
             self.__asmChkCachePath = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}{hash_code_ext}_asm_chk.pkl")
+            self.__coordPropCachePath = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}{hash_code_ext}_coord_prop.pkl")
+
             self.__caC = load_from_pickle(self.__asmChkCachePath)
+            self.__cpC = load_from_pickle(self.__coordPropCachePath, default=copy.copy(default_coord_properties))
+            self.__cpC_hash = hash(str(self.__cpC))
 
             # DAOTHER-8817
             if self.__caC is not None and 'chem_comp_atom' in self.__caC\
@@ -30004,7 +30484,7 @@ class NmrDpUtility:
 
             has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
-            if has_poly_seq_in_loop:
+            if has_poly_seq_in_loop and content_subtype != 'ph_param_data':
 
                 # if self.__caC is None:
                 #     self.__retrieveCoordAssemblyChecker()
@@ -30017,7 +30497,7 @@ class NmrDpUtility:
                 br_seq_align = br_chain_assign = None
                 np_seq_align = np_chain_assign = None
 
-                if content_subtype in polymer_sequence_in_loop:
+                if has_poly_seq_in_loop and content_subtype in polymer_sequence_in_loop:
                     ps_in_loop = next((ps for ps in polymer_sequence_in_loop[content_subtype] if ps['sf_framecode'] == _sf_framecode), None)
 
                     if ps_in_loop is not None:
@@ -30990,6 +31470,24 @@ class NmrDpUtility:
                     lp = loop
 
                     sf_item['loop'] = lp
+
+            elif content_subtype == 'ph_param_data':
+
+                lp = getLoop(content_subtype, reduced=False, hasInsCode=False)
+
+                sf.add_loop(lp)
+                sf_item['loop'] = lp
+
+                for row in loop:
+                    sf_item['id'] += 1
+                    sf_item['index_id'] += 1
+
+                    _row = getRowForStrMr(content_subtype, sf_item['id'], sf_item['index_id'],
+                                          None, None, list_id, self.__entry_id,
+                                          loop.tags, row,
+                                          {}, {}, {}, {},
+                                          [None], self.__annotation_mode)
+                    lp.add_data(_row)
 
             else:  # nothing to do because of missing polymer sequence for this loop
 
@@ -32224,9 +32722,11 @@ class NmrDpUtility:
 
         amberAtomNumberDict = None
         gromacsAtomNumberDict = None
+        charmmAtomNumberDict = None
         _amberAtomNumberDict = {}
 
         has_nm_aux_gro_file = False
+        has_nm_aux_cha_file = False
 
         cyanaUplDistRest = 0
         cyanaLolDistRest = 0
@@ -32292,6 +32792,9 @@ class NmrDpUtility:
 
             if file_type == 'nm-aux-gro':
                 has_nm_aux_gro_file = True
+
+            if file_type == 'nm-aux-cha':
+                has_nm_aux_cha_file = True
 
             if file_type == 'nm-aux-amb' and content_subtype is not None and 'topology' in content_subtype:
 
@@ -32369,11 +32872,49 @@ class NmrDpUtility:
                         if seq_align is not None:
                             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
 
-                elif file_type == 'nm-res-cya' and content_subtype is not None and 'dist_restraint' in content_subtype:
-                    if ar['dist_type'] in ('upl', 'both'):
-                        cyanaUplDistRest += 1
-                    if ar['dist_type'] in ('lol', 'both'):
-                        cyanaLolDistRest += 1
+            elif file_type == 'nm-aux-cha' and content_subtype is not None and 'topology' in content_subtype:
+
+                if 'is_valid' in ar and ar['is_valid']:
+
+                    file_name = input_source_dic['file_name']
+
+                    original_file_name = None
+                    if 'original_file_name' in input_source_dic:
+                        if input_source_dic['original_file_name'] is not None:
+                            original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                        if file_name != original_file_name and original_file_name is not None:
+                            file_name = f"{original_file_name} ({file_name})"
+
+                    self.__cur_original_ar_file_name = original_file_name
+
+                    reader = CharmmCRDReader(self.__verbose, self.__lfh,
+                                             self.__representative_model_id,
+                                             self.__representative_alt_id,
+                                             self.__mr_atom_name_mapping,
+                                             self.__cR, self.__caC,
+                                             self.__ccU, self.__csStat)
+
+                    listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                    if listener is not None:
+
+                        deal_aux_warn_message(listener)
+
+                        charmmAtomNumberDict = listener.getAtomNumberDict()
+
+                        poly_seq = listener.getPolymerSequence()
+                        if poly_seq is not None:
+                            input_source.setItemValue('polymer_sequence', poly_seq)
+
+                        seq_align = listener.getSequenceAlignment()
+                        if seq_align is not None:
+                            self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
+
+            elif file_type == 'nm-res-cya' and content_subtype is not None and 'dist_restraint' in content_subtype:
+                if ar['dist_type'] in ('upl', 'both'):
+                    cyanaUplDistRest += 1
+                if ar['dist_type'] in ('lol', 'both'):
+                    cyanaLolDistRest += 1
 
         fileListId = self.__file_path_list_len
 
@@ -32402,7 +32943,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax', 'nm-pea-any'):
+            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-aux-cha', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
                 continue
 
             if self.__remediation_mode and os.path.exists(file_path + '-ignored'):
@@ -32688,6 +33229,14 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
 
+                    elif warn.startswith('[Inconsistent dihedral angle atoms]'):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+
                     elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                         # consume_suspended_message()
 
@@ -32812,7 +33361,7 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
             content_subtype = input_source_dic['content_subtype']
 
-            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax', 'nm-pea-any'):
+            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-aux-cha', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
                 continue
 
             if self.__remediation_mode and os.path.exists(file_path + '-ignored'):
@@ -32853,6 +33402,13 @@ class NmrDpUtility:
                     self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
 
                 continue
+
+            if file_type == 'nm-res-cha' and not has_nm_aux_cha_file:
+
+                err = f"CHARMM topology file (aka. CRD or CHARM CARD) must be uploaded to verify CHARMM restraint file {file_name!r}."
+
+                suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
+                                                       {'file_name': file_name, 'description': err}})
 
             if content_subtype is None or len(content_subtype) == 0:
                 continue
@@ -33675,6 +34231,7 @@ class NmrDpUtility:
                                         self.__mr_atom_name_mapping,
                                         self.__cR, self.__caC,
                                         self.__ccU, self.__csStat, self.__nefT,
+                                        charmmAtomNumberDict,
                                         reasons)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
@@ -33695,6 +34252,7 @@ class NmrDpUtility:
                                                 self.__mr_atom_name_mapping,
                                                 self.__cR, self.__caC,
                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                charmmAtomNumberDict,
                                                 None)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
@@ -33721,6 +34279,7 @@ class NmrDpUtility:
                                                 self.__mr_atom_name_mapping,
                                                 self.__cR, self.__caC,
                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                charmmAtomNumberDict,
                                                 reasons)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
@@ -35253,7 +35812,7 @@ class NmrDpUtility:
 
             for content_subtype in input_source_dic['content_subtype']:
 
-                if content_subtype in ('entry_info', 'entity'):
+                if content_subtype in ('entry_info', 'entity', 'ph_param_data'):
                     continue
 
                 if self.report_prev is not None:
@@ -37191,6 +37750,47 @@ class NmrDpUtility:
                 if len(rci) > 0:
                     ent['random_coil_index'] = rci
 
+            if file_type == 'nmr-star' and self.__star_data_type[file_list_id] != 'Loop':
+                lp_category = self.lp_categories[file_type]['chem_shift']
+                sf = self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
+                lp = next(lp for lp in sf.loops if lp.category == lp_category)
+
+                mapping = []
+
+                tags = ['Comp_ID', 'Atom_ID', 'Original_PDB_atom_name']
+                if set(tags) & set(lp.tags) == set(tags):
+                    dat = get_lp_tag(lp, tags)
+                    for row in dat:
+                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
+                            continue
+                        comp_id = row[0]
+                        atom_id = row[1]
+                        atom_name = row[2]
+
+                        if not any(m['comp_id'] == comp_id for m in mapping):
+                            mapping.append({'comp_id': comp_id, 'history': []})
+
+                        history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
+
+                        if not any(h for h in history if h['atom_name'] == atom_name):
+                            history.append({'atom_name': atom_name, 'atom_id': [atom_id]})
+                        else:
+                            h = next(h for h in history if h['atom_name'] == atom_name)
+                            if atom_id not in h['atom_id']:
+                                h['atom_id'].append(atom_id)
+
+                if len(mapping) == 0:
+                    mapping = None
+
+                else:
+                    for m in mapping:
+                        for h in m['history']:
+                            h['atom_id'] = sorted(h['atom_id'])
+                        m['history'] = sorted(m['history'], key=itemgetter('atom_name'))
+                    mapping = sorted(mapping, key=lambda x: (len(x['comp_id']), x['comp_id']))
+
+                ent['atom_name_mapping'] = mapping
+
         except Exception as e:
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Error  - " + str(e))
@@ -38055,6 +38655,69 @@ class NmrDpUtility:
 
                     if len(range_of_vals) > 1:
                         ent['histogram_of_discrepancy'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': dist_ann}
+
+            if file_type == 'nmr-star' and self.__star_data_type[file_list_id] != 'Loop':
+                lp_category = self.lp_categories[file_type]['dist_restraint']
+                sf = self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
+                lp = next(lp for lp in sf.loops if lp.category == lp_category)
+
+                mapping = []
+
+                tags = ['Comp_ID_1', 'Atom_ID_1', 'Auth_atom_name_1']
+                if set(tags) & set(lp.tags) == set(tags):
+                    dat = get_lp_tag(lp, tags)
+                    for row in dat:
+                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
+                            continue
+                        comp_id = row[0]
+                        atom_id = row[1]
+                        atom_name = row[2]
+
+                        if not any(m['comp_id'] == comp_id for m in mapping):
+                            mapping.append({'comp_id': comp_id, 'history': []})
+
+                        history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
+
+                        if not any(h for h in history if h['atom_name'] == atom_name):
+                            history.append({'atom_name': atom_name, 'atom_id': [atom_id]})
+                        else:
+                            h = next(h for h in history if h['atom_name'] == atom_name)
+                            if atom_id not in h['atom_id']:
+                                h['atom_id'].append(atom_id)
+
+                tags = ['Comp_ID_2', 'Atom_ID_2', 'Auth_atom_name_2']
+                if set(tags) & set(lp.tags) == set(tags):
+                    dat = get_lp_tag(lp, tags)
+                    for row in dat:
+                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
+                            continue
+                        comp_id = row[0]
+                        atom_id = row[1]
+                        atom_name = row[2]
+
+                        if not any(m['comp_id'] == comp_id for m in mapping):
+                            mapping.append({'comp_id': comp_id, 'history': []})
+
+                        history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
+
+                        if not any(h for h in history if h['atom_name'] == atom_name):
+                            history.append({'atom_name': atom_name, 'atom_id': [atom_id]})
+                        else:
+                            h = next(h for h in history if h['atom_name'] == atom_name)
+                            if atom_id not in h['atom_id']:
+                                h['atom_id'].append(atom_id)
+
+                if len(mapping) == 0:
+                    mapping = None
+
+                else:
+                    for m in mapping:
+                        for h in m['history']:
+                            h['atom_id'] = sorted(h['atom_id'])
+                        m['history'] = sorted(m['history'], key=itemgetter('atom_name'))
+                    mapping = sorted(mapping, key=lambda x: (len(x['comp_id']), x['comp_id']))
+
+                ent['atom_name_mapping'] = mapping
 
         except Exception as e:
 
@@ -39101,12 +39764,17 @@ class NmrDpUtility:
                 weight = row.get(weight_name)
                 set_id.add(row[id_tag])
 
-                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_2)
+                plane_like = is_like_planality_boundary(row, lower_limit_name, upper_limit_name)
+
+                atom1 = {'chain_id': chain_id_1, 'seq_id': seq_id_1, 'comp_id': comp_id_1, 'atom_id': atom_id_1}
+                atom2 = {'chain_id': chain_id_2, 'seq_id': seq_id_2, 'comp_id': comp_id_2, 'atom_id': atom_id_2}
+                atom3 = {'chain_id': chain_id_3, 'seq_id': seq_id_3, 'comp_id': comp_id_3, 'atom_id': atom_id_3}
+                atom4 = {'chain_id': chain_id_4, 'seq_id': seq_id_4, 'comp_id': comp_id_4, 'atom_id': atom_id_4}
 
                 data_type =\
                     self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
-                                                      chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                                      chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)
+                                                      [atom1, atom2, atom3, atom4], plane_like)
 
                 if data_type in count:
                     count[data_type] += 1
@@ -39474,17 +40142,25 @@ class NmrDpUtility:
                             seq_id_3 = row_1[seq_id_3_name]
                             seq_id_4 = row_1[seq_id_4_name]
                             comp_id_1 = row_1[comp_id_1_name]
+                            comp_id_2 = row_1[comp_id_2_name]
+                            comp_id_3 = row_1[comp_id_3_name]
+                            comp_id_4 = row_1[comp_id_4_name]
                             atom_id_1 = row_1[atom_id_1_name]
                             atom_id_2 = row_1[atom_id_2_name]
                             atom_id_3 = row_1[atom_id_3_name]
                             atom_id_4 = row_1[atom_id_4_name]
                             data_type = row_1[angle_type_name]
 
-                            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_2)
+                            plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
+
+                            atom1 = {'chain_id': chain_id_1, 'seq_id': seq_id_1, 'comp_id': comp_id_1, 'atom_id': atom_id_1}
+                            atom2 = {'chain_id': chain_id_2, 'seq_id': seq_id_2, 'comp_id': comp_id_2, 'atom_id': atom_id_2}
+                            atom3 = {'chain_id': chain_id_3, 'seq_id': seq_id_3, 'comp_id': comp_id_3, 'atom_id': atom_id_3}
+                            atom4 = {'chain_id': chain_id_4, 'seq_id': seq_id_4, 'comp_id': comp_id_4, 'atom_id': atom_id_4}
 
                             data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
-                                                                          chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                                                          chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)[0]
+                                                                          [atom1, atom2, atom3, atom4], plane_like)[0]
 
                             if data_type.startswith('phi') or data_type.startswith('psi') or data_type.startswith('omega'):
 
@@ -39630,16 +40306,24 @@ class NmrDpUtility:
                                     seq_id_3 = row_1[seq_id_3_name]
                                     seq_id_4 = row_1[seq_id_4_name]
                                     comp_id_1 = row_1[comp_id_1_name]
+                                    comp_id_2 = row_1[comp_id_2_name]
+                                    comp_id_3 = row_1[comp_id_3_name]
+                                    comp_id_4 = row_1[comp_id_4_name]
                                     atom_id_1 = row_1[atom_id_1_name]
                                     atom_id_2 = row_1[atom_id_2_name]
                                     atom_id_3 = row_1[atom_id_3_name]
                                     atom_id_4 = row_1[atom_id_4_name]
 
-                                    peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                                    peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_2)
+                                    plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
+
+                                    atom1 = {'chain_id': chain_id_1, 'seq_id': seq_id_1, 'comp_id': comp_id_1, 'atom_id': atom_id_1}
+                                    atom2 = {'chain_id': chain_id_2, 'seq_id': seq_id_2, 'comp_id': comp_id_2, 'atom_id': atom_id_2}
+                                    atom3 = {'chain_id': chain_id_3, 'seq_id': seq_id_3, 'comp_id': comp_id_3, 'atom_id': atom_id_3}
+                                    atom4 = {'chain_id': chain_id_4, 'seq_id': seq_id_4, 'comp_id': comp_id_4, 'atom_id': atom_id_4}
 
                                     data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
-                                                                                  chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                                                                  chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)[0]
+                                                                                  [atom1, atom2, atom3, atom4], plane_like)[0]
 
                                     if data_type in _count:
                                         _count[data_type] += 1
@@ -39657,16 +40341,24 @@ class NmrDpUtility:
                                 seq_id_3 = row_1[seq_id_3_name]
                                 seq_id_4 = row_1[seq_id_4_name]
                                 comp_id_1 = row_1[comp_id_1_name]
+                                comp_id_2 = row_1[comp_id_2_name]
+                                comp_id_3 = row_1[comp_id_3_name]
+                                comp_id_4 = row_1[comp_id_4_name]
                                 atom_id_1 = row_1[atom_id_1_name]
                                 atom_id_2 = row_1[atom_id_2_name]
                                 atom_id_3 = row_1[atom_id_3_name]
                                 atom_id_4 = row_1[atom_id_4_name]
 
-                                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_2)
+                                plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
+
+                                atom1 = {'chain_id': chain_id_1, 'seq_id': seq_id_1, 'comp_id': comp_id_1, 'atom_id': atom_id_1}
+                                atom2 = {'chain_id': chain_id_2, 'seq_id': seq_id_2, 'comp_id': comp_id_2, 'atom_id': atom_id_2}
+                                atom3 = {'chain_id': chain_id_3, 'seq_id': seq_id_3, 'comp_id': comp_id_3, 'atom_id': atom_id_3}
+                                atom4 = {'chain_id': chain_id_4, 'seq_id': seq_id_4, 'comp_id': comp_id_4, 'atom_id': atom_id_4}
 
                                 data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
-                                                                              chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                                                              chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4)[0]
+                                                                              [atom1, atom2, atom3, atom4], plane_like)[0]
 
                                 if data_type in _count:
                                     _count[data_type] += 1
@@ -39698,32 +40390,18 @@ class NmrDpUtility:
                 self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfDihedralRestraint() ++ Error  - {str(e)}\n")
 
     def __getTypeOfDihedralRestraint(self, data_type, peptide, nucleotide, carbohydrate,  # pylint: disable=no-self-use
-                                     chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2,
-                                     chain_id_3, seq_id_3, atom_id_3, chain_id_4, seq_id_4, atom_id_4):
+                                     atoms, plane_like):
         """ Return type of dihedral angle restraint.
         """
 
         if data_type in emptyValue:
-            atom1 = {'chain_id': chain_id_1,
-                     'seq_id': seq_id_1,
-                     'atom_id': atom_id_1}
-            atom2 = {'chain_id': chain_id_2,
-                     'seq_id': seq_id_2,
-                     'atom_id': atom_id_2}
-            atom3 = {'chain_id': chain_id_3,
-                     'seq_id': seq_id_3,
-                     'atom_id': atom_id_3}
-            atom4 = {'chain_id': chain_id_4,
-                     'seq_id': seq_id_4,
-                     'atom_id': atom_id_4}
+            data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                   atoms, plane_like)
 
-            data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate, [atom1, atom2, atom3, atom4])
-
-            if data_type is not None:
-                data_type = data_type.lower()
-
-            if data_type in emptyValue:
+            if data_type in emptyValue or data_type.startswith('pseudo'):
                 data_type = 'undefined'
+            else:
+                data_type = data_type.lower()
 
         else:
             data_type = data_type.lower()
@@ -41275,12 +41953,13 @@ class NmrDpUtility:
                 self.__coord_unobs_res = None
                 self.__auth_to_label_seq = None
                 self.__label_to_auth_seq = None
-                self.__coord_tautomer = {}
-                self.__coord_rotamer = {}
-                self.__coord_near_ring = {}
-                self.__coord_near_para_ferro = {}
-                self.__coord_bond_length = {}
+                # self.__coord_tautomer = {}
+                # self.__coord_rotamer = {}
+                # self.__coord_near_ring = {}
+                # self.__coord_near_para_ferro = {}
+                # self.__coord_bond_length = {}
                 self.__caC = None
+                self.__cpC = copy.copy(default_coord_properties)
                 self.__ent_asym_id_with_exptl_data = set()
                 self.__label_asym_id_with_exptl_data = set()
                 self.__auth_asym_ids_with_chem_exch = {}
@@ -46021,9 +46700,23 @@ class NmrDpUtility:
         if has_entry_id:
             loop.add_tag(lp_category + '.Entry_ID')
 
+        cif_polymer_sequence = self.__caC['polymer_sequence']
         entity_assembly = self.__caC['entity_assembly'] if self.__caC is not None else []
         auth_to_star_seq = self.__caC['auth_to_star_seq'] if self.__caC is not None else {}
         auth_to_orig_seq = self.__caC['auth_to_orig_seq'] if self.__caC is not None else {}
+        asym_to_orig_seq = {}
+        if self.__caC is not None:
+            if 'asym_to_orig_seq' in self.__caC:
+                asym_to_orig_seq = self.__caC['asym_to_orig_seq']
+            else:
+                for _k, _v in auth_to_orig_seq.items():
+                    auth_asym_id = _k[0]
+                    if auth_asym_id not in asym_to_orig_seq:
+                        asym_to_orig_seq[auth_asym_id] = {}
+                    asym_to_orig_seq[auth_asym_id][(_k[1], _k[2])] = _v
+                self.__caC['asym_to_orig_seq'] = asym_to_orig_seq
+                if self.__asmChkCachePath is not None:
+                    write_as_pickle(self.__caC, self.__asmChkCachePath)
 
         # DAOTHER-9644: sort by Entity_assembly_ID and Comp_index_ID due to inserted sequence for truncated loop
         _auth_to_star_seq = dict(sorted(auth_to_star_seq.items(), key=lambda item: item[1]))
@@ -46084,7 +46777,10 @@ class NmrDpUtility:
                             nef_index += 1
                             index += 1
 
-                auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == k), comp_id)
+                if auth_asym_id in asym_to_orig_seq:
+                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (auth_seq_id, comp_id)), comp_id)
+                else:
+                    auth_comp_id = comp_id
 
                 row = [None] * len(loop.tags)
 
@@ -46095,7 +46791,7 @@ class NmrDpUtility:
                 row[comp_id_col] = auth_comp_id
 
                 if entity_type == 'polymer':
-                    ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
+                    ps = next(ps for ps in cif_polymer_sequence if ps['auth_chain_id'] == auth_asym_id)
                     nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id, label_scheme=False)
                     if nmr_ps is None and 'identical_auth_chain_id' in ps:
                         nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0], label_scheme=False)
@@ -46342,7 +47038,10 @@ class NmrDpUtility:
                             nef_index += 1
                             index += 1
 
-                auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == k), comp_id)
+                if auth_asym_id in asym_to_orig_seq:
+                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (auth_seq_id, comp_id)), comp_id)
+                else:
+                    auth_comp_id = comp_id
 
                 row = [None] * len(loop.tags)
 
@@ -46355,7 +47054,7 @@ class NmrDpUtility:
                 row[comp_id_col], row[auth_asym_id_col], row[auth_seq_id_col], row[auth_comp_id_col] = auth_comp_id, auth_asym_id, auth_seq_id, auth_comp_id
 
                 if entity_type == 'polymer':
-                    ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_asym_id)
+                    ps = next(ps for ps in cif_polymer_sequence if ps['auth_chain_id'] == auth_asym_id)
                     nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id, label_scheme=False)
                     if nmr_ps is None and 'identical_auth_chain_id' in ps:
                         nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0], label_scheme=False)
@@ -46696,7 +47395,10 @@ class NmrDpUtility:
                                     seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                     if seq_key in auth_to_star_seq:
-                                        auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == seq_key), comp_id)
+                                        if auth_asym_id in asym_to_orig_seq:
+                                            auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
+                                        else:
+                                            auth_comp_id = comp_id
 
                                         row = [None] * len(tags)
 
@@ -46742,7 +47444,10 @@ class NmrDpUtility:
                                         seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                         if seq_key in auth_to_star_seq:
-                                            auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == seq_key), comp_id)
+                                            if auth_asym_id in asym_to_orig_seq:
+                                                auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
+                                            else:
+                                                auth_comp_id = comp_id
 
                                             row = [None] * len(tags)
 
@@ -46779,7 +47484,7 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                 if seq_key in auth_to_star_seq:
-                                    auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == seq_key), comp_id)
+                                    auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
 
                                     row = [None] * len(tags)
 
@@ -46814,7 +47519,10 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                 if seq_key in auth_to_star_seq:
-                                    auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == seq_key), comp_id)
+                                    if auth_asym_id in asym_to_orig_seq:
+                                        auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
+                                    else:
+                                        auth_comp_id = comp_id
 
                                     row = [None] * len(tags)
 
@@ -46849,7 +47557,10 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                 if seq_key in auth_to_star_seq:
-                                    auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == seq_key), comp_id)
+                                    if auth_asym_id in asym_to_orig_seq:
+                                        auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
+                                    else:
+                                        auth_comp_id = comp_id
 
                                     row = [None] * len(tags)
 
@@ -46884,7 +47595,10 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
 
                                 if seq_key in auth_to_star_seq:
-                                    auth_comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == seq_key), comp_id)
+                                    if auth_asym_id in asym_to_orig_seq:
+                                        auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items() if _k == (seq_key[1], comp_id)), comp_id)
+                                    else:
+                                        auth_comp_id = comp_id
 
                                     row = [None] * len(tags)
 
@@ -47174,7 +47888,7 @@ class NmrDpUtility:
                 one_letter_code = item['one_letter_code']
                 if self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
                    and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] in auth_asym_ids):
-                    ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] in auth_asym_ids)
+                    ps = next(ps for ps in cif_polymer_sequence if ps['auth_chain_id'] in auth_asym_ids)
                     auth_seq_ids = list(filter(None, ps['auth_seq_id']))
                     min_auth_seq_id = min(auth_seq_ids)
                     max_auth_seq_id = max(auth_seq_ids)
@@ -47217,7 +47931,7 @@ class NmrDpUtility:
             label_asym_ids = set(item[_label_asym_id].split(','))
             for chain_id in label_asym_ids:
                 if entity_type == 'polymer':
-                    ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)
+                    ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id)
                     cys_total += ps['comp_id'].count('CYS') + ps['comp_id'].count('DCY')
 
             if cys_total > 0:
@@ -47409,7 +48123,7 @@ class NmrDpUtility:
 
             for chain_id in label_asym_ids:
                 if entity_type == 'polymer':
-                    ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)
+                    ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id)
                     auth_seq_ids = list(filter(None, ps['auth_seq_id']))
                     seq_ids = list(filter(None, ps['seq_id']))
                     min_auth_seq_id = min(auth_seq_ids)
@@ -47515,7 +48229,7 @@ class NmrDpUtility:
                 label_asym_ids = list(set(item['label_asym_id'].split(',')))
                 for chain_id in sorted(sorted(label_asym_ids), key=len):
                     if entity_type == 'polymer':
-                        ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['chain_id'] == chain_id)
+                        ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id)
                         auth_seq_ids = list(filter(None, ps['auth_seq_id']))
                         seq_ids = list(filter(None, ps['seq_id']))
                         min_auth_seq_id = min(auth_seq_ids)
@@ -47955,6 +48669,33 @@ class NmrDpUtility:
         file_name = cif_input_source_dic['file_name']
         cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
 
+        if len(self.__cpC['tautomer_per_model']) > 0:
+
+            for inst in self.__cpC['tautomer_per_model']:
+                tautomer_per_model = inst['tautomer_per_model']
+                rep_tautomer = tautomer_per_model[self.__representative_model_id]
+
+                if any(tautomer != rep_tautomer for tautomer in tautomer_per_model.values()):
+                    chain_id, auth_chain_id = inst['chain_id'], inst['auth_chain_id']
+                    seq_id, auth_seq_id = inst['seq_id'], inst['auth_seq_id']
+                    comp_id = inst['comp_id']
+                    cif_seq_code = f"{chain_id}:{seq_id}:{comp_id}"
+                    if chain_id != auth_chain_id or seq_id != auth_seq_id:
+                        cif_seq_code += f" ({auth_chain_id}:{auth_seq_id}:{comp_id} in author sequence scheme)"
+
+                    err = f'{cif_seq_code} has been instantiated with different tautomeric states across models, {tautomer_per_model}. '\
+                        'Please re-upload the model file.'
+
+                    self.report.error.appendDescription('coordinate_issue',
+                                                        {'file_name': file_name, 'category': 'atom_site',
+                                                         'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+NmrDpUtility.__testTautomerOfHistidinePerModel() ++ Error  - {err}\n")
+
+            return True
+
         model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
 
         for ps in cif_polymer_sequence:
@@ -48043,6 +48784,10 @@ class NmrDpUtility:
 
                     rep_tautomer = tautomer_per_model[self.__representative_model_id]
 
+                    self.__cpC['tautomer_per_model'].append({'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id,
+                                                             'auth_chain_id': auth_chain_id, 'auth_seq_id': auth_seq_id,
+                                                             'tautomer_per_model': tautomer_per_model})
+
                     if any(tautomer != rep_tautomer for tautomer in tautomer_per_model.values()):
                         cif_seq_code = f"{chain_id}:{seq_id}:{comp_id}"
                         if chain_id != auth_chain_id or seq_id != auth_seq_id:
@@ -48058,6 +48803,12 @@ class NmrDpUtility:
 
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__testTautomerOfHistidinePerModel() ++ Error  - {err}\n")
+
+        if self.__coordPropCachePath is not None:
+            hash_value = hash(str(self.__cpC))
+            if hash_value != self.__cpC_hash:
+                write_as_pickle(self.__cpC, self.__coordPropCachePath)
+                self.__cpC_hash = hash_value
 
         return True
 
@@ -48080,8 +48831,8 @@ class NmrDpUtility:
 
         seq_key = (nmr_chain_id, nmr_seq_id)
 
-        if seq_key in self.__coord_tautomer:
-            return self.__coord_tautomer[seq_key]
+        if seq_key in self.__cpC['tautomer']:
+            return self.__cpC['tautomer'][seq_key]
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                        if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -48093,7 +48844,7 @@ class NmrDpUtility:
                                if ref_seq_id == nmr_seq_id and ref_code == 'H'), None)
 
             if cif_seq_id is None:
-                self.__coord_tautomer[seq_key] = 'unknown'
+                self.__cpC['tautomer'][seq_key] = 'unknown'
                 return 'unknown'
 
             try:
@@ -48133,18 +48884,18 @@ class NmrDpUtility:
                         has_he2 = True
 
                 if has_hd1 and has_he2:
-                    self.__coord_tautomer[seq_key] = 'biprotonated'
+                    self.__cpC['tautomer'][seq_key] = 'biprotonated'
                     return 'biprotonated'
 
                 if has_hd1:
-                    self.__coord_tautomer[seq_key] = 'pi-tautomer'
+                    self.__cpC['tautomer'][seq_key] = 'pi-tautomer'
                     return 'pi-tautomer'
 
                 if has_he2:
-                    self.__coord_tautomer[seq_key] = 'tau-tautomer'
+                    self.__cpC['tautomer'][seq_key] = 'tau-tautomer'
                     return 'tau-tautomer'
 
-        self.__coord_tautomer[seq_key] = 'unknown'
+        self.__cpC['tautomer'][seq_key] = 'unknown'
         return 'unknown'
 
     def __getRotamerOfValine(self, nmr_chain_id, nmr_seq_id):
@@ -48168,8 +48919,8 @@ class NmrDpUtility:
 
         seq_key = (nmr_chain_id, nmr_seq_id, 'VAL')
 
-        if seq_key in self.__coord_rotamer:
-            return self.__coord_rotamer[seq_key]
+        if seq_key in self.__cpC['rotamer']:
+            return self.__cpC['rotamer'][seq_key]
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                        if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -48181,7 +48932,7 @@ class NmrDpUtility:
                                if ref_seq_id == nmr_seq_id and ref_code == 'V'), None)
 
             if cif_seq_id is None:
-                self.__coord_rotamer[seq_key] = none
+                self.__cpC['rotamer'][seq_key] = none
                 return none
 
             try:
@@ -48237,7 +48988,7 @@ class NmrDpUtility:
                     rot1['unknown'] += 1.0
 
             if rot1['unknown'] == total_models:
-                self.__coord_rotamer[seq_key] = none
+                self.__cpC['rotamer'][seq_key] = none
                 return none
 
             if rot1['unknown'] == 0.0:
@@ -48250,10 +49001,10 @@ class NmrDpUtility:
                     continue
                 rot1[k] = float(f"{v/total_models:.3f}")
 
-            self.__coord_rotamer[seq_key] = [rot1]
+            self.__cpC['rotamer'][seq_key] = [rot1]
             return [rot1]
 
-        self.__coord_rotamer[seq_key] = none
+        self.__cpC['rotamer'][seq_key] = none
         return none
 
     def __getRotamerOfLeucine(self, nmr_chain_id, nmr_seq_id):
@@ -48277,8 +49028,8 @@ class NmrDpUtility:
 
         seq_key = (nmr_chain_id, nmr_seq_id, 'LEU')
 
-        if seq_key in self.__coord_rotamer:
-            return self.__coord_rotamer[seq_key]
+        if seq_key in self.__cpC['rotamer']:
+            return self.__cpC['rotamer'][seq_key]
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                        if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -48290,7 +49041,7 @@ class NmrDpUtility:
                                if ref_seq_id == nmr_seq_id and ref_code == 'L'), None)
 
             if cif_seq_id is None:
-                self.__coord_rotamer[seq_key] = none
+                self.__cpC['rotamer'][seq_key] = none
                 return none
 
             try:
@@ -48359,7 +49110,7 @@ class NmrDpUtility:
                     rot2['unknown'] += 1.0
 
             if rot1['unknown'] == total_models:
-                self.__coord_rotamer[seq_key] = none
+                self.__cpC['rotamer'][seq_key] = none
                 return none
 
             if rot1['unknown'] == 0.0:
@@ -48380,10 +49131,10 @@ class NmrDpUtility:
                     continue
                 rot2[k] = float(f"{v/total_models:.3f}")
 
-            self.__coord_rotamer[seq_key] = [rot1, rot2]
+            self.__cpC['rotamer'][seq_key] = [rot1, rot2]
             return [rot1, rot2]
 
-        self.__coord_rotamer[seq_key] = none
+        self.__cpC['rotamer'][seq_key] = none
         return none
 
     def __getRotamerOfIsoleucine(self, nmr_chain_id, nmr_seq_id):
@@ -48407,8 +49158,8 @@ class NmrDpUtility:
 
         seq_key = (nmr_chain_id, nmr_seq_id, 'ILE')
 
-        if seq_key in self.__coord_rotamer:
-            return self.__coord_rotamer[seq_key]
+        if seq_key in self.__cpC['rotamer']:
+            return self.__cpC['rotamer'][seq_key]
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                        if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -48420,7 +49171,7 @@ class NmrDpUtility:
                                if ref_seq_id == nmr_seq_id and ref_code == 'I'), None)
 
             if cif_seq_id is None:
-                self.__coord_rotamer[seq_key] = none
+                self.__cpC['rotamer'][seq_key] = none
                 return none
 
             try:
@@ -48489,7 +49240,7 @@ class NmrDpUtility:
                     rot2['unknown'] += 1.0
 
             if rot1['unknown'] == total_models:
-                self.__coord_rotamer[seq_key] = none
+                self.__cpC['rotamer'][seq_key] = none
                 return none
 
             if rot1['unknown'] == 0.0:
@@ -48510,10 +49261,10 @@ class NmrDpUtility:
                     continue
                 rot2[k] = float(f"{v/total_models:.3f}")
 
-            self.__coord_rotamer[seq_key] = [rot1, rot2]
+            self.__cpC['rotamer'][seq_key] = [rot1, rot2]
             return [rot1, rot2]
 
-        self.__coord_rotamer[seq_key] = none
+        self.__cpC['rotamer'][seq_key] = none
         return none
 
     def __extractCoordDisulfideBond(self):
@@ -49324,8 +50075,8 @@ class NmrDpUtility:
 
         seq_key = (nmr_chain_id, nmr_seq_id, nmr_atom_id)
 
-        if seq_key in self.__coord_near_ring:
-            return self.__coord_near_ring[seq_key]
+        if seq_key in self.__cpC['near_ring']:
+            return self.__cpC['near_ring'][seq_key]
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                        if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -49337,7 +50088,7 @@ class NmrDpUtility:
                                if ref_seq_id == nmr_seq_id), None)
 
             if cif_seq_id is None:
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             try:
@@ -49367,7 +50118,7 @@ class NmrDpUtility:
                 return None
 
             if len(_origin) != 1:
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             o = to_np_array(_origin[0])
@@ -49405,7 +50156,7 @@ class NmrDpUtility:
                 return None
 
             if len(_neighbor) == 0:
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             neighbor = [n for n in _neighbor
@@ -49415,11 +50166,11 @@ class NmrDpUtility:
                         and n['atom_id'] in self.__csStat.getAromaticAtoms(n['comp_id'])]
 
             if len(neighbor) == 0:
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             if not has_key_value(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq'):
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             atom_list = []
@@ -49460,7 +50211,7 @@ class NmrDpUtility:
             na_atom_id = na['atom_id']
 
             if not self.__ccU.updateChemCompDict(na['comp_id']):
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             # matches with comp_id in CCD
@@ -49514,7 +50265,7 @@ class NmrDpUtility:
             len_half_ring_traces = len(half_ring_traces)
 
             if len_half_ring_traces < 2:
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             ring_traces = []
@@ -49536,7 +50287,7 @@ class NmrDpUtility:
                         ring_traces.append(half_ring_traces[i] + ':' + half_ring_trace_2[1])
 
             if len(ring_traces) == 0:
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             ring_atoms = None
@@ -49587,7 +50338,7 @@ class NmrDpUtility:
                 return None
 
             if len(_na) == 0:
-                self.__coord_near_ring[seq_key] = None
+                self.__cpC['near_ring'][seq_key] = None
                 return None
 
             model_ids = set(a['model_id'] for a in _na)
@@ -49641,10 +50392,10 @@ class NmrDpUtility:
             na['ring_distance'] = float(f"{ring_dist / len_model_ids:.1f}")
             na['ring_angle'] = float(f"{numpy.degrees(ring_angle / len_model_ids):.1f}")
 
-            self.__coord_near_ring[seq_key] = na
+            self.__cpC['near_ring'][seq_key] = na
             return na
 
-        self.__coord_near_ring[seq_key] = None
+        self.__cpC['near_ring'][seq_key] = None
         return None
 
     def __getNearestParaFerroMagneticAtom(self, nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
@@ -49669,8 +50420,8 @@ class NmrDpUtility:
 
         seq_key = (nmr_chain_id, nmr_seq_id, nmr_atom_id)
 
-        if seq_key in self.__coord_near_para_ferro:
-            return self.__coord_near_para_ferro[seq_key]
+        if seq_key in self.__cpC['near_para_ferro']:
+            return self.__cpC['near_para_ferro'][seq_key]
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                        if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -49682,7 +50433,7 @@ class NmrDpUtility:
                                if ref_seq_id == nmr_seq_id), None)
 
             if cif_seq_id is None:
-                self.__coord_near_para_ferro[seq_key] = None
+                self.__cpC['near_para_ferro'][seq_key] = None
                 return None
 
             try:
@@ -49712,7 +50463,7 @@ class NmrDpUtility:
                 return None
 
             if len(_origin) != 1:
-                self.__coord_near_para_ferro[seq_key] = None
+                self.__cpC['near_para_ferro'][seq_key] = None
                 return None
 
             o = to_np_array(_origin[0])
@@ -49750,7 +50501,7 @@ class NmrDpUtility:
                 return None
 
             if len(_neighbor) == 0:
-                self.__coord_near_para_ferro[seq_key] = None
+                self.__cpC['near_para_ferro'][seq_key] = None
                 return None
 
             neighbor = [n for n in _neighbor
@@ -49760,7 +50511,7 @@ class NmrDpUtility:
                              or n['type_symbol'] in FERROMAGNETIC_ELEMENTS)]
 
             if len(neighbor) == 0:
-                self.__coord_near_para_ferro[seq_key] = None
+                self.__cpC['near_para_ferro'][seq_key] = None
                 return None
 
             atom_list = []
@@ -49799,7 +50550,7 @@ class NmrDpUtility:
                 return None
 
             if len(_p) == 0:
-                self.__coord_near_para_ferro[seq_key] = None
+                self.__cpC['near_para_ferro'][seq_key] = None
                 return None
 
             dist = 0.0
@@ -49809,10 +50560,10 @@ class NmrDpUtility:
 
             p['distance'] = float(f"{dist / len(_p):.1f}")
 
-            self.__coord_near_para_ferro[seq_key] = p
+            self.__cpC['near_para_ferro'][seq_key] = p
             return p
 
-        self.__coord_near_para_ferro[seq_key] = None
+        self.__cpC['near_para_ferro'][seq_key] = None
         return None
 
     def __appendElemAndIsoNumOfNefCsLoop(self):
@@ -50210,6 +50961,8 @@ class NmrDpUtility:
             atom_id_3_name = item_names['atom_id_3']
             atom_id_4_name = item_names['atom_id_4']
             angle_type_name = item_names['angle_type']
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
 
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
@@ -50277,10 +51030,12 @@ class NmrDpUtility:
                                      'atom_id': atom_id_4}
 
                             peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                            plane_like = is_like_planality_boundary(row, lower_limit_name, upper_limit_name)
 
-                            data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate, [atom1, atom2, atom3, atom4])
+                            data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                   [atom1, atom2, atom3, atom4], plane_like)
 
-                            if data_type in emptyValue:
+                            if data_type in emptyValue or data_type.startswith('pseudo'):
                                 continue
 
                             update = True
@@ -51333,6 +52088,8 @@ class NmrDpUtility:
         atom_id_3_name = item_names['atom_id_3']
         atom_id_4_name = item_names['atom_id_4']
         angle_type_name = item_names['angle_type']
+        lower_limit_name = item_names['lower_limit']
+        upper_limit_name = item_names['upper_limit']
 
         dh_chain_ids = set()
         dh_seq_ids = {}
@@ -51383,7 +52140,10 @@ class NmrDpUtility:
                 if not peptide:
                     return False
 
-                data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate, [atom1, atom2, atom3, atom4])
+                plane_like = is_like_planality_boundary(row, lower_limit_name, upper_limit_name)
+
+                data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       [atom1, atom2, atom3, atom4], plane_like)
 
                 if data_type is None or data_type.lower() not in ('phi', 'psi'):
                     return False
@@ -52521,6 +53281,7 @@ class NmrDpUtility:
         master_entry = self.__c2S.normalize(master_entry)
 
         if not self.__annotation_mode or self.__dstPath != self.__srcPath:
+
             if __pynmrstar_v3__:
                 master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
             else:
@@ -52553,6 +53314,7 @@ class NmrDpUtility:
         if 'nef' not in self.__op and ('deposit' in self.__op or 'annotate' in self.__op) and 'nmr_cif_file_path' in self.__outputParamDict:
 
             if self.__cifPath is None:
+
                 if __pynmrstar_v3__:
                     master_entry.write_to_file(self.__dstPath__, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
                 else:
@@ -52596,12 +53358,15 @@ class NmrDpUtility:
         self.__c2S.set_entry_id(master_entry, self.__entry_id)
         self.__c2S.normalize(master_entry)
 
-        master_entry = self.__c2S.normalize_str(master_entry)
+        try:
 
-        if __pynmrstar_v3__:
-            master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
-        else:
-            master_entry.write_to_file(self.__dstPath)
+            if __pynmrstar_v3__:
+                master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
+            else:
+                master_entry.write_to_file(self.__dstPath)
+
+        except Exception:
+            return False
 
         if 'nmr_cif_file_path' in self.__outputParamDict:
 
@@ -52664,8 +53429,6 @@ class NmrDpUtility:
 
         self.__c2S.set_entry_id(master_entry, self.__entry_id)
         self.__c2S.normalize(master_entry)
-
-        master_entry = self.__c2S.normalize_str(master_entry)
 
         if self.__remediation_mode and self.__internal_mode:
 
@@ -54450,6 +55213,10 @@ class NmrDpUtility:
                 datum_counter['T1rho relaxation values'] += get_loop_size(content_subtype)
             elif content_subtype == 'order_param_data':
                 datum_counter['order parameters'] += get_loop_size(content_subtype)
+            elif content_subtype == 'ph_titr_data':
+                datum_counter['pKa values'] += get_loop_size(content_subtype)
+            elif content_subtype == 'ph_param_data':
+                datum_counter['pH NMR parameter values'] += get_loop_size(content_subtype)
             elif content_subtype == 'ccrd_dd_restraint':
                 datum_counter['dipole-dipole cross correlation relaxation values'] += get_loop_size(content_subtype)
 
@@ -56250,7 +57017,3 @@ class NmrDpUtility:
             raise KeyError("+NmrDpUtility.__initReousrceForStr2Nef() ++ Error  - Could not find 'nef_file_path' or 'report_file_path' output parameter.")
 
         return False
-
-
-if __name__ == '__main__':
-    dp = NmrDpUtility()

@@ -9,6 +9,7 @@
 # 04-Apr-2024  M. Yokochi - permit dihedral angle restraint across entities due to ligand split (DAOTHER-9063)
 # 20-Aug-2024  M. Yokochi - support truncated loop sequence in the model (DAOTHER-9644)
 # 10-Sep-2024  M. Yokochi - ignore identical polymer sequence extensions within polynucleotide multiplexes (DAOTHER-9674)
+# 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -17,15 +18,14 @@ import re
 import copy
 import collections
 import itertools
-
 import numpy
-
 import pynmrstar
 
 from operator import itemgetter
 
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+
 try:
-    from wwpdb.utils.align.alignlib import PairwiseAlign
     from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            emptyValue,
@@ -41,7 +41,6 @@ try:
                                            getScoreOfSeqAlign)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 except ImportError:
-    from nmr.align.alignlib import PairwiseAlign
     from nmr.io.CifReader import SYMBOLS_ELEMENT
     from nmr.AlignUtil import (monDict3,
                                emptyValue,
@@ -105,13 +104,16 @@ UNREAL_AUTH_SEQ_NUM = -10000
 
 THRESHHOLD_FOR_CIRCULAR_SHIFT = 355.0
 
+PLANE_LIKE_LOWER_LIMIT = -10.0
+PLANE_LIKE_UPPER_LIMIT = 10.0
+
 
 DIST_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 101.0}
 DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}
 
 
-ANGLE_RESTRAINT_RANGE = {'min_inclusive': -375.0, 'max_inclusive': 375.0}  # 2n96
-ANGLE_RESTRAINT_ERROR = {'min_exclusive': -400.0, 'max_exclusive': 400.0}
+ANGLE_RESTRAINT_RANGE = {'min_inclusive': -400.0, 'max_inclusive': 400.0}  # 2n96, 5o4d
+ANGLE_RESTRAINT_ERROR = {'min_exclusive': -450.0, 'max_exclusive': 450.0}
 
 
 RDC_RESTRAINT_RANGE = {'min_inclusive': -150.0, 'max_inclusive': 150.0}
@@ -304,6 +306,8 @@ NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
                             'heteronucl_t2_data': '_Heteronucl_T2_list',
                             'heteronucl_t1r_data': '_Heteronucl_T1rho_list',
                             'order_param_data': '_Order_parameter_list',
+                            'ph_titr_data': '_PH_titration_list',
+                            'ph_param_data': '_PH_param_list',
                             'ccr_d_csa_restraint': '_Cross_correlation_D_CSA_list',
                             'ccr_dd_restraint': '_Cross_correlation_DD_list',
                             'fchiral_restraint': '_Floating_chirality_assign',
@@ -328,6 +332,8 @@ NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
                           'heteronucl_t2_data': 'heteronucl_T2_relaxation',
                           'heteronucl_t1r_data': 'heteronucl_T1rho_relaxation',
                           'order_param_data': 'order_parameters',
+                          'ph_titr_data': 'pH_titration',
+                          'ph_param_data': 'pH_param_list',
                           'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
                           'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
                           'fchiral_restraint': 'floating_chiral_stereo_assign',
@@ -553,6 +559,24 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                               {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                               ],
+                         'ph_titr_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                          {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                          {'name': 'Expt_observed_param', 'type': 'enum', 'mandatory': True,
+                                           'enum': ('chemical shift', 'coupling constant', 'peak height', 'peak volume')},
+                                          {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                          {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                          {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                          ],
+                         'ph_param_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Observed_NMR_param', 'type': 'enum', 'mondatory': True,
+                                            'enum': ('chemical shift', 'coupling constant', 'peak height', 'peak volume')},
+                                           {'name': 'PH_titration_list_ID', 'type': 'positive-int', 'mandatory': True,
+                                            'default': '1'},
+                                           {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
                          'ccr_d_csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                  {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
@@ -613,6 +637,8 @@ NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
                           'heteronucl_t2_data': '_T2',
                           'heteronucl_t1r_data': '_T1rho',
                           'order_param_data': '_Order_param',
+                          'ph_titr_data': '_PH_titr_result',
+                          'ph_param_data': '_PH_param',
                           'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
                           'ccr_dd_restraint': '_Cross_correlation_DD',
                           'fchiral_restraint': '_Floating_chirality',
@@ -819,6 +845,20 @@ NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int
                                               {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                               {'name': 'Atom_ID', 'type': 'str'}
                                               ],
+                         'ph_titr_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                          {'name': 'Atm_obs_entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                          {'name': 'Atm_obs_entity_ID', 'type': 'positive-int'},
+                                          {'name': 'Atm_obs_comp_index_ID', 'type': 'int', 'default-from': 'Atm_obs_seq_ID'},
+                                          {'name': 'Atm_obs_comp_ID', 'type': 'str', 'uppercase': True},
+                                          {'name': 'Atm_obs_atom_ID', 'type': 'str'},
+                                          {'name': 'Atm_titr_entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1'},
+                                          {'name': 'Atm_titr_entity_ID', 'type': 'positive-int'},
+                                          {'name': 'Atm_titr_comp_index_ID', 'type': 'int', 'default-from': 'Atm_titr_seq_ID'},
+                                          {'name': 'Atm_titr_comp_ID', 'type': 'str', 'uppercase': True},
+                                          {'name': 'Atm_titr_atom_ID', 'type': 'str'}
+                                          ],
+                         'ph_param_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True}
+                                           ],
                          'ccr_d_csa_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                  {'name': 'Dipole_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
                                                  {'name': 'Dipole_entity_ID_1', 'type': 'positive-int'},
@@ -1634,6 +1674,59 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                 'default': '1', 'default-from': 'parent'},
                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                ],
+                          'ph_titr_data': [{'name': 'Atm_obs_atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atm_obs_atom_ID',
+                                            'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                            'enforce-enum': True},
+                                           {'name': 'Atm_obs_atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atm_obs_atom_ID',
+                                            'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                            'enforce-enum': True},
+                                           {'name': 'Atm_titr_atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atm_titr_atom_ID',
+                                            'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                            'enforce-enum': True},
+                                           {'name': 'Atm_titr_atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atm_titr_atom_ID',
+                                            'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                            'enforce-enum': True},
+                                           {'name': 'Hill_coeff_val', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'Hill_coeff_val_fit_err', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'High_PH_param_fit_val', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'High_PH_param_fit_val_err', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'Low_PH_param_fit_val', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'Low_PH_param_fit_val_err', 'type': 'positive-float', 'mandatory': False,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'PKa_val', 'type': 'positive-float', 'mandatory': True,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'PKa_val_fit_err', 'type': 'positive-float', 'mandatory': True,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'PHmid_val', 'type': 'positive-float', 'mandatory': True,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'PHmid_val_fit_err', 'type': 'positive-float', 'mandatory': True,
+                                            'clear-bad-pattern': True},
+                                           {'name': 'Atm_obs_auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Atm_obs_auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                           {'name': 'Atm_obs_auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Atm_obs_auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Atm_titr_auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Atm_titr_auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                           {'name': 'Atm_titr_auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Atm_titr_auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                           {'name': 'PH_titration_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                            'default': '1', 'default-from': 'parent'},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ],
+                          'ph_param_data': [{'name': 'PH_titr_result_ID', 'type': 'positive-int', 'mandatory': True},
+                                            {'name': 'PH_val', 'type': 'positive-float', 'mandatory': True},
+                                            {'name': 'PH_val_err', 'type': 'positive-float', 'mandatory': False},
+                                            {'name': 'Observed_NMR_param_val', 'type': 'positive-float', 'mandatory': True},
+                                            {'name': 'Observed_NMR_param_val_err', 'type': 'positive-float', 'mandatory': False},
+                                            {'name': 'PH_param_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                             'default': '1', 'default-from': 'parent'},
+                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                            ],
                           'ccr_d_csa_restraint': [{'name': 'Dipole_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_atom_ID_1',
                                                    'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                    'enforce-enum': True},
@@ -1853,6 +1946,8 @@ PTNR2_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt
                               {'name': 'ptnr2_label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
                               ]
 
+REMEDIATE_BACKBONE_ANGLE_NAME_PAT = re.compile(r'pseudo (PHI|PSI|OMEGA) \(0, (0|1|\-1), (0|1|\-1), 0\)')
+
 
 def toRegEx(string):
     """ Return regular expression for a given string including XPLOR-NIH wildcard format.
@@ -1905,6 +2000,8 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
     """
 
     atomId = atomId.upper()
+    lenAtomId = len(atomId)
+    lenRefCompId = 0 if refCompId is None else len(refCompId)
 
     if refAtomIdList is not None:
         if atomId in refAtomIdList:
@@ -2081,13 +2178,13 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                         return 'HM5'
                 if atomId in ('C7', 'CM'):  # 7png, 7pdu
                     return 'C5M'
-            elif refCompId in ('DA', 'A') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
+            elif refCompId in ('DA', 'A') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
                 return 'H6' + atomId[-1]
-            elif refCompId in ('DG', 'G') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):  # 6g99
+            elif refCompId in ('DG', 'G') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):  # 6g99
                 return 'H2' + atomId[-1]
-            elif refCompId in ('DC', 'C') and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
+            elif refCompId in ('DC', 'C') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
                 return 'H4' + atomId[-1]
-            elif refCompId == 'U' and atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[-1] == '1':  # 6g99
+            elif refCompId == 'U' and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] == '1':  # 6g99
                 return 'H3'
             elif refAtomIdList is not None and ((atomId[0] + 'N' + atomId[1:] in refAtomIdList) or (atomId[0] + 'N' + atomId[1:] + '1' in refAtomIdList)):  # 5CM
                 return atomId[0] + 'N' + atomId[1:]
@@ -2137,7 +2234,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                         return "H4'"
                 if "H4'" in _refAtomIdList:
                     return "H4'"
-            if atomId[0] == 'R' and len(atomId) > 1:  # 2lkk
+            if atomId[0] == 'R' and lenAtomId > 1:  # 2lkk
                 _atomId = 'H' + atomId[1:]
                 if _atomId in _refAtomIdList:
                     return _atomId
@@ -2149,9 +2246,9 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 if len(candidates) == 1:
                     return candidates[0]
 
-            if len(refCompId) == 3 and refCompId in monDict3 and len(atomId) > 1:
+            if lenRefCompId == 3 and refCompId in monDict3 and lenAtomId > 1:
                 candidates = [_atomId for _atomId in _refAtomIdList if _atomId.startswith(atomId)]
-                if len(candidates) == 1 and len(candidates[0]) == len(atomId) + 1 and candidates[0][-1].isdigit():
+                if len(candidates) == 1 and len(candidates[0]) == lenAtomId + 1 and candidates[0][-1].isdigit():
                     return candidates[0]
 
             if not unambig:
@@ -2225,7 +2322,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return 'CD1'
 
         elif refCompId in ('SER', 'THR', 'TYR'):
-            if atomId.startswith('HO') and len(atomId) > 2:  # 2n6j
+            if atomId.startswith('HO') and lenAtomId > 2:  # 2n6j
                 return 'H' + atomId[2:]
 
         elif refCompId == 'ASN' and atomId.startswith('HND'):  # 2kg1
@@ -2352,12 +2449,12 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
             if atomId == 'QPG' and refCompId == 'OUI':
                 return 'HG1'
 
-        if len(refCompId) == 3 and refCompId in monDict3:
+        if lenRefCompId == 3 and refCompId in monDict3:
             if atomId in ('O1', 'OT1'):
                 return 'O'
             if atomId == 'O2' or atomId.startswith('OT'):
                 return 'OXT'
-            if atomId.startswith('HT') and len(atomId) > 2:
+            if atomId.startswith('HT') and lenAtomId > 2:
                 return 'H' + atomId[2:]
             if atomId == 'NH':  # 2jwu
                 return 'N'
@@ -2370,7 +2467,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return 'HE1'
 
         # BIOSYM atom nomenclature
-        if (atomId[-1] in ('R', 'S', 'Z', 'E') or (len(atomId) > 2 and atomId[-1] in ('*', '%') and atomId[-2] in ('R', 'S'))):
+        if (atomId[-1] in ('R', 'S', 'Z', 'E') or (lenAtomId > 2 and atomId[-1] in ('*', '%') and atomId[-2] in ('R', 'S'))):
             if refCompId in ('CYS', 'ASP', 'HIS', 'SER'):
                 if atomId == 'HBR':
                     return 'HB3'
@@ -2505,17 +2602,17 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                     return 'CG2'
 
     if atomId.endswith("O'1"):
-        atomId = atomId[:len(atomId) - 3] + "O1'"
+        atomId = atomId[:lenAtomId - 3] + "O1'"
     elif atomId.endswith("O'2"):
-        atomId = atomId[:len(atomId) - 3] + "O2'"
+        atomId = atomId[:lenAtomId - 3] + "O2'"
     elif atomId.endswith("O'3"):
-        atomId = atomId[:len(atomId) - 3] + "O3'"
+        atomId = atomId[:lenAtomId - 3] + "O3'"
     elif atomId.endswith("O'4"):
-        atomId = atomId[:len(atomId) - 3] + "O4'"
+        atomId = atomId[:lenAtomId - 3] + "O4'"
     elif atomId.endswith("O'5"):
-        atomId = atomId[:len(atomId) - 3] + "O5'"
+        atomId = atomId[:lenAtomId - 3] + "O5'"
     elif atomId.endswith("O'6"):
-        atomId = atomId[:len(atomId) - 3] + "O6'"
+        atomId = atomId[:lenAtomId - 3] + "O6'"
     elif atomId.endswith("'1") and not atomId.endswith("''1"):
         atomId = atomId.rstrip('1')
     elif atomId.endswith("'2") and not atomId.endswith("''2"):
@@ -2532,9 +2629,9 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
         atomId = 'HOP2'
     elif atomId.endswith("''"):
         if atomId[0] in ('C', 'O') and atomId[1].isdigit():
-            atomId = atomId[:len(atomId) - 1]
+            atomId = atomId[:lenAtomId - 1]
     elif atomId.endswith('"'):
-        atomId = atomId[:len(atomId) - 1] + "''"
+        atomId = atomId[:lenAtomId - 1] + "''"
 
     if refAtomIdList is not None and atomId not in refAtomIdList:
         if not atomId.endswith("'") and (atomId + "'") in refAtomIdList:
@@ -2571,13 +2668,13 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 return "H5'1"
         if atomId.endswith("''") and atomId[:-1] in refAtomIdList:
             return atomId[:-1]
-        if atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit() and atomId[2] in ('1', '2'):
+        if atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[2] in ('1', '2'):
             n = atomId[1]
             if atomId.endswith('1') and ('HN' + n) in refAtomIdList:
                 return 'HN' + n
             if atomId.endswith('2') and ('HN' + n + 'A') in refAtomIdList:
                 return 'HN' + n + 'A'
-        if atomId[0] == 'H' and len(atomId) == 3 and atomId[1].isdigit():  # DAOTHER-9198: DNR(DC):H3+ -> HN3
+        if atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit():  # DAOTHER-9198: DNR(DC):H3+ -> HN3
             if 'HN' + atomId[1] in refAtomIdList:
                 return 'HN' + atomId[1]
         if atomId.startswith("HN'") and ccU.getTypeOfCompId(refCompId)[1]:
@@ -2594,7 +2691,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
                 if len(nh) == 1:
                     if nh[0] in refAtomIdList:
                         return nh[0]
-        if len(atomId) > 1 and atomId[-1] not in ('*', '%') and refCompId not in monDict3:
+        if lenAtomId > 1 and atomId[-1] not in ('*', '%') and refCompId not in monDict3:
             canAtomIdList = [_atomId for _atomId in refAtomIdList if _atomId[0] == atomId[0]]
             if len(canAtomIdList) > 0:
                 pA = PairwiseAlign()
@@ -2638,9 +2735,10 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
     """
 
     atomId = atomId.upper()
+    lenAtomId = len(atomId)
 
     if dmpcNameSystemId == 1:  # 2mzi
-        if atomId.startswith('CN') and len(atomId) == 3:
+        if atomId.startswith('CN') and lenAtomId == 3:
             if atomId[-1] == '1':
                 return 'C3'
             if atomId[-1] == '2':
@@ -2672,7 +2770,7 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
             return 'O7'
         if atomId == 'OF':
             return 'O8'
-        if atomId.startswith('C2') and len(atomId) == 3:
+        if atomId.startswith('C2') and lenAtomId == 3:
             if atomId[-1] == 'A':
                 return 'C8'
             if atomId[-1] == 'B':
@@ -2710,7 +2808,7 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
             return 'O5'
         if atomId == 'OH':
             return 'O6'
-        if atomId.startswith('C1') and len(atomId) == 3:
+        if atomId.startswith('C1') and lenAtomId == 3:
             if atomId[-1] == 'A':
                 return 'C23'
             if atomId[-1] == 'B':
@@ -2835,7 +2933,7 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
             return 'N1'
         if atomId == 'C13':
             return 'C3'
-        if atomId.startswith('H13') and len(atomId) == 3:
+        if atomId.startswith('H13') and lenAtomId == 3:
             if atomId[-1] == 'A':
                 return 'H5'
             if atomId[-1] == 'B':
@@ -2844,7 +2942,7 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
                 return 'H7'
         if atomId == 'C14':
             return 'C4'
-        if atomId.startswith('H14') and len(atomId) == 3:
+        if atomId.startswith('H14') and lenAtomId == 3:
             if atomId[-1] == 'A':
                 return 'H8'
             if atomId[-1] == 'B':
@@ -2853,7 +2951,7 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
                 return 'H10'
         if atomId == 'C15':
             return 'C5'
-        if atomId.startswith('H15') and len(atomId) == 3:
+        if atomId.startswith('H15') and lenAtomId == 3:
             if atomId[-1] == 'A':
                 return 'H11'
             if atomId[-1] == 'B':
@@ -2862,14 +2960,14 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
                 return 'H13'
         if atomId == 'C12':
             return 'C2'
-        if atomId.startswith('H12') and len(atomId) == 3:
+        if atomId.startswith('H12') and lenAtomId == 3:
             if atomId[-1] == 'A':
                 return 'H3'
             if atomId[-1] == 'B':
                 return 'H4'
         if atomId == 'C11':
             return 'C1'
-        if atomId.startswith('H11') and len(atomId) == 3:
+        if atomId.startswith('H11') and lenAtomId == 3:
             if atomId[-1] == 'A':
                 return 'H1'
             if atomId[-1] == 'B':
@@ -3179,7 +3277,10 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
     """ Translate software specific residue name to standard residue name of CCD.
     """
 
-    if len(compId) > 3:
+    lenCompId = len(compId)
+    lenRefCompId = 0 if refCompId is None else len(refCompId)
+
+    if lenCompId > 3:
         compId3 = compId[:3]
 
         if compId3 in monDict3:
@@ -3206,25 +3307,25 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
         if _compId == 'HC':
             return 'CH' if refCompId == 'C' else 'DNR'
 
-    if compId.startswith('R') and len(compId) > 1 and compId[1] in ('A', 'C', 'G', 'U'):
+    if compId.startswith('R') and lenCompId > 1 and compId[1] in ('A', 'C', 'G', 'U'):
         _compId = compId[1:]
 
         if _compId in monDict3:
             return _compId
 
-        if refCompId is not None and len(refCompId) == 1 and _compId[-1] in ('5', '3'):
+        if refCompId is not None and lenRefCompId == 1 and _compId[-1] in ('5', '3'):
             _compId = _compId[:-1]
 
             if _compId in monDict3:
                 return _compId
 
-    if refCompId is not None and refCompId in monDict3 and len(refCompId) == 3:
-        if len(compId) >= 3 and compId[:2] == refCompId[:2]:  # 1e8e: HID/HIE/HIF/HIP/HIZ -> HIS, PR. -> PRO, 2k4w: ASM -> ASP + ZN, 2n6j: TYZ -> TYR
+    if refCompId is not None and refCompId in monDict3 and lenRefCompId == 3:
+        if lenCompId >= 3 and compId[:2] == refCompId[:2]:  # 1e8e: HID/HIE/HIF/HIP/HIZ -> HIS, PR. -> PRO, 2k4w: ASM -> ASP + ZN, 2n6j: TYZ -> TYR
             return refCompId
         if 'Z' in compId and compId[0] == refCompId[0]:  # 2n6j: GZC, GZL -> GLU + ZN,
             return refCompId
 
-    if compId in ('HID', 'HIE', 'HIF', 'HIP', 'HIZ'):
+    if compId in ('HID', 'HIE', 'HIF', 'HIP', 'HIZ', 'HSD', 'HSE'):
         return 'HIS'
 
     if compId.startswith('CY'):
@@ -3238,7 +3339,7 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
     if compId in ('CYO', 'CYX', 'CYZ', 'CZN'):
         return 'CYS'
 
-    if len(compId) == 3:
+    if lenCompId == 3:
         if compId.startswith('DA'):
             return 'DA'
         if compId.startswith('DC'):
@@ -3278,7 +3379,7 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
         if compId == 'HCY':
             return 'CH' if refCompId == 'C' else 'DNR'
 
-    if len(compId) == 2 and compId[1] == 'P':
+    if lenCompId == 2 and compId[1] == 'P':
         if compId == 'AP':
             return 'A' if refCompId == 'A' else 'DA'
         if compId == 'CP':
@@ -3311,10 +3412,10 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
     if compId == 'HEMC':
         return 'HEC'
 
-    if len(compId) > 3 and compId[:3] in ('H2O', 'WAT'):
+    if lenCompId >= 3 and compId[:3] in ('H2O', 'WAT'):
         return 'HOH'
 
-    if len(compId) > 3 and compId[3] in ('_', '+', '-'):  # 1e8e
+    if lenCompId > 3 and compId[3] in ('_', '+', '-'):  # 1e8e
         if ccU is not None and ccU.updateChemCompDict(compId[:3]):
             return compId[:3]
 
@@ -5760,7 +5861,7 @@ def isAmbigAtomSelection(atoms, csStat):
     return False
 
 
-def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms, cR=None, ccU=None,
+def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms, planeLike, cR=None, ccU=None,
                                representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
                                modelNumName='PDB_model_num'):
     """ Return type of dihedral angle restraint.
@@ -5776,7 +5877,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
 
     # DAOTHER-9063: Permit dihedral angle restraint across entities due to ligand split
     def is_connected():
-        if cR is None:
+        if cR is None or ccU is None:
             return False
         for idx, atom2 in enumerate(atoms):
             if idx == 0:
@@ -5791,7 +5892,11 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                 return False
         return True
 
-    if len(collections.Counter(chainIds).most_common()) > 1:
+    commonChainId = collections.Counter(chainIds).most_common()
+
+    lenCommonChainId = len(commonChainId)
+
+    if lenCommonChainId > 1 and not planeLike:
         return None  # '.' if is_connected() else None
 
     commonSeqId = collections.Counter(seqIds).most_common()
@@ -5829,6 +5934,14 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         if atomIds == phiPsiCommonAtomIds:
                             return 'PSI'
 
+            if atomIds == ['C', 'N', 'CA', 'C']:  # i-1, i, i, i
+                if seqIds[0] + 1 == seqIds[3] and (abs(seqIds[1] - seqIds[3]) == 1 or abs(seqIds[2] - seqIds[3]) == 1):
+                    return f'pseudo PHI (0, {seqIds[3] - seqIds[1]}, {seqIds[3] - seqIds[2]}, 0)'
+
+            if atomIds == ['N', 'CA', 'C', 'N']:  # i, i, i, i+1
+                if seqIds[0] + 1 == seqIds[3] and (abs(seqIds[1] - seqIds[0]) == 1 or abs(seqIds[2] - seqIds[0]) == 1):
+                    return f'pseudo PSI (0, {seqIds[0] - seqIds[1]}, {seqIds[0] - seqIds[2]}, 0)'
+
             # OMEGA
             if atomIds[0] == 'CA' and atomIds[1] == 'N' and atomIds[2] == 'C' and atomIds[3] == 'CA'\
                and seqIds[0] == seqIds[1] and seqIds[1] - 1 == seqIds[2] and seqIds[2] == seqIds[3]:
@@ -5838,11 +5951,19 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                and seqIds[0] == seqIds[1] and seqIds[1] + 1 == seqIds[2] and seqIds[2] == seqIds[3]:
                 return 'OMEGA'
 
+            if atomIds in (['CA', 'N', 'C', 'CA'], ['CA', 'C', 'N', 'CA']):  # i, i, i+1, i+1
+                if abs(seqIds[0] - seqIds[3]) == 1 and (abs(seqIds[1] - seqIds[0]) == 1 or abs(seqIds[2] - seqIds[3]) == 1):
+                    return f'pseudo OMEGA (0, {seqIds[0] - seqIds[1]}, {seqIds[3] - seqIds[2]}, 0)'
+
             # OMEGA - modified CYANA definition
             if atomIds[0] == 'O' and atomIds[1] == 'C' and atomIds[2] == 'N'\
                and (atomIds[3] == 'H' or atomIds[3] == 'CD')\
                and seqIds[0] == seqIds[1] and seqIds[1] + 1 == seqIds[2] and seqIds[2] == seqIds[3]:
                 return 'OMEGA'
+
+            if atomIds in (['O', 'C', 'N', 'H'], ['O', 'C', 'N', 'CD']):  # i, i, i+1, i+1
+                if seqIds[0] + 1 == seqIds[3] and (abs(seqIds[1] - seqIds[0]) == 1 or abs(seqIds[2] - seqIds[3]) == 1):
+                    return f'pseudo OMEGA (0, {seqIds[0] - seqIds[1]}, {seqIds[3] - seqIds[2]}, 0)'
 
         elif lenCommonSeqId == 1:
 
@@ -5888,7 +6009,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         found = False
                         break
 
-            if found:
+            if found and not planeLike:
                 return '.' if is_connected() else None
 
     elif polynucleotide:
@@ -6004,7 +6125,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         found = False
                         break
 
-            if found:
+            if found and not planeLike:
                 return '.' if is_connected() else None
 
         if 'N1' in atomIds:
@@ -6017,7 +6138,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                     found = False
                     break
 
-            if found:
+            if found and not planeLike:
                 return '.' if is_connected() else None
 
         elif 'N9' in atomIds:
@@ -6030,7 +6151,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                     found = False
                     break
 
-            if found:
+            if found and not planeLike:
                 return '.' if is_connected() else None
 
     elif carbohydrates:
@@ -6086,10 +6207,118 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
                         found = False
                         break
 
-            if found:
+            if found and not planeLike:
                 return '.' if is_connected() else None
 
+    if planeLike and ccU is not None:
+
+        if lenCommonChainId == 1 and lenCommonSeqId == 1:
+            compId = atoms[0]['comp_id']
+            if ccU.updateChemCompDict(compId):
+                ring = True
+                for a in atoms:
+                    atomId = a['atom_id']
+                    cca = next((cca for cca in ccU.lastAtomList if cca[ccU.ccaAtomId] == atomId), None)
+                    if cca is None or cca[ccU.ccaAromaticFlag] != 'Y':
+                        bonded = ccU.getBondedAtoms(compId, atomId, exclProton=True)
+                        attach = False
+                        for b in bonded:
+                            _cca = next((_cca for _cca in ccU.lastAtomList if _cca[ccU.ccaAtomId] == b), None)
+                            if _cca is not None:
+                                if _cca[ccU.ccaAromaticFlag] == 'Y':
+                                    attach = True
+                        if not attach:
+                            ring = False
+                            break
+                if ring:
+                    return 'RING'
+
+        if atoms[0]['chain_id'] == atoms[1]['chain_id'] and atoms[0]['seq_id'] == atoms[1]['seq_id']\
+           and atoms[2]['chain_id'] == atoms[3]['chain_id'] and atoms[2]['seq_id'] == atoms[3]['seq_id']:
+
+            if all(a['atom_id'][0] not in protonBeginCode for a in atoms):
+                aroma = True
+                for a in atoms:
+                    compId = a['comp_id']
+                    atomId = a['atom_id']
+                    if ccU.updateChemCompDict(compId):
+                        cca = next((cca for cca in ccU.lastAtomList if cca[ccU.ccaAtomId] == atomId), None)
+                        if cca is None:
+                            aroma = False
+                            break
+                        if cca[ccU.ccaAromaticFlag] != 'Y':
+                            if ccU.getTypeOfCompId(compId)[1] and atomId[0] in ('C', 'N') and not atomId.endswith("'"):
+                                continue
+                            bonded = ccU.getBondedAtoms(compId, atomId, exclProton=True)
+                            attach = False
+                            for b in bonded:
+                                _cca = next((_cca for _cca in ccU.lastAtomList if _cca[ccU.ccaAtomId] == b), None)
+                                if _cca is not None:
+                                    if _cca[ccU.ccaAromaticFlag] == 'Y':
+                                        attach = True
+                            if not attach:
+                                aroma = False
+                                break
+                if aroma:
+                    return 'PLANE'
+
+            if ccU.hasBond(atoms[0]['comp_id'], atoms[0]['atom_id'], atoms[1]['atom_id'])\
+               and ccU.hasBond(atoms[2]['comp_id'], atoms[2]['atom_id'], atoms[3]['atom_id']):
+                return 'ALIGN'
+
     return '.' if is_connected() else None
+
+
+def remediateBackboneDehedralRestraint(angleName, atoms, currentRestraint):
+    """ Return valid angle name and remediated backbone atoms.
+    """
+
+    msg = ''
+
+    if REMEDIATE_BACKBONE_ANGLE_NAME_PAT.match(angleName):
+        g = REMEDIATE_BACKBONE_ANGLE_NAME_PAT.search(angleName).groups()
+
+        angleName = g[0]
+        offset1 = int(g[1])
+        offset2 = int(g[2])
+
+        atomName0 = f"{atoms[0]['seq_id']}:{atoms[0]['comp_id']}:{atoms[0]['atom_id']}"
+        atomName1 = f"{atoms[1]['seq_id']}:{atoms[1]['comp_id']}:{atoms[1]['atom_id']}"
+        atomName2 = f"{atoms[2]['seq_id']}:{atoms[2]['comp_id']}:{atoms[2]['atom_id']}"
+        atomName3 = f"{atoms[3]['seq_id']}:{atoms[3]['comp_id']}:{atoms[3]['atom_id']}"
+
+        msg = f"[Inconsistent dihedral angle atoms] {currentRestraint}"\
+              f"The original dihedral angle irregularly composed of "\
+              f"{atomName0}-{atomName1}-{atomName2}-{atomName3} was "
+
+        if offset1 != 0:
+            seq_id1 = atoms[1]['seq_id'] + offset1
+            for idx, a in enumerate(atoms):
+                if idx == 1:
+                    continue
+                if a['seq_id'] == seq_id1:
+                    atoms[1]['chain_id'] = a['chain_id']
+                    atoms[1]['seq_id'] = a['seq_id']
+                    atoms[1]['comp_id'] = a['comp_id']
+                    atomName1 = f"{atoms[1]['seq_id']}:{atoms[1]['comp_id']}:{atoms[1]['atom_id']}"
+                    break
+
+        if offset2 != 0:
+            seq_id2 = atoms[2]['seq_id'] + offset2
+            for idx, a in enumerate(atoms):
+                if idx == 2:
+                    continue
+                if a['seq_id'] == seq_id2:
+                    atoms[2]['chain_id'] = a['chain_id']
+                    atoms[2]['seq_id'] = a['seq_id']
+                    atoms[2]['comp_id'] = a['comp_id']
+                    atomName2 = f"{atoms[2]['seq_id']}:{atoms[2]['comp_id']}:{atoms[2]['atom_id']}"
+                    break
+
+        msg += f"translated to well-known {angleName!r} angle composed of "\
+               f"{atomName0}-{atomName1}-{atomName2}-{atomName3}."
+
+    return angleName, atoms[1], atoms[2], msg
 
 
 def isLikePheOrTyr(compId, ccU):
@@ -6549,7 +6778,11 @@ def getRestraintName(mrSubtype, title=False):
     if mrSubtype == 'heteronucl_t1r_data':
         return "Heteronuclear T1rho relaxation data" if title else "heteronuclear T1rho relaxation data"
     if mrSubtype == 'order_param_data':
-        return "Order parameters" if title else "order parameters"
+        return "Order parameter data" if title else "order parameter data"
+    if mrSubtype == 'ph_titr_data':
+        return "pKa value data"
+    if mrSubtype == 'ph_param_data':
+        return "pH titration data"
 
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
@@ -6607,6 +6840,8 @@ def incListIdCounter(mrSubtype, listIdCounter, reduced=True):
                          'heteronucl_t2_data': 0,
                          'heteronucl_t1r_data': 0,
                          'order_param_data': 0,
+                         'ph_titr_data': 0,
+                         'ph_param_data': 0,
                          'ccr_d_csa_restraint': 0,
                          'ccr_dd_restraint': 0,
                          'fchiral_restraint': 0,
@@ -6646,6 +6881,8 @@ def decListIdCounter(mrSubtype, listIdCounter, reduced=True):
                          'heteronucl_t2_data': 0,
                          'heteronucl_t1r_data': 0,
                          'order_param_data': 0,
+                         'ph_titr_data': 0,
+                         'ph_param_data': 0,
                          'ccr_d_csa_restraint': 0,
                          'ccr_dd_restraint': 0,
                          'fchiral_restraint': 0,
@@ -8415,6 +8652,83 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
         if atom1 is not None:
             row[key_size + 22], row[key_size + 23], row[key_size + 24], row[key_size + 25] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+
+    elif contentSubtype == 'ph_titr_data':
+        if atom1 is not None:
+            row[key_size] = atomType = atom1['atom_id'][0]
+            row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        if atom2 is not None:
+            row[key_size + 2] = atomType = atom2['atom_id'][0]
+            row[key_size + 3] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        val = getRowValue('Hill_coeff_val')
+        if val is not None:
+            row[key_size + 4] = val
+            float_row_idx.append(key_size + 4)
+        val = getRowValue('Hill_coeff_val_fit_err')
+        if val is not None:
+            row[key_size + 5] = val
+            float_row_idx.append(key_size + 5)
+        val = getRowValue('High_PH_param_val')
+        if val is not None:
+            row[key_size + 6] = val
+            float_row_idx.append(key_size + 6)
+        val = getRowValue('High_PH_param_val_fit_err')
+        if val is not None:
+            row[key_size + 7] = val
+            float_row_idx.append(key_size + 7)
+        val = getRowValue('Low_PH_param_val')
+        if val is not None:
+            row[key_size + 8] = val
+            float_row_idx.append(key_size + 8)
+        val = getRowValue('Low_PH_param_val_fit_err')
+        if val is not None:
+            row[key_size + 9] = val
+            float_row_idx.append(key_size + 9)
+        val = getRowValue('PKa_val')
+        if val is not None:
+            row[key_size + 10] = val
+            float_row_idx.append(key_size + 10)
+        val = getRowValue('PKa_val_fit_err')
+        if val is not None:
+            row[key_size + 11] = val
+            float_row_idx.append(key_size + 11)
+        val = getRowValue('PHmid_val')
+        if val is not None:
+            row[key_size + 12] = val
+            float_row_idx.append(key_size + 12)
+        val = getRowValue('PHmid_val_fit_err')
+        if val is not None:
+            row[key_size + 13] = val
+            float_row_idx.append(key_size + 13)
+
+        if atom1 is not None:
+            row[key_size + 14], row[key_size + 15], row[key_size + 16], row[key_size + 17] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+
+        if atom2 is not None:
+            row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+
+    elif contentSubtype == 'ph_param_data':
+        val = getRowValue('PH_titr_result_ID')
+        if val is not None:
+            row[key_size] = val
+        val = getRowValue('PH_val')
+        if val is not None:
+            row[key_size + 1] = val
+            float_row_idx.append(key_size + 1)
+        val = getRowValue('PH_val_err')
+        if val is not None:
+            row[key_size + 2] = val
+            float_row_idx.append(key_size + 2)
+        val = getRowValue('Observed_NMR_param_val')
+        if val is not None:
+            row[key_size + 3] = val
+            float_row_idx.append(key_size + 3)
+        val = getRowValue('Observed_NMR_param_val_err')
+        if val is not None:
+            row[key_size + 4] = val
+            float_row_idx.append(key_size + 4)
 
     elif contentSubtype.startswith('ccr'):
         if star_atom3 is not None:

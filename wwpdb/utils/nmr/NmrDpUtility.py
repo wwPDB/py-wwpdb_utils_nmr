@@ -222,9 +222,9 @@ from operator import itemgetter
 from striprtf.striprtf import rtf_to_text
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                              NEF_VERSION,
                                                              altDistanceConstraintType,
@@ -333,7 +333,6 @@ try:
     from wwpdb.utils.nmr.mr.AriaMRReader import AriaMRReader
 
 except ImportError:
-    from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
                                                  NEF_VERSION,
                                                  altDistanceConstraintType,

@@ -217,7 +217,7 @@ NmrDpUtility class can absorb differences between NMR-STAR file and CIF formatte
 
 ## Schema of report file
 
-[NmrDpReport class](NmrDpReport.py) handles writing and reading the report file. Document structure of the report file is defined in [JSON Schema file](../tests-nmr/json-schema/nmr-data-procesing-report-schema.json).
+[NmrDpReport class](NmrDpReport.py) handles writing and reading the report file. Document structure of the report file is defined in [JSON Schema file](../tests-nmr/json-schema/nmr-data-procesing-report-schema-v4.json).
 
 ## Appendix
 

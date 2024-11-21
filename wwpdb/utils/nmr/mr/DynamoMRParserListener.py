@@ -15,8 +15,9 @@ import collections
 
 from antlr4 import ParseTreeListener
 
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+
 try:
-    from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
     from wwpdb.utils.nmr.mr.DynamoMRParser import DynamoMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
@@ -107,7 +108,6 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
-    from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.io.CifReader import SYMBOLS_ELEMENT
     from nmr.mr.DynamoMRParser import DynamoMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,

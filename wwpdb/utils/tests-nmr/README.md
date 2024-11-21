@@ -5,6 +5,7 @@
 
 - pip packages:
 	- pynmrstar (3.2.0 or later)
+	- wwpdb.utils.align
 	- munkres
 	- mmcif
 	- numpy
@@ -20,21 +21,6 @@
 ```bash
     pip install urllib3==1.26.18  # Only for Python 3.6, 3.7, 3.8, and 3.9 users.
 ```
-
-- shared library:
-	- wwpdb/utils/nmr/align/alignlib.so, a shared library of [py-wwpdb_utils_align](https://github.com/wwPDB/py-wwpdb_utils_align) package
-	- Python 3.6, 3.7, and 3.8 compatible shared libraries are included by default.
-	  	- Python 3.6 users must link alignlib.cpython-36m-x86_64-linux-gnu.so to alignlib.so
-	  	- Python 3.7 users must link alignlib.cpython-37m-x86_64-linux-gnu.so to alignlib.so
-	  	- Python 3.8 users must link alignlib.cpython-38-x86_64-linux-gnu.so to alignlib.so (default)
-	- For other environments, the shared library is avaialble by following instuctions:
-	```bash
-		cd py-wwpdb_utils_nmr/wwpdb/utils/nmr/align
-		pip install wwpdb.utils.align
-		cp ~/.pyenv/versions/3.x.y/lib/python3.x/site-packages/wwpdb/utils/align/alignlib.cpython-3x-x86_64-linux-gnu.so .  # Please replace 'x' and 'y' with proper digits.
-		rm -f alignlib.so ; ln -s alignlib.cpython-3x-x86_64-linux-gnu.so alignlib.so  # Please replace 'x' with proper digit.
-		pip uninstall wwpdb.utils.align  # Uninstall wwpdb.utils.align package without affecting the standalone mode.
-	```
 
 ## How to set up
 1. Set enviromnent variable PYTHONPATH 

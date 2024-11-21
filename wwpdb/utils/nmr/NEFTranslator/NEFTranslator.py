@@ -120,8 +120,9 @@ import collections
 from packaging import version
 from operator import itemgetter
 
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+
 try:
-    from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.AlignUtil import (LEN_LARGE_ASYM_ID, LOW_SEQ_COVERAGE,
                                            emptyValue, trueValue, monDict3,
                                            protonBeginCode, pseProBeginCode, aminoProtonCode,
@@ -137,7 +138,6 @@ try:
                                                        ALLOWED_AMBIGUITY_CODES,
                                                        translateToStdResName)
 except ImportError:
-    from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.AlignUtil import (LEN_LARGE_ASYM_ID, LOW_SEQ_COVERAGE,
                                emptyValue, trueValue, monDict3,
                                protonBeginCode, pseProBeginCode, aminoProtonCode,

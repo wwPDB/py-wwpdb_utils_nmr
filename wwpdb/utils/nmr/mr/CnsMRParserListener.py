@@ -17,8 +17,9 @@ from antlr4 import ParseTreeListener
 from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
 from operator import itemgetter
 
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+
 try:
-    from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
     from wwpdb.utils.nmr.mr.CnsMRParser import CnsMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx, toNefEx,
@@ -122,7 +123,6 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
-    from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.io.CifReader import SYMBOLS_ELEMENT
     from nmr.mr.CnsMRParser import CnsMRParser
     from nmr.mr.ParserListenerUtil import (toRegEx, toNefEx,

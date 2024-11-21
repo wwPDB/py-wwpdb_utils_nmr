@@ -18,15 +18,14 @@ import re
 import copy
 import collections
 import itertools
-
 import numpy
-
 import pynmrstar
 
 from operator import itemgetter
 
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+
 try:
-    from wwpdb.utils.align.alignlib import PairwiseAlign
     from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            emptyValue,
@@ -42,7 +41,6 @@ try:
                                            getScoreOfSeqAlign)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 except ImportError:
-    from nmr.align.alignlib import PairwiseAlign
     from nmr.io.CifReader import SYMBOLS_ELEMENT
     from nmr.AlignUtil import (monDict3,
                                emptyValue,

@@ -13,8 +13,9 @@ import copy
 from antlr4 import ParseTreeListener
 from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
 
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
+
 try:
-    from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from wwpdb.utils.nmr.mr.GromacsPTParser import GromacsPTParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        translateToStdAtomName,
@@ -39,7 +40,6 @@ try:
                                            getRestraintFormatName,
                                            getOneLetterCodeCanSequence)
 except ImportError:
-    from nmr.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
     from nmr.mr.GromacsPTParser import GromacsPTParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            translateToStdAtomName,

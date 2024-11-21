@@ -212,5 +212,10 @@ class AriaMRReader:
 if __name__ == "__main__":
     reader = AriaMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2kgj/2kgj-corrected-div_dst.mr',
+                 '../../tests-nmr/mock-data-remediation/2kgj/2kgj.cif')
+
+    reader = AriaMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-daother-9079/noe_restraints.assignments',
                  '../../tests-nmr/mock-data-daother-9079/D_800644_model_P1.cif.V4')

@@ -13478,7 +13478,7 @@ class NmrDpUtility:
 
         offset += j + j2
 
-        if j == 0:  # or j3 == 0:
+        if j == 0:
             if div_src:
                 os.remove(file_path)
             if os.path.exists(div_try_file):
@@ -13506,7 +13506,8 @@ class NmrDpUtility:
 
         file_name = os.path.basename(div_try_file)
 
-        _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMr(div_try_file, file_name, 'nm-res-mr', [], True)
+        _, _, valid_types, possible_types =\
+            self.__detectOtherPossibleFormatAsErrorOfLegacyMr(div_try_file if j3 > 0 else div_ext_file, file_name, 'nm-res-mr', [], True)
 
         len_valid_types = len(valid_types)
         len_possible_types = len(possible_types)
@@ -13570,7 +13571,10 @@ class NmrDpUtility:
         if div_src:
             os.remove(file_path)
 
-        os.rename(div_try_file, div_dst_file)
+        os.rename(div_try_file if j3 > 0 else div_ext_file, div_dst_file)
+
+        if j3 == 0:
+            os.remove(div_try_file)
 
         file_path = div_dst_file
 

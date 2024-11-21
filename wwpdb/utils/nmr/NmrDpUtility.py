@@ -15270,7 +15270,7 @@ class NmrDpUtility:
 
                 remediated = False
 
-            if os.path.exists(cor_str_file) and os.path.exists(cor_dst_file):
+            if os.path.exists(cor_str_file) and os.path.exists(cor_dst_file) and has_content:
                 mrPath = cor_str_file
 
                 mr_file_path_list = 'restraint_file_path_list'
@@ -37751,6 +37751,47 @@ class NmrDpUtility:
                 if len(rci) > 0:
                     ent['random_coil_index'] = rci
 
+            if file_type == 'nmr-star' and self.__star_data_type[file_list_id] != 'Loop':
+                lp_category = self.lp_categories[file_type]['chem_shift']
+                sf = self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
+                lp = next(lp for lp in sf.loops if lp.category == lp_category)
+
+                mapping = []
+
+                tags = ['Comp_ID', 'Atom_ID', 'Original_PDB_atom_name']
+                if set(tags) & set(lp.tags) == set(tags):
+                    dat = get_lp_tag(lp, tags)
+                    for row in dat:
+                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
+                            continue
+                        comp_id = row[0]
+                        atom_id = row[1]
+                        atom_name = row[2]
+
+                        if not any(m['comp_id'] == comp_id for m in mapping):
+                            mapping.append({'comp_id': comp_id, 'history': []})
+
+                        history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
+
+                        if not any(h for h in history if h['atom_name'] == atom_name):
+                            history.append({'atom_name': atom_name, 'atom_id': [atom_id]})
+                        else:
+                            h = next(h for h in history if h['atom_name'] == atom_name)
+                            if atom_id not in h['atom_id']:
+                                h['atom_id'].append(atom_id)
+
+                if len(mapping) == 0:
+                    mapping = None
+
+                else:
+                    for m in mapping:
+                        for h in m['history']:
+                            h['atom_id'] = sorted(h['atom_id'])
+                        m['history'] = sorted(m['history'], key=itemgetter('atom_name'))
+                    mapping = sorted(mapping, key=lambda x: (len(x['comp_id']), x['comp_id']))
+
+                ent['atom_name_mapping'] = mapping
+
         except Exception as e:
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Error  - " + str(e))
@@ -38615,6 +38656,69 @@ class NmrDpUtility:
 
                     if len(range_of_vals) > 1:
                         ent['histogram_of_discrepancy'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': dist_ann}
+
+            if file_type == 'nmr-star' and self.__star_data_type[file_list_id] != 'Loop':
+                lp_category = self.lp_categories[file_type]['dist_restraint']
+                sf = self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
+                lp = next(lp for lp in sf.loops if lp.category == lp_category)
+
+                mapping = []
+
+                tags = ['Comp_ID_1', 'Atom_ID_1', 'Auth_atom_name_1']
+                if set(tags) & set(lp.tags) == set(tags):
+                    dat = get_lp_tag(lp, tags)
+                    for row in dat:
+                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
+                            continue
+                        comp_id = row[0]
+                        atom_id = row[1]
+                        atom_name = row[2]
+
+                        if not any(m['comp_id'] == comp_id for m in mapping):
+                            mapping.append({'comp_id': comp_id, 'history': []})
+
+                        history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
+
+                        if not any(h for h in history if h['atom_name'] == atom_name):
+                            history.append({'atom_name': atom_name, 'atom_id': [atom_id]})
+                        else:
+                            h = next(h for h in history if h['atom_name'] == atom_name)
+                            if atom_id not in h['atom_id']:
+                                h['atom_id'].append(atom_id)
+
+                tags = ['Comp_ID_2', 'Atom_ID_2', 'Auth_atom_name_2']
+                if set(tags) & set(lp.tags) == set(tags):
+                    dat = get_lp_tag(lp, tags)
+                    for row in dat:
+                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
+                            continue
+                        comp_id = row[0]
+                        atom_id = row[1]
+                        atom_name = row[2]
+
+                        if not any(m['comp_id'] == comp_id for m in mapping):
+                            mapping.append({'comp_id': comp_id, 'history': []})
+
+                        history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
+
+                        if not any(h for h in history if h['atom_name'] == atom_name):
+                            history.append({'atom_name': atom_name, 'atom_id': [atom_id]})
+                        else:
+                            h = next(h for h in history if h['atom_name'] == atom_name)
+                            if atom_id not in h['atom_id']:
+                                h['atom_id'].append(atom_id)
+
+                if len(mapping) == 0:
+                    mapping = None
+
+                else:
+                    for m in mapping:
+                        for h in m['history']:
+                            h['atom_id'] = sorted(h['atom_id'])
+                        m['history'] = sorted(m['history'], key=itemgetter('atom_name'))
+                    mapping = sorted(mapping, key=lambda x: (len(x['comp_id']), x['comp_id']))
+
+                ent['atom_name_mapping'] = mapping
 
         except Exception as e:
 

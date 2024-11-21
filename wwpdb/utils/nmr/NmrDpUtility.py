@@ -3805,9 +3805,9 @@ class NmrDpUtility:
                                                           'clear-bad-pattern': True},
                                                          {'name': 'PKa_val_fit_err', 'type': 'positive-float', 'mandatory': True,
                                                           'clear-bad-pattern': True},
-                                                         {'name': 'PHmid_val', 'type': 'positive-float', 'mandatory': True,
+                                                         {'name': 'PHmid_val', 'type': 'positive-float', 'mandatory': False,
                                                           'clear-bad-pattern': True},
-                                                         {'name': 'PHmid_val_fit_err', 'type': 'positive-float', 'mandatory': True,
+                                                         {'name': 'PHmid_val_fit_err', 'type': 'positive-float', 'mandatory': False,
                                                           'clear-bad-pattern': True}
                                                          ],
                                         'ph_param_data': [{'name': 'PH_titr_result_ID', 'type': 'positive-int', 'mandatory': True},
@@ -5204,7 +5204,7 @@ class NmrDpUtility:
                                                            ],
                                           'ph_param_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                            {'name': 'Observed_NMR_param', 'type': 'enum', 'mondatory': True,
+                                                            {'name': 'Observed_NMR_param', 'type': 'enum', 'mandatory': True,
                                                              'enum': ('chemical shift', 'coupling constant', 'peak height', 'peak volume')},
                                                             {'name': 'PH_titration_list_ID', 'type': 'positive-int', 'mandatory': True,
                                                              'default': '1'}

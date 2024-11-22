@@ -151,6 +151,10 @@ class CyanaNOAReader:
                     if 'input' in description:
                         self.__lfh.write(f"{description['input']}\n")
                         self.__lfh.write(f"{description['marker']}\n")
+
+            # lexer_error_listener is inconsistent when accessing via return value (2n07)
+            # old lexer_error_listner may be accidentally reused within antler4?
+            # anyway, we need to ensure that illegal messaging is avoided.
             elif messageList is None and cifFilePath is None:
                 lexer_error_listener = LexerErrorListener(mrFilePath, maxErrorReport=self.__maxLexerErrorReport)
 

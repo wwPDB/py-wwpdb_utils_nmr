@@ -549,7 +549,24 @@ comment_code_mixed_set = {'#', '!'}
 default_coord_properties = {'tautomer': {}, 'rotamer': {}, 'near_ring': {}, 'near_para_ferro': {}, 'bond_length': {},
                             'tautomer_per_model': []}
 
-linear_mr_file_types = ('nm-res-ari', 'nm-res-bio', 'nm-res-cya', 'nm-res-noa', 'nm-res-ros', 'nm-res-syb')
+linear_mr_file_types = ('nm-res-bio', 'nm-res-cya', 'nm-res-ros', 'nm-res-syb')
+
+retrial_mr_file_types = ('nm-res-ari', 'nm-res-bio', 'nm-res-cns', 'nm-res-cha',
+                         'nm-res-cya', 'nm-res-dyn', 'nm-res-isd', 'nm-res-noa',
+                         'nm-res-ros', 'nm-res-syb', 'nm-res-xpl')
+
+parsable_mr_file_types = ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro',
+                          'nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha',
+                          'nm-res-cns', 'nm-res-cya', 'nm-res-dyn', 'nm-res-gro',
+                          'nm-res-isd', 'nm-res-noa', 'nm-res-syb', 'nm-res-ros',
+                          'nm-res-xpl')
+
+archival_mr_file_types = ('nmr-star',
+                          'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro',
+                          'nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha',
+                          'nm-res-cns', 'nm-res-cya', 'nm-res-dyn', 'nm-res-gro',
+                          'nm-res-isd', 'nm-res-noa', 'nm-res-oth', 'nm-res-sax',
+                          'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
 
 
 def detect_bom(fPath, default='utf-8'):
@@ -10251,6 +10268,10 @@ class NmrDpUtility:
 
         fileListId = self.__file_path_list_len
 
+        light_mr_file_types = ('nm-res-ari', 'nm-res-bio', 'nm-res-cya', 'nm-res-dyn',
+                               'nm-res-isd', 'nm-res-noa', 'nm-res-syb', 'nm-res-ros',
+                               'nm-res-oth')
+
         for ar in self.__inputParamDict[ar_file_path_list]:
             file_path = ar['file_name']
 
@@ -10709,9 +10730,7 @@ class NmrDpUtility:
                                     in_igr1 = False
                                     in_igr2 = False
 
-            elif file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
-                               'nm-res-isd', 'nm-res-ari', 'nm-res-noa', 'nm-res-oth')\
-                    or is_aux_amb or is_aux_gro or is_aux_cha:
+            elif file_type in light_mr_file_types or is_aux_amb or is_aux_gro or is_aux_cha:
 
                 if is_aux_amb:
 
@@ -11187,9 +11206,7 @@ class NmrDpUtility:
                     if has_ext and atom_names > 0:
                         has_topology = True
 
-            if file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
-                             'nm-res-isd', 'nm-res-ari', 'nm-res-noa', 'nm-res-oth')\
-                    and not has_dist_restraint:  # DAOTHER-7491
+            if file_type in light_mr_file_types and not has_dist_restraint:  # DAOTHER-7491
 
                 with open(file_path, 'r', encoding='utf-8') as ifh:
 
@@ -11252,10 +11269,7 @@ class NmrDpUtility:
 
             try:
 
-                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
-                                 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn',
-                                 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-aux-cha', 'nm-res-ari',
-                                 'nm-res-noa'):
+                if file_type in parsable_mr_file_types:
                     sll_pred = False
                     if file_path in self.__sll_pred_holder and file_type in self.__sll_pred_holder[file_path]:
                         sll_pred = self.__sll_pred_holder[file_path][file_type]
@@ -11264,9 +11278,7 @@ class NmrDpUtility:
 
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
-                    if listener is not None and file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio',
-                                                              'nm-res-dyn', 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari',
-                                                              'nm-res-noa'):
+                    if listener is not None and file_type in retrial_mr_file_types:
                         reasons = listener.getReasonsForReparsing()
 
                         if reasons is not None:
@@ -12237,10 +12249,31 @@ class NmrDpUtility:
         """ Return simple MR/PT file reader for a given format.
         """
 
-        if file_type == 'nm-res-xpl':
-            reader = XplorMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                   self.__ccU, self.__csStat, self.__nefT,
-                                   reasons)
+        if file_type == 'nm-aux-amb':
+            return AmberPTReader(verbose, self.__lfh, None, None, None, None, None,
+                                 self.__ccU, self.__csStat, self.__nefT)
+        if file_type == 'nm-aux-cha':
+            return CharmmCRDReader(verbose, self.__lfh, None, None, None, None, None,
+                                   self.__ccU, self.__csStat)
+        if file_type == 'nm-aux-gro':
+            return GromacsPTReader(verbose, self.__lfh, None, None, None, None, None,
+                                   self.__ccU, self.__csStat, self.__nefT)
+
+        if file_type == 'nm-res-amb':
+            return AmberMRReader(verbose, self.__lfh, None, None, None, None, None,
+                                 self.__ccU, self.__csStat, self.__nefT)
+        if file_type == 'nm-res-ari':
+            return AriaMRReader(verbose, self.__lfh, None, None, None, None, None,
+                                self.__ccU, self.__csStat, self.__nefT,
+                                reasons)
+        if file_type == 'nm-res-bio':
+            return BiosymMRReader(verbose, self.__lfh, None, None, None, None, None,
+                                  self.__ccU, self.__csStat, self.__nefT,
+                                  reasons)
+        if file_type == 'nm-res-cha':
+            reader = CharmmMRReader(verbose, self.__lfh, None, None, None, None, None,
+                                    self.__ccU, self.__csStat, self.__nefT,
+                                    reasons)
             reader.setSllPredMode(sll_pred)
             return reader
         if file_type == 'nm-res-cns':
@@ -12249,12 +12282,6 @@ class NmrDpUtility:
                                  reasons)
             reader.setSllPredMode(sll_pred)
             return reader
-        if file_type == 'nm-res-amb':
-            return AmberMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                 self.__ccU, self.__csStat, self.__nefT)
-        if file_type == 'nm-aux-amb':
-            return AmberPTReader(verbose, self.__lfh, None, None, None, None, None,
-                                 self.__ccU, self.__csStat, self.__nefT)
         if file_type == 'nm-res-cya':
             reader = CyanaMRReader(verbose, self.__lfh, None, None, None, None, None,
                                    self.__ccU, self.__csStat, self.__nefT,
@@ -12264,51 +12291,37 @@ class NmrDpUtility:
             # do not use SLL prediction mode for CyanaMRReader
             # reader.setSllPredMode(sll_pred)
             return reader
+        if file_type == 'nm-res-dyn':
+            return DynamoMRReader(verbose, self.__lfh, None, None, None, None, None,
+                                  self.__ccU, self.__csStat, self.__nefT,
+                                  reasons)
+        if file_type == 'nm-res-gro':
+            return GromacsMRReader(verbose, self.__lfh, None, None, None, None, None,
+                                   self.__ccU, self.__csStat, self.__nefT)
+        if file_type == 'nm-res-isd':
+            return IsdMRReader(verbose, self.__lfh, None, None, None, None, None,
+                               self.__ccU, self.__csStat, self.__nefT,
+                               reasons)
+        if file_type == 'nm-res-noa':
+            return CyanaNOAReader(verbose, self.__lfh, None, None, None, None, None,
+                                  self.__ccU, self.__csStat, self.__nefT,
+                                  reasons)
         if file_type == 'nm-res-ros':
             reader = RosettaMRReader(verbose, self.__lfh, None, None, None, None, None,
                                      self.__ccU, self.__csStat, self.__nefT,
                                      reasons)
             reader.setRemediateMode(self.__remediation_mode)
             return reader
-        if file_type == 'nm-res-bio':
-            return BiosymMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                  self.__ccU, self.__csStat, self.__nefT,
-                                  reasons)
-        if file_type == 'nm-res-gro':
-            return GromacsMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                   self.__ccU, self.__csStat, self.__nefT)
-        if file_type == 'nm-aux-gro':
-            return GromacsPTReader(verbose, self.__lfh, None, None, None, None, None,
-                                   self.__ccU, self.__csStat, self.__nefT)
-        if file_type == 'nm-res-dyn':
-            return DynamoMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                  self.__ccU, self.__csStat, self.__nefT,
-                                  reasons)
         if file_type == 'nm-res-syb':
             return SybylMRReader(verbose, self.__lfh, None, None, None, None, None,
                                  self.__ccU, self.__csStat, self.__nefT,
                                  reasons)
-        if file_type == 'nm-res-isd':
-            return IsdMRReader(verbose, self.__lfh, None, None, None, None, None,
-                               self.__ccU, self.__csStat, self.__nefT,
-                               reasons)
-        if file_type == 'nm-res-cha':
-            reader = CharmmMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                    self.__ccU, self.__csStat, self.__nefT,
-                                    reasons)
+        if file_type == 'nm-res-xpl':
+            reader = XplorMRReader(verbose, self.__lfh, None, None, None, None, None,
+                                   self.__ccU, self.__csStat, self.__nefT,
+                                   reasons)
             reader.setSllPredMode(sll_pred)
             return reader
-        if file_type == 'nm-aux-cha':
-            return CharmmCRDReader(verbose, self.__lfh, None, None, None, None, None,
-                                   self.__ccU, self.__csStat)
-        if file_type == 'nm-res-ari':
-            return AriaMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                self.__ccU, self.__csStat, self.__nefT,
-                                reasons)
-        if file_type == 'nm-res-noa':
-            return CyanaNOAReader(verbose, self.__lfh, None, None, None, None, None,
-                                  self.__ccU, self.__csStat, self.__nefT,
-                                  reasons)
 
         return None
 
@@ -12341,33 +12354,7 @@ class NmrDpUtility:
         if self.__mr_debug:
             self.__lfh.write('DIV-MR\n')
 
-        if file_type == 'nm-res-xpl':
-            pass
-        elif file_type == 'nm-res-cns':
-            pass
-        elif file_type in ('nm-res-amb', 'nm-aux-amb'):
-            pass
-        elif file_type == 'nm-res-cya':
-            pass
-        elif file_type == 'nm-res-ros':
-            pass
-        elif file_type == 'nm-res-bio':
-            pass
-        elif file_type in ('nm-res-gro', 'nm-aux-gro'):
-            pass
-        elif file_type == 'nm-res-dyn':
-            pass
-        elif file_type == 'nm-res-syb':
-            pass
-        elif file_type == 'nm-res-isd':
-            pass
-        elif file_type in ('nm-res-cha', 'nm-aux-cha'):
-            pass
-        elif file_type == 'nm-res-ari':
-            pass
-        elif file_type == 'nm-res-noa':
-            pass
-        else:
+        if file_type not in parsable_mr_file_types:
             return False
 
         err_message = err_desc['message']
@@ -13355,10 +13342,7 @@ class NmrDpUtility:
 
                 return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset) | corrected
 
-            for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
-                                   'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn',
-                                   'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-aux-cha', 'nm-res-ari',
-                                   'nm-res-noa']:
+            for test_file_type in parsable_mr_file_types:
 
                 if test_file_type == file_type:
                     continue
@@ -13664,33 +13648,7 @@ class NmrDpUtility:
         if self.__mr_debug:
             self.__lfh.write('DO-DIV-MR\n')
 
-        if file_type == 'nm-res-xpl':
-            pass
-        elif file_type == 'nm-res-cns':
-            pass
-        elif file_type in ('nm-res-amb', 'nm-aux-amb'):
-            pass
-        elif file_type == 'nm-res-cya':
-            pass
-        elif file_type == 'nm-res-ros':
-            pass
-        elif file_type == 'nm-res-bio':
-            pass
-        elif file_type in ('nm-res-gro', 'nm-aux-gro'):
-            pass
-        elif file_type == 'nm-res-dyn':
-            pass
-        elif file_type == 'nm-res-syb':
-            pass
-        elif file_type == 'nm-res-isd':
-            pass
-        elif file_type in ('nm-res-cha', 'nm-aux-cha'):
-            pass
-        elif file_type == 'nm-res-ari':
-            pass
-        elif file_type == 'nm-res-noa':
-            pass
-        else:
+        if file_type not in parsable_mr_file_types:
             return False
 
         err_message = err_desc['message']
@@ -14218,8 +14176,7 @@ class NmrDpUtility:
             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
             if listener is not None:
-                if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn',
-                                 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari', 'nm-res-noa'):
+                if file_type in retrial_mr_file_types:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
@@ -14293,7 +14250,7 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cns')
 
-            is_valid |= _is_valid
+            # is_valid |= _is_valid
             agreed_w_cns = _is_valid
             err += _err
             if _genuine_type is not None:
@@ -14306,7 +14263,19 @@ class NmrDpUtility:
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-xpl',
                                                                     agreed_w_cns=agreed_w_cns)
 
-            is_valid |= _is_valid
+            # is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-cha':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cha',
+                                                                    agreed_w_cns=agreed_w_cns)
+
+            # is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -14317,7 +14286,7 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-amb')
 
-            is_valid |= _is_valid
+            # is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -14328,18 +14297,18 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-amb')
 
-            is_valid |= _is_valid
+            # is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
-        if (not is_valid or multiple_check) and file_type != 'nm-res-ros':
+        if (not is_valid or multiple_check) and file_type != 'nm-res-ari':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-ros')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-ari')
 
-            is_valid |= _is_valid
+            # is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -14350,96 +14319,18 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-bio')
 
-            is_valid |= _is_valid
+            # is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
-        if (not is_valid or multiple_check) and file_type != 'nm-res-gro':
+        if (not is_valid or multiple_check) and file_type != 'nm-aux-cha':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-gro')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-cha')
 
-            is_valid |= _is_valid
-            err += _err
-            if _genuine_type is not None:
-                genuine_type.append(_genuine_type)
-            valid_types.update(_valid_types)
-            possible_types.update(_possible_types)
-
-        if (not is_valid or multiple_check) and file_type != 'nm-aux-gro':
-            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-gro')
-
-            is_valid |= _is_valid
-            err += _err
-            if _genuine_type is not None:
-                genuine_type.append(_genuine_type)
-            valid_types.update(_valid_types)
-            possible_types.update(_possible_types)
-
-        if (not is_valid or multiple_check) and file_type != 'nm-res-dyn':
-            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-dyn')
-
-            is_valid |= _is_valid
-            err += _err
-            if _genuine_type is not None:
-                genuine_type.append(_genuine_type)
-            valid_types.update(_valid_types)
-            possible_types.update(_possible_types)
-
-        if (not is_valid or multiple_check) and file_type != 'nm-res-syb':
-            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-syb')
-
-            is_valid |= _is_valid
-            err += _err
-            if _genuine_type is not None:
-                genuine_type.append(_genuine_type)
-            valid_types.update(_valid_types)
-            possible_types.update(_possible_types)
-
-        if (not is_valid or multiple_check) and file_type != 'nm-res-isd':
-            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-isd')
-
-            is_valid |= _is_valid
-            err += _err
-            if _genuine_type is not None:
-                genuine_type.append(_genuine_type)
-                valid_types.update(_valid_types)
-                possible_types.update(_possible_types)
-
-        if (not is_valid or multiple_check) and file_type != 'nm-res-cha':
-            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cha',
-                                                                    agreed_w_cns=agreed_w_cns)
-
-            is_valid |= _is_valid
-            err += _err
-            if _genuine_type is not None:
-                genuine_type.append(_genuine_type)
-                valid_types.update(_valid_types)
-                possible_types.update(_possible_types)
-
-        if (not is_valid or multiple_check) and file_type != 'nm-res-ari':
-            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-ari')
-
-            is_valid |= _is_valid
-            err += _err
-            if _genuine_type is not None:
-                genuine_type.append(_genuine_type)
-            valid_types.update(_valid_types)
-            possible_types.update(_possible_types)
-
-        if (not is_valid or multiple_check) and file_type != 'nm-res-noa':
-            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-noa')
-
-            is_valid |= _is_valid
+            # is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -14451,13 +14342,88 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cya')
 
-            if len(valid_types) == 0:
-                is_valid |= _is_valid
-                err += _err
-                if _genuine_type is not None:
-                    genuine_type.append(_genuine_type)
-                valid_types.update(_valid_types)
+            # is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
 
+        if (not is_valid or multiple_check) and file_type != 'nm-res-dyn':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-dyn')
+
+            # is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-gro':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-gro')
+
+            # is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-aux-gro':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-gro')
+
+            # is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-isd':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-isd')
+
+            # is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-noa':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-noa')
+
+            # is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-ros':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-ros')
+
+            # is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-syb':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-syb')
+
+            # is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
         if len(genuine_type) != 1:
@@ -14626,6 +14592,11 @@ class NmrDpUtility:
         mr_part_paths = []
         pk_list_paths = []
 
+        settled_mr_file_types = ('nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha',
+                                 'nm-res-cns', 'nm-res-cya', 'nm-res-dyn', 'nm-res-gro',
+                                 'nm-res-isd', 'nm-res-noa', 'nm-res-ros', 'nm-res-sax',
+                                 'nm-res-syb', 'nm-res-xpl')
+
         for ar in self.__inputParamDict[ar_file_path_list]:
 
             src_file = ar['file_name']
@@ -14738,10 +14709,7 @@ class NmrDpUtility:
 
             designated = False
 
-            for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
-                               'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
-                               'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari',
-                               'nm-res-noa', 'nm-res-sax'):
+            for _file_type in settled_mr_file_types:
 
                 sel_res_file = src_basename + f'-selected-as-res-{_file_type[-3:]}.mr'
 
@@ -15512,10 +15480,7 @@ class NmrDpUtility:
 
                         designated = False
 
-                        for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
-                                           'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
-                                           'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari',
-                                           'nm-res-noa', 'nm-res-sax'):
+                        for _file_type in settled_mr_file_types:
 
                             sel_res_file = dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
@@ -15896,10 +15861,7 @@ class NmrDpUtility:
 
                     designated = False
 
-                    for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
-                                       'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
-                                       'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari',
-                                       'nm-res-noa', 'nm-res-sax'):
+                    for _file_type in settled_mr_file_types:
 
                         sel_res_file = dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
@@ -16249,10 +16211,7 @@ class NmrDpUtility:
 
                         designated = False
 
-                        for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
-                                           'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
-                                           'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari',
-                                           'nm-res-noa', 'nm-res-sax'):
+                        for _file_type in settled_mr_file_types:
 
                             sel_res_file = _dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
@@ -16553,11 +16512,7 @@ class NmrDpUtility:
                     if 'header' in mr_part_path or 'footer' in mr_part_path:
                         continue
 
-                    for file_type in ['nmr-star',
-                                      'nm-res-amb', 'nm-aux-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl',
-                                      'nm-res-oth', 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro',
-                                      'nm-res-dyn', 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-aux-cha',
-                                      'nm-res-ari', 'nm-res-noa', 'nm-res-sax']:
+                    for file_type in archival_mr_file_types:
                         if file_type in mr_part_path:
                             file_path = mr_part_path[file_type]
                             if 'original_file_name' in mr_part_path and mr_part_path['original_file_name'] is not None:
@@ -32899,44 +32854,6 @@ class NmrDpUtility:
                         if seq_align is not None:
                             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
 
-            elif file_type == 'nm-aux-gro' and content_subtype is not None and 'topology' in content_subtype:
-
-                if 'is_valid' in ar and ar['is_valid']:
-
-                    file_name = input_source_dic['file_name']
-
-                    original_file_name = None
-                    if 'original_file_name' in input_source_dic:
-                        if input_source_dic['original_file_name'] is not None:
-                            original_file_name = os.path.basename(input_source_dic['original_file_name'])
-                        if file_name != original_file_name and original_file_name is not None:
-                            file_name = f"{original_file_name} ({file_name})"
-
-                    self.__cur_original_ar_file_name = original_file_name
-
-                    reader = GromacsPTReader(self.__verbose, self.__lfh,
-                                             self.__representative_model_id,
-                                             self.__representative_alt_id,
-                                             self.__mr_atom_name_mapping,
-                                             self.__cR, self.__caC,
-                                             self.__ccU, self.__csStat, self.__nefT)
-
-                    listener, _, _ = reader.parse(file_path, self.__cifPath)
-
-                    if listener is not None:
-
-                        deal_aux_warn_message(listener)
-
-                        gromacsAtomNumberDict = listener.getAtomNumberDict()
-
-                        poly_seq = listener.getPolymerSequence()
-                        if poly_seq is not None:
-                            input_source.setItemValue('polymer_sequence', poly_seq)
-
-                        seq_align = listener.getSequenceAlignment()
-                        if seq_align is not None:
-                            self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
-
             elif file_type == 'nm-aux-cha' and content_subtype is not None and 'topology' in content_subtype:
 
                 if 'is_valid' in ar and ar['is_valid']:
@@ -32966,6 +32883,44 @@ class NmrDpUtility:
                         deal_aux_warn_message(listener)
 
                         charmmAtomNumberDict = listener.getAtomNumberDict()
+
+                        poly_seq = listener.getPolymerSequence()
+                        if poly_seq is not None:
+                            input_source.setItemValue('polymer_sequence', poly_seq)
+
+                        seq_align = listener.getSequenceAlignment()
+                        if seq_align is not None:
+                            self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
+
+            elif file_type == 'nm-aux-gro' and content_subtype is not None and 'topology' in content_subtype:
+
+                if 'is_valid' in ar and ar['is_valid']:
+
+                    file_name = input_source_dic['file_name']
+
+                    original_file_name = None
+                    if 'original_file_name' in input_source_dic:
+                        if input_source_dic['original_file_name'] is not None:
+                            original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                        if file_name != original_file_name and original_file_name is not None:
+                            file_name = f"{original_file_name} ({file_name})"
+
+                    self.__cur_original_ar_file_name = original_file_name
+
+                    reader = GromacsPTReader(self.__verbose, self.__lfh,
+                                             self.__representative_model_id,
+                                             self.__representative_alt_id,
+                                             self.__mr_atom_name_mapping,
+                                             self.__cR, self.__caC,
+                                             self.__ccU, self.__csStat, self.__nefT)
+
+                    listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                    if listener is not None:
+
+                        deal_aux_warn_message(listener)
+
+                        gromacsAtomNumberDict = listener.getAtomNumberDict()
 
                         poly_seq = listener.getPolymerSequence()
                         if poly_seq is not None:
@@ -33496,15 +33451,234 @@ class NmrDpUtility:
 
             suspended_errors_for_lazy_eval.clear()
 
-            if file_type == 'nm-res-xpl':
-                reader = XplorMRReader(self.__verbose, self.__lfh,
+            if file_type == 'nm-res-amb':
+                reader = AmberMRReader(self.__verbose, self.__lfh,
                                        self.__representative_model_id,
                                        self.__representative_alt_id,
                                        self.__mr_atom_name_mapping,
                                        self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT,
+                                       amberAtomNumberDict, _amberAtomNumberDict,
                                        reasons)
-                reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = reader.getReasons()
+
+                    if reasons is not None and _reasons is not None and listener.warningMessage is not None and len(listener.warningMessage) > 0:
+                        deal_res_warn_message_for_lazy_eval(listener)
+
+                        reader = AmberMRReader(self.__verbose, self.__lfh,
+                                               self.__representative_model_id,
+                                               self.__representative_alt_id,
+                                               self.__mr_atom_name_mapping,
+                                               self.__cR, self.__caC,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               amberAtomNumberDict, _amberAtomNumberDict,
+                                               None)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                        if listener is not None:
+                            reasons = reader.getReasons()
+
+                    if reasons is not None:
+
+                        if 'dist_restraint' in content_subtype.keys():
+                            reasons_dict[file_type] = reasons
+
+                    deal_res_warn_message(listener)
+
+                    cur_dict = listener.getAtomNumberDict()
+                    if cur_dict is not None:
+                        if len(_amberAtomNumberDict) == 0:
+                            _amberAtomNumberDict = cur_dict
+                        else:
+                            for k, v in cur_dict.items():
+                                if k not in _amberAtomNumberDict:
+                                    _amberAtomNumberDict[k] = v
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (AMBER) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-res-ari':
+                reader = AriaMRReader(self.__verbose, self.__lfh,
+                                      self.__representative_model_id,
+                                      self.__representative_alt_id,
+                                      self.__mr_atom_name_mapping,
+                                      self.__cR, self.__caC,
+                                      self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
+
+                        if 'model_chain_id_ext' in reasons:
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+
+                        reader = AriaMRReader(self.__verbose, self.__lfh,
+                                              self.__representative_model_id,
+                                              self.__representative_alt_id,
+                                              self.__mr_atom_name_mapping,
+                                              self.__cR, self.__caC,
+                                              self.__ccU, self.__csStat, self.__nefT,
+                                              reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                    deal_res_warn_message(listener)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (ARIA) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-res-bio':
+                reader = BiosymMRReader(self.__verbose, self.__lfh,
+                                        self.__representative_model_id,
+                                        self.__representative_alt_id,
+                                        self.__mr_atom_name_mapping,
+                                        self.__cR, self.__caC,
+                                        self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
+
+                        if 'model_chain_id_ext' in reasons:
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+
+                        reader = BiosymMRReader(self.__verbose, self.__lfh,
+                                                self.__representative_model_id,
+                                                self.__representative_alt_id,
+                                                self.__mr_atom_name_mapping,
+                                                self.__cR, self.__caC,
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                    deal_res_warn_message(listener)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (BIOSYM) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-res-cha':
+                reader = CharmmMRReader(self.__verbose, self.__lfh,
+                                        self.__representative_model_id,
+                                        self.__representative_alt_id,
+                                        self.__mr_atom_name_mapping,
+                                        self.__cR, self.__caC,
+                                        self.__ccU, self.__csStat, self.__nefT,
+                                        charmmAtomNumberDict,
+                                        reasons)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
                 __list_id_counter = copy.copy(self.__list_id_counter)
@@ -33518,14 +33692,14 @@ class NmrDpUtility:
 
                     if reasons is not None and _reasons is not None:
 
-                        reader = XplorMRReader(self.__verbose, self.__lfh,
-                                               self.__representative_model_id,
-                                               self.__representative_alt_id,
-                                               self.__mr_atom_name_mapping,
-                                               self.__cR, self.__caC,
-                                               self.__ccU, self.__csStat, self.__nefT,
-                                               None)
-                        reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
+                        reader = CharmmMRReader(self.__verbose, self.__lfh,
+                                                self.__representative_model_id,
+                                                self.__representative_alt_id,
+                                                self.__mr_atom_name_mapping,
+                                                self.__cR, self.__caC,
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                charmmAtomNumberDict,
+                                                None)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -33545,14 +33719,14 @@ class NmrDpUtility:
                         if 'chain_id_clone' in reasons:
                             self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
-                        reader = XplorMRReader(self.__verbose, self.__lfh,
-                                               self.__representative_model_id,
-                                               self.__representative_alt_id,
-                                               self.__mr_atom_name_mapping,
-                                               self.__cR, self.__caC,
-                                               self.__ccU, self.__csStat, self.__nefT,
-                                               reasons)
-                        reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
+                        reader = CharmmMRReader(self.__verbose, self.__lfh,
+                                                self.__representative_model_id,
+                                                self.__representative_alt_id,
+                                                self.__mr_atom_name_mapping,
+                                                self.__cR, self.__caC,
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                charmmAtomNumberDict,
+                                                reasons)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -33569,12 +33743,9 @@ class NmrDpUtility:
                     if seq_align is not None:
                         self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
-                    # support content subtype change during MR validation with the coordinates
-                    input_source.setItemValue('content_subtype', listener.getContentSubtype())
-
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0:
-                            err = f"Failed to validate NMR restraint file (XPLOR-NIH) {file_name!r}."
+                            err = f"Failed to validate NMR restraint file (CHARMM) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -33665,89 +33836,6 @@ class NmrDpUtility:
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (CNS) {file_name!r}."
-
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
-
-                        self.__list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-res-amb':
-                reader = AmberMRReader(self.__verbose, self.__lfh,
-                                       self.__representative_model_id,
-                                       self.__representative_alt_id,
-                                       self.__mr_atom_name_mapping,
-                                       self.__cR, self.__caC,
-                                       self.__ccU, self.__csStat, self.__nefT,
-                                       amberAtomNumberDict, _amberAtomNumberDict,
-                                       reasons)
-
-                _list_id_counter = copy.copy(self.__list_id_counter)
-
-                listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
-
-                if listener is not None:
-                    reasons = reader.getReasons()
-
-                    if reasons is not None and _reasons is not None and listener.warningMessage is not None and len(listener.warningMessage) > 0:
-                        deal_res_warn_message_for_lazy_eval(listener)
-
-                        reader = AmberMRReader(self.__verbose, self.__lfh,
-                                               self.__representative_model_id,
-                                               self.__representative_alt_id,
-                                               self.__mr_atom_name_mapping,
-                                               self.__cR, self.__caC,
-                                               self.__ccU, self.__csStat, self.__nefT,
-                                               amberAtomNumberDict, _amberAtomNumberDict,
-                                               None)
-
-                        listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
-
-                        if listener is not None:
-                            reasons = reader.getReasons()
-
-                    if reasons is not None:
-
-                        if 'dist_restraint' in content_subtype.keys():
-                            reasons_dict[file_type] = reasons
-
-                    deal_res_warn_message(listener)
-
-                    cur_dict = listener.getAtomNumberDict()
-                    if cur_dict is not None:
-                        if len(_amberAtomNumberDict) == 0:
-                            _amberAtomNumberDict = cur_dict
-                        else:
-                            for k, v in cur_dict.items():
-                                if k not in _amberAtomNumberDict:
-                                    _amberAtomNumberDict[k] = v
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0:
-                            err = f"Failed to validate NMR restraint file (AMBER) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -33879,212 +33967,6 @@ class NmrDpUtility:
                                     if sf not in self.__mr_sf_dict_holder[content_subtype]:
                                         self.__mr_sf_dict_holder[content_subtype].append(sf)
 
-            elif file_type == 'nm-res-ros':
-                reader = RosettaMRReader(self.__verbose, self.__lfh,
-                                         self.__representative_model_id,
-                                         self.__representative_alt_id,
-                                         self.__mr_atom_name_mapping,
-                                         self.__cR, self.__caC,
-                                         self.__ccU, self.__csStat, self.__nefT,
-                                         reasons)
-                reader.setRemediateMode(self.__remediation_mode)
-
-                _list_id_counter = copy.copy(self.__list_id_counter)
-                __list_id_counter = copy.copy(self.__list_id_counter)
-
-                listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None and _reasons is not None:
-
-                        reader = RosettaMRReader(self.__verbose, self.__lfh,
-                                                 self.__representative_model_id,
-                                                 self.__representative_alt_id,
-                                                 self.__mr_atom_name_mapping,
-                                                 self.__cR, self.__caC,
-                                                 self.__ccU, self.__csStat, self.__nefT,
-                                                 None)
-                        reader.setRemediateMode(self.__remediation_mode)
-
-                        listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
-
-                        if listener is not None:
-                            reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
-
-                        if 'dist_restraint' in content_subtype.keys():
-                            reasons_dict[file_type] = reasons
-
-                        if 'model_chain_id_ext' in reasons:
-                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
-                        if 'chain_id_clone' in reasons:
-                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
-
-                        reader = RosettaMRReader(self.__verbose, self.__lfh,
-                                                 self.__representative_model_id,
-                                                 self.__representative_alt_id,
-                                                 self.__mr_atom_name_mapping,
-                                                 self.__cR, self.__caC,
-                                                 self.__ccU, self.__csStat, self.__nefT,
-                                                 reasons)
-                        reader.setRemediateMode(self.__remediation_mode)
-
-                        listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
-
-                    deal_res_warn_message(listener)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0:
-                            err = f"Failed to validate NMR restraint file (ROSETTA) {file_name!r}."
-
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
-
-                        self.__list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-res-bio':
-                reader = BiosymMRReader(self.__verbose, self.__lfh,
-                                        self.__representative_model_id,
-                                        self.__representative_alt_id,
-                                        self.__mr_atom_name_mapping,
-                                        self.__cR, self.__caC,
-                                        self.__ccU, self.__csStat, self.__nefT)
-
-                _list_id_counter = copy.copy(self.__list_id_counter)
-
-                listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
-
-                        if 'model_chain_id_ext' in reasons:
-                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
-                        if 'chain_id_clone' in reasons:
-                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
-
-                        reader = BiosymMRReader(self.__verbose, self.__lfh,
-                                                self.__representative_model_id,
-                                                self.__representative_alt_id,
-                                                self.__mr_atom_name_mapping,
-                                                self.__cR, self.__caC,
-                                                self.__ccU, self.__csStat, self.__nefT,
-                                                reasons)
-
-                        listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
-
-                    deal_res_warn_message(listener)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0:
-                            err = f"Failed to validate NMR restraint file (BIOSYM) {file_name!r}."
-
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
-
-                        self.__list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-res-gro':
-                reader = GromacsMRReader(self.__verbose, self.__lfh,
-                                         self.__representative_model_id,
-                                         self.__representative_alt_id,
-                                         self.__mr_atom_name_mapping,
-                                         self.__cR, self.__caC,
-                                         self.__ccU, self.__csStat, self.__nefT,
-                                         gromacsAtomNumberDict)
-
-                listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
-
-                if listener is not None:
-                    deal_res_warn_message(listener)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0:
-                            err = f"Failed to validate NMR restraint file (GROMACS) {file_name!r}."
-
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
-
-                        self.__list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
-
             elif file_type == 'nm-res-dyn':
                 reader = DynamoMRReader(self.__verbose, self.__lfh,
                                         self.__representative_model_id,
@@ -34136,74 +34018,6 @@ class NmrDpUtility:
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (DYNAMO/PALES/TALOS) {file_name!r}."
-
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
-
-                        self.__list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-res-syb':
-                reader = SybylMRReader(self.__verbose, self.__lfh,
-                                       self.__representative_model_id,
-                                       self.__representative_alt_id,
-                                       self.__mr_atom_name_mapping,
-                                       self.__cR, self.__caC,
-                                       self.__ccU, self.__csStat, self.__nefT)
-
-                _list_id_counter = copy.copy(self.__list_id_counter)
-
-                listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
-
-                        if 'model_chain_id_ext' in reasons:
-                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
-                        if 'chain_id_clone' in reasons:
-                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
-
-                        reader = SybylMRReader(self.__verbose, self.__lfh,
-                                               self.__representative_model_id,
-                                               self.__representative_alt_id,
-                                               self.__mr_atom_name_mapping,
-                                               self.__cR, self.__caC,
-                                               self.__ccU, self.__csStat, self.__nefT,
-                                               reasons)
-
-                        listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
-
-                    deal_res_warn_message(listener)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0:
-                            err = f"Failed to validate NMR restraint file (SYBYL) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -34289,68 +34103,20 @@ class NmrDpUtility:
                                     if sf not in self.__mr_sf_dict_holder[content_subtype]:
                                         self.__mr_sf_dict_holder[content_subtype].append(sf)
 
-            elif file_type == 'nm-res-cha':
-                reader = CharmmMRReader(self.__verbose, self.__lfh,
-                                        self.__representative_model_id,
-                                        self.__representative_alt_id,
-                                        self.__mr_atom_name_mapping,
-                                        self.__cR, self.__caC,
-                                        self.__ccU, self.__csStat, self.__nefT,
-                                        charmmAtomNumberDict,
-                                        reasons)
-
-                _list_id_counter = copy.copy(self.__list_id_counter)
-                __list_id_counter = copy.copy(self.__list_id_counter)
+            elif file_type == 'nm-res-gro':
+                reader = GromacsMRReader(self.__verbose, self.__lfh,
+                                         self.__representative_model_id,
+                                         self.__representative_alt_id,
+                                         self.__mr_atom_name_mapping,
+                                         self.__cR, self.__caC,
+                                         self.__ccU, self.__csStat, self.__nefT,
+                                         gromacsAtomNumberDict)
 
                 listener, _, _ = reader.parse(file_path, self.__cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
                                               listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None and _reasons is not None:
-
-                        reader = CharmmMRReader(self.__verbose, self.__lfh,
-                                                self.__representative_model_id,
-                                                self.__representative_alt_id,
-                                                self.__mr_atom_name_mapping,
-                                                self.__cR, self.__caC,
-                                                self.__ccU, self.__csStat, self.__nefT,
-                                                charmmAtomNumberDict,
-                                                None)
-
-                        listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
-
-                        if listener is not None:
-                            reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
-
-                        if 'dist_restraint' in content_subtype.keys():
-                            reasons_dict[file_type] = reasons
-
-                        if 'model_chain_id_ext' in reasons:
-                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
-                        if 'chain_id_clone' in reasons:
-                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
-
-                        reader = CharmmMRReader(self.__verbose, self.__lfh,
-                                                self.__representative_model_id,
-                                                self.__representative_alt_id,
-                                                self.__mr_atom_name_mapping,
-                                                self.__cR, self.__caC,
-                                                self.__ccU, self.__csStat, self.__nefT,
-                                                charmmAtomNumberDict,
-                                                reasons)
-
-                        listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
-
                     deal_res_warn_message(listener)
 
                     poly_seq = listener.getPolymerSequence()
@@ -34364,75 +34130,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0:
-                            err = f"Failed to validate NMR restraint file (CHARMM) {file_name!r}."
-
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
-
-                        self.__list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__mr_sf_dict_holder:
-                                    self.__mr_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
-                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-res-ari':
-                reader = AriaMRReader(self.__verbose, self.__lfh,
-                                      self.__representative_model_id,
-                                      self.__representative_alt_id,
-                                      self.__mr_atom_name_mapping,
-                                      self.__cR, self.__caC,
-                                      self.__ccU, self.__csStat, self.__nefT)
-
-                _list_id_counter = copy.copy(self.__list_id_counter)
-
-                listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
-
-                        if 'model_chain_id_ext' in reasons:
-                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
-                        if 'chain_id_clone' in reasons:
-                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
-
-                        reader = AriaMRReader(self.__verbose, self.__lfh,
-                                              self.__representative_model_id,
-                                              self.__representative_alt_id,
-                                              self.__mr_atom_name_mapping,
-                                              self.__cR, self.__caC,
-                                              self.__ccU, self.__csStat, self.__nefT,
-                                              reasons)
-
-                        listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
-
-                    deal_res_warn_message(listener)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0:
-                            err = f"Failed to validate NMR restraint file (ARIA) {file_name!r}."
+                            err = f"Failed to validate NMR restraint file (GROMACS) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -34526,6 +34224,263 @@ class NmrDpUtility:
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (CYANA NOA) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-res-ros':
+                reader = RosettaMRReader(self.__verbose, self.__lfh,
+                                         self.__representative_model_id,
+                                         self.__representative_alt_id,
+                                         self.__mr_atom_name_mapping,
+                                         self.__cR, self.__caC,
+                                         self.__ccU, self.__csStat, self.__nefT,
+                                         reasons)
+                reader.setRemediateMode(self.__remediation_mode)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+                __list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None and _reasons is not None:
+
+                        reader = RosettaMRReader(self.__verbose, self.__lfh,
+                                                 self.__representative_model_id,
+                                                 self.__representative_alt_id,
+                                                 self.__mr_atom_name_mapping,
+                                                 self.__cR, self.__caC,
+                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                 None)
+                        reader.setRemediateMode(self.__remediation_mode)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                        if listener is not None:
+                            reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
+
+                        if 'dist_restraint' in content_subtype.keys():
+                            reasons_dict[file_type] = reasons
+
+                        if 'model_chain_id_ext' in reasons:
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+
+                        reader = RosettaMRReader(self.__verbose, self.__lfh,
+                                                 self.__representative_model_id,
+                                                 self.__representative_alt_id,
+                                                 self.__mr_atom_name_mapping,
+                                                 self.__cR, self.__caC,
+                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                 reasons)
+                        reader.setRemediateMode(self.__remediation_mode)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
+
+                    deal_res_warn_message(listener)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (ROSETTA) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-res-syb':
+                reader = SybylMRReader(self.__verbose, self.__lfh,
+                                       self.__representative_model_id,
+                                       self.__representative_alt_id,
+                                       self.__mr_atom_name_mapping,
+                                       self.__cR, self.__caC,
+                                       self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
+
+                        if 'model_chain_id_ext' in reasons:
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+
+                        reader = SybylMRReader(self.__verbose, self.__lfh,
+                                               self.__representative_model_id,
+                                               self.__representative_alt_id,
+                                               self.__mr_atom_name_mapping,
+                                               self.__cR, self.__caC,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                    deal_res_warn_message(listener)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (SYBYL) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-res-xpl':
+                reader = XplorMRReader(self.__verbose, self.__lfh,
+                                       self.__representative_model_id,
+                                       self.__representative_alt_id,
+                                       self.__mr_atom_name_mapping,
+                                       self.__cR, self.__caC,
+                                       self.__ccU, self.__csStat, self.__nefT,
+                                       reasons)
+                reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+                __list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None and _reasons is not None:
+
+                        reader = XplorMRReader(self.__verbose, self.__lfh,
+                                               self.__representative_model_id,
+                                               self.__representative_alt_id,
+                                               self.__mr_atom_name_mapping,
+                                               self.__cR, self.__caC,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               None)
+                        reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                        if listener is not None:
+                            reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
+
+                        if 'dist_restraint' in content_subtype.keys():
+                            reasons_dict[file_type] = reasons
+
+                        if 'model_chain_id_ext' in reasons:
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+
+                        reader = XplorMRReader(self.__verbose, self.__lfh,
+                                               self.__representative_model_id,
+                                               self.__representative_alt_id,
+                                               self.__mr_atom_name_mapping,
+                                               self.__cR, self.__caC,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               reasons)
+                        reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
+
+                    deal_res_warn_message(listener)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    # support content subtype change during MR validation with the coordinates
+                    input_source.setItemValue('content_subtype', listener.getContentSubtype())
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (XPLOR-NIH) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()

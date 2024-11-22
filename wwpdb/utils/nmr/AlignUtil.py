@@ -604,42 +604,45 @@ def getRestraintFormatName(fileType, ambig=False):
     """ Return restraint format name.
     """
 
-    if fileType == 'nm-res-xpl':
-        return 'XPLOR-NIH/CNS restraint' if ambig else 'XPLOR-NIH restraint'
-    if fileType == 'nm-res-cns':
-        return 'CNS/XPLOR-NIH restraint' if ambig else 'CNS restraint'
-    if fileType == 'nm-res-amb':
-        return 'AMBER restraint'
-    if fileType == 'nm-aux-amb':
-        return 'AMBER topology'
-    if fileType == 'nm-res-cya':
-        return 'CYANA restraint'
-    if fileType == 'nm-res-ros':
-        return 'ROSETTA restraint'
-    if fileType == 'nm-res-bio':
-        return 'BIOSYM restraint'
-    if fileType == 'nm-res-gro':
-        return 'GROMACS restraint'
-    if fileType == 'nm-aux-gro':
-        return 'GROMACS topology'
-    if fileType == 'nm-res-dyn':
-        return 'DYNAMO/PALES/TALOS restraint'
-    if fileType == 'nm-res-syb':
-        return 'SYBYL restraint'
-    if fileType == 'nm-res-isd':
-        return 'ISD restraint'
-    if fileType == 'nm-aux-cha':
-        return 'CHARMM topology'
-    if fileType == 'nm-res-cha':
-        return 'CHARMM restraint'
-    if fileType == 'nm-res-ari':
-        return 'ARIA restraint'
-    if fileType == 'nm-res-noa':
-        return 'CYANA NOE assignment'
     if fileType == 'nmr-star':
         return 'NMR-STAR data'
+
+    if fileType == 'nm-aux-amb':
+        return 'AMBER topology'
+    if fileType == 'nm-aux-cha':
+        return 'CHARMM topology'
+    if fileType == 'nm-aux-gro':
+        return 'GROMACS topology'
+
+    if fileType == 'nm-res-amb':
+        return 'AMBER restraint'
+    if fileType == 'nm-res-ari':
+        return 'ARIA restraint'
+    if fileType == 'nm-res-bio':
+        return 'BIOSYM restraint'
+    if fileType == 'nm-res-cha':
+        return 'CHARMM restraint'
+    if fileType == 'nm-res-cns':
+        return 'CNS/XPLOR-NIH restraint' if ambig else 'CNS restraint'
+    if fileType == 'nm-res-cya':
+        return 'CYANA restraint'
+    if fileType == 'nm-res-dyn':
+        return 'DYNAMO/PALES/TALOS restraint'
+    if fileType == 'nm-res-gro':
+        return 'GROMACS restraint'
+    if fileType == 'nm-res-isd':
+        return 'ISD restraint'
+    if fileType == 'nm-res-noa':
+        return 'CYANA NOE assignment'
     if fileType == 'nm-res-mr':
         return 'MR data'
+    if fileType == 'nm-res-ros':
+        return 'ROSETTA restraint'
+    if fileType == 'nm-res-syb':
+        return 'SYBYL restraint'
+    if fileType == 'nm-res-xpl':
+        return 'XPLOR-NIH/CNS restraint' if ambig else 'XPLOR-NIH restraint'
+
     return 'other restraint'
 
 

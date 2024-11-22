@@ -151,6 +151,8 @@ class RosettaMRReader:
                     if 'input' in description:
                         self.__lfh.write(f"{description['input']}\n")
                         self.__lfh.write(f"{description['marker']}\n")
+            elif messageList is None and cifFilePath is None:
+                lexer_error_listener = LexerErrorListener(mrFilePath, maxErrorReport=self.__maxLexerErrorReport)
 
             stream = CommonTokenStream(lexer)
             parser = RosettaMRParser(stream)

@@ -197,6 +197,7 @@
 # 20-Aug-2024  M. Yokochi - support truncated loop sequence in the model (DAOTHER-9644)
 # 14-Nov-2024  M. Yokochi - add support for CHARMM extended CRD (topology) file. file type: 'nm-aux-cha'
 # 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
+# 22-Nov-2024  M. Yokochi - add support for CYANA NOA (NOE Assignment) file. file type: 'nm-res-noa'
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -331,6 +332,7 @@ try:
     from wwpdb.utils.nmr.mr.CharmmCRDReader import CharmmCRDReader
     from wwpdb.utils.nmr.mr.CharmmMRReader import CharmmMRReader
     from wwpdb.utils.nmr.mr.AriaMRReader import AriaMRReader
+    from wwpdb.utils.nmr.mr.CyanaNOAReader import CyanaNOAReader
 
 except ImportError:
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -439,6 +441,7 @@ except ImportError:
     from nmr.mr.CharmmCRDReader import CharmmCRDReader
     from nmr.mr.CharmmMRReader import CharmmMRReader
     from nmr.mr.AriaMRReader import AriaMRReader
+    from nmr.mr.CyanaNOAReader import CyanaNOAReader
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
@@ -545,6 +548,8 @@ comment_code_mixed_set = {'#', '!'}
 
 default_coord_properties = {'tautomer': {}, 'rotamer': {}, 'near_ring': {}, 'near_para_ferro': {}, 'bond_length': {},
                             'tautomer_per_model': []}
+
+linear_mr_file_types = ('nm-res-ari', 'nm-res-bio', 'nm-res-cya', 'nm-res-noa', 'nm-res-ros', 'nm-res-syb')
 
 
 def detect_bom(fPath, default='utf-8'):
@@ -7372,6 +7377,42 @@ class NmrDpUtility:
                         if has_ext and atom_names > 0:
                             ar['file_type'] = 'nm-aux-cha'
 
+                    if ar['file_type'] in ('nm-res-cya', 'nm-res-oth'):
+
+                        atom_names = 0
+
+                        three_letter_codes = monDict3.keys()
+                        atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
+
+                        with open(arPath, 'r', encoding='utf-8') as ifh:
+
+                            for line in ifh:
+
+                                if ' OK ' in line and ' + ' in line:
+                                    l_split = line.split()
+                                    _line = ' '.join(l_split)
+
+                                    if len(_line) == 0 or _line.startswith('#') or _line.startswith('!') or _line.startswith(';'):
+                                        continue
+
+                                    if len(l_split) >= 12:
+                                        try:
+                                            if l_split[3] == '+' and l_split[7] == 'OK':
+                                                seq_id = int(l_split[2])
+                                                comp_id = l_split[1]
+                                                atom_id = l_split[0]
+                                                if seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                                    seq_id = int(l_split[6])
+                                                    comp_id = l_split[5]
+                                                    atom_id = l_split[4]
+                                                    if seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                                        atom_names += 1
+                                        except ValueError:
+                                            pass
+
+                        if atom_names > 0:
+                            ar['file_type'] = 'nm-aux-noa'
+
                     input_source.setItemValue('file_name', os.path.basename(arPath))
                     input_source.setItemValue('file_type', ar['file_type'])
                     input_source.setItemValue('content_type', 'nmr-restraints')
@@ -10669,7 +10710,8 @@ class NmrDpUtility:
                                     in_igr2 = False
 
             elif file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
-                               'nm-res-isd', 'nm-res-ari', 'nm-res-oth') or is_aux_amb or is_aux_gro or is_aux_cha:
+                               'nm-res-isd', 'nm-res-ari', 'nm-res-noa', 'nm-res-oth')\
+                    or is_aux_amb or is_aux_gro or is_aux_cha:
 
                 if is_aux_amb:
 
@@ -11146,7 +11188,8 @@ class NmrDpUtility:
                         has_topology = True
 
             if file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
-                             'nm-res-isd', 'nm-res-ari', 'nm-res-oth') and not has_dist_restraint:  # DAOTHER-7491
+                             'nm-res-isd', 'nm-res-ari', 'nm-res-noa', 'nm-res-oth')\
+                    and not has_dist_restraint:  # DAOTHER-7491
 
                 with open(file_path, 'r', encoding='utf-8') as ifh:
 
@@ -11211,7 +11254,8 @@ class NmrDpUtility:
 
                 if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
                                  'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn',
-                                 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-aux-cha', 'nm-res-ari'):
+                                 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-aux-cha', 'nm-res-ari',
+                                 'nm-res-noa'):
                     sll_pred = False
                     if file_path in self.__sll_pred_holder and file_type in self.__sll_pred_holder[file_path]:
                         sll_pred = self.__sll_pred_holder[file_path][file_type]
@@ -11221,7 +11265,8 @@ class NmrDpUtility:
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
                     if listener is not None and file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio',
-                                                              'nm-res-dyn', 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari'):
+                                                              'nm-res-dyn', 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari',
+                                                              'nm-res-noa'):
                         reasons = listener.getReasonsForReparsing()
 
                         if reasons is not None:
@@ -11285,8 +11330,7 @@ class NmrDpUtility:
 
                         for description in messageList:
                             # ignore noeol error for linear mr file formats
-                            if description['line_number'] == total_line and file_type in ('nm-res-cya', 'nm-res-ros', 'nm-res-bio',
-                                                                                          'nm-res-syb', 'nm-res-ari'):
+                            if description['line_number'] == total_line and file_type in linear_mr_file_types:
                                 continue
                             err_lines.append(description['line_number'])
                             err += f"[Syntax error] line {description['line_number']}:{description['column_position']} {description['message']}\n"
@@ -12258,10 +12302,13 @@ class NmrDpUtility:
             return CharmmCRDReader(verbose, self.__lfh, None, None, None, None, None,
                                    self.__ccU, self.__csStat)
         if file_type == 'nm-res-ari':
-            reader = AriaMRReader(verbose, self.__lfh, None, None, None, None, None,
+            return AriaMRReader(verbose, self.__lfh, None, None, None, None, None,
+                                self.__ccU, self.__csStat, self.__nefT,
+                                reasons)
+        if file_type == 'nm-res-noa':
+            return CyanaNOAReader(verbose, self.__lfh, None, None, None, None, None,
                                   self.__ccU, self.__csStat, self.__nefT,
                                   reasons)
-            return reader
 
         return None
 
@@ -12318,6 +12365,8 @@ class NmrDpUtility:
             pass
         elif file_type == 'nm-res-ari':
             pass
+        elif file_type == 'nm-res-noa':
+            pass
         else:
             return False
 
@@ -12329,7 +12378,6 @@ class NmrDpUtility:
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
         amber_file_type = file_type == 'nm-res-amb'
         gromacs_file_type = file_type in ('nm-res-gro', 'nm-aux-gro')
-        linear_mr_file_types = ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-syb')
 
         xplor_missing_end = xplor_file_type and err_message.startswith(xplor_missing_end_err_msg)
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
@@ -13309,7 +13357,8 @@ class NmrDpUtility:
 
             for test_file_type in ['nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-aux-amb', 'nm-res-cya',
                                    'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro', 'nm-res-dyn',
-                                   'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-aux-cha', 'nm-res-ari']:
+                                   'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-aux-cha', 'nm-res-ari',
+                                   'nm-res-noa']:
 
                 if test_file_type == file_type:
                     continue
@@ -13639,6 +13688,8 @@ class NmrDpUtility:
             pass
         elif file_type == 'nm-res-ari':
             pass
+        elif file_type == 'nm-res-noa':
+            pass
         else:
             return False
 
@@ -13657,7 +13708,6 @@ class NmrDpUtility:
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
         amber_file_type = file_type == 'nm-res-amb'
         gromacs_file_type = file_type in ('nm-res-gro', 'nm-aux-gro')
-        linear_mr_file_types = ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-syb')
 
         xplor_missing_end = xplor_file_type and err_message.startswith(xplor_missing_end_err_msg)
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
@@ -14169,7 +14219,7 @@ class NmrDpUtility:
 
             if listener is not None:
                 if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-dyn',
-                                 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari'):
+                                 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari', 'nm-res-noa'):
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
@@ -14243,7 +14293,7 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cns')
 
-            is_valid |= is_valid
+            is_valid |= _is_valid
             agreed_w_cns = _is_valid
             err += _err
             if _genuine_type is not None:
@@ -14256,7 +14306,7 @@ class NmrDpUtility:
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-xpl',
                                                                     agreed_w_cns=agreed_w_cns)
 
-            is_valid |= is_valid
+            is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -14267,7 +14317,7 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-amb')
 
-            is_valid |= is_valid
+            is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -14278,19 +14328,7 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-amb')
 
-            is_valid |= is_valid
-            err += _err
-            if _genuine_type is not None:
-                genuine_type.append(_genuine_type)
-            valid_types.update(_valid_types)
-            possible_types.update(_possible_types)
-
-        # prevent 'nm-pea-any' occasionally matches with 'nm-res-cya' (DAOTHER-9425)
-        if (not is_valid or multiple_check) and file_type not in ('nm-res-cya', 'nm-pea-any'):
-            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cya')
-
-            is_valid |= is_valid
+            is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -14301,7 +14339,7 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-ros')
 
-            is_valid |= is_valid
+            is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -14312,7 +14350,7 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-bio')
 
-            is_valid |= is_valid
+            is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -14323,7 +14361,7 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-gro')
 
-            is_valid |= is_valid
+            is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -14334,7 +14372,7 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-gro')
 
-            is_valid |= is_valid
+            is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -14345,7 +14383,7 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-dyn')
 
-            is_valid |= is_valid
+            is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -14356,7 +14394,7 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-syb')
 
-            is_valid |= is_valid
+            is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -14367,7 +14405,7 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-isd')
 
-            is_valid |= is_valid
+            is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -14379,7 +14417,7 @@ class NmrDpUtility:
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cha',
                                                                     agreed_w_cns=agreed_w_cns)
 
-            is_valid |= is_valid
+            is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -14390,11 +14428,36 @@ class NmrDpUtility:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-ari')
 
-            is_valid |= is_valid
+            is_valid |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
             valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-noa':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-noa')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        # prevent 'nm-pea-any' occasionally matches with 'nm-res-cya' (DAOTHER-9425)
+        if (not is_valid or multiple_check) and file_type not in ('nm-res-cya', 'nm-pea-any'):
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cya')
+
+            if len(valid_types) == 0:
+                is_valid |= _is_valid
+                err += _err
+                if _genuine_type is not None:
+                    genuine_type.append(_genuine_type)
+                valid_types.update(_valid_types)
+
             possible_types.update(_possible_types)
 
         if len(genuine_type) != 1:
@@ -14542,8 +14605,6 @@ class NmrDpUtility:
         if self.__combined_mode or not self.__remediation_mode:
             return True
 
-        linear_mr_file_types = ('nm-res-cya', 'nm-res-ros', 'nm-res-bio', 'nm-res-syb')
-
         ar_file_path_list = 'atypical_restraint_file_path_list'
 
         if ar_file_path_list not in self.__inputParamDict:
@@ -14680,7 +14741,7 @@ class NmrDpUtility:
             for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
                                'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
                                'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari',
-                               'nm-res-sax'):
+                               'nm-res-noa', 'nm-res-sax'):
 
                 sel_res_file = src_basename + f'-selected-as-res-{_file_type[-3:]}.mr'
 
@@ -15454,7 +15515,7 @@ class NmrDpUtility:
                         for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
                                            'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
                                            'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari',
-                                           'nm-res-sax'):
+                                           'nm-res-noa', 'nm-res-sax'):
 
                             sel_res_file = dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
@@ -15838,7 +15899,7 @@ class NmrDpUtility:
                     for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
                                        'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
                                        'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari',
-                                       'nm-res-sax'):
+                                       'nm-res-noa', 'nm-res-sax'):
 
                         sel_res_file = dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
@@ -16191,7 +16252,7 @@ class NmrDpUtility:
                         for _file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-amb', 'nm-res-cya',
                                            'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-res-dyn',
                                            'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-res-ari',
-                                           'nm-res-sax'):
+                                           'nm-res-noa', 'nm-res-sax'):
 
                             sel_res_file = _dst_file + f'-selected-as-res-{_file_type[-3:]}'
 
@@ -16496,7 +16557,7 @@ class NmrDpUtility:
                                       'nm-res-amb', 'nm-aux-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl',
                                       'nm-res-oth', 'nm-res-ros', 'nm-res-bio', 'nm-res-gro', 'nm-aux-gro',
                                       'nm-res-dyn', 'nm-res-syb', 'nm-res-isd', 'nm-res-cha', 'nm-aux-cha',
-                                      'nm-res-ari', 'nm-res-sax']:
+                                      'nm-res-ari', 'nm-res-noa', 'nm-res-sax']:
                         if file_type in mr_part_path:
                             file_path = mr_part_path[file_type]
                             if 'original_file_name' in mr_part_path and mr_part_path['original_file_name'] is not None:
@@ -34372,6 +34433,99 @@ class NmrDpUtility:
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (ARIA) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-res-noa':
+                reader = CyanaNOAReader(self.__verbose, self.__lfh,
+                                        self.__representative_model_id,
+                                        self.__representative_alt_id,
+                                        self.__mr_atom_name_mapping,
+                                        self.__cR, self.__caC,
+                                        self.__ccU, self.__csStat, self.__nefT,
+                                        reasons)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+                __list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None and _reasons is not None:
+
+                        reader = CyanaNOAReader(self.__verbose, self.__lfh,
+                                                self.__representative_model_id,
+                                                self.__representative_alt_id,
+                                                self.__mr_atom_name_mapping,
+                                                self.__cR, self.__caC,
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                None)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                        if listener is not None:
+                            reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(listener)
+
+                        if 'dist_restraint' in content_subtype.keys():
+                            reasons_dict[file_type] = reasons
+
+                        if 'model_chain_id_ext' in reasons:
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+
+                        reader = CyanaNOAReader(self.__verbose, self.__lfh,
+                                                self.__representative_model_id,
+                                                self.__representative_alt_id,
+                                                self.__mr_atom_name_mapping,
+                                                self.__cR, self.__caC,
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
+
+                    deal_res_warn_message(listener)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    # support content subtype change during MR validation with the coordinates
+                    input_source.setItemValue('content_subtype', listener.getContentSubtype())
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR restraint file (CYANA NOA) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()

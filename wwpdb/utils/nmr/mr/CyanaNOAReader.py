@@ -1,9 +1,9 @@
 ##
-# DynamoMRReader.py
+# CyanaNOAReader.py
 #
 # Update:
 ##
-""" A collection of classes for parsing DYNAMO/PALES/TALOS MR files.
+""" A collection of classes for parsing CYANA NOA files.
 """
 import sys
 import os
@@ -13,9 +13,9 @@ from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMo
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-    from wwpdb.utils.nmr.mr.DynamoMRLexer import DynamoMRLexer
-    from wwpdb.utils.nmr.mr.DynamoMRParser import DynamoMRParser
-    from wwpdb.utils.nmr.mr.DynamoMRParserListener import DynamoMRParserListener
+    from wwpdb.utils.nmr.mr.CyanaNOALexer import CyanaNOALexer
+    from wwpdb.utils.nmr.mr.CyanaNOAParser import CyanaNOAParser
+    from wwpdb.utils.nmr.mr.CyanaNOAParserListener import CyanaNOAParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -27,9 +27,9 @@ try:
 except ImportError:
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
-    from nmr.mr.DynamoMRLexer import DynamoMRLexer
-    from nmr.mr.DynamoMRParser import DynamoMRParser
-    from nmr.mr.DynamoMRParserListener import DynamoMRParserListener
+    from nmr.mr.CyanaNOALexer import CyanaNOALexer
+    from nmr.mr.CyanaNOAParser import CyanaNOAParser
+    from nmr.mr.CyanaNOAParserListener import CyanaNOAParserListener
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID,
@@ -40,8 +40,8 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
-class DynamoMRReader:
-    """ Accessor methods for parsing DYNAMO/PALES/TALOS MR files.
+class CyanaNOAReader:
+    """ Accessor methods for parsing CYANA NOA files.
     """
 
     def __init__(self, verbose=True, log=sys.stdout,
@@ -53,6 +53,7 @@ class DynamoMRReader:
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
+        self.__sll_pred = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
         self.__maxParserErrorReport = MAX_ERROR_REPORT
@@ -91,10 +92,13 @@ class DynamoMRReader:
     def setParserMaxErrorReport(self, maxErrReport):
         self.__maxParserErrorReport = maxErrReport
 
+    def setSllPredMode(self, ssl_pred):
+        self.__sll_pred = ssl_pred
+
     def parse(self, mrFilePath, cifFilePath=None, isFilePath=True,
               createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
-        """ Parse DYNAMO/PALES/TALOS MR file.
-            @return: DynamoMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
+        """ Parse CYANA NOA file.
+            @return: CyanaNOAParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
         ifh = None
@@ -106,7 +110,7 @@ class DynamoMRReader:
 
                 if not os.access(mrFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"DynamoMRReader.parse() {mrFilePath} is not accessible.\n")
+                        self.__lfh.write(f"CyanaNOAReader.parse() {mrFilePath} is not accessible.\n")
                     return None, None, None
 
                 ifh = open(mrFilePath, 'r')  # pylint: disable=consider-using-with
@@ -117,7 +121,7 @@ class DynamoMRReader:
 
                 if mrString is None or len(mrString) == 0:
                     if self.__verbose:
-                        self.__lfh.write("DynamoMRReader.parse() Empty string.\n")
+                        self.__lfh.write("CyanaNOAReader.parse() Empty string.\n")
                     return None, None, None
 
                 input = InputStream(mrString)
@@ -125,7 +129,7 @@ class DynamoMRReader:
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"DynamoMRReader.parse() {cifFilePath} is not accessible.\n")
+                        self.__lfh.write(f"CyanaNOAReader.parse() {cifFilePath} is not accessible.\n")
                     return None, None, None
 
                 if self.__cR is None:
@@ -133,7 +137,7 @@ class DynamoMRReader:
                     if not self.__cR.parse(cifFilePath):
                         return None, None, None
 
-            lexer = DynamoMRLexer(input)
+            lexer = CyanaNOALexer(input)
             lexer.removeErrorListeners()
 
             lexer_error_listener = LexerErrorListener(mrFilePath, maxErrorReport=self.__maxLexerErrorReport)
@@ -151,16 +155,16 @@ class DynamoMRReader:
                 lexer_error_listener = LexerErrorListener(mrFilePath, maxErrorReport=self.__maxLexerErrorReport)
 
             stream = CommonTokenStream(lexer)
-            parser = DynamoMRParser(stream)
-            # try with simpler/faster SLL prediction mode
-            parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
+            parser = CyanaNOAParser(stream)
+            if not isFilePath or self.__sll_pred:
+                parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)
-            tree = parser.dynamo_mr()
+            tree = parser.cyana_noa()
 
             walker = ParseTreeWalker()
-            listener = DynamoMRParserListener(self.__verbose, self.__lfh,
+            listener = CyanaNOAParserListener(self.__verbose, self.__lfh,
                                               self.__representativeModelId,
                                               self.__representativeAltId,
                                               self.__mrAtomNameMapping,
@@ -197,13 +201,13 @@ class DynamoMRReader:
 
         except IOError as e:
             if self.__verbose:
-                self.__lfh.write(f"+DynamoMRReader.parse() ++ Error - {str(e)}\n")
+                self.__lfh.write(f"+CyanaNOAReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
             # pylint: disable=unreachable
             """ debug code
         except Exception as e:
             if self.__verbose and isFilePath:
-                self.__lfh.write(f"+DynamoMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
+                self.__lfh.write(f"+CyanaNOAReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
             return None, None, None
             """
         finally:
@@ -212,33 +216,7 @@ class DynamoMRReader:
 
 
 if __name__ == "__main__":
-    reader = DynamoMRReader(True)
+    reader = CyanaNOAReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6o8t/6o8t-corrected.mr',
-                 '../../tests-nmr/mock-data-remediation/6o8t/6o8t.cif')
-
-    reader = DynamoMRReader(True)
-    reader.setDebugMode(True)
-    reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/6ry9/WF1a-1-noes.tab-corrected',
-                     '../../tests-nmr/mock-data-remediation/6ry9/6ry9.cif')
-
-    reader = DynamoMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/1qvx/1qvx-trimmed-div_dst-div_src.mr',
-                 '../../tests-nmr/mock-data-remediation/1qvx/1qvx.cif')
-
-    reader = DynamoMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2ju5/2ju5-corrected-div_dst.mr',
-                 '../../tests-nmr/mock-data-remediation/2ju5/2ju5.cif')
-
-    reader = DynamoMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/5kqj/ANT2_FINALTAB.tab',
-                 '../../tests-nmr/mock-data-remediation/5kqj/5kqj.cif')
-
-    reader = DynamoMRReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/7kn0/dObsA_ngel2.tab',
-                 '../../tests-nmr/mock-data-remediation/7kn0/7kn0.cif')
+    reader.parse('../../tests-nmr/mock-data-remediation/2n07/2n07-trimmed-div_dst.mr',
+                 '../../tests-nmr/mock-data-remediation/2n07/2n07.cif')

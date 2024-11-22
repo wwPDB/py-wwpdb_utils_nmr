@@ -87,6 +87,7 @@
 # 07-Nov-2024  M. Yokochi - add 'nm-pea-ccp', 'nm-pea-pip', 'nm-pea-vie', 'nm-pea-spa', 'nm-pea-top', and 'nm-pea-xea' file types for NMR spectral peak remediation
 # 14-Nov-2024  M. Yokochi - add 'nm-aux-cha' file type for CHARMM extended CRD (CARD) file acting as CHARMM topology definition
 # 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
+# 22-Nov-2024  M. Yokochi - add 'nm-res-noa' file type for CYANA NOA (NOE Assignment) file
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1761,12 +1762,13 @@ class NmrDpReportInputSource:
                       'stats_of_exptl_data')
         self.file_types = ('pdbx',
                            'nef', 'nmr-star',
-                           'nm-aux-amb', 'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl',
-                           'nm-res-oth', 'nm-res-ros', 'nm-res-bio', 'nm-aux-gro', 'nm-res-gro',
-                           'nm-res-dyn', 'nm-res-syb', 'nm-res-isd', 'nm-aux-cha', 'nm-res-cha',
-                           'nm-res-ari', 'nm-res-sax', 'nm-res-mr',
-                           'nm-pea-ccp', 'nm-pea-pip', 'nm-pea-vie', 'nm-pea-spa', 'nm-pea-top',
-                           'nm-pea-xea', 'nm-pea-any')
+                           'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro',
+                           'nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha', 'nm-res-cns',
+                           'nm-res-cya', 'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-mr',
+                           'nm-res-noa', 'nm-res-oth', 'nm-res-ros', 'nm-res-sax', 'nm-res-syb',
+                           'nm-res-xpl',
+                           'nm-pea-any', 'nm-pea-ccp', 'nm-pea-pip', 'nm-pea-spa', 'nm-pea-top',
+                           'nm-pea-vie', 'nm-pea-xea')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',
                               'nmr-chemical-shifts', 'nmr-restraints', 'nmr-peaks')

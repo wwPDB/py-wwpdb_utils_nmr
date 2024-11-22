@@ -215,9 +215,57 @@ NmrDpUtility class can absorb differences between NMR-STAR file and CIF formatte
     util.addOutput(name='nmr_cif_file_path', value=path_to_pdbx_nmr_data_file, type='file')
 ```
 
-## Schema of report file
+## Schema of NMR data processing report file
 
 [NmrDpReport class](NmrDpReport.py) handles writing and reading the report file. Document structure of the report file is defined in [JSON Schema file](../tests-nmr/json-schema/nmr-data-procesing-report-schema-v4.json).
+
+## Standalone mode
+
+### Requirements
+
+- python 3.6 or later
+
+- pip packages:
+	- pynmrstar (3.2.0 or later)
+	- wwpdb.utils.align
+	- munkres
+	- mmcif
+	- numpy
+	- packaging
+	- rmsd
+	- chardet
+	- scikit-learn
+	- antlr4-python3-runtime
+	- typing_extensions
+	- striprtf
+
+- If your Python version is less than 3.10, downgrade urllib3 from v2 to v1. Otherwise, [the urllib3 v2 requires OpenSSL 1.1.1+](https://github.com/urllib3/urllib3/issues/2168).
+```bash
+    pip install urllib3==1.26.18  # Only for Python 3.6, 3.7, 3.8, and 3.9 users.
+```
+
+### How to set up
+
+1. Set enviromnent variable PYTHONPATH 
+```bash
+    export PYTHONPATH=$PYTHONPATH:(path to wwpdb/utils)  # Required only the first time.
+```
+
+2. Update CCD periodically
+```bash
+    cd wwpdb/utils/nmr ; ./update_ccd.sh ; ./deploy_ccd.sh  # You must run this command every Wednesday UTC+00:00.
+```
+
+3. Test importing modules
+```python
+    from nmr.NmrDpUtility import NmrDpUtility
+```
+
+4. Run unit tests in wwpdb/utils/tests-nmr
+```bash
+   python test_ChemCompUtil.py
+   python test_BMRBChemShiftStat.py  # Run twice test_BMRBChemShiftStat.py just in case.
+```
 
 ## Appendix
 
@@ -232,7 +280,7 @@ nm-aux-amb|nm-aux-amb|nmr-restraints/any|Topology file in AMBER format
 nm-res-amb|nm-res-amb|nmr-restraints/amber|Restraint file in AMBER format
 nm-res-ari|nm-res-ari|nmr-restraints/aria|Restraint file in ARIA format
 nm-res-bio|nm-res-bio|nmr-restraints/biosym|Restraint file in BIOSYM format
-nm-aux-cha|nm-aux-cha|nmr-restraints/any|Topology file in CHARMM format (aka. CHARMM extended CRD)
+nm-aux-cha|not applicable|nmr-restraints/any|Topology file in CHARMM format (aka. CHARMM extended CRD)
 nm-res-cha|nm-res-cha|nmr-restraints/charmm|Restraint file in CHARMM format
 nm-res-cns|nm-res-cns|nmr-restraints/cns|Restraint file in CNS format
 nm-res-cya|nm-res-cya|nmr-restraints/cyana|Restraint file in CYANA format
@@ -240,6 +288,7 @@ nm-res-dyn|nm-res-dyn|nmr-restraints/dynamo|Restraint file in DYNAMO/PALES/TALOS
 nm-aux-gro|nm-aux-gro|nmr-restraints/any|Topology file in GROMACS format
 nm-res-gro|nm-res-gro|nmr-restraints/gromacs|Restraint file in GROMACS format
 nm-res-isd|nm-res-isd|nmr-restraints/isd|Restraint file in ISD format
+nm-res-noa|not applicable|nmr-restraints/cyana|Restraint file in CYANA NOA format
 nm-res-ros|nm-res-ros|nmr-restraints/rosetta|Restraint file in ROSETTA format
 nm-res-syb|nm-res-syb|nmr-restraints/sybyl|Restraint file in SYBYL format
 nm-res-xpl|nm-res-xpl|nmr-restraints/xplor-nih|Restraint file in XPLOR-NIH format

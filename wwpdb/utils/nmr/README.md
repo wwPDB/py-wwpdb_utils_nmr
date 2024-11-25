@@ -1,6 +1,6 @@
 ﻿# NmrDpUtility - NMR data processing utility for OneDep system
 
-[NmrDpUtility class](NmrDpUtility.py) is backend tool of OneDep system utilized for NMR deposition and validation. It accepts a coordinate file and various NMR data files, and generates combined NMR data file in either NEF or NMR-STAR format. Data processing status is reported through a JSON file. The software package can run outside of the OneDep system, called as standalone mode, for which see [instruction](../tests-nmr/README.md) for details.
+[NmrDpUtility class](NmrDpUtility.py) is backend tool of OneDep system utilized for NMR deposition and validation. It accepts a coordinate file and various NMR data files, and generates combined NMR data file in either NEF or NMR-STAR format. Data processing status is reported through a JSON file. The software package can run outside of the OneDep system, called as standalone mode, for which see [instruction](#standalone-mode) for details.
 
 ## How to use
 

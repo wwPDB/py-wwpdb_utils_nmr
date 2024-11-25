@@ -97,8 +97,8 @@ class CharmmMRReader:
     def setParserMaxErrorReport(self, maxErrReport):
         self.__maxParserErrorReport = maxErrReport
 
-    def setSllPredMode(self, ssl_pred):
-        self.__sll_pred = ssl_pred
+    def setSllPredMode(self, sll_pred):
+        self.__sll_pred = sll_pred
 
     def parse(self, mrFilePath, cifFilePath=None, crdFilePath=None, isFilePath=True,
               createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
@@ -204,6 +204,8 @@ class CharmmMRReader:
                     if 'input' in description:
                         self.__lfh.write(f"{description['input']}\n")
                         self.__lfh.write(f"{description['marker']}\n")
+            elif messageList is None and cifFilePath is None:
+                parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
 
             if self.__verbose:
                 if listener.warningMessage is not None and len(listener.warningMessage) > 0:
@@ -230,6 +232,15 @@ class CharmmMRReader:
 
 
 if __name__ == "__main__":
+    reader = CharmmMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2bgo/2bgo-corrected.mr', None)
+
+    reader = CharmmMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2bgo/2bgo-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2bgo/2bgo.cif')
+
     reader = CharmmMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2ms6/2ms6-corrected.mr',

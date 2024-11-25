@@ -158,6 +158,8 @@ class CharmmCRDReader:
                     if 'input' in description:
                         self.__lfh.write(f"{description['input']}\n")
                         self.__lfh.write(f"{description['marker']}\n")
+            elif messageList is None and cifFilePath is None:
+                parser_error_listener = ParserErrorListener(ptFilePath, maxErrorReport=self.__maxParserErrorReport)
 
             if self.__verbose:
                 if listener.warningMessage is not None and len(listener.warningMessage) > 0:

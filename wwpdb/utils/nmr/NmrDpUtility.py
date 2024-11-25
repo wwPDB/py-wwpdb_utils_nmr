@@ -11270,6 +11270,7 @@ class NmrDpUtility:
             try:
 
                 if file_type in parsable_mr_file_types:
+
                     sll_pred = False
                     if file_path in self.__sll_pred_holder and file_type in self.__sll_pred_holder[file_path]:
                         sll_pred = self.__sll_pred_holder[file_path][file_type]
@@ -12780,11 +12781,11 @@ class NmrDpUtility:
 
                     test_reader = self.__getSimpleMrPtFileReader('nm-res-gro', False)
 
-                    _, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
+                    _, _parser_err_listener, _lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
 
-                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    _has_lexer_error = _lexer_err_listener is not None and _lexer_err_listener.getMessageList() is not None
 
-                    if not has_lexer_error:
+                    if not _has_lexer_error:
 
                         if self.__mr_debug:
                             self.__lfh.write('DIV-MR-EXIT #3-6\n')
@@ -12793,11 +12794,11 @@ class NmrDpUtility:
 
                     test_reader = self.__getSimpleMrPtFileReader('nm-aux-gro', False)
 
-                    _, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
+                    _, _parser_err_listener, _lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
 
-                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    _has_lexer_error = _lexer_err_listener is not None and _lexer_err_listener.getMessageList() is not None
 
-                    if not has_lexer_error:
+                    if not _has_lexer_error:
 
                         if self.__mr_debug:
                             self.__lfh.write('DIV-MR-EXIT #3-7\n')
@@ -13046,7 +13047,6 @@ class NmrDpUtility:
                     if err_column_position == 0 and file_type not in linear_mr_file_types:
 
                         for test_file_type in linear_mr_file_types:
-
                             test_reader = self.__getSimpleMrPtFileReader(test_file_type, False)
 
                             listener, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
@@ -13213,6 +13213,9 @@ class NmrDpUtility:
         if div_src:
             os.remove(file_path)
 
+        if self.__mr_debug:
+            self.__lfh.write(f'{valid_types} {possible_types}\n')
+
         os.rename(div_try_file, div_dst_file)
 
         file_path = div_dst_file
@@ -13233,6 +13236,9 @@ class NmrDpUtility:
                 file_type = 'nm-res-xpl'
             if set_valid_types == {'nm-res-cha', 'nm-res-cns', 'nm-res-xpl'}:
                 file_type = 'nm-res-cha'
+
+        if self.__mr_debug:
+            self.__lfh.write(f' -> {file_type}\n')
 
         self.__testFormatValidityOfLegacyMr(file_path, file_type, src_path, offset)
 
@@ -13350,12 +13356,12 @@ class NmrDpUtility:
 
                 test_reader = self.__getSimpleMrPtFileReader(test_file_type, False)
 
-                _, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
+                _, _parser_err_listener, _lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
 
-                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                _has_lexer_error = _lexer_err_listener is not None and _lexer_err_listener.getMessageList() is not None
+                _has_parser_error = _parser_err_listener is not None and _parser_err_listener.getMessageList() is not None
 
-                if not has_lexer_error and not has_parser_error:
+                if not _has_lexer_error and not _has_parser_error:
 
                     if self.__mr_debug:
                         self.__lfh.write('PEEL-MR-EXIT #2\n')
@@ -13405,11 +13411,12 @@ class NmrDpUtility:
                 has_content = bool(listener is not None and len(listener.getContentSubtype()) > 0)
 
                 if has_lexer_error or has_parser_error or not has_content:
+
                     test_reader = self.__getSimpleMrPtFileReader('nm-res-xpl', False)
 
-                    _, _, lexer_err_listener = test_reader.parse(prev_input, None, isFilePath=False)
+                    _, _parser_err_listener, _lexer_err_listener = test_reader.parse(prev_input, None, isFilePath=False)
 
-                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    _has_lexer_error = _lexer_err_listener is not None and _lexer_err_listener.getMessageList() is not None
 
                     if not has_lexer_error:
                         err_line_number -= 1
@@ -13610,6 +13617,9 @@ class NmrDpUtility:
         if j3 == 0:
             os.remove(div_try_file)
 
+        if self.__mr_debug:
+            self.__lfh.write(f'{valid_types} {possible_types}\n')
+
         file_path = div_dst_file
 
         if len_valid_types == 1:
@@ -13628,6 +13638,9 @@ class NmrDpUtility:
                 file_type = 'nm-res-xpl'
             if set_valid_types == {'nm-res-cha', 'nm-res-cns', 'nm-res-xpl'}:
                 file_type = 'nm-res-cha'
+
+        if self.__mr_debug:
+            self.__lfh.write(f' -> {file_type}\n')
 
         self.__testFormatValidityOfLegacyMr(file_path, file_type, src_path, offset)
 
@@ -13870,7 +13883,7 @@ class NmrDpUtility:
                         if reader is None:
                             reader = self.__getSimpleMrPtFileReader(file_type, False)
 
-                        _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
+                        _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
                         has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
 
@@ -14140,6 +14153,9 @@ class NmrDpUtility:
 
         os.rename(div_try_file, div_dst_file)
 
+        if self.__mr_debug:
+            self.__lfh.write(f'{valid_types} {possible_types}\n')
+
         file_path = div_dst_file
 
         if len_valid_types == 1:
@@ -14158,6 +14174,9 @@ class NmrDpUtility:
                 file_type = 'nm-res-xpl'
             if set_valid_types == {'nm-res-cha', 'nm-res-cns', 'nm-res-xpl'}:
                 file_type = 'nm-res-cha'
+
+        if self.__mr_debug:
+            self.__lfh.write(f' -> {file_type}\n')
 
         self.__testFormatValidityOfLegacyMr(file_path, file_type, src_path, offset)
 
@@ -14273,10 +14292,9 @@ class NmrDpUtility:
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
-        if (not is_valid or multiple_check) and file_type != 'nm-res-cha':
+        if (not is_valid or 'Syntax error' in err) and file_type != 'nm-res-cha':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cha',
-                                                                    agreed_w_cns=agreed_w_cns)
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cha')
 
             is_valid |= _is_valid
             err += _err
@@ -14384,17 +14402,6 @@ class NmrDpUtility:
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
-        if (not is_valid or multiple_check) and file_type != 'nm-res-noa':
-            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-noa')
-
-            is_valid |= _is_valid
-            err += _err
-            if _genuine_type is not None:
-                genuine_type.append(_genuine_type)
-            valid_types.update(_valid_types)
-            possible_types.update(_possible_types)
-
         if (not is_valid or multiple_check) and file_type != 'nm-res-ros':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-ros')
@@ -14409,6 +14416,17 @@ class NmrDpUtility:
         if (not is_valid or multiple_check) and file_type != 'nm-res-syb':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-syb')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if not is_valid and file_type != 'nm-res-noa':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-noa')
 
             is_valid |= _is_valid
             err += _err
@@ -15541,6 +15559,9 @@ class NmrDpUtility:
                     len_valid_types = len(valid_types)
                     len_possible_types = len(possible_types)
 
+                    if self.__mr_debug:
+                        self.__lfh.write(f'{valid_types} {possible_types}\n')
+
                     if len_valid_types == 0 and len_possible_types == 0:
 
                         ins_msg = ''
@@ -16251,6 +16272,9 @@ class NmrDpUtility:
 
                         len_valid_types = len(valid_types)
                         len_possible_types = len(possible_types)
+
+                        if self.__mr_debug:
+                            self.__lfh.write(f'{valid_types} {possible_types}\n')
 
                         if len_valid_types == 0 and len_possible_types == 0:
 
@@ -37866,7 +37890,7 @@ class NmrDpUtility:
                 if len(rci) > 0:
                     ent['random_coil_index'] = rci
 
-            if file_type == 'nmr-star' and self.__star_data_type[file_list_id] != 'Loop':
+            if file_type == 'nmr-star' and self.__star_data_type[file_list_id] == 'Entry':
                 lp_category = self.lp_categories[file_type]['chem_shift']
                 sf = self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
                 lp = next(lp for lp in sf.loops if lp.category == lp_category)
@@ -38772,7 +38796,7 @@ class NmrDpUtility:
                     if len(range_of_vals) > 1:
                         ent['histogram_of_discrepancy'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': dist_ann}
 
-            if file_type == 'nmr-star' and self.__star_data_type[file_list_id] != 'Loop':
+            if file_type == 'nmr-star' and self.__star_data_type[file_list_id] == 'Entry':
                 lp_category = self.lp_categories[file_type]['dist_restraint']
                 sf = self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
                 lp = next(lp for lp in sf.loops if lp.category == lp_category)

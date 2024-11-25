@@ -30,7 +30,7 @@ where **setSource()** and **setLog()** are methods to add unified NMR data file 
 
 3. Add input file path and parameters
 
-Any input file paths and parameters should be set through *addInput()* method:
+Any input file paths and parameters should be set through **addInput()** method:
 
 ```python
    def addInput(self, name=None, value=None, type='file')
@@ -280,7 +280,7 @@ nm-aux-amb|nm-aux-amb|nmr-restraints/any|Topology file in AMBER format
 nm-res-amb|nm-res-amb|nmr-restraints/amber|Restraint file in AMBER format
 nm-res-ari|nm-res-ari|nmr-restraints/aria|Restraint file in ARIA format
 nm-res-bio|nm-res-bio|nmr-restraints/biosym|Restraint file in BIOSYM format
-nm-aux-cha|not applicable|nmr-restraints/any|Topology file in CHARMM format (aka. CHARMM extended CRD)
+nm-aux-cha|**not applicable**|nmr-restraints/any|Topology file in CHARMM format (aka. CHARMM extended CRD)
 nm-res-cha|nm-res-cha|nmr-restraints/charmm|Restraint file in CHARMM format
 nm-res-cns|nm-res-cns|nmr-restraints/cns|Restraint file in CNS format
 nm-res-cya|nm-res-cya|nmr-restraints/cyana|Restraint file in CYANA format
@@ -288,11 +288,11 @@ nm-res-dyn|nm-res-dyn|nmr-restraints/dynamo|Restraint file in DYNAMO/PALES/TALOS
 nm-aux-gro|nm-aux-gro|nmr-restraints/any|Topology file in GROMACS format
 nm-res-gro|nm-res-gro|nmr-restraints/gromacs|Restraint file in GROMACS format
 nm-res-isd|nm-res-isd|nmr-restraints/isd|Restraint file in ISD format
-nm-res-noa|not applicable|nmr-restraints/cyana|Restraint file in CYANA NOA format
+nm-res-noa|**not applicable**|nmr-restraints/cyana|Restraint file in CYANA NOA format
 nm-res-ros|nm-res-ros|nmr-restraints/rosetta|Restraint file in ROSETTA format
 nm-res-syb|nm-res-syb|nmr-restraints/sybyl|Restraint file in SYBYL format
 nm-res-xpl|nm-res-xpl|nmr-restraints/xplor-nih|Restraint file in XPLOR-NIH format
 nm-res-oth|nm-res-oth|nmr-restraints/any|Restraint file in other format
-nm-res-mr|not applicable|nmr-restraints/pdb-mr|Restraint file in PDB-MR format
-nm-res-sax|not applicable|nmr-restraints/any|SAX CSV file
+nm-res-mr|**not applicable**|nmr-restraints/pdb-mr|Restraint file in PDB-MR format
+nm-res-sax|**not applicable**|nmr-restraints/any|SAX CSV file
 nm-pea-any|nm-pea-any|nmr-peaks/any|Any spectral peak list file

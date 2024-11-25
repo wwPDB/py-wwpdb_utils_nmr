@@ -92,8 +92,8 @@ class CnsMRReader:
     def setParserMaxErrorReport(self, maxErrReport):
         self.__maxParserErrorReport = maxErrReport
 
-    def setSllPredMode(self, ssl_pred):
-        self.__sll_pred = ssl_pred
+    def setSllPredMode(self, sll_pred):
+        self.__sll_pred = sll_pred
 
     def parse(self, mrFilePath, cifFilePath=None, isFilePath=True,
               createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):

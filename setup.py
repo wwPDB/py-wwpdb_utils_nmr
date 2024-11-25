@@ -42,14 +42,14 @@ setup(
     #
     # munkres 1.0.12 last to support python 2. Developers did not tag properly
     install_requires=['wwpdb.utils.config ~= 0.34', 'wwpdb.utils.align',
-                      "pynmrstar ~= 2.6; python_version < '3'",
-                      "pynmrstar; python_version >= '3'",
-                      "munkres==1.0.12; python_version == '2.7'",
+                      # "pynmrstar ~= 2.6; python_version < '3'",
+                      "pynmrstar >= 3.2; python_version >= '3'",
+                      # "munkres==1.0.12; python_version == '2.7'",
                       "munkres; python_version >= '3'",
                       'mmcif', 'numpy', "scikit-learn",
                       "rmsd", "packaging", "chardet",
                       "typing_extensions",  # typing_extensions was missing from rmsd 1.5 package
-                      "antlr4-python2-runtime; python_version == '2.7'",
+                      # "antlr4-python2-runtime; python_version == '2.7'",
                       "antlr4-python3-runtime ~= 4.13.0; python_version >= '3'",
                       "striprtf"],
     packages=find_packages(exclude=['wwpdb.utils.tests-nmr', 'wwpdb.utils.tests-nmr-tox', 'mock-data']),

@@ -1,8 +1,8 @@
 wwpdb.utils.config
 wwpdb.utils.align
-pynmrstar ~= 2.6; python_version < '3'
-pynmrstar; python_version >= '3'
-munkres==1.0.12; python_version == '2.7'
+# pynmrstar ~= 2.6; python_version < '3'
+pynmrstar >= 3.2; python_version >= '3'
+# munkres==1.0.12; python_version == '2.7'
 munkres; python_version >= '3'
 mmcif
 numpy
@@ -10,7 +10,7 @@ packaging
 rmsd
 chardet
 scikit-learn
-antlr4-python2-runtime; python_version == '2.7'
+# antlr4-python2-runtime; python_version == '2.7'
 antlr4-python3-runtime; python_version >= '3'
 striprtf
 # typing_extensions was missing from rmsd 1.5.  Remove someday from here.

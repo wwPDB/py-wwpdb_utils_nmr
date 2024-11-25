@@ -14346,18 +14346,18 @@ class NmrDpUtility:
                 genuine_type.append(_genuine_type)
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
-        """ conflict with nm-res-cya (2kcp)
-        if (not is_valid or multiple_check) and file_type != 'nm-aux-cha':
-            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-cha')
-
-            is_valid |= _is_valid
-            err += _err
-            if _genuine_type is not None:
-                genuine_type.append(_genuine_type)
-            valid_types.update(_valid_types)
-            possible_types.update(_possible_types)
-        """
+        # """ conflict with nm-res-cya (2kcp)
+        # if (not is_valid or multiple_check) and file_type != 'nm-aux-cha':
+        #     _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+        #         self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-cha')
+        #
+        #     is_valid |= _is_valid
+        #     err += _err
+        #     if _genuine_type is not None:
+        #         genuine_type.append(_genuine_type)
+        #     valid_types.update(_valid_types)
+        #     possible_types.update(_possible_types)
+        # """
         if (not is_valid or multiple_check) and file_type != 'nm-res-dyn':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-dyn')

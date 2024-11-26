@@ -82,8 +82,7 @@ class mmCIFUtil:
     def GetValueAndItemByBlock(self, blockName, catName, ext=1):
         """ Get category values and item names
         """
-        dList = []
-        iList = []
+        dList, iList = [], []
         if blockName not in self.__dataMap:
             return dList, iList
         #

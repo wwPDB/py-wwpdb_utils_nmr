@@ -280,7 +280,7 @@ nm-aux-amb|nm-aux-amb|nmr-restraints/any|Topology file in AMBER format
 nm-res-amb|nm-res-amb|nmr-restraints/amber|Restraint file in AMBER format
 nm-res-ari|nm-res-ari|nmr-restraints/aria|Restraint file in ARIA format
 nm-res-bio|nm-res-bio|nmr-restraints/biosym|Restraint file in BIOSYM format
-nm-aux-cha|**not applicable**|nmr-restraints/any|Topology file in CHARMM format (aka. CHARMM extended CRD)
+nm-aux-cha|nm-aux-cha|nmr-restraints/any|Topology file in CHARMM format (aka. CHARMM extended CRD)
 nm-res-cha|nm-res-cha|nmr-restraints/charmm|Restraint file in CHARMM format
 nm-res-cns|nm-res-cns|nmr-restraints/cns|Restraint file in CNS format
 nm-res-cya|nm-res-cya|nmr-restraints/cyana|Restraint file in CYANA format

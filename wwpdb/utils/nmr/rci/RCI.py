@@ -6020,7 +6020,6 @@ class RCI:
         """
 
         sec_str_list = []
-
         for l_bmrb_to_aa_entry in self.__bmrb_to_aa_list:
             if l_bmrb_to_aa_entry[0] in self.__aa_names_full_all_CAP:
                 residue_num = l_bmrb_to_aa_entry[1]
@@ -6140,12 +6139,9 @@ class RCI:
 
                         if L_residue_number_found == 0 and self.__real_BMRB_first_res <= L_residue_number <= self.__real_BMRB_last_res\
                            and L_residue_number not in self.__excluded_residues:
-                            positive_found = 0
-                            negative_found = 0
-                            pos_neg_list_true = []
-                            pos_neg_list_abs = []
-                            pos_neg_list_true_ave = None
-                            pos_neg_list_abs_ave = None
+                            positive_found = negative_found = 0
+                            pos_neg_list_true, pos_neg_list_abs = [], []
+                            pos_neg_list_true_ave = pos_neg_list_abs_ave = None
                             for i in range(1, self.gap_limit + 1):
                                 if L_residue_number_found == 0:
                                     if positive_found != 1:
@@ -6233,13 +6229,11 @@ class RCI:
             ####################################################
             Real_first_residue = L_list[0][0]
             Real_last_residue = L_list[-1][0]
-            L_chem_shift_diff_list = []
-            L_chem_shift_diff_abs_list = []
+            L_chem_shift_diff_list, L_chem_shift_diff_abs_list = [], []
             Old_first_residue = Real_first_residue
             negative_switch = 0
             for L_number in range(0, (smooth_factor - N_terminus_smooth_factor)):
-                L_chem_shift_diff_list = []
-                L_chem_shift_diff_abs_list = []
+                L_chem_shift_diff_list, L_chem_shift_diff_abs_list = [], []
                 L_residue_number = L_list[L_number][0]
                 L_residue_name = L_list[L_number][1]
                 L_bmrb_shift = L_list[L_number][2]
@@ -6289,10 +6283,9 @@ class RCI:
                                         plus_done = 1
                         else:
                             minus_done = 1
-                N_chem_shift_diff_mean = None
+                N_chem_shift_diff_mean = N_chem_shift_diff_abs_mean = None
                 if len(L_chem_shift_diff_list) > 0:
                     N_chem_shift_diff_mean = lmean(L_chem_shift_diff_list)
-                N_chem_shift_diff_abs_mean = None
                 if len(L_chem_shift_diff_abs_list) > 0:
                     N_chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_list)
                 N_chem_shift_diff_len = len(L_chem_shift_diff_list)
@@ -6307,17 +6300,11 @@ class RCI:
             done = 0
             while not done:
                 if L_end <= last_residue - offset:  # For Ubiquitin
-                    L_smooth_list = []
-                    missing_chemshift = []
-                    bigger_missing = 0
-                    smaller_missing = 0
-                    new_end = 0
-                    new_start = 0
+                    L_smooth_list, missing_chemshift = [], []
+                    bigger_missing = smaller_missing = 0
+                    new_end = new_start = 0
 
-                    L_residue_number = None
-                    L_residue_name = None
-                    L_bmrb_shift = None
-                    L_simpred_shift = None
+                    L_residue_number = L_residue_name = L_bmrb_shift = L_simpred_shift = None
 
                     for L_number in residue_number_list[L_start:L_end]:
                         found_flag = 0
@@ -6327,12 +6314,10 @@ class RCI:
                                 found_flag = 1
                         if found_flag == 0:
                             missing_chemshift.append(L_number)
-                    more_smaller = 0
-                    more_bigger = 0
+                    more_smaller = more_bigger = 0
 
                     if len(L_smooth_list) == smooth_factor and smooth_factor != 0:
-                        L_chem_shift_diff_tmp_list = []
-                        L_chem_shift_diff_abs_tmp_list = []
+                        L_chem_shift_diff_tmp_list, L_chem_shift_diff_abs_tmp_list = [], []
                         L_residue_number = L_smooth_list[central_residue - 1][0]
                         L_residue_name = L_smooth_list[central_residue - 1][1]
                         L_bmrb_shift = L_smooth_list[central_residue - 1][2]
@@ -6351,8 +6336,7 @@ class RCI:
                                       chem_shift_diff_mean, chem_shift_diff_abs_mean, l_atom_type, chem_shift_len, smooth_factor])
                     elif len(L_smooth_list) < smooth_factor:
 
-                        L_chem_shift_diff_tmp_list = []
-                        L_chem_shift_diff_abs_tmp_list = []
+                        L_chem_shift_diff_tmp_list, L_chem_shift_diff_abs_tmp_list = [], []
                         L_residue_number = residue_number_list[L_start:L_end][central_residue - 1]
                         for L_item in L_list:
                             if L_residue_number == L_item[0]:
@@ -6367,8 +6351,7 @@ class RCI:
                             elif miss_number == L_residue_number:
                                 bigger_missing += 1
                         if bigger_missing > 0:
-                            bigger_counter = 0
-                            bigger_flag = 0
+                            bigger_counter = bigger_flag = 0
                             new_end = residue_number_list[L_end - 1]
                             while not bigger_flag:
                                 new_end += 1
@@ -6387,8 +6370,7 @@ class RCI:
                                     more_smaller = bigger_missing - bigger_counter
                                     bigger_flag = 1
                         if smaller_missing > 0:
-                            smaller_counter = 0
-                            smaller_flag = 0
+                            smaller_counter = smaller_flag = 0
                             new_start = residue_number_list[L_start]
                             while not smaller_flag:
                                 new_start -= 1
@@ -6407,8 +6389,7 @@ class RCI:
                                     smaller_flag = 1
 
                         if more_bigger > 0:
-                            more_bigger_counter = 0
-                            more_bigger_flag = 0
+                            more_bigger_counter = more_bigger_flag = 0
                             new_end = residue_number_list[L_end - 1]
                             while not more_bigger_flag:
                                 new_end += 1
@@ -6423,8 +6404,7 @@ class RCI:
                                     more_bigger_flag = 1
 
                         if more_smaller > 0:
-                            more_smaller_counter = 0
-                            more_smaller_flag = 0
+                            more_smaller_counter = more_smaller_flag = 0
                             new_start = residue_number_list[L_start]
                             while not more_smaller_flag:
                                 new_start -= 1
@@ -6444,10 +6424,9 @@ class RCI:
                             L_chem_shift_diff_abs = entry[5]
                             L_chem_shift_diff_tmp_list.append(L_chem_shift_diff)
                             L_chem_shift_diff_abs_tmp_list.append(L_chem_shift_diff_abs)
-                        chem_shift_diff_mean = None
+                        chem_shift_diff_mean = chem_shift_diff_abs_mean = None
                         if len(L_chem_shift_diff_tmp_list) > 0:
                             chem_shift_diff_mean = lmean(L_chem_shift_diff_tmp_list)
-                        chem_shift_diff_abs_mean = None
                         if len(L_chem_shift_diff_abs_tmp_list) > 0:
                             chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_tmp_list)
                         chem_shift_diff_len = len(L_chem_shift_diff_tmp_list)
@@ -6459,8 +6438,7 @@ class RCI:
                                           chem_shift_diff_mean, chem_shift_diff_abs_mean, l_atom_type, chem_shift_diff_len, smooth_factor])
 
                     else:
-                        L_chem_shift_diff_tmp_list = []
-                        L_chem_shift_diff_abs_tmp_list = []
+                        L_chem_shift_diff_tmp_list, L_chem_shift_diff_abs_tmp_list = [], []
                         L_residue_number = residue_number_list[L_start:L_end][central_residue - 1]
                         for L_item in L_list:
                             if L_residue_number == L_item[0]:
@@ -6472,10 +6450,9 @@ class RCI:
                             L_chem_shift_diff_abs = entry[5]
                             L_chem_shift_diff_tmp_list.append(L_chem_shift_diff)
                             L_chem_shift_diff_abs_tmp_list.append(L_chem_shift_diff_abs)
-                        chem_shift_diff_mean = None
+                        chem_shift_diff_mean = chem_shift_diff_abs_mean = None
                         if len(L_chem_shift_diff_tmp_list) > 0:
                             chem_shift_diff_mean = lmean(L_chem_shift_diff_tmp_list)
-                        chem_shift_diff_abs_mean = None
                         if len(L_chem_shift_diff_abs_tmp_list) > 0:
                             chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_tmp_list)
                         chem_shift_diff_len = len(L_chem_shift_diff_tmp_list)
@@ -6496,10 +6473,8 @@ class RCI:
                 Real_first_residue = L_list[0][0]
                 Real_last_residue = L_list[1][0]
                 Old_first_residue = Real_first_residue
-                negative_switch = 0
                 for L_number in range(1, (smooth_factor - N_terminus_smooth_factor + 1)):
-                    L_chem_shift_diff_list = []
-                    L_chem_shift_diff_abs_list = []
+                    L_chem_shift_diff_list, L_chem_shift_diff_abs_list = [], []
 
                     L_residue_number = L_list[-L_number][0]
                     L_residue_name = L_list[-L_number][1]
@@ -6550,10 +6525,9 @@ class RCI:
                                             plus_done = 1
                             else:
                                 minus_done = 1
-                    N_chem_shift_diff_mean = None
+                    N_chem_shift_diff_mean = N_chem_shift_diff_abs_mean = None
                     if len(L_chem_shift_diff_list) > 0:
                         N_chem_shift_diff_mean = lmean(L_chem_shift_diff_list)
-                    N_chem_shift_diff_abs_mean = None
                     if len(L_chem_shift_diff_abs_list) > 0:
                         N_chem_shift_diff_abs_mean = lmean(L_chem_shift_diff_abs_list)
                     N_chem_shift_diff_len = len(L_chem_shift_diff_list)
@@ -6568,9 +6542,7 @@ class RCI:
         """ Function to do a grid search
         """
 
-        list_of_files = []
-
-        CA_CB_CO_HA_all_residues_abs_corr = []
+        list_of_files, CA_CB_CO_HA_all_residues_abs_corr = [], []
 
         if self.grid_search_flag == 1:
             lCOp_list = lCAp_list = lCBp_list = lHAp_list = lHp_list = lNp_list = self.gridsearch_list
@@ -6610,8 +6582,7 @@ class RCI:
                                                 for coefHpos in lHp_list:
                                                     for coefHneg in [1]:  # pylint: disable=unused-variable
 
-                                                        CA_CB_CO_HA_all_residues_abs = []
-                                                        list_of_coefficients = []
+                                                        CA_CB_CO_HA_all_residues_abs, list_of_coefficients = [], []
 
                                                         if self.CAp_exclude != 1:
                                                             list_of_coefficients.append(coefCApos)
@@ -6880,11 +6851,9 @@ class RCI:
                                                                         atoms_abs.append(atomabs)
 
                                                                 elif self.function_flag == 8:
-                                                                    valueabs_list = []
-                                                                    valueabs_origin = None
-                                                                    valueabs = None
+                                                                    valueabs_list, coef_list = [], []
+                                                                    valueabs_origin = valueabs = None
                                                                     coef_trigger = f"{CA_found}{CB_found}{CO_found}{NH_found}{N_found}{HA_found}"
-                                                                    coef_list = []
                                                                     for item in residue_data_abs:
                                                                         resid_name_abs = item[1]
                                                                         valueabs_origin = item[2]
@@ -7032,9 +7001,8 @@ class RCI:
         """ Function1 to correct sigma for end effects.
         """
 
-        result_list = []
+        result_list, l_N_end_list, l_C_end_list = [], [], []
         l_N_switch = l_C_switch = 0
-        l_N_end_list = l_C_end_list = []
         l_N_mean = l_C_mean = 9999
         for l_item in l_list:
             l_res_num, l_sigma = l_item[0], l_item[2]
@@ -7085,10 +7053,8 @@ class RCI:
         """ Function2 to correct sigma for end effects.
         """
 
-        result_list = []
+        result_list, l_N_end_list, l_C_end_list = [], [], []
         l_N_switch = l_C_switch = 0
-        l_N_end_list = []
-        l_C_end_list = []
         l_N_mean = l_C_mean = 9999
         for l_item in l_list:
             l_res_num, l_sigma = l_item[0], l_item[2]
@@ -7139,10 +7105,8 @@ class RCI:
         """ Function3 to correct sigma for end effects.
         """
 
-        result_list = []
+        result_list, l_N_end_list, l_C_end_list = [], [], []
         # l_N_switch = l_C_switch = 0
-        l_N_end_list = []
-        l_C_end_list = []
         l_N_max_place = l_C_max_place = 0
         l_N_max = l_C_max = None
         for l_item in l_list:
@@ -7210,11 +7174,8 @@ class RCI:
         """ Function4 to correct sigma for end effects.
         """
 
-        result_list = []
-        l_N_end_list = []
-        l_C_end_list = []
-        l_N_max = None
-        l_C_max = None
+        result_list, l_N_end_list, l_C_end_list = [], [], []
+        l_N_max = l_C_max = None
         # l_N_min = None
         for l_item in l_list:
             l_res_num, l_sigma = l_item[0], l_item[2]
@@ -7265,9 +7226,7 @@ class RCI:
         """ Function5 to correct sigma for end effects.
         """
 
-        result_list = []
-        l_N_end_list = []
-        l_C_end_list = []
+        result_list, l_N_end_list, l_C_end_list = [], [], []
         l_N_max = l_C_max = None
         for l_item in l_list:
             l_res_num, l_sigma = l_item[0], l_item[2]
@@ -7315,9 +7274,7 @@ class RCI:
         """ Smoothing function for final result.
         """
         # Building residue number list
-        first_residue = 0
-        last_residue = 0
-        first_residue_flag = 0
+        first_residue = last_residue = first_residue_flag = 0
         smooth_factor = L_smooth
         central_residue = (smooth_factor // 2) + 1
         N_terminus_smooth_factor = central_residue
@@ -7356,8 +7313,7 @@ class RCI:
             Real_last_residue = L_list[-1][0]
             Old_first_residue = Real_first_residue
             negative_switch = 0
-            L_abs_or_true = None
-            L_first_smooth = None
+            L_abs_or_true = L_first_smooth = None
             for L_number in range(0, (smooth_factor - N_terminus_smooth_factor)):
                 L_chem_shift_diff_abs_list = []
                 L_residue_number = L_list[L_number][0]
@@ -7422,14 +7378,10 @@ class RCI:
                 chem_shift_diff_abs_mean = None
                 if L_end <= (last_residue - offset):  # For Ubiquitin
 
-                    L_smooth_list = []
-                    missing_chemshift = []
-                    bigger_missing = 0
-                    smaller_missing = 0
-                    new_end = 0
-                    new_start = 0
-                    L_residue_number = None
-                    L_residue_name = None
+                    L_smooth_list, missing_chemshift = [], []
+                    bigger_missing = smaller_missing = 0
+                    new_end = new_start = 0
+                    L_residue_number = L_residue_name = None
                     # chem_shift_diff_mean = None
                     chem_shift_diff_abs_mean = None
                     for L_number in residue_number_list[L_start:L_end]:
@@ -7440,8 +7392,7 @@ class RCI:
                                 found_flag = 1
                         if found_flag == 0:
                             missing_chemshift.append(L_number)
-                    more_smaller = 0
-                    more_bigger = 0
+                    more_smaller = more_bigger = 0
 
                     if len(L_smooth_list) == smooth_factor:
 
@@ -7485,8 +7436,7 @@ class RCI:
                             elif miss_number == L_residue_number:
                                 bigger_missing += 1
                         if bigger_missing > 0:
-                            bigger_counter = 0
-                            bigger_flag = 0
+                            bigger_counter = bigger_flag = 0
                             new_end = residue_number_list[L_end - 1]
                             while not bigger_flag:
                                 new_end += 1
@@ -7507,8 +7457,7 @@ class RCI:
                                     bigger_flag = 1
 
                         if smaller_missing > 0:
-                            smaller_counter = 0
-                            smaller_flag = 0
+                            smaller_counter = smaller_flag = 0
                             new_start = residue_number_list[L_start]
                             while not smaller_flag:
                                 new_start -= 1
@@ -7528,8 +7477,7 @@ class RCI:
                                     smaller_flag = 1
 
                         if more_bigger > 0:
-                            more_bigger_counter = 0
-                            more_bigger_flag = 0
+                            more_bigger_counter = more_bigger_flag = 0
                             new_end = residue_number_list[L_end]
                             while not more_bigger_flag:
                                 new_end += 1
@@ -7544,8 +7492,7 @@ class RCI:
                                     more_bigger_flag = 1
 
                         if more_bigger > 0:
-                            more_bigger_counter = 0
-                            more_bigger_flag = 0
+                            more_bigger_counter = more_bigger_flag = 0
                             new_end = residue_number_list[L_end]
                             while not more_bigger_flag:
                                 new_end += 1
@@ -7560,8 +7507,7 @@ class RCI:
                                     more_bigger_flag = 1
 
                         if more_smaller > 0:
-                            more_smaller_counter = 0
-                            more_smaller_flag = 0
+                            more_smaller_counter = more_smaller_flag = 0
                             new_start = residue_number_list[L_start]
                             while not more_smaller_flag:
                                 new_start -= 1
@@ -7619,7 +7565,6 @@ class RCI:
             Real_first_residue = L_list[0][0]
             Real_last_residue = L_list[1][0]
             Old_first_residue = Real_first_residue
-            negative_switch = 0
             for L_number in range(1, (smooth_factor - N_terminus_smooth_factor + 1)):
                 L_chem_shift_diff_abs_list = []
                 L_residue_number = L_list[-L_number][0]
@@ -7725,10 +7670,8 @@ class RCI:
 
         m_atoms_real = m_data_type = m_smooth_type = None
         for filename in m_list_of_files:
-            correlation_true_MD = []
-            correlation_true_Dynamr = []
-            md_data = []
-            dynamr_data = []
+            correlation_true_MD, correlation_true_Dynamr = [], []
+            md_data, dynamr_data = [], []
             for entry in m_md_result:
                 residue_number = entry[0]
                 residue_name = entry[1]
@@ -7746,9 +7689,7 @@ class RCI:
                             md_data.append([residue_number, residue_name, MD_value])
                             dynamr_data.append([residue_number, residue_name, dynamr_value])
 
-            dynamr_to_md_ratio = 0
-            entry_found_true_corr = 0
-            counter = 0
+            dynamr_to_md_ratio = entry_found_true_corr = counter = 0
             corel_coef = l_Pearson_coeff = l_Spearman_coeff = 0
             if len(correlation_true_Dynamr) > 0 and len(correlation_true_MD) > 0:
                 compare_list_corr_true = [abs(corel_coef), filename, "correlation", corel_coef, l_coeff_list, md_data, dynamr_data, dynamr_to_md_ratio]
@@ -7804,71 +7745,68 @@ class RCI:
             res_i_minus_2 = number - 2
             res_i_plus_2 = number + 2
 
-            res_i_found = 0
-            res_i_minus_1_found = 0
-            res_i_plus_1_found = 0
+            res_i_found = res_i_minus_1_found = res_i_plus_1_found = 0
 
-            res_i_found = 0
             # res_i_minus_2_found = 0
             # res_i_plus_2_found = 0
 
-            dyna_simp_res_num_i = None
-            dyna_simp_res_name_i = None
-            dyna_simp_res_num_i_minus_1 = None
-            dyna_simp_res_name_i_minus_1 = None
-            dyna_simp_res_num_i_plus_1 = None
-            dyna_simp_res_name_i_plus_1 = None
-            dyna_simp_res_num_i_minus_2 = None
-            dyna_simp_res_name_i_minus_2 = None
-            dyna_simp_res_num_i_plus_2 = None
-            dyna_simp_res_name_i_plus_2 = None
+            dyna_simp_res_num_i =\
+                dyna_simp_res_name_i =\
+                dyna_simp_res_num_i_minus_1 =\
+                dyna_simp_res_name_i_minus_1 =\
+                dyna_simp_res_num_i_plus_1 =\
+                dyna_simp_res_name_i_plus_1 =\
+                dyna_simp_res_num_i_minus_2 =\
+                dyna_simp_res_name_i_minus_2 =\
+                dyna_simp_res_num_i_plus_2 =\
+                dyna_simp_res_name_i_plus_2 = None
 
-            res_num_i_sec_str_found = 0
-            res_num_i_minus_1_sec_str_found = 0
-            res_num_i_plus_1_sec_str_found = 0
-            res_num_i_minus_2_sec_str_found = 0
-            res_num_i_plus_2_sec_str_found = 0
+            res_num_i_sec_str_found =\
+                res_num_i_minus_1_sec_str_found =\
+                res_num_i_plus_1_sec_str_found =\
+                res_num_i_minus_2_sec_str_found =\
+                res_num_i_plus_2_sec_str_found = 0
 
-            preceed_res_cor_N = None
-            preceed_res_cor_CO = None
-            preceed_res_cor_CA = None
-            preceed_res_cor_CB = None
-            preceed_res_cor_NH = None
-            preceed_res_cor_HA = None
+            preceed_res_cor_N =\
+                preceed_res_cor_CO =\
+                preceed_res_cor_CA =\
+                preceed_res_cor_CB =\
+                preceed_res_cor_NH =\
+                preceed_res_cor_HA = None
 
-            preceed_preceed_res_cor_N = None
-            preceed_preceed_res_cor_CO = None
-            preceed_preceed_res_cor_CA = None
-            preceed_preceed_res_cor_CB = None
-            preceed_preceed_res_cor_NH = None
-            preceed_preceed_res_cor_HA = None
+            preceed_preceed_res_cor_N =\
+                preceed_preceed_res_cor_CO =\
+                preceed_preceed_res_cor_CA =\
+                preceed_preceed_res_cor_CB =\
+                preceed_preceed_res_cor_NH =\
+                preceed_preceed_res_cor_HA = None
 
-            next_res_cor_N = None
-            next_res_cor_CO = None
-            next_res_cor_CA = None
-            next_res_cor_CB = None
-            next_res_cor_NH = None
-            next_res_cor_HA = None
+            next_res_cor_N =\
+                next_res_cor_CO =\
+                next_res_cor_CA =\
+                next_res_cor_CB =\
+                next_res_cor_NH =\
+                next_res_cor_HA = None
 
-            next_next_res_cor_N = None
-            next_next_res_cor_CO = None
-            next_next_res_cor_CA = None
-            next_next_res_cor_CB = None
-            next_next_res_cor_NH = None
-            next_next_res_cor_HA = None
+            next_next_res_cor_N =\
+                next_next_res_cor_CO =\
+                next_next_res_cor_CA =\
+                next_next_res_cor_CB =\
+                next_next_res_cor_NH =\
+                next_next_res_cor_HA = None
 
-            final_N = None
-            final_CO = None
-            final_CA = None
-            final_CB = None
-            final_NH = None
-            final_HA = None
+            final_N =\
+                final_CO =\
+                final_CA =\
+                final_CB =\
+                final_NH =\
+                final_HA = None
 
-            res_i_csi_sec_str = "C"
-            res_i_minus_1_csi_sec_str = "C"
-            res_i_plus_1_csi_sec_str = "C"
-            res_i_minus_2_csi_sec_str = "C"
-            res_i_plus_2_csi_sec_str = "C"
+            res_i_csi_sec_str =\
+                res_i_minus_1_csi_sec_str =\
+                res_i_plus_1_csi_sec_str =\
+                res_i_minus_2_csi_sec_str =\
+                res_i_plus_2_csi_sec_str = "C"
 
             for bmrb_to_aa_entry in self.__bmrb_to_aa_list:
                 dyna_simp_res_num = bmrb_to_aa_entry[1]
@@ -8244,8 +8182,7 @@ class RCI:
         self.__real_BMRB_last_res = 0
 
         for atom_type in self.__atom_list:
-            no_smooth_list = []
-            no_smooth_list2 = []
+            no_smooth_list, no_smooth_list2 = [], []
 
             for v in assignment:
                 residue_name_init, residue_number, bmrb_atom_name, bmrb_shift = (v[0], v[1], v[2], v[4])

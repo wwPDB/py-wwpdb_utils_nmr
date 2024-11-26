@@ -730,8 +730,7 @@ class DynamoMRParserListener(ParseTreeListener):
                                             poly_seq_model = next(ps for ps in self.__polySeq
                                                                   if ps['auth_chain_id'] == ref_chain_id)
 
-                                            seq_id_mapping = {}
-                                            comp_id_mapping = {}
+                                            seq_id_mapping, comp_id_mapping = {}, {}
 
                                             for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
                                                 if seq_id in sa['test_seq_id']:

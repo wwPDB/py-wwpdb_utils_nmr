@@ -1022,7 +1022,6 @@ class BMRBChemShiftStat:
                                                     or re.match(r'^HBB[23]', _atom_id) is not None))
                           or (comp_id == 'HEC' and (re.match(r'^HM[A-D][123]$', _atom_id) is not None
                                                     or re.match(r'^HB[BC][123]$', _atom_id) is not None))):
-
                     _row = {}
                     _row['comp_id'] = comp_id
                     _row['atom_id'] = _atom_id
@@ -1072,7 +1071,6 @@ class BMRBChemShiftStat:
                                and a[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
 
                             if not any(item for item in atm_list if item['comp_id'] == comp_id and item['atom_id'] == a[self.__ccU.ccaAtomId]):
-
                                 _row = {}
                                 _row['comp_id'] = comp_id
                                 _row['atom_id'] = a[self.__ccU.ccaAtomId]
@@ -1560,7 +1558,6 @@ class BMRBChemShiftStat:
                                and a[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
 
                             if not any(item for item in atm_list if item['comp_id'] == comp_id and item['atom_id'] == a[self.__ccU.ccaAtomId]):
-
                                 _row = {}
                                 _row['comp_id'] = comp_id
                                 _row['atom_id'] = a[self.__ccU.ccaAtomId]
@@ -1605,7 +1602,6 @@ class BMRBChemShiftStat:
                or (peptide_like
                    and a[self.__ccU.ccaNTerminalAtomFlag] == 'N'
                    and a[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
-
                 _row = {}
                 _row['comp_id'] = comp_id
                 _row['atom_id'] = a[self.__ccU.ccaAtomId]

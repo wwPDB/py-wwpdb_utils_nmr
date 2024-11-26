@@ -555,9 +555,7 @@ class CifReader:
             len_catName = len(catName) + 2
 
             # get column name index
-            colDict = {}
-            fcolDict = {}
-            fetchDict = {}  # 'fetch_first_match': True
+            colDict, fcolDict, fetchDict = {}, {}, {}  # 'fetch_first_match': True
 
             itNameList = [name[len_catName:] for name in catObj.getItemNameList()]
 
@@ -734,8 +732,7 @@ class CifReader:
             len_catName = len(catName) + 2
 
             # get column name index
-            itDict = {}
-            altDict = {}
+            itDict, altDict = {}, {}
 
             itNameList = [name[len_catName:] for name in catObj.getItemNameList()]
 
@@ -750,9 +747,7 @@ class CifReader:
             # get row list
             rowList = catObj.getRowList()
             _rowList = None
-            unmapSeqIds = {}
-            unmapAuthSeqIds = {}
-            mapAuthSeqIds = {}
+            unmapSeqIds, unmapAuthSeqIds, mapAuthSeqIds = {}, {}, {}
             chainIdWoDefault = set()
 
             entityPoly = self.getDictList('entity_poly')
@@ -835,13 +830,8 @@ class CifReader:
                             row[itCol] = row[itDict[keyItems[j]['default-from']]]
                             continue
 
-            compDict = {}
-            seqDict = {}
-            insCodeDict = {}
-            authSeqDict = {}
-            labelSeqDict = {}
-
-            authChainDict = {}
+            compDict, seqDict, insCodeDict, authSeqDict, labelSeqDict, authChainDict =\
+                {}, {}, {}, {}, {}, {}
 
             chain_id_col = altDict['chain_id']
             seq_id_col = altDict['seq_id']
@@ -936,7 +926,7 @@ class CifReader:
             largeAssembly = catName == 'pdbx_poly_seq_scheme' and len(chainIds) > LEN_MAJOR_ASYM_ID
 
             caRmsd = caWellDefinedRegion = None
-            polyPeptideChains = polyPeptideLengths = []
+            polyPeptideChains, polyPeptideLengths = [], []
 
             _seqDict = copy.deepcopy(seqDict)
 
@@ -1665,9 +1655,7 @@ class CifReader:
                                    key=itemgetter(0, 1))
                 _bb_atom_site_p = [_a for _a in _bb_atom_site_ref if (_a['chain_id'], _a['seq_id']) in _seq_keys]
 
-                core_rmsd = []
-                align_rmsd = []
-                exact_overlaid_model_ids = []
+                core_rmsd, align_rmsd, exact_overlaid_model_ids = [], [], []
 
                 for test_model_id in eff_model_ids:
 

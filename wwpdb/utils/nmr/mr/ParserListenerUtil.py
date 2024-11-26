@@ -3627,9 +3627,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                     if conflict == 0 and unmapped > 0:
 
-                        nmr_seq_ids = []
-                        cif_auth_seq_ids = []
-                        cif_label_seq_ids = []
+                        nmr_seq_ids, cif_auth_seq_ids, cif_label_seq_ids = [], [], []
 
                         for i in range(length):
                             if str(myAlign[i][0]) != '.' and i < len(s1['seq_id']):
@@ -3973,11 +3971,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             if len(coord) > 0:
                 nonPoly = []
 
-                compDict = {}
-                seqDict = {}
-                insCodeDict = {}
-
-                authChainDict = {}
+                compDict, seqDict, insCodeDict, authChainDict = {}, {}, {}, {}
 
                 chainIds = []
                 for item in coord:
@@ -4308,17 +4302,13 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                         if seqKey in labelToAuthSeqForBranched:
                             c['seq_id'], c['alt_seq_id'] = labelToAuthSeqForBranched[seqKey], str(c['seq_id'])
 
-            coordAtomSite = {}
-            labelToAuthSeq = {}
+            coordAtomSite, labelToAuthSeq = {}, {}
 
             # DAOTHER-8817
-            chemCompAtom = {}
-            chemCompBond = {}
-            chemCompTopo = {}
+            chemCompAtom, chemCompBond, chemCompTopo = {}, {}, {}
 
             # DAOTHER-8828
-            authAtomNameToId = {}
-            authAtomNameToIdExt = {}
+            authAtomNameToId, authAtomNameToIdExt = {}, {}
 
             chainIds = set(c['chain_id'] for c in coord)
             for chainId in chainIds:
@@ -4426,8 +4416,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                             resCoordDict = {c['atom_id']: to_np_array(c) for c in cR.getDictListWithFilter('atom_site', dataItems, filterItems)}
 
-                            chemCompBond[compId] = {}
-                            chemCompTopo[compId] = {}
+                            chemCompBond[compId], chemCompTopo[compId] = {}, {}
 
                             for proton in atomIds:
                                 if proton[0] in protonBeginCode:
@@ -4609,11 +4598,8 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
         if authToStarSeq is None or authToEntityType is None or entityAssembly is None or authToStarSeqAnn is None:
             changed = True
 
-            authToStarSeq = {}
-            authToOrigSeq = {}
-            authToInsCode = {}
-            authToEntityType = {}
-            authToStarSeqAnn = {}
+            authToStarSeq, authToOrigSeq, authToInsCode, authToEntityType, authToStarSeqAnn =\
+                {}, {}, {}, {}, {}
             entityAssembly = []
 
             entityAssemblyId = 1
@@ -4797,8 +4783,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                                 mappings = sorted(mappings, key=itemgetter('seq_id'))
 
-                    authAsymIds = []
-                    labelAsymIds = []
+                    authAsymIds, labelAsymIds = [], []
                     compIds = set()
                     for item in mappings:
                         if item['auth_asym_id'] not in authAsymIds:
@@ -4905,8 +4890,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
                             for labelAsymId in _labelAsymIds:
 
-                                authAsymIds = []
-                                labelAsymIds = []
+                                authAsymIds, labelAsymIds = [], []
                                 compIds = set()
                                 for item in mappings:
                                     if item['label_asym_id'] != labelAsymId:
@@ -5320,7 +5304,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                                 authToInsCode[seqKey] = item['ins_code'][idx]
                             authToEntityType[seqKey] = entityType
 
-                            authAsymIds = labelAsymIds = []
+                            authAsymIds, labelAsymIds = [], []
                             for _item in nonPoly:
                                 if idx < len(item['comp_id']) and item['comp_id'][idx] == compId:
                                     if _item['auth_chain_id'] not in authAsymIds:

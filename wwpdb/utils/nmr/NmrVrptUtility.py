@@ -1273,8 +1273,7 @@ class NmrVrptUtility:
                                 _auth_atom_id_ = 'alt_auth_atom_id'
                                 break
 
-                atom_id_list_per_model = {}
-                coordinates_per_model = {}
+                atom_id_list_per_model, coordinates_per_model = {}, {}
 
                 for c in coord:
                     atom_key = (c['auth_asym_id'], c['auth_seq_id'], c['auth_comp_id'],
@@ -2113,8 +2112,7 @@ class NmrVrptUtility:
                         min_comb_key_per_model[model_id]['member_id'] = member_id
 
             def get_viol_per_model(min_error_per_model, min_comb_key_per_model):
-                viol_per_model = {}
-                comb_key_per_model = {}
+                viol_per_model, comb_key_per_model = {}, {}
 
                 for model_id in self.__eff_model_ids:
                     error = min_error_per_model[model_id]
@@ -2328,8 +2326,7 @@ class NmrVrptUtility:
                         min_comb_key_per_model[model_id]['combination_id'] = combination_id
 
             def get_viol_per_model(min_error_per_model, min_comb_key_per_model):
-                viol_per_model = {}
-                comb_key_per_model = {}
+                viol_per_model, comb_key_per_model = {}, {}
 
                 for model_id in self.__eff_model_ids:
                     error = min_error_per_model[model_id]
@@ -2490,8 +2487,7 @@ class NmrVrptUtility:
                         min_comb_key_per_model[model_id]['combination_id'] = combination_id
 
             def get_viol_per_model(min_error_per_model, min_comb_key_per_model):
-                viol_per_model = {}
-                comb_key_per_model = {}
+                viol_per_model, comb_key_per_model = {}, {}
 
                 for model_id in self.__eff_model_ids:
                     error = min_error_per_model[model_id]
@@ -2604,12 +2600,10 @@ class NmrVrptUtility:
             self.__results['key_lists']['distance_sub_type'] = distance_sub_type
             self.__results['key_lists']['bond_flag'] = bond_flag
 
-            distance_summary = {}
-            distance_violation = {}
+            distance_summary, distance_violation = {}, {}
 
-            consistent_distance_violation = {}
-            distance_violations_vs_models = {}
-            distance_violations_in_models = {}
+            consistent_distance_violation, distance_violations_vs_models, distance_violations_in_models =\
+                {}, {}, {}
 
             for m in self.__eff_model_ids:
                 distance_violations_in_models[m] = {}
@@ -2868,12 +2862,10 @@ class NmrVrptUtility:
 
             self.__results['key_lists']['angle_type'] = angle_type
 
-            angle_summary = {}
-            angle_violation = {}
+            angle_summary, angle_violation = {}, {}
 
-            consistent_angle_violation = {}
-            angle_violations_vs_models = {}
-            angle_violations_in_models = {}
+            consistent_angle_violation, angle_violations_vs_models, angle_violations_in_models =\
+                {}, {}, {}
 
             for m in self.__eff_model_ids:
                 angle_violations_in_models[m] = {}
@@ -3034,10 +3026,7 @@ class NmrVrptUtility:
                         if comb_key is None:
                             continue
 
-                        atom_ids_1 = []
-                        atom_ids_2 = []
-                        atom_ids_3 = []
-                        atom_ids_4 = []
+                        atom_ids_1, atom_ids_2, atom_ids_3, atom_ids_4 = [], [], [], []
                         angle_type = None
 
                         for r in self.__dihedRestDictWithCombKey[rest_key][comb_key]:
@@ -3113,12 +3102,10 @@ class NmrVrptUtility:
 
             self.__results['key_lists']['rdc_type'] = rdc_type
 
-            rdc_summary = {}
-            rdc_violation = {}
+            rdc_summary, rdc_violation = {}, {}
 
-            consistent_rdc_violation = {}
-            rdc_violations_vs_models = {}
-            rdc_violations_in_models = {}
+            consistent_rdc_violation, rdc_violations_vs_models, rdc_violations_in_models =\
+                {}, {}, {}
 
             for m in self.__eff_model_ids:
                 rdc_violations_in_models[m] = {}
@@ -3275,8 +3262,7 @@ class NmrVrptUtility:
                         if comb_key is None:
                             continue
 
-                        atom_ids_1 = []
-                        atom_ids_2 = []
+                        atom_ids_1, atom_ids_2 = [], []
                         rdc_type = None
 
                         for r in self.__rdcRestDictWithCombKey[rest_key][comb_key]:

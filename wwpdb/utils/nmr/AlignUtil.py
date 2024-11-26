@@ -304,8 +304,7 @@ def beautifyPolySeq(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'
         if _a_c2 in emptyValue:
             _a_c2 = _c2
 
-    gapS = []
-    gapP = []
+    gapS, gapP = [], []
 
     lenSpacer = 5  # DAOTHER-7465, issue #2
 
@@ -856,13 +855,8 @@ def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
                     if _authCompIds[_idx] in emptyValue:
                         _authCompIds[_idx] = _compIds[_idx]
 
-            _endSeqIds = []
-            _endCompIds = []
-            _endAuthCompIds = []
-
-            _begSeqIds = []
-            _begCompIds = []
-            _begAuthCompIds = []
+            _endSeqIds, _endCompIds, _endAuthCompIds = [], [], []
+            _begSeqIds, _begCompIds, _begAuthCompIds = [], [], []
 
             for item in remapList:
                 if item['chain_id'] != ps['chain_id']:
@@ -994,14 +988,12 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
     """ Align polymer sequence of the coordinates and restraints.
     """
 
-    seqAlign = []
-    compIdMapping = []
+    seqAlign, compIdMapping = [], []
 
     if pA is None or polySeqModel is None or polySeqRst is None:
         return seqAlign, compIdMapping
 
-    tabooList = []
-    inhibitList = []
+    tabooList, inhibitList = [], []
 
     hasMultimer = False
 
@@ -1191,8 +1183,7 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                     if s_p is None or s_q is None or s_p not in s2['seq_id'] or s_q not in s2['seq_id']:
                         continue
                     if s_p + 1 != s_q:
-                        idx1 = 0
-                        idx2 = 0
+                        idx1 = idx2 = 0
                         beg = -1
                         for i in range(length):
                             myPr = myAlign[i]
@@ -1236,20 +1227,17 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
                and any((__s1, __s2) for (__s1, __s2, __c1, __c2)
                        in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                        if __c1 != '.' and __c2 != '.' and __c1 != __c2):
-                seq_id1 = []
-                seq_id2 = []
+                seq_id1, seq_id2 = [], []
                 if has_auth_seq_id1:
                     auth_seq_id1 = []
                 if has_auth_seq_id2:
                     auth_seq_id2 = []
-                comp_id1 = []
-                comp_id2 = []
+                comp_id1, comp_id2 = [], []
                 if has_auth_comp_id1:
                     auth_comp_id1 = []
                 if has_auth_comp_id2:
                     auth_comp_id2 = []
-                idx1 = 0
-                idx2 = 0
+                idx1 = idx2 = 0
                 for i in range(length):
                     myPr = myAlign[i]
                     myPr0 = str(myPr[0])
@@ -1427,8 +1415,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
     """ Align polymer sequence of the coordinates and restraints allowing minor conflicts.
     """
 
-    seqAlign = []
-    compIdMapping = []
+    seqAlign, compIdMapping = [], []
 
     if pA is None or polySeqModel is None or polySeqRst is None:
         return seqAlign, compIdMapping
@@ -1578,8 +1565,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
                     if s_p is None or s_q is None or s_p not in s2['seq_id'] or s_q not in s2['seq_id']:
                         continue
                     if s_p + 1 != s_q:
-                        idx1 = 0
-                        idx2 = 0
+                        idx1 = idx2 = 0
                         beg = -1
                         for i in range(length):
                             myPr = myAlign[i]
@@ -1622,20 +1608,17 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
             if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
                    in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                    if __c1 != '.' and __c2 != '.' and __c1 != __c2):
-                seq_id1 = []
-                seq_id2 = []
+                seq_id1, seq_id2 = [], []
                 if has_auth_seq_id1:
                     auth_seq_id1 = []
                 if has_auth_seq_id2:
                     auth_seq_id2 = []
-                comp_id1 = []
-                comp_id2 = []
+                comp_id1, comp_id2 = [], []
                 if has_auth_comp_id1:
                     auth_comp_id1 = []
                 if has_auth_comp_id2:
                     auth_comp_id2 = []
-                idx1 = 0
-                idx2 = 0
+                idx1 = idx2 = 0
                 for i in range(length):
                     myPr = myAlign[i]
                     myPr0 = str(myPr[0])
@@ -1757,8 +1740,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
 
     mr_chains = len(polySeqRst) if len(polySeqRst) < LEN_LARGE_ASYM_ID else LEN_LARGE_ASYM_ID
 
-    mat = []
-    indices = []
+    mat, indices = [], []
 
     for i1, s1 in enumerate(polySeqModel):
         chain_id_name = 'auth_chain_id' if 'auth_chain_id' in s1 else 'chain_id'
@@ -1877,8 +1859,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
         if result['unmapped'] > 0 or result['conflict'] > 0:
 
             aligned = [True] * length
-            seq_id1 = []
-            seq_id2 = []
+            seq_id1, seq_id2 = [], []
 
             j = 0
             for i in range(length):
@@ -1940,8 +1921,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
             if _conflicts + offset_1 > _matched and ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-7825 (2lyw)
                 continue
 
-            unmapped = []
-            conflict = []
+            unmapped, conflict = [], []
 
             for i in range(length):
                 myPr = myAlign[i]
@@ -2819,10 +2799,8 @@ def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssign):
 
                 _polySeqRst.append(_test_ps_)
 
-                ref_seq_ids = []
-                test_seq_ids = []
-                idx1 = 0
-                idx2 = 0
+                ref_seq_ids, test_seq_ids = [], []
+                idx1 = idx2 = 0
                 for i in range(length):
                     myPr = myAlign[i]
                     myPr0 = str(myPr[0])
@@ -2892,8 +2870,7 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel, polySeqRst, chainAssign):
     split = False
 
     _polySeqRst = copy.copy(polySeqRst)
-    _chainIdMapping = {}
-    _modelChainIdExt = {}
+    _chainIdMapping, _modelChainIdExt = {}, {}
 
     for test_chain_id, ref_chain_ids in target_chain_ids.items():
 
@@ -2970,10 +2947,8 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel, polySeqRst, chainAssign):
                     if conflict > 0:
                         return None, None, None
 
-                    ref_seq_ids = []
-                    test_seq_ids = []
-                    idx1 = 0
-                    idx2 = 0
+                    ref_seq_ids, test_seq_ids = [], []
+                    idx1 = idx2 = 0
                     for i in range(length):
                         myPr = myAlign[i]
                         myPr0 = str(myPr[0])
@@ -3038,10 +3013,8 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel, polySeqRst, chainAssign):
 
                 _polySeqRst.append(_test_ps_)
 
-                ref_seq_ids = []
-                test_seq_ids = []
-                idx1 = 0
-                idx2 = 0
+                ref_seq_ids, test_seq_ids = [], []
+                idx1 = idx2 = 0
                 for i in range(length):
                     myPr = myAlign[i]
                     myPr0 = str(myPr[0])
@@ -3302,8 +3275,7 @@ def splitPolySeqRstForBranched(pA, polySeqModel, branchedModel, polySeqRst, chai
 
         _split = False
 
-        p = 0
-        b_p = 0
+        p = b_p = 0
 
         _ref_chain_ids = []
         for ref_chain_id in ref_chain_ids:
@@ -3362,15 +3334,11 @@ def splitPolySeqRstForBranched(pA, polySeqModel, branchedModel, polySeqRst, chai
                 _polySeqRst.remove(test_ps)
                 _split = True
 
-            ref_seq_ids = []
-            test_seq_ids = []
-            idx1 = 0
-            idx2 = 0
+            ref_seq_ids, test_seq_ids = [], []
+            idx1 = idx2 = 0
 
-            b_ref_seq_ids = []
-            b_test_seq_ids = []
-            b_idx1 = 0
-            b_idx2 = 0
+            b_ref_seq_ids, b_test_seq_ids = [], []
+            b_idx1 = b_idx2 = 0
 
             if matched > 0:
 
@@ -3535,8 +3503,7 @@ def getPrettyJson(data):
 
     lines = json.dumps(data, indent=2).split('\n')
 
-    is_tag = []
-    chunk = []
+    is_tag, chunk = [], []
 
     with io.StringIO() as f:
 

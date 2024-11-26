@@ -662,13 +662,7 @@ def get_type_of_star_file(fPath):
 
     try:
 
-        is_cif = False
-
-        has_datablock = False
-        has_anonymous_saveframe = False
-        has_save = False
-        has_loop = False
-        has_stop = False
+        is_cif = has_datablock = has_anonymous_saveframe = has_save = has_loop = has_stop = False
 
         with open(fPath, 'r', encoding='utf-8') as ifh:
             for line in ifh:
@@ -8315,8 +8309,7 @@ class NmrDpUtility:
                     if is_cs_cif:
 
                         loop_count = 0
-                        has_sf_category = False
-                        has_sf_framecode = False
+                        has_sf_category = has_sf_framecode = False
 
                         with open(_srcPath, 'r', encoding='utf-8') as ifh:
                             for line in ifh:
@@ -8490,8 +8483,7 @@ class NmrDpUtility:
 
                     target = {'sf_framecode': sf_framecode}
 
-                    pass_sf_framecode = False
-                    pass_sf_loop = False
+                    pass_sf_framecode = pass_sf_loop = False
 
                     sf_named_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
 
@@ -8520,8 +8512,7 @@ class NmrDpUtility:
 
                 sf_framecode = target['sf_framecode']
 
-                pass_sf_framecode = False
-                pass_sf_loop = False
+                pass_sf_framecode = pass_sf_loop = False
 
                 sf_named_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
 
@@ -8689,10 +8680,7 @@ class NmrDpUtility:
 
                     target = {'category_1': category_1, 'category_2': category_2}
 
-                    pass_sf_framecode = False
-                    pass_category_1 = False
-                    pass_category_2 = False
-                    pass_sf_loop = False
+                    pass_sf_framecode = pass_category_1 = pass_category_2 = pass_sf_loop = False
 
                     i = 1
 
@@ -8703,10 +8691,7 @@ class NmrDpUtility:
                                     if 'category_1_begin' in target and 'category_2_begin' in target:
                                         targets.append(target)
                                         break
-                                    pass_sf_framecode = False
-                                    pass_category_1 = False
-                                    pass_category_2 = False
-                                    pass_sf_loop = False
+                                    pass_sf_framecode = pass_category_1 = pass_category_2 = pass_sf_loop = False
                                 elif loop_pattern.match(line):
                                     pass_sf_loop = True
                                 elif not pass_sf_loop:
@@ -8750,9 +8735,7 @@ class NmrDpUtility:
                                     pass_sf_loop = True
                             elif sf_anonymous_pattern.match(line):
                                 pass_sf_framecode = True
-                                pass_category_1 = False
-                                pass_category_2 = False
-                                pass_sf_loop = False
+                                pass_category_1 = pass_category_2 = pass_sf_loop = False
 
                             i += 1
 
@@ -10338,20 +10321,12 @@ class NmrDpUtility:
 
                 with open(file_path, 'r', encoding='utf-8') as ifh:
 
-                    atom_likes = 0
-                    atom_unlikes = 0
-                    cs_atom_likes = 0
-                    resid_likes = 0
-                    real_likes = 0
-                    names = []
-                    resids = []
+                    atom_likes = atom_unlikes = cs_atom_likes = resid_likes = real_likes = 0
+                    names, resids = [], []
 
                     rdc_atom_names = set()
 
-                    cs_range_like = False
-                    dist_range_like = False
-                    dihed_range_like = False
-                    rdc_range_like = False
+                    cs_range_like = dist_range_like = dihed_range_like = rdc_range_like = False
 
                     for line in ifh:
 
@@ -10401,17 +10376,9 @@ class NmrDpUtility:
                                         and names[0][0] in hbond_da_atom_types and names[1][0] in protonBeginCode and names[2][0] in hbond_da_atom_types:
                                     has_hbond_restraint = True
 
-                                atom_likes = 0
-                                atom_unlikes = 0
-                                cs_atom_likes = 0
-                                resid_likes = 0
-                                real_likes = 0
-                                names = []
-                                resids = []
-                                cs_range_like = False
-                                dist_range_like = False
-                                dihed_range_like = False
-                                rdc_range_like = False
+                                atom_likes = atom_unlikes = cs_atom_likes = resid_likes = real_likes = 0
+                                names, resids = [], []
+                                cs_range_like = dist_range_like = dihed_range_like = rdc_range_like = False
 
                             elif _t_lower == 'name':
                                 name = t.upper()
@@ -10458,11 +10425,7 @@ class NmrDpUtility:
 
                     atom_likes = 0
                     names = []
-                    has_rest = False
-                    has_plan = False
-                    has_grou = False
-                    has_sele = False
-                    has_resi = False
+                    has_rest = has_plan = has_grou = has_sele = has_resi = False
 
                     for line in ifh:
 
@@ -10519,9 +10482,7 @@ class NmrDpUtility:
                                             pass
 
                                 elif t_lower == 'end':
-                                    has_grou = False
-                                    has_sele = False
-                                    has_resi = False
+                                    has_grou = has_sele = has_resi = False
 
                             _t_lower = t_lower
 
@@ -10529,19 +10490,13 @@ class NmrDpUtility:
 
                 with open(file_path, 'r', encoding='utf-8') as ifh:
 
-                    in_rst = False
-                    in_iat = False
-                    in_igr1 = False
-                    in_igr2 = False
+                    in_rst = in_iat = in_igr1 = in_igr2 = False
 
-                    names = []
-                    values = []
+                    names, values = [], []
 
                     pos = 0
 
-                    dist_range_like = False
-                    dihed_range_like = False
-                    rdc_range_like = False
+                    dist_range_like = dihed_range_like = rdc_range_like = False
 
                     for line in ifh:
 
@@ -10603,8 +10558,7 @@ class NmrDpUtility:
 
                                 if t == '&end':
 
-                                    atom_likes = 0
-                                    atom_unlikes = 0
+                                    atom_likes = atom_unlikes = 0
 
                                     for name in names:
 
@@ -10640,13 +10594,9 @@ class NmrDpUtility:
                                         elif atom_likes + atom_unlikes == 6 and rdc_range_like:
                                             has_rdc_restraint = True
 
-                                    names = []
-                                    values = []
+                                    names, values = [], []
 
-                                    in_rst = False
-                                    in_iat = False
-                                    in_igr1 = False
-                                    in_igr2 = False
+                                    in_rst = in_iat = in_igr1 = in_igr2 = False
 
                                 elif t.startswith('iat='):
                                     in_iat = True
@@ -10656,8 +10606,7 @@ class NmrDpUtility:
                                     except ValueError:
                                         pass
 
-                                    in_igr1 = False
-                                    in_igr2 = False
+                                    in_igr1 = in_igr2 = False
 
                                 elif '=' not in t and in_iat:
                                     try:
@@ -10683,9 +10632,7 @@ class NmrDpUtility:
                                     except ValueError:
                                         pass
 
-                                    in_iat = False
-                                    in_igr1 = False
-                                    in_igr2 = False
+                                    in_iat = in_igr1 = in_igr2 = False
 
                                 elif t.startswith('igr1'):
                                     in_igr1 = True
@@ -10695,8 +10642,7 @@ class NmrDpUtility:
                                     except ValueError:
                                         pass
 
-                                    in_iat = False
-                                    in_igr2 = False
+                                    in_iat = in_igr2 = False
 
                                 elif '=' not in t and in_igr1:
                                     try:
@@ -10714,8 +10660,7 @@ class NmrDpUtility:
                                     except ValueError:
                                         pass
 
-                                    in_iat = False
-                                    in_igr1 = False
+                                    in_iat = in_igr1 = False
 
                                 elif '=' not in t and in_igr2:
                                     try:
@@ -10726,53 +10671,31 @@ class NmrDpUtility:
                                         pass
 
                                 elif '=' in t:
-                                    in_iat = False
-                                    in_igr1 = False
-                                    in_igr2 = False
+                                    in_iat = in_igr1 = in_igr2 = False
 
             elif file_type in light_mr_file_types or is_aux_amb or is_aux_gro or is_aux_cha:
 
                 if is_aux_amb:
 
-                    has_atom_name = False
-                    has_residue_label = False
-                    has_residue_pointer = False
-                    has_amb_atom_type = False
+                    has_atom_name = has_residue_label = has_residue_pointer = has_amb_atom_type = False
 
-                    chk_atom_name_format = False
-                    chk_residue_label_format = False
-                    chk_residue_pointer_format = False
-                    chk_amb_atom_type_format = False
+                    chk_atom_name_format = chk_residue_label_format = chk_residue_pointer_format = chk_amb_atom_type_format = False
 
-                    in_atom_name = False
-                    in_residue_label = False
-                    in_residue_pointer = False
-                    in_amb_atom_type = False
+                    in_atom_name = in_residue_label = in_residue_pointer = in_amb_atom_type = False
 
-                    atom_names = 0
-                    residue_labels = 0
-                    residue_pointers = 0
-                    amb_atom_types = 0
+                    atom_names = residue_labels = residue_pointers = amb_atom_types = 0
 
                 elif is_aux_gro:
 
-                    has_system = False
-                    has_molecules = False
-                    has_atoms = False
+                    has_system = has_molecules = has_atoms = False
 
-                    in_system = False
-                    in_molecules = False
-                    in_atoms = False
+                    in_system = in_molecules = in_atoms = False
 
-                    system_names = 0
-                    molecule_names = 0
-                    atom_names = 0
+                    system_names = molecule_names = atom_names = 0
 
                 elif is_aux_cha:
 
-                    has_ext = False
-
-                    in_atoms = False
+                    has_ext = in_atoms = False
 
                     atom_names = 0
 
@@ -10885,9 +10808,8 @@ class NmrDpUtility:
 
                             elif in_atom_name:
                                 len_line = len(line)
-                                begin = 0
+                                begin = col = 0
                                 end = max_char
-                                col = 0
                                 while col < max_cols and end < len_line:
                                     if len(line[begin:end].rstrip()) > 0:
                                         atom_names += 1
@@ -10897,9 +10819,8 @@ class NmrDpUtility:
 
                             elif in_residue_label:
                                 len_line = len(line)
-                                begin = 0
+                                begin = col = 0
                                 end = max_char
-                                col = 0
                                 while col < max_cols and end < len_line:
                                     if len(line[begin:end].rstrip()) > 0:
                                         residue_labels += 1
@@ -10909,9 +10830,8 @@ class NmrDpUtility:
 
                             elif in_residue_pointer:
                                 len_line = len(line)
-                                begin = 0
+                                begin = col = 0
                                 end = max_char
-                                col = 0
                                 while col < max_cols and end < len_line:
                                     try:
                                         _residue_pointer = line[begin:end].lstrip()
@@ -10926,9 +10846,8 @@ class NmrDpUtility:
 
                             elif in_amb_atom_type:
                                 len_line = len(line)
-                                begin = 0
+                                begin = col = 0
                                 end = max_char
-                                col = 0
                                 while col < max_cols and end < len_line:
                                     if len(line[begin:end].rstrip()) > 0:
                                         amb_atom_types += 1
@@ -11016,14 +10935,9 @@ class NmrDpUtility:
 
                         s = re.split('[ ()]', _line)
 
-                        atom_likes = 0
-                        cs_atom_likes = 0
+                        atom_likes = cs_atom_likes = 0
                         names = []
-                        res_like = False
-                        angle_like = False
-                        cs_range_like = False
-                        dist_range_like = False
-                        dihed_range_like = False
+                        res_like = angle_like = cs_range_like = dist_range_like = dihed_range_like = False
 
                         for t in s:
 
@@ -11085,14 +10999,9 @@ class NmrDpUtility:
 
                             s = re.split('[ ()]', _line)
 
-                            atom_likes = 0
-                            cs_atom_likes = 0
+                            atom_likes = cs_atom_likes = 0
                             names = []
-                            res_like = False
-                            angle_like = False
-                            cs_range_like = False
-                            dist_range_like = False
-                            dihed_range_like = False
+                            res_like = angle_like = cs_range_like = dist_range_like = dihed_range_like = False
 
                             for t in s:
 
@@ -11915,27 +11824,16 @@ class NmrDpUtility:
             if has_spectral_peak:
                 continue
 
-            has_mr_header = False
-            has_pdb_format = False
-            has_cif_format = False
-            has_str_format = False
+            has_mr_header = has_pdb_format = has_cif_format = has_str_format = False
 
             try:
 
                 header = True
-                in_header = False
-                pdb_record = False
-                cs_str = False
-                mr_str = False
+                in_header = pdb_record = cs_str = mr_str = False
 
-                has_datablock = False
-                has_anonymous_saveframe = False
-                has_save = False
-                has_loop = False
-                has_stop = False
+                has_datablock = has_anonymous_saveframe = has_save = has_loop = has_stop = False
 
-                first_str_line_num = -1
-                last_str_line_num = -1
+                first_str_line_num = last_str_line_num = -1
 
                 i = 0
 
@@ -14260,13 +14158,10 @@ class NmrDpUtility:
         """ Report other possible format as error of a given legacy NMR restraint file.
         """
 
-        is_valid = False
+        is_valid = agreed_w_cns = False
         err = ''
         genuine_type = []
-        valid_types = {}
-        possible_types = {}
-
-        agreed_w_cns = False
+        valid_types, possible_types = {}, {}
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-cns':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
@@ -14471,8 +14366,7 @@ class NmrDpUtility:
         is_valid = False
         err = ''
         genuine_type = None
-        valid_types = {}
-        possible_types = {}
+        valid_types, possible_types = {}, {}
 
         try:
 
@@ -14599,19 +14493,14 @@ class NmrDpUtility:
 
         fileListId = self.__file_path_list_len
 
-        dir_path = '.'
-        mr_file_name = '.'
-        split_file_list = []
-        peak_file_list = []
+        dir_path = mr_file_name = '.'
+        split_file_list, peak_file_list = [], []
 
         self.__mr_atom_name_mapping = []
 
-        remediated = False
-        aborted = False
-        src_basename = mr_core_path = None
-        mr_file_path = mr_file_link = None
-        mr_part_paths = []
-        pk_list_paths = []
+        remediated = aborted = False
+        src_basename = mr_core_path = mr_file_path = mr_file_link = None
+        mr_part_paths, pk_list_paths = [], []
 
         settled_mr_file_types = ('nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha',
                                  'nm-res-cns', 'nm-res-cya', 'nm-res-dyn', 'nm-res-gro',
@@ -14766,28 +14655,16 @@ class NmrDpUtility:
                 mr_part_paths.append({'header': header_file})
                 mr_part_paths.append({'footer': footer_file})
 
-            has_mr_header = False
-            has_pdb_format = False
-            has_cif_format = False
-            has_str_format = False
-            has_cs_str = False
-            has_mr_str = False
+            has_mr_header = has_pdb_format = has_cif_format = has_str_format = has_cs_str = has_mr_str = False
 
             try:
 
                 header = True
-                in_header = False
-                pdb_record = False
-                footer = False
+                in_header = pdb_record = footer = False
 
-                has_datablock = False
-                has_anonymous_saveframe = False
-                has_save = False
-                has_loop = False
-                has_stop = False
+                has_datablock = has_anonymous_saveframe = has_save = has_loop = has_stop = False
 
-                first_str_line_num = -1
-                last_str_line_num = -1
+                first_str_line_num = last_str_line_num = -1
 
                 i = 0
 
@@ -14949,8 +14826,7 @@ class NmrDpUtility:
                         mrPath = os.path.splitext(src_file)[0] + '-trimmed.str'
 
                         header = True
-                        in_header = False
-                        pdb_record = False
+                        in_header = pdb_record = False
 
                         i = 0
 
@@ -15125,9 +15001,7 @@ class NmrDpUtility:
                         mrPath = os.path.splitext(src_file)[0] + '-trimmed.cif'
 
                         header = True
-                        in_header = False
-                        pdb_record = False
-                        has_sharp = False
+                        in_header = pdb_record = has_sharp = False
 
                         i = 0
 
@@ -18489,12 +18363,8 @@ class NmrDpUtility:
 
                 seq_align_set = []
 
-                dst_chain_ids = {}
-                ref_chain_ids = {}
-                map_chain_ids = {}
-                map_seq_ids = {}
-
-                proc_chain_ids = {}
+                dst_chain_ids, ref_chain_ids, map_chain_ids, map_seq_ids, proc_chain_ids =\
+                    {}, {}, {}, {}, {}
 
                 for s1 in polymer_sequence:
                     chain_id = s1['chain_id']
@@ -18542,10 +18412,7 @@ class NmrDpUtility:
                                     __matched = _matched
                                     __unmapped = unmapped
                                     __conflict = conflict
-                                    __chain_id = None
-                                    __s1 = None
-                                    __offset_1 = None
-                                    __offset_2 = None
+                                    __chain_id = __s1 = __offset_1 = __offset_2 = None
 
                                     for _s1 in polymer_sequence:
 
@@ -18865,10 +18732,7 @@ class NmrDpUtility:
                                     __matched = _matched
                                     __unmapped = unmapped
                                     __conflict = conflict
-                                    __chain_id = None
-                                    __s1 = None
-                                    __offset_1 = None
-                                    __offset_2 = None
+                                    __chain_id = __s1 = __offset_1 = __offset_2 = None
 
                                     for _s1 in polymer_sequence:
 
@@ -19062,8 +18926,7 @@ class NmrDpUtility:
                             k_rests = list(total - set(mapping.keys()))
                             v_rests = list(total - set(mapping.values()))
 
-                            circular = False
-                            cross = False
+                            circular = cross = False
 
                             for k, v in mapping.items():
                                 for _k, _v in mapping.items():
@@ -19322,13 +19185,9 @@ class NmrDpUtility:
 
         length = len(myAlign)
 
-        seq_id1 = []
-        seq_id2 = []
-        comp_id1 = []
-        comp_id2 = []
+        seq_id1, seq_id2, comp_id1, comp_id2 = [], [], [], []
 
-        idx1 = 0
-        idx2 = 0
+        idx1 = idx2 = 0
         for i in range(length):
             myPr = myAlign[i]
             myPr0 = str(myPr[0])
@@ -21221,8 +21080,7 @@ class NmrDpUtility:
 
             warns = str(e).strip("'").split('\n')
 
-            has_multiple_data = False
-            has_bad_pattern = False
+            has_multiple_data = has_bad_pattern = False
 
             for warn in warns:
 
@@ -21482,8 +21340,7 @@ class NmrDpUtility:
                     except IndexError:
                         continue
 
-                    conflict = False
-                    inconsist = False
+                    conflict = inconsist = False
 
                     discrepancy = ''
 
@@ -21746,8 +21603,7 @@ class NmrDpUtility:
                                                               enforce_allowed_tags=(file_type == 'nmr-star'),
                                                               excl_missing_data=self.__excl_missing_data)[0]
 
-                            disulf_asm = []
-                            other_asm = []
+                            disulf_asm, other_asm = [], []
 
                             item_names = self.item_names_in_rdc_loop[file_type]
                             chain_id_1_name = item_names['chain_id_1']
@@ -21807,8 +21663,7 @@ class NmrDpUtility:
 
                                     if cs_lp_data is not None:
 
-                                        ca_chem_shift_1 = None
-                                        cb_chem_shift_1 = None
+                                        ca_chem_shift_1 = cb_chem_shift_1 = None
 
                                         for _row in cs_lp_data:
 
@@ -21829,8 +21684,7 @@ class NmrDpUtility:
                                         disulf['ca_chem_shift_1'] = ca_chem_shift_1
                                         disulf['cb_chem_shift_1'] = cb_chem_shift_1
 
-                                        ca_chem_shift_2 = None
-                                        cb_chem_shift_2 = None
+                                        ca_chem_shift_2 = cb_chem_shift_2 = None
 
                                         for _row in cs_lp_data:
 
@@ -21980,8 +21834,7 @@ class NmrDpUtility:
 
                                     if cs_lp_data is not None:
 
-                                        ca_chem_shift_1 = None
-                                        cb_chem_shift_1 = None
+                                        ca_chem_shift_1 = cb_chem_shift_1 = None
 
                                         for _row in cs_lp_data:
 
@@ -22002,8 +21855,7 @@ class NmrDpUtility:
                                         other['ca_chem_shift_1'] = ca_chem_shift_1
                                         other['cb_chem_shift_1'] = cb_chem_shift_1
 
-                                        ca_chem_shift_2 = None
-                                        cb_chem_shift_2 = None
+                                        ca_chem_shift_2 = cb_chem_shift_2 = None
 
                                         for _row in cs_lp_data:
 
@@ -22275,8 +22127,7 @@ class NmrDpUtility:
 
                                 warns = str(e).strip("'").split('\n')
 
-                                has_multiple_data = False
-                                has_bad_pattern = False
+                                has_multiple_data = has_bad_pattern = False
 
                                 for warn in warns:
 
@@ -22507,10 +22358,7 @@ class NmrDpUtility:
                                 first_point /= sp_freq
                                 sp_width /= sp_freq
 
-                        min_point = None
-                        max_point = None
-                        min_limit = None
-                        max_limit = None
+                        min_point = max_point = min_limit = max_limit = None
 
                         if first_point is not None and sp_width is not None:
 
@@ -22668,10 +22516,7 @@ class NmrDpUtility:
                             first_point /= sp_freq
                             sp_width /= sp_freq
 
-                        min_point = None
-                        max_point = None
-                        min_limit = None
-                        max_limit = None
+                        min_point = max_point = min_limit = max_limit = None
 
                         if first_point is not None and sp_width is not None:
 
@@ -23681,8 +23526,7 @@ class NmrDpUtility:
                                             f"is located at a distance of {na['ring_distance']}Å, "\
                                             f"and has an elevation angle of {na['ring_angle']}° with the ring plane."
                                     else:
-                                        warn = None
-                                        warn_alt = None
+                                        warn = warn_alt = None
 
                                 elif pa is not None:
 
@@ -23692,8 +23536,7 @@ class NmrDpUtility:
                                         warn_alt += f" The nearest paramagnetic/ferromagnetic atom ({pa['chain_id']}:{pa['seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
                                             f"is located at a distance of {pa['distance']}Å."
                                     else:
-                                        warn = None
-                                        warn_alt = None
+                                        warn = warn_alt = None
 
                                 elif self.__cifChecked:
                                     warn += no_reason_message
@@ -25355,8 +25198,7 @@ class NmrDpUtility:
                                         if row[0] in valid_auth_seq_per_chain:
                                             valid_auth_seq_per_chain.remove(row[0])
 
-            has_orig_seq = False
-            ch2_name_in_xplor = ch3_name_in_xplor = False
+            has_orig_seq = ch2_name_in_xplor = ch3_name_in_xplor = False
 
             if self.__remediation_mode:
                 if set(orig_pdb_tags) & set(loop.tags) == set(orig_pdb_tags):
@@ -25486,9 +25328,11 @@ class NmrDpUtility:
                         _row[7] = _coord_atom_site['type_symbol'][_atom_site_atom_id.index(atom_id)]
                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                        if fill_orig_atom_id and _row[6] != _row[23] and _row[23] in _atom_site_atom_id:
-                            if _row[23] in self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True):
-                                _row[23] = copy.copy(atom_id)
+                        # """
+                        # if fill_orig_atom_id and _row[6] != _row[23] and _row[23] in _atom_site_atom_id:
+                        #     if _row[23] in self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True):
+                        #         _row[23] = copy.copy(atom_id)
+                        # """
                     else:
                         if atom_id in ('H1', 'HT1') and 'H' in _atom_site_atom_id\
                            and atom_id not in _atom_site_atom_id:
@@ -28084,10 +27928,7 @@ class NmrDpUtility:
 
                         num_dim = max_dim - 1
 
-                        chain_id_names = []
-                        seq_id_names = []
-                        comp_id_names = []
-                        atom_id_names = []
+                        chain_id_names, seq_id_names, comp_id_names, atom_id_names = [], [], [], []
 
                         for d in range(num_dim):
 
@@ -28450,9 +28291,7 @@ class NmrDpUtility:
                                  if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode
                                  and lp['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
 
-                axis_codes = []
-                abs_pk_pos = []
-                sp_widths = []
+                axis_codes, abs_pk_pos, sp_widths = [], [], []
 
                 if aux_data is not None and len(aux_data) > 0:
                     for i in range(1, max_dim):
@@ -28547,11 +28386,7 @@ class NmrDpUtility:
                         _d[k] = v
                     item_names.append(_d)
 
-                chain_id_names = []
-                seq_id_names = []
-                comp_id_names = []
-                atom_id_names = []
-                position_names = []
+                chain_id_names, seq_id_names, comp_id_names, atom_id_names, position_names = [], [], [], [], []
 
                 for d in range(num_dim):
                     chain_id_names.append(item_names[d]['chain_id'])
@@ -28948,10 +28783,7 @@ class NmrDpUtility:
                         _d[k] = v
                     item_names.append(_d)
 
-                chain_id_names = []
-                seq_id_names = []
-                comp_id_names = []
-                atom_id_names = []
+                chain_id_names, seq_id_names, comp_id_names, atom_id_names = [], [], [], []
 
                 for i in range(num_dim):
                     chain_id_names.append(item_names[i]['chain_id'])
@@ -28963,9 +28795,7 @@ class NmrDpUtility:
                                  if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode
                                  and lp['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
 
-                axis_codes = []
-                abs_pk_pos = []
-                sp_widths = []
+                axis_codes, abs_pk_pos, sp_widths = [], [], []
 
                 if aux_data is not None and len(aux_data) > 0:
                     for i in range(1, max_dim):
@@ -31696,10 +31526,7 @@ class NmrDpUtility:
 
                 if sf_item['constraint_subsubtype'] == 'simple':
 
-                    metal_coord = False
-                    disele_bond = False
-                    disulf_bond = False
-                    hydrog_bond = False
+                    metal_coord = disele_bond = disulf_bond = hydrog_bond = False
 
                     for row in lp:
                         comp_id_1 = row[comp_id_1_col]
@@ -32093,13 +31920,11 @@ class NmrDpUtility:
                 + (str(row[upper_limit_col]) if upper_limit_col != -1 else '')\
                 + (str(row[weight_col]) if weight_col != -1 else '')
 
-        _rest_id = None
-        _member_logic_code = None
-        _atom1 = _atom2 = {}
+        _rest_id = _member_logic_code = None
+        _atom1, _atom2 = {}, {}
         _values = ''
 
-        modified = False
-        has_member_id = False
+        modified = has_member_id = False
 
         sf_item['id'] = 0
 
@@ -32179,7 +32004,7 @@ class NmrDpUtility:
                 _rest_id, _member_logic_code, _atom1, _atom2, _values = rest_id, member_logic_code, atom1, atom2, values
 
             except ValueError:
-                _atom1 = _atom2 = {}
+                _atom1, _atom2 = {}, {}
 
             if not self.__native_combined:  # DAOTHER-8855
                 _row[id_col] = sf_item['id']
@@ -32196,8 +32021,7 @@ class NmrDpUtility:
             if len(rows) < 2:
                 return
 
-            atom_sel1 = []
-            atom_sel2 = []
+            atom_sel1, atom_sel2 = [], []
 
             for row in rows:
 
@@ -32226,8 +32050,7 @@ class NmrDpUtility:
                     index_id = row[index_id_col]
                     member_id_dict[index_id] = member_id
 
-        _row = None
-        _rest_id = None
+        _row = _rest_id = None
         _union_rows = []
 
         for row in lp:
@@ -32767,16 +32590,12 @@ class NmrDpUtility:
         if not has_poly_seq:
             return False
 
-        amberAtomNumberDict = None
-        gromacsAtomNumberDict = None
-        charmmAtomNumberDict = None
+        amberAtomNumberDict = gromacsAtomNumberDict = charmmAtomNumberDict = None
         _amberAtomNumberDict = {}
 
-        has_nm_aux_gro_file = False
-        has_nm_aux_cha_file = False
+        has_nm_aux_gro_file = has_nm_aux_cha_file = False
 
-        cyanaUplDistRest = 0
-        cyanaLolDistRest = 0
+        cyanaUplDistRest = cyanaLolDistRest = 0
 
         fileListId = self.__file_path_list_len
 
@@ -32965,9 +32784,7 @@ class NmrDpUtility:
 
         fileListId = self.__file_path_list_len
 
-        ar_file_order = []
-        ar_file_any_dist = []  # 6gbm, NOE restraint files must take precedence over other distance constraints such as hydrogen bonds
-        ar_file_wo_dist = []
+        ar_file_order, ar_file_any_dist, ar_file_wo_dist = [], [], []  # 6gbm, NOE restraint files must take precedence over other distance constraints such as hydrogen bonds
 
         derived_from_public_mr = False
 
@@ -33078,8 +32895,7 @@ class NmrDpUtility:
 
                     if conflict == 0 and unmapped > 0:
 
-                        nmr_seq_ids = []
-                        cif_auth_seq_ids = []
+                        nmr_seq_ids, cif_auth_seq_ids = [], []
 
                         for i in range(length):
                             if str(myAlign[i][0]) != '.' and i < len(s1['seq_id']):
@@ -34658,10 +34474,9 @@ class NmrDpUtility:
 
             sf_item = {}
 
-            title = None
+            title = _row = None
 
             _q_value = 0.0
-            _row = None
 
             lp_count = 0
 
@@ -36379,15 +36194,9 @@ class NmrDpUtility:
 
                     # all atoms
 
-                    all_c = []
+                    all_c, excluded_comp_id, excluded_atom_id = [], [], []
 
-                    excluded_comp_id = []
-                    excluded_atom_id = []
-
-                    h1_col = -1
-                    c13_col = -1
-                    n15_col = -1
-                    p31_col = -1
+                    h1_col = c13_col = n15_col = p31_col = -1
 
                     col = 0
 
@@ -36526,10 +36335,7 @@ class NmrDpUtility:
 
                     bb_c = []
 
-                    h1_col = -1
-                    c13_col = -1
-                    n15_col = -1
-                    p31_col = -1
+                    h1_col = c13_col = n15_col = p31_col = -1
 
                     col = 0
 
@@ -36652,10 +36458,7 @@ class NmrDpUtility:
 
                     sc_c = []
 
-                    h1_col = -1
-                    c13_col = -1
-                    n15_col = -1
-                    p31_col = -1
+                    h1_col = c13_col = n15_col = p31_col = -1
 
                     col = 0
 
@@ -36778,8 +36581,7 @@ class NmrDpUtility:
 
                     ch3_c = []
 
-                    h1_col = -1
-                    c13_col = -1
+                    h1_col = c13_col = -1
 
                     col = 0
 
@@ -36881,9 +36683,7 @@ class NmrDpUtility:
 
                     aro_c = []
 
-                    h1_col = -1
-                    c13_col = -1
-                    n15_col = -1
+                    h1_col = c13_col = n15_col = -1
 
                     col = 0
 
@@ -37000,8 +36800,7 @@ class NmrDpUtility:
             for k in count:
                 z_scores[k] = []
 
-            max_val = 0.0
-            min_val = 0.0
+            max_val = min_val = 0.0
 
             for row in lp_data:
 
@@ -37100,8 +36899,7 @@ class NmrDpUtility:
             while scale > target_scale:
                 scale /= 2.0
 
-            range_of_vals = []
-            count_of_vals = []
+            range_of_vals, count_of_vals = [], []
 
             v = 0.0
             while v < min_val:
@@ -37156,8 +36954,7 @@ class NmrDpUtility:
 
                             cys = {'chain_id': chain_id, 'seq_id': seq_id}
 
-                            ca_chem_shift = None
-                            cb_chem_shift = None
+                            ca_chem_shift = cb_chem_shift = None
 
                             for row in lp_data:
 
@@ -37240,8 +37037,7 @@ class NmrDpUtility:
 
                             pro = {'chain_id': chain_id, 'seq_id': seq_id}
 
-                            cb_chem_shift = None
-                            cg_chem_shift = None
+                            cb_chem_shift = cg_chem_shift = None
 
                             for row in lp_data:
 
@@ -37349,10 +37145,7 @@ class NmrDpUtility:
 
                             his = {'chain_id': chain_id, 'seq_id': seq_id}
 
-                            cg_chem_shift = None
-                            cd2_chem_shift = None
-                            nd1_chem_shift = None
-                            ne2_chem_shift = None
+                            cg_chem_shift = cd2_chem_shift = nd1_chem_shift = ne2_chem_shift = None
 
                             for row in lp_data:
 
@@ -37461,8 +37254,7 @@ class NmrDpUtility:
 
                             if comp_id == 'VAL':
 
-                                cg1_chem_shift = None
-                                cg2_chem_shift = None
+                                cg1_chem_shift = cg2_chem_shift = None
 
                                 for row in lp_data:
 
@@ -37555,8 +37347,7 @@ class NmrDpUtility:
 
                             elif comp_id == 'LEU':
 
-                                cd1_chem_shift = None
-                                cd2_chem_shift = None
+                                cd1_chem_shift = cd2_chem_shift = None
 
                                 for row in lp_data:
 
@@ -37749,10 +37540,7 @@ class NmrDpUtility:
 
                     if s is not None:
 
-                        rci_residues = []
-                        rci_assignments = []
-                        seq_ids_wo_assign = []
-                        oxidized_cys_seq_ids = []
+                        rci_residues, rci_assignments, seq_ids_wo_assign, oxidized_cys_seq_ids = [], [], [], []
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
@@ -37811,8 +37599,7 @@ class NmrDpUtility:
 
                                 if comp_id in ('CYS', 'DCY'):
 
-                                    ca_chem_shift = None
-                                    cb_chem_shift = None
+                                    ca_chem_shift = cb_chem_shift = None
 
                                     for row in lp_data:
 
@@ -37895,11 +37682,19 @@ class NmrDpUtility:
                 sf = self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
                 lp = next(lp for lp in sf.loops if lp.category == lp_category)
 
-                mapping = []
+                mapping, identity_mapping = [], []
 
                 tags = ['Comp_ID', 'Atom_ID', 'Original_PDB_atom_name']
                 if set(tags) & set(lp.tags) == set(tags):
                     dat = get_lp_tag(lp, tags)
+
+                    for row in dat:
+                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] != row[2]:
+                            continue
+                        key = (row[0], row[2])
+                        if key not in identity_mapping:
+                            identity_mapping.append(key)
+
                     for row in dat:
                         if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
                             continue
@@ -37913,11 +37708,11 @@ class NmrDpUtility:
                         history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
 
                         if not any(h for h in history if h['atom_name'] == atom_name):
-                            history.append({'atom_name': atom_name, 'atom_id': [atom_id]})
-                        else:
-                            h = next(h for h in history if h['atom_name'] == atom_name)
-                            if atom_id not in h['atom_id']:
-                                h['atom_id'].append(atom_id)
+                            history.append({'atom_name': atom_name, 'atom_id': [atom_name] if (comp_id, atom_name) in identity_mapping else []})
+
+                        h = next(h for h in history if h['atom_name'] == atom_name)
+                        if atom_id not in h['atom_id']:
+                            h['atom_id'].append(atom_id)
 
                 if len(mapping) == 0:
                     mapping = None
@@ -37979,17 +37774,12 @@ class NmrDpUtility:
             max_val = -100.0
             min_val = 100.0
 
-            count = {}
-            comb_count = {}
-            inco_count = {}
-            redu_count = {}
-            weights = {}
-            potential_types = {}
+            count, comb_count, inco_count, redu_count, weights, potential_types =\
+                {}, {}, {}, {}, {}, {}
+
             set_id = set()
 
-            count_per_residue = []
-            count_on_map = []
-            count_on_asym_map = []
+            count_per_residue, count_on_map, count_on_asym_map = [], [], []
 
             has_inter_chain_constraint = False
 
@@ -38058,8 +37848,7 @@ class NmrDpUtility:
 
                 target_value = row.get(target_value_name)
 
-                upper_limit = None
-                lower_limit = None
+                upper_limit = lower_limit = None
 
                 if target_value is None:
 
@@ -38362,8 +38151,7 @@ class NmrDpUtility:
             while scale > target_scale:
                 scale /= 2.0
 
-            range_of_vals = []
-            count_of_vals = []
+            range_of_vals, count_of_vals = [], []
 
             v = 0.0
             while v < min_val:
@@ -38393,8 +38181,7 @@ class NmrDpUtility:
 
                     target_value = row.get(target_value_name)
 
-                    upper_limit = None
-                    lower_limit = None
+                    upper_limit = lower_limit = None
 
                     if target_value is None:
 
@@ -38459,8 +38246,7 @@ class NmrDpUtility:
 
                 # max_inclusive = DIST_UNCERT_MAX
 
-                max_val = 0.0
-                min_val = 0.0
+                max_val = min_val = 0.0
 
                 dist_ann = []
 
@@ -38566,8 +38352,7 @@ class NmrDpUtility:
                     while scale > target_scale:
                         scale /= 2.0
 
-                    range_of_vals = []
-                    count_of_vals = []
+                    range_of_vals, count_of_vals = [], []
 
                     v = 0.0
                     while v < min_val:
@@ -38668,8 +38453,7 @@ class NmrDpUtility:
 
                                     target_value = row_1.get(target_value_name)
 
-                                    upper_limit = None
-                                    lower_limit = None
+                                    upper_limit = lower_limit = None
 
                                     if target_value is None:
 
@@ -38726,8 +38510,7 @@ class NmrDpUtility:
 
                                 target_value = row_1.get(target_value_name)
 
-                                upper_limit = None
-                                lower_limit = None
+                                upper_limit = lower_limit = None
 
                                 if target_value is None:
 
@@ -38801,12 +38584,38 @@ class NmrDpUtility:
                 sf = self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
                 lp = next(lp for lp in sf.loops if lp.category == lp_category)
 
-                mapping = []
+                mapping, identity_mapping = [], []
+                dat1 = dat2 = None
 
-                tags = ['Comp_ID_1', 'Atom_ID_1', 'Auth_atom_name_1']
-                if set(tags) & set(lp.tags) == set(tags):
-                    dat = get_lp_tag(lp, tags)
-                    for row in dat:
+                tags1 = ['Comp_ID_1', 'Atom_ID_1', 'Auth_atom_name_1']
+                if set(tags1) & set(lp.tags) == set(tags1):
+                    dat1 = get_lp_tag(lp, tags1)
+
+                tags2 = ['Comp_ID_2', 'Atom_ID_2', 'Auth_atom_name_2']
+                if set(tags2) & set(lp.tags) == set(tags2):
+                    dat2 = get_lp_tag(lp, tags2)
+
+                if dat1 is not None:
+
+                    for row in dat1:
+                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] != row[2]:
+                            continue
+                        key = (row[0], row[2])
+                        if key not in identity_mapping:
+                            identity_mapping.append(key)
+
+                if dat2 is not None:
+
+                    for row in dat2:
+                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] != row[2]:
+                            continue
+                        key = (row[0], row[2])
+                        if key not in identity_mapping:
+                            identity_mapping.append(key)
+
+                if dat1 is not None:
+
+                    for row in dat1:
                         if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
                             continue
                         comp_id = row[0]
@@ -38819,16 +38628,15 @@ class NmrDpUtility:
                         history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
 
                         if not any(h for h in history if h['atom_name'] == atom_name):
-                            history.append({'atom_name': atom_name, 'atom_id': [atom_id]})
-                        else:
-                            h = next(h for h in history if h['atom_name'] == atom_name)
-                            if atom_id not in h['atom_id']:
-                                h['atom_id'].append(atom_id)
+                            history.append({'atom_name': atom_name, 'atom_id': [atom_name] if (comp_id, atom_name) in identity_mapping else []})
 
-                tags = ['Comp_ID_2', 'Atom_ID_2', 'Auth_atom_name_2']
-                if set(tags) & set(lp.tags) == set(tags):
-                    dat = get_lp_tag(lp, tags)
-                    for row in dat:
+                        h = next(h for h in history if h['atom_name'] == atom_name)
+                        if atom_id not in h['atom_id']:
+                            h['atom_id'].append(atom_id)
+
+                if dat2 is not None:
+
+                    for row in dat2:
                         if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
                             continue
                         comp_id = row[0]
@@ -38841,11 +38649,11 @@ class NmrDpUtility:
                         history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
 
                         if not any(h for h in history if h['atom_name'] == atom_name):
-                            history.append({'atom_name': atom_name, 'atom_id': [atom_id]})
-                        else:
-                            h = next(h for h in history if h['atom_name'] == atom_name)
-                            if atom_id not in h['atom_id']:
-                                h['atom_id'].append(atom_id)
+                            history.append({'atom_name': atom_name, 'atom_id': [atom_name] if (comp_id, atom_name) in identity_mapping else []})
+
+                        h = next(h for h in history if h['atom_name'] == atom_name)
+                        if atom_id not in h['atom_id']:
+                            h['atom_id'].append(atom_id)
 
                 if len(mapping) == 0:
                     mapping = None
@@ -38891,8 +38699,7 @@ class NmrDpUtility:
 
             count = {}
 
-            count_on_map = []
-            count_on_asym_map = []
+            count_on_map, count_on_asym_map = [], []
 
             has_inter_chain_constraint = False
 
@@ -39067,15 +38874,9 @@ class NmrDpUtility:
         comp_id_1_name = item_names['comp_id_1']
         comp_id_2_name = item_names['comp_id_2']
 
-        hydrogen_bond_type = None
-        hydrogen_bond = False
-        disulfide_bond_type = None
-        disulfide_bond = False
-        diselenide_bond_type = None
-        diselenide_bond = False
-        other_bond_type = None
-        other_bond = False
-        symmetry = False
+        hydrogen_bond_type = disulfide_bond_type = diselenide_bond_type = other_bond_type = None
+
+        hydrogen_bond = disulfide_bond = diselenide_bond = other_bond = symmetry = False
 
         if chain_id_1 != chain_id_2 or seq_id_1 != seq_id_2:
 
@@ -39374,10 +39175,7 @@ class NmrDpUtility:
                         is_bb_atom_2 = _atom_id_2[0] in self.__csStat.getBackBoneAtoms(comp_id_2)
 
                 else:
-                    is_bb_atom_1 = False
-                    is_bb_atom_2 = False
-                    is_sc_atom_1 = False
-                    is_sc_atom_2 = False
+                    is_bb_atom_1 = is_bb_atom_2 = is_sc_atom_1 = is_sc_atom_2 = False
 
             else:
                 is_sc_atom_1 = atom_id_1 in self.__csStat.getSideChainAtoms(comp_id_1)
@@ -39426,15 +39224,9 @@ class NmrDpUtility:
         comp_id_1_name = item_names['comp_id_1']
         comp_id_2_name = item_names['comp_id_2']
 
-        hydrogen_bond_type = None
-        hydrogen_bond = False
-        disulfide_bond_type = None
-        disulfide_bond = False
-        diselenide_bond_type = None
-        diselenide_bond = False
-        other_bond_type = None
-        other_bond = False
-        symmetry = False
+        hydrogen_bond_type = disulfide_bond_type = diselenide_bond_type = other_bond_type = None
+
+        hydrogen_bond = disulfide_bond = diselenide_bond = other_bond = symmetry = False
 
         if chain_id_1 != chain_id_2 or seq_id_1 != seq_id_2:
 
@@ -39716,10 +39508,7 @@ class NmrDpUtility:
                         is_bb_atom_2 = _atom_id_2[0] in self.__csStat.getBackBoneAtoms(comp_id_2)
 
                 else:
-                    is_bb_atom_1 = False
-                    is_bb_atom_2 = False
-                    is_sc_atom_1 = False
-                    is_sc_atom_2 = False
+                    is_bb_atom_1 = is_bb_atom_2 = is_sc_atom_1 = is_sc_atom_2 = False
 
             else:
                 is_sc_atom_1 = atom_id_1 in self.__csStat.getSideChainAtoms(comp_id_1)
@@ -39796,20 +39585,12 @@ class NmrDpUtility:
 
         try:
 
-            count = {}
-            comb_count = {}
-            inco_count = {}
-            redu_count = {}
-            polymer_types = {}
-            weights = {}
-            potential_types = {}
+            count, comb_count, inco_count, redu_count, polymer_types, weights, potential_types =\
+                {}, {}, {}, {}, {}, {}, {}
+
             set_id = set()
 
-            phi_list = []
-            psi_list = []
-            chi1_list = []
-            chi2_list = []
-            value_per_residue = []
+            phi_list, psi_list, chi1_list, chi2_list, value_per_residue = [], [], [], [], []
 
             polymer_sequence = input_source_dic['polymer_sequence']
 
@@ -39877,8 +39658,7 @@ class NmrDpUtility:
                         upper_limit += 360.0
 
                 else:
-                    lower_limit = None
-                    upper_limit = None
+                    lower_limit = upper_limit = None
 
                 data_type = row[angle_type_name]
 
@@ -39965,18 +39745,20 @@ class NmrDpUtility:
                     else:
                         polymer_types['other'] = 1
 
-                seq_ids = []
+                seq_ids, comp_ids = [], []
+
                 seq_ids.append(seq_id_1)
                 seq_ids.append(seq_id_2)
                 seq_ids.append(seq_id_3)
                 seq_ids.append(seq_id_4)
-                comp_ids = []
+
+                seq_id_common = collections.Counter(seq_ids).most_common()
+
                 comp_ids.append(comp_id_1)
                 comp_ids.append(comp_id_2)
                 comp_ids.append(comp_id_3)
                 comp_ids.append(comp_id_4)
 
-                seq_id_common = collections.Counter(seq_ids).most_common()
                 comp_id_common = collections.Counter(comp_ids).most_common()
 
                 if data_type.startswith('phi_'):
@@ -40106,8 +39888,7 @@ class NmrDpUtility:
 
             if 'phi_angle_constraints' in count and 'psi_angle_constraints' in count:
 
-                phi_psi_value = {}
-                phi_psi_error = {}
+                phi_psi_value, phi_psi_error = {}, {}
 
                 for phi in phi_list:
 
@@ -40144,8 +39925,7 @@ class NmrDpUtility:
 
             if 'chi1_angle_constraints' in count and 'chi2_angle_constraints' in count:
 
-                chi1_chi2_value = {}
-                chi1_chi2_error = {}
+                chi1_chi2_value, chi1_chi2_error = {}, {}
 
                 for chi1 in chi1_list:
 
@@ -40331,8 +40111,7 @@ class NmrDpUtility:
                     while scale > target_scale:
                         scale /= 2.0
 
-                    range_of_vals = []
-                    count_of_vals = []
+                    range_of_vals, count_of_vals = [], []
 
                     v = 0.0
                     while v < min_val:
@@ -40625,12 +40404,9 @@ class NmrDpUtility:
             weight_name = self.weight_tags[file_type]['rdc_restraint']
             id_tag = self.consist_id_tags[file_type]['rdc_restraint']
 
-            count = {}
-            comb_count = {}
-            inco_count = {}
-            redu_count = {}
-            weights = {}
-            potential_types = {}
+            count, comb_count, inco_count, redu_count, weights, potential_types =\
+                {}, {}, {}, {}, {}, {}
+
             set_id = set()
 
             value_per_residue = []
@@ -40786,8 +40562,7 @@ class NmrDpUtility:
             while scale > target_scale:
                 scale /= 2.0
 
-            range_of_vals = []
-            count_of_vals = []
+            range_of_vals, count_of_vals = [], []
 
             v = 0.0
             while v < min_val:
@@ -40864,8 +40639,7 @@ class NmrDpUtility:
 
                 max_inclusive = RDC_UNCERT_MAX
 
-                max_val = 0.0
-                min_val = 0.0
+                max_val = min_val = 0.0
 
                 rdc_ann = []
 
@@ -40962,8 +40736,7 @@ class NmrDpUtility:
                     while scale > target_scale:
                         scale /= 2.0
 
-                    range_of_vals = []
-                    count_of_vals = []
+                    range_of_vals, count_of_vals = [], []
 
                     v = 0.0
                     while v < min_val:
@@ -41141,10 +40914,7 @@ class NmrDpUtility:
                 _d[k] = v
             item_names.append(_d)
 
-        chain_id_names = []
-        seq_id_names = []
-        comp_id_names = []
-        atom_id_names = []
+        chain_id_names, seq_id_names, comp_id_names, atom_id_names = [], [], [], []
 
         try:
 
@@ -41177,12 +40947,7 @@ class NmrDpUtility:
             if aux_data is not None:
                 for i in range(1, max_dim):
                     for sp_dim in aux_data:
-                        sp_freq = None
-                        center_point = None
-                        under_sampling_type = None
-                        encoding_code = None
-                        encoded_src_dim_id = None
-                        mag_link_id = None
+                        sp_freq = center_point = under_sampling_type = encoding_code = encoded_src_dim_id = mag_link_id = None
                         if file_type == 'nef':
                             if sp_dim['dimension_id'] != i:
                                 continue
@@ -41444,12 +41209,7 @@ class NmrDpUtility:
             if aux_data is not None:
                 for i in range(1, max_dim):
                     for sp_dim in aux_data:
-                        sp_freq = None
-                        center_point = None
-                        under_sampling_type = None
-                        encoding_code = None
-                        encoded_src_dim_id = None
-                        mag_link_id = None
+                        sp_freq = center_point = under_sampling_type = encoding_code = encoded_src_dim_id = mag_link_id = None
                         if sp_dim['ID'] != i:
                             continue
                         axis_code = sp_dim['Axis_code']
@@ -42296,9 +42056,7 @@ class NmrDpUtility:
 
             cif_input_source.setItemValue('polymer_sequence', poly_seq)
 
-            not_superimposed_ensemble = {}
-            exactly_overlaid_ensemble = {}
-            exactly_overlaid_models = {}
+            not_superimposed_ensemble, exactly_overlaid_ensemble, exactly_overlaid_models = {}, {}, {}
 
             if not self.__combined_mode and self.__allow_missing_legacy_dist_restraint:  # no exception
 
@@ -43204,13 +42962,9 @@ class NmrDpUtility:
                     len_s1 = len(_s1['seq_id'])
                     len_s2 = len(_s2['seq_id'])
 
-                    seq_id1 = []
-                    seq_id2 = []
-                    comp_id1 = []
-                    comp_id2 = []
+                    seq_id1, seq_id2, comp_id1, comp_id2 = [], [], [], []
 
-                    idx1 = 0
-                    idx2 = 0
+                    idx1 = idx2 = 0
                     for i in range(length):
                         myPr = myAlign[i]
                         myPr0 = str(myPr[0])
@@ -43359,13 +43113,9 @@ class NmrDpUtility:
                     len_s1 = len(_s1['seq_id'])
                     len_s2 = len(_s2['seq_id'])
 
-                    seq_id1 = []
-                    seq_id2 = []
-                    comp_id1 = []
-                    comp_id2 = []
+                    seq_id1, seq_id2, comp_id1, comp_id2 = [], [], [], []
 
-                    idx1 = 0
-                    idx2 = 0
+                    idx1 = idx2 = 0
                     for i in range(length):
                         myPr = myAlign[i]
                         myPr0 = str(myPr[0])
@@ -43517,8 +43267,7 @@ class NmrDpUtility:
 
                 # from model to nmr (first trial, never raise a warning or an error)
 
-                mat = []
-                indices = []
+                mat, indices = [], []
 
                 for s1 in cif_polymer_sequence:
                     chain_id = s1['chain_id']
@@ -43684,8 +43433,7 @@ class NmrDpUtility:
                     if result['unmapped'] > 0 or result['conflict'] > 0:
 
                         aligned = [True] * length
-                        seq_id1 = []
-                        seq_id2 = []
+                        seq_id1, seq_id2 = [], []
 
                         j = 0
                         for i in range(length):
@@ -43750,10 +43498,8 @@ class NmrDpUtility:
                                 if not low_evid_chain_mapping:  # DAOTHER-8751
                                     continue
 
-                        unmapped = []
-                        conflict = []
-                        # offset_1 = 0
-                        # offset_2 = 0
+                        unmapped, conflict = [], []
+                        # offset_1 = offset_2 = 0
 
                         for i in range(length):
                             myPr = myAlign[i]
@@ -43792,8 +43538,7 @@ class NmrDpUtility:
 
                 ca_idx = 0
 
-                mat = []
-                indices = []
+                mat, indices = [], []
 
                 for s1 in nmr_polymer_sequence:
                     chain_id = s1['chain_id']
@@ -43968,8 +43713,7 @@ class NmrDpUtility:
                     if result['unmapped'] > 0 or result['conflict'] > 0:
 
                         aligned = [True] * length
-                        seq_id1 = []
-                        seq_id2 = []
+                        seq_id1, seq_id2 = [], []
 
                         j = 0
                         for i in range(length):
@@ -44048,10 +43792,8 @@ class NmrDpUtility:
                                 if not low_evid_chain_mapping:  # DAOTHER-8751
                                     continue
 
-                        unmapped = []
-                        conflict = []
-                        # offset_1 = 0
-                        # offset_2 = 0
+                        unmapped, conflict = [], []
+                        # offset_1 = offset_2 = 0
 
                         for i in range(length):
                             myPr = myAlign[i]
@@ -44262,8 +44004,7 @@ class NmrDpUtility:
                                 if len(cif_ident_chain_id) == len(nmr_ident_chain_id) and len(cif_ident_chain_id) > 1:
                                     _chain_assign = chain_assign.copy()
 
-                                    nmr_mapped_chain_id = []
-                                    cif_mapped_chain_id = []
+                                    nmr_mapped_chain_id, cif_mapped_chain_id = [], []
 
                                     for ca in _chain_assign:
 
@@ -44307,8 +44048,7 @@ class NmrDpUtility:
 
                 ca_idx = 0
 
-                mat = []
-                indices = []
+                mat, indices = [], []
 
                 for s1 in cif_polymer_sequence:
                     chain_id = s1['chain_id']
@@ -44510,8 +44250,7 @@ class NmrDpUtility:
                     if result['unmapped'] > 0 or result['conflict'] > 0:
 
                         aligned = [True] * length
-                        seq_id1 = []
-                        seq_id2 = []
+                        seq_id1, seq_id2 = [], []
 
                         j = 0
                         for i in range(length):
@@ -44576,10 +44315,8 @@ class NmrDpUtility:
                                 if not low_evid_chain_mapping:  # DAOTHER-8751
                                     continue
 
-                        unmapped = []
-                        conflict = []
-                        # offset_1 = 0
-                        # offset_2 = 0
+                        unmapped, conflict = [], []
+                        # offset_1 = offset_2 = 0
 
                         for i in range(length):
                             myPr = myAlign[i]
@@ -44795,8 +44532,7 @@ class NmrDpUtility:
                                 if len(cif_ident_chain_id) == len(nmr_ident_chain_id) and len(cif_ident_chain_id) > 1:
                                     _chain_assign = chain_assign.copy()
 
-                                    nmr_mapped_chain_id = []
-                                    cif_mapped_chain_id = []
+                                    nmr_mapped_chain_id, cif_mapped_chain_id = [], []
 
                                     for ca in _chain_assign:
 
@@ -45426,10 +45162,7 @@ class NmrDpUtility:
 
         num_dim = max_dim - 1
 
-        chain_id_names = []
-        seq_id_names = []
-        comp_id_names = []
-        atom_id_names = []
+        chain_id_names, seq_id_names, comp_id_names, atom_id_names = [], [], [], []
         if file_type == 'nmr-star':
             alt_seq_id_names = []
 
@@ -46468,10 +46201,7 @@ class NmrDpUtility:
 
         orig_lp_data = None
 
-        has_res_var_dat = False
-
-        has_nef_index = False
-        has_entry_id = False
+        has_res_var_dat = has_nef_index = has_entry_id = False
 
         sf_framecode = 'assembly'
 
@@ -48901,8 +48631,7 @@ class NmrDpUtility:
 
                         _protons = [h for h in protons if h['model_id'] == model_id]
 
-                        has_hd1 = False
-                        has_he2 = False
+                        has_hd1 = has_he2 = False
 
                         for h in _protons:
                             if h['atom_id'] == hd1_name:
@@ -49014,8 +48743,7 @@ class NmrDpUtility:
 
             if len(protons) > 0:
 
-                has_hd1 = False
-                has_he2 = False
+                has_hd1 = has_he2 = False
 
                 for h in protons:
                     if h['atom_id'] == 'HD1':
@@ -49741,10 +49469,7 @@ class NmrDpUtility:
         """ Map disulfide bond of coordinate file to NMR data.
         """
 
-        ca_chem_shift_1 = None
-        cb_chem_shift_1 = None
-        ca_chem_shift_2 = None
-        cb_chem_shift_2 = None
+        ca_chem_shift_1 = cb_chem_shift_1 = ca_chem_shift_2 = cb_chem_shift_2 = None
 
         key_items = self.key_items[file_type][content_subtype]
         data_items = self.data_items[file_type][content_subtype]
@@ -50136,10 +49861,7 @@ class NmrDpUtility:
         """ Map other bond (neither disulfide nor covalent bond) of coordinate file to NMR data.
         """
 
-        ca_chem_shift_1 = None
-        cb_chem_shift_1 = None
-        ca_chem_shift_2 = None
-        cb_chem_shift_2 = None
+        ca_chem_shift_1 = cb_chem_shift_1 = ca_chem_shift_2 = cb_chem_shift_2 = None
 
         key_items = self.key_items[file_type][content_subtype]
         data_items = self.data_items[file_type][content_subtype]
@@ -50485,9 +50207,7 @@ class NmrDpUtility:
 
             len_model_ids = 0
 
-            dist = 0.0
-            ring_dist = 0.0
-            ring_angle = 0.0
+            dist = ring_dist = ring_angle = 0.0
 
             for model_id in model_ids:
 
@@ -51925,8 +51645,7 @@ class NmrDpUtility:
 
                 target_value = row.get(target_value_name)
 
-                upper_limit = None
-                lower_limit = None
+                upper_limit = lower_limit = None
 
                 if target_value is None:
 
@@ -52059,8 +51778,7 @@ class NmrDpUtility:
 
                 target_value = row.get(target_value_name)
 
-                upper_limit = None
-                lower_limit = None
+                upper_limit = lower_limit = None
 
                 if target_value is None:
 
@@ -52231,10 +51949,8 @@ class NmrDpUtility:
         lower_limit_name = item_names['lower_limit']
         upper_limit_name = item_names['upper_limit']
 
-        dh_chain_ids = set()
-        dh_seq_ids = {}
-        cs_chain_ids = set()
-        cs_seq_ids = {}
+        dh_chain_ids, cs_chain_ids = set(), set()
+        dh_seq_ids, cs_seq_ids = {}, {}
 
         try:
 
@@ -53658,23 +53374,22 @@ class NmrDpUtility:
                         cst_sf.add_tag('NOE_dist_averaging_method', sf_item['NOE_dist_averaging_method'])
                         break
 
-                NOE_tot_num = 0
-
-                NOE_intraresidue_tot_num = 0
-                NOE_sequential_tot_num = 0
-                NOE_medium_range_tot_num = 0
-                NOE_long_range_tot_num = 0
-                NOE_unique_tot_num = 0
-                NOE_intraresidue_unique_tot_num = 0
-                NOE_sequential_unique_tot_num = 0
-                NOE_medium_range_unique_tot_num = 0
-                NOE_long_range_unique_tot_num = 0
-                NOE_unamb_intramol_tot_num = 0
-                NOE_unamb_intermol_tot_num = 0
-                NOE_ambig_intramol_tot_num = 0
-                NOE_ambig_intermol_tot_num = 0
-                NOE_interentity_tot_num = 0
-                NOE_other_tot_num = 0
+                NOE_tot_num =\
+                    NOE_intraresidue_tot_num =\
+                    NOE_sequential_tot_num =\
+                    NOE_medium_range_tot_num =\
+                    NOE_long_range_tot_num =\
+                    NOE_unique_tot_num =\
+                    NOE_intraresidue_unique_tot_num =\
+                    NOE_sequential_unique_tot_num =\
+                    NOE_medium_range_unique_tot_num =\
+                    NOE_long_range_unique_tot_num =\
+                    NOE_unamb_intramol_tot_num =\
+                    NOE_unamb_intermol_tot_num =\
+                    NOE_ambig_intramol_tot_num =\
+                    NOE_ambig_intermol_tot_num =\
+                    NOE_interentity_tot_num =\
+                    NOE_other_tot_num = 0
 
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
 
@@ -53817,17 +53532,17 @@ class NmrDpUtility:
                         cst_sf.add_tag('ROE_dist_averaging_method', sf_item['ROE_dist_averaging_method'])
                         break
 
-                ROE_tot_num = 0
+                ROE_tot_num =\
+                    ROE_intraresidue_tot_num =\
+                    ROE_sequential_tot_num =\
+                    ROE_medium_range_tot_num =\
+                    ROE_long_range_tot_num =\
+                    ROE_unambig_intramol_tot_num =\
+                    ROE_unambig_intermol_tot_num =\
+                    ROE_ambig_intramol_tot_num =\
+                    ROE_ambig_intermol_tot_num =\
+                    ROE_other_tot_num = 0
 
-                ROE_intraresidue_tot_num = 0
-                ROE_sequential_tot_num = 0
-                ROE_medium_range_tot_num = 0
-                ROE_long_range_tot_num = 0
-                ROE_unambig_intramol_tot_num = 0
-                ROE_unambig_intermol_tot_num = 0
-                ROE_ambig_intramol_tot_num = 0
-                ROE_ambig_intermol_tot_num = 0
-                ROE_other_tot_num = 0
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
                     sf = sf_item['saveframe']
                     potential_type = get_first_sf_tag(sf, 'Potential_type')
@@ -53938,12 +53653,12 @@ class NmrDpUtility:
             if Dihedral_angle_tot_num > 0:
                 cst_sf.add_tag('Dihedral_angle_tot_num', Dihedral_angle_tot_num)
 
-            Protein_dihedral_angle_tot_num = 0
+            Protein_dihedral_angle_tot_num =\
+                Protein_phi_angle_tot_num =\
+                Protein_psi_angle_tot_num =\
+                Protein_chi_one_angle_tot_num =\
+                Protein_other_angle_tot_num = 0
 
-            Protein_phi_angle_tot_num = 0
-            Protein_psi_angle_tot_num = 0
-            Protein_chi_one_angle_tot_num = 0
-            Protein_other_angle_tot_num = 0
             if content_subtype in self.__mr_sf_dict_holder:
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
                     self.__updateTorsionAngleConstIdInMrStr(sf_item)
@@ -53956,8 +53671,7 @@ class NmrDpUtility:
                     auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
                     angle_name_col = lp.tags.index('Torsion_angle_name')
 
-                    _protein_angles = _other_angles = 0
-                    _protein_bb_angles = _protein_oth_angles = 0
+                    _protein_angles = _other_angles = _protein_bb_angles = _protein_oth_angles = 0
 
                     prev_id = -1
                     for row in lp:
@@ -54008,9 +53722,7 @@ class NmrDpUtility:
 
                         else:
 
-                            _protein_jcoups = 0
-                            _protein_bb_jcoups = 0
-                            _protein_oth_jcoups = 0
+                            _protein_jcoups = _protein_bb_jcoups = _protein_oth_jcoups = 0
 
                             for _sf_item in self.__mr_sf_dict_holder['jcoup_restraint']:
 
@@ -54062,16 +53774,16 @@ class NmrDpUtility:
                 cst_sf.add_tag('Protein_chi_one_angle_tot_num', Protein_chi_one_angle_tot_num)
                 cst_sf.add_tag('Protein_other_angle_tot_num', Protein_other_angle_tot_num)
 
-            NA_dihedral_angle_tot_num = 0
+            NA_dihedral_angle_tot_num =\
+                NA_alpha_angle_tot_num =\
+                NA_beta_angle_tot_num =\
+                NA_gamma_angle_tot_num =\
+                NA_delta_angle_tot_num =\
+                NA_epsilon_angle_tot_num =\
+                NA_chi_angle_tot_num =\
+                NA_other_angle_tot_num =\
+                NA_amb_dihedral_angle_tot_num = 0
 
-            NA_alpha_angle_tot_num = 0
-            NA_beta_angle_tot_num = 0
-            NA_gamma_angle_tot_num = 0
-            NA_delta_angle_tot_num = 0
-            NA_epsilon_angle_tot_num = 0
-            NA_chi_angle_tot_num = 0
-            NA_other_angle_tot_num = 0
-            NA_amb_dihedral_angle_tot_num = 0
             if content_subtype in self.__mr_sf_dict_holder:
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
 
@@ -54256,30 +53968,27 @@ class NmrDpUtility:
 
             content_subtype = 'rdc_restraint'
 
-            RDC_tot_num = 0
-
-            RDC_HH_tot_num = 0
-            RDC_HNC_tot_num = 0
-            RDC_NH_tot_num = 0
-            RDC_CC_tot_num = 0
-            RDC_CN_i_1_tot_num = 0
-            RDC_CAHA_tot_num = 0
-            RDC_HNHA_tot_num = 0
-            RDC_HNHA_i_1_tot_num = 0
-            RDC_CAC_tot_num = 0
-            RDC_CAN_tot_num = 0
-            RDC_other_tot_num = 0
-
-            RDC_intraresidue_tot_num = 0
-            RDC_sequential_tot_num = 0
-            RDC_medium_range_tot_num = 0
-            RDC_long_range_tot_num = 0
-
-            RDC_unambig_intramol_tot_num = 0
-            RDC_unambig_intermol_tot_num = 0
-            RDC_ambig_intramol_tot_num = 0
-            RDC_ambig_intermol_tot_num = 0
-            RDC_intermol_tot_num = 0
+            RDC_tot_num =\
+                RDC_HH_tot_num =\
+                RDC_HNC_tot_num =\
+                RDC_NH_tot_num =\
+                RDC_CC_tot_num =\
+                RDC_CN_i_1_tot_num =\
+                RDC_CAHA_tot_num =\
+                RDC_HNHA_tot_num =\
+                RDC_HNHA_i_1_tot_num =\
+                RDC_CAC_tot_num =\
+                RDC_CAN_tot_num =\
+                RDC_other_tot_num =\
+                RDC_intraresidue_tot_num =\
+                RDC_sequential_tot_num =\
+                RDC_medium_range_tot_num =\
+                RDC_long_range_tot_num =\
+                RDC_unambig_intramol_tot_num =\
+                RDC_unambig_intermol_tot_num =\
+                RDC_ambig_intramol_tot_num =\
+                RDC_ambig_intermol_tot_num =\
+                RDC_intermol_tot_num = 0
 
             if content_subtype in self.__mr_sf_dict_holder:
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
@@ -54618,8 +54327,7 @@ class NmrDpUtility:
             content_subtype = 'other_restraint'
 
             if content_subtype in self.__mr_sf_dict_holder:
-                Protein_other_tot_num = 0
-                NA_other_tot_num = 0
+                Protein_other_tot_num = NA_other_tot_num = 0
                 for sf_item in self.__mr_sf_dict_holder[content_subtype]:
                     lp = sf_item['loop']
                     lp_tags = lp['tags']
@@ -54711,8 +54419,7 @@ class NmrDpUtility:
                     software_id = max(software_id, _id_)
 
         file_name_dict = {}
-        file_id = 0
-        block_id = 0
+        file_id = block_id = 0
 
         for content_subtype in self.mr_content_subtypes:
             if self.__mr_sf_dict_holder is not None and content_subtype in self.__mr_sf_dict_holder:
@@ -54872,8 +54579,7 @@ class NmrDpUtility:
 
                 dir_path = os.path.dirname(file_path)
 
-                details = None
-                data_format = None
+                details = data_format = None
 
                 unknown_mr_desc = os.path.join(dir_path, '.entry_with_unknown_mr')
                 if os.path.exists(unknown_mr_desc):
@@ -55645,10 +55351,7 @@ class NmrDpUtility:
 
                         if sf_item[sf_framecode]['constraint_subsubtype'] == 'simple':
 
-                            metal_coord = False
-                            disele_bond = False
-                            disulf_bond = False
-                            hydrog_bond = False
+                            metal_coord = disele_bond = disulf_bond = hydrog_bond = False
 
                             for row in lp:
                                 comp_id_1 = row[comp_id_1_col]
@@ -55709,23 +55412,22 @@ class NmrDpUtility:
                             elif not metal_coord and not disele_bond and not disulf_bond and hydrog_bond:
                                 sf_item[sf_framecode]['constraint_subtype'] = 'hydrogen bond'
 
-                    NOE_tot_num = 0
-
-                    NOE_intraresidue_tot_num = 0
-                    NOE_sequential_tot_num = 0
-                    NOE_medium_range_tot_num = 0
-                    NOE_long_range_tot_num = 0
-                    NOE_unique_tot_num = 0
-                    NOE_intraresidue_unique_tot_num = 0
-                    NOE_sequential_unique_tot_num = 0
-                    NOE_medium_range_unique_tot_num = 0
-                    NOE_long_range_unique_tot_num = 0
-                    NOE_unamb_intramol_tot_num = 0
-                    NOE_unamb_intermol_tot_num = 0
-                    NOE_ambig_intramol_tot_num = 0
-                    NOE_ambig_intermol_tot_num = 0
-                    NOE_interentity_tot_num = 0
-                    NOE_other_tot_num = 0
+                    NOE_tot_num =\
+                        NOE_intraresidue_tot_num =\
+                        NOE_sequential_tot_num =\
+                        NOE_medium_range_tot_num =\
+                        NOE_long_range_tot_num =\
+                        NOE_unique_tot_num =\
+                        NOE_intraresidue_unique_tot_num =\
+                        NOE_sequential_unique_tot_num =\
+                        NOE_medium_range_unique_tot_num =\
+                        NOE_long_range_unique_tot_num =\
+                        NOE_unamb_intramol_tot_num =\
+                        NOE_unamb_intermol_tot_num =\
+                        NOE_ambig_intramol_tot_num =\
+                        NOE_ambig_intermol_tot_num =\
+                        NOE_interentity_tot_num =\
+                        NOE_other_tot_num = 0
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
@@ -55863,17 +55565,16 @@ class NmrDpUtility:
                             cst_sf.add_tag('ROE_dist_averaging_method', avr_method)
                             break
 
-                    ROE_tot_num = 0
-
-                    ROE_intraresidue_tot_num = 0
-                    ROE_sequential_tot_num = 0
-                    ROE_medium_range_tot_num = 0
-                    ROE_long_range_tot_num = 0
-                    ROE_unambig_intramol_tot_num = 0
-                    ROE_unambig_intermol_tot_num = 0
-                    ROE_ambig_intramol_tot_num = 0
-                    ROE_ambig_intermol_tot_num = 0
-                    ROE_other_tot_num = 0
+                    ROE_tot_num =\
+                        ROE_intraresidue_tot_num =\
+                        ROE_sequential_tot_num =\
+                        ROE_medium_range_tot_num =\
+                        ROE_long_range_tot_num =\
+                        ROE_unambig_intramol_tot_num =\
+                        ROE_unambig_intermol_tot_num =\
+                        ROE_ambig_intramol_tot_num =\
+                        ROE_ambig_intermol_tot_num =\
+                        ROE_other_tot_num = 0
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
@@ -56056,12 +55757,11 @@ class NmrDpUtility:
                     if Dihedral_angle_tot_num > 0:
                         cst_sf.add_tag('Dihedral_angle_tot_num', Dihedral_angle_tot_num)
 
-                    Protein_dihedral_angle_tot_num = 0
-
-                    Protein_phi_angle_tot_num = 0
-                    Protein_psi_angle_tot_num = 0
-                    Protein_chi_one_angle_tot_num = 0
-                    Protein_other_angle_tot_num = 0
+                    Protein_dihedral_angle_tot_num =\
+                        Protein_phi_angle_tot_num =\
+                        Protein_psi_angle_tot_num =\
+                        Protein_chi_one_angle_tot_num =\
+                        Protein_other_angle_tot_num = 0
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
@@ -56135,16 +55835,15 @@ class NmrDpUtility:
                         cst_sf.add_tag('Protein_chi_one_angle_tot_num', Protein_chi_one_angle_tot_num)
                         cst_sf.add_tag('Protein_other_angle_tot_num', Protein_other_angle_tot_num)
 
-                    NA_dihedral_angle_tot_num = 0
-
-                    NA_alpha_angle_tot_num = 0
-                    NA_beta_angle_tot_num = 0
-                    NA_gamma_angle_tot_num = 0
-                    NA_delta_angle_tot_num = 0
-                    NA_epsilon_angle_tot_num = 0
-                    NA_chi_angle_tot_num = 0
-                    NA_other_angle_tot_num = 0
-                    NA_amb_dihedral_angle_tot_num = 0
+                    NA_dihedral_angle_tot_num =\
+                        NA_alpha_angle_tot_num =\
+                        NA_beta_angle_tot_num =\
+                        NA_gamma_angle_tot_num =\
+                        NA_delta_angle_tot_num =\
+                        NA_epsilon_angle_tot_num =\
+                        NA_chi_angle_tot_num =\
+                        NA_other_angle_tot_num =\
+                        NA_amb_dihedral_angle_tot_num = 0
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
@@ -56350,30 +56049,27 @@ class NmrDpUtility:
 
                         sf_item[sf_framecode]['id'] = count
 
-                    RDC_tot_num = 0
-
-                    RDC_HH_tot_num = 0
-                    RDC_HNC_tot_num = 0
-                    RDC_NH_tot_num = 0
-                    RDC_CC_tot_num = 0
-                    RDC_CN_i_1_tot_num = 0
-                    RDC_CAHA_tot_num = 0
-                    RDC_HNHA_tot_num = 0
-                    RDC_HNHA_i_1_tot_num = 0
-                    RDC_CAC_tot_num = 0
-                    RDC_CAN_tot_num = 0
-                    RDC_other_tot_num = 0
-
-                    RDC_intraresidue_tot_num = 0
-                    RDC_sequential_tot_num = 0
-                    RDC_medium_range_tot_num = 0
-                    RDC_long_range_tot_num = 0
-
-                    RDC_unambig_intramol_tot_num = 0
-                    RDC_unambig_intermol_tot_num = 0
-                    RDC_ambig_intramol_tot_num = 0
-                    RDC_ambig_intermol_tot_num = 0
-                    RDC_intermol_tot_num = 0
+                    RDC_tot_num =\
+                        RDC_HH_tot_num =\
+                        RDC_HNC_tot_num =\
+                        RDC_NH_tot_num =\
+                        RDC_CC_tot_num =\
+                        RDC_CN_i_1_tot_num =\
+                        RDC_CAHA_tot_num =\
+                        RDC_HNHA_tot_num =\
+                        RDC_HNHA_i_1_tot_num =\
+                        RDC_CAC_tot_num =\
+                        RDC_CAN_tot_num =\
+                        RDC_other_tot_num =\
+                        RDC_intraresidue_tot_num =\
+                        RDC_sequential_tot_num =\
+                        RDC_medium_range_tot_num =\
+                        RDC_long_range_tot_num =\
+                        RDC_unambig_intramol_tot_num =\
+                        RDC_unambig_intermol_tot_num =\
+                        RDC_ambig_intramol_tot_num =\
+                        RDC_ambig_intermol_tot_num =\
+                        RDC_intermol_tot_num = 0
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')

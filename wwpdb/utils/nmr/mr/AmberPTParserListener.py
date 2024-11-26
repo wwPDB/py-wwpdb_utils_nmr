@@ -819,9 +819,7 @@ class AmberPTParserListener(ParseTreeListener):
                                 "Please verify the two sequences and re-upload the correct file(s) if required.")
 
             assi_ref_chain_ids = {}
-            proc_test_chain_ids = []
-            atom_nums = []
-            delete_atom_nums = []
+            proc_test_chain_ids, atom_nums, delete_atom_nums = [], [], []
 
             def update_atom_num(seq_align, orphan):
                 ref_chain_id = seq_align['ref_chain_id']
@@ -1021,8 +1019,7 @@ class AmberPTParserListener(ParseTreeListener):
 
             if self.__hasNonPolyModel:
                 compIdMapping = {}
-                mappedSeqVal = []
-                mappedAtomNum = []
+                mappedSeqVal, mappedAtomNum = [], []
 
                 for np in self.__nonPolyModel:
                     authChainId = np['auth_chain_id']

@@ -220,9 +220,7 @@ class GromacsPTParserListener(ParseTreeListener):
             if terminus[-1]:
                 terminus[-1] = False
 
-            seqIdList = []
-            compIdList = []
-            retrievedAtomNumList = []
+            seqIdList, compIdList, retrievedAtomNumList = [], [], []
 
             NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S')
 
@@ -297,8 +295,7 @@ class GromacsPTParserListener(ParseTreeListener):
                     self.__polySeqPrmTop.append({'chain_id': chainId,
                                                  'seq_id': seqIdList,
                                                  'auth_comp_id': compIdList})
-                    seqIdList = []
-                    compIdList = []
+                    seqIdList, compIdList = [], []
                     chainIndex += 1
                     chainId = indexToLetter(chainIndex)
                     offset = 1 - _seqId
@@ -571,9 +568,7 @@ class GromacsPTParserListener(ParseTreeListener):
                 len_top_na = sum(len(ps_top['seq_id']) for ps_top in self.__polySeqPrmTop
                                  if len(ps_top['seq_id']) > 3 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id']))
                 if len_cif_na == len_top_na:
-                    chainIdList = []
-                    seqIdList = []
-                    authCompIdList = []
+                    chainIdList, seqIdList, authCompIdList = [], [], []
                     for ps_top in self.__polySeqPrmTop:
                         len_ps_cif_seq = len(ps_top['seq_id'])
                         if len_ps_cif_seq > 3 and any(compId in ('DA?', 'DT?', 'DG?', 'DC?', 'A?', 'U?', 'G?', 'C?') for compId in ps_top['comp_id']):
@@ -761,9 +756,7 @@ class GromacsPTParserListener(ParseTreeListener):
                                 "Please verify the two sequences and re-upload the correct file(s) if required.")
 
             assi_ref_chain_ids = {}
-            proc_test_chain_ids = []
-            atom_nums = []
-            delete_atom_nums = []
+            proc_test_chain_ids, atom_nums, delete_atom_nums = [], [], []
 
             def update_atom_num(seq_align, orphan):
                 ref_chain_id = seq_align['ref_chain_id']
@@ -963,8 +956,7 @@ class GromacsPTParserListener(ParseTreeListener):
 
             if self.__hasNonPolyModel:
                 compIdMapping = {}
-                mappedSeqVal = []
-                mappedAtomNum = []
+                mappedSeqVal, mappedAtomNum = [], []
 
                 for np in self.__nonPolyModel:
                     authChainId = np['auth_chain_id']

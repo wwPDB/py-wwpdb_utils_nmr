@@ -1653,8 +1653,7 @@ class NEFTranslator:
 
         mandatoryTag = self.nefMandatoryTag if file_type == 'nef' else self.starMandatoryTag
 
-        missing_sf_tags = []
-        missing_lp_tags = []
+        missing_sf_tags, missing_lp_tags = [], []
 
         try:
             star_data = pynmrstar.Entry.from_file(in_file)
@@ -1731,8 +1730,7 @@ class NEFTranslator:
         """
 
         is_valid = True
-        info = []
-        error = []
+        info, error = [], []
 
         file_type = 'unknown'
 
@@ -2116,8 +2114,7 @@ class NEFTranslator:
             @return: list of saveframe category names, list of loop category names
         """
 
-        sf_list = []
-        lp_list = []
+        sf_list, lp_list = [], []
 
         if isinstance(star_data, pynmrstar.Entry):
 
@@ -2177,8 +2174,7 @@ class NEFTranslator:
             return False
 
         for loop in loops:
-            cmp_dict = {}
-            seq_dict = {}
+            cmp_dict, seq_dict = {}, {}
 
             seq_data = []
 
@@ -2367,8 +2363,7 @@ class NEFTranslator:
             return False
 
         for loop in loops:
-            cmp_dict = {}
-            seq_dict = {}
+            cmp_dict, seq_dict = {}, {}
 
             seq_data = []
 
@@ -2581,8 +2576,7 @@ class NEFTranslator:
                                         orig_seq_id_col = _loop.tags.index('Original_PDB_residue_no') if 'Original_PDB_residue_no' in _loop.tags else -1
                                         auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
 
-                                        rev_seq = {}
-                                        _offset = {}
+                                        rev_seq, _offset = {}, {}
                                         _entity_assembly_id = _entity_id = None
 
                                         for ca in chain_assign:
@@ -3326,8 +3320,7 @@ class NEFTranslator:
 
                 asm = []  # assembly of a loop
 
-                valid_gap_key = []
-                valid_spacer_key = []
+                valid_gap_key, valid_spacer_key = [], []
 
                 if coord_assembly_checker is not None:
                     cif_ps = coord_assembly_checker['polymer_sequence']
@@ -3538,10 +3531,7 @@ class NEFTranslator:
         seq_id_col = 3
 
         for loop in loops:
-            seq_dict = {}
-            acmp_dict = {}
-            aseq_dict = {}
-            asym_dict = {}
+            seq_dict, acmp_dict, aseq_dict, asym_dict = {}, {}, {}, {}
 
             seq_data = []
 
@@ -3833,8 +3823,7 @@ class NEFTranslator:
         tags = [atom_type, isotope_number, atom_id]
 
         for loop in loops:
-            ist_dict = {}
-            atm_dict = {}
+            ist_dict, atm_dict = {}, {}
 
             a_type_data = []
 
@@ -4162,7 +4151,7 @@ class NEFTranslator:
                 return True
             return False
 
-        f = _f = []  # user warnings
+        f, _f = [], []  # user warnings
 
         with io.StringIO() as idx_f, io.StringIO() as key_f, io.StringIO() as msg_f:
 
@@ -6642,8 +6631,7 @@ class NEFTranslator:
                             elif len_protons == 2:
                                 atom_list, ambiguity_code, details = protons, 2, None
                         if atom_id.startswith('QQ') and self.__ccU.updateChemCompDict(comp_id):
-                            root = []
-                            _branch = []
+                            root, _branch = [], []
                             _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:], exclProton=True)
                             if len(_root) > 0:
                                 _branch.append('C' + atom_id[2:])
@@ -6806,10 +6794,8 @@ class NEFTranslator:
         comp_id = comp_id.upper()
         is_std_comp_id = comp_id in monDict3
 
-        atom_list = []
+        atom_list, atoms, methyl_atoms = [], [], []
         ambiguity_code = 1
-        atoms = []
-        methyl_atoms = []
 
         alt_atom_conv_dict = dict(zip(coord_atom_site['atom_id'], coord_atom_site['alt_atom_id']))
         atom_conv_dict = dict(zip(coord_atom_site['alt_atom_id'], coord_atom_site['atom_id']))
@@ -7198,8 +7184,7 @@ class NEFTranslator:
                         if details is not None and atom_id[0] in ('Q', 'M'):
 
                             if atom_id.startswith('QQM'):  # 2n06, comp_id=CM8, atom_id=QQM -> ['HM2%', HM3%']
-                                root = []
-                                _branch = []
+                                root, _branch = [], []
                                 _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:], exclProton=True)
                                 if len(_root) > 0:
                                     _branch.append('C' + atom_id[2:])
@@ -7247,8 +7232,7 @@ class NEFTranslator:
                                 elif len_protons == 2:
                                     atom_list, ambiguity_code, details = protons, 2, None
                             if atom_id.startswith('QQ') and self.__ccU.updateChemCompDict(comp_id):
-                                root = []
-                                _branch = []
+                                root, _branch = [], []
                                 _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:], exclProton=True)
                                 if len(_root) > 0:
                                     _branch.append('C' + atom_id[2:])
@@ -7350,8 +7334,7 @@ class NEFTranslator:
             if atom_id[0] == 'M' or (atom_id[0] == 'Q' and self.__remediation_mode):  # DAOTHER-8663, 8751
 
                 if atom_id.startswith('QQM'):  # 2n06, comp_id=CM8, atom_id=QQM -> ['HM2%', HM3%']
-                    root = []
-                    _branch = []
+                    root, _branch = [], []
                     _root = self.__ccU.getBondedAtoms(comp_id, 'C' + atom_id[2:], exclProton=True)
                     if len(_root) > 0:
                         _branch.append('C' + atom_id[2:])
@@ -7490,10 +7473,8 @@ class NEFTranslator:
         comp_id = comp_id.upper()
         is_std_comp_id = comp_id in monDict3
 
-        atom_list = []
+        atom_list, atoms, methyl_atoms = [], [], []
         ambiguity_code = 1
-        atoms = []
-        methyl_atoms = []
 
         try:
 
@@ -7805,9 +7786,8 @@ class NEFTranslator:
         if key in self.__cachedDictForNefAtom:
             return copy.deepcopy(self.__cachedDictForNefAtom[key])
 
-        atom_list = []
+        atom_list, atoms = [], []
         atom_id_map = {}
-        atoms = []
 
         try:
 
@@ -8309,8 +8289,7 @@ class NEFTranslator:
             @return: rows of NMR-STAR, rows of _Entity_deleted_atom loop (residue variants), otherwise None
         """
 
-        out_row = []
-        aux_row = []
+        out_row, aux_row = [], []
 
         chain_index = nef_tags.index('_nef_sequence.chain_code')
         seq_index = nef_tags.index('_nef_sequence.sequence_code')
@@ -8478,9 +8457,7 @@ class NEFTranslator:
         self.star2NefChainMapping = {}
         self.star2CifChainMapping = {}
 
-        auth_scheme = {}
-
-        seq_list = {}
+        auth_scheme, seq_list = {}, {}
 
         for cid, star_chain in enumerate(self.authChainId):
 
@@ -8643,8 +8620,7 @@ class NEFTranslator:
             @return: rows of NMR-STAR, rows of _Entity_deleted_atom loop (residue variants), otherwise None
         """
 
-        out_row = []
-        aux_row = []
+        out_row, aux_row = [], []
 
         chain_index = in_star_tags.index('_Chem_comp_assembly.Entity_assembly_ID')
         seq_index = in_star_tags.index('_Chem_comp_assembly.Comp_index_ID')
@@ -8827,8 +8803,7 @@ class NEFTranslator:
 
                 buf_row = []
 
-                tag_map = {}
-                self_tag_map = {}
+                tag_map, self_tag_map = {}, {}
 
                 for tag in seq_ident_tags:
                     chain_tag = tag['chain_tag']
@@ -9000,8 +8975,7 @@ class NEFTranslator:
 
                 buf_row = []
 
-                tag_map = {}
-                self_tag_map = {}
+                tag_map, self_tag_map = {}, {}
 
                 for tag in seq_ident_tags:
                     chain_tag = tag['chain_tag']
@@ -9640,8 +9614,7 @@ class NEFTranslator:
 
                 for row in in_row:
 
-                    tag_map = {}
-                    self_tag_map = {}
+                    tag_map, self_tag_map = {}, {}
 
                     for tag in seq_ident_tags:
                         chain_tag = tag['chain_tag']
@@ -10008,8 +9981,7 @@ class NEFTranslator:
 
                 for row in in_row:
 
-                    tag_map = {}
-                    self_tag_map = {}
+                    tag_map, self_tag_map = {}, {}
 
                     for tag in seq_ident_tags:
                         chain_tag = tag['chain_tag']
@@ -10202,8 +10174,7 @@ class NEFTranslator:
 
                 for row in in_row:
 
-                    tag_map = {}
-                    self_tag_map = {}
+                    tag_map, self_tag_map = {}, {}
 
                     for tag in seq_ident_tags:
                         chain_tag = tag['chain_tag']
@@ -10428,8 +10399,7 @@ class NEFTranslator:
 
                 for row in in_row:
 
-                    tag_map = {}
-                    self_tag_map = {}
+                    tag_map, self_tag_map = {}, {}
 
                     for tag in seq_ident_tags:
                         chain_tag = tag['chain_tag']
@@ -10638,8 +10608,7 @@ class NEFTranslator:
 
                 for row in in_row:
 
-                    tag_map = {}
-                    self_tag_map = {}
+                    tag_map, self_tag_map = {}, {}
 
                     for tag in seq_ident_tags:
                         chain_tag = tag['chain_tag']
@@ -10812,8 +10781,7 @@ class NEFTranslator:
 
                 for row in in_row:
 
-                    tag_map = {}
-                    self_tag_map = {}
+                    tag_map, self_tag_map = {}, {}
 
                     for tag in seq_ident_tags:
                         chain_tag = tag['chain_tag']
@@ -10932,8 +10900,7 @@ class NEFTranslator:
 
         out_row = []
 
-        nef_comp_indices = []
-        nef_atom_indices = []
+        nef_comp_indices, nef_atom_indices = [], []
 
         seq_ident_tags = self.get_seq_ident_tags(nef_tags, 'nef')
 
@@ -10969,8 +10936,7 @@ class NEFTranslator:
 
                 for row in in_row:
 
-                    tag_map = {}
-                    self_tag_map = {}
+                    tag_map, self_tag_map = {}, {}
 
                     for tag in seq_ident_tags:
                         chain_tag = tag['chain_tag']
@@ -11165,9 +11131,7 @@ class NEFTranslator:
             @return: rows of NEF
         """
 
-        out_row = []
-
-        comp_indices = []
+        out_row, comp_indices = [], []
 
         seq_ident_tags = self.get_seq_ident_tags(star_tags, 'nmr-star')
 
@@ -11309,8 +11273,7 @@ class NEFTranslator:
 
         out_row = []
 
-        in_star_comp_indices = []
-        in_star_atom_indices = []
+        in_star_comp_indices, in_star_atom_indices = [], []
 
         seq_ident_tags = self.get_seq_ident_tags(in_star_tags, 'nmr-star')
 
@@ -11346,8 +11309,7 @@ class NEFTranslator:
 
                 for row in in_row:
 
-                    tag_map = {}
-                    self_tag_map = {}
+                    tag_map, self_tag_map = {}, {}
 
                     for tag in seq_ident_tags:
                         chain_tag = tag['chain_tag']
@@ -11546,8 +11508,7 @@ class NEFTranslator:
 
         out_row = []
 
-        tag_map = {}
-        self_tag_map = {}
+        tag_map, self_tag_map = {}, {}
 
         for tag in self.get_seq_ident_tags(nef_tags, 'nef'):
             chain_tag = tag['chain_tag']
@@ -11683,8 +11644,7 @@ class NEFTranslator:
 
         out_row = []
 
-        tag_map = {}
-        self_tag_map = {}
+        tag_map, self_tag_map = {}, {}
 
         for tag in self.get_seq_ident_tags(in_star_tags, 'nmr-star'):
             chain_tag = tag['chain_tag']
@@ -11937,8 +11897,7 @@ class NEFTranslator:
 
         (file_path, file_name) = ntpath.split(os.path.realpath(nef_file))
 
-        info = []
-        error = []
+        info, error = [], []
 
         if star_file is None:
             star_file = file_path + '/' + file_name.split('.')[0] + '.str'
@@ -12468,8 +12427,7 @@ class NEFTranslator:
 
         (file_path, file_name) = ntpath.split(os.path.realpath(star_file))
 
-        info = []
-        error = []
+        info, error = [], []
 
         if nef_file is None:
             nef_file = file_path + '/' + file_name.split('.')[0] + '.nef'

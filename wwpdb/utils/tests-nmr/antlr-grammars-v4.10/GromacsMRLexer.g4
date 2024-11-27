@@ -69,14 +69,12 @@ Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;
 //Residue_name:		SIMPLE_NAME;
 //Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
-//Atom_type:		ALPHA ATM_TYPE_CHAR*;
 
 fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_';
 fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"' | '*' | '#';
-fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
-fragment ATM_TYPE_CHAR:	ALPHA_NUM | '-' | '+';
+//fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 SPACE:			[ \t\r\n]+ -> skip;

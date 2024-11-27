@@ -328,8 +328,6 @@ Integers:		(WILDCARD | WILDCARD* Integer WILDCARD+) DEC_DIGIT*;
 //Residue_names:	(WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+) POST_WC_CHAR*;
 //Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
 //Atom_names:		(WILDCARD | WILDCARD* Atom_name WILDCARD+) POST_WC_CHAR*;
-//Atom_type:		ALPHA ATM_TYPE_CHAR*;
-//Atom_types:		(WILDCARD | WILDCARD* Atom_type WILDCARD+) POST_WC_CHAR*;
 
 /* Wildcard - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -341,7 +339,6 @@ fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_';
 fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"';
 fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
-fragment ATM_TYPE_CHAR:	ALPHA_NUM | '-' | '+';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 fragment POST_WC_CHAR:	DEC_DIGIT | '\'' | 'P';
 fragment SYMBOL_NAME:	'@' START_CHAR+;

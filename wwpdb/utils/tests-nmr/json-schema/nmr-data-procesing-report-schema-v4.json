@@ -3416,6 +3416,17 @@
             "number_of_values",
             "annotations"
           ]
+        },
+        "atom_name_mapping": {
+          "description": "Atom name mapping information from author-provided names to cannonical names during data conversion.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/atom_name_mapping",
+            "minItems": 1
+          }
         }
       }
     },
@@ -3690,6 +3701,17 @@
             "number_of_values",
             "annotations"
           ]
+        },
+        "atom_name_mapping": {
+          "description": "Atom name mapping information from author-provided names to cannonical names during data conversion.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/atom_name_mapping",
+            "minItems": 1
+          }
         }
       }
     },

@@ -199,6 +199,7 @@
 # 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
 # 22-Nov-2024  M. Yokochi - add support for CYANA NOA (NOE Assignment) file. file type: 'nm-res-noa'
 # 27-Nov-2024  M. Yokochi - implement atom name mapping history as requirement of standalone NMR data conversion service
+# 28-Nov-2024  M. Yokochi - drop support for old pynmrstar versions less than 3.2
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -446,9 +447,6 @@ except ImportError:
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
-__pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
-__pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
-__pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
 
 CS_RANGE_MIN = CS_RESTRAINT_RANGE['min_inclusive']
@@ -714,13 +712,6 @@ def has_key_value(d=None, key=None):
         return d[key] is not None
 
     return False
-
-
-def get_lp_tag(lp, tags):
-    """ Return the selected loop tags by row as a list of lists.
-    """
-
-    return lp.get_tag(tags) if __pynmrstar_v3__ else lp.get_data_by_tag(tags)
 
 
 def get_first_sf_tag(sf=None, tag=None):
@@ -1168,6 +1159,59 @@ def is_like_planality_boundary(row, lower_limit_name, upper_limit_name):
         return False
 
 
+def get_atom_name_mapping(lp, list_of_tags):
+    """ Return atom name mapping history for each comp_id.
+        Each tags should be array of 'comp_id', 'atom_id', and 'atom_name'.
+    """
+
+    mapping, identity_mapping = [], []
+    list_of_dat = [None] * len(list_of_tags)
+
+    for idx, tags in enumerate(list_of_tags):
+        if set(tags) & set(lp.tags) == set(tags):
+            list_of_dat[idx] = lp.get_tag(tags)
+            for row in list_of_dat[idx]:
+                if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] != row[2]:
+                    continue
+                key = (row[0], row[2])
+                if key not in identity_mapping:
+                    identity_mapping.append(key)
+
+    for dat in list_of_dat:
+        if dat is None:
+            continue
+        for row in dat:
+            if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
+                continue
+            comp_id = row[0]
+            atom_id = row[1]
+            atom_name = row[2]
+
+            if not any(m['comp_id'] == comp_id for m in mapping):
+                mapping.append({'comp_id': comp_id, 'history': []})
+
+            history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
+
+            if not any(h for h in history if h['atom_name'] == atom_name):
+                history.append({'atom_name': atom_name, 'atom_id': [atom_name] if (comp_id, atom_name) in identity_mapping else []})
+
+            h = next(h for h in history if h['atom_name'] == atom_name)
+            if atom_id not in h['atom_id']:
+                h['atom_id'].append(atom_id)
+
+    if len(mapping) == 0:
+        mapping = None
+
+    else:
+        for m in mapping:
+            for h in m['history']:
+                h['atom_id'] = sorted(h['atom_id'])
+            m['history'] = sorted(m['history'], key=itemgetter('atom_name'))
+        mapping = sorted(mapping, key=lambda x: (len(x['comp_id']), x['comp_id']))
+
+    return mapping
+
+
 class NmrDpUtility:
     """ Wrapper class for data processing for NMR data.
     """
@@ -1327,7 +1371,6 @@ class NmrDpUtility:
                            self.__detectContentSubTypeOfLegacyPk,
                            self.__extractPolymerSequence,
                            self.__extractPolymerSequenceInLoop,
-                           # self.__testSequenceConsistency,
                            self.__extractCommonPolymerSequence,
                            self.__extractNonStandardResidue,
                            self.__appendPolymerSequenceAlignment,
@@ -1342,16 +1385,13 @@ class NmrDpUtility:
                            self.__appendWeightInLoop,
                            self.__appendDihedAngleType,
                            self.__testDataConsistencyInLoop,
-                           # self.__detectConflictDataInLoop,
                            self.__testDataConsistencyInAuxLoop,
                            self.__testNmrCovalentBond,
                            self.__appendSfTagItem,
                            self.__testSfTagConsistency,
-                           # self.__validateCsValue,
                            self.__testCsPseudoAtomNameConsistencyInMrLoop,
                            self.__testCsValueConsistencyInPkLoop,
                            self.__testCsValueConsistencyInPkAltLoop,
-                           # self.__testRdcVector
                            ]
 
         # validation tasks for coordinate file only
@@ -7201,8 +7241,6 @@ class NmrDpUtility:
 
                         _cs = cs + '.cif2str'
 
-                        # if not os.path.exists(_cs):
-
                         if not self.__c2S.convert(cs, _cs):
                             _cs = cs
 
@@ -7246,8 +7284,6 @@ class NmrDpUtility:
 
                         _cs = cs['file_name'] + '.cif2str'
 
-                        # if not os.path.exists(_cs):
-
                         if not self.__c2S.convert(cs['file_name'], _cs):
                             _cs = cs['file_name']
 
@@ -7280,8 +7316,6 @@ class NmrDpUtility:
 
                             _mr = mr + '.cif2str'
 
-                            # if not os.path.exists(_mr):
-
                             if not self.__c2S.convert(mr, _mr):
                                 _mr = mr
 
@@ -7300,8 +7334,6 @@ class NmrDpUtility:
                                 input_source.setItemValue('original_file_name', os.path.basename(mr['file_name']))
 
                             _mr = mr['file_name'] + '.cif2str'
-
-                            # if not os.path.exists(_mr):
 
                             if not self.__c2S.convert(mr['file_name'], _mr):
                                 _mr = mr['file_name']
@@ -8126,13 +8158,7 @@ class NmrDpUtility:
                 _srcPath = ofh.name
                 tmpPaths.append(_srcPath)
 
-#        if __pynmrstar_v3_1__:
-#            msg_template = 'Invalid token found in loop contents. Expecting \'loop_\' but found:' # \'*\' Error detected on line *.'
-#        else:
-        if __pynmrstar_v3_2__:
-            msg_template = "Invalid file. NMR-STAR files must start with 'data_' followed by the data name. Did you accidentally select the wrong file?"
-        else:
-            msg_template = "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file?"
+        msg_template = "Invalid file. NMR-STAR files must start with 'data_' followed by the data name. Did you accidentally select the wrong file?"
 
         if any(msg for msg in message['error'] if msg_template in msg) or (self.__has_legacy_sf_issue and star_data_type == 'Saveframe'):
             warn = 'The datablock must hook saveframe(s).'
@@ -8214,10 +8240,7 @@ class NmrDpUtility:
             _msg_template = r"Cannot use keywords as data values unless quoted or semi-colon delineated. "\
                 r"Perhaps this is a loop that wasn't properly terminated\? Illegal value:"
 
-            if __pynmrstar_v3__:
-                msg_pattern = re.compile(r'^.*' + _msg_template + r".*on line (\d+).*$")
-            else:
-                msg_pattern = re.compile(r'^.*' + _msg_template + r".*, (\d+).*$")
+            msg_pattern = re.compile(r'^.*' + _msg_template + r".*on line (\d+).*$")
 
             try:
 
@@ -8259,10 +8282,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
 
-            if __pynmrstar_v3__:
-                msg_pattern = re.compile(r'^.*' + msg_template + r".*on line (\d+).*$")
-            else:
-                msg_pattern = re.compile(r'^.*' + msg_template + r".*, (\d+).*$")
+            msg_pattern = re.compile(r'^.*' + msg_template + r".*on line (\d+).*$")
 
             try:
 
@@ -8413,10 +8433,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
 
-            if __pynmrstar_v3__:
-                msg_pattern = re.compile(r'^.*' + msg_template + r".*on line (\d+).*$")
-            else:
-                msg_pattern = re.compile(r'^.*' + msg_template + r".*, (\d+).*$")
+            msg_pattern = re.compile(r'^.*' + msg_template + r".*on line (\d+).*$")
 
             try:
 
@@ -8444,14 +8461,9 @@ class NmrDpUtility:
         except StopIteration:
             pass
 
-        if __pynmrstar_v3__:
-            msg_template = "The tag prefix was never set! Either the saveframe had no tags, "\
-                "you tried to read a version 2.1 file, or there is something else wrong with your file. "\
-                "Saveframe error occurred within:"
-        else:
-            msg_template = "The tag prefix was never set! Either the saveframe had no tags, "\
-                "you tried to read a version 2.1 file without setting ALLOW_V2_ENTRIES to True, "\
-                "or there is something else wrong with your file. Saveframe error occured:"
+        msg_template = "The tag prefix was never set! Either the saveframe had no tags, "\
+            "you tried to read a version 2.1 file, or there is something else wrong with your file. "\
+            "Saveframe error occurred within:"
 
         try:
 
@@ -8955,10 +8967,7 @@ class NmrDpUtility:
                             g = onedep_file_pattern.search(srcPath).groups()
                             srcPath = g[0] + '.V' + str(int(g[1]) + 1)
 
-                    if __pynmrstar_v3__:
-                        self.__star_data[file_list_id].write_to_file(srcPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
-                    else:
-                        self.__star_data[file_list_id].write_to_file(srcPath)
+                    self.__star_data[file_list_id].write_to_file(srcPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
 
         else:
 
@@ -9157,10 +9166,7 @@ class NmrDpUtility:
         if isinstance(sf, pynmrstar.Loop):
             loop = sf
         else:
-            if __pynmrstar_v3_2__:
-                loop = sf.get_loop(lp_category)
-            else:
-                loop = sf.get_loop_by_category(lp_category)
+            loop = sf.get_loop(lp_category)
 
         try:
 
@@ -9216,10 +9222,7 @@ class NmrDpUtility:
             elif content_subtype == 'chem_shift':
 
                 if any(tag for tag in sf.tags if tag[0] == 'atom_chemical_shift_units'):
-                    if __pynmrstar_v3_2__:
-                        sf.remove_tag('atom_chemical_shift_units')
-                    else:
-                        sf.delete_tag('atom_chemical_shift_units')
+                    sf.remove_tag('atom_chemical_shift_units')
 
                 try:
                     tag_pos = next(loop.tags.index(tag) for tag in loop.tags if tag == 'residue_type')
@@ -9344,10 +9347,7 @@ class NmrDpUtility:
 
                     tag = next(tag for tag in sf.tags if tag[0] == 'tensor_residue_type')
                     sf.add_tag(sf_category + '.tensor_residue_name', tag[1])
-                    if __pynmrstar_v3_2__:
-                        sf.remove_tag('tensor_residue_type')
-                    else:
-                        sf.delete_tag('tensor_residue_type')
+                    sf.remove_tag('tensor_residue_type')
 
                 except StopIteration:
                     pass
@@ -9517,10 +9517,7 @@ class NmrDpUtility:
         if isinstance(sf, pynmrstar.Loop):
             loop = sf
         else:
-            if __pynmrstar_v3_2__:
-                loop = sf.get_loop(lp_category)
-            else:
-                loop = sf.get_loop_by_category(lp_category)
+            loop = sf.get_loop(lp_category)
 
         try:
 
@@ -9618,27 +9615,21 @@ class NmrDpUtility:
                     for original_item in original_items:
                         tag = original_item + '_' + str(i)
                         if tag in loop.tags:
-                            if __pynmrstar_v3_2__:
-                                loop.remove_tag(tag)
-                            else:
-                                loop.delete_tag(tag)
+                            loop.remove_tag(tag)
 
                     tag = 'Original_PDB_atom_name_' + str(i)
                     if tag in loop.tags:
 
                         _tag = 'Auth_atom_name_' + str(i)
                         if _tag not in loop.tags:
-                            _dat = get_lp_tag(loop, [tag])
+                            _dat = loop.get_tag([tag])
 
                             for idx, row in enumerate(loop):
                                 row.append(_dat[idx])
 
                             loop.add_tag(_tag)
 
-                        if __pynmrstar_v3_2__:
-                            loop.remove_tag(tag)
-                        else:
-                            loop.delete_tag(tag)
+                        loop.remove_tag(tag)
 
             elif content_subtype == 'dihed_restraint':
 
@@ -9986,10 +9977,7 @@ class NmrDpUtility:
                             if not os.path.exists(cs_file_path):
                                 master_entry = self.__star_data[0]
 
-                                if __pynmrstar_v3__:
-                                    master_entry.write_to_file(cs_file_path, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
-                                else:
-                                    master_entry.write_to_file(cs_file_path)
+                                master_entry.write_to_file(cs_file_path, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
 
                                 compress_as_gzip_file(cs_file_path, cs_file_path + '.gz')
 
@@ -10105,10 +10093,7 @@ class NmrDpUtility:
                     for sf in self.__star_data[file_list_id].get_saveframes_by_category('other_data_types'):
 
                         try:
-                            if __pynmrstar_v3_2__:
-                                loop = sf.get_loop('_Other_data')
-                            else:
-                                loop = sf.get_loop_by_category('_Other_data')
+                            loop = sf.get_loop('_Other_data')
                         except KeyError:
                             sf_framecodes_wo_loop.append(get_first_sf_tag(sf, 'sf_framecode'))
                             continue
@@ -11708,7 +11693,7 @@ class NmrDpUtility:
                         file_path_2 = self.__inputParamDict[ar_file_path_list][j]['file_name']
                         shutil.copyfile(file_path_2, file_path_2 + '-ignored')
 
-        # restart using format issue resolved input files
+        # Restart using format issue resolved input files
 
         if self.__remediation_mode and corrected:
 
@@ -13062,8 +13047,6 @@ class NmrDpUtility:
 
             return False
 
-        # self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
-
         if file_type in valid_types:
             os.remove(div_src_file)
             os.remove(div_try_file)
@@ -13505,8 +13488,6 @@ class NmrDpUtility:
                 self.__lfh.write('PEEL-MR-EXIT #9\n')
 
             return False | corrected
-
-        # self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
 
         if div_src:
             os.remove(file_path)
@@ -14045,8 +14026,6 @@ class NmrDpUtility:
 
             return False
 
-        # self.__lfh.write(f"The NMR restraint file {file_name!r} ({mr_format_name} format) is identified as {valid_types}.\n")
-
         if div_src:
             os.remove(file_path)
 
@@ -14164,21 +14143,38 @@ class NmrDpUtility:
         genuine_type = []
         valid_types, possible_types = {}, {}
 
-        if (not is_valid or multiple_check) and file_type != 'nm-res-cns':
+        if (not is_valid or multiple_check) and file_type != 'nm-res-xpl':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cns')
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-xpl',
+                                                                    agreed_w_cns=agreed_w_cns)
 
             is_valid |= _is_valid
-            agreed_w_cns = _is_valid
+            agreed_w_cns |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
-        if (not is_valid or multiple_check) and file_type != 'nm-res-xpl':
+        if len(genuine_type) > 0:
+            multiple_check = False
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-cns':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-xpl',
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cns',
+                                                                    agreed_w_cns=agreed_w_cns)
+
+            is_valid |= _is_valid
+            agreed_w_cns |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or 'Syntax error' in err) and file_type != 'nm-res-cha':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cha',
                                                                     agreed_w_cns=agreed_w_cns)
 
             is_valid |= _is_valid
@@ -14188,16 +14184,8 @@ class NmrDpUtility:
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
-        if (not is_valid or 'Syntax error' in err) and file_type != 'nm-res-cha':
-            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
-                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-cha')
-
-            is_valid |= _is_valid
-            err += _err
-            if _genuine_type is not None:
-                genuine_type.append(_genuine_type)
-            valid_types.update(_valid_types)
-            possible_types.update(_possible_types)
+        if len(genuine_type) > 0:
+            multiple_check = False
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-amb':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
@@ -14207,6 +14195,7 @@ class NmrDpUtility:
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
+                multiple_check = False
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
@@ -14218,6 +14207,7 @@ class NmrDpUtility:
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
+                multiple_check = False
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
@@ -14229,6 +14219,7 @@ class NmrDpUtility:
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
+                multiple_check = False
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
@@ -14262,6 +14253,7 @@ class NmrDpUtility:
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
+                multiple_check = False
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
@@ -14273,6 +14265,7 @@ class NmrDpUtility:
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
+                multiple_check = False
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
@@ -14284,6 +14277,7 @@ class NmrDpUtility:
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
+                multiple_check = False
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
@@ -14295,6 +14289,7 @@ class NmrDpUtility:
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
+                multiple_check = False
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
@@ -14328,6 +14323,7 @@ class NmrDpUtility:
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
+                multiple_check = False
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
@@ -15468,7 +15464,6 @@ class NmrDpUtility:
                         continue
 
                     if len_possible_types == 0:
-                        # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.\n")
 
                         _ar = ar.copy()
 
@@ -15527,7 +15522,6 @@ class NmrDpUtility:
                             aborted = True
 
                     elif len_valid_types == 0:
-                        # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.\n")
 
                         _ar = ar.copy()
 
@@ -15547,7 +15541,6 @@ class NmrDpUtility:
                         aborted = True
 
                     else:
-                        # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.\n")
 
                         _ar['file_name'] = dst_file
                         _ar['file_type'] = valid_types[0]
@@ -16183,7 +16176,6 @@ class NmrDpUtility:
                             continue
 
                         if len_possible_types == 0:
-                            # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}.\n")
 
                             _ar = ar.copy()
 
@@ -16258,7 +16250,6 @@ class NmrDpUtility:
                                 aborted = True
 
                         elif len_valid_types == 0:
-                            # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}.\n")
 
                             _ar['file_name'] = _dst_file
                             _ar['file_type'] = possible_types[0]
@@ -16277,7 +16268,6 @@ class NmrDpUtility:
                             aborted = True
 
                         else:
-                            # self.__lfh.write(f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well.\n")
 
                             _ar['file_name'] = _dst_file
                             _ar['file_type'] = valid_types[0]
@@ -17012,8 +17002,6 @@ class NmrDpUtility:
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            # file_type = input_source_dic['file_type']
-
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
             has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
@@ -17050,10 +17038,8 @@ class NmrDpUtility:
 
                     for ps_in_loop in polymer_sequence_in_loop[subtype2]:
                         ps2 = ps_in_loop['polymer_sequence']
-                        # sf_framecode2 = ps_in_loop['sf_framecode']
 
                         for s2 in ps2:
-
                             chain_id = s2['chain_id']
 
                             if chain_id not in ref_chain_ids and not ('identical_chain_id' in s2 and chain_id not in s2['identical_chain_id']):
@@ -17083,18 +17069,15 @@ class NmrDpUtility:
 
                     for ps_in_loop in polymer_sequence_in_loop[subtype1]:
                         ps1 = ps_in_loop['polymer_sequence']
-                        # sf_framecode1 = ps_in_loop['sf_framecode']
 
                         for ps_in_loop2 in polymer_sequence_in_loop[subtype2]:
                             ps2 = ps_in_loop2['polymer_sequence']
-                            # sf_framecode2 = ps_in_loop2['sf_framecode']
 
                             # suppress redundant tests inside the same subtype
                             if subtype1 == subtype2 and ps_in_loop['list_id'] >= ps_in_loop2['list_id']:
                                 continue
 
                             for s2 in ps2:
-
                                 chain_id = s2['chain_id']
 
                                 for s1 in ps1:
@@ -17113,11 +17096,9 @@ class NmrDpUtility:
 
                             # inverse check required for unverified sequences
                             for s1 in ps1:
-
                                 chain_id = s1['chain_id']
 
                                 for s2 in ps2:
-
                                     if chain_id != s2['chain_id']:
                                         continue
 
@@ -17173,13 +17154,10 @@ class NmrDpUtility:
 
                     try:
 
-                        if __pynmrstar_v3_2__:
-                            loop = sf.get_loop('_Entity_assembly')
-                        else:
-                            loop = sf.get_loop_by_category('_Entity_assembly')
+                        loop = sf.get_loop('_Entity_assembly')
 
                         if loop is not None:
-                            dat = get_lp_tag(loop, ['ID', 'Entity_ID'])
+                            dat = loop.get_tag(['ID', 'Entity_ID'])
 
                             for row in dat:
                                 to_entity_id[row[0]] = row[1]
@@ -17199,12 +17177,9 @@ class NmrDpUtility:
                 if subtype1 is None or subtype2 is None:
                     continue
 
-                # lp_category1 = self.lp_categories[file_type][subtype1]
                 lp_category2 = self.lp_categories[file_type][subtype2]
 
                 if file_type == 'nmr-star':
-                    # if subtype1 == 'spectral_peak_alt':
-                    #    lp_category1 = '_Assigned_peak_chem_shift'
                     if subtype2 == 'spectral_peak_alt':
                         lp_category2 = '_Assigned_peak_chem_shift'
 
@@ -17219,7 +17194,6 @@ class NmrDpUtility:
                         sf_framecode2 = ps_in_loop['sf_framecode']
 
                         for s2 in ps2:
-
                             chain_id = s2['chain_id']
 
                             if self.__bmrb_only and self.__internal_mode\
@@ -17373,7 +17347,6 @@ class NmrDpUtility:
                                 continue
 
                             for s2 in ps2:
-
                                 chain_id = s2['chain_id']
 
                                 for s1 in ps1:
@@ -17412,7 +17385,6 @@ class NmrDpUtility:
 
                             # inverse check required for unverified sequences
                             for s1 in ps1:
-
                                 chain_id = s1['chain_id']
 
                                 for s2 in ps2:
@@ -17555,10 +17527,7 @@ class NmrDpUtility:
 
             max_dim = num_dim + 1
 
-        if __pynmrstar_v3_2__:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
-        else:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
+        loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         if max_dim == 2:
 
@@ -17627,7 +17596,6 @@ class NmrDpUtility:
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            # file_type = input_source_dic['file_type']
             content_type = input_source_dic['content_type']
 
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
@@ -17661,8 +17629,6 @@ class NmrDpUtility:
                 else:
                     continue
 
-            # for content_subtype in polymer_sequence_in_loop.keys():
-
             for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
                 polymer_sequence = ps_in_loop['polymer_sequence']
 
@@ -17674,8 +17640,6 @@ class NmrDpUtility:
 
             chain_ids = common_poly_seq.keys()
             offset_seq_ids = {c: 0 for c in chain_ids}
-
-            # for content_subtype in polymer_sequence_in_loop.keys():
 
             for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
                 polymer_sequence = ps_in_loop['polymer_sequence']
@@ -17870,10 +17834,7 @@ class NmrDpUtility:
         for sf in self.__star_data[file_list_id].get_saveframes_by_category('assembly'):
 
             try:
-                if __pynmrstar_v3_2__:
-                    loop = sf.get_loop('_Entity_assembly')
-                else:
-                    loop = sf.get_loop_by_category('_Entity_assembly')
+                loop = sf.get_loop('_Entity_assembly')
             except KeyError:
                 return False
 
@@ -17888,7 +17849,7 @@ class NmrDpUtility:
             if set(tags) & set(loop.tags) != set(tags):
                 return False
 
-            dat = get_lp_tag(loop, tags)
+            dat = loop.get_tag(tags)
 
             asm = []  # molecular assembly of a loop
 
@@ -17927,10 +17888,7 @@ class NmrDpUtility:
                 content_subtype = 'entity'
 
                 try:
-                    if __pynmrstar_v3_2__:
-                        _loop = _sf.get_loop(self.lp_categories[file_type][content_subtype])
-                    else:
-                        _loop = _sf.get_loop_by_category(self.lp_categories[file_type][content_subtype])
+                    _loop = _sf.get_loop(self.lp_categories[file_type][content_subtype])
                 except KeyError:
                     return False
 
@@ -17942,7 +17900,7 @@ class NmrDpUtility:
                 if set(_tags) & set(_loop.tags) != set(_tags):
                     return False
 
-                _dat = get_lp_tag(_loop, _tags)
+                _dat = _loop.get_tag(_tags)
 
                 seq = set()
 
@@ -18012,27 +17970,21 @@ class NmrDpUtility:
             loops = star_data.get_loops_by_category(lp_category)
         except AttributeError:
             try:
-                if __pynmrstar_v3_2__:
-                    loops = [star_data.get_loop(lp_category)]
-                else:
-                    loops = [star_data.get_loop_by_category(lp_category)]
+                loops = [star_data.get_loop(lp_category)]
             except AttributeError:
                 return False
 
         for sf in self.__star_data[file_list_id].get_saveframes_by_category('assembly'):
 
             try:
-                if __pynmrstar_v3_2__:
-                    loop = sf.get_loop('_Entity_assembly')
-                else:
-                    loop = sf.get_loop_by_category('_Entity_assembly')
+                loop = sf.get_loop('_Entity_assembly')
             except KeyError:
                 return False
 
             if loop is None:
                 return False
 
-            dat = get_lp_tag(loop, ['Entity_ID'])
+            dat = loop.get_tag(['Entity_ID'])
 
             entity_id_set = set()
 
@@ -18059,12 +18011,12 @@ class NmrDpUtility:
             dat = []
 
             if set(tags) & set(loop.tags) == set(tags):
-                dat = get_lp_tag(loop, tags)
+                dat = loop.get_tag(tags)
                 for row in dat:
                     if row[2] in emptyValue:
                         row[2] = '1'
             elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_ID tag case
-                dat = get_lp_tag(loop, tags_)
+                dat = loop.get_tag(tags_)
                 for row in dat:
                     row.append('1')
 
@@ -18119,10 +18071,7 @@ class NmrDpUtility:
             loops = star_data.get_loops_by_category(lp_category)
         except AttributeError:
             try:
-                if __pynmrstar_v3_2__:
-                    loops = [star_data.get_loop(lp_category)]
-                else:
-                    loops = [star_data.get_loop_by_category(lp_category)]
+                loops = [star_data.get_loop(lp_category)]
             except AttributeError:
                 return None
 
@@ -18140,12 +18089,12 @@ class NmrDpUtility:
             dat = []
 
             if set(tags) & set(loop.tags) == set(tags):
-                dat = get_lp_tag(loop, tags)
+                dat = loop.get_tag(tags)
                 for row in dat:
                     if row[2] in emptyValue:
                         row[2] = '1'
             elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_ID tag case
-                dat = get_lp_tag(loop, tags_)
+                dat = loop.get_tag(tags_)
                 for row in dat:
                     row.append('1')
 
@@ -18344,7 +18293,6 @@ class NmrDpUtility:
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            # file_name = input_source_dic['file_name']
             file_type = input_source_dic['file_type']
 
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
@@ -18486,8 +18434,6 @@ class NmrDpUtility:
                                 offset_2 = __offset_2
                                 s1 = __s1
 
-                                # s2['chain_id'] = __chain_id
-
                                 update_poly_seq = True
 
                             if conflict == 0 and self.__alt_chain and not alt_chain and chain_id != s2['chain_id'] and\
@@ -18571,8 +18517,6 @@ class NmrDpUtility:
                                         test_code = _seq_align['test_code']
                                         test_gauge_code = _seq_align['test_gauge_code']
                                     else:
-                                        # if _s1['seq_id'][0] < 0:
-                                        #    continue
                                         chain_id2 = chain_id
                                         if sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2].values():
                                             chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == chain_id)
@@ -18806,8 +18750,6 @@ class NmrDpUtility:
                                 offset_2 = __offset_2
                                 s1 = __s1
 
-                                # s2['chain_id'] = __chain_id
-
                                 update_poly_seq = True
 
                             _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
@@ -18954,10 +18896,6 @@ class NmrDpUtility:
                                             continue
 
                                         for s2 in ps2:
-
-                                            # if chain_id != dst_chain:
-                                            #    continue
-
                                             _s2 = fillBlankCompIdWithOffset(s2, 0)
 
                                             if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
@@ -19060,8 +18998,6 @@ class NmrDpUtility:
                                                 test_code = _seq_align['test_code']
                                                 test_gauge_code = _seq_align['test_gauge_code']
                                             else:
-                                                # if _s1['seq_id'][0] < 0:
-                                                #    continue
                                                 chain_id2 = chain_id
                                                 if chain_id in mapping.values():
                                                     chain_id2 = next(k for k, v in mapping.items() if v == chain_id)
@@ -19314,10 +19250,7 @@ class NmrDpUtility:
 
             max_dim = num_dim + 1
 
-        if __pynmrstar_v3_2__:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
-        else:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
+        loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         if max_dim == 2:
 
@@ -19430,10 +19363,7 @@ class NmrDpUtility:
 
             max_dim = num_dim + 1
 
-        if __pynmrstar_v3_2__:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
-        else:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
+        loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         if max_dim == 2:
 
@@ -20154,7 +20084,6 @@ class NmrDpUtility:
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            # file_name = input_source_dic['file_name']
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -20176,20 +20105,17 @@ class NmrDpUtility:
 
                 if self.__star_data_type[fileListId] == 'Loop':
                     sf = self.__star_data[fileListId]
-                    # sf_framecode = ''
 
                     self.__fixAtomNomenclature__(fileListId, file_type, content_subtype, sf, lp_category, comp_id, atom_id_conv_dict)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
                     sf = self.__star_data[fileListId]
-                    # sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                     self.__fixAtomNomenclature__(fileListId, file_type, content_subtype, sf, lp_category, comp_id, atom_id_conv_dict)
 
                 else:
 
                     for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-                        # sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                         if not any(loop for loop in sf.loops if loop.category == lp_category):
                             continue
@@ -20226,10 +20152,7 @@ class NmrDpUtility:
 
             max_dim = num_dim + 1
 
-        if __pynmrstar_v3_2__:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
-        else:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
+        loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         if max_dim == 2:
 
@@ -20603,10 +20526,7 @@ class NmrDpUtility:
 
                 try:
 
-                    if __pynmrstar_v3_2__:
-                        lp = sf.get_loop(lp_category)
-                    else:
-                        lp = sf.get_loop_by_category(lp_category)
+                    lp = sf.get_loop(lp_category)
 
                     ambig_code_col = lp.tags.index('Ambiguity_code')
                     ambig_set_id_col = lp.tags.index('Ambiguity_set_ID')
@@ -20620,10 +20540,7 @@ class NmrDpUtility:
 
                     if any(aux_loop for aux_loop in sf if aux_loop.category == aux_lp_category):
 
-                        if __pynmrstar_v3_2__:
-                            aux_loop = sf.get_loop(aux_lp_category)
-                        else:
-                            aux_loop = sf.get_loop_by_category(aux_lp_category)
+                        aux_loop = sf.get_loop(aux_lp_category)
 
                         del sf[aux_loop]
 
@@ -21156,15 +21073,11 @@ class NmrDpUtility:
                         self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - {warn}\n")
 
             # try to parse data without constraints
-
             if has_multiple_data:
                 conflict_id = self.__nefT.get_conflict_id(sf, lp_category, key_items)[0]
 
                 if len(conflict_id) > 0:
-                    if __pynmrstar_v3_2__:
-                        loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
-                    else:
-                        loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
+                    loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
                     for lcid in conflict_id:
                         del loop.data[lcid]
@@ -21177,15 +21090,11 @@ class NmrDpUtility:
                                 row[index_col] = idx
 
             # try to parse data without bad patterns
-
             if has_bad_pattern:
                 conflict_id = self.__nefT.get_bad_pattern_id(sf, lp_category, key_items, data_items)[0]
 
                 if len(conflict_id) > 0:
-                    if __pynmrstar_v3_2__:
-                        loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
-                    else:
-                        loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
+                    loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
                     for lcid in conflict_id:
                         del loop.data[lcid]
@@ -22200,15 +22109,11 @@ class NmrDpUtility:
                                             self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - {warn}\n")
 
                                 # try to parse data without constraints
-
                                 if has_multiple_data:
                                     conflict_id = self.__nefT.get_conflict_id(sf, lp_category, key_items)[0]
 
                                     if len(conflict_id) > 0:
-                                        if __pynmrstar_v3_2__:
-                                            _loop = sf.get_loop(lp_category)
-                                        else:
-                                            _loop = sf.get_loop_by_category(lp_category)
+                                        _loop = sf.get_loop(lp_category)
 
                                         for lcid in conflict_id:
                                             del _loop.data[lcid]
@@ -22221,15 +22126,11 @@ class NmrDpUtility:
                                                     row[index_col] = idx
 
                                 # try to parse data without bad patterns
-
                                 if has_bad_pattern:
                                     conflict_id = self.__nefT.get_bad_pattern_id(sf, lp_category, key_items, data_items)[0]
 
                                     if len(conflict_id) > 0:
-                                        if __pynmrstar_v3_2__:
-                                            _loop = sf.get_loop(lp_category)
-                                        else:
-                                            _loop = sf.get_loop_by_category(lp_category)
+                                        _loop = sf.get_loop(lp_category)
 
                                         for lcid in conflict_id:
                                             del _loop.data[lcid]
@@ -22334,7 +22235,6 @@ class NmrDpUtility:
 
                             first_point = sp_dim.get('value_first_point')
                             sp_width = sp_dim.get('spectral_width')
-                            # acq = sp_dim['is_acquisition']
                             sp_freq = sp_dim.get('spectrometer_frequency')
                             abs_positions[i - 1] = False if 'absolute_peak_positions' not in sp_dim else sp_dim['absolute_peak_positions']
 
@@ -22350,7 +22250,6 @@ class NmrDpUtility:
 
                             first_point = sp_dim.get('Value_first_point')
                             sp_width = sp_dim.get('Sweep_width')
-                            # acq = sp_dim['Acquisition']
                             sp_freq = sp_dim.get('Spectrometer_frequency')
                             abs_positions[i - 1] = False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions']
 
@@ -22509,7 +22408,6 @@ class NmrDpUtility:
                         first_point = sp_dim.get('Value_first_point')
                         sp_width = sp_dim.get('Sweep_width')
                         sp_freq = sp_dim.get('Spectrometer_frequency')
-                        # acq = sp_dim['Acquisition']
                         abs_positions[i - 1] = False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions']
 
                         if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
@@ -22799,7 +22697,6 @@ class NmrDpUtility:
                                     self.__lfh.write(f"+NmrDpUtility.__testSfTagConsistency() ++ Error  - {warn}\n")
 
                         # try to parse data without constraints
-
                         try:
 
                             sf_tag_data = self.__nefT.check_sf_tag(sf, file_type, sf_category, sf_tag_items, self.sf_allowed_tags[file_type][content_subtype],
@@ -23009,7 +22906,8 @@ class NmrDpUtility:
 
         modified = False
 
-        has_mr_atom_name_mapping = file_type == 'nmr-star' and self.__remediation_mode and self.__mr_atom_name_mapping is not None and len(self.__mr_atom_name_mapping) > 0
+        has_mr_atom_name_mapping = file_type == 'nmr-star' and self.__remediation_mode\
+            and self.__mr_atom_name_mapping is not None and len(self.__mr_atom_name_mapping) > 0
 
         try:
 
@@ -23017,10 +22915,7 @@ class NmrDpUtility:
 
             if file_type == 'nmr-star':
 
-                if __pynmrstar_v3_2__:
-                    loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
-                else:
-                    loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
+                loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
                 if has_mr_atom_name_mapping:
                     auth_seq_id_col = loop.tags.index('Auth_seq_ID') if 'Auth_seq_ID' in loop.tags else -1
@@ -23035,7 +22930,7 @@ class NmrDpUtility:
 
                 if ambig_code_name in loop.tags:
                     ambig_code_col = loop.tags.index(ambig_code_name)
-                    ambig_code_dat = get_lp_tag(loop, ambig_code_name)
+                    ambig_code_dat = loop.get_tag(ambig_code_name)
                     if len(ambig_code_dat) > 0:
                         ambig_code_set = set()
                         invalid_ambig_code_set = set()
@@ -23048,7 +22943,7 @@ class NmrDpUtility:
                         if len(invalid_ambig_code_set) > 0:
                             if seq_id_name in loop.tags and comp_id_name in loop.tags:
                                 seq_key_set = set()
-                                seq_key_dat = get_lp_tag(loop, [seq_id_name, comp_id_name])
+                                seq_key_dat = loop.get_tag([seq_id_name, comp_id_name])
                                 for row in seq_key_dat:
                                     seq_key = (row[0], row[1])
                                     seq_key_set.add(seq_key)
@@ -24681,7 +24576,6 @@ class NmrDpUtility:
             if modified:
 
                 # update _Entity_assembly.Experimental_data_reported
-
                 if file_type == 'nmr-star' and len(self.__ent_asym_id_with_exptl_data) > 0:
 
                     _content_subtype = 'poly_seq'
@@ -24693,10 +24587,7 @@ class NmrDpUtility:
                         _sf = self.__star_data[fileListId].get_saveframes_by_category(_sf_category)[0]
 
                         try:
-                            if __pynmrstar_v3_2__:
-                                _loop = _sf.get_loop('_Entity_assembly')
-                            else:
-                                _loop = _sf.get_loop_by_category('_Entity_assembly')
+                            _loop = _sf.get_loop('_Entity_assembly')
 
                             if 'Experimental_data_reported' in _loop.tags:
                                 id_col = _loop.tags.index('ID')
@@ -24738,19 +24629,16 @@ class NmrDpUtility:
 
                 _lp_category = '_Systematic_chem_shift_offset'
 
-                if __pynmrstar_v3_2__:
-                    _loop = sf.get_loop(_lp_category)
-                else:
-                    _loop = sf.get_loop_by_category(_lp_category)
+                _loop = sf.get_loop(_lp_category)
 
-                    if 'Type' in _loop.tags:
-                        type_col = _loop.tags.index('Type')
-                        for _row in _loop:
-                            if _row[type_col] in emptyValue:
-                                continue
-                            if _row[type_col] == 'SAIL isotope labeling':
-                                self.__sail_flag = True
-                                break
+                if 'Type' in _loop.tags:
+                    type_col = _loop.tags.index('Type')
+                    for _row in _loop:
+                        if _row[type_col] in emptyValue:
+                            continue
+                        if _row[type_col] == 'SAIL isotope labeling':
+                            self.__sail_flag = True
+                            break
 
                 if 'sample' in self.__sf_category_list\
                    and '_Sample_component' in self.__lp_category_list:
@@ -24759,10 +24647,7 @@ class NmrDpUtility:
 
                     for _sf in self.__star_data[file_list_id].get_saveframes_by_category('sample'):
 
-                        if __pynmrstar_v3_2__:
-                            _loop = _sf.get_loop(_lp_category)
-                        else:
-                            _loop = _sf.get_loop_by_category(_lp_category)
+                        _loop = _sf.get_loop(_lp_category)
 
                         if 'Isotopic_labeling' in _loop.tags:
                             isotopic_labeling_col = _loop.tags.index('Isotopic_labeling')
@@ -24779,12 +24664,9 @@ class NmrDpUtility:
 
         polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
-        ps = None
         ps_common = input_source_dic['polymer_sequence']
 
-        seq_align = chain_assign = None
-        br_seq_align = br_chain_assign = None
-        np_seq_align = np_chain_assign = None
+        ps = seq_align = chain_assign = br_seq_align = br_chain_assign = np_seq_align = np_chain_assign = None
 
         if content_subtype in polymer_sequence_in_loop and self.__caC is not None:
             ps_in_loop = next((ps for ps in polymer_sequence_in_loop[content_subtype] if ps['sf_framecode'] == sf_framecode), None)
@@ -24919,10 +24801,7 @@ class NmrDpUtility:
                            if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
                     has_ins_code = True
 
-        if __pynmrstar_v3_2__:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
-        else:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
+        loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         aux_lp = None
 
@@ -24934,10 +24813,7 @@ class NmrDpUtility:
 
                 try:
 
-                    if __pynmrstar_v3_2__:
-                        aux_loop = sf.get_loop(aux_lp_category)
-                    else:
-                        aux_loop = sf.get_loop_by_category(aux_lp_category)
+                    aux_loop = sf.get_loop(aux_lp_category)
 
                     del sf[aux_loop]
 
@@ -25129,9 +25005,8 @@ class NmrDpUtility:
 
             valid_auth_seq_per_chain = []
 
-            # if self.__remediation_mode or self.__annotation_mode:
             if set(auth_pdb_tags) & set(loop.tags) == set(auth_pdb_tags):
-                auth_dat = get_lp_tag(loop, auth_pdb_tags)
+                auth_dat = loop.get_tag(auth_pdb_tags)
                 if len(auth_dat) > 0:
                     has_auth_seq = valid_auth_seq = True
                     if not self.__annotation_mode:
@@ -25167,7 +25042,7 @@ class NmrDpUtility:
                     _auth_pdb_tags.append('Atom_ID')
 
                 if len(_auth_pdb_tags) == 4:
-                    auth_dat = get_lp_tag(loop, _auth_pdb_tags)
+                    auth_dat = loop.get_tag(_auth_pdb_tags)
                     if len(auth_dat) > 0:
                         aux_auth_seq_id_col = loop.tags.index(_auth_pdb_tags[1])
                         aux_auth_comp_id_col = loop.tags.index(_auth_pdb_tags[2])
@@ -25203,7 +25078,7 @@ class NmrDpUtility:
 
             if self.__remediation_mode:
                 if set(orig_pdb_tags) & set(loop.tags) == set(orig_pdb_tags):
-                    orig_dat = get_lp_tag(loop, orig_pdb_tags)
+                    orig_dat = loop.get_tag(orig_pdb_tags)
                     if len(orig_dat) > 0:
                         for row in orig_dat:
                             if all(d not in emptyValue for d in row):
@@ -25212,7 +25087,7 @@ class NmrDpUtility:
                         if has_orig_seq:
                             orig_pdb_tags.append('Comp_ID')
                             orig_pdb_tags.append('Atom_ID')
-                            dat = get_lp_tag(loop, orig_pdb_tags)
+                            dat = loop.get_tag(orig_pdb_tags)
                             for row in dat:
                                 if row[3] in emptyValue:
                                     continue
@@ -25231,7 +25106,7 @@ class NmrDpUtility:
                                     ch3_name_in_xplor = True
             else:
                 if set(orig_pdb_tags) & set(loop.tags) == set(orig_pdb_tags):
-                    orig_dat = get_lp_tag(loop, orig_pdb_tags)
+                    orig_dat = loop.get_tag(orig_pdb_tags)
                     if len(orig_dat) > 0:
                         for row in orig_dat:
                             if all(d not in emptyValue for d in row):
@@ -25329,7 +25204,7 @@ class NmrDpUtility:
                         _row[7] = _coord_atom_site['type_symbol'][_atom_site_atom_id.index(atom_id)]
                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
-                        # """
+                        # """ need to preserve Original_PDB_atom_name for atom name mapping hisotry
                         # if fill_orig_atom_id and _row[6] != _row[23] and _row[23] in _atom_site_atom_id:
                         #     if _row[23] in self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True):
                         #         _row[23] = copy.copy(atom_id)
@@ -25770,8 +25645,8 @@ class NmrDpUtility:
                         if auth_to_entity_type[_seq_key_1] != auth_to_entity_type[_seq_key_2] or auth_to_entity_type[_seq_key_1] in ('non-polymer', 'water'):
                             continue
 
-                        _auth_cs_1 = [row[1:] for row in get_lp_tag(loop, auth_cs_tags) if row[0] == _auth_chain_id_1]
-                        _auth_cs_2 = [row[1:] for row in get_lp_tag(loop, auth_cs_tags) if row[0] == _auth_chain_id_2]
+                        _auth_cs_1 = [row[1:] for row in loop.get_tag(auth_cs_tags) if row[0] == _auth_chain_id_1]
+                        _auth_cs_2 = [row[1:] for row in loop.get_tag(auth_cs_tags) if row[0] == _auth_chain_id_2]
 
                         _auth_cs_1 = sorted(_auth_cs_1, key=itemgetter(0, 2))
                         _auth_cs_2 = sorted(_auth_cs_2, key=itemgetter(0, 2))
@@ -25782,7 +25657,7 @@ class NmrDpUtility:
             else:
 
                 tags = ['Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID']
-                dat = get_lp_tag(loop, tags)
+                dat = loop.get_tag(tags)
 
                 chain_ids = [row[0] for row in dat]
 
@@ -25798,8 +25673,8 @@ class NmrDpUtility:
                         if _common_chain_ids[_chain_id_1] != _common_chain_ids[_chain_id_2]:
                             continue
 
-                        _cs_1 = [row[1:] for row in get_lp_tag(loop, cs_tags) if row[0] == _chain_id_1]
-                        _cs_2 = [row[1:] for row in get_lp_tag(loop, cs_tags) if row[0] == _chain_id_2]
+                        _cs_1 = [row[1:] for row in loop.get_tag(cs_tags) if row[0] == _chain_id_1]
+                        _cs_2 = [row[1:] for row in loop.get_tag(cs_tags) if row[0] == _chain_id_2]
 
                         _cs_1 = sorted(_cs_1, key=itemgetter(0, 2))
                         _cs_2 = sorted(_cs_2, key=itemgetter(0, 2))
@@ -27366,10 +27241,7 @@ class NmrDpUtility:
 
                                 if not isinstance(sf, pynmrstar.Loop) and any(aux_loop for aux_loop in sf if aux_loop.category == aux_lp_category):
 
-                                    if __pynmrstar_v3_2__:
-                                        aux_loop = sf.get_loop(aux_lp_category)
-                                    else:
-                                        aux_loop = sf.get_loop_by_category(aux_lp_category)
+                                    aux_loop = sf.get_loop(aux_lp_category)
 
                                     if 'Ambiguous_shift_set_ID' in aux_loop.tags:
                                         ambig_set_id_col = aux_loop.tags.index('Ambiguous_shift_set_ID')
@@ -27595,10 +27467,7 @@ class NmrDpUtility:
         """ Remove unused PDB_ind_code tags from loops.
         """
 
-        if __pynmrstar_v3_2__:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
-        else:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
+        loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         if loop is None:
             return False
@@ -27617,7 +27486,7 @@ class NmrDpUtility:
 
         try:
 
-            dat = get_lp_tag(loop, tags)
+            dat = loop.get_tag(tags)
 
             for row in dat:
                 if row is not None:
@@ -27697,10 +27566,7 @@ class NmrDpUtility:
         """ Synchronize sequence scheme of restraint loop based on coordinates.
         """
 
-        if __pynmrstar_v3_2__:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
-        else:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
+        loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         if file_type == 'nef':
 
@@ -27709,7 +27575,7 @@ class NmrDpUtility:
 
             if chain_id_name in loop.tags:
                 tags = [chain_id_name, seq_id_name]
-                dat = get_lp_tag(loop, tags)
+                dat = loop.get_tag(tags)
                 for row in dat:
                     try:
                         seq_key = (row[0], int(row[1]))
@@ -27726,7 +27592,7 @@ class NmrDpUtility:
                     if chain_id_name not in loop.tags:
                         break
                     tags = [chain_id_name, seq_id_name]
-                    dat = get_lp_tag(loop, tags)
+                    dat = loop.get_tag(tags)
                     for row in dat:
                         try:
                             seq_key = (row[0], int(row[1]))
@@ -27746,7 +27612,7 @@ class NmrDpUtility:
                         alt_seq_id_name = f'{interaction}_seq_ID_{j}'
                         if alt_seq_id_name in loop.tags:
                             tags = [chain_id_name, seq_id_name, alt_seq_id_name]
-                            dat = get_lp_tag(loop, tags)
+                            dat = loop.get_tag(tags)
                             for row in dat:
                                 try:
                                     seq_key = (row[0], int(row[1]))
@@ -27759,7 +27625,7 @@ class NmrDpUtility:
 
                         else:
                             tags = [chain_id_name, seq_id_name]
-                            dat = get_lp_tag(loop, tags)
+                            dat = loop.get_tag(tags)
                             for row in dat:
                                 try:
                                     seq_key = (row[0], int(row[1]))
@@ -27777,7 +27643,7 @@ class NmrDpUtility:
                         alt_seq_id_name = f'{interaction}_seq_ID_{j}'
                         if alt_seq_id_name in loop.tags:
                             tags = [chain_id_name, seq_id_name, alt_seq_id_name]
-                            dat = get_lp_tag(loop, tags)
+                            dat = loop.get_tag(tags)
                             for row in dat:
                                 try:
                                     seq_key = (row[0], int(row[1]))
@@ -27790,7 +27656,7 @@ class NmrDpUtility:
 
                         else:
                             tags = [chain_id_name, seq_id_name]
-                            dat = get_lp_tag(loop, tags)
+                            dat = loop.get_tag(tags)
                             for row in dat:
                                 try:
                                     seq_key = (row[0], int(row[1]))
@@ -27808,7 +27674,7 @@ class NmrDpUtility:
                 if chain_id_name in loop.tags:
                     if alt_seq_id_name in loop.tags:
                         tags = [chain_id_name, seq_id_name, alt_seq_id_name]
-                        dat = get_lp_tag(loop, tags)
+                        dat = loop.get_tag(tags)
                         for row in dat:
                             try:
                                 seq_key = (row[0], int(row[1]))
@@ -27821,7 +27687,7 @@ class NmrDpUtility:
 
                     else:
                         tags = [chain_id_name, seq_id_name]
-                        dat = get_lp_tag(loop, tags)
+                        dat = loop.get_tag(tags)
                         for row in dat:
                             try:
                                 seq_key = (row[0], int(row[1]))
@@ -27840,7 +27706,7 @@ class NmrDpUtility:
                             break
                         if alt_seq_id_name in loop.tags:
                             tags = [chain_id_name, seq_id_name, alt_seq_id_name]
-                            dat = get_lp_tag(loop, tags)
+                            dat = loop.get_tag(tags)
                             for row in dat:
                                 try:
                                     seq_key = (row[0], int(row[1]))
@@ -27852,7 +27718,7 @@ class NmrDpUtility:
                                         row[0] = self.__chain_id_map_for_remediation[row[0]]
                         else:
                             tags = [chain_id_name, seq_id_name]
-                            dat = get_lp_tag(loop, tags)
+                            dat = loop.get_tag(tags)
                             for row in dat:
                                 try:
                                     seq_key = (row[0], int(row[1]))
@@ -28095,10 +27961,7 @@ class NmrDpUtility:
                 for sf in star_data.get_saveframes_by_category(sf_category):
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                    if __pynmrstar_v3_2__:
-                        loop = sf.get_loop(lp_category)
-                    else:
-                        loop = sf.get_loop_by_category(lp_category)
+                    loop = sf.get_loop(lp_category)
 
                     lp = pynmrstar.Loop.from_scratch(lp_category)
 
@@ -28408,9 +28271,8 @@ class NmrDpUtility:
                         for row in lp_data:
                             for d in range(num_dim):
 
-                                if __pynmrstar_v3__\
-                                   and not (chain_id_names[d] in row and seq_id_names[d] in row
-                                            and comp_id_names[d] in row and atom_id_names[d] in row):
+                                if not (chain_id_names[d] in row and seq_id_names[d] in row
+                                        and comp_id_names[d] in row and atom_id_names[d] in row):
                                     continue
 
                                 chain_id = row.get(chain_id_names[d])
@@ -28862,9 +28724,8 @@ class NmrDpUtility:
 
                         for row in lp_data:
 
-                            if __pynmrstar_v3__\
-                               and not (cs_chain_id_name in row and cs_seq_id_name in row
-                                        and cs_comp_id_name in row and cs_atom_id_name in row):
+                            if not (cs_chain_id_name in row and cs_seq_id_name in row
+                                    and cs_comp_id_name in row and cs_atom_id_name in row):
                                 continue
 
                             chain_id = row[cs_chain_id_name]
@@ -30214,10 +30075,7 @@ class NmrDpUtility:
 
                     if not self.__annotation_mode:
 
-                        if __pynmrstar_v3__:
-                            master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
-                        else:
-                            master_entry.write_to_file(self.__dstPath)
+                        master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
                         if 'nmr_cif_file_path' in self.__outputParamDict:
 
@@ -30317,13 +30175,10 @@ class NmrDpUtility:
             sf_framecode = restraint_name.replace(' ', '_').lower() + f'_{list_id}'
             is_sf = False
 
-        # refresh saveframe
-
         sf = getSaveframe(content_subtype, sf_framecode, list_id, self.__entry_id, original_file_name,
                           reduced=False)
 
         # merge saveframe tags of the source saveframe
-
         if is_sf:
 
             origTagNames = [t[0] for t in _sf.tags]
@@ -30335,10 +30190,7 @@ class NmrDpUtility:
 
         try:
 
-            if __pynmrstar_v3_2__:
-                loop = _sf if self.__star_data_type[file_list_id] == 'Loop' else _sf.get_loop(lp_category)
-            else:
-                loop = _sf if self.__star_data_type[file_list_id] == 'Loop' else _sf.get_loop_by_category(lp_category)
+            loop = _sf if self.__star_data_type[file_list_id] == 'Loop' else _sf.get_loop(lp_category)
 
             if not isinstance(loop, pynmrstar.Loop):
                 loop = None
@@ -30363,17 +30215,9 @@ class NmrDpUtility:
             has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
             if has_poly_seq_in_loop and content_subtype != 'ph_param_data':
-
-                # if self.__caC is None:
-                #     self.__retrieveCoordAssemblyChecker()
-
                 polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
-                ps = None
-
-                seq_align = chain_assign = None
-                br_seq_align = br_chain_assign = None
-                np_seq_align = np_chain_assign = None
+                ps = seq_align = chain_assign = br_seq_align = br_chain_assign = np_seq_align = np_chain_assign = None
 
                 if has_poly_seq_in_loop and content_subtype in polymer_sequence_in_loop:
                     ps_in_loop = next((ps for ps in polymer_sequence_in_loop[content_subtype] if ps['sf_framecode'] == _sf_framecode), None)
@@ -30547,7 +30391,7 @@ class NmrDpUtility:
                 has_key_seq = False
 
                 if set(key_tags) & set(loop.tags) == set(key_tags):
-                    dat = get_lp_tag(loop, key_seq_id_names)
+                    dat = loop.get_tag(key_seq_id_names)
                     if len(dat) > 0:
                         has_key_seq = True
                         for row in dat:
@@ -30561,7 +30405,7 @@ class NmrDpUtility:
                 has_auth_seq = valid_auth_seq = False
 
                 if set(auth_pdb_tags) & set(loop.tags) == set(auth_pdb_tags):
-                    auth_dat = get_lp_tag(loop, auth_pdb_tags)
+                    auth_dat = loop.get_tag(auth_pdb_tags)
                     if len(auth_dat) > 0:
                         has_auth_seq = valid_auth_seq = True
                         if not self.__annotation_mode:
@@ -30587,7 +30431,7 @@ class NmrDpUtility:
                         if has_auth_atom_name:
                             auth_pdb_tags.extend(auth_atom_name_names)
 
-                        dat = get_lp_tag(loop, auth_pdb_tags)
+                        dat = loop.get_tag(auth_pdb_tags)
 
                         prefer_auth_atom_name = False
 
@@ -30950,7 +30794,7 @@ class NmrDpUtility:
                         if has_auth_atom_name:
                             key_tags.extend(auth_atom_name_names)
 
-                        dat = get_lp_tag(loop, key_tags)
+                        dat = loop.get_tag(key_tags)
 
                         prefer_auth_atom_name = False
 
@@ -31833,7 +31677,6 @@ class NmrDpUtility:
                 sf_item['id'] = len(lp)
 
             # merge other loops of the source saveframe
-
             if is_sf:
 
                 for loop in _sf.loops:
@@ -34665,10 +34508,7 @@ class NmrDpUtility:
 
                 if not self.__annotation_mode:
 
-                    if __pynmrstar_v3__:
-                        master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
-                    else:
-                        master_entry.write_to_file(self.__dstPath)
+                    master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
                     if 'nmr_cif_file_path' in self.__outputParamDict:
 
@@ -34770,10 +34610,7 @@ class NmrDpUtility:
 
         try:
 
-            if __pynmrstar_v3_2__:
-                loop = sf.get_loop(lp_category)
-            else:
-                loop = sf.get_loop_by_category(lp_category)
+            loop = sf.get_loop(lp_category)
 
         except KeyError:
             return False
@@ -34794,9 +34631,7 @@ class NmrDpUtility:
 
         polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
-        seq_align = chain_assign = None
-        br_seq_align = br_chain_assign = None
-        np_seq_align = np_chain_assign = None
+        seq_align = chain_assign = br_seq_align = br_chain_assign = np_seq_align = np_chain_assign = None
 
         if content_subtype in polymer_sequence_in_loop:
             ps_in_loop = next((ps for ps in polymer_sequence_in_loop[content_subtype] if ps['sf_framecode'] == sf_framecode), None)
@@ -35859,10 +35694,7 @@ class NmrDpUtility:
 
                     _sf = self.__star_data[0].get_saveframes_by_category(_sf_category)
 
-                    if __pynmrstar_v3_2__:
-                        _loop = _sf[0].get_loop(_lp_category)
-                    else:
-                        _loop = _sf[0].get_loop_by_category(_lp_category)
+                    _loop = _sf[0].get_loop(_lp_category)
 
                     _block_id_col = _loop.tags.index('Block_ID')
                     _constraint_type_col = _loop.tags.index('Constraint_type')
@@ -37683,49 +37515,7 @@ class NmrDpUtility:
                 sf = self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
                 lp = next(lp for lp in sf.loops if lp.category == lp_category)
 
-                mapping, identity_mapping = [], []
-
-                tags = ['Comp_ID', 'Atom_ID', 'Original_PDB_atom_name']
-                if set(tags) & set(lp.tags) == set(tags):
-                    dat = get_lp_tag(lp, tags)
-
-                    for row in dat:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] != row[2]:
-                            continue
-                        key = (row[0], row[2])
-                        if key not in identity_mapping:
-                            identity_mapping.append(key)
-
-                    for row in dat:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
-                            continue
-                        comp_id = row[0]
-                        atom_id = row[1]
-                        atom_name = row[2]
-
-                        if not any(m['comp_id'] == comp_id for m in mapping):
-                            mapping.append({'comp_id': comp_id, 'history': []})
-
-                        history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
-
-                        if not any(h for h in history if h['atom_name'] == atom_name):
-                            history.append({'atom_name': atom_name, 'atom_id': [atom_name] if (comp_id, atom_name) in identity_mapping else []})
-
-                        h = next(h for h in history if h['atom_name'] == atom_name)
-                        if atom_id not in h['atom_id']:
-                            h['atom_id'].append(atom_id)
-
-                if len(mapping) == 0:
-                    mapping = None
-
-                else:
-                    for m in mapping:
-                        for h in m['history']:
-                            h['atom_id'] = sorted(h['atom_id'])
-                        m['history'] = sorted(m['history'], key=itemgetter('atom_name'))
-                    mapping = sorted(mapping, key=lambda x: (len(x['comp_id']), x['comp_id']))
-
-                ent['atom_name_mapping'] = mapping
+                ent['atom_name_mapping'] = get_atom_name_mapping(lp, [['Comp_ID', 'Atom_ID', 'Original_PDB_atom_name']])
 
         except Exception as e:
 
@@ -38029,7 +37819,6 @@ class NmrDpUtility:
 
                 # detect potential type
 
-                # targe_value = row.get(target_value_name)
                 lower_limit = row.get(lower_limit_name)
                 upper_limit = row.get(upper_limit_name)
                 lower_linear_limit = row.get(lower_linear_limit_name)
@@ -38587,88 +38376,8 @@ class NmrDpUtility:
                 sf = self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
                 lp = next(lp for lp in sf.loops if lp.category == lp_category)
 
-                mapping, identity_mapping = [], []
-                dat1 = dat2 = None
-
-                tags1 = ['Comp_ID_1', 'Atom_ID_1', 'Auth_atom_name_1']
-                if set(tags1) & set(lp.tags) == set(tags1):
-                    dat1 = get_lp_tag(lp, tags1)
-
-                tags2 = ['Comp_ID_2', 'Atom_ID_2', 'Auth_atom_name_2']
-                if set(tags2) & set(lp.tags) == set(tags2):
-                    dat2 = get_lp_tag(lp, tags2)
-
-                if dat1 is not None:
-
-                    for row in dat1:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] != row[2]:
-                            continue
-                        key = (row[0], row[2])
-                        if key not in identity_mapping:
-                            identity_mapping.append(key)
-
-                if dat2 is not None:
-
-                    for row in dat2:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] != row[2]:
-                            continue
-                        key = (row[0], row[2])
-                        if key not in identity_mapping:
-                            identity_mapping.append(key)
-
-                if dat1 is not None:
-
-                    for row in dat1:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
-                            continue
-                        comp_id = row[0]
-                        atom_id = row[1]
-                        atom_name = row[2]
-
-                        if not any(m['comp_id'] == comp_id for m in mapping):
-                            mapping.append({'comp_id': comp_id, 'history': []})
-
-                        history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
-
-                        if not any(h for h in history if h['atom_name'] == atom_name):
-                            history.append({'atom_name': atom_name, 'atom_id': [atom_name] if (comp_id, atom_name) in identity_mapping else []})
-
-                        h = next(h for h in history if h['atom_name'] == atom_name)
-                        if atom_id not in h['atom_id']:
-                            h['atom_id'].append(atom_id)
-
-                if dat2 is not None:
-
-                    for row in dat2:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
-                            continue
-                        comp_id = row[0]
-                        atom_id = row[1]
-                        atom_name = row[2]
-
-                        if not any(m['comp_id'] == comp_id for m in mapping):
-                            mapping.append({'comp_id': comp_id, 'history': []})
-
-                        history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
-
-                        if not any(h for h in history if h['atom_name'] == atom_name):
-                            history.append({'atom_name': atom_name, 'atom_id': [atom_name] if (comp_id, atom_name) in identity_mapping else []})
-
-                        h = next(h for h in history if h['atom_name'] == atom_name)
-                        if atom_id not in h['atom_id']:
-                            h['atom_id'].append(atom_id)
-
-                if len(mapping) == 0:
-                    mapping = None
-
-                else:
-                    for m in mapping:
-                        for h in m['history']:
-                            h['atom_id'] = sorted(h['atom_id'])
-                        m['history'] = sorted(m['history'], key=itemgetter('atom_name'))
-                    mapping = sorted(mapping, key=lambda x: (len(x['comp_id']), x['comp_id']))
-
-                ent['atom_name_mapping'] = mapping
+                ent['atom_name_mapping'] = get_atom_name_mapping(lp, [['Comp_ID_1', 'Atom_ID_1', 'Auth_atom_name_1'],
+                                                                      ['Comp_ID_2', 'Atom_ID_2', 'Auth_atom_name_2']])
 
         except Exception as e:
 
@@ -39811,7 +39520,6 @@ class NmrDpUtility:
 
                 # detect potential type
 
-                # targe_value = row.get(target_value_name)
                 lower_limit = row.get(lower_limit_name)
                 upper_limit = row.get(upper_limit_name)
                 lower_linear_limit = row.get(lower_linear_limit_name)
@@ -39969,8 +39677,7 @@ class NmrDpUtility:
 
                 max_inclusive = ANGLE_UNCERT_MAX
 
-                max_val = 0.0
-                min_val = 0.0
+                max_val = min_val = 0.0
 
                 dihed_ann = []
 
@@ -40310,156 +40017,10 @@ class NmrDpUtility:
                 sf = self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
                 lp = next(lp for lp in sf.loops if lp.category == lp_category)
 
-                mapping, identity_mapping = [], []
-                dat1 = dat2 = dat3 = dat4 = None
-
-                tags1 = ['Comp_ID_1', 'Atom_ID_1', 'Auth_atom_name_1']
-                if set(tags1) & set(lp.tags) == set(tags1):
-                    dat1 = get_lp_tag(lp, tags1)
-
-                tags2 = ['Comp_ID_2', 'Atom_ID_2', 'Auth_atom_name_2']
-                if set(tags2) & set(lp.tags) == set(tags2):
-                    dat2 = get_lp_tag(lp, tags2)
-
-                tags3 = ['Comp_ID_3', 'Atom_ID_3', 'Auth_atom_name_3']
-                if set(tags3) & set(lp.tags) == set(tags3):
-                    dat3 = get_lp_tag(lp, tags3)
-
-                tags4 = ['Comp_ID_4', 'Atom_ID_4', 'Auth_atom_name_4']
-                if set(tags4) & set(lp.tags) == set(tags4):
-                    dat4 = get_lp_tag(lp, tags4)
-
-                if dat1 is not None:
-
-                    for row in dat1:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] != row[2]:
-                            continue
-                        key = (row[0], row[2])
-                        if key not in identity_mapping:
-                            identity_mapping.append(key)
-
-                if dat2 is not None:
-
-                    for row in dat2:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] != row[2]:
-                            continue
-                        key = (row[0], row[2])
-                        if key not in identity_mapping:
-                            identity_mapping.append(key)
-
-                if dat3 is not None:
-
-                    for row in dat3:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] != row[2]:
-                            continue
-                        key = (row[0], row[2])
-                        if key not in identity_mapping:
-                            identity_mapping.append(key)
-
-                if dat4 is not None:
-
-                    for row in dat4:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] != row[2]:
-                            continue
-                        key = (row[0], row[2])
-                        if key not in identity_mapping:
-                            identity_mapping.append(key)
-
-                if dat1 is not None:
-
-                    for row in dat1:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
-                            continue
-                        comp_id = row[0]
-                        atom_id = row[1]
-                        atom_name = row[2]
-
-                        if not any(m['comp_id'] == comp_id for m in mapping):
-                            mapping.append({'comp_id': comp_id, 'history': []})
-
-                        history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
-
-                        if not any(h for h in history if h['atom_name'] == atom_name):
-                            history.append({'atom_name': atom_name, 'atom_id': [atom_name] if (comp_id, atom_name) in identity_mapping else []})
-
-                        h = next(h for h in history if h['atom_name'] == atom_name)
-                        if atom_id not in h['atom_id']:
-                            h['atom_id'].append(atom_id)
-
-                if dat2 is not None:
-
-                    for row in dat2:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
-                            continue
-                        comp_id = row[0]
-                        atom_id = row[1]
-                        atom_name = row[2]
-
-                        if not any(m['comp_id'] == comp_id for m in mapping):
-                            mapping.append({'comp_id': comp_id, 'history': []})
-
-                        history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
-
-                        if not any(h for h in history if h['atom_name'] == atom_name):
-                            history.append({'atom_name': atom_name, 'atom_id': [atom_name] if (comp_id, atom_name) in identity_mapping else []})
-
-                        h = next(h for h in history if h['atom_name'] == atom_name)
-                        if atom_id not in h['atom_id']:
-                            h['atom_id'].append(atom_id)
-
-                if dat3 is not None:
-
-                    for row in dat3:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
-                            continue
-                        comp_id = row[0]
-                        atom_id = row[1]
-                        atom_name = row[2]
-
-                        if not any(m['comp_id'] == comp_id for m in mapping):
-                            mapping.append({'comp_id': comp_id, 'history': []})
-
-                        history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
-
-                        if not any(h for h in history if h['atom_name'] == atom_name):
-                            history.append({'atom_name': atom_name, 'atom_id': [atom_name] if (comp_id, atom_name) in identity_mapping else []})
-
-                        h = next(h for h in history if h['atom_name'] == atom_name)
-                        if atom_id not in h['atom_id']:
-                            h['atom_id'].append(atom_id)
-
-                if dat4 is not None:
-
-                    for row in dat4:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
-                            continue
-                        comp_id = row[0]
-                        atom_id = row[1]
-                        atom_name = row[2]
-
-                        if not any(m['comp_id'] == comp_id for m in mapping):
-                            mapping.append({'comp_id': comp_id, 'history': []})
-
-                        history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
-
-                        if not any(h for h in history if h['atom_name'] == atom_name):
-                            history.append({'atom_name': atom_name, 'atom_id': [atom_name] if (comp_id, atom_name) in identity_mapping else []})
-
-                        h = next(h for h in history if h['atom_name'] == atom_name)
-                        if atom_id not in h['atom_id']:
-                            h['atom_id'].append(atom_id)
-
-                if len(mapping) == 0:
-                    mapping = None
-
-                else:
-                    for m in mapping:
-                        for h in m['history']:
-                            h['atom_id'] = sorted(h['atom_id'])
-                        m['history'] = sorted(m['history'], key=itemgetter('atom_name'))
-                    mapping = sorted(mapping, key=lambda x: (len(x['comp_id']), x['comp_id']))
-
-                ent['atom_name_mapping'] = mapping
+                ent['atom_name_mapping'] = get_atom_name_mapping(lp, [['Comp_ID_1', 'Atom_ID_1', 'Auth_atom_name_1'],
+                                                                      ['Comp_ID_2', 'Atom_ID_2', 'Auth_atom_name_2'],
+                                                                      ['Comp_ID_3', 'Atom_ID_3', 'Auth_atom_name_3'],
+                                                                      ['Comp_ID_4', 'Atom_ID_4', 'Auth_atom_name_4']])
 
         except Exception as e:
 
@@ -40514,8 +40075,7 @@ class NmrDpUtility:
 
         try:
 
-            max_val = 0.0
-            min_val = 0.0
+            max_val = min_val = 0.0
 
             max_val_ = -100.0
             min_val_ = 100.0
@@ -40557,11 +40117,8 @@ class NmrDpUtility:
             item_names = self.item_names_in_rdc_loop[file_type]
             combination_id_name = item_names['combination_id']
             chain_id_1_name = item_names['chain_id_1']
-            # chain_id_2_name = item_names['chain_id_2']
             seq_id_1_name = item_names['seq_id_1']
-            # seq_id_2_name = item_names['seq_id_2']
             comp_id_1_name = item_names['comp_id_1']
-            # comp_id_2_name = item_names['comp_id_2']
             atom_id_1_name = item_names['atom_id_1']
             atom_id_2_name = item_names['atom_id_2']
             weight_name = self.weight_tags[file_type][content_subtype]
@@ -41031,88 +40588,8 @@ class NmrDpUtility:
                 sf = self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
                 lp = next(lp for lp in sf.loops if lp.category == lp_category)
 
-                mapping, identity_mapping = [], []
-                dat1 = dat2 = None
-
-                tags1 = ['Comp_ID_1', 'Atom_ID_1', 'Auth_atom_name_1']
-                if set(tags1) & set(lp.tags) == set(tags1):
-                    dat1 = get_lp_tag(lp, tags1)
-
-                tags2 = ['Comp_ID_2', 'Atom_ID_2', 'Auth_atom_name_2']
-                if set(tags2) & set(lp.tags) == set(tags2):
-                    dat2 = get_lp_tag(lp, tags2)
-
-                if dat1 is not None:
-
-                    for row in dat1:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] != row[2]:
-                            continue
-                        key = (row[0], row[2])
-                        if key not in identity_mapping:
-                            identity_mapping.append(key)
-
-                if dat2 is not None:
-
-                    for row in dat2:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] != row[2]:
-                            continue
-                        key = (row[0], row[2])
-                        if key not in identity_mapping:
-                            identity_mapping.append(key)
-
-                if dat1 is not None:
-
-                    for row in dat1:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
-                            continue
-                        comp_id = row[0]
-                        atom_id = row[1]
-                        atom_name = row[2]
-
-                        if not any(m['comp_id'] == comp_id for m in mapping):
-                            mapping.append({'comp_id': comp_id, 'history': []})
-
-                        history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
-
-                        if not any(h for h in history if h['atom_name'] == atom_name):
-                            history.append({'atom_name': atom_name, 'atom_id': [atom_name] if (comp_id, atom_name) in identity_mapping else []})
-
-                        h = next(h for h in history if h['atom_name'] == atom_name)
-                        if atom_id not in h['atom_id']:
-                            h['atom_id'].append(atom_id)
-
-                if dat2 is not None:
-
-                    for row in dat2:
-                        if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue or row[1] == row[2]:
-                            continue
-                        comp_id = row[0]
-                        atom_id = row[1]
-                        atom_name = row[2]
-
-                        if not any(m['comp_id'] == comp_id for m in mapping):
-                            mapping.append({'comp_id': comp_id, 'history': []})
-
-                        history = next(m['history'] for m in mapping if m['comp_id'] == comp_id)
-
-                        if not any(h for h in history if h['atom_name'] == atom_name):
-                            history.append({'atom_name': atom_name, 'atom_id': [atom_name] if (comp_id, atom_name) in identity_mapping else []})
-
-                        h = next(h for h in history if h['atom_name'] == atom_name)
-                        if atom_id not in h['atom_id']:
-                            h['atom_id'].append(atom_id)
-
-                if len(mapping) == 0:
-                    mapping = None
-
-                else:
-                    for m in mapping:
-                        for h in m['history']:
-                            h['atom_id'] = sorted(h['atom_id'])
-                        m['history'] = sorted(m['history'], key=itemgetter('atom_name'))
-                    mapping = sorted(mapping, key=lambda x: (len(x['comp_id']), x['comp_id']))
-
-                ent['atom_name_mapping'] = mapping
+                ent['atom_name_mapping'] = get_atom_name_mapping(lp, [['Comp_ID_1', 'Atom_ID_1', 'Auth_atom_name_1'],
+                                                                      ['Comp_ID_2', 'Atom_ID_2', 'Auth_atom_name_2']])
 
         except Exception as e:
 
@@ -41383,8 +40860,7 @@ class NmrDpUtility:
 
                 for j in range(num_dim):
 
-                    if __pynmrstar_v3__\
-                       and not (chain_id_names[j] in row and seq_id_names[j] in row and comp_id_names[j] in row and atom_id_names[j] in row):
+                    if not (chain_id_names[j] in row and seq_id_names[j] in row and comp_id_names[j] in row and atom_id_names[j] in row):
                         has_assignment = False
                         break
 
@@ -41632,8 +41108,7 @@ class NmrDpUtility:
                             has_assignment = False
                             break
 
-                        if __pynmrstar_v3__\
-                           and not (chain_id_name in k and seq_id_name in k and comp_id_name in k and atom_id_name in k):
+                        if not (chain_id_name in k and seq_id_name in k and comp_id_name in k and atom_id_name in k):
                             has_assignment = False
                             break
 
@@ -42104,11 +41579,6 @@ class NmrDpUtility:
                 self.__coord_unobs_res = None
                 self.__auth_to_label_seq = None
                 self.__label_to_auth_seq = None
-                # self.__coord_tautomer = {}
-                # self.__coord_rotamer = {}
-                # self.__coord_near_ring = {}
-                # self.__coord_near_para_ferro = {}
-                # self.__coord_bond_length = {}
                 self.__caC = None
                 self.__cpC = copy.copy(default_coord_properties)
                 self.__ent_asym_id_with_exptl_data = set()
@@ -43513,7 +42983,8 @@ class NmrDpUtility:
                 cif_chains = len(cif_polymer_sequence)
                 nmr_chains = len(nmr_polymer_sequence)
 
-                # map polymer sequences between coordinate and NMR data using Hungarian algorithm
+                # Map polymer sequences between coordinate and NMR data using Hungarian algorithm
+
                 m = Munkres()
 
                 # from model to nmr (first trial, never raise a warning or an error)
@@ -43750,7 +43221,6 @@ class NmrDpUtility:
                                     continue
 
                         unmapped, conflict = [], []
-                        # offset_1 = offset_2 = 0
 
                         for i in range(length):
                             myPr = myAlign[i]
@@ -44044,7 +43514,6 @@ class NmrDpUtility:
                                     continue
 
                         unmapped, conflict = [], []
-                        # offset_1 = offset_2 = 0
 
                         for i in range(length):
                             myPr = myAlign[i]
@@ -44567,7 +44036,6 @@ class NmrDpUtility:
                                     continue
 
                         unmapped, conflict = [], []
-                        # offset_1 = offset_2 = 0
 
                         for i in range(length):
                             myPr = myAlign[i]
@@ -44940,10 +44408,7 @@ class NmrDpUtility:
         """ Update residue name in CS loop to follow CCD replacement.
         """
 
-        if __pynmrstar_v3_2__:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
-        else:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
+        loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         chain_id_col = loop.tags.index('Entity_assembly_ID')
         seq_id_col = loop.tags.index('Comp_index_ID')
@@ -45071,10 +44536,7 @@ class NmrDpUtility:
         """ Resolve unmapped author sequence in CS loop based on sequence alignment.
         """
 
-        if __pynmrstar_v3_2__:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
-        else:
-            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
+        loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         chain_id_col = loop.tags.index('Entity_assembly_ID')
         seq_id_col = loop.tags.index('Comp_index_ID')
@@ -45429,10 +44891,7 @@ class NmrDpUtility:
 
         if file_type == 'nmr-star':
 
-            if __pynmrstar_v3_2__:
-                loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
-            else:
-                loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop_by_category(lp_category)
+            loop = sf if self.__star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
             if 'Details' in loop.tags:
                 details_col = loop.tags.index('Details')
@@ -45914,10 +45373,7 @@ class NmrDpUtility:
                         if len(conflict_id) > 0:
                             modified = True
 
-                            if __pynmrstar_v3_2__:
-                                loop = sf.get_loop(lp_category)
-                            else:
-                                loop = sf.get_loop_by_category(lp_category)
+                            loop = sf.get_loop(lp_category)
 
                             for _id in conflict_id:
                                 del loop.data[_id]
@@ -45927,10 +45383,7 @@ class NmrDpUtility:
                         if len(conflict_id) > 0:
                             modified = True
 
-                            if __pynmrstar_v3_2__:
-                                loop = sf.get_loop(lp_category)
-                            else:
-                                loop = sf.get_loop_by_category(lp_category)
+                            loop = sf.get_loop(lp_category)
 
                             for _id in conflict_id:
                                 del loop.data[_id]
@@ -46017,10 +45470,7 @@ class NmrDpUtility:
                             conflict_id = self.__nefT.get_conflict_id(sf, lp_category, key_items)[0]
 
                             if len(conflict_id) > 0:
-                                if __pynmrstar_v3_2__:
-                                    _loop = sf.get_loop(lp_category)
-                                else:
-                                    _loop = sf.get_loop_by_category(lp_category)
+                                _loop = sf.get_loop(lp_category)
 
                                 for _id in conflict_id:
                                     del _loop.data[_id]
@@ -46065,10 +45515,7 @@ class NmrDpUtility:
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                     try:
-                        if __pynmrstar_v3_2__:
-                            loop = sf.get_loop(lp_category)
-                        else:
-                            loop = sf.get_loop_by_category(lp_category)
+                        loop = sf.get_loop(lp_category)
                     except KeyError:
                         continue
 
@@ -46237,10 +45684,7 @@ class NmrDpUtility:
 
                     else:
 
-                        if __pynmrstar_v3_2__:
-                            del sf[sf.get_loop(w['category'])]
-                        else:
-                            del sf[sf.get_loop_by_category(w['category'])]
+                        del sf[sf.get_loop(w['category'])]
 
             else:
 
@@ -46420,14 +45864,11 @@ class NmrDpUtility:
 
                 try:
 
-                    if __pynmrstar_v3_2__:
-                        lp = sf.get_loop(lp_category)
-                    else:
-                        lp = sf.get_loop_by_category(lp_category)
+                    lp = sf.get_loop(lp_category)
 
                     test_tags = ['Given_name', 'Family_name', 'First_initial', 'Middle_initials', 'Family_title']
 
-                    dat = get_lp_tag(lp, test_tags)
+                    dat = lp.get_tag(test_tags)
 
                     for idx, row in enumerate(dat):
                         for col in range(5):
@@ -46463,14 +45904,11 @@ class NmrDpUtility:
 
                 _lp_category = '_Entity_assembly'
 
-                if __pynmrstar_v3_2__:
-                    _loop = sf.get_loop(_lp_category)
-                else:
-                    _loop = sf.get_loop_by_category(_lp_category)
+                _loop = sf.get_loop(_lp_category)
 
                 tags = ['Conformational_isomer', 'Details']
 
-                dat = get_lp_tag(_loop, tags)
+                dat = _loop.get_tag(tags)
 
                 for row in dat:
                     if row[0] == 'yes' and 'Conformational isomer' in row[1]:
@@ -46571,10 +46009,8 @@ class NmrDpUtility:
             if self.__cR.hasCategory('struct_conn'):
                 bonds = self.__cR.getDictList('struct_conn')
                 for bond in bonds:
-                    # auth_seq_id_1 = bond['ptnr1_auth_seq_id']
                     auth_comp_id_1 = bond['ptnr1_auth_comp_id']
                     atom_id_1 = bond['ptnr1_label_atom_id']
-                    # auth_seq_id_2 = bond['ptnr2_auth_seq_id']
                     auth_comp_id_2 = bond['ptnr2_auth_comp_id']
                     atom_id_2 = bond['ptnr2_label_atom_id']
 
@@ -47301,7 +46737,7 @@ class NmrDpUtility:
                     if 'touch' in d:
                         del d['touch']
 
-            self.__cca_dat = get_lp_tag(loop, ['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'])
+            self.__cca_dat = loop.get_tag(['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'])
 
             # Refresh _Bond loop
 
@@ -48061,11 +47497,9 @@ class NmrDpUtility:
                     bonds = self.__cR.getDictList('struct_conn')
                     for bond in bonds:
                         label_asym_id_1 = bond['ptnr1_label_asym_id']
-                        # auth_seq_id_1 = bond['ptnr1_auth_seq_id']
                         auth_comp_id_1 = bond['ptnr1_auth_comp_id']
                         label_asym_id_2 = bond['ptnr2_label_asym_id']
                         atom_id_1 = bond['ptnr1_label_atom_id']
-                        # auth_seq_id_2 = bond['ptnr2_auth_seq_id']
                         auth_comp_id_2 = bond['ptnr2_auth_comp_id']
                         atom_id_2 = bond['ptnr2_label_atom_id']
 
@@ -48478,10 +47912,7 @@ class NmrDpUtility:
         for sf in self.__star_data[0].get_saveframes_by_category(sf_category):
 
             try:
-                if __pynmrstar_v3_2__:
-                    loop = sf.get_loop(lp_category)
-                else:
-                    loop = sf.get_loop_by_category(lp_category)
+                loop = sf.get_loop(lp_category)
             except KeyError:
                 continue
 
@@ -48518,10 +47949,7 @@ class NmrDpUtility:
             for sf in self.__star_data[0].get_saveframes_by_category(sf_category):
 
                 try:
-                    if __pynmrstar_v3_2__:
-                        loop = sf.get_loop(lp_category)
-                    else:
-                        loop = sf.get_loop_by_category(lp_category)
+                    loop = sf.get_loop(lp_category)
                 except KeyError:
                     continue
 
@@ -50712,10 +50140,7 @@ class NmrDpUtility:
                 for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
                     try:
-                        if __pynmrstar_v3_2__:
-                            loop = sf.get_loop(lp_category)
-                        else:
-                            loop = sf.get_loop_by_category(lp_category)
+                        loop = sf.get_loop(lp_category)
                     except KeyError:
                         continue
 
@@ -50850,10 +50275,7 @@ class NmrDpUtility:
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                         try:
-                            if __pynmrstar_v3_2__:
-                                loop = sf.get_loop(lp_category)
-                            else:
-                                loop = sf.get_loop_by_category(lp_category)
+                            loop = sf.get_loop(lp_category)
                         except KeyError:
                             continue
 
@@ -50921,10 +50343,7 @@ class NmrDpUtility:
                 for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
                     try:
-                        if __pynmrstar_v3_2__:
-                            loop = sf.get_loop(lp_category)
-                        else:
-                            loop = sf.get_loop_by_category(lp_category)
+                        loop = sf.get_loop(lp_category)
                     except KeyError:
                         continue
 
@@ -50974,7 +50393,6 @@ class NmrDpUtility:
                         continue
 
                     sf_category = self.sf_categories[file_type][content_subtype]
-                    # lp_category = self.lp_categories[file_type][content_subtype]
 
                     has_data_file_name = file_type == 'nmr-star' and 'Data_file_name' in self.sf_allowed_tags[file_type][content_subtype]
                     tag_items = self._sf_tag_items[file_type][content_subtype]
@@ -51169,10 +50587,7 @@ class NmrDpUtility:
                     if update:
 
                         try:
-                            if __pynmrstar_v3_2__:
-                                loop = sf.get_loop(lp_category)
-                            else:
-                                loop = sf.get_loop_by_category(lp_category)
+                            loop = sf.get_loop(lp_category)
                         except KeyError:
                             continue
 
@@ -51259,10 +50674,8 @@ class NmrDpUtility:
                             content_subtype = next(c for c in input_source_dic['content_subtype']
                                                    if self.lp_categories[file_type][c] == category and self.index_tags[file_type][c] is not None)
 
-                            if __pynmrstar_v3_2__:
-                                loop = sf.get_loop(w['category'])
-                            else:
-                                loop = sf.get_loop_by_category(w['category'])
+                            loop = sf.get_loop(w['category'])
+
                             loop.renumber_rows(self.index_tags[file_type][content_subtype])
 
                         except StopIteration:
@@ -51354,10 +50767,7 @@ class NmrDpUtility:
 
                         itName = w['description'].split(' ')[0]
 
-                        if __pynmrstar_v3_2__:
-                            loop = sf.get_loop(w['category'])
-                        else:
-                            loop = sf.get_loop_by_category(w['category'])
+                        loop = sf.get_loop(w['category'])
 
                         if itName not in loop.tags:
 
@@ -51465,10 +50875,7 @@ class NmrDpUtility:
 
                         itName = w['description'].split(' ')[0]
 
-                        if __pynmrstar_v3_2__:
-                            loop = sf.get_loop(w['category'])
-                        else:
-                            loop = sf.get_loop_by_category(w['category'])
+                        loop = sf.get_loop(w['category'])
 
                         if itName not in loop.tags:
 
@@ -51786,10 +51193,7 @@ class NmrDpUtility:
 
                     else:
 
-                        if __pynmrstar_v3_2__:
-                            loop = sf.get_loop(w['category'])
-                        else:
-                            loop = sf.get_loop_by_category(w['category'])
+                        loop = sf.get_loop(w['category'])
 
                         if itName not in loop.tags:
 
@@ -52761,10 +52165,7 @@ class NmrDpUtility:
                     key_items = self.key_items[file_type][content_subtype]
                     data_items = self.data_items[file_type][content_subtype]
 
-                if __pynmrstar_v3_2__:
-                    loop = sf.get_loop(lp_category)
-                else:
-                    loop = sf.get_loop_by_category(lp_category)
+                loop = sf.get_loop(lp_category)
 
                 if file_type == 'nef':
                     key_names = [k['name'] for k in key_items
@@ -52917,10 +52318,7 @@ class NmrDpUtility:
 
                 if has_bool_key or has_bool_data:
 
-                    if __pynmrstar_v3_2__:
-                        loop = sf.get_loop(lp_category)
-                    else:
-                        loop = sf.get_loop_by_category(lp_category)
+                    loop = sf.get_loop(lp_category)
 
                     if has_bool_key:
 
@@ -52990,7 +52388,6 @@ class NmrDpUtility:
             sf_category = self.sf_categories[file_type][content_subtype]
 
             for sf in self.__star_data[0].get_saveframes_by_category(sf_category):
-                # sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                 for loop in sf.loops:
 
@@ -53023,10 +52420,7 @@ class NmrDpUtility:
 
                         if has_bool_key or has_bool_data:
 
-                            if __pynmrstar_v3_2__:
-                                _loop = sf.get_loop(lp_category)
-                            else:
-                                _loop = sf.get_loop_by_category(lp_category)
+                            _loop = sf.get_loop(lp_category)
 
                             if has_bool_key:
 
@@ -53119,10 +52513,7 @@ class NmrDpUtility:
                         if (warn_desc is not None) and warn_desc.split(' ')[0] == self.sf_tag_prefixes[file_type][content_subtype].lstrip('_') + '.ID':
                             continue
 
-                        if __pynmrstar_v3_2__:
-                            loop = sf.get_loop(lp_category)
-                        else:
-                            loop = sf.get_loop_by_category(lp_category)
+                        loop = sf.get_loop(lp_category)
 
                         itName = list_id_tag_in_lp['name']
 
@@ -53195,8 +52586,6 @@ class NmrDpUtility:
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
-
-        # update datablock name
 
         if self.__star_data_type[0] == 'Entry':
             if self.__bmrb_only and self.__internal_mode and self.__bmrb_id is not None:
@@ -53314,17 +52703,14 @@ class NmrDpUtility:
 
             if sorted_idx != list(range(1, len(_lp_data) + 1)):
 
-                if __pynmrstar_v3_2__:
-                    loop = sf.get_loop(lp_category)
-                else:
-                    loop = sf.get_loop_by_category(lp_category)
+                loop = sf.get_loop(lp_category)
 
                 lp = pynmrstar.Loop.from_scratch(lp_category)
 
                 for tag in loop.tags:
                     lp.add_tag(lp_category + '.' + tag)
 
-                dat = [int(idx) for idx in get_lp_tag(loop, [idx_name])]
+                dat = [int(idx) for idx in loop.get_tag([idx_name])]
 
                 idx_col = lp.tags.index(idx_name)
 
@@ -53356,10 +52742,7 @@ class NmrDpUtility:
 
                 master_entry = self.__c2S.normalize(master_entry)
 
-                if __pynmrstar_v3__:
-                    master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
-                else:
-                    master_entry.write_to_file(self.__dstPath)
+                master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
             return True
 
@@ -53389,10 +52772,7 @@ class NmrDpUtility:
 
         if not self.__annotation_mode or self.__dstPath != self.__srcPath:
 
-            if __pynmrstar_v3__:
-                master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
-            else:
-                master_entry.write_to_file(self.__dstPath)
+            master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
         if self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2cif-annotate') and self.__remediation_mode:
 
@@ -53422,10 +52802,7 @@ class NmrDpUtility:
 
             if self.__cifPath is None:
 
-                if __pynmrstar_v3__:
-                    master_entry.write_to_file(self.__dstPath__, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
-                else:
-                    master_entry.write_to_file(self.__dstPath__)
+                master_entry.write_to_file(self.__dstPath__, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
             try:
 
@@ -53467,10 +52844,7 @@ class NmrDpUtility:
 
         try:
 
-            if __pynmrstar_v3__:
-                master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
-            else:
-                master_entry.write_to_file(self.__dstPath)
+            master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
         except Exception:
             return False
@@ -53548,10 +52922,7 @@ class NmrDpUtility:
 
             dst_cs_path = os.path.join(dir_path, input_source_dic['file_name'])
 
-            if __pynmrstar_v3__:
-                master_entry.write_to_file(dst_cs_path, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
-            else:
-                master_entry.write_to_file(dst_cs_path)
+            master_entry.write_to_file(dst_cs_path, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
         if self.__bmrb_only and self.__internal_mode and self.__bmrb_id is not None:
             master_entry.entry_id = self.__bmrb_id
@@ -53571,10 +52942,7 @@ class NmrDpUtility:
             sf = master_entry.get_saveframes_by_category(sf_category)[0]
 
             try:
-                if __pynmrstar_v3_2__:
-                    loop = sf.get_loop('_Audit')
-                else:
-                    loop = sf.get_loop_by_category('_Audit')
+                loop = sf.get_loop('_Audit')
 
                 del sf[loop]
 
@@ -54910,10 +54278,6 @@ class NmrDpUtility:
                         sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                         if content_subtype == 'fchiral_restraint':
                             set_sf_tag(sf, 'Stereo_assigned_count', sf_item['id'])
-                        # if __pynmrstar_v3_2__:
-                        #     lp = sf.get_loop(lp_category)
-                        # else:
-                        #     lp = sf.get_loop_by_category(lp_category)
                         if self.__bmrb_only:
                             if any(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode):
                                 continue
@@ -55071,10 +54435,7 @@ class NmrDpUtility:
 
         master_entry = self.__c2S.normalize_str(master_entry)
 
-        if __pynmrstar_v3__:
-            master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
-        else:
-            master_entry.write_to_file(self.__dstPath)
+        master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
         self.__list_id_counter = None
         self.__mr_sf_dict_holder = None
@@ -55228,10 +54589,7 @@ class NmrDpUtility:
             size = 0
             for sf in master_entry.get_saveframes_by_category(sf_category):
                 try:
-                    if __pynmrstar_v3_2__:
-                        lp = sf.get_loop(lp_category)
-                    else:
-                        lp = sf.get_loop_by_category(lp_category)
+                    lp = sf.get_loop(lp_category)
                 except KeyError:
                     continue
                 size += len(lp)
@@ -55244,12 +54602,9 @@ class NmrDpUtility:
                 lp_category = self.lp_categories[file_type][content_subtype]
                 for sf in master_entry.get_saveframes_by_category(sf_category):
                     try:
-                        if __pynmrstar_v3_2__:
-                            lp = sf.get_loop(lp_category)
-                        else:
-                            lp = sf.get_loop_by_category(lp_category)
+                        lp = sf.get_loop(lp_category)
 
-                        dat = get_lp_tag(lp, ['Atom_isotope_number', 'Atom_type'])
+                        dat = lp.get_tag(['Atom_isotope_number', 'Atom_type'])
                         for row in dat:
                             if row[0] not in emptyValue and row[1] not in emptyValue:
                                 t = f'{row[0]}{row[1].title()} chemical shifts'
@@ -55263,10 +54618,7 @@ class NmrDpUtility:
                 for sf in master_entry.get_saveframes_by_category(sf_category):
                     constraint_type = get_first_sf_tag(sf, 'Constraint_type')
                     try:
-                        if __pynmrstar_v3_2__:
-                            lp = sf.get_loop(lp_category)
-                        else:
-                            lp = sf.get_loop_by_category(lp_category)
+                        lp = sf.get_loop(lp_category)
 
                         if constraint_type == 'hydrogen bond':
                             datum_counter['hydrogen bond distance constraints'] += len(lp)
@@ -55274,7 +54626,7 @@ class NmrDpUtility:
                             datum_counter['symmetry constraints'] += len(lp)
                         else:
                             if 'Combination_ID' in lp.tags and 'Member_ID' in lp.tags:
-                                dat = get_lp_tag(lp, ['Combination_ID', 'Member_ID'])
+                                dat = lp.get_tag(['Combination_ID', 'Member_ID'])
                                 for row in dat:
                                     if row[0] in emptyValue and row[1] in emptyValue:
                                         datum_counter['distance constraints'] += 1
@@ -55476,10 +54828,7 @@ class NmrDpUtility:
                             if len(constraint_type) > 0 and constraint_type not in emptyValue:
                                 sf_item[sf_framecode]['constraint_subtype'] = constraint_type
 
-                        if __pynmrstar_v3_2__:
-                            lp = sf.get_loop(lp_category)
-                        else:
-                            lp = sf.get_loop_by_category(lp_category)
+                        lp = sf.get_loop(lp_category)
 
                         item_names = self.item_names_in_ds_loop[file_type]
                         id_col = lp.tags.index('ID')
@@ -55688,10 +55037,7 @@ class NmrDpUtility:
                         if 'constraint_subtype' in sf_item[sf_framecode] and 'NOE' in sf_item[sf_framecode]['constraint_subtype']:
                             # NOE_tot_num += sf_item[sf_framecode]['id']
 
-                            if __pynmrstar_v3_2__:
-                                lp = sf.get_loop(lp_category)
-                            else:
-                                lp = sf.get_loop_by_category(lp_category)
+                            lp = sf.get_loop(lp_category)
 
                             item_names = self.item_names_in_ds_loop[file_type]
                             id_col = lp.tags.index('ID')
@@ -55835,10 +55181,7 @@ class NmrDpUtility:
                         if 'constraint_subtype' in sf_item[sf_framecode] and 'ROE' in sf_item[sf_framecode]['constraint_subtype']:
                             # ROE_tot_num += sf_item[sf_framecode]['id']
 
-                            if __pynmrstar_v3_2__:
-                                lp = sf.get_loop(lp_category)
-                            else:
-                                lp = sf.get_loop_by_category(lp_category)
+                            lp = sf.get_loop(lp_category)
 
                             item_names = self.item_names_in_ds_loop[file_type]
                             id_col = lp.tags.index('ID')
@@ -55940,10 +55283,7 @@ class NmrDpUtility:
                         if sf_framecode not in sf_item:
                             sf_item[sf_framecode] = {'constraint_type': 'dihedral angle'}
 
-                        if __pynmrstar_v3_2__:
-                            lp = sf.get_loop(lp_category)
-                        else:
-                            lp = sf.get_loop_by_category(lp_category)
+                        lp = sf.get_loop(lp_category)
 
                         item_names = self.item_names_in_dh_loop[file_type]
                         id_col = lp.tags.index('ID')
@@ -56017,10 +55357,7 @@ class NmrDpUtility:
                     for sf in master_entry.get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                        if __pynmrstar_v3_2__:
-                            lp = sf.get_loop(lp_category)
-                        else:
-                            lp = sf.get_loop_by_category(lp_category)
+                        lp = sf.get_loop(lp_category)
 
                         id_col = lp.tags.index('ID')
                         auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
@@ -56099,10 +55436,7 @@ class NmrDpUtility:
                     for sf in master_entry.get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                        if __pynmrstar_v3_2__:
-                            lp = sf.get_loop(lp_category)
-                        else:
-                            lp = sf.get_loop_by_category(lp_category)
+                        lp = sf.get_loop(lp_category)
 
                         id_col = lp.tags.index('ID')
                         auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
@@ -56178,10 +55512,7 @@ class NmrDpUtility:
                     for sf in master_entry.get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                        if __pynmrstar_v3_2__:
-                            lp = sf.get_loop(lp_category)
-                        else:
-                            lp = sf.get_loop_by_category(lp_category)
+                        lp = sf.get_loop(lp_category)
 
                         id_col = lp.tags.index('ID')
                         auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
@@ -56236,10 +55567,7 @@ class NmrDpUtility:
                         if sf_framecode not in sf_item:
                             sf_item[sf_framecode] = {'constraint_type': 'dipolar coupling', 'constraint_subtype': 'RDC'}  # DAOTHER-9471
 
-                        if __pynmrstar_v3_2__:
-                            lp = sf.get_loop(lp_category)
-                        else:
-                            lp = sf.get_loop_by_category(lp_category)
+                        lp = sf.get_loop(lp_category)
 
                         item_names = self.item_names_in_rdc_loop[file_type]
                         id_col = lp.tags.index('ID')
@@ -56325,10 +55653,7 @@ class NmrDpUtility:
                     for sf in master_entry.get_saveframes_by_category(sf_category):
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                        if __pynmrstar_v3_2__:
-                            lp = sf.get_loop(lp_category)
-                        else:
-                            lp = sf.get_loop_by_category(lp_category)
+                        lp = sf.get_loop(lp_category)
 
                         # RDC_tot_num += sf_item[sf_framecode]['id']
 
@@ -56665,10 +55990,7 @@ class NmrDpUtility:
 
         master_entry = self.__c2S.normalize_str(master_entry)
 
-        if __pynmrstar_v3__:
-            master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
-        else:
-            master_entry.write_to_file(self.__dstPath)
+        master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
         return True
 
@@ -56707,10 +56029,7 @@ class NmrDpUtility:
                 data_file_name = self.__srcName
 
             try:
-                if __pynmrstar_v3_2__:
-                    lp = sf.get_loop(lp_category)
-                else:
-                    lp = sf.get_loop_by_category(lp_category)
+                lp = sf.get_loop(lp_category)
             except KeyError:
                 return False
 
@@ -56778,10 +56097,7 @@ class NmrDpUtility:
                     if get_first_sf_tag(sf, 'Block_ID') == block_id:
 
                         try:
-                            if __pynmrstar_v3_2__:
-                                lp = sf.get_loop(lp_category)
-                            else:
-                                lp = sf.get_loop_by_category(lp_category)
+                            lp = sf.get_loop(lp_category)
                         except KeyError:
                             continue
 

@@ -101,6 +101,7 @@
 #                           remove dependency of CSV resource files (NEF_NMRSTAR_equivalence.csv, NEF_mandatory.csv, NMR-STAR_mandatory.csv) (v4.0.0)
 # 08-Aug-2024  M. Yokochi - conform to the NEF specification 3.3 (sf_framecode must start with sf_category) and
 #                           preserve the original NMR-STAR frame codes provided by author through bidirectional conversion (v4.0.0, DAOTHER-9623)
+# 28-Nov-2024  M. Yokochi - drop support for old pynmrstar versions less than 3.2
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -155,13 +156,9 @@ except ImportError:
 
 
 __package_name__ = 'wwpdb.utils.nmr'
-__version__ = '4.0.0'
+__version__ = '4.1.0'
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
-__pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
-__pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
-__pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
-
 
 if __pynmrstar_v3_3_1__:
     logger = logging.getLogger('pynmrstar')
@@ -474,13 +471,6 @@ altRdcConstraintType = {'nef': {'RDC': 'measured',
                         }
 
 
-def get_lp_tag(lp, tags):
-    """ Return the selected loop tags by row as a list of lists.
-    """
-
-    return lp.get_tag(tags) if __pynmrstar_v3__ else lp.get_data_by_tag(tags)
-
-
 def get_first_sf_tag(sf=None, tag=None):
     """ Return the first value of a given saveframe tag.
         @return: The first tag value, empty string otherwise.
@@ -530,10 +520,7 @@ def is_empty_loop(star_data, lp_category):
         return any(len(loop) == 0 for loop in loops)
 
     if isinstance(star_data, pynmrstar.Saveframe):
-        if __pynmrstar_v3_2__:
-            loop = star_data.get_loop(lp_category)
-        else:
-            loop = star_data.get_loop_by_category(lp_category)
+        loop = star_data.get_loop(lp_category)
 
         return len(loop) == 0
 
@@ -551,10 +538,7 @@ def count_non_empty_loops(star_data, lp_category):
         return sum(len(loop) > 0 for loop in loops)
 
     if isinstance(star_data, pynmrstar.Saveframe):
-        if __pynmrstar_v3_2__:
-            loop = star_data.get_loop(lp_category)
-        else:
-            loop = star_data.get_loop_by_category(lp_category)
+        loop = star_data.get_loop(lp_category)
 
         return 0 if len(loop) == 0 else 1
 
@@ -570,10 +554,7 @@ def get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category):
 
     for sf in star_data.get_saveframes_by_category(sf_category):
 
-        if __pynmrstar_v3_2__:
-            loop = sf.get_loop(lp_category)
-        else:
-            loop = sf.get_loop_by_category(lp_category)
+        loop = sf.get_loop(lp_category)
 
         if len(loop.data) == 0:
             sf_framecodes.append(get_first_sf_tag(sf, 'sf_framecode'))
@@ -1615,27 +1596,14 @@ class NEFTranslator:
 
                     is_ok = False
 
-                    if __pynmrstar_v3_1__:
-                        if 'The Sf_framecode tag cannot be different from the saveframe name.' in str(e2):
-                            data_type = str(e2)
-                        elif "Invalid loop. Loops must start with the 'loop_' keyword." not in str(e3) and\
-                             "Invalid token found in loop contents" not in str(e3) and\
-                             "Illegal value: 'loop_'" not in str(e3):
-                            data_type = str(e3)
-                        else:
-                            data_type = str(e1)
-
-                    elif version.parse(pynmrstar.__version__) >= version.parse("2.6.5.1"):
-                        if "Invalid loop. Loops must start with the 'loop_' keyword." not in str(e3):
-                            data_type = str(e3)
-                        else:
-                            data_type = str(e1)
-
+                    if 'The Sf_framecode tag cannot be different from the saveframe name.' in str(e2):
+                        data_type = str(e2)
+                    elif "Invalid loop. Loops must start with the 'loop_' keyword." not in str(e3) and\
+                         "Invalid token found in loop contents" not in str(e3) and\
+                         "Illegal value: 'loop_'" not in str(e3):
+                        data_type = str(e3)
                     else:
-                        if 'internaluseyoushouldntseethis_frame' not in str(e3):
-                            data_type = str(e3)
-                        else:
-                            data_type = str(e1)
+                        data_type = str(e1)
 
         if is_ok:
             data_type = 'Entry' if isinstance(star_data, pynmrstar.Entry)\
@@ -1697,7 +1665,7 @@ class NEFTranslator:
                         if k[1:].split('.')[0] == star_data.category and v:
 
                             try:
-                                get_lp_tag(star_data, k)
+                                star_data.get_tag(k)
                             except Exception:  # ValueError:
                                 missing_lp_tags.append(k)
 
@@ -2143,12 +2111,8 @@ class NEFTranslator:
 
         if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-
         elif isinstance(star_data, pynmrstar.Saveframe):
-            if __pynmrstar_v3_2__:
-                loops = [star_data.get_loop(lp_category)]
-            else:
-                loops = [star_data.get_loop_by_category(lp_category)]
+            loops = [star_data.get_loop(lp_category)]
         else:
             loops = [star_data]
 
@@ -2181,7 +2145,7 @@ class NEFTranslator:
             len_loop_data = len(loop.data)
 
             if set(tags) & set(loop.tags) == set(tags):
-                seq_data = get_lp_tag(loop, tags)
+                seq_data = loop.get_tag(tags)
                 for row in seq_data:
                     if row[2] in emptyValue:
                         row[2] = 1
@@ -2191,7 +2155,7 @@ class NEFTranslator:
                     _tags = [seq_id + '_' + str(j), comp_id + '_' + str(j), chain_id + '_' + str(j)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
-                        seq_data += get_lp_tag(loop, _tags)
+                        seq_data += loop.get_tag(_tags)
 
                 if not _tags_exist:
                     missing_tags = list(set(tags) - set(loop.tags))
@@ -2328,12 +2292,8 @@ class NEFTranslator:
 
         if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-
         elif isinstance(star_data, pynmrstar.Saveframe):
-            if __pynmrstar_v3_2__:
-                loops = [star_data.get_loop(lp_category)]
-            else:
-                loops = [star_data.get_loop_by_category(lp_category)]
+            loops = [star_data.get_loop(lp_category)]
         else:
             loops = [star_data]
 
@@ -2374,7 +2334,7 @@ class NEFTranslator:
                 alt_chain_id_set = set()
                 if 'Auth_asym_ID' in loop.tags:
                     pre_tag = ['Auth_asym_ID']
-                    pre_chain_data = get_lp_tag(loop, pre_tag)
+                    pre_chain_data = loop.get_tag(pre_tag)
                     for row in pre_chain_data:
                         if row not in emptyValue:
                             alt_chain_id_set.add(row)
@@ -2382,7 +2342,7 @@ class NEFTranslator:
 
                 # fix wrong biocuration seen in 8ofc_cs.str
                 if set(tags) & set(loop.tags) == set(tags):
-                    pre_seq_data = get_lp_tag(loop, tags)
+                    pre_seq_data = loop.get_tag(tags)
                     if not isinstance(pre_seq_data[0][0], int):
                         if all(not row[0].isdigit() and row[1].isdigit() for row in pre_seq_data
                                if row[0] not in emptyValue and row[1] not in emptyValue):
@@ -2396,7 +2356,7 @@ class NEFTranslator:
                    and set(tags) & set(loop.tags) == set(tags):
                     pre_tags = copy.deepcopy(tags)
                     pre_tags.append('Atom_ID')
-                    pre_seq_data = get_lp_tag(loop, pre_tags)
+                    pre_seq_data = loop.get_tag(pre_tags)
                     has_dc_h3 = has_c_h3 = False
                     dnr_set = set()
                     ch_set = set()
@@ -2428,7 +2388,7 @@ class NEFTranslator:
                         and set(tags) & set(loop.tags) == set(tags):
                     pre_tags = copy.deepcopy(tags)
                     pre_tags.append('Atom_ID')
-                    pre_seq_data = get_lp_tag(loop, pre_tags)
+                    pre_seq_data = loop.get_tag(pre_tags)
                     has_dc_h3 = has_c_h3 = False
                     dnr_set = set()
                     ch_set = set()
@@ -2457,7 +2417,7 @@ class NEFTranslator:
                                 if seq_key in ch_set:
                                     loop.data[idx][comp_id_col] = loop.data[idx][auth_comp_id_col] = 'CH'
                     pre_tags = ['Comp_ID', 'Auth_comp_ID']
-                    pre_seq_data = get_lp_tag(loop, pre_tags)
+                    pre_seq_data = loop.get_tag(pre_tags)
                     for idx, row in enumerate(pre_seq_data):
                         _comp_id, _auth_comp_id = row
                         if _comp_id not in emptyValue:
@@ -2474,7 +2434,7 @@ class NEFTranslator:
                 factor = max(len(alt_chain_id_set), 2)  # 2lnh
                 if seq_id != alt_seq_id and alt_seq_id in loop.tags:
                     pre_tags = [seq_id, alt_seq_id]
-                    pre_seq_data = get_lp_tag(loop, pre_tags)
+                    pre_seq_data = loop.get_tag(pre_tags)
                     seq_id_set = set()
                     alt_seq_id_set = set()
                     for row in pre_seq_data:
@@ -2488,7 +2448,7 @@ class NEFTranslator:
 
                     elif 'Auth_seq_ID' in loop.tags:
                         pre_tag = ['Auth_seq_ID']
-                        pre_seq_data = get_lp_tag(loop, pre_tag)
+                        pre_seq_data = loop.get_tag(pre_tag)
                         alt_seq_id_set = set()
                         for row in pre_seq_data:
                             alt_seq_id_set.add(row)
@@ -2500,7 +2460,7 @@ class NEFTranslator:
 
                 if 'Entity_assembly_ID' in loop.tags and 'Auth_asym_ID' in loop.tags:
                     pre_tag = ['Entity_assembly_ID']
-                    pre_chain_data = get_lp_tag(loop, pre_tag)
+                    pre_chain_data = loop.get_tag(pre_tag)
                     chain_id_set = set()
                     for row in pre_chain_data:
                         if row not in emptyValue:
@@ -2514,7 +2474,7 @@ class NEFTranslator:
                                 pre_tags = [alt_chain_id, 'Auth_seq_ID', 'Comp_ID']
                                 if 'Auth_comp_ID' in _loop.tags:
                                     pre_tags.append('Auth_comp_ID')
-                                pre_seq_data = get_lp_tag(_loop, pre_tags)
+                                pre_seq_data = _loop.get_tag(pre_tags)
                                 cif_ps = coord_assembly_checker['polymer_sequence']
                                 cif_np = coord_assembly_checker['non_polymer']
                                 nmr_ps = []
@@ -2715,7 +2675,7 @@ class NEFTranslator:
                             sync_seq = True
                             if 'Original_PDB_strand_ID' in _loop.tags:
                                 _pre_tag = ['Auth_asym_ID', 'Original_PDB_strand_ID']
-                                _pre_chain_data = get_lp_tag(_loop, _pre_tag)
+                                _pre_chain_data = _loop.get_tag(_pre_tag)
                                 for _row in _pre_chain_data:
                                     if _row[0] != _row[1]:
                                         sync_seq = False
@@ -2727,7 +2687,7 @@ class NEFTranslator:
                         def sync_entity_assembly_with_entity(_loop, _chain_id_set, _alt_chain_id_set):
                             if len(_chain_id_set) == 0 and 'Entity_ID' in _loop.tags:
                                 _pre_tag = ['Entity_ID']
-                                _pre_chain_data = get_lp_tag(_loop, _pre_tag)
+                                _pre_chain_data = _loop.get_tag(_pre_tag)
                                 entity_id_set = set()
                                 for _row in _pre_chain_data:
                                     if _row not in emptyValue:
@@ -2760,7 +2720,7 @@ class NEFTranslator:
                                 refresh_entity_assembly(loop, list(alt_chain_id_set))
 
                 if 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags and coord_assembly_checker is not None:
-                    pre_comp_data = get_lp_tag(loop, ['Auth_asym_ID', 'Auth_seq_ID', 'Comp_ID'])
+                    pre_comp_data = loop.get_tag(['Auth_asym_ID', 'Auth_seq_ID', 'Comp_ID'])
                     comp_id_col = loop.tags.index('Comp_ID')
                     for idx, row in enumerate(pre_comp_data):
                         if row[2] in emptyValue:
@@ -2787,7 +2747,7 @@ class NEFTranslator:
                             loop.data[idx][comp_id_col] = translateToStdResName(row[2].upper(), refCompId=ref_comp_id, ccU=self.__ccU)
 
                     if 'Auth_comp_ID' in loop.tags:
-                        pre_comp_data = get_lp_tag(loop, ['Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID'])
+                        pre_comp_data = loop.get_tag(['Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID'])
                         alt_chain_id_col = loop.tags.index('Auth_asym_ID')
                         auth_seq_id_col = loop.tags.index('Auth_seq_ID')
                         auth_comp_id_col = loop.tags.index('Auth_comp_ID')
@@ -2880,7 +2840,7 @@ class NEFTranslator:
                                                     fill_ligand(loop, idx, np)
                                                     break
 
-                seq_data = get_lp_tag(loop, tags)
+                seq_data = loop.get_tag(tags)
                 if isinstance(seq_data[0][2], int):
                     for row in seq_data:
                         row[2] = str(row[2])
@@ -2920,7 +2880,7 @@ class NEFTranslator:
                     if wrong_chain_id_anno:
                         has_valid_chain_id = False
                 if not has_valid_chain_id:
-                    seq_data = get_lp_tag(loop, tags__)
+                    seq_data = loop.get_tag(tags__)
                     for row in seq_data:
                         row[2] = def_chain_id if row[2] in emptyValue else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
 
@@ -2930,7 +2890,7 @@ class NEFTranslator:
                 factor = 2
                 if seq_id != alt_seq_id and alt_seq_id in loop.tags:
                     pre_tags = [seq_id, alt_seq_id]
-                    pre_seq_data = get_lp_tag(loop, pre_tags)
+                    pre_seq_data = loop.get_tag(pre_tags)
                     seq_id_set = set()
                     alt_seq_id_set = set()
                     for row in pre_seq_data:
@@ -2943,7 +2903,7 @@ class NEFTranslator:
                             r[seq_id_col] = r[alt_seq_id_col]
                     elif 'Auth_seq_ID' in loop.tags:
                         pre_tag = ['Auth_seq_ID']
-                        pre_seq_data = get_lp_tag(loop, pre_tag)
+                        pre_seq_data = loop.get_tag(pre_tag)
                         alt_seq_id_set = set()
                         for row in pre_seq_data:
                             alt_seq_id_set.add(row)
@@ -2953,14 +2913,14 @@ class NEFTranslator:
                             for r in loop.data:
                                 r[seq_id_col] = r[alt_seq_id_col]
                 pre_tag = ['Entity_assembly_ID']
-                pre_chain_data = get_lp_tag(loop, pre_tag)
+                pre_chain_data = loop.get_tag(pre_tag)
                 chain_id_set = set()
                 for row in pre_chain_data:
                     if row not in emptyValue:
                         chain_id_set.add(row)
                 if len(chain_id_set) == 1:
                     pre_tags = ['Comp_index_ID', 'Comp_ID']
-                    pre_seq_data = get_lp_tag(loop, pre_tags)
+                    pre_seq_data = loop.get_tag(pre_tags)
                     cif_ps = coord_assembly_checker['polymer_sequence']
                     cif_np = coord_assembly_checker['non_polymer']
                     nmr_chain_id = list(chain_id_set)[0]
@@ -3133,7 +3093,7 @@ class NEFTranslator:
                                                 if entity_id_col != -1:
                                                     r[entity_id_col] = str(_entity_id)
 
-                seq_data = get_lp_tag(loop, tags)
+                seq_data = loop.get_tag(tags)
                 has_valid_chain_id = True
                 for row in seq_data:
                     if row[2] in emptyValue:
@@ -3170,21 +3130,21 @@ class NEFTranslator:
                     if wrong_chain_id_anno:
                         has_valid_chain_id = False
                 if not has_valid_chain_id:
-                    seq_data = get_lp_tag(loop, tags__)
+                    seq_data = loop.get_tag(tags__)
                     for row in seq_data:
                         row[2] = def_chain_id if row[2] in emptyValue else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
 
             elif set(tags) & set(loop.tags) == set(tags):
-                seq_data = get_lp_tag(loop, tags)
+                seq_data = loop.get_tag(tags)
                 for row in seq_data:
                     if row[2] in emptyValue:
                         row[2] = def_chain_id
             elif set(tags__) & set(loop.tags) == set(tags__):  # DAOTHER-7421
-                seq_data = get_lp_tag(loop, tags__)
+                seq_data = loop.get_tag(tags__)
                 for row in seq_data:
                     row[2] = def_chain_id if row[2] in emptyValue else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
             elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_assembly_ID tag case
-                seq_data = get_lp_tag(loop, tags_)
+                seq_data = loop.get_tag(tags_)
                 for row in seq_data:
                     row.append(def_chain_id)
                 for row in loop:
@@ -3198,7 +3158,7 @@ class NEFTranslator:
                     _tags__ = [seq_id + '_' + str(j), comp_id + '_' + str(j), alt_chain_id + '_' + str(j)]  # DAOTHER-7421
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
-                        seq_data_ = get_lp_tag(loop, _tags)
+                        seq_data_ = loop.get_tag(_tags)
                         for row_ in seq_data_:
                             if alt_seq_id_offset != 0:
                                 row_[0] += alt_seq_id_offset
@@ -3207,13 +3167,13 @@ class NEFTranslator:
                         seq_data += seq_data_
                     elif set(_tags__) & set(loop.tags) == set(_tags__):  # DAOTHER-7421
                         _tags_exist = True
-                        seq_data_ = get_lp_tag(loop, _tags__)
+                        seq_data_ = loop.get_tag(_tags__)
                         for row_ in seq_data_:
                             row_[2] = def_chain_id if row_[2] in emptyValue else str(row_[2] if self.__remediation_mode else letterToDigit(row_[2], 1))
                         seq_data += seq_data_
                     elif set(_tags_) & set(loop.tags) == set(_tags_):
                         _tags_exist = True
-                        seq_data_ = get_lp_tag(loop, _tags_)
+                        seq_data_ = loop.get_tag(_tags_)
                         for row_ in seq_data_:
                             row_.append(def_chain_id)
                         seq_data += seq_data_
@@ -3283,7 +3243,7 @@ class NEFTranslator:
                         if seq_id != alt_seq_id and alt_seq_id in loop.tags:
 
                             seq_tags = [seq_id, alt_seq_id]
-                            _seq_data = get_lp_tag(loop, seq_tags)
+                            _seq_data = loop.get_tag(seq_tags)
 
                             offset = None
 
@@ -3314,7 +3274,7 @@ class NEFTranslator:
                         comp_tags.append('Auth_comp_ID')
                     if 'Original_PDB_residue_name' in loop.tags:
                         comp_tags.append('Original_PDB_residue_name')
-                    comp_data = get_lp_tag(loop, comp_tags)
+                    comp_data = loop.get_tag(comp_tags)
                     if len(comp_data) > 0:
                         has_alt_comp_id = True
 
@@ -3497,12 +3457,8 @@ class NEFTranslator:
 
         if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-
         elif isinstance(star_data, pynmrstar.Saveframe):
-            if __pynmrstar_v3_2__:
-                loops = [star_data.get_loop(lp_category)]
-            else:
-                loops = [star_data.get_loop_by_category(lp_category)]
+            loops = [star_data.get_loop(lp_category)]
         else:
             loops = [star_data]
 
@@ -3538,9 +3494,9 @@ class NEFTranslator:
             len_loop_data = len(loop.data)
 
             if set(tags) & set(loop.tags) == set(tags):
-                seq_data = get_lp_tag(loop, tags)
+                seq_data = loop.get_tag(tags)
             elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_assembly_ID tag case
-                seq_data = get_lp_tag(loop, tags_)
+                seq_data = loop.get_tag(tags_)
                 for row in seq_data:
                     row.append('1')
                 for row in loop:
@@ -3555,10 +3511,10 @@ class NEFTranslator:
                     _tags_ = [aseq_id + '_' + str(j), acomp_id + '_' + str(j), asym_id + '_' + str(j), seq_id + '_' + str(j)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
-                        seq_data += get_lp_tag(loop, _tags)
+                        seq_data += loop.get_tag(_tags)
                     elif set(_tags_) & set(loop.tags) == set(_tags_):
                         _tags_exist = True
-                        seq_data_ = get_lp_tag(loop, _tags_)
+                        seq_data_ = loop.get_tag(_tags_)
                         for row_ in seq_data_:
                             row_.append('1')
                         seq_data += seq_data_
@@ -3681,12 +3637,8 @@ class NEFTranslator:
 
         if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-
         elif isinstance(star_data, pynmrstar.Saveframe):
-            if __pynmrstar_v3_2__:
-                loops = [star_data.get_loop(lp_category)]
-            else:
-                loops = [star_data.get_loop_by_category(lp_category)]
+            loops = [star_data.get_loop(lp_category)]
         else:
             loops = [star_data]
 
@@ -3727,14 +3679,14 @@ class NEFTranslator:
             len_loop_data = len(loop.data)
 
             if set(tags) & set(loop.tags) == set(tags):
-                pair_data = get_lp_tag(loop, tags)
+                pair_data = loop.get_tag(tags)
             else:
                 _tags_exist = False
                 for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
                     _tags = [comp_id + '_' + str(j), atom_id + '_' + str(j)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
-                        pair_data += get_lp_tag(loop, _tags)
+                        pair_data += loop.get_tag(_tags)
 
                 if not _tags_exist:
                     missing_tags = list(set(tags) - set(loop.tags))
@@ -3807,12 +3759,8 @@ class NEFTranslator:
 
         if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-
         elif isinstance(star_data, pynmrstar.Saveframe):
-            if __pynmrstar_v3_2__:
-                loops = [star_data.get_loop(lp_category)]
-            else:
-                loops = [star_data.get_loop_by_category(lp_category)]
+            loops = [star_data.get_loop(lp_category)]
         else:
             loops = [star_data]
 
@@ -3833,7 +3781,7 @@ class NEFTranslator:
                 missing_tags = list(set(tags) - set(loop.tags))
                 raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
-            a_type_data = get_lp_tag(loop, tags)
+            a_type_data = loop.get_tag(tags)
 
             if allow_empty:
                 # a_type_data = list(filter(is_data, a_type_data))
@@ -3906,12 +3854,8 @@ class NEFTranslator:
 
         if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-
         elif isinstance(star_data, pynmrstar.Saveframe):
-            if __pynmrstar_v3_2__:
-                loops = [star_data.get_loop(lp_category)]
-            else:
-                loops = [star_data.get_loop_by_category(lp_category)]
+            loops = [star_data.get_loop(lp_category)]
         else:
             loops = [star_data]
 
@@ -3932,7 +3876,7 @@ class NEFTranslator:
                 missing_tags = list(set(tags) - set(loop.tags))
                 raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
-            ambig_data = get_lp_tag(loop, tags)
+            ambig_data = loop.get_tag(tags)
 
             if len(ambig_data) == 0:
                 data.append(None)
@@ -4037,12 +3981,8 @@ class NEFTranslator:
 
         if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-
         elif isinstance(star_data, pynmrstar.Saveframe):
-            if __pynmrstar_v3_2__:
-                loops = [star_data.get_loop(lp_category)]
-            else:
-                loops = [star_data.get_loop_by_category(lp_category)]
+            loops = [star_data.get_loop(lp_category)]
         else:
             loops = [star_data]
 
@@ -4061,7 +4001,7 @@ class NEFTranslator:
                 raise UserWarning(f'[Too big loop] The total number of rows in a loop, {len_loop_data}, exceeds the limit {row_limit}.')
 
             if set(tags) & set(loop.tags) == set(tags):
-                index_data = get_lp_tag(loop, tags)
+                index_data = loop.get_tag(tags)
             else:
                 raise LookupError(f"Missing mandatory {index_id} loop tag.")
 
@@ -4088,10 +4028,7 @@ class NEFTranslator:
 
             try:
 
-                if __pynmrstar_v3__:
-                    idxs = [int(row) for row in index_data]
-                else:
-                    idxs = [int(row) for row in index_data[0]]
+                idxs = [int(row) for row in index_data]
 
                 dup_idxs = [idx for idx in set(idxs) if idxs.count(idx) > 1]
 
@@ -4119,12 +4056,8 @@ class NEFTranslator:
 
         if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-
         elif isinstance(star_data, pynmrstar.Saveframe):
-            if __pynmrstar_v3_2__:
-                loops = [star_data.get_loop(lp_category)]
-            else:
-                loops = [star_data.get_loop_by_category(lp_category)]
+            loops = [star_data.get_loop(lp_category)]
         else:
             loops = [star_data]
 
@@ -4372,7 +4305,7 @@ class NEFTranslator:
                         if d['name'] == name and 'relax-key-if-exist' in d and d['relax-key-if-exist']:
                             relax_key_ids.add(j)
 
-                tag_data = get_lp_tag(loop, tags)
+                tag_data = loop.get_tag(tags)
 
                 if _test_on_index:  # and len(idx_tag_ids) > 0 and len(tag_data) <= MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
 
@@ -4604,7 +4537,7 @@ class NEFTranslator:
                                         except ValueError:
                                             continue
 
-                    tag_data = get_lp_tag(loop, tags)
+                    tag_data = loop.get_tag(tags)
 
                     if _test_on_index and key_len > 0:
                         keys = set()
@@ -5646,12 +5579,8 @@ class NEFTranslator:
 
         if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-
         elif isinstance(star_data, pynmrstar.Saveframe):
-            if __pynmrstar_v3_2__:
-                loops = [star_data.get_loop(lp_category)]
-            else:
-                loops = [star_data.get_loop_by_category(lp_category)]
+            loops = [star_data.get_loop(lp_category)]
         else:
             loops = [star_data]
 
@@ -5682,7 +5611,7 @@ class NEFTranslator:
                 keys = set()
                 dup_ids = set()
 
-                for idx, row in enumerate(get_lp_tag(loop, key_names)):
+                for idx, row in enumerate(loop.get_tag(key_names)):
 
                     if key_f.tell() > 0:
                         key_f.truncate(0)
@@ -5711,12 +5640,8 @@ class NEFTranslator:
 
         if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-
         elif isinstance(star_data, pynmrstar.Saveframe):
-            if __pynmrstar_v3_2__:
-                loops = [star_data.get_loop(lp_category)]
-            else:
-                loops = [star_data.get_loop_by_category(lp_category)]
+            loops = [star_data.get_loop(lp_category)]
         else:
             loops = [star_data]
 
@@ -5737,7 +5662,7 @@ class NEFTranslator:
 
                 len_loop = len(loop)
 
-                tag_data = get_lp_tag(loop, key_names)
+                tag_data = loop.get_tag(key_names)
 
                 keys = set()
                 dup_ids = set()
@@ -5812,12 +5737,8 @@ class NEFTranslator:
 
         if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-
         elif isinstance(star_data, pynmrstar.Saveframe):
-            if __pynmrstar_v3_2__:
-                loops = [star_data.get_loop(lp_category)]
-            else:
-                loops = [star_data.get_loop_by_category(lp_category)]
+            loops = [star_data.get_loop(lp_category)]
         else:
             loops = [star_data]
 
@@ -5869,7 +5790,7 @@ class NEFTranslator:
 
             dup_ids = set()
 
-            for idx, row in enumerate(get_lp_tag(loop, key_names)):
+            for idx, row in enumerate(loop.get_tag(key_names)):
 
                 for j in range(0, len_atom_keys - 2):
                     atom_key_j = atom_keys[j]
@@ -5900,12 +5821,8 @@ class NEFTranslator:
 
         if isinstance(star_data, pynmrstar.Entry):
             loops = star_data.get_loops_by_category(lp_category)
-
         elif isinstance(star_data, pynmrstar.Saveframe):
-            if __pynmrstar_v3_2__:
-                loops = [star_data.get_loop(lp_category)]
-            else:
-                loops = [star_data.get_loop_by_category(lp_category)]
+            loops = [star_data.get_loop(lp_category)]
         else:
             loops = [star_data]
 
@@ -5927,7 +5844,7 @@ class NEFTranslator:
 
             bad_ids = set()
 
-            for idx, row in enumerate(get_lp_tag(loop, key_names)):
+            for idx, row in enumerate(loop.get_tag(key_names)):
 
                 if any(isinstance(dat, str) and badPattern.match(dat) for dat in row):
                     if idx < len_loop:
@@ -6574,8 +6491,7 @@ class NEFTranslator:
         methyl_only = atom_id[0] == 'M'
 
         atom_list = []
-        ambiguity_code = None
-        details = None
+        ambiguity_code = details = None
 
         if '++' in atom_id:
             atom_id = re.sub(r'\+\+', '+', atom_id)
@@ -6689,8 +6605,7 @@ class NEFTranslator:
         methyl_only |= atom_id[0] == 'M'
 
         atom_list = []
-        ambiguity_code = None
-        details = None
+        ambiguity_code = details = None
 
         if '#' in atom_id:
             atom_id = atom_id.replace('#', '%')
@@ -7088,8 +7003,7 @@ class NEFTranslator:
             return copy.deepcopy(self.__cachedDictForValidStarAtomInXplor[key])
 
         atom_list = []
-        ambiguity_code = None
-        details = None
+        ambiguity_code = details = None
 
         try:
 
@@ -7317,8 +7231,7 @@ class NEFTranslator:
             return copy.deepcopy(self.__cachedDictForValidStarAtom[key])
 
         atom_list = []
-        ambiguity_code = None
-        details = None
+        ambiguity_code = details = None
 
         try:
 
@@ -7711,12 +7624,10 @@ class NEFTranslator:
                 if self.__csStat.peptideLike(comp_id):
                     if nef_atom == 'HN':
                         atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H', None,
-                                                                                # 'HN converted to H.'
                                                                                 leave_unmatched)
                         return (atom_list, ambiguity_code, details)
                     if nef_atom == 'CO':
                         atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'C', None,
-                                                                                # 'CO converted to C.'
                                                                                 leave_unmatched)
                         return (atom_list, ambiguity_code, details)
 
@@ -7725,14 +7636,12 @@ class NEFTranslator:
                     if is_std_comp_id and not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
                         atom_list, ambiguity_code, details =\
                             self.get_star_atom(comp_id, nef_atom + '%', None,
-                                               # f"{nef_atom} converted to {nef_atom}%."
                                                leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
                     if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
                         atom_list, ambiguity_code, details =\
                             self.get_star_atom(comp_id, nef_atom[:-1] + '%', None,
-                                               # f"{nef_atom} converted to {nef_atom[:-1]}%."
                                                leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
@@ -7740,14 +7649,12 @@ class NEFTranslator:
                        len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
                         atom_list, ambiguity_code, details =\
                             self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%', None,
-                                               # f"{nef_atom} converted to {nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2')}%."
                                                leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
                     if ((is_std_comp_id and nef_atom[-1] == '%') or nef_atom[-1] == '*') and nef_atom[:-1] in atoms:
                         atom_list, ambiguity_code, details =\
                             self.get_star_atom(comp_id, nef_atom[:-1], None,
-                                               # f"{nef_atom} converted to {nef_atom[:-1]}."
                                                leave_unmatched, methyl_only)
                         return (atom_list, ambiguity_code, details)
 
@@ -8307,12 +8214,9 @@ class NEFTranslator:
                 seq_align = report.getSequenceAlignmentWithNmrChainId(nef_chain)
                 if seq_align is not None:
                     cif_chain = seq_align['test_chain_id']  # label_asym_id
-                    # _star_chain = str(letterToDigit(cif_chain))
                     cif_ps = report.getModelPolymerSequenceOf(cif_chain, label_scheme=True)
                     if cif_ps is not None and 'auth_chain_id' in cif_ps:
                         cif_chain = cif_ps['auth_chain_id']  # auth_asym_id
-                    # if self.__remediation_mode:
-                    #     _star_chain = cif_chain
 
             offset = None
 
@@ -8638,12 +8542,9 @@ class NEFTranslator:
                 seq_align = report.getSequenceAlignmentWithNmrChainId(in_star_chain)
                 if seq_align is not None:
                     cif_chain = seq_align['test_chain_id']  # label_asym_id
-                    # _star_chain = str(letterToDigit(cif_chain))
                     cif_ps = report.getModelPolymerSequenceOf(cif_chain, label_scheme=True)
                     if cif_ps is not None and 'auth_chain_id' in cif_ps:
                         cif_chain = cif_ps['auth_chain_id']  # auth_asym_id
-                    # if self.__remediation_mode:
-                    #     _star_chain = cif_chain
 
             offset = None
 
@@ -8712,11 +8613,7 @@ class NEFTranslator:
                             out[data_index] = data
 
                 out_row.append(out)
-                #
-                # self.authSeqMap[(in_star_chain, _in_star_seq)] = (_star_chain, _star_seq)
-                # self.selfSeqMap[(in_star_chain, _in_star_seq)] = (in_star_chain if cif_chain is None else cif_chain,
-                #                                                   _in_star_seq if _cif_seq is None else _cif_seq)
-                #
+
                 if variant is not None:
                     aux = [None] * len(ENTITY_DELETED_ATOM_ITEMS)
                     for col, aux_tag in enumerate(ENTITY_DELETED_ATOM_ITEMS):
@@ -9685,16 +9582,6 @@ class NEFTranslator:
                                             buf[star_tags.index('_Gen_dist_constraint.Auth_atom_name_2')] = row[nef_atom_index_2]
                                     else:
                                         buf[data_index] = data
-                                #
-                                # if details_1 is None and details_2 is None:
-                                #     pass
-
-                                # else:
-
-                                #     details_index = star_tags.index('_Gen_dist_constraint.Details')
-
-                                #     buf[details_index] = ' '.join(filter(None, [details_1, detail_2]))
-                                #
 
                             if id_index != -1:
                                 buf[id_index] = _id
@@ -9755,11 +9642,8 @@ class NEFTranslator:
 
             if chain_tag.endswith('_1'):
                 chain_tag_1 = chain_tag
-                # seq_tag_1 = seq_tag
             else:
                 pass
-                # chain_tag_2 = chain_tag
-                # seq_tag_2 = seq_tag
 
         with io.StringIO() as key_f:
 
@@ -11716,34 +11600,22 @@ class NEFTranslator:
             return None
 
         try:
-            if __pynmrstar_v3_2__:
-                pk_loop = in_sf.get_loop('_Peak')
-            else:
-                pk_loop = in_sf.get_loop_by_category('_Peak')
+            pk_loop = in_sf.get_loop('_Peak')
         except KeyError:
             return None
 
         try:
-            if __pynmrstar_v3_2__:
-                pk_gen_char_loop = in_sf.get_loop('_Peak_general_char')
-            else:
-                pk_gen_char_loop = in_sf.get_loop_by_category('_Peak_general_char')
+            pk_gen_char_loop = in_sf.get_loop('_Peak_general_char')
         except KeyError:
             pk_gen_char_loop = None
 
         try:
-            if __pynmrstar_v3_2__:
-                pk_char_loop = in_sf.get_loop('_Peak_char')
-            else:
-                pk_char_loop = in_sf.get_loop_by_category('_Peak_char')
+            pk_char_loop = in_sf.get_loop('_Peak_char')
         except KeyError:
             return None
 
         try:
-            if __pynmrstar_v3_2__:
-                pk_assign_loop = in_sf.get_loop('_Assigned_peak_chem_shift')
-            else:
-                pk_assign_loop = in_sf.get_loop_by_category('_Assigned_peak_chem_shift')
+            pk_assign_loop = in_sf.get_loop('_Assigned_peak_chem_shift')
         except KeyError:
             pk_assign_loop = None
 
@@ -12114,10 +11986,7 @@ class NEFTranslator:
                     sf.add_tag('NMR_STAR_version', NMR_STAR_VERSION)
 
                     try:
-                        if __pynmrstar_v3_2__:
-                            loop = sf.get_loop('_Software_applied_methods')
-                        else:
-                            loop = sf.get_loop_by_category('_Software_applied_methods')
+                        loop = sf.get_loop('_Software_applied_methods')
                         row = []
                         for t in loop.tags:
                             if t == 'Software_name':
@@ -12369,10 +12238,7 @@ class NEFTranslator:
                 sf.add_tag('NMR_STAR_version', NMR_STAR_VERSION)
 
                 try:
-                    if __pynmrstar_v3_2__:
-                        loop = sf.get_loop('_Software_applied_methods')
-                    else:
-                        loop = sf.get_loop_by_category('_Software_applied_methods')
+                    loop = sf.get_loop('_Software_applied_methods')
                     row = []
                     for t in loop.tags:
                         if t == 'Software_name':
@@ -12408,10 +12274,7 @@ class NEFTranslator:
         # star_data.normalize()  # do not invoke normalize() to preserve ID
         self.__c2S.normalize_str(star_data)
 
-        if __pynmrstar_v3__:
-            star_data.write_to_file(star_file, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
-        else:
-            star_data.write_to_file(star_file)
+        star_data.write_to_file(star_file, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
 
         info.append(f"File {star_file} successfully written.")
 
@@ -12604,10 +12467,7 @@ class NEFTranslator:
                         sf.add_tag('format_version', NEF_VERSION)
 
                     try:
-                        if __pynmrstar_v3_2__:
-                            loop = sf.get_loop('_nef_program_script')
-                        else:
-                            loop = sf.get_loop_by_category('_nef_program_script')
+                        loop = sf.get_loop('_nef_program_script')
                         row = []
                         for t in loop.tags:
                             if t == 'program_name':
@@ -12810,10 +12670,7 @@ class NEFTranslator:
                     sf.add_tag('format_version', NEF_VERSION)
 
                 try:
-                    if __pynmrstar_v3_2__:
-                        loop = sf.get_loop('_nef_program_script')
-                    else:
-                        loop = sf.get_loop_by_category('_nef_program_script')
+                    loop = sf.get_loop('_nef_program_script')
                     row = []
                     for t in loop.tags:
                         if t == 'program_name':
@@ -12842,10 +12699,7 @@ class NEFTranslator:
 
         self.__c2S.normalize_nef(nef_data)
 
-        if __pynmrstar_v3__:
-            nef_data.write_to_file(nef_file, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
-        else:
-            nef_data.write_to_file(nef_file)
+        nef_data.write_to_file(nef_file, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
 
         info.append(f"File {nef_file} successfully written.")
 

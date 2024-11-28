@@ -35,9 +35,6 @@ except ImportError:
 
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
-__pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
-__pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
-__pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
 if __pynmrstar_v3_3_1__:
     logger = logging.getLogger('pynmrstar')
@@ -397,8 +394,7 @@ class CifToNmrStar:
                     dict_list = cifObj.GetDataBlock(block_name, ext)
                     itVals = next(v for k, v in dict_list.items() if k == category)
 
-                    list_id_idx = -1
-                    entry_id_idx = -1
+                    list_id_idx = entry_id_idx = -1
 
                     for idx, _item in enumerate(itVals['Items']):
                         lp.add_tag(_item)
@@ -427,10 +423,7 @@ class CifToNmrStar:
 
             self.normalize(strData)
 
-            if __pynmrstar_v3__:
-                strData.write_to_file(strPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
-            else:
-                strData.write_to_file(strPath)
+            strData.write_to_file(strPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
 
             return True
 

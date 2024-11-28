@@ -299,13 +299,10 @@ class NmrDpReport:
         content_subtype = 'dist_restraint'
 
         if content_subtype in content_subtypes:
-            hydrogen_bonds = 0
-            disulfide_bonds = 0
-            diselenide_bonds = 0
-            other_bonds = 0
-            symmetric = 0
-            noe_like = 0
+            hydrogen_bonds = disulfide_bonds = diselenide_bonds = other_bonds = symmetric = noe_like = 0
+
             noe_exp_type = None
+
             for stat in self.getNmrStatsOfExptlData(content_subtype):
 
                 if 'number_of_constraints' not in stat:
@@ -391,10 +388,8 @@ class NmrDpReport:
         content_subtype = 'dihed_restraint'
 
         if content_subtype in content_subtypes:
-            proteins = 0
-            nucleic_acids = 0
-            carbohydrates = 0
-            others = 0
+            proteins = nucleic_acids = carbohydrates = others = 0
+
             for stat in self.getNmrStatsOfExptlData(content_subtype):
 
                 if 'constraints_per_polymer_type' in stat:  # DAOTHER-6509
@@ -451,6 +446,7 @@ class NmrDpReport:
 
         if content_subtype in content_subtypes:
             rdc_total = 0
+
             for stat in self.getNmrStatsOfExptlData(content_subtype):
 
                 if 'number_of_constraints' not in stat:
@@ -504,12 +500,8 @@ class NmrDpReport:
                 if stats is None:
                     continue
 
-                hydrogen_bonds = 0
-                disulfide_bonds = 0
-                diselenide_bonds = 0
-                other_bonds = 0
-                symmetric = 0
-                noe_like = 0
+                hydrogen_bonds = disulfide_bonds = diselenide_bonds = other_bonds = symmetric = noe_like = 0
+
                 noe_exp_type = None
 
                 for stat in stats:
@@ -603,10 +595,7 @@ class NmrDpReport:
                 if stats is None:
                     continue
 
-                proteins = 0
-                nucleic_acids = 0
-                carbohydrates = 0
-                others = 0
+                proteins = nucleic_acids = carbohydrates = others = 0
 
                 for stat in stats:
 

@@ -63,6 +63,7 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
+
 NMR_VTF_DIST_VIOL_CUTOFF = 0.1
 NMR_VTF_DIHED_VIOL_CUTOFF = 1.0
 NMR_VTF_RDC_VIOL_CUTOFF = 1.0  # to be decided

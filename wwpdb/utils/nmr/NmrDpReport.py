@@ -2475,8 +2475,7 @@ class NmrDpReportWarning:
 
         d = []
 
-        anomalous_cs = False
-        mixed_status = False
+        anomalous_cs = mixed_status = False
 
         for item in ['anomalous_data', 'anomalous_chemical_shift', 'unusual_data', 'unusual_chemical_shift']:
 

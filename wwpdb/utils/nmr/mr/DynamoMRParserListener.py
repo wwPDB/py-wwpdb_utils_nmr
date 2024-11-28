@@ -29,7 +29,7 @@ try:
                                                        isAmbigAtomSelection,
                                                        getAltProtonIdInBondConstraint,
                                                        getTypeOfDihedralRestraint,
-                                                       remediateBackboneDehedralRestraint,
+                                                       fixBackboneAtomsOfDihedralRestraint,
                                                        isLikePheOrTyr,
                                                        getRdcCode,
                                                        translateToStdResName,
@@ -119,7 +119,7 @@ except ImportError:
                                            isAmbigAtomSelection,
                                            getAltProtonIdInBondConstraint,
                                            getTypeOfDihedralRestraint,
-                                           remediateBackboneDehedralRestraint,
+                                           fixBackboneAtomsOfDihedralRestraint,
                                            isLikePheOrTyr,
                                            getRdcCode,
                                            translateToStdResName,
@@ -925,7 +925,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2], self.__nefT):
+                atoms = [atom1, atom2]
+                if isIdenticalRestraint(atoms, self.__nefT):
                     continue
                 if self.__createSfDict and isinstance(memberId, int):
                     star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
@@ -935,7 +936,7 @@ class DynamoMRParserListener(ParseTreeListener):
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
                 if self.__createSfDict and memberLogicCode == '.':
-                    altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
+                    altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint(atoms, self.__csStat)
                     if altAtomId1 is not None or altAtomId2 is not None:
                         atom1, atom2 =\
                             self.selectRealisticBondConstraint(atom1, atom2,
@@ -1099,7 +1100,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2], self.__nefT):
+                atoms = [atom1, atom2]
+                if isIdenticalRestraint(atoms, self.__nefT):
                     continue
                 if self.__createSfDict and isinstance(memberId, int):
                     star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
@@ -1107,7 +1109,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                         continue
                 if self.__createSfDict and memberLogicCode == '.':
-                    altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
+                    altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint(atoms, self.__csStat)
                     if altAtomId1 is not None or altAtomId2 is not None:
                         atom1, atom2 =\
                             self.selectRealisticBondConstraint(atom1, atom2,
@@ -1272,7 +1274,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2], self.__nefT):
+                atoms = [atom1, atom2]
+                if isIdenticalRestraint(atoms, self.__nefT):
                     continue
                 if self.__createSfDict and isinstance(memberId, int):
                     star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
@@ -1280,7 +1283,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                         continue
                 if self.__createSfDict and memberLogicCode == '.':
-                    altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
+                    altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint(atoms, self.__csStat)
                     if altAtomId1 is not None or altAtomId2 is not None:
                         atom1, atom2 =\
                             self.selectRealisticBondConstraint(atom1, atom2,
@@ -3107,16 +3110,17 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[1],
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
+                    atoms = [atom1, atom2, atom3, atom4]
                     angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                           [atom1, atom2, atom3, atom4],
+                                                           atoms,
                                                            'plane_like' in dstFunc,
                                                            self.__cR, self.__ccU,
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                     if angleName is not None and angleName.startswith('pseudo'):
-                        angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
-                                                                                          [atom1, atom2, atom3, atom4],
-                                                                                          self.__getCurrentRestraint(n=index))
+                        angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                           atoms,
+                                                                                           self.__getCurrentRestraint(n=index))
                         self.__f.append(err)
 
                     if angleName in emptyValue and atomSelTotal != 4:
@@ -3137,16 +3141,17 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
+                atoms = [atom1, atom2, atom3, atom4]
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                       [atom1, atom2, atom3, atom4],
+                                                       atoms,
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
-                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
-                                                                                      [atom1, atom2, atom3, atom4],
-                                                                                      self.__getCurrentRestraint(n=index))
+                    angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                       atoms,
+                                                                                       self.__getCurrentRestraint(n=index))
                     self.__f.append(err)
 
                 if angleName in emptyValue and atomSelTotal != 4:
@@ -3278,16 +3283,17 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[1],
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
+                    atoms = [atom1, atom2, atom3, atom4]
                     angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                           [atom1, atom2, atom3, atom4],
+                                                           atoms,
                                                            'plane_like' in dstFunc,
                                                            self.__cR, self.__ccU,
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                     if angleName is not None and angleName.startswith('pseudo'):
-                        angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
-                                                                                          [atom1, atom2, atom3, atom4],
-                                                                                          self.__getCurrentRestraint(n=index))
+                        angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                           atoms,
+                                                                                           self.__getCurrentRestraint(n=index))
                         self.__f.append(err)
 
                     if angleName in emptyValue and atomSelTotal != 4:
@@ -3308,16 +3314,17 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
+                atoms = [atom1, atom2, atom3, atom4]
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                       [atom1, atom2, atom3, atom4],
+                                                       atoms,
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
-                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
-                                                                                      [atom1, atom2, atom3, atom4],
-                                                                                      self.__getCurrentRestraint(n=index))
+                    angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                       atoms,
+                                                                                       self.__getCurrentRestraint(n=index))
                     self.__f.append(err)
 
                 if angleName in emptyValue and atomSelTotal != 4:
@@ -3449,16 +3456,17 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[1],
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
+                    atoms = [atom1, atom2, atom3, atom4]
                     angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                           [atom1, atom2, atom3, atom4],
+                                                           atoms,
                                                            'plane_like' in dstFunc,
                                                            self.__cR, self.__ccU,
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                     if angleName is not None and angleName.startswith('pseudo'):
-                        angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
-                                                                                          [atom1, atom2, atom3, atom4],
-                                                                                          self.__getCurrentRestraint(n=index))
+                        angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                           atoms,
+                                                                                           self.__getCurrentRestraint(n=index))
                         self.__f.append(err)
 
                     if angleName in emptyValue and atomSelTotal != 4:
@@ -3479,16 +3487,17 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
+                atoms = [atom1, atom2, atom3, atom4]
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                       [atom1, atom2, atom3, atom4],
+                                                       atoms,
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
-                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
-                                                                                      [atom1, atom2, atom3, atom4],
-                                                                                      self.__getCurrentRestraint(n=index))
+                    angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                       atoms,
+                                                                                       self.__getCurrentRestraint(n=index))
                     self.__f.append(err)
 
                 if angleName in emptyValue and atomSelTotal != 4:
@@ -3767,9 +3776,10 @@ class DynamoMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2], self.__nefT):
+                atoms = [atom1, atom2]
+                if isIdenticalRestraint(atoms, self.__nefT):
                     continue
-                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
+                if isLongRangeRestraint(atoms, self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if isinstance(combinationId, int):
                     combinationId += 1
@@ -3952,9 +3962,10 @@ class DynamoMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2], self.__nefT):
+                atoms = [atom1, atom2]
+                if isIdenticalRestraint(atoms, self.__nefT):
                     continue
-                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
+                if isLongRangeRestraint(atoms, self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if isinstance(combinationId, int):
                     combinationId += 1
@@ -4137,9 +4148,10 @@ class DynamoMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2], self.__nefT):
+                atoms = [atom1, atom2]
+                if isIdenticalRestraint(atoms, self.__nefT):
                     continue
-                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
+                if isLongRangeRestraint(atoms, self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if isinstance(combinationId, int):
                     combinationId += 1
@@ -4331,9 +4343,10 @@ class DynamoMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2], self.__nefT):
+                atoms = [atom1, atom2]
+                if isIdenticalRestraint(atoms, self.__nefT):
                     continue
-                if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
+                if isLongRangeRestraint(atoms, self.__polySeq if self.__gapInAuthSeq else None):
                     continue
                 if isinstance(combinationId, int):
                     combinationId += 1
@@ -4556,16 +4569,17 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
+                atoms = [atom1, atom2, atom3, atom4]
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                       [atom1, atom2, atom3, atom4],
+                                                       atoms,
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
-                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
-                                                                                      [atom1, atom2, atom3, atom4],
-                                                                                      self.__getCurrentRestraint(n=index))
+                    angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                       atoms,
+                                                                                       self.__getCurrentRestraint(n=index))
                     self.__f.append(err)
 
                 if angleName in emptyValue and atomSelTotal != 4:
@@ -4715,16 +4729,17 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
+                atoms = [atom1, atom2, atom3, atom4]
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                       [atom1, atom2, atom3, atom4],
+                                                       atoms,
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
-                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
-                                                                                      [atom1, atom2, atom3, atom4],
-                                                                                      self.__getCurrentRestraint(n=index))
+                    angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                       atoms,
+                                                                                       self.__getCurrentRestraint(n=index))
                     self.__f.append(err)
 
                 if angleName in emptyValue and atomSelTotal != 4:
@@ -4874,16 +4889,17 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
+                atoms = [atom1, atom2, atom3, atom4]
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                       [atom1, atom2, atom3, atom4],
+                                                       atoms,
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
-                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
-                                                                                      [atom1, atom2, atom3, atom4],
-                                                                                      self.__getCurrentRestraint(n=index))
+                    angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                       atoms,
+                                                                                       self.__getCurrentRestraint(n=index))
                     self.__f.append(err)
 
                 if angleName in emptyValue and atomSelTotal != 4:
@@ -5196,14 +5212,15 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                             self.atomSelectionSet[1],
                                                                             self.atomSelectionSet[2],
                                                                             self.atomSelectionSet[3]):
+                            atoms = [atom1, atom2, atom3, atom4]
                             _angleName = getTypeOfDihedralRestraint(True, False, False,
-                                                                    [atom1, atom2, atom3, atom4],
+                                                                    atoms,
                                                                     'plane_like' in dstFunc)
 
                             if _angleName is not None and _angleName.startswith('pseudo'):
-                                _angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(_angleName,
-                                                                                                   [atom1, atom2, atom3, atom4],
-                                                                                                   self.__getCurrentRestraint())
+                                _angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(_angleName,
+                                                                                                    atoms,
+                                                                                                    self.__getCurrentRestraint())
                                 self.__f.append(err)
 
                             if _angleName in emptyValue and atomSelTotal != 4:
@@ -5222,16 +5239,17 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
                                                                         self.atomSelectionSet[3]):
-                        if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
+                        atoms = [atom1, atom2, atom3, atom4]
+                        if isLongRangeRestraint(atoms, self.__polySeq if self.__gapInAuthSeq else None):
                             continue
                         _angleName = getTypeOfDihedralRestraint(True, False, False,
-                                                                [atom1, atom2, atom3, atom4],
+                                                                atoms,
                                                                 'plane_like' in dstFunc)
 
                         if _angleName is not None and _angleName.startswith('pseudo'):
-                            _angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(_angleName,
-                                                                                               [atom1, atom2, atom3, atom4],
-                                                                                               self.__getCurrentRestraint())
+                            _angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(_angleName,
+                                                                                                atoms,
+                                                                                                self.__getCurrentRestraint())
                             self.__f.append(err)
 
                         if _angleName in emptyValue and atomSelection != 4:
@@ -5449,14 +5467,15 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                             self.atomSelectionSet[1],
                                                                             self.atomSelectionSet[2],
                                                                             self.atomSelectionSet[3]):
+                            atoms = [atom1, atom2, atom3, atom4]
                             _angleName = getTypeOfDihedralRestraint(True, False, False,
-                                                                    [atom1, atom2, atom3, atom4],
+                                                                    atoms,
                                                                     'plane_like' in dstFunc)
 
                             if _angleName is not None and _angleName.startswith('pseudo'):
-                                _angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(_angleName,
-                                                                                                   [atom1, atom2, atom3, atom4],
-                                                                                                   self.__getCurrentRestraint())
+                                _angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(_angleName,
+                                                                                                    atoms,
+                                                                                                    self.__getCurrentRestraint())
                                 self.__f.append(err)
 
                             if _angleName in emptyValue and atomSelTotal != 4:
@@ -5475,16 +5494,17 @@ class DynamoMRParserListener(ParseTreeListener):
                                                                         self.atomSelectionSet[1],
                                                                         self.atomSelectionSet[2],
                                                                         self.atomSelectionSet[3]):
-                        if isLongRangeRestraint([atom1, atom2, atom3, atom4], self.__polySeq if self.__gapInAuthSeq else None):
+                        atoms = [atom1, atom2, atom3, atom4]
+                        if isLongRangeRestraint(atoms, self.__polySeq if self.__gapInAuthSeq else None):
                             continue
                         _angleName = getTypeOfDihedralRestraint(True, False, False,
-                                                                [atom1, atom2, atom3, atom4],
+                                                                atoms,
                                                                 'plane_like' in dstFunc)
 
                         if _angleName is not None and _angleName.startswith('pseudo'):
-                            _angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(_angleName,
-                                                                                               [atom1, atom2, atom3, atom4],
-                                                                                               self.__getCurrentRestraint())
+                            _angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(_angleName,
+                                                                                                atoms,
+                                                                                                self.__getCurrentRestraint())
                             self.__f.append(err)
 
                         if _angleName in emptyValue and atomSelTotal != 4:

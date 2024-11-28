@@ -23,7 +23,7 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
                                                        getTypeOfDihedralRestraint,
-                                                       remediateBackboneDehedralRestraint,
+                                                       fixBackboneAtomsOfDihedralRestraint,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        translateToLigandName,
@@ -104,7 +104,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
                                            getTypeOfDihedralRestraint,
-                                           remediateBackboneDehedralRestraint,
+                                           fixBackboneAtomsOfDihedralRestraint,
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            translateToLigandName,
@@ -812,7 +812,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2], self.__nefT):
+                atoms = [atom1, atom2]
+                if isIdenticalRestraint(atoms, self.__nefT):
                     continue
                 if self.__createSfDict and isinstance(memberId, int):
                     star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
@@ -820,7 +821,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                         continue
                 if self.__createSfDict and memberLogicCode == '.':
-                    altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
+                    altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint(atoms, self.__csStat)
                     if altAtomId1 is not None or altAtomId2 is not None:
                         atom1, atom2 =\
                             self.selectRealisticBondConstraint(atom1, atom2,
@@ -950,7 +951,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
-                if isIdenticalRestraint([atom1, atom2], self.__nefT):
+                atoms = [atom1, atom2]
+                if isIdenticalRestraint(atoms, self.__nefT):
                     continue
                 if self.__createSfDict and isinstance(memberId, int):
                     star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
@@ -958,7 +960,7 @@ class BiosymMRParserListener(ParseTreeListener):
                     if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                         continue
                 if self.__createSfDict and memberLogicCode == '.':
-                    altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint([atom1, atom2], self.__csStat)
+                    altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint(atoms, self.__csStat)
                     if altAtomId1 is not None or altAtomId2 is not None:
                         atom1, atom2 =\
                             self.selectRealisticBondConstraint(atom1, atom2,
@@ -2735,16 +2737,17 @@ class BiosymMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[1],
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
+                    atoms = [atom1, atom2, atom3, atom4]
                     angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                           [atom1, atom2, atom3, atom4],
+                                                           atoms,
                                                            'plane_like' in dstFunc,
                                                            self.__cR, self.__ccU,
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                     if angleName is not None and angleName.startswith('pseudo'):
-                        angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
-                                                                                          [atom1, atom2, atom3, atom4],
-                                                                                          self.__getCurrentRestraint())
+                        angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                           atoms,
+                                                                                           self.__getCurrentRestraint())
                         self.__f.append(err)
 
                     if angleName in emptyValue and atomSelTotal != 4:
@@ -2763,16 +2766,17 @@ class BiosymMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
+                atoms = [atom1, atom2, atom3, atom4]
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                       [atom1, atom2, atom3, atom4],
+                                                       atoms,
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
-                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
-                                                                                      [atom1, atom2, atom3, atom4],
-                                                                                      self.__getCurrentRestraint())
+                    angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                       atoms,
+                                                                                       self.__getCurrentRestraint())
                     self.__f.append(err)
 
                 if angleName in emptyValue and atomSelTotal != 4:
@@ -2935,16 +2939,17 @@ class BiosymMRParserListener(ParseTreeListener):
                                                                     self.atomSelectionSet[1],
                                                                     self.atomSelectionSet[2],
                                                                     self.atomSelectionSet[3]):
+                    atoms = [atom1, atom2, atom3, atom4]
                     angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                           [atom1, atom2, atom3, atom4],
+                                                           atoms,
                                                            'plane_like' in dstFunc,
                                                            self.__cR, self.__ccU,
                                                            self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                     if angleName is not None and angleName.startswith('pseudo'):
-                        angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
-                                                                                          [atom1, atom2, atom3, atom4],
-                                                                                          self.__getCurrentRestraint())
+                        angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                           atoms,
+                                                                                           self.__getCurrentRestraint())
                         self.__f.append(err)
 
                     if angleName in emptyValue and atomSelTotal != 4:
@@ -2963,16 +2968,17 @@ class BiosymMRParserListener(ParseTreeListener):
                                                                 self.atomSelectionSet[1],
                                                                 self.atomSelectionSet[2],
                                                                 self.atomSelectionSet[3]):
+                atoms = [atom1, atom2, atom3, atom4]
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
-                                                       [atom1, atom2, atom3, atom4],
+                                                       atoms,
                                                        'plane_like' in dstFunc,
                                                        self.__cR, self.__ccU,
                                                        self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
 
                 if angleName is not None and angleName.startswith('pseudo'):
-                    angleName, atom2, atom3, err = remediateBackboneDehedralRestraint(angleName,
-                                                                                      [atom1, atom2, atom3, atom4],
-                                                                                      self.__getCurrentRestraint())
+                    angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                       atoms,
+                                                                                       self.__getCurrentRestraint())
                     self.__f.append(err)
 
                 if angleName in emptyValue and atomSelTotal != 4:

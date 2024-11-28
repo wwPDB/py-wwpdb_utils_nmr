@@ -6253,8 +6253,8 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
     return '.' if is_connected() else None
 
 
-def remediateBackboneDehedralRestraint(angleName, atoms, currentRestraint):
-    """ Return valid angle name and remediated backbone atoms.
+def fixBackboneAtomsOfDihedralRestraint(angleName, atoms, currentRestraint):
+    """ Return valid dihedral angle name and remediated protein backbone atoms.
     """
 
     msg = ''

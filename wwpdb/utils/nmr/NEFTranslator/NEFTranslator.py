@@ -4707,9 +4707,7 @@ class NEFTranslator:
                 for idx, row in enumerate(tag_data):
                     ent = {}  # entity
 
-                    missing_mandatory_data = False
-                    remove_bad_pattern = False
-                    clear_bad_pattern = False
+                    missing_mandatory_data = remove_bad_pattern = clear_bad_pattern = False
 
                     for j in range(tag_len):
                         name = tags[j]
@@ -12391,8 +12389,7 @@ class NEFTranslator:
 
                 entity_del_atom_loop = next((loop for loop in saveframe if loop.category == '_Entity_deleted_atom'), None)
 
-                has_pk_can_format = False
-                has_pk_row_format = False
+                has_pk_can_format = has_pk_row_format = False
 
                 for loop in saveframe:
 
@@ -12453,8 +12450,7 @@ class NEFTranslator:
                         pass
 
                 if saveframe.category == 'entry_information':
-                    has_format_name = False
-                    has_format_ver = False
+                    has_format_name = has_format_ver = False
                     for tags in sf.tags:
                         if tags[0] == 'format_name':
                             has_format_name = True
@@ -12594,8 +12590,7 @@ class NEFTranslator:
 
             entity_del_atom_loop = next((loop for loop in saveframe if loop.category == '_Entity_deleted_atom'), None)
 
-            has_pk_can_format = False
-            has_pk_row_format = False
+            has_pk_can_format = has_pk_row_format = False
 
             for loop in saveframe:
 
@@ -12656,8 +12651,7 @@ class NEFTranslator:
                     pass
 
             if sf.category == 'entry_information':
-                has_format_name = False
-                has_format_ver = False
+                has_format_name = has_format_ver = False
                 for tags in sf.tags:
                     if tags[0] == 'format_name':
                         has_format_name = True

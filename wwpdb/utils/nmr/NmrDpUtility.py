@@ -10285,23 +10285,9 @@ class NmrDpUtility:
                                                                                  'nm-res-isd', 'nm-res-ari', 'nm-res-oth') or is_aux_amb or is_aux_gro or is_aux_cha else 1))
             cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))  # DAOTHER-7491
 
-            has_chem_shift = False
-            has_dist_restraint = False
-            has_dihed_restraint = False
-            has_rdc_restraint = False
-            has_plane_restraint = False
-            has_hbond_restraint = False
-            has_ssbond_restraint = False
-            has_rdc_origins = False
-            has_spectral_peak = False
-
-            has_coordinate = False
-            has_amb_coord = False
-            has_amb_inpcrd = False
-            has_ens_coord = False
-            has_topology = False
-
-            has_first_atom = False
+            has_chem_shift = has_dist_restraint = has_dihed_restraint = has_rdc_restraint =\
+                has_plane_restraint = has_hbond_restraint = has_ssbond_restraint = has_rdc_origins = has_spectral_peak =\
+                has_coordinate = has_amb_coord = has_amb_inpcrd = has_ens_coord = has_topology = has_first_atom = False
 
             if file_type in ('nm-res-xpl', 'nm-res-cns'):
 
@@ -10309,10 +10295,9 @@ class NmrDpUtility:
 
                     atom_likes = atom_unlikes = cs_atom_likes = resid_likes = real_likes = 0
                     names, resids = [], []
+                    cs_range_like = dist_range_like = dihed_range_like = rdc_range_like = False
 
                     rdc_atom_names = set()
-
-                    cs_range_like = dist_range_like = dihed_range_like = rdc_range_like = False
 
                     for line in ifh:
 
@@ -10475,14 +10460,12 @@ class NmrDpUtility:
             elif file_type == 'nm-res-amb':
 
                 with open(file_path, 'r', encoding='utf-8') as ifh:
-
-                    in_rst = in_iat = in_igr1 = in_igr2 = False
+                    in_rst = in_iat = in_igr1 = in_igr2 =\
+                        dist_range_like = dihed_range_like = rdc_range_like = False
 
                     names, values = [], []
 
                     pos = 0
-
-                    dist_range_like = dihed_range_like = rdc_range_like = False
 
                     for line in ifh:
 
@@ -10663,19 +10646,16 @@ class NmrDpUtility:
 
                 if is_aux_amb:
 
-                    has_atom_name = has_residue_label = has_residue_pointer = has_amb_atom_type = False
-
-                    chk_atom_name_format = chk_residue_label_format = chk_residue_pointer_format = chk_amb_atom_type_format = False
-
-                    in_atom_name = in_residue_label = in_residue_pointer = in_amb_atom_type = False
+                    has_atom_name = has_residue_label = has_residue_pointer = has_amb_atom_type =\
+                        chk_atom_name_format = chk_residue_label_format = chk_residue_pointer_format = chk_amb_atom_type_format =\
+                        in_atom_name = in_residue_label = in_residue_pointer = in_amb_atom_type = False
 
                     atom_names = residue_labels = residue_pointers = amb_atom_types = 0
 
                 elif is_aux_gro:
 
-                    has_system = has_molecules = has_atoms = False
-
-                    in_system = in_molecules = in_atoms = False
+                    has_system = has_molecules = has_atoms =\
+                        in_system = in_molecules = in_atoms = False
 
                     system_names = molecule_names = atom_names = 0
 
@@ -11815,9 +11795,8 @@ class NmrDpUtility:
             try:
 
                 header = True
-                in_header = pdb_record = cs_str = mr_str = False
-
-                has_datablock = has_anonymous_saveframe = has_save = has_loop = has_stop = False
+                in_header = pdb_record = cs_str = mr_str =\
+                    has_datablock = has_anonymous_saveframe = has_save = has_loop = has_stop = False
 
                 first_str_line_num = last_str_line_num = -1
 
@@ -14657,9 +14636,8 @@ class NmrDpUtility:
             try:
 
                 header = True
-                in_header = pdb_record = footer = False
-
-                has_datablock = has_anonymous_saveframe = has_save = has_loop = has_stop = False
+                in_header = pdb_record = footer =\
+                    has_datablock = has_anonymous_saveframe = has_save = has_loop = has_stop = False
 
                 first_str_line_num = last_str_line_num = -1
 
@@ -18276,7 +18254,6 @@ class NmrDpUtility:
         """
 
         is_done = True
-
         update_poly_seq = False
 
         self.__alt_chain = False
@@ -25760,9 +25737,7 @@ class NmrDpUtility:
 
             while True:
 
-                regenerate_request = False  # DAOTHER-9065
-
-                can_auth_asym_id_mapping_failed = False  # DAOTHER-9158
+                regenerate_request = can_auth_asym_id_mapping_failed = False  # DAOTHER-9065, DAOTHER-9158
 
                 lp.clear_data()
 
@@ -52306,12 +52281,10 @@ class NmrDpUtility:
                     key_items = self.key_items[file_type][content_subtype]
                     data_items = self.data_items[file_type][content_subtype]
 
-                has_bool_key = False
+                has_bool_key = has_bool_data = False
 
                 if key_items is not None:
                     has_bool_key = next((k['type'] == 'bool' for k in key_items if k['type'] == 'bool'), False)
-
-                has_bool_data = False
 
                 if data_items is not None:
                     has_bool_data = next((d['type'] == 'bool' for d in data_items if d['type'] == 'bool'), False)
@@ -52408,12 +52381,10 @@ class NmrDpUtility:
                         key_items = self.aux_key_items[file_type][content_subtype][lp_category]
                         data_items = self.aux_data_items[file_type][content_subtype][lp_category]
 
-                        has_bool_key = False
+                        has_bool_key = has_bool_data = False
 
                         if key_items is not None:
                             has_bool_key = next((k['type'] == 'bool' for k in key_items if k['type'] == 'bool'), False)
-
-                        has_bool_data = False
 
                         if data_items is not None:
                             has_bool_data = next((d['type'] == 'bool' for d in data_items if d['type'] == 'bool'), False)

@@ -39,12 +39,14 @@
             "nm-res-syb",
             "nm-res-xpl",
             "nm-pea-any",
+            "nm-pea-ari",
             "nm-pea-ccp",
             "nm-pea-pip",
             "nm-pea-spa",
             "nm-pea-top",
             "nm-pea-vie",
-            "nm-pea-xea"
+            "nm-pea-xea",
+            "nm-pea-xwi"
           ]
         },
         "original_file_name": {

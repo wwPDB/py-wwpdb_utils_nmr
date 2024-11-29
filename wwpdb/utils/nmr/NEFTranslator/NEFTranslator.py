@@ -137,7 +137,8 @@ try:
     from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        ALLOWED_AMBIGUITY_CODES,
-                                                       translateToStdResName)
+                                                       translateToStdResName,
+                                                       translateToStdAtomName)
 except ImportError:
     from nmr.AlignUtil import (LEN_LARGE_ASYM_ID, LOW_SEQ_COVERAGE,
                                emptyValue, trueValue, monDict3,
@@ -152,7 +153,8 @@ except ImportError:
     from nmr.CifToNmrStar import CifToNmrStar
     from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            ALLOWED_AMBIGUITY_CODES,
-                                           translateToStdResName)
+                                           translateToStdResName,
+                                           translateToStdAtomName)
 
 
 __package_name__ = 'wwpdb.utils.nmr'
@@ -6683,7 +6685,7 @@ class NEFTranslator:
 
         if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and atom_id[0] in ('H', 'C', 'N', 'O', 'P')\
            and len_atom_id > 1 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H')\
-           and (atom_id[0] != 'H' or (atom_id[0] == 'H' and atom_id[-1] not in ('%', '#'))):
+           and (atom_id[0] != 'H' or (atom_id[0] == 'H' and atom_id[-1] not in ('%', '*'))):
             grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, atom_id)
             if len(grk_atoms) > 0:
                 atom_list = []
@@ -7010,6 +7012,10 @@ class NEFTranslator:
 
             if '#' in atom_id:
                 atom_id = atom_id.replace('#', '%')
+
+            if atom_id[-1] in ('%', '*') and atom_id[-2] != "'" and self.__csStat.getTypeOfCompId(comp_id)[1]:
+                atom_id = translateToStdAtomName(atom_id[:-1], refCompId=comp_id, ccU=self.__ccU) + atom_id[-1]
+                print(atom_id)
 
             if atom_id[0] in ('1', '2', '3'):
                 atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
@@ -7349,7 +7355,7 @@ class NEFTranslator:
 
             if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and atom_id[0] in ('H', 'C', 'N', 'O', 'P')\
                and len_atom_id > 1 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H')\
-               and (atom_id[0] != 'H' or (atom_id[0] == 'H' and atom_id[-1] not in ('%', '#'))):
+               and (atom_id[0] != 'H' or (atom_id[0] == 'H' and atom_id[-1] not in ('%', '*'))):
                 grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, atom_id)
                 if len(grk_atoms) > 0:
                     atom_list = []

@@ -7015,7 +7015,6 @@ class NEFTranslator:
 
             if atom_id[-1] in ('%', '*') and atom_id[-2] != "'" and self.__csStat.getTypeOfCompId(comp_id)[1]:
                 atom_id = translateToStdAtomName(atom_id[:-1], refCompId=comp_id, ccU=self.__ccU) + atom_id[-1]
-                print(atom_id)
 
             if atom_id[0] in ('1', '2', '3'):
                 atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)

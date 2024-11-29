@@ -84,7 +84,7 @@
 # 29-Jan-2024  M. Yokochi - add 'ambiguous_dihedral_angle' warning type (NMR restraint remediation, 6sy2)
 # 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
 # 01-May-2024  M. Yokochi - merge cs/mr sequence extensions containing unknown residues (e.g UNK, DN, N) if necessary (NMR restraint remediation, 6fw4)
-# 07-Nov-2024  M. Yokochi - add 'nm-pea-ccp', 'nm-pea-pip', 'nm-pea-vie', 'nm-pea-spa', 'nm-pea-top', and 'nm-pea-xea' file types for NMR spectral peak remediation
+# 07-Nov-2024  M. Yokochi - add 'nm-pea-ari', 'nm-pea-pip', 'nm-pea-vie', 'nm-pea-spa', 'nm-pea-top', 'nm-pea-xea', and 'nm-pea-xwi' file types for NMR spectral peak remediation
 # 14-Nov-2024  M. Yokochi - add 'nm-aux-cha' file type for CHARMM extended CRD (CARD) file acting as CHARMM topology definition
 # 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
 # 22-Nov-2024  M. Yokochi - add 'nm-res-noa' file type for CYANA NOA (NOE Assignment) file
@@ -1756,8 +1756,8 @@ class NmrDpReportInputSource:
                            'nm-res-cya', 'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-mr',
                            'nm-res-noa', 'nm-res-oth', 'nm-res-ros', 'nm-res-sax', 'nm-res-syb',
                            'nm-res-xpl',
-                           'nm-pea-any', 'nm-pea-ccp', 'nm-pea-pip', 'nm-pea-spa', 'nm-pea-top',
-                           'nm-pea-vie', 'nm-pea-xea')
+                           'nm-pea-any', 'nm-pea-ari', 'nm-pea-pip', 'nm-pea-spa', 'nm-pea-top',
+                           'nm-pea-vie', 'nm-pea-xea', 'nm-pea-xwi')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',
                               'nmr-chemical-shifts', 'nmr-restraints', 'nmr-peaks')

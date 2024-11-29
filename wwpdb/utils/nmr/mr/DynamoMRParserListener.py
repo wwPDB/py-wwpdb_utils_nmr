@@ -232,7 +232,6 @@ class DynamoMRParserListener(ParseTreeListener):
     __verbose = None
     __lfh = None
     __debug = False
-    __remediate = False
 
     __createSfDict = False
     __omitDistLimitOutlier = True

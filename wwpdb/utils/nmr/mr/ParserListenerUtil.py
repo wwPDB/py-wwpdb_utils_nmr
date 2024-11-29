@@ -1948,6 +1948,25 @@ PTNR2_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt
 
 REMEDIATE_BACKBONE_ANGLE_NAME_PAT = re.compile(r'pseudo (PHI|PSI|OMEGA) \(0, (0|1|\-1), (0|1|\-1), 0\)')
 
+SPECTRAL_DIM_TEMPLATE = {'axis_code': None,
+                         'spectrometer_frequency': None,
+                         'atom_type': None,
+                         'atom_isotope_number': None,
+                         'spectral_region': None,
+                         'magnetization_linkage_id': None,
+                         'sweep_width': None,
+                         'sweep_width_unit': None,
+                         'value_first_point': None,
+                         'absolute_peak_positions': None,
+                         'acquisition': None,
+                         'center_frequency_offset': None,
+                         'encoding_code': None,
+                         'encoded_reduced_dimension_id': None
+                         }
+
+SPECTRAL_DIM_TRANSFER_TEMPLATE = {'indirect': None,
+                                  'type': None}
+
 
 def toRegEx(string):
     """ Return regular expression for a given string including XPLOR-NIH wildcard format.
@@ -6744,9 +6763,9 @@ def getRestraintName(mrSubtype, title=False):
     if mrSubtype.startswith('pccr'):
         return "Paramagnetic CCR restraints" if title else "paramagnetic CCR restraints"
     if mrSubtype.startswith('ccr_d_csa'):
-        return "CCR D-CSA restraints" if title else "CCR D-CSA restraints"
+        return "CCR D-CSA restraints"
     if mrSubtype.startswith('ccr_dd'):
-        return "CCR D-D restraints" if title else "CCR D-D restraints"
+        return "CCR D-D restraints"
     if mrSubtype.startswith('geo'):
         return "Coordinate geometry restraints" if title else "coordinate geometry restraints"
     if mrSubtype.startswith('noepk'):
@@ -6767,6 +6786,13 @@ def getRestraintName(mrSubtype, title=False):
         return "pKa value data"
     if mrSubtype == 'ph_param_data':
         return "pH titration data"
+
+    if mrSubtype == 'peak2d':
+        return "2D spectral peak list"
+    if mrSubtype == 'peak3d':
+        return "3D spectral peak list"
+    if mrSubtype == 'peak4d':
+        return "4D spectral peak list"
 
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
@@ -6799,6 +6825,9 @@ def contentSubtypeOf(mrSubtype):
     if mrSubtype in ('plane', 'adist', 'rama', 'radi', 'diff', 'nbase', 'ang', 'pang', 'geo'):
         return 'other_restraint'
 
+    if mrSubtype.startswth('peak'):
+        return 'spectral_peak'
+
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
 
@@ -6830,7 +6859,8 @@ def incListIdCounter(mrSubtype, listIdCounter, reduced=True):
                          'ccr_dd_restraint': 0,
                          'fchiral_restraint': 0,
                          'saxs_restraint': 0,
-                         'other_restraint': 0
+                         'other_restraint': 0,
+                         'spectral_peak': 0
                          }
 
     contentSubtype = (contentSubtypeOf(mrSubtype) if reduced else mrSubtype) if mrSubtype is not None else 'other_restraint'
@@ -6871,7 +6901,8 @@ def decListIdCounter(mrSubtype, listIdCounter, reduced=True):
                          'ccr_dd_restraint': 0,
                          'fchiral_restraint': 0,
                          'saxs_restraint': 0,
-                         'other_restraint': 0
+                         'other_restraint': 0,
+                         'spectral_peak': 0
                          }
 
     contentSubtype = (contentSubtypeOf(mrSubtype) if reduced else mrSubtype) if mrSubtype is not None else 'other_restraint'

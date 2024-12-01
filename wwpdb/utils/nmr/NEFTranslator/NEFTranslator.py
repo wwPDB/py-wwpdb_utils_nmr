@@ -7013,7 +7013,7 @@ class NEFTranslator:
             if '#' in atom_id:
                 atom_id = atom_id.replace('#', '%')
 
-            if atom_id[-1] in ('%', '*') and atom_id[-2] != "'" and self.__csStat.getTypeOfCompId(comp_id)[1]:
+            if atom_id[-1] in ('%', '*') and len(atom_id) > 2 and atom_id[-2] != "'" and self.__csStat.getTypeOfCompId(comp_id)[1]:
                 atom_id = translateToStdAtomName(atom_id[:-1], refCompId=comp_id, ccU=self.__ccU) + atom_id[-1]
 
             if atom_id[0] in ('1', '2', '3'):

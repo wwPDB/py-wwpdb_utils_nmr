@@ -83,7 +83,7 @@ CARTN_DATA_ITEMS = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                     ]
 
 
-def M(axis, theta):
+def M(axis: list, theta: float) -> list:
     """ Return the rotation matrix associated with counterclockwise rotation about the given axis by theta radians.
     """
 
@@ -99,14 +99,14 @@ def M(axis, theta):
                      [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]])
 
 
-def to_np_array(a):
+def to_np_array(a: dict) -> list:
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
     """
 
     return np.asarray([a['x'], a['y'], a['z']], dtype=float)
 
 
-def get_coordinates(p):
+def get_coordinates(p: list) -> [list, list]:
     """ Convert list of atoms for RMSD calculation.
         @return: a vector set of the coordinates.
     """
@@ -126,7 +126,7 @@ def get_coordinates(p):
     return atoms, V
 
 
-def calculate_rmsd(p, q):
+def calculate_rmsd(p: list, q: list) -> float:
     """ Calculate RMSD of two coordinates.
         @return: RMSD value
     """
@@ -182,7 +182,7 @@ def calculate_rmsd(p, q):
     return result_rmsd
 
 
-def calculate_uninstanced_coord(p_coord, q_coord, s_coord):
+def calculate_uninstanced_coord(p_coord: list, q_coord: list, s_coord: list) -> [list, float]:
     """ Calculate RMSD of two reference coordinates (p_coord, q_coord) and complement missing coordinate (s_coord). (DAOTHER-8945)
         @return: complemented coordinates, RMSD value
     """

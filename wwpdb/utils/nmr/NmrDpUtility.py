@@ -223,6 +223,7 @@ from packaging import version
 from munkres import Munkres
 from operator import itemgetter
 from striprtf.striprtf import rtf_to_text
+from typing import List, Tuple, Optional
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -568,7 +569,7 @@ archival_mr_file_types = ('nmr-star',
                           'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
 
 
-def detect_bom(fPath, default='utf-8'):
+def detect_bom(fPath: str, default='utf-8') -> str:
     """ Detect BOM of input file.
     """
 
@@ -585,7 +586,7 @@ def detect_bom(fPath, default='utf-8'):
     return default
 
 
-def convert_codec(inPath, outPath, in_codec='utf-8', out_codec='utf-8'):
+def convert_codec(inPath: str, outPath: str, in_codec='utf-8', out_codec='utf-8'):
     """ Convert codec of input file.
     """
 
@@ -595,7 +596,7 @@ def convert_codec(inPath, outPath, in_codec='utf-8', out_codec='utf-8'):
         ofh.write(contents.decode(in_codec).encode(out_codec))
 
 
-def convert_rtf_to_ascii(inPath, outPath):
+def convert_rtf_to_ascii(inPath: str, outPath: str):
     """ Convert RTF file to ASCII text file.
     """
 
@@ -605,7 +606,7 @@ def convert_rtf_to_ascii(inPath, outPath):
         ofh.write(rtf_to_text(contents, encoding='ascii', errors='ignore'))
 
 
-def is_binary_file(fPath):
+def is_binary_file(fPath: str) -> bool:
     """ Check if there are non-ascii or non-printable characters in a file.
     """
 
@@ -617,7 +618,7 @@ def is_binary_file(fPath):
     return False
 
 
-def is_rtf_file(fPath):
+def is_rtf_file(fPath: str) -> bool:
     """ Check if there are RTF header characters in a file.
     """
 
@@ -629,7 +630,7 @@ def is_rtf_file(fPath):
     return False
 
 
-def detect_encoding(line):
+def detect_encoding(line: str) -> str:
     """ Return encoding of a given string.
     """
 
@@ -640,7 +641,7 @@ def detect_encoding(line):
         return 'binary'
 
 
-def get_type_of_star_file(fPath):
+def get_type_of_star_file(fPath: str) -> str:
     """ Return type of a STAR file.
         @return: 'str' for STAR, 'cif' for CIF, 'other' otherwise
     """
@@ -700,7 +701,7 @@ def get_type_of_star_file(fPath):
                 pass
 
 
-def has_key_value(d=None, key=None):
+def has_key_value(d=None, key=None) -> bool:
     """ Return whether a given dictionary has effective value for a key.
         @return: True if d[key] has effective value, False otherwise
     """
@@ -714,7 +715,7 @@ def has_key_value(d=None, key=None):
     return False
 
 
-def get_first_sf_tag(sf=None, tag=None):
+def get_first_sf_tag(sf=None, tag=None) -> str:
     """ Return the first value of a given saveframe tag.
         @return: The first tag value, empty string otherwise.
     """
@@ -730,7 +731,7 @@ def get_first_sf_tag(sf=None, tag=None):
     return array[0] if array[0] is not None else ''
 
 
-def set_sf_tag(sf, tag, value):
+def set_sf_tag(sf, tag: str, value):
     """ Set saveframe tag.
     """
 
@@ -746,7 +747,7 @@ def set_sf_tag(sf, tag, value):
     sf.tags[tagNames.index(tag)][1] = value
 
 
-def is_non_metal_element(comp_id, atom_id):
+def is_non_metal_element(comp_id: str, atom_id: str) -> bool:
     """ Return whether a given atom_id is non metal element.
         @return: True for non metal element, False otherwise
     """
@@ -757,7 +758,7 @@ def is_non_metal_element(comp_id, atom_id):
     return any(elem for elem in NON_METAL_ELEMENTS if atom_id.startswith(elem))
 
 
-def is_half_spin_nuclei(atom_id):
+def is_half_spin_nuclei(atom_id: str) -> bool:
     """ Return whether nuclei of a given atom_id has a spin 1/2.
         @return: True for spin 1/2 nuclei, False otherwise
     """
@@ -765,7 +766,7 @@ def is_half_spin_nuclei(atom_id):
     return any(nucl for nucl in HALF_SPIN_NUCLEUS if atom_id.startswith(nucl))
 
 
-def probability_density(value, mean, stddev):
+def probability_density(value: float, mean: float, stddev: float) -> float:
     """ Return probability density.
     """
 
@@ -774,7 +775,8 @@ def probability_density(value, mean, stddev):
     return math.exp(-((value - mean) ** 2.0) / (2.0 * stddev2)) / math.sqrt(2.0 * math.pi * stddev2)
 
 
-def predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift):
+def predict_redox_state_of_cystein(ca_chem_shift: Optional[float], cb_chem_shift: Optional[float]
+                                   ) -> Tuple[float, float]:
     """ Return prediction of redox state of Cystein using assigned CA, CB chemical shifts.
         @return: probability of oxidized state, probability of reduced state
         Reference:
@@ -815,7 +817,7 @@ def predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift):
     return oxi / total, red / total
 
 
-def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift):
+def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift) -> Tuple[float, float]:
     """ Return prediction of cis-trans peptide bond of Proline using assigned CB, CG chemical shifts.
         @return: probability of cis-peptide bond, probability of trans-peptide bond
         Reference:
@@ -870,7 +872,9 @@ def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift):
     return cis / total, trs / total
 
 
-def predict_tautomer_state_of_histidine(cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift):
+def predict_tautomer_state_of_histidine(cg_chem_shift: Optional[float], cd2_chem_shift: Optional[float],
+                                        nd1_chem_shift: Optional[float], ne2_chem_shift: Optional[float]
+                                        ) -> Tuple[float, float]:
     """ Return prediction of tautomeric state of Histidine using assigned CG, CD2, ND1, and NE2 chemical shifts.
         @return: probability of biprotonated, probability of tau tautomer, probability of pi tautomer
         Reference:
@@ -927,7 +931,8 @@ def predict_tautomer_state_of_histidine(cg_chem_shift, cd2_chem_shift, nd1_chem_
     return bip / total, tau / total, pi / total
 
 
-def predict_rotamer_state_of_leucine(cd1_chem_shift, cd2_chem_shift):
+def predict_rotamer_state_of_leucine(cd1_chem_shift: Optional[float], cd2_chem_shift: Optional[float]
+                                     ) -> Tuple[float, float]:
     """ Return prediction of rotermeric state of Leucine using assigned CD1 and CD2 chemical shifts.
         @return: probability of gauche+, trans, gauche-
         Reference:
@@ -971,7 +976,8 @@ def predict_rotamer_state_of_leucine(cd1_chem_shift, cd2_chem_shift):
     return gp / total, t / total, 0.0
 
 
-def predict_rotamer_state_of_valine(cg1_chem_shift, cg2_chem_shift):
+def predict_rotamer_state_of_valine(cg1_chem_shift: Optional[float], cg2_chem_shift: Optional[float]
+                                    ) -> Tuple[float, float]:
     """ Return prediction of rotermeric state of Valine using assigned CG1 and CG2 chemical shifts.
         @return: probability of gauche+, trans, gauche-
         Reference:
@@ -1012,7 +1018,7 @@ def predict_rotamer_state_of_valine(cg1_chem_shift, cg2_chem_shift):
     return gp / total, t / total, gm / total
 
 
-def predict_rotamer_state_of_isoleucine(cd1_chem_shift):
+def predict_rotamer_state_of_isoleucine(cd1_chem_shift: Optional[float]) -> Tuple[float, float, float]:
     """ Return prediction of rotermeric state of Isoleucine using assigned CD1 chemical shift.
         @return: probability of gauche+, trans, gauche-
         Reference:
@@ -1036,7 +1042,7 @@ def predict_rotamer_state_of_isoleucine(cd1_chem_shift):
     return (1.0 - pgm) * (4.0 / 85.0), (1.0 - pgm) * (81.0 / 85.0), pgm
 
 
-def concat_nmr_restraint_names(content_subtype):
+def concat_nmr_restraint_names(content_subtype: Optional[str]) -> str:
     """ Return concatenated NMR restraint names.
     """
 
@@ -1056,7 +1062,7 @@ def concat_nmr_restraint_names(content_subtype):
     return ', '.join(f)
 
 
-def is_peak_list(line, has_header=True):
+def is_peak_list(line: str, has_header=True) -> bool:
     """ Return whether a given input is derived from peak list in any native format.
     """
 
@@ -1076,7 +1082,7 @@ def is_peak_list(line, has_header=True):
     return False
 
 
-def get_peak_list_format(line, has_header=True):
+def get_peak_list_format(line: str, has_header=True) -> Optional[str]:
     """ Return peak list format for a given input.
     """
 
@@ -1097,7 +1103,7 @@ def get_peak_list_format(line, has_header=True):
     return None
 
 
-def get_number_of_dimensions_of_peak_list(file_format, line):
+def get_number_of_dimensions_of_peak_list(file_format: str, line: str) -> Optional[int]:
     """ Return number of dimensions of peak list of given format and input.
     """
 
@@ -1131,7 +1137,7 @@ def get_number_of_dimensions_of_peak_list(file_format, line):
     return None
 
 
-def is_like_planality_boundary(row, lower_limit_name, upper_limit_name):
+def is_like_planality_boundary(row, lower_limit_name: str, upper_limit_name: str) -> bool:
     """ Return whether boundary conditions like planality restraint.
     """
 
@@ -1159,7 +1165,7 @@ def is_like_planality_boundary(row, lower_limit_name, upper_limit_name):
         return False
 
 
-def get_atom_name_mapping(lp, list_of_tags):
+def get_atom_name_mapping(lp, list_of_tags: List[List[str]]) -> Optional[List[dict]]:
     """ Return atom name mapping history for each comp_id.
         Each tags should be array of 'comp_id', 'atom_id', and 'atom_name'.
     """

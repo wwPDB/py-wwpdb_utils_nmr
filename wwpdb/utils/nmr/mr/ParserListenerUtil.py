@@ -22,6 +22,7 @@ import numpy
 import pynmrstar
 
 from operator import itemgetter
+from typing import Any, List, Set, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
@@ -38,7 +39,8 @@ try:
                                            isReservedLigCode,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
-                                           getScoreOfSeqAlign)
+                                           getScoreOfSeqAlign,
+                                           getOneLetterCode)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 except ImportError:
     from nmr.io.CifReader import SYMBOLS_ELEMENT
@@ -53,7 +55,8 @@ except ImportError:
                                isReservedLigCode,
                                alignPolymerSequence,
                                assignPolymerSequence,
-                               getScoreOfSeqAlign)
+                               getScoreOfSeqAlign,
+                               getOneLetterCode)
     from nmr.ChemCompUtil import ChemCompUtil
 
 MAX_ERROR_REPORT = 1
@@ -1967,8 +1970,12 @@ SPECTRAL_DIM_TEMPLATE = {'axis_code': None,
 SPECTRAL_DIM_TRANSFER_TEMPLATE = {'indirect': None,
                                   'type': None}
 
+PEAK_ASSIGNMENT_SEPARATOR_PAT = re.compile('[^0-9A-Za-z]+')
+PEAK_ASSIGNMENT_RESID_PAT = re.compile('[0-9]+')
+PEAK_HALF_SPIN_NUCLEUS = ('H', 'Q', 'M', 'C', 'N', 'P', 'F')
 
-def toRegEx(string):
+
+def toRegEx(string: str) -> str:
     """ Return regular expression for a given string including XPLOR-NIH wildcard format.
     """
 
@@ -1983,7 +1990,7 @@ def toRegEx(string):
     return string
 
 
-def toNefEx(string):
+def toNefEx(string: str) -> str:
     """ Return NEF regular expression for a given string including XPLOR-NIH wildcard format.
     """
 
@@ -1998,7 +2005,7 @@ def toNefEx(string):
     return string
 
 
-def stripQuot(string):
+def stripQuot(string: str) -> str:
     """ Return strippped string by removing single/double quotation marks.
     """
 
@@ -2014,7 +2021,7 @@ def stripQuot(string):
     return _string
 
 
-def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None, unambig=False):
+def translateToStdAtomName(atomId: str, refCompId=None, refAtomIdList=None, ccU=None, unambig=False) -> str:
     """ Translate software specific atom nomenclature for standard residues to the CCD one.
     """
 
@@ -2749,7 +2756,7 @@ def translateToStdAtomName(atomId, refCompId=None, refAtomIdList=None, ccU=None,
     return atomId
 
 
-def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
+def translateToStdAtomNameOfDmpc(atomId: str, dmpcNameSystemId=-1) -> str:
     """ Translate software specific atom nomenclature for DMPC to CCD PX4.
     """
 
@@ -3292,7 +3299,7 @@ def translateToStdAtomNameOfDmpc(atomId, dmpcNameSystemId=-1):
     return atomId
 
 
-def translateToStdResName(compId, refCompId=None, ccU=None):
+def translateToStdResName(compId: str, refCompId=None, ccU=None) -> str:
     """ Translate software specific residue name to standard residue name of CCD.
     """
 
@@ -3447,7 +3454,7 @@ def translateToStdResName(compId, refCompId=None, ccU=None):
     return compId
 
 
-def translateToLigandName(compId, refCompId, ccU):
+def translateToLigandName(compId: str, refCompId: str, ccU) -> str:
     """ Translate software specific ligand name if possible.
     """
 
@@ -3465,7 +3472,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
                          representativeModelId=REPRESENTATIVE_MODEL_ID,
                          representativeAltId=REPRESENTATIVE_ALT_ID,
                          cR=None, prevResult=None, nmrPolySeq=None,
-                         fullCheck=True):
+                         fullCheck=True) -> dict:
     """ Check assembly of the coordinates for MR/PT parser listener.
     """
 
@@ -5391,8 +5398,10 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
 
 def extendCoordChainsForExactNoes(modelChainIdExt,
-                                  polySeq, altPolySeq, coordAtomSite, coordUnobsRes,
-                                  authToLabelSeq, authToStarSeq, authToOrigSeq):
+                                  polySeq: List[dict], altPolySeq: List[dict],
+                                  coordAtomSite: Optional[dict], coordUnobsRes: Optional[dict],
+                                  authToLabelSeq: Optional[dict], authToStarSeq: Optional[dict],
+                                  authToOrigSeq: Optional[dict]):
     """ Extend coordinate chains for eNOEs-guided multiple conformers.
     """
 
@@ -5535,7 +5544,7 @@ def extendCoordChainsForExactNoes(modelChainIdExt,
     return _polySeq, _altPolySeq, _coordAtomSite, _coordUnobsRes, _labelToAuthSeq, _authToLabelSeq, _authToStarSeq, _authToOrigSeq
 
 
-def isIdenticalRestraint(atoms, nefT=None):
+def isIdenticalRestraint(atoms: List[dict], nefT=None) -> bool:
     """ Return whether restraint contains identical atom selection.
     """
 
@@ -5564,7 +5573,7 @@ def isIdenticalRestraint(atoms, nefT=None):
     return False
 
 
-def isLongRangeRestraint(atoms, polySeq=None):
+def isLongRangeRestraint(atoms: List[dict], polySeq=None) -> bool:
     """ Return whether restraint is neither an intra residue nor sequential residue restraint.
     """
 
@@ -5606,7 +5615,7 @@ def isLongRangeRestraint(atoms, polySeq=None):
     return False
 
 
-def getAltProtonIdInBondConstraint(atoms, csStat):
+def getAltProtonIdInBondConstraint(atoms: List[dict], csStat) -> Tuple[Optional[str], Optional[str]]:
     """ Return alternative atom_id in swappable proton group, which involves in bond constraint (e.g. amino group in Watson-Crick pair).
     """
 
@@ -5656,7 +5665,7 @@ def getAltProtonIdInBondConstraint(atoms, csStat):
     return None, None
 
 
-def isAsymmetricRangeRestraint(atoms, chainIdSet, symmetric):
+def isAsymmetricRangeRestraint(atoms: List[dict], chainIdSet: List[str], symmetric: str) -> bool:
     """ Return whether restraint is asymmetric.
     """
 
@@ -5699,14 +5708,14 @@ def isAsymmetricRangeRestraint(atoms, chainIdSet, symmetric):
     return False
 
 
-def guessCompIdFromAtomId(atoms: list, polySeq, nefT):
+def guessCompIdFromAtomId(atomIds: List[str], polySeq: List[dict], nefT) -> List[str]:
     """ Try to find candidate comp_id that matches with a given atom_id.
     """
 
-    if atoms[0] in ('C', 'CA', 'CB', 'CO', 'H', 'HN', 'HA', 'N', 'O',
-                    "C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''",
-                    "H5'1", "H5'2", "H2'1", "H2'2", "HO2'", "H2'1", "HO'2", 'P', "O2'",
-                    'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'H1', 'H2', 'H3', 'H4', 'H5', 'H61', 'H62'):
+    if atomIds[0] in ('C', 'CA', 'CB', 'CO', 'H', 'HN', 'HA', 'N', 'O',
+                      "C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''",
+                      "H5'1", "H5'2", "H2'1", "H2'2", "HO2'", "H2'1", "HO'2", 'P', "O2'",
+                      'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'H1', 'H2', 'H3', 'H4', 'H5', 'H61', 'H62'):
         return None
 
     candidates = set()
@@ -5716,7 +5725,7 @@ def guessCompIdFromAtomId(atoms: list, polySeq, nefT):
 
         for _compId in set(compIds):
             if _compId in monDict3:
-                _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, atoms[0])
+                _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, atomIds[0])
                 if len(_atomId) > 0 and details is None:
                     candidates.add(_compId)
                     if len(candidates) > 2:
@@ -5725,7 +5734,7 @@ def guessCompIdFromAtomId(atoms: list, polySeq, nefT):
     return list(candidates)
 
 
-def guessCompIdFromAtomIdWoLimit(atoms: list, polySeq, nefT, isPolySeq=True):
+def guessCompIdFromAtomIdWoLimit(atomIds: List[str], polySeq: List[dict], nefT, isPolySeq=True) -> List[str]:
     """ Try to find candidate comp_id that matches with a given atom_id.
     """
 
@@ -5737,9 +5746,9 @@ def guessCompIdFromAtomIdWoLimit(atoms: list, polySeq, nefT, isPolySeq=True):
         for _compId in set(compIds):
             if _compId in monDict3 or not isPolySeq:
                 failed = False
-                for atom in atoms:
-                    _atom = translateToStdAtomName(atom, _compId, ccU=nefT.get_ccu())
-                    _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, _atom)
+                for atomId in atomIds:
+                    _atomId = translateToStdAtomName(atomId, _compId, ccU=nefT.get_ccu())
+                    _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, _atomId)
                     if len(_atomId) == 0 or details is not None:
                         failed = True
                         break
@@ -5749,7 +5758,7 @@ def guessCompIdFromAtomIdWoLimit(atoms: list, polySeq, nefT, isPolySeq=True):
     return list(candidates)
 
 
-def hasIntraChainRestraint(atomSelectionSet):
+def hasIntraChainRestraint(atomSelectionSet: List[List[dict]]) -> Tuple[bool, Optional[set]]:
     """ Return whether intra-chain distance restraints in the atom selection.
     """
 
@@ -5761,7 +5770,7 @@ def hasIntraChainRestraint(atomSelectionSet):
     return False, None
 
 
-def hasInterChainRestraint(atomSelectionSet):
+def hasInterChainRestraint(atomSelectionSet: List[List[dict]]) -> bool:
     """ Return whether inter-chain distance restraints in the atom selection.
     """
 
@@ -5773,7 +5782,7 @@ def hasInterChainRestraint(atomSelectionSet):
     return False
 
 
-def getRepIntraChainIds(atomSelectionSet):
+def getRepIntraChainIds(atomSelectionSet: List[List[dict]]) -> set:
     """ Return representative set of chain id of intra-chain distance restraints in case of large assembly.
     """
 
@@ -5791,7 +5800,7 @@ def getRepIntraChainIds(atomSelectionSet):
     return intraChainIds
 
 
-def isAmbigAtomSelection(atoms, csStat):
+def isAmbigAtomSelection(atoms: List[dict], csStat) -> bool:
     """ Return whether an atom selection involves heterogeneous atom groups.
     """
 
@@ -5864,9 +5873,10 @@ def isAmbigAtomSelection(atoms, csStat):
     return False
 
 
-def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms, planeLike, cR=None, ccU=None,
+def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohydrates: bool,
+                               atoms: List[dict], planeLike: bool, cR=None, ccU=None,
                                representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
-                               modelNumName='PDB_model_num'):
+                               modelNumName='PDB_model_num') -> Optional[str]:
     """ Return type of dihedral angle restraint.
     """
 
@@ -6272,7 +6282,7 @@ def getTypeOfDihedralRestraint(polypeptide, polynucleotide, carbohydrates, atoms
     return '.' if is_connected() else None
 
 
-def fixBackboneAtomsOfDihedralRestraint(angleName, atoms, currentRestraint):
+def fixBackboneAtomsOfDihedralRestraint(angleName: str, atoms: List[dict], currentRestraint: str) -> Tuple[str, dict, dict, str]:
     """ Return valid dihedral angle name and remediated protein backbone atoms.
     """
 
@@ -6324,7 +6334,7 @@ def fixBackboneAtomsOfDihedralRestraint(angleName, atoms, currentRestraint):
     return angleName, atoms[1], atoms[2], msg
 
 
-def isLikePheOrTyr(compId, ccU):
+def isLikePheOrTyr(compId: str, ccU) -> bool:
     """ Return whether a given comp_id is amino acid with flippable symmetrical ring like phenylalanine or tryrosine.
     """
 
@@ -6344,7 +6354,7 @@ def isLikePheOrTyr(compId, ccU):
     return False
 
 
-def isLikeHis(compId, ccU):
+def isLikeHis(compId: str, ccU) -> bool:
     """ Return whether a given comp_id is like histigine.
     """
 
@@ -6364,7 +6374,7 @@ def isLikeHis(compId, ccU):
     return False
 
 
-def getRdcCode(atoms: list):
+def getRdcCode(atoms: List[dict]) -> Optional[str]:
     """ Return type of residual dipolar coupling restraint.
     """
 
@@ -6418,7 +6428,7 @@ def getRdcCode(atoms: list):
     return 'RDC_other'
 
 
-def startsWithPdbRecord(line):
+def startsWithPdbRecord(line: str) -> bool:
     """ Return whether a given line string starts with legacy PDB records.
     """
 
@@ -6428,9 +6438,9 @@ def startsWithPdbRecord(line):
     return any(line[:-1] == pdb_record[:-1] for pdb_record in LEGACY_PDB_RECORDS if pdb_record.endswith(' '))
 
 
-def isCyclicPolymer(cR, polySeq, authAsymId,
+def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,
                     representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
-                    modelNumName='PDB_model_num'):
+                    modelNumName='PDB_model_num') -> bool:
     """ Return whether a given chain is cyclic polymer based on coordinate annotation.
     """
 
@@ -6515,9 +6525,10 @@ def isCyclicPolymer(cR, polySeq, authAsymId,
     return struct_conn[0]['conn_type_id'] == 'covale'
 
 
-def isStructConn(cR, authAsymId1, authSeqId1, authAtomId1, authAsymId2, authSeqId2, authAtomId2,
+def isStructConn(cR, authAsymId1: str, authSeqId1: int, authAtomId1: str,
+                 authAsymId2: str, authSeqId2: int, authAtomId2: str,
                  representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
-                 modelNumName='PDB_model_num'):
+                 modelNumName='PDB_model_num') -> bool:
     """ Return whether a given atom pair is structurally connected.
     """
 
@@ -6614,8 +6625,8 @@ def isStructConn(cR, authAsymId1, authSeqId1, authAtomId1, authAsymId2, authSeqI
     return struct_conn[0]['conn_type_id'] not in emptyValue
 
 
-def getCoordBondLength(cR, asymId1, seqId1, atomId1, asymId2, seqId2, atomId2,
-                       representativeAltId=REPRESENTATIVE_ALT_ID, modelNumName='PDB_model_num', labelScheme=True):
+def getCoordBondLength(cR, asymId1: str, seqId1: int, atomId1: str, asymId2: str, seqId2: int, atomId2: str,
+                       representativeAltId=REPRESENTATIVE_ALT_ID, modelNumName='PDB_model_num', labelScheme=True) -> Optional[List[dict]]:
     """ Return the bond length of given two CIF atoms.
         @return: the bond length
     """
@@ -6671,7 +6682,7 @@ def getCoordBondLength(cR, asymId1, seqId1, atomId1, asymId2, seqId2, atomId2,
     return None
 
 
-def getMetalCoordOf(cR, authSeqId, authCompId, metalId):
+def getMetalCoordOf(cR, authSeqId: int, authCompId: str, metalId: str) -> Tuple[Optional[str], Optional[int]]:
     """ Return auth_asym_id and auth_seq_id of a metal element attached to given residue.
     """
 
@@ -6712,7 +6723,7 @@ def getMetalCoordOf(cR, authSeqId, authCompId, metalId):
     return None, None
 
 
-def getRestraintName(mrSubtype, title=False):
+def getRestraintName(mrSubtype: str, title=False) -> str:
     """ Return human-readable restraint name for a given restraint subtype.
     """
 
@@ -6786,7 +6797,6 @@ def getRestraintName(mrSubtype, title=False):
         return "pKa value data"
     if mrSubtype == 'ph_param_data':
         return "pH titration data"
-
     if mrSubtype == 'peak2d':
         return "2D spectral peak list"
     if mrSubtype == 'peak3d':
@@ -6797,7 +6807,7 @@ def getRestraintName(mrSubtype, title=False):
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
 
-def contentSubtypeOf(mrSubtype):
+def contentSubtypeOf(mrSubtype: str) -> str:
     """ Return legitimate content subtype of NmrDpUtility.py for a given internal restraint subtype.
     """
 
@@ -6831,7 +6841,7 @@ def contentSubtypeOf(mrSubtype):
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
 
-def incListIdCounter(mrSubtype, listIdCounter, reduced=True):
+def incListIdCounter(mrSubtype: str, listIdCounter: dict, reduced=True) -> dict:
     """ Increment list id counter for a given internal restraint subtype (default)/content subtype (reduced=False).
     """
 
@@ -6873,7 +6883,7 @@ def incListIdCounter(mrSubtype, listIdCounter, reduced=True):
     return listIdCounter
 
 
-def decListIdCounter(mrSubtype, listIdCounter, reduced=True):
+def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced=True) -> dict:
     """ Decrement list id counter for a given internal restraint subtype (default)/content subtype (reduced=False).
     """
 
@@ -6915,7 +6925,7 @@ def decListIdCounter(mrSubtype, listIdCounter, reduced=True):
     return listIdCounter
 
 
-def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=None,
+def getSaveframe(mrSubtype: str, sf_framecode: str, listId=None, entryId=None, fileName=None,
                  constraintType=None, potentialType=None,
                  rdcCode=None, alignCenter=None, cyanaParameter=None, reduced=True):
     """ Return pynmrstar saveframe for a given internal restraint subtype (default)/content subtype (reduced=False).
@@ -7006,7 +7016,7 @@ def getSaveframe(mrSubtype, sf_framecode, listId=None, entryId=None, fileName=No
     return sf
 
 
-def getLoop(mrSubtype, reduced=True, hasInsCode=False):
+def getLoop(mrSubtype: str, reduced=True, hasInsCode=False):
     """ Return pynmrstart loop for a given internal restraint subtype (default)/content subtype (reduced=False)..
         @return: pynmrstar loop
     """
@@ -7038,7 +7048,7 @@ def getLoop(mrSubtype, reduced=True, hasInsCode=False):
     return lp
 
 
-def getAuxLoops(mrSubtype):
+def getAuxLoops(mrSubtype: str):
     """ Return pynmrstart auxiliary loops for a given internal restraint subtype.
         @return: pynmrstar loop
     """
@@ -7070,7 +7080,8 @@ def getAuxLoops(mrSubtype):
     return aux_lps
 
 
-def getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom, aux_atom=None, asis=False):
+def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], offsetHolder: dict,
+                atom: List[dict], aux_atom=None, asis=False) -> Optional[str]:
     """ Return NMR-STAR sequence including entity ID for a given auth atom of the cooridnates.
         @return: a dictionary of NMR-STAR sequence/entity, None otherwise
     """
@@ -7204,7 +7215,7 @@ def getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom, aux_atom=None,
     return None
 
 
-def getInsCode(authToInsCode, offsetHolder, atom):
+def getInsCode(authToInsCode: Optional[dict], offsetHolder: dict, atom: List[dict]) -> Optional[str]:
     """ Return PDB_ins_code for a given auth atom of the cooridnates.
         @return: PDB_ins_code
     """
@@ -7247,10 +7258,12 @@ def getInsCode(authToInsCode, offsetHolder, atom):
     return None
 
 
-def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryId, dstFunc,
-           authToStarSeq, authToOrigSeq, authToInsCode, offsetHolder,
-           atom1, atom2=None, atom3=None, atom4=None, atom5=None,
-           asis1=False, asis2=False, asis3=False, asis4=False, asis5=False):
+def getRow(mrSubtype: str, id: int, indexId: int,
+           combinationId: Optional[int], memberId: Optional[int], code: Optional[str],
+           listId: int, entryId: str, dstFunc: dict,
+           authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], authToInsCode: Optional[dict], offsetHolder: dict,
+           atom1: dict, atom2=None, atom3=None, atom4=None, atom5=None,
+           asis1=False, asis2=False, asis3=False, asis4=False, asis5=False) -> List[Any]:
     """ Return row data for a given internal restraint subtype.
         @return: data array
     """
@@ -7745,7 +7758,7 @@ def getRow(mrSubtype, id, indexId, combinationId, memberId, code, listId, entryI
     return row
 
 
-def resetCombinationId(mrSubtype, row):
+def resetCombinationId(mrSubtype: str, row: List[Any]) -> List[Any]:
     """ Reset Combination_ID.
         @return: data array
     """
@@ -7765,7 +7778,7 @@ def resetCombinationId(mrSubtype, row):
     return row
 
 
-def resetMemberId(mrSubtype, row):
+def resetMemberId(mrSubtype: str, row: List[Any]) -> List[Any]:
     """ Reset Member_ID and Member_logic_code.
         @return: data array
     """
@@ -7785,7 +7798,7 @@ def resetMemberId(mrSubtype, row):
     return row
 
 
-def getDstFuncForHBond(atom1, atom2):
+def getDstFuncForHBond(atom1: dict, atom2: dict) -> dict:
     """ Return default upper/lower limits for a hydrogen bond.
     """
 
@@ -7825,7 +7838,7 @@ def getDstFuncForHBond(atom1, atom2):
     return getDstFuncAsNoe()
 
 
-def getDstFuncForSsBond(atom1, atom2):
+def getDstFuncForSsBond(atom1: dict, atom2: dict) -> dict:
     """ Return default upper/lower limits for a disulfide bond.
     """
 
@@ -7848,16 +7861,16 @@ def getDstFuncForSsBond(atom1, atom2):
     return dstFunc
 
 
-def getDstFuncAsNoe():
+def getDstFuncAsNoe() -> dict:
     """ Return default upper/lower limits as an NOE.
     """
     return {'weight': '1.0', 'lower_limit': '2.0', 'upper_limit': str(DIST_AMBIG_MED)}
 
 
-def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
-                   originalTagNames, originalRow,
-                   authToStarSeq, authToOrigSeq, authToInsCode, offsetHolder,
-                   atoms, annotationMode):
+def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optional[int], code: Optional[str],
+                   listId: int, entryId: str, originalTagNames: List[str], originalRow: List[Any],
+                   authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], authToInsCode: Optional[dict], offsetHolder: dict,
+                   atoms: List[dict], annotationMode: bool) -> List[Any]:
     """ Return row data for a given constraint subtype and corresponding NMR-STAR row.
         @return: data array
     """
@@ -8848,7 +8861,7 @@ def getRowForStrMr(contentSubtype, id, indexId, memberId, code, listId, entryId,
     return row
 
 
-def getAuxRow(mrSubtype, catName, listId, entryId, inDict):
+def getAuxRow(mrSubtype: str, catName: str, listId: int, entryId: str, inDict: dict) -> List[Any]:
     """ Return aux row data for a given category.
         @return: data array
     """
@@ -8881,7 +8894,8 @@ def getAuxRow(mrSubtype, catName, listId, entryId, inDict):
     return row
 
 
-def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, atomId):
+def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId: str, seqId: int, compId: str, atomId: str
+                                          ) -> Tuple[List[Tuple[str, int, str, bool]], str]:
     """ Assign polymer sequences of the coordinates.
         @return possible assignments to the coordinate, warning message (None for valid case)
     """
@@ -9072,10 +9086,11 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId, seqId, compId, 
     return list(chainAssign), warningMessage
 
 
-def selectCoordAtoms(cR, caC, nefT, chainAssign, authChainId, seqId, compId, atomId, authAtomId,
+def selectCoordAtoms(cR, caC, nefT, chainAssign: List[Tuple[str, int, str, bool]],
+                     authChainId: str, seqId: int, compId: str, atomId: str, authAtomId: str,
                      allowAmbig=True, enableWarning=True, preferAuthAtomName=False,
                      representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
-                     modelNumName='PDB_model_num', offset=1):
+                     modelNumName='PDB_model_num', offset=1) -> Tuple[List[dict], str]:
     """ Select atoms of the coordinates.
         @return atom selection, warning mesage (None for valid case)
     """
@@ -9264,7 +9279,7 @@ def selectCoordAtoms(cR, caC, nefT, chainAssign, authChainId, seqId, compId, ato
     return atomSelection, warningMessage
 
 
-def getRealChainSeqId(ccU, polySeq, seqId, compId=None):
+def getRealChainSeqId(ccU, polySeq: dict, seqId: int, compId=None) -> Tuple[str, int]:
     """ Return effective sequence key according to polymer sequence of the coordinates.
         @return: sequence key
     """
@@ -9280,7 +9295,7 @@ def getRealChainSeqId(ccU, polySeq, seqId, compId=None):
     return polySeq['auth_chain_id'], seqId
 
 
-def getCoordAtomSiteOf(caC, authChainId, chainId, seqId, compId=None, asis=True):
+def getCoordAtomSiteOf(caC, authChainId: str, chainId: str, seqId: int, compId=None, asis=True) -> Tuple[Tuple[str, int], dict]:
     """ Return sequence key and its atom list of the coordinates.
         @return: sequence key, atom list in the sequence
     """
@@ -9314,7 +9329,8 @@ def getCoordAtomSiteOf(caC, authChainId, chainId, seqId, compId=None, asis=True)
     return seqKey, coordAtomSite
 
 
-def testCoordAtomIdConsistency(caC, ccU, authChainId, chainId, seqId, compId, atomId, seqKey, coordAtomSite, enableWarning=True):
+def testCoordAtomIdConsistency(caC, ccU, authChainId: str, chainId: str, seqId: int, compId: str, atomId: str,
+                               seqKey: Tuple[str, int], coordAtomSite: Optional[dict], enableWarning=True) -> Optional[str]:
     """ Check existence of specified atom in the coordinates.
         @return: waring message (None for valid case)
     """
@@ -9391,7 +9407,7 @@ def testCoordAtomIdConsistency(caC, ccU, authChainId, chainId, seqId, compId, at
     return None
 
 
-def getDistConstraintType(atomSelectionSet, dstFunc, csStat, hint='.'):
+def getDistConstraintType(atomSelectionSet: List[List[dict]], dstFunc: dict, csStat, hint='.') -> Optional[str]:
     """ Return distance constraint type for _Constraint_file.Constraint_type tag value.
         @return 'hydrogen bond', 'disulfide bond', etc., None for unclassified distance constraint
     """
@@ -9542,7 +9558,7 @@ def getDistConstraintType(atomSelectionSet, dstFunc, csStat, hint='.'):
     return None
 
 
-def getPotentialType(fileType, mrSubtype, dstFunc):
+def getPotentialType(fileType: str, mrSubtype: str, dstFunc: dict) -> Optional[str]:
     """ Return NMR-STAR potential type for a given function.
         @return potential type, None for unmatched case
     """
@@ -9574,7 +9590,7 @@ def getPotentialType(fileType, mrSubtype, dstFunc):
     return None
 
 
-def getPdbxNmrSoftwareName(name):
+def getPdbxNmrSoftwareName(name: str) -> str:
     """ Return _pdbx_nmr_software.name enumarated value for a given software name.
     """
 
@@ -9590,10 +9606,20 @@ def getPdbxNmrSoftwareName(name):
         return 'X-PLOR NIH'
     if name == 'XPLOR-NIH/CNS':
         return 'X-PLOR NIH/CNS'
-    return name  # 'ARIA', 'CHARMM', 'CNS', 'CYANA', 'DYNAMO', 'PALES', 'TALOS', 'GROMACS', 'SYBYL'
+    if name == 'NMRPIPE':
+        return 'NMRPipe'
+    if name == 'NMRVIEW':
+        return 'NMRView'
+    if name == 'SPARKY':
+        return 'Sparky'
+    if name == 'TOPSPIN':
+        return 'TopSpin'
+    if name == 'XWINNMR':
+        return 'XwinNMR'
+    return name  # 'ARIA', 'CHARMM', 'CNS', 'CYANA', 'DYNAMO', 'PALES', 'TALOS', 'GROMACS', 'SYBYL', 'XEASY'
 
 
-def hasKeyValue(d=None, key=None):
+def hasKeyValue(d=None, key=None) -> bool:
     """ Return whether a given dictionary has effective value for a key.
         @return: True if d[key] has effective value, False otherwise
     """
@@ -9605,3 +9631,284 @@ def hasKeyValue(d=None, key=None):
         return d[key] is not None
 
     return False
+
+
+def extractPeakAssignment(numOfDim: int, string: str, segIdSet: Set[str], compIdSet: Set[str], altCompIdSet: Set[str],
+                          aa: bool, dna: bool, rna: bool, nefT) -> Optional[List[dict]]:
+    """ Extract peak assignment from a given string.
+    """
+
+    if numOfDim not in (2, 3, 4):
+        return None
+
+    _str = PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', string.upper()).split()
+    lenStr = len(_str)
+
+    segIdLike, resIdLike, resNameLike, atomNameLike, _atomNameLike, __atomNameLike, ___atomNameLike =\
+        [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr
+
+    segIdSpan, resIdSpan, resNameSpan, atomNameSpan, _atomNameSpan, __atomNameSpan, ___atomNameSpan =\
+        [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr
+
+    aaOnly = aa and not dna and not rna
+    if aaOnly:
+        oneLetterCodeSet = [getOneLetterCode(compId) for compId in compIdSet]
+
+    for idx, term in enumerate(_str):
+        for segId in segIdSet:
+            if term.startsWith(segId):
+                segIdLike[idx] = True
+                segIdSpan[idx] = (0, len(segId))
+                break
+
+        resIdTest = PEAK_ASSIGNMENT_RESID_PAT.search(term)
+        if resIdTest:
+            resIdLike[idx] = True
+            resIdSpan[idx] = resIdTest.span()
+
+        for compId in compIdSet:
+            if compId in term:
+                resNameLike[idx] = True
+                index = term.index(compId)
+                resNameSpan[idx] = (index, index + len(compId))
+                break
+        if not resNameLike[idx]:
+            for compId in altCompIdSet:
+                if compId in term:
+                    resNameLike[idx] = True
+                    index = term.index(compId)
+                    resNameSpan[idx] = (index, index + len(compId))
+                    break
+        if not resNameLike[idx] and aaOnly:
+            for compId in oneLetterCodeSet:
+                if compId in term:
+                    resNameLike[idx] = True
+                    index = term.index(compId)
+                    resNameSpan[idx] = (index, index + len(compId))
+                    break
+
+        for elem in PEAK_HALF_SPIN_NUCLEUS:
+            if len(elem) == 1:
+                if elem in term:
+                    index = term.rindex(elem)
+                    atomId = term[index:len(term)]
+                    if resNameSpan[idx]:
+                        compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                        if len(compId) == 1 and aaOnly:
+                            compId = next(k for k, v in monDict3.items() if v == compId)
+                            _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                atomNameLike[idx] = True
+                                atomNameSpan[idx] = (index, len(term))
+                                break
+                    else:
+                        for compId in compIdSet:
+                            _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                atomNameLike[idx] = True
+                                atomNameSpan[idx] = (index, len(term))
+                                break
+                        if atomNameLike[idx]:
+                            break
+
+        if atomNameLike[idx]:
+            _term = term[0:atomNameSpan[idx][0]]
+            for elem in PEAK_HALF_SPIN_NUCLEUS:
+                if len(elem) == 1:
+                    if elem in _term:
+                        index = _term.rindex(elem)
+                        atomId = _term[index:len(_term)]
+                        if resNameSpan[idx]:
+                            compId = _term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                            if len(compId) == 1 and aaOnly:
+                                compId = next(k for k, v in monDict3.items() if v == compId)
+                                _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    _atomNameLike[idx] = True
+                                    _atomNameSpan[idx] = (index, len(_term))
+                                    break
+                        else:
+                            for compId in compIdSet:
+                                _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    _atomNameLike[idx] = True
+                                    _atomNameSpan[idx] = (index, len(_term))
+                                    break
+                            if _atomNameLike[idx]:
+                                break
+
+        if numOfDim >= 3 and _atomNameLike[idx]:
+            __term = term[0:_atomNameSpan[idx][0]]
+            for elem in PEAK_HALF_SPIN_NUCLEUS:
+                if len(elem) == 1:
+                    if elem in __term:
+                        index = __term.rindex(elem)
+                        atomId = __term[index:len(__term)]
+                        if resNameSpan[idx]:
+                            compId = __term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                            if len(compId) == 1 and aaOnly:
+                                compId = next(k for k, v in monDict3.items() if v == compId)
+                                _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    __atomNameLike[idx] = True
+                                    __atomNameSpan[idx] = (index, len(__term))
+                                    break
+                        else:
+                            for compId in compIdSet:
+                                _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    __atomNameLike[idx] = True
+                                    __atomNameSpan[idx] = (index, len(__term))
+                                    break
+                            if __atomNameLike[idx]:
+                                break
+
+        if numOfDim >= 4 and __atomNameLike[idx]:
+            ___term = term[0:__atomNameSpan[idx][0]]
+            for elem in PEAK_HALF_SPIN_NUCLEUS:
+                if len(elem) == 1:
+                    if elem in ___term:
+                        index = ___term.rindex(elem)
+                        atomId = ___term[index:len(___term)]
+                        if resNameSpan[idx]:
+                            compId = ___term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                            if len(compId) == 1 and aaOnly:
+                                compId = next(k for k, v in monDict3.items() if v == compId)
+                                _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    ___atomNameLike[idx] = True
+                                    ___atomNameSpan[idx] = (index, len(___term))
+                                    break
+                        else:
+                            for compId in compIdSet:
+                                _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    ___atomNameLike[idx] = True
+                                    ___atomNameSpan[idx] = (index, len(___term))
+                                    break
+                            if ___atomNameLike[idx]:
+                                break
+
+    atomNameCount = 0
+    for idx in range(lenStr):
+        if atomNameLike[idx]:
+            atomNameCount += 1
+        if _atomNameLike[idx]:
+            atomNameCount += 1
+        if __atomNameLike[idx]:
+            atomNameCount += 1
+        if ___atomNameLike[idx]:
+            atomNameCount += 1
+
+    if atomNameCount < numOfDim:
+        return None
+
+    if atomNameCount > numOfDim:
+        atomNameCount = 0
+        ignoreBefore = False
+        for idx in range(lenStr - 1, 0, -1):
+            if ignoreBefore:
+                atomNameLike[idx] = _atomNameLike[idx] = __atomNameLike[idx] = ___atomNameLike[idx] = False
+            else:
+                if atomNameLike[idx]:
+                    atomNameCount += 1
+                if _atomNameLike[idx]:
+                    atomNameCount += 1
+                if __atomNameLike[idx]:
+                    atomNameCount += 1
+                if ___atomNameLike[idx]:
+                    atomNameCount += 1
+                if atomNameCount >= numOfDim:
+                    ignoreBefore = True
+
+    for idx in range(lenStr):
+        if ___atomNameLike[idx]:
+            if resNameLike[idx]:
+                if resNameSpan[idx][1] > ___atomNameSpan[idx][0]:
+                    resNameLike[idx] = False
+            if resIdLike[idx]:
+                if resNameSpan[idx][1] > ___atomNameSpan[idx][0]:
+                    resIdLike[idx] = False
+            if segIdLike[idx]:
+                if segIdSpan[idx][1] > ___atomNameSpan[idx][0]:
+                    segIdLike[idx] = False
+
+        elif __atomNameLike[idx]:
+            if resNameLike[idx]:
+                if resNameSpan[idx][1] > __atomNameSpan[idx][0]:
+                    resNameLike[idx] = False
+            if resIdLike[idx]:
+                if resNameSpan[idx][1] > __atomNameSpan[idx][0]:
+                    resIdLike[idx] = False
+            if segIdLike[idx]:
+                if segIdSpan[idx][1] > __atomNameSpan[idx][0]:
+                    segIdLike[idx] = False
+
+        elif _atomNameLike[idx]:
+            if resNameLike[idx]:
+                if resNameSpan[idx][1] > _atomNameSpan[idx][0]:
+                    resNameLike[idx] = False
+            if resIdLike[idx]:
+                if resNameSpan[idx][1] > _atomNameSpan[idx][0]:
+                    resIdLike[idx] = False
+            if segIdLike[idx]:
+                if segIdSpan[idx][1] > _atomNameSpan[idx][0]:
+                    segIdLike[idx] = False
+
+        elif atomNameLike[idx]:
+            if resNameLike[idx]:
+                if resNameSpan[idx][1] > atomNameSpan[idx][0]:
+                    resNameLike[idx] = False
+            if resIdLike[idx]:
+                if resNameSpan[idx][1] > atomNameSpan[idx][0]:
+                    resIdLike[idx] = False
+            if segIdLike[idx]:
+                if segIdSpan[idx][1] > atomNameSpan[idx][0]:
+                    segIdLike[idx] = False
+
+        if resNameLike[idx]:
+            if segIdLike[idx]:
+                if segIdSpan[idx][1] > resNameSpan[idx][0]:
+                    segIdLike[idx] = False
+
+    resIdCount = 0
+    for idx in range(lenStr):
+        if resIdLike[idx]:
+            resIdCount += 1
+
+    if resIdCount == 0:
+        return None
+
+    ret = []
+
+    segId = resId = resName = atomName = None
+    dimId = 0
+    for idx, term in enumerate(_str):
+        if segIdLike[idx]:
+            segId = term[segIdSpan[idx][0]:segIdSpan[idx][1]]
+        if resIdLike[idx]:
+            resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
+        if resNameLike[idx]:
+            resName = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+            if len(resName) == 1 and aaOnly:
+                resName = next(k for k, v in monDict3.items() if v == resName)
+        if resId is None:
+            return None
+        if ___atomNameLike[idx]:
+            atomName = term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]]
+            dimId += 1
+            ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+        if __atomNameLike[idx]:
+            atomName = term[__atomNameSpan[idx][0]:__atomNameSpan[idx][1]]
+            dimId += 1
+            ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+        if _atomNameLike[idx]:
+            atomName = term[_atomNameSpan[idx][0]:_atomNameSpan[idx][1]]
+            dimId += 1
+            ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+        if atomNameLike[idx]:
+            atomName = term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]
+            dimId += 1
+            ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+
+    return ret if len(ret) == numOfDim else None

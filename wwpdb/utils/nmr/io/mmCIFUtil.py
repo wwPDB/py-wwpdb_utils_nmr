@@ -22,7 +22,7 @@ from mmcif.io.PdbxReader import PdbxReader
 from mmcif.io.PdbxWriter import PdbxWriter
 
 
-def get_ext_block_name(name, ext=1):
+def get_ext_block_name(name: str, ext=1) -> str:
     """ Return unique block name avoiding duplication
     """
     return name if ext == 1 else f'{name}_{ext}'

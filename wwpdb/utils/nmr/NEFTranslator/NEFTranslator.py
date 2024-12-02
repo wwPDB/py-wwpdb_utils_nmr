@@ -120,6 +120,7 @@ import collections
 
 from packaging import version
 from operator import itemgetter
+from typing import List
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
@@ -473,7 +474,7 @@ altRdcConstraintType = {'nef': {'RDC': 'measured',
                         }
 
 
-def get_first_sf_tag(sf=None, tag=None):
+def get_first_sf_tag(sf=None, tag=None) -> str:
     """ Return the first value of a given saveframe tag.
         @return: The first tag value, empty string otherwise.
     """
@@ -489,7 +490,7 @@ def get_first_sf_tag(sf=None, tag=None):
     return array[0] if array[0] is not None else ''
 
 
-def get_idx_msg(idx_tag_ids, tags, row):
+def get_idx_msg(idx_tag_ids: List[int], tags: List[str], row) -> str:
     """ Return description about current index.
         @author: Masashi Yokochi
         @return: description
@@ -511,7 +512,7 @@ def get_idx_msg(idx_tag_ids, tags, row):
         return ''
 
 
-def is_empty_loop(star_data, lp_category):
+def is_empty_loop(star_data, lp_category: str) -> bool:
     """ Return whether one of specified loops is empty loop.
         @return: True for empty loop exists, False otherwise
     """
@@ -529,7 +530,7 @@ def is_empty_loop(star_data, lp_category):
     return len(star_data) == 0
 
 
-def count_non_empty_loops(star_data, lp_category):
+def count_non_empty_loops(star_data, lp_category: str) -> int:
     """ Return the number of non-empty loops.
         @return: the number of non-empty loops.
     """
@@ -547,7 +548,7 @@ def count_non_empty_loops(star_data, lp_category):
     return 0 if len(star_data) == 0 else 1
 
 
-def get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category):
+def get_sf_tag_values_with_empty_loop(star_data, lp_category: str, sf_category: str) -> List[str]:
     """ Return list of saveframe tag values with empty loop.
         @return: list of saveframe tag values
     """
@@ -564,7 +565,7 @@ def get_sf_tag_values_with_empty_loop(star_data, lp_category, sf_category):
     return sf_framecodes
 
 
-def is_empty(array):
+def is_empty(array: list) -> bool:
     """ Return whether the array contains empty data.
         @author: Masashi Yokochi
         @return: True for empty data in the array, False otherwise
@@ -573,7 +574,7 @@ def is_empty(array):
     return any(d in emptyValue for d in array)
 
 
-def is_data(array):
+def is_data(array: list) -> bool:
     """ Return whether the array consists of no empty data.
         @author: Masashi Yokochi
         @return: True for no empty data in the array, False for empty data
@@ -582,7 +583,7 @@ def is_data(array):
     return not any(d in emptyValue for d in array)
 
 
-def is_good_data(array):
+def is_good_data(array: list) -> bool:
     """ Return whether the array consists of good pattern data (neither empty nor bad pattern).
         @author: Masashi Yokochi
         @return: True for good data in the array, False otherwise

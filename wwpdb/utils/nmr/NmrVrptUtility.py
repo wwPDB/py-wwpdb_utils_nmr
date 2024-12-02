@@ -25,6 +25,7 @@ import copy
 import numpy as np
 
 from operator import itemgetter
+from typing import Any, List, Tuple, Optional
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
@@ -77,7 +78,7 @@ ANGLE_ERROR_MAX = ANGLE_RESTRAINT_ERROR['max_exclusive']
 RDC_ERROR_MAX = RDC_RESTRAINT_ERROR['max_exclusive']
 
 
-def uncompress_gzip_file(inPath, outPath):
+def uncompress_gzip_file(inPath: str, outPath: str):
     """ Uncompress a given gzip file.
     """
 
@@ -86,7 +87,7 @@ def uncompress_gzip_file(inPath, outPath):
             ofh.write(line)
 
 
-def compress_as_gzip_file(inPath, outPath):
+def compress_as_gzip_file(inPath: str, outPath: str):
     """ Compress a given file as a gzip file.
     """
 
@@ -95,7 +96,7 @@ def compress_as_gzip_file(inPath, outPath):
             ofh.write(line)
 
 
-def load_from_pickle(file_name, default=None):
+def load_from_pickle(file_name: str, default=None) -> Any:
     """ Load object from pickle file.
     """
 
@@ -108,7 +109,7 @@ def load_from_pickle(file_name, default=None):
     return default
 
 
-def write_as_pickle(obj, file_name):
+def write_as_pickle(obj: Any, file_name: str):
     """ Write a given object as pickle file.
     """
 
@@ -118,28 +119,28 @@ def write_as_pickle(obj, file_name):
             pickle.dump(obj, ofh)
 
 
-def to_np_array(a):
+def to_np_array(a: dict) -> list:
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
     """
 
     return np.asarray([a['x'], a['y'], a['z']], dtype=float)
 
 
-def distance(p0, p1):
+def distance(p0: list, p1: list) -> float:
     """ Return distance between two points.
     """
 
     return np.linalg.norm(p0 - p1)
 
 
-def to_unit_vector(a):
+def to_unit_vector(a: list) -> list:
     """ Return unit vector of a given vector.
     """
 
     return a / np.linalg.norm(a)
 
 
-def dihedral_angle(p0, p1, p2, p3):
+def dihedral_angle(p0: list, p1: list, p2: list, p3: list) -> float:
     """ Return dihedral angle from a series of four points.
     """
 
@@ -167,7 +168,7 @@ def dihedral_angle(p0, p1, p2, p3):
     return np.degrees(np.arctan2(y, x))
 
 
-def dist_inv_6_summed(r_list: [float]) -> float:
+def dist_inv_6_summed(r_list: List[float]) -> float:
     """ Return r^−6-summed distance for a given list of distances for ambiguous restraints as recommended by NMR VTF.
         Reference:
           Calculation of Protein Structures with Ambiguous Distance Restraints. Automated Assignment of
@@ -185,9 +186,10 @@ def dist_inv_6_summed(r_list: [float]) -> float:
     return sum(r ** (-6.0) for r in r_list) ** (-1.0 / 6.0)
 
 
-def dist_target_values(target_value, target_value_uncertainty,
-                       lower_limit, upper_limit,
-                       lower_linear_limit, upper_linear_limit):
+def dist_target_values(target_value: Optional[float], target_value_uncertainty: Optional[float],
+                       lower_limit: Optional[float], upper_limit: Optional[float],
+                       lower_linear_limit: Optional[float], upper_linear_limit: Optional[float]
+                       ) -> Tuple[Optional[float], Optional[float], Optional[float]]:
     """ Return estimated distance target value, lower_bound, upper_bound.
         @author: Masashi Yokochi
     """
@@ -225,7 +227,7 @@ def dist_target_values(target_value, target_value_uncertainty,
     return target_value, lower_bound, upper_bound
 
 
-def dist_error(lower_bound, upper_bound, dist):
+def dist_error(lower_bound: Optional[float], upper_bound: Optional[float], dist: Optional[float]) -> float:
     """ Return distance outlier for given lower_bound and upper_bound.
         @author: Masashi Yokochi
     """
@@ -259,9 +261,10 @@ def dist_error(lower_bound, upper_bound, dist):
     return error
 
 
-def angle_target_values(target_value, target_value_uncertainty,
-                        lower_limit, upper_limit,
-                        lower_linear_limit, upper_linear_limit):
+def angle_target_values(target_value: Optional[float], target_value_uncertainty: Optional[float],
+                        lower_limit: Optional[float], upper_limit: Optional[float],
+                        lower_linear_limit: Optional[float], upper_linear_limit: Optional[float]
+                        ) -> Tuple[Optional[float], Optional[float], Optional[float]]:
     """ Return estimated angle target value, lower_bound, upper_bound.
         @author: Masashi Yokochi
         @note: support for the case target_value is not set, but upper/lower_limit and upper/lower_linear_limit are set
@@ -335,7 +338,7 @@ def angle_target_values(target_value, target_value_uncertainty,
     return target_value, lower_bound, upper_bound
 
 
-def angle_diff(x, y):
+def angle_diff(x: float, y: float) -> float:
     """ Return normalized angular difference.
         @author: Kumaran Baskaran
         @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.angle_diff.ac
@@ -354,7 +357,7 @@ def angle_diff(x, y):
     return d
 
 
-def angle_error(lower_bound, upper_bound, target_value, angle):
+def angle_error(lower_bound: Optional[float], upper_bound: Optional[float], target_value: Optional[float], angle: float) -> float:
     """ Return angle outlier for given lower_bound, upper_bound, and target_value.
         @author: Kumaran Baskaran
         @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.angle_diff
@@ -385,9 +388,11 @@ def angle_error(lower_bound, upper_bound, target_value, angle):
     return min(angle_diff(upper_bound, angle), angle_diff(lower_bound, angle))
 
 
-def rdc_target_values(target_value, target_value_uncertainty, value, value_uncertainty,
-                      lower_limit, upper_limit,
-                      lower_linear_limit, upper_linear_limit):
+def rdc_target_values(target_value: Optional[float], target_value_uncertainty: Optional[float],
+                      value: Optional[float], value_uncertainty: Optional[float],
+                      lower_limit: Optional[float], upper_limit: Optional[float],
+                      lower_linear_limit: Optional[float], upper_linear_limit: Optional[float]
+                      ) -> Tuple[Optional[float], Optional[float], Optional[float]]:
     """ Return estimated RDC target value, lower_bound, upper_bound.
         @author: Masashi Yokochi
     """
@@ -428,7 +433,7 @@ def rdc_target_values(target_value, target_value_uncertainty, value, value_uncer
     return target_value, lower_bound, upper_bound
 
 
-def rdc_error(lower_bound, upper_bound, rdc):
+def rdc_error(lower_bound: Optional[float], upper_bound: Optional[float], rdc: float) -> float:
     """ Return RDC outlier for given lower_bound and upper_bound.
         @author: Masashi Yokochi
     """
@@ -462,11 +467,14 @@ def rdc_error(lower_bound, upper_bound, rdc):
     return error
 
 
-def get_violated_model_ids(viol_per_model):
+def get_violated_model_ids(viol_per_model: List[dict]) -> List[int]:
     return [m for m, err in viol_per_model.items() if err is not None and err > 0.0]
 
 
-def get_violation_statistics_for_each_bin(beg_err_bin, end_err_bin, total_models, eff_model_ids, viol_dict):
+def get_violation_statistics_for_each_bin(beg_err_bin: Optional[float], end_err_bin: Optional[float],
+                                          total_models: int, eff_model_ids: List[int], viol_dict: dict
+                                          ) -> Tuple[Optional[float], Optional[float], Optional[int],
+                                                     Optional[float], Optional[float], Optional[int], Optional[float]]:
     viol_stat_per_model = []
 
     all_err_list = []

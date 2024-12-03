@@ -646,7 +646,8 @@ NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
                           'ccr_dd_restraint': '_Cross_correlation_DD',
                           'fchiral_restraint': '_Floating_chirality',
                           'saxs_restraint': '_SAXS_constraint',
-                          'other_restraint': '_Other_data'
+                          'other_restraint': '_Other_data',
+                          'spectral_peak': '_Peak_row_format'
                           }
 
 NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
@@ -928,7 +929,8 @@ NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int
                                              {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID'},
                                              {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID', 'type': 'str'}
-                                             ]
+                                             ],
+                         'spectral_peak': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True}]
                          }
 
 NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
@@ -1385,14 +1387,6 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                              'range': ANGLE_RESTRAINT_RANGE,
                                              'group': {'member-with': ['Principal_Euler_angle_alpha_val', 'Principal_Euler_angle_beta_val'],
                                                        'coexist-with': None}},
-                                            {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
-                                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
-                                            {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
-                                            {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
-                                            {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
-                                            {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
-                                            {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
-                                            {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
                                             {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
                                             {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                             {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -1871,7 +1865,133 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                               {'name': 'Other_data_type_list_ID', 'type': 'pointer-index', 'mandatory': True,
                                                'default': '1', 'default-from': 'parent'},
                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
-                                              ]
+                                              ],
+                          'peak2d': [{'name': 'Position_1', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Position_2', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Volume', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Volume_uncertainty', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Height', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Height_uncertainty', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                      'default': '1', 'default-from': 'parent'},
+                                     {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                     ],
+                          'peak3d': [{'name': 'Position_1', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Position_2', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Position_3', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_3', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_3', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_3', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_3', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Volume', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Volume_uncertainty', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Height', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Height_uncertainty', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                      'default': '1', 'default-from': 'parent'},
+                                     {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                     ],
+                          'peak4d': [{'name': 'Position_1', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Position_2', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Position_3', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_3', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_3', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_3', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_3', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Position_4', 'type': 'float', 'mandatory': True},
+                                     {'name': 'Position_uncertainty_4', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_4', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Line_width_uncertainty_4', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Auth_asym_ID_4', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Auth_ambiguity_code_4', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES,
+                                      'enforce-enum': True},
+                                     {'name': 'Volume', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Volume_uncertainty', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Height', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Height_uncertainty', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                      'default': '1', 'default-from': 'parent'},
+                                     {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                     ]
                           }
 
 NMR_STAR_LP_DATA_ITEMS_INS_CODE = {'dist_restraint': copy.copy(NMR_STAR_LP_DATA_ITEMS['dist_restraint'][:-2]),
@@ -7078,6 +7198,32 @@ def getAuxLoops(mrSubtype: str):
         aux_lps.append(aux_lp)
 
     return aux_lps
+
+
+def getPkLoops(pkSubtype: str):
+    """ Return pynmrstart peak_row_format loops for a given internal peak subtype
+        @return: pynmrstar loop
+    """
+
+    contentSubtype = contentSubtypeOf(pkSubtype)
+
+    if contentSubtype is None:
+        return None
+
+    if contentSubtype in NMR_STAR_LP_CATEGORIES:
+        return None
+
+    prefix = NMR_STAR_LP_CATEGORIES[contentSubtype] + '.'
+
+    lp = pynmrstar.Loop.from_scratch()
+
+    tags = [prefix + item['name'] for item in NMR_STAR_LP_KEY_ITEMS[pkSubtype]]
+    tags.extend([prefix + item['name'] for item in NMR_STAR_LP_DATA_ITEMS[pkSubtype]])
+
+    for tag in tags:
+        lp.add_tag(tag)
+
+    return lp
 
 
 def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], offsetHolder: dict,

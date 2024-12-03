@@ -1866,7 +1866,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                                'default': '1', 'default-from': 'parent'},
                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                               ],
-                          'peak2d': [{'name': 'Position_1', 'type': 'float', 'mandatory': True},
+                          'peak2d': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                     {'name': 'Position_1', 'type': 'float', 'mandatory': True},
                                      {'name': 'Position_uncertainty_1', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_1', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_uncertainty_1', 'type': 'float', 'mandatory': False},
@@ -1897,7 +1898,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                       'default': '1', 'default-from': 'parent'},
                                      {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                      ],
-                          'peak3d': [{'name': 'Position_1', 'type': 'float', 'mandatory': True},
+                          'peak3d': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                     {'name': 'Position_1', 'type': 'float', 'mandatory': True},
                                      {'name': 'Position_uncertainty_1', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_1', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_uncertainty_1', 'type': 'float', 'mandatory': False},
@@ -1939,7 +1941,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                       'default': '1', 'default-from': 'parent'},
                                      {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                      ],
-                          'peak4d': [{'name': 'Position_1', 'type': 'float', 'mandatory': True},
+                          'peak4d': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                     {'name': 'Position_1', 'type': 'float', 'mandatory': True},
                                      {'name': 'Position_uncertainty_1', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_1', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_uncertainty_1', 'type': 'float', 'mandatory': False},
@@ -3422,6 +3425,9 @@ def translateToStdAtomNameOfDmpc(atomId: str, dmpcNameSystemId=-1) -> str:
 def translateToStdResName(compId: str, refCompId=None, ccU=None) -> str:
     """ Translate software specific residue name to standard residue name of CCD.
     """
+
+    if compId is None:
+        return None
 
     lenCompId = len(compId)
     lenRefCompId = 0 if refCompId is None else len(refCompId)
@@ -7200,8 +7206,8 @@ def getAuxLoops(mrSubtype: str):
     return aux_lps
 
 
-def getPkLoops(pkSubtype: str):
-    """ Return pynmrstart peak_row_format loops for a given internal peak subtype
+def getPkLoop(pkSubtype: str):
+    """ Return pynmrstart peak_row_format loop for a given internal peak subtype
         @return: pynmrstar loop
     """
 
@@ -7217,7 +7223,7 @@ def getPkLoops(pkSubtype: str):
 
     lp = pynmrstar.Loop.from_scratch()
 
-    tags = [prefix + item['name'] for item in NMR_STAR_LP_KEY_ITEMS[pkSubtype]]
+    tags = [prefix + item['name'] for item in NMR_STAR_LP_KEY_ITEMS[contentSubtype]]
     tags.extend([prefix + item['name'] for item in NMR_STAR_LP_DATA_ITEMS[pkSubtype]])
 
     for tag in tags:
@@ -7902,6 +7908,175 @@ def getRow(mrSubtype: str, id: int, indexId: int,
                     row[idx] = row[idx][0:first_digit + 1]
 
     return row
+
+
+def getPkRow(pkSubtype: str, id: int, indexId: int,
+             listId: int, entryId: str, dstFunc: dict,
+             authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], offsetHolder: dict,
+             atom1=None, atom2=None, atom3=None, atom4=None,
+             asis1=False, asis2=False, asis3=False, asis4=False,
+             ambig_code1=None, ambig_code2=None, ambig_code3=None, ambig_code4=None,
+             details=None) -> List[Any]:
+    """ Return row data for a given internal peak subtype.
+        @return: data array
+    """
+
+    contentSubtype = contentSubtypeOf(pkSubtype)
+
+    if contentSubtype is None:
+        return None
+
+    key_size = len(NMR_STAR_LP_KEY_ITEMS[contentSubtype])
+    data_size = len(NMR_STAR_LP_DATA_ITEMS[pkSubtype])
+
+    row = [None] * (key_size + data_size)
+
+    row[0] = id
+
+    star_atom1, star_atom2, star_atom3, star_atom4 = None, None, None, None
+
+    if atom1 is not None:
+        if 'asis' in atom1:
+            asis1 = True
+        star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, atom2, asis=asis1)
+        if star_atom1 is None:
+            star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, asis=asis1)
+        atom1['atom_id'] = atom1['auth_atom_id']
+
+    if atom2 is not None:
+        if 'asis' in atom2:
+            asis2 = True
+        star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, atom1, asis=asis2)
+        if star_atom2 is None:
+            star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, asis=asis2)
+        atom2['atom_id'] = atom2['auth_atom_id']
+
+    if atom3 is not None:
+        if 'asis' in atom3:
+            asis3 = True
+        star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, atom1, asis=asis3)
+        if star_atom3 is None:
+            star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, asis=asis3)
+        atom3['atom_id'] = atom3['auth_atom_id']
+
+    if atom4 is not None:
+        if 'asis' in atom4:
+            asis4 = True
+        star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, atom1, asis=asis4)
+        if star_atom4 is None:
+            star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, asis=asis4)
+        atom4['atom_id'] = atom4['auth_atom_id']
+
+    row[key_size] = indexId
+
+    _key_size = key_size
+
+    row[_key_size + 1] = dstFunc['position_1']
+    if hasKeyValue(dstFunc, 'position_uncertainty_1'):
+        row[_key_size + 2] = dstFunc['position_uncertainty_1']
+    if hasKeyValue(dstFunc, 'line_width_1'):
+        row[_key_size + 3] = dstFunc['line_width_1']
+    if hasKeyValue(dstFunc, 'line_width_uncertainty_1'):
+        row[_key_size + 4] = dstFunc['line_width_uncertainty_1']
+    if atom1 is not None:
+        row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if ambig_code1 is not None:
+            row[_key_size + 9] = ambig_code1
+
+    _key_size += 9
+
+    row[_key_size + 1] = dstFunc['position_2']
+    if hasKeyValue(dstFunc, 'position_uncertainty_2'):
+        row[_key_size + 2] = dstFunc['position_uncertainty_2']
+    if hasKeyValue(dstFunc, 'line_width_2'):
+        row[_key_size + 3] = dstFunc['line_width_2']
+    if hasKeyValue(dstFunc, 'line_width_uncertainty_2'):
+        row[_key_size + 4] = dstFunc['line_width_uncertainty_2']
+    if atom2 is not None:
+        row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+        if ambig_code2 is not None:
+            row[_key_size + 9] = ambig_code2
+
+    if pkSubtype in ('peak3d', 'peak4d'):
+
+        _key_size += 9
+
+        row[_key_size + 1] = dstFunc['position_3']
+        if hasKeyValue(dstFunc, 'position_uncertainty_3'):
+            row[_key_size + 2] = dstFunc['position_uncertainty_3']
+        if hasKeyValue(dstFunc, 'line_width_3'):
+            row[_key_size + 3] = dstFunc['line_width_3']
+        if hasKeyValue(dstFunc, 'line_width_uncertainty_3'):
+            row[_key_size + 4] = dstFunc['line_width_uncertainty_3']
+        if atom3 is not None:
+            row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
+                atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
+            if ambig_code3 is not None:
+                row[_key_size + 9] = ambig_code3
+
+    if pkSubtype == 'peak4d':
+
+        _key_size += 9
+
+        row[_key_size + 1] = dstFunc['position_4']
+        if hasKeyValue(dstFunc, 'position_uncertainty_4'):
+            row[_key_size + 2] = dstFunc['position_uncertainty_4']
+        if hasKeyValue(dstFunc, 'line_width_4'):
+            row[_key_size + 3] = dstFunc['line_width_4']
+        if hasKeyValue(dstFunc, 'line_width_uncertainty_4'):
+            row[_key_size + 4] = dstFunc['line_width_uncertainty_4']
+        if atom4 is not None:
+            row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
+                atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
+            if ambig_code4 is not None:
+                row[_key_size + 9] = ambig_code4
+
+    if hasKeyValue(dstFunc, 'volume'):
+        row[-7] = dstFunc['volume']
+    if hasKeyValue(dstFunc, 'volume_uncertainty'):
+        row[-6] = dstFunc['volume_uncertainty']
+    if hasKeyValue(dstFunc, 'height'):
+        row[-5] = dstFunc['height']
+    if hasKeyValue(dstFunc, 'height_uncertainty'):
+        row[-4] = dstFunc['height_uncertainty']
+    if details is not None:
+        row[-3] = details
+    row[-2] = listId
+    row[-1] = entryId
+
+    return row
+
+
+def getMaxEffDigits(str_list: List[str]) -> int:
+    """ Return maximum effective precision of float strings.
+    """
+
+    max_eff_digits = 0
+    for val in str_list:
+        if '.' in val:
+            period = val.index('.')
+            last = len(val) - 1
+            while val[last] == '0':
+                last -= 1
+            eff_digits = last - period
+            if eff_digits > 0 and eff_digits > max_eff_digits:
+                max_eff_digits = eff_digits
+    return max_eff_digits
+
+
+def roundString(string: str, max_eff_digits: int) -> str:
+    """ Return rounded float string for a given maximum effective precision.
+    """
+
+    if '.' in string:
+        first_digit = string.index('.') + 1
+        eff_digits = len(string) - first_digit
+        if 0 < max_eff_digits < eff_digits:
+            return string[0:first_digit + max_eff_digits]
+        return string[0:first_digit + 1]
+    return string
 
 
 def resetCombinationId(mrSubtype: str, row: List[Any]) -> List[Any]:
@@ -9802,7 +9977,7 @@ def extractPeakAssignment(numOfDim: int, string: str, segIdSet: Set[str], compId
 
     for idx, term in enumerate(_str):
         for segId in segIdSet:
-            if term.startsWith(segId):
+            if term.startswith(segId):
                 segIdLike[idx] = True
                 segIdSpan[idx] = (0, len(segId))
                 break
@@ -9838,7 +10013,7 @@ def extractPeakAssignment(numOfDim: int, string: str, segIdSet: Set[str], compId
                 if elem in term:
                     index = term.rindex(elem)
                     atomId = term[index:len(term)]
-                    if resNameSpan[idx]:
+                    if resNameLike[idx]:
                         compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                         if len(compId) == 1 and aaOnly:
                             compId = next(k for k, v in monDict3.items() if v == compId)
@@ -9847,15 +10022,14 @@ def extractPeakAssignment(numOfDim: int, string: str, segIdSet: Set[str], compId
                                 atomNameLike[idx] = True
                                 atomNameSpan[idx] = (index, len(term))
                                 break
-                    else:
-                        for compId in compIdSet:
-                            _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
-                            if details is None:
-                                atomNameLike[idx] = True
-                                atomNameSpan[idx] = (index, len(term))
-                                break
-                        if atomNameLike[idx]:
+                    for compId in compIdSet:
+                        _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                        if details is None:
+                            atomNameLike[idx] = True
+                            atomNameSpan[idx] = (index, len(term))
                             break
+                    if atomNameLike[idx]:
+                        break
 
         if atomNameLike[idx]:
             _term = term[0:atomNameSpan[idx][0]]
@@ -9864,7 +10038,7 @@ def extractPeakAssignment(numOfDim: int, string: str, segIdSet: Set[str], compId
                     if elem in _term:
                         index = _term.rindex(elem)
                         atomId = _term[index:len(_term)]
-                        if resNameSpan[idx]:
+                        if resNameLike[idx]:
                             compId = _term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                             if len(compId) == 1 and aaOnly:
                                 compId = next(k for k, v in monDict3.items() if v == compId)
@@ -9873,15 +10047,14 @@ def extractPeakAssignment(numOfDim: int, string: str, segIdSet: Set[str], compId
                                     _atomNameLike[idx] = True
                                     _atomNameSpan[idx] = (index, len(_term))
                                     break
-                        else:
-                            for compId in compIdSet:
-                                _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
-                                if details is None:
-                                    _atomNameLike[idx] = True
-                                    _atomNameSpan[idx] = (index, len(_term))
-                                    break
-                            if _atomNameLike[idx]:
+                        for compId in compIdSet:
+                            _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                _atomNameLike[idx] = True
+                                _atomNameSpan[idx] = (index, len(_term))
                                 break
+                        if _atomNameLike[idx]:
+                            break
 
         if numOfDim >= 3 and _atomNameLike[idx]:
             __term = term[0:_atomNameSpan[idx][0]]
@@ -9890,7 +10063,7 @@ def extractPeakAssignment(numOfDim: int, string: str, segIdSet: Set[str], compId
                     if elem in __term:
                         index = __term.rindex(elem)
                         atomId = __term[index:len(__term)]
-                        if resNameSpan[idx]:
+                        if resNameLike[idx]:
                             compId = __term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                             if len(compId) == 1 and aaOnly:
                                 compId = next(k for k, v in monDict3.items() if v == compId)
@@ -9899,15 +10072,14 @@ def extractPeakAssignment(numOfDim: int, string: str, segIdSet: Set[str], compId
                                     __atomNameLike[idx] = True
                                     __atomNameSpan[idx] = (index, len(__term))
                                     break
-                        else:
-                            for compId in compIdSet:
-                                _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
-                                if details is None:
-                                    __atomNameLike[idx] = True
-                                    __atomNameSpan[idx] = (index, len(__term))
-                                    break
-                            if __atomNameLike[idx]:
+                        for compId in compIdSet:
+                            _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                __atomNameLike[idx] = True
+                                __atomNameSpan[idx] = (index, len(__term))
                                 break
+                        if __atomNameLike[idx]:
+                            break
 
         if numOfDim >= 4 and __atomNameLike[idx]:
             ___term = term[0:__atomNameSpan[idx][0]]
@@ -9916,7 +10088,7 @@ def extractPeakAssignment(numOfDim: int, string: str, segIdSet: Set[str], compId
                     if elem in ___term:
                         index = ___term.rindex(elem)
                         atomId = ___term[index:len(___term)]
-                        if resNameSpan[idx]:
+                        if resNameLike[idx]:
                             compId = ___term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                             if len(compId) == 1 and aaOnly:
                                 compId = next(k for k, v in monDict3.items() if v == compId)
@@ -9925,15 +10097,14 @@ def extractPeakAssignment(numOfDim: int, string: str, segIdSet: Set[str], compId
                                     ___atomNameLike[idx] = True
                                     ___atomNameSpan[idx] = (index, len(___term))
                                     break
-                        else:
-                            for compId in compIdSet:
-                                _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
-                                if details is None:
-                                    ___atomNameLike[idx] = True
-                                    ___atomNameSpan[idx] = (index, len(___term))
-                                    break
-                            if ___atomNameLike[idx]:
+                        for compId in compIdSet:
+                            _, _, details = nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = True
+                                ___atomNameSpan[idx] = (index, len(___term))
                                 break
+                        if ___atomNameLike[idx]:
+                            break
 
     atomNameCount = 0
     for idx in range(lenStr):

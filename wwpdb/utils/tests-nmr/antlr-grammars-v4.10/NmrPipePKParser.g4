@@ -48,7 +48,7 @@ peak_list_2d:
 		X1 X3 Y1 Y3
 		Height DHeight Vol
 		Pchi2 Type Ass
-		ClustId Memcnt RETURN_VA
+		ClustId Memcnt Trouble? RETURN_VA
 	Format Format_code
 		Format_code Format_code
 		Format_code Format_code
@@ -58,7 +58,8 @@ peak_list_2d:
 		Format_code Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code
-		Format_code Format_code RETURN_FO
+		Format_code Format_code Format_code
+		Format_code Format_code Format_code? RETURN_FO
 	(Null_value Any_name_NV RETURN_NV)?
 	(Null_string Any_name_NS RETURN_NS)?
 	peak_2d+;
@@ -71,10 +72,10 @@ peak_2d:
 	number number
 	number number
 	number number
-	number number number number
+	Integer Integer Integer Integer
 	number number number
-	number Integer Simple_name
-	Integer Integer;
+	number Integer Any_name
+	Integer Integer Integer? RETURN;
 
 peak_list_3d:
 	Vars
@@ -88,7 +89,7 @@ peak_list_3d:
 		X1 X3 Y1 Y3 Z1 Z3
 		Height DHeight Vol
 		Pchi2 Type Ass
-		ClustId Memcnt RETURN_VA
+		ClustId Memcnt Trouble? RETURN_VA
 	Format Format_code
 		Format_code Format_code Format_code
 		Format_code Format_code Format_code
@@ -98,7 +99,8 @@ peak_list_3d:
 		Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code
-		Format_code Format_code RETURN_FO
+		Format_code Format_code Format_code
+		Format_code Format_code Format_code? RETURN_FO
 	(Null_value Any_name_NV RETURN_NV)?
 	(Null_string Any_name_NS RETURN_NS)?
 	peak_3d+;
@@ -111,10 +113,10 @@ peak_3d:
 	number number number
 	number number number
 	number number number
-	number number number number number number
+	Integer Integer Integer Integer Integer Integer
 	number number number
-	number Integer Simple_name
-	Integer Integer;
+	number Integer Any_name
+	Integer Integer Integer? RETURN;
 
 peak_list_4d:
 	Vars
@@ -128,7 +130,7 @@ peak_list_4d:
 		X1 X3 Y1 Y3 Z1 Z3 A1 A3
 		Height DHeight Vol
 		Pchi2 Type Ass
-		ClustId Memcnt RETURN_VA
+		ClustId Memcnt Trouble? RETURN_VA
 	Format Format_code
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code
@@ -138,7 +140,8 @@ peak_list_4d:
 		Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code Format_code Format_code Format_code Format_code Format_code
 		Format_code Format_code Format_code
-		Format_code Format_code RETURN_FO
+		Format_code Format_code Format_code
+		Format_code Format_code Format_code? RETURN_FO
 	(Null_value Any_name_NV RETURN_NV)?
 	(Null_string Any_name_NS RETURN_NS)?
 	peak_4d+;
@@ -151,11 +154,11 @@ peak_4d:
 	number number number number
 	number number number number
 	number number number number
-	number number number number number number number number
+	Integer Integer Integer Integer Integer Integer Integer Integer
 	number number number
-	number Integer Simple_name
-	Integer Integer;
+	number Integer Any_name
+	Integer Integer Integer? RETURN;
 
 /* number expression in peak list */
-number: Float | Real | Integer | Simple_name;
+number: Float | Real | Any_name;
 

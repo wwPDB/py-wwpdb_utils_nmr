@@ -73,12 +73,13 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         super().__init__(verbose, log, representativeModelId, representativeAltId,
                          mrAtomNameMapping, cR, caC, ccU, csStat, nefT, reasons)
 
-        self.file_type = 'nm-pea-view'
+        self.file_type = 'nm-pea-vie'
         self.software_name = 'NMRVIEW'
 
     # Enter a parse tree produced by NmrViewPKParser#nmrview_pk.
     def enterNmrview_pk(self, ctx: NmrViewPKParser.Nmrview_pkContext):  # pylint: disable=unused-argument
         self.num_of_dim = -1
+        self.acq_dim_id = 1
         self.spectral_dim = {}
         self.listIdInternal = {}
         self.chainNumberDict = {}
@@ -386,15 +387,44 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             if len(self.spectral_dim) > 0:
                 for d, v in self.spectral_dim.items():
-                    for _v in v.values():
+                    for _id, _v in v.items():
                         for __d, __v in _v.items():
                             if 'freq_hint' in __v:
+                                center = np.mean(np.array(__v['freq_hint']))
+
+                                if __v['spectral_region'] is None:
+                                    atom_type = __v['atom_type']
+                                    if 125 < center < 130 and atom_type == 'C':
+                                        __v['spectral_region'] = 'C_aro'
+                                    elif 115 < center < 125 and atom_type == 'N':
+                                        __v['spectral_region'] = 'N_ami'
+                                    elif 170 < center < 180 and atom_type == 'C':
+                                        __v['spectral_region'] = 'CO'
+                                    elif 6 < center < 9 and atom_type == 'H':
+                                        __v['spectral_region'] = 'H_ami_or_aro'
+                                    elif 4 < center < 6 and atom_type == 'H':
+                                        __v['spectral_region'] = 'H_all'
+                                    elif 60 < center < 90 and atom_type == 'C':
+                                        __v['spectral_region'] = 'C_all'
+                                    elif 30 < center < 50 and atom_type == 'C':
+                                        __v['spectral_region'] = 'C_ali'
+
                                 if len(__v['freq_hint']) > 0 and d > 2 and __d >= 2\
                                    and self.exptlMethod != 'SOLID-STATE NMR' and __v['atom_isotope_number'] == 13:
-                                    center = np.mean(np.array(__v['freq_hint']))
                                     if center < 100.0 and __v['sweep_width'] / __v['spectrometer_frequency'] < 50.0:
                                         __v['under_sampling_type'] = 'fold'
+
                                 del __v['freq_hint']
+
+                        for __v in _v.values():
+                            if __v['spectral_region'] == 'H_ami_or_aro':
+                                has_a = any(___v['spectral_region'] == 'C_aro' for ___v in _v.values())
+                                __v['spectral_region'] = 'H_aro' if has_a else 'H_ami'
+
+                        if self.debug:
+                            print(f'num_of_dim: {d}, list_id: {_id}')
+                            for __d, __v in _v.items():
+                                print(f'{__d} {__v}')
 
         finally:
             self.warningMessage = sorted(list(set(self.f)), key=self.f.index)
@@ -456,9 +486,12 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
                 isotope_number = cur_spectral_dim['atom_isotope_number']
 
-                cur_spectral_dim['acquisition'] = 'yes' if _dim_id == 1 and (isotope_number == 1
-                                                                             or (isotope_number == 13
-                                                                                 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
+                cur_spectral_dim['acquisition'] = 'yes' if _dim_id == self.acq_dim_id\
+                    and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
+
+                if _dim_id == 1 and cur_spectral_dim['acquisition'] == 'no':
+                    self.acq_dim_id = self.num_of_dim
+
                 cur_spectral_dim['under_sampling_type'] = 'not observed' if cur_spectral_dim['acquisition'] == 'yes' else 'aliased'
 
                 self.cur_spectral_dim[_dim_id] = cur_spectral_dim
@@ -527,8 +560,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         # J2 = str(ctx.ENCLOSE_DATA(4))[1:-1]
         # U2 = str(ctx.ENCLOSE_DATA(5))[1:-1]
 
-        vol = float(str(ctx.Float(6)))
-        _int = float(str(ctx.Float(7)))
+        vol = str(ctx.Float(6))
+        _int = str(ctx.Float(7))
         stat = int(str(ctx.Integer(1)))
         if ctx.ENCLOSE_DATA(6):
             comment = str(ctx.ENCLOSE_DATA(6))[1:-1]
@@ -551,7 +584,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             return
 
         dstFunc = self.validatePeak2D(index, P1, P2, B1, B2, W1, W2,
-                                      None, None, None, None, _int, None, vol)
+                                      None, None, None, None, _int, None, vol, None)
 
         if dstFunc is None:
             self.peaks2D -= 1
@@ -565,13 +598,16 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         has_assignments = False
 
         if L1 is not None and L2 is not None:
-            assignments = [None] * self.num_of_dim
-            assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
-            assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
+            assignments = [{}] * self.num_of_dim
+            try:
+                assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+                assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+            except Exception:
+                pass
 
-            if all(a is not None for a in assignments):
+            if all(len(a) > 0 for a in assignments):
 
                 self.retrieveLocalSeqScheme()
 
@@ -699,8 +735,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         # J3 = str(ctx.ENCLOSE_DATA(7))[1:-1]
         # U3 = str(ctx.ENCLOSE_DATA(8))[1:-1]
 
-        vol = float(str(ctx.Float(9)))
-        _int = float(str(ctx.Float(10)))
+        vol = str(ctx.Float(9))
+        _int = str(ctx.Float(10))
         stat = int(str(ctx.Integer(1)))
         if ctx.ENCLOSE_DATA(9):
             comment = str(ctx.ENCLOSE_DATA(9))[1:-1]
@@ -725,7 +761,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             return
 
         dstFunc = self.validatePeak3D(index, P1, P2, P3, B1, B2, B3, W1, W2, W3,
-                                      None, None, None, None, None, None, _int, None, vol)
+                                      None, None, None, None, None, None, _int, None, vol, None)
 
         if dstFunc is None:
             self.peaks3D -= 1
@@ -740,15 +776,18 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         has_assignments = False
 
         if L1 is not None and L2 is not None and L3 is not None:
-            assignments = [None] * self.num_of_dim
-            assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
-            assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
-            assignments[2] = extractPeakAssignment(1, L3, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
+            assignments = [{}] * self.num_of_dim
+            try:
+                assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+                assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+                assignments[2] = extractPeakAssignment(1, L3, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+            except Exception:
+                pass
 
-            if all(a is not None for a in assignments):
+            if all(len(a) > 0 for a in assignments):
 
                 self.retrieveLocalSeqScheme()
 
@@ -896,8 +935,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         # J4 = str(ctx.ENCLOSE_DATA(10))[1:-1]
         # U4 = str(ctx.ENCLOSE_DATA(11))[1:-1]
 
-        vol = float(str(ctx.Float(12)))
-        _int = float(str(ctx.Float(13)))
+        vol = str(ctx.Float(12))
+        _int = str(ctx.Float(13))
         stat = int(str(ctx.Integer(1)))
         if ctx.ENCLOSE_DATA(12):
             comment = str(ctx.ENCLOSE_DATA(12))[1:-1]
@@ -924,7 +963,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             return
 
         dstFunc = self.validatePeak4D(index, P1, P2, P3, P4, B1, B2, B3, B4, W1, W2, W3, W4,
-                                      None, None, None, None, None, None, None, None, _int, None, vol)
+                                      None, None, None, None, None, None, None, None, _int, None, vol, None)
 
         if dstFunc is None:
             self.peaks4D -= 1
@@ -940,17 +979,20 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         has_assignments = False
 
         if L1 is not None and L2 is not None and L3 is not None and L4 is not None:
-            assignments = [None] * self.num_of_dim
-            assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
-            assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
-            assignments[2] = extractPeakAssignment(1, L3, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
-            assignments[3] = extractPeakAssignment(1, L4, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
+            assignments = [{}] * self.num_of_dim
+            try:
+                assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+                assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+                assignments[2] = extractPeakAssignment(1, L3, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+                assignments[3] = extractPeakAssignment(1, L4, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+            except Exception:
+                pass
 
-            if all(a is not None for a in assignments):
+            if all(len(a) > 0 for a in assignments):
 
                 self.retrieveLocalSeqScheme()
 
@@ -1067,8 +1109,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         W2 = float(str(ctx.Float(4)))
         B2 = float(str(ctx.Float(5)))
 
-        vol = float(str(ctx.Float(6)))
-        _int = float(str(ctx.Float(7)))
+        vol = str(ctx.Float(6))
+        _int = str(ctx.Float(7))
         stat = int(str(ctx.Integer(1)))
         if ctx.ENCLOSE_DATA(2):
             comment = str(ctx.ENCLOSE_DATA(2))[1:-1]
@@ -1091,7 +1133,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             return
 
         dstFunc = self.validatePeak2D(index, P1, P2, B1, B2, W1, W2,
-                                      None, None, None, None, _int, None, vol)
+                                      None, None, None, None, _int, None, vol, None)
 
         if dstFunc is None:
             self.peaks2D -= 1
@@ -1105,13 +1147,16 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         has_assignments = False
 
         if L1 is not None and L2 is not None:
-            assignments = [None] * self.num_of_dim
-            assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
-            assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
+            assignments = [{}] * self.num_of_dim
+            try:
+                assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+                assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+            except Exception:
+                pass
 
-            if all(a is not None for a in assignments):
+            if all(len(a) > 0 for a in assignments):
 
                 self.retrieveLocalSeqScheme()
 
@@ -1210,8 +1255,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         W3 = float(str(ctx.Float(7)))
         B3 = float(str(ctx.Float(8)))
 
-        vol = float(str(ctx.Float(9)))
-        _int = float(str(ctx.Float(10)))
+        vol = str(ctx.Float(9))
+        _int = str(ctx.Float(10))
         stat = int(str(ctx.Integer(1)))
         if ctx.ENCLOSE_DATA(3):
             comment = str(ctx.ENCLOSE_DATA(3))[1:-1]
@@ -1236,7 +1281,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             return
 
         dstFunc = self.validatePeak3D(index, P1, P2, P3, B1, B2, B3, W1, W2, W3,
-                                      None, None, None, None, None, None, _int, None, vol)
+                                      None, None, None, None, None, None, _int, None, vol, None)
 
         if dstFunc is None:
             self.peaks3D -= 1
@@ -1251,15 +1296,18 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         has_assignments = False
 
         if L1 is not None and L2 is not None and L3 is not None:
-            assignments = [None] * self.num_of_dim
-            assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
-            assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
-            assignments[2] = extractPeakAssignment(1, L3, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
+            assignments = [{}] * self.num_of_dim
+            try:
+                assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+                assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+                assignments[2] = extractPeakAssignment(1, L3, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+            except Exception:
+                pass
 
-            if all(a is not None for a in assignments):
+            if all(len(a) > 0 for a in assignments):
 
                 self.retrieveLocalSeqScheme()
 
@@ -1375,8 +1423,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         W4 = float(str(ctx.Float(10)))
         B4 = float(str(ctx.Float(11)))
 
-        vol = float(str(ctx.Float(12)))
-        _int = float(str(ctx.Float(13)))
+        vol = str(ctx.Float(12))
+        _int = str(ctx.Float(13))
         stat = int(str(ctx.Integer(1)))
         if ctx.ENCLOSE_DATA(4):
             comment = str(ctx.ENCLOSE_DATA(4))[1:-1]
@@ -1403,7 +1451,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             return
 
         dstFunc = self.validatePeak4D(index, P1, P2, P3, P4, B1, B2, B3, B4, W1, W2, W3, W4,
-                                      None, None, None, None, None, None, None, None, _int, None, vol)
+                                      None, None, None, None, None, None, None, None, _int, None, vol, None)
 
         if dstFunc is None:
             self.peaks4D -= 1
@@ -1419,17 +1467,20 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         has_assignments = False
 
         if L1 is not None and L2 is not None and L3 is not None and L4 is not None:
-            assignments = [None] * self.num_of_dim
-            assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
-            assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
-            assignments[2] = extractPeakAssignment(1, L3, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
-            assignments[3] = extractPeakAssignment(1, L4, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                   self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
+            assignments = [{}] * self.num_of_dim
+            try:
+                assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+                assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+                assignments[2] = extractPeakAssignment(1, L3, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+                assignments[3] = extractPeakAssignment(1, L4, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
+                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
+            except Exception:
+                pass
 
-            if all(a is not None for a in assignments):
+            if all(len(a) > 0 for a in assignments):
 
                 self.retrieveLocalSeqScheme()
 

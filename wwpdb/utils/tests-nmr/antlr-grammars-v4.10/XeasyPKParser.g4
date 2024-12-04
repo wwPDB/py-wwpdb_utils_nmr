@@ -21,6 +21,7 @@ options { tokenVocab=XeasyPKLexer; }
 xeasy_pk:
 	(
 	dimension |
+	format |
 	iname |
 	cyana_format |
 	spectrum |
@@ -33,6 +34,9 @@ xeasy_pk:
 
 dimension:
 	Num_of_dim Integer_ND RETURN_ND;
+
+format:
+	Format Simple_name_FO RETURN_FO;
 
 iname:
 	Iname Integer_IN Simple_name_IN RETURN_IN;
@@ -54,7 +58,7 @@ peak_2d:
 	Float Float
 	Integer Simple_name
 	number number
-	Simple_name
+	Simple_name Integer
 	assign assign;
 
 peak_list_3d:
@@ -65,7 +69,7 @@ peak_3d:
 	Float Float Float
 	Integer Simple_name
 	number number
-	Simple_name
+	Simple_name Integer
 	assign assign assign;
 
 peak_list_4d:
@@ -76,12 +80,12 @@ peak_4d:
 	Float Float Float Float
 	Integer Simple_name
 	number number
-	Simple_name
+	Simple_name Integer
 	assign assign assign assign;
 
 /* number expression in peak list */
 number: Float | Real | Integer | Simple_name;
 
 /* assignment expression in peak list */
-assign: Integer | Simple_name Integer?;
+assign: Integer | (Simple_name Integer?);
 

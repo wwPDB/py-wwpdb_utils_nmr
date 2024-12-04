@@ -209,6 +209,7 @@ class BasePKParserListener():
 
     # spectral metadata
     num_of_dim = -1
+    acq_dim_id = 1
     spectral_dim = {}
 
     # whether to allow extended sequence temporary
@@ -223,6 +224,9 @@ class BasePKParserListener():
     # collection of number selection
     numberSelection = []
     originalNumberSelection = []
+
+    # collection of assignment (XEASY)
+    assignmentSelection = []
 
     f = None
     warningMessage = None
@@ -375,7 +379,8 @@ class BasePKParserListener():
                        lw_1: Optional[float], lw_2: Optional[float],
                        pos_hz_1: Optional[float], pos_hz_2: Optional[float],
                        lw_hz_1: Optional[float], lw_hz_2: Optional[float],
-                       height: Optional[str], height_uncertainty: Optional[str], volume: Optional[str]) -> Optional[dict]:
+                       height: Optional[str], height_uncertainty: Optional[str],
+                       volume: Optional[str], volume_uncertainty: Optional[str]) -> Optional[dict]:
 
         dstFunc = {'position_1': str(pos_1), 'position_2': str(pos_2)}
 
@@ -385,6 +390,8 @@ class BasePKParserListener():
             dstFunc['volume'] = volume
         if height_uncertainty is not None and float(height_uncertainty) != 0.0:
             dstFunc['height_uncertainty'] = height_uncertainty
+        if volume_uncertainty is not None and float(volume_uncertainty) != 0.0:
+            dstFunc['volume_uncertainty'] = volume_uncertainty
 
         if 'height' not in dstFunc and 'volume' not in dstFunc:
             self.f.append(f"[Missing data] {self.__getCurrentRestraint(n=index)}"
@@ -427,7 +434,8 @@ class BasePKParserListener():
                        lw_1: Optional[float], lw_2: Optional[float], lw_3: Optional[float],
                        pos_hz_1: Optional[float], pos_hz_2: Optional[float], pos_hz_3: Optional[float],
                        lw_hz_1: Optional[float], lw_hz_2: Optional[float], lw_hz_3: Optional[float],
-                       height: Optional[str], height_uncertainty: Optional[str], volume: Optional[str]) -> Optional[dict]:
+                       height: Optional[str], height_uncertainty: Optional[str],
+                       volume: Optional[str], volume_uncertainty: Optional[str]) -> Optional[dict]:
 
         dstFunc = {'position_1': str(pos_1), 'position_2': str(pos_2), 'position_3': str(pos_3)}
 
@@ -437,6 +445,8 @@ class BasePKParserListener():
             dstFunc['volume'] = volume
         if height_uncertainty is not None and float(height_uncertainty) != 0.0:
             dstFunc['height_uncertainty'] = height_uncertainty
+        if volume_uncertainty is not None and float(volume_uncertainty) != 0.0:
+            dstFunc['volume_uncertainty'] = volume_uncertainty
 
         if 'height' not in dstFunc and 'volume' not in dstFunc:
             self.f.append(f"[Missing data] {self.__getCurrentRestraint(n=index)}"
@@ -495,7 +505,8 @@ class BasePKParserListener():
                        lw_1: Optional[float], lw_2: Optional[float], lw_3: Optional[float], lw_4: Optional[float],
                        pos_hz_1: Optional[float], pos_hz_2: Optional[float], pos_hz_3: Optional[float], pos_hz_4: Optional[float],
                        lw_hz_1: Optional[float], lw_hz_2: Optional[float], lw_hz_3: Optional[float], lw_hz_4: Optional[float],
-                       height: Optional[str], height_uncertainty: Optional[str], volume: Optional[str]) -> Optional[dict]:
+                       height: Optional[str], height_uncertainty: Optional[str],
+                       volume: Optional[str], volume_uncertainty: Optional[str]) -> Optional[dict]:
 
         dstFunc = {'position_1': str(pos_1), 'position_2': str(pos_2), 'position_3': str(pos_3), 'position_4': str(pos_4)}
 
@@ -505,6 +516,8 @@ class BasePKParserListener():
             dstFunc['volume'] = volume
         if height_uncertainty is not None and float(height_uncertainty) != 0.0:
             dstFunc['height_uncertainty'] = height_uncertainty
+        if volume_uncertainty is not None and float(volume_uncertainty) != 0.0:
+            dstFunc['volume_uncertainty'] = volume_uncertainty
 
         if 'height' not in dstFunc and 'volume' not in dstFunc:
             self.f.append(f"[Missing data] {self.__getCurrentRestraint(n=index)}"

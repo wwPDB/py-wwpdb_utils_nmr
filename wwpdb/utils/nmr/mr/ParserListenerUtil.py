@@ -22,7 +22,7 @@ import numpy
 import pynmrstar
 
 from operator import itemgetter
-from typing import Any, List, Set, Tuple, Optional
+from typing import Any, List, IO, Set, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
@@ -41,7 +41,6 @@ try:
                                            assignPolymerSequence,
                                            getScoreOfSeqAlign,
                                            getOneLetterCode)
-    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
 except ImportError:
     from nmr.io.CifReader import SYMBOLS_ELEMENT
     from nmr.AlignUtil import (monDict3,
@@ -57,7 +56,6 @@ except ImportError:
                                assignPolymerSequence,
                                getScoreOfSeqAlign,
                                getOneLetterCode)
-    from nmr.ChemCompUtil import ChemCompUtil
 
 MAX_ERROR_REPORT = 1
 MAX_ERR_LINENUM_REPORT = 20
@@ -2144,7 +2142,9 @@ def stripQuot(string: str) -> str:
     return _string
 
 
-def translateToStdAtomName(atomId: str, refCompId=None, refAtomIdList=None, ccU=None, unambig=False) -> str:
+def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
+                           refAtomIdList: Optional[List[str]] = None,
+                           ccU=None, unambig: bool = False) -> str:
     """ Translate software specific atom nomenclature for standard residues to the CCD one.
     """
 
@@ -2879,7 +2879,7 @@ def translateToStdAtomName(atomId: str, refCompId=None, refAtomIdList=None, ccU=
     return atomId
 
 
-def translateToStdAtomNameOfDmpc(atomId: str, dmpcNameSystemId=-1) -> str:
+def translateToStdAtomNameOfDmpc(atomId: str, dmpcNameSystemId: int = -1) -> str:
     """ Translate software specific atom nomenclature for DMPC to CCD PX4.
     """
 
@@ -3422,7 +3422,7 @@ def translateToStdAtomNameOfDmpc(atomId: str, dmpcNameSystemId=-1) -> str:
     return atomId
 
 
-def translateToStdResName(compId: str, refCompId=None, ccU=None) -> str:
+def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None) -> str:
     """ Translate software specific residue name to standard residue name of CCD.
     """
 
@@ -3594,11 +3594,11 @@ def translateToLigandName(compId: str, refCompId: str, ccU) -> str:
     return compId
 
 
-def coordAssemblyChecker(verbose=True, log=sys.stdout,
-                         representativeModelId=REPRESENTATIVE_MODEL_ID,
-                         representativeAltId=REPRESENTATIVE_ALT_ID,
-                         cR=None, prevResult=None, nmrPolySeq=None,
-                         fullCheck=True) -> dict:
+def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
+                         representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                         representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                         cR=None, ccU=None, prevResult: dict = None,
+                         nmrPolySeq: Optional[list] = None, fullCheck: bool = True) -> dict:
     """ Check assembly of the coordinates for MR/PT parser listener.
     """
 
@@ -3749,7 +3749,6 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
 
             if nmrPolySeq is not None:
                 pA = PairwiseAlign()
-                ccU = ChemCompUtil()
                 seqAlign, _ = alignPolymerSequence(pA, polySeq, nmrPolySeq)
                 chainAssign, _ = assignPolymerSequence(pA, ccU, 'nmr-star', polySeq, nmrPolySeq, seqAlign)
 
@@ -5523,7 +5522,7 @@ def coordAssemblyChecker(verbose=True, log=sys.stdout,
             'split_ligand': splitLigand}
 
 
-def extendCoordChainsForExactNoes(modelChainIdExt,
+def extendCoordChainsForExactNoes(modelChainIdExt: dict,
                                   polySeq: List[dict], altPolySeq: List[dict],
                                   coordAtomSite: Optional[dict], coordUnobsRes: Optional[dict],
                                   authToLabelSeq: Optional[dict], authToStarSeq: Optional[dict],
@@ -5699,7 +5698,7 @@ def isIdenticalRestraint(atoms: List[dict], nefT=None) -> bool:
     return False
 
 
-def isLongRangeRestraint(atoms: List[dict], polySeq=None) -> bool:
+def isLongRangeRestraint(atoms: List[dict], polySeq: Optional[List[dict]] = None) -> bool:
     """ Return whether restraint is neither an intra residue nor sequential residue restraint.
     """
 
@@ -5860,7 +5859,7 @@ def guessCompIdFromAtomId(atomIds: List[str], polySeq: List[dict], nefT) -> List
     return list(candidates)
 
 
-def guessCompIdFromAtomIdWoLimit(atomIds: List[str], polySeq: List[dict], nefT, isPolySeq=True) -> List[str]:
+def guessCompIdFromAtomIdWoLimit(atomIds: List[str], polySeq: List[dict], nefT, isPolySeq: bool = True) -> List[str]:
     """ Try to find candidate comp_id that matches with a given atom_id.
     """
 
@@ -6000,9 +5999,11 @@ def isAmbigAtomSelection(atoms: List[dict], csStat) -> bool:
 
 
 def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohydrates: bool,
-                               atoms: List[dict], planeLike: bool, cR=None, ccU=None,
-                               representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
-                               modelNumName='PDB_model_num') -> Optional[str]:
+                               atoms: List[dict], planeLike: bool,
+                               cR=None, ccU=None,
+                               representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                               representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                               modelNumName: str = 'PDB_model_num') -> Optional[str]:
     """ Return type of dihedral angle restraint.
     """
 
@@ -6565,8 +6566,9 @@ def startsWithPdbRecord(line: str) -> bool:
 
 
 def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,
-                    representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
-                    modelNumName='PDB_model_num') -> bool:
+                    representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                    representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                    modelNumName: str = 'PDB_model_num') -> bool:
     """ Return whether a given chain is cyclic polymer based on coordinate annotation.
     """
 
@@ -6653,8 +6655,9 @@ def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,
 
 def isStructConn(cR, authAsymId1: str, authSeqId1: int, authAtomId1: str,
                  authAsymId2: str, authSeqId2: int, authAtomId2: str,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
-                 modelNumName='PDB_model_num') -> bool:
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 modelNumName: str = 'PDB_model_num') -> bool:
     """ Return whether a given atom pair is structurally connected.
     """
 
@@ -6751,8 +6754,10 @@ def isStructConn(cR, authAsymId1: str, authSeqId1: int, authAtomId1: str,
     return struct_conn[0]['conn_type_id'] not in emptyValue
 
 
-def getCoordBondLength(cR, asymId1: str, seqId1: int, atomId1: str, asymId2: str, seqId2: int, atomId2: str,
-                       representativeAltId=REPRESENTATIVE_ALT_ID, modelNumName='PDB_model_num', labelScheme=True) -> Optional[List[dict]]:
+def getCoordBondLength(cR, asymId1: str, seqId1: int, atomId1: str,
+                       asymId2: str, seqId2: int, atomId2: str,
+                       representativeAltId: int = REPRESENTATIVE_ALT_ID,
+                       modelNumName: str = 'PDB_model_num', labelScheme: bool = True) -> Optional[List[dict]]:
     """ Return the bond length of given two CIF atoms.
         @return: the bond length
     """
@@ -6849,7 +6854,7 @@ def getMetalCoordOf(cR, authSeqId: int, authCompId: str, metalId: str) -> Tuple[
     return None, None
 
 
-def getRestraintName(mrSubtype: str, title=False) -> str:
+def getRestraintName(mrSubtype: str, title: bool = False) -> str:
     """ Return human-readable restraint name for a given restraint subtype.
     """
 
@@ -6967,7 +6972,7 @@ def contentSubtypeOf(mrSubtype: str) -> str:
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
 
-def incListIdCounter(mrSubtype: str, listIdCounter: dict, reduced=True) -> dict:
+def incListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True) -> dict:
     """ Increment list id counter for a given internal restraint subtype (default)/content subtype (reduced=False).
     """
 
@@ -7009,7 +7014,7 @@ def incListIdCounter(mrSubtype: str, listIdCounter: dict, reduced=True) -> dict:
     return listIdCounter
 
 
-def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced=True) -> dict:
+def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True) -> dict:
     """ Decrement list id counter for a given internal restraint subtype (default)/content subtype (reduced=False).
     """
 
@@ -7051,9 +7056,11 @@ def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced=True) -> dict:
     return listIdCounter
 
 
-def getSaveframe(mrSubtype: str, sf_framecode: str, listId=None, entryId=None, fileName=None,
-                 constraintType=None, potentialType=None,
-                 rdcCode=None, alignCenter=None, cyanaParameter=None, reduced=True):
+def getSaveframe(mrSubtype: str, sf_framecode: str,
+                 listId: Optional[int] = None, entryId: Optional[str] = None, fileName: Optional[str] = None,
+                 constraintType: Optional[str] = None, potentialType: Optional[str] = None,
+                 rdcCode: Optional[str] = None, alignCenter: Optional[dict] = None,
+                 cyanaParameter: Optional[dict] = None, reduced: bool = True) -> Optional[pynmrstar.Saveframe]:
     """ Return pynmrstar saveframe for a given internal restraint subtype (default)/content subtype (reduced=False).
         @return: pynmrstar saveframe
     """
@@ -7142,7 +7149,7 @@ def getSaveframe(mrSubtype: str, sf_framecode: str, listId=None, entryId=None, f
     return sf
 
 
-def getLoop(mrSubtype: str, reduced=True, hasInsCode=False):
+def getLoop(mrSubtype: str, reduced: bool = True, hasInsCode: bool = False) -> Optional[pynmrstar.Loop]:
     """ Return pynmrstart loop for a given internal restraint subtype (default)/content subtype (reduced=False)..
         @return: pynmrstar loop
     """
@@ -7174,7 +7181,7 @@ def getLoop(mrSubtype: str, reduced=True, hasInsCode=False):
     return lp
 
 
-def getAuxLoops(mrSubtype: str):
+def getAuxLoops(mrSubtype: str) -> Optional[List[pynmrstar.Loop]]:
     """ Return pynmrstart auxiliary loops for a given internal restraint subtype.
         @return: pynmrstar loop
     """
@@ -7206,7 +7213,7 @@ def getAuxLoops(mrSubtype: str):
     return aux_lps
 
 
-def getPkLoop(pkSubtype: str):
+def getPkLoop(pkSubtype: str) -> Optional[pynmrstar.Loop]:
     """ Return pynmrstart peak_row_format loop for a given internal peak subtype
         @return: pynmrstar loop
     """
@@ -7233,7 +7240,7 @@ def getPkLoop(pkSubtype: str):
 
 
 def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], offsetHolder: dict,
-                atom: List[dict], aux_atom=None, asis=False) -> Optional[str]:
+                atom: List[dict], aux_atom: Optional[dict] = None, asis: bool = False) -> Optional[str]:
     """ Return NMR-STAR sequence including entity ID for a given auth atom of the cooridnates.
         @return: a dictionary of NMR-STAR sequence/entity, None otherwise
     """
@@ -7413,9 +7420,12 @@ def getInsCode(authToInsCode: Optional[dict], offsetHolder: dict, atom: List[dic
 def getRow(mrSubtype: str, id: int, indexId: int,
            combinationId: Optional[int], memberId: Optional[int], code: Optional[str],
            listId: int, entryId: str, dstFunc: dict,
-           authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], authToInsCode: Optional[dict], offsetHolder: dict,
-           atom1: dict, atom2=None, atom3=None, atom4=None, atom5=None,
-           asis1=False, asis2=False, asis3=False, asis4=False, asis5=False) -> List[Any]:
+           authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict],
+           authToInsCode: Optional[dict], offsetHolder: dict,
+           atom1: dict, atom2: Optional[dict] = None, atom3: Optional[dict] = None,
+           atom4: Optional[dict] = None, atom5: Optional[dict] = None,
+           asis1: bool = False, asis2: bool = False, asis3: bool = False,
+           asis4: bool = False, asis5: bool = False) -> Optional[List[Any]]:
     """ Return row data for a given internal restraint subtype.
         @return: data array
     """
@@ -7913,10 +7923,12 @@ def getRow(mrSubtype: str, id: int, indexId: int,
 def getPkRow(pkSubtype: str, id: int, indexId: int,
              listId: int, entryId: str, dstFunc: dict,
              authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], offsetHolder: dict,
-             atom1=None, atom2=None, atom3=None, atom4=None,
-             asis1=False, asis2=False, asis3=False, asis4=False,
-             ambig_code1=None, ambig_code2=None, ambig_code3=None, ambig_code4=None,
-             details=None) -> List[Any]:
+             atom1: Optional[dict] = None, atom2: Optional[dict] = None,
+             atom3: Optional[dict] = None, atom4: Optional[dict] = None,
+             asis1: bool = False, asis2: bool = False, asis3: bool = False, asis4: bool = False,
+             ambig_code1: Optional[int] = None, ambig_code2: Optional[int] = None,
+             ambig_code3: Optional[int] = None, ambig_code4: Optional[int] = None,
+             details: Optional[str] = None) -> Optional[List[Any]]:
     """ Return row data for a given internal peak subtype.
         @return: data array
     """
@@ -7941,7 +7953,8 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, atom2, asis=asis1)
         if star_atom1 is None:
             star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, asis=asis1)
-        atom1['atom_id'] = atom1['auth_atom_id']
+        if ambig_code1 is not None:
+            atom1['atom_id'] = atom1['auth_atom_id']
 
     if atom2 is not None:
         if 'asis' in atom2:
@@ -7949,7 +7962,8 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, atom1, asis=asis2)
         if star_atom2 is None:
             star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, asis=asis2)
-        atom2['atom_id'] = atom2['auth_atom_id']
+        if ambig_code2 is not None:
+            atom2['atom_id'] = atom2['auth_atom_id']
 
     if atom3 is not None:
         if 'asis' in atom3:
@@ -7957,7 +7971,8 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, atom1, asis=asis3)
         if star_atom3 is None:
             star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, asis=asis3)
-        atom3['atom_id'] = atom3['auth_atom_id']
+        if ambig_code3 is not None:
+            atom3['atom_id'] = atom3['auth_atom_id']
 
     if atom4 is not None:
         if 'asis' in atom4:
@@ -7965,7 +7980,8 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, atom1, asis=asis4)
         if star_atom4 is None:
             star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, asis=asis4)
-        atom4['atom_id'] = atom4['auth_atom_id']
+        if ambig_code4 is not None:
+            atom4['atom_id'] = atom4['auth_atom_id']
 
     row[key_size] = indexId
 
@@ -8049,12 +8065,12 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
     return row
 
 
-def getMaxEffDigits(str_list: List[str]) -> int:
+def getMaxEffDigits(vals: List[str]) -> int:
     """ Return maximum effective precision of float strings.
     """
 
     max_eff_digits = 0
-    for val in str_list:
+    for val in vals:
         if '.' in val:
             period = val.index('.')
             last = len(val) - 1
@@ -8066,15 +8082,15 @@ def getMaxEffDigits(str_list: List[str]) -> int:
     return max_eff_digits
 
 
-def roundString(string: str, max_eff_digits: int) -> str:
+def roundString(string: str, maxEffDigits: int) -> str:
     """ Return rounded float string for a given maximum effective precision.
     """
 
     if '.' in string:
         first_digit = string.index('.') + 1
         eff_digits = len(string) - first_digit
-        if 0 < max_eff_digits < eff_digits:
-            return string[0:first_digit + max_eff_digits]
+        if 0 < maxEffDigits < eff_digits:
+            return string[0:first_digit + maxEffDigits]
         return string[0:first_digit + 1]
     return string
 
@@ -8190,7 +8206,8 @@ def getDstFuncAsNoe() -> dict:
 
 def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optional[int], code: Optional[str],
                    listId: int, entryId: str, originalTagNames: List[str], originalRow: List[Any],
-                   authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], authToInsCode: Optional[dict], offsetHolder: dict,
+                   authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict],
+                   authToInsCode: Optional[dict], offsetHolder: dict,
                    atoms: List[dict], annotationMode: bool) -> List[Any]:
     """ Return row data for a given constraint subtype and corresponding NMR-STAR row.
         @return: data array
@@ -9182,7 +9199,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
     return row
 
 
-def getAuxRow(mrSubtype: str, catName: str, listId: int, entryId: str, inDict: dict) -> List[Any]:
+def getAuxRow(mrSubtype: str, catName: str, listId: int, entryId: str, inDict: dict) -> Optional[List[Any]]:
     """ Return aux row data for a given category.
         @return: data array
     """
@@ -9215,7 +9232,8 @@ def getAuxRow(mrSubtype: str, catName: str, listId: int, entryId: str, inDict: d
     return row
 
 
-def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId: str, seqId: int, compId: str, atomId: str
+def assignCoordPolymerSequenceWithChainId(caC: dict, nefT,
+                                          refChainId: str, seqId: int, compId: str, atomId: str
                                           ) -> Tuple[List[Tuple[str, int, str, bool]], str]:
     """ Assign polymer sequences of the coordinates.
         @return possible assignments to the coordinate, warning message (None for valid case)
@@ -9407,11 +9425,11 @@ def assignCoordPolymerSequenceWithChainId(caC, nefT, refChainId: str, seqId: int
     return list(chainAssign), warningMessage
 
 
-def selectCoordAtoms(cR, caC, nefT, chainAssign: List[Tuple[str, int, str, bool]],
+def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str, bool]],
                      authChainId: str, seqId: int, compId: str, atomId: str, authAtomId: str,
-                     allowAmbig=True, enableWarning=True, preferAuthAtomName=False,
-                     representativeModelId=REPRESENTATIVE_MODEL_ID, representativeAltId=REPRESENTATIVE_ALT_ID,
-                     modelNumName='PDB_model_num', offset=1) -> Tuple[List[dict], str]:
+                     allowAmbig: bool = True, enableWarning: bool = True, preferAuthAtomName: bool = False,
+                     representativeModelId: int = REPRESENTATIVE_MODEL_ID, representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                     modelNumName: str = 'PDB_model_num', offset: int = 1) -> Tuple[List[dict], str]:
     """ Select atoms of the coordinates.
         @return atom selection, warning mesage (None for valid case)
     """
@@ -9600,23 +9618,24 @@ def selectCoordAtoms(cR, caC, nefT, chainAssign: List[Tuple[str, int, str, bool]
     return atomSelection, warningMessage
 
 
-def getRealChainSeqId(ccU, polySeq: dict, seqId: int, compId=None) -> Tuple[str, int]:
+def getRealChainSeqId(ccU, ps: dict, seqId: int, compId: Optional[str] = None) -> Tuple[str, int]:
     """ Return effective sequence key according to polymer sequence of the coordinates.
         @return: sequence key
     """
 
     if compId is not None:
         compId = translateToStdResName(compId, ccU=ccU)
-    if seqId in polySeq['auth_seq_id']:
+    if seqId in ps['auth_seq_id']:
         if compId is None:
-            return polySeq['auth_chain_id'], seqId
-        idx = polySeq['auth_seq_id'].index(seqId)
-        if compId in (polySeq['comp_id'][idx], polySeq['auth_comp_id'][idx]):
-            return polySeq['auth_chain_id'], seqId
-    return polySeq['auth_chain_id'], seqId
+            return ps['auth_chain_id'], seqId
+        idx = ps['auth_seq_id'].index(seqId)
+        if compId in (ps['comp_id'][idx], ps['auth_comp_id'][idx]):
+            return ps['auth_chain_id'], seqId
+    return ps['auth_chain_id'], seqId
 
 
-def getCoordAtomSiteOf(caC, authChainId: str, chainId: str, seqId: int, compId=None, asis=True) -> Tuple[Tuple[str, int], dict]:
+def getCoordAtomSiteOf(caC: dict, authChainId: str, chainId: str, seqId: int,
+                       compId: Optional[str] = None, asis: bool = True) -> Tuple[Tuple[str, int], dict]:
     """ Return sequence key and its atom list of the coordinates.
         @return: sequence key, atom list in the sequence
     """
@@ -9650,8 +9669,8 @@ def getCoordAtomSiteOf(caC, authChainId: str, chainId: str, seqId: int, compId=N
     return seqKey, coordAtomSite
 
 
-def testCoordAtomIdConsistency(caC, ccU, authChainId: str, chainId: str, seqId: int, compId: str, atomId: str,
-                               seqKey: Tuple[str, int], coordAtomSite: Optional[dict], enableWarning=True) -> Optional[str]:
+def testCoordAtomIdConsistency(caC: dict, ccU, authChainId: str, chainId: str, seqId: int, compId: str, atomId: str,
+                               seqKey: Tuple[str, int], coordAtomSite: Optional[dict], enableWarning: bool = True) -> Optional[str]:
     """ Check existence of specified atom in the coordinates.
         @return: waring message (None for valid case)
     """
@@ -9728,7 +9747,7 @@ def testCoordAtomIdConsistency(caC, ccU, authChainId: str, chainId: str, seqId: 
     return None
 
 
-def getDistConstraintType(atomSelectionSet: List[List[dict]], dstFunc: dict, csStat, hint='.') -> Optional[str]:
+def getDistConstraintType(atomSelectionSet: List[List[dict]], dstFunc: dict, csStat, hint: str = '.') -> Optional[str]:
     """ Return distance constraint type for _Constraint_file.Constraint_type tag value.
         @return 'hydrogen bond', 'disulfide bond', etc., None for unclassified distance constraint
     """
@@ -9940,7 +9959,7 @@ def getPdbxNmrSoftwareName(name: str) -> str:
     return name  # 'ARIA', 'CHARMM', 'CNS', 'CYANA', 'DYNAMO', 'PALES', 'TALOS', 'GROMACS', 'SYBYL', 'XEASY'
 
 
-def hasKeyValue(d=None, key=None) -> bool:
+def hasKeyValue(d: Optional[dict] = None, key: Any = None) -> bool:
     """ Return whether a given dictionary has effective value for a key.
         @return: True if d[key] has effective value, False otherwise
     """
@@ -9959,7 +9978,7 @@ def extractPeakAssignment(numOfDim: int, string: str, segIdSet: Set[str], compId
     """ Extract peak assignment from a given string.
     """
 
-    if numOfDim not in (2, 3, 4):
+    if numOfDim not in (1, 2, 3, 4):
         return None
 
     _str = PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', string.upper()).split()

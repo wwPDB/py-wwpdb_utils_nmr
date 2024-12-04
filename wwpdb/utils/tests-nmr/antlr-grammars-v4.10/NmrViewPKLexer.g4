@@ -41,10 +41,16 @@ fragment NAME_CHAR:	START_CHAR | '\'' | '"';
 //fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
-SPACE:			[ \t\r\n]+ -> skip;
-ENCLOSE_COMMENT:	'{' (Float | SIMPLE_NAME)*? '}';
-SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* -> channel(HIDDEN);
+SPACE:			[ \t]+ -> skip;
+RETURN:			[\r\n]+;
+
+ENCLOSE_DATA:		'{' ' '* (Float | (SIMPLE_NAME | ' ')*?) ' '* '}';
+SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
+LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
+
+/* NMRView: Peak list format
+ See also https://github.com/onemoonsci/nmrfxprocessordocs/blob/master/pages/02.viewer/08.refcmds/01.ref/docs.md
+*/
 
 mode LABEL_MODE;
 
@@ -58,7 +64,7 @@ W_name:			Simple_name '.W';
 B_name:			Simple_name '.B';
 E_name:			Simple_name '.E';
 J_name:			Simple_name '.J';
-U_name:			Simple_name ',U';
+U_name:			Simple_name '.U';
 
 Vol:			'vol';
 Int:			'int';
@@ -71,4 +77,6 @@ Float_LA:		Float;
 
 SPACE_LA:		[ \t]+ -> skip;
 RETURN_LA:		[\r\n]+;
+
+ENCLOSE_DATA_LA:	'{' ' '* (Float | (SIMPLE_NAME | ' ')*?) ' '* '}';
 

@@ -3,7 +3,7 @@
 # Date: 03-Dec-2024
 #
 # Updates:
-""" ParserLister base class.
+""" ParserLister base class for any peak list file.
     @author: Masashi Yokochi
 """
 import sys
@@ -11,12 +11,12 @@ import re
 import copy
 import collections
 
-from typing import List, Tuple, Optional
+from typing import List, IO, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
+    from wwpdb.utils.nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
@@ -62,7 +62,7 @@ try:
                                            retrieveRemappedNonPoly,
                                            retrieveOriginalSeqIdFromMRMap)
 except ImportError:
-    from nmr.io.CifReader import SYMBOLS_ELEMENT
+    from nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            translateToStdResName,
                                            translateToStdAtomName,
@@ -245,12 +245,13 @@ class BasePKParserListener():
 
     __cachedDictForStarAtom = {}
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 representativeAltId=REPRESENTATIVE_ALT_ID,
-                 mrAtomNameMapping=None,
-                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 reasons=None):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 mrAtomNameMapping: Optional[List[dict]] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 reasons: Optional[dict] = None):
 
         self.representativeModelId = representativeModelId
         self.representativeAltId = representativeAltId
@@ -259,9 +260,12 @@ class BasePKParserListener():
         self.cR = cR
         self.__hasCoord = cR is not None
 
+        # CCD accessing utility
+        self.ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
+
         if self.__hasCoord:
             ret = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
-                                       cR, caC)
+                                       cR, self.ccU, caC)
             self.modelNumName = ret['model_num_name']
             self.__authSeqId = ret['auth_seq_id']
             self.polySeq = ret['polymer_sequence']
@@ -325,9 +329,6 @@ class BasePKParserListener():
                     elif poly_type == 'polyribonucleotide':
                         self.polyRibonucleotide = True
 
-        # CCD accessing utility
-        self.ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
-
         # BMRB chemical shift statistics
         self.csStat = BMRBChemShiftStat(verbose, log, self.ccU) if csStat is None else csStat
 
@@ -370,6 +371,8 @@ class BasePKParserListener():
         self.entryId = entryId
 
     def validatePeak2D(self, index: int, pos_1: float, pos_2: float,
+                       pos_unc_1: Optional[float], pos_unc_2: Optional[float],
+                       lw_1: Optional[float], lw_2: Optional[float],
                        pos_hz_1: Optional[float], pos_hz_2: Optional[float],
                        lw_hz_1: Optional[float], lw_hz_2: Optional[float],
                        height: Optional[str], height_uncertainty: Optional[str], volume: Optional[str]) -> Optional[dict]:
@@ -388,7 +391,17 @@ class BasePKParserListener():
                           "Neither height nor volume value is set.")
             return None
 
-        if lw_hz_1 is not None or lw_hz_2 is not None:
+        if pos_unc_1 is not None:
+            dstFunc['position_uncertainty_1'] = str(pos_unc_1)
+        if pos_unc_2 is not None:
+            dstFunc['position_uncertainty_2'] = str(pos_unc_2)
+
+        if lw_1 is not None:
+            dstFunc['line_width_1'] = str(lw_1)
+        if lw_2 is not None:
+            dstFunc['line_width_2'] = str(lw_2)
+
+        if (lw_1 is None and lw_hz_1 is not None) or (lw_2 is None and lw_hz_2 is not None):
             cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
         if lw_hz_1 is not None:
@@ -410,6 +423,8 @@ class BasePKParserListener():
         return dstFunc
 
     def validatePeak3D(self, index: int, pos_1: float, pos_2: float, pos_3: float,
+                       pos_unc_1: Optional[float], pos_unc_2: Optional[float], pos_unc_3: Optional[float],
+                       lw_1: Optional[float], lw_2: Optional[float], lw_3: Optional[float],
                        pos_hz_1: Optional[float], pos_hz_2: Optional[float], pos_hz_3: Optional[float],
                        lw_hz_1: Optional[float], lw_hz_2: Optional[float], lw_hz_3: Optional[float],
                        height: Optional[str], height_uncertainty: Optional[str], volume: Optional[str]) -> Optional[dict]:
@@ -427,6 +442,24 @@ class BasePKParserListener():
             self.f.append(f"[Missing data] {self.__getCurrentRestraint(n=index)}"
                           "Neither height nor volume value is set.")
             return None
+
+        if pos_unc_1 is not None:
+            dstFunc['position_uncertainty_1'] = str(pos_unc_1)
+        if pos_unc_2 is not None:
+            dstFunc['position_uncertainty_2'] = str(pos_unc_2)
+        if pos_unc_3 is not None:
+            dstFunc['position_uncertainty_3'] = str(pos_unc_3)
+
+        if lw_1 is not None:
+            dstFunc['line_width_1'] = str(lw_1)
+        if lw_2 is not None:
+            dstFunc['line_width_2'] = str(lw_2)
+        if lw_3 is not None:
+            dstFunc['line_width_3'] = str(lw_3)
+
+        if (lw_1 is None and lw_hz_1 is not None) or (lw_2 is None and lw_hz_2 is not None)\
+           or (lw_3 is None and lw_hz_3 is not None):
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
         if lw_hz_1 is not None or lw_hz_2 is not None or lw_hz_3 is not None:
             cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
@@ -458,6 +491,8 @@ class BasePKParserListener():
         return dstFunc
 
     def validatePeak4D(self, index: int, pos_1: float, pos_2: float, pos_3: float, pos_4: float,
+                       pos_unc_1: Optional[float], pos_unc_2: Optional[float], pos_unc_3: Optional[float], pos_unc_4: Optional[float],
+                       lw_1: Optional[float], lw_2: Optional[float], lw_3: Optional[float], lw_4: Optional[float],
                        pos_hz_1: Optional[float], pos_hz_2: Optional[float], pos_hz_3: Optional[float], pos_hz_4: Optional[float],
                        lw_hz_1: Optional[float], lw_hz_2: Optional[float], lw_hz_3: Optional[float], lw_hz_4: Optional[float],
                        height: Optional[str], height_uncertainty: Optional[str], volume: Optional[str]) -> Optional[dict]:
@@ -476,7 +511,26 @@ class BasePKParserListener():
                           "Neither height nor volume value is set.")
             return None
 
-        if lw_hz_1 is not None or lw_hz_2 is not None or lw_hz_3 is not None or lw_hz_4 is not None:
+        if pos_unc_1 is not None:
+            dstFunc['position_uncertainty_1'] = str(pos_unc_1)
+        if pos_unc_2 is not None:
+            dstFunc['position_uncertainty_2'] = str(pos_unc_2)
+        if pos_unc_3 is not None:
+            dstFunc['position_uncertainty_3'] = str(pos_unc_3)
+        if pos_unc_4 is not None:
+            dstFunc['position_uncertainty_4'] = str(pos_unc_4)
+
+        if lw_1 is not None:
+            dstFunc['line_width_1'] = str(lw_1)
+        if lw_2 is not None:
+            dstFunc['line_width_2'] = str(lw_2)
+        if lw_3 is not None:
+            dstFunc['line_width_3'] = str(lw_3)
+        if lw_4 is not None:
+            dstFunc['line_width_4'] = str(lw_4)
+
+        if (lw_1 is None and lw_hz_1 is not None) or (lw_2 is None and lw_hz_2 is not None)\
+           or (lw_3 is None and lw_hz_3 is not None) or (lw_4 is None and lw_hz_4 is not None):
             cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
         if lw_hz_1 is not None:
@@ -513,7 +567,7 @@ class BasePKParserListener():
 
         return dstFunc
 
-    def getRealChainSeqId(self, ps: list, seqId: int, compId: Optional[str], isPolySeq=True) -> Tuple[str, int, Optional[str]]:
+    def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str], isPolySeq=True) -> Tuple[str, int, Optional[str]]:
         if compId is not None:
             compId = _compId = translateToStdResName(compId, ccU=self.ccU)
             if len(_compId) == 2 and _compId.startswith('D'):

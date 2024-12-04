@@ -96,7 +96,7 @@ def compress_as_gzip_file(inPath: str, outPath: str):
             ofh.write(line)
 
 
-def load_from_pickle(file_name: str, default=None) -> Any:
+def load_from_pickle(file_name: str, default: Any = None) -> Any:
     """ Load object from pickle file.
     """
 
@@ -1177,7 +1177,7 @@ class NmrVrptUtility:
             self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
                                               self.__representative_model_id,
                                               self.__representative_alt_id,
-                                              self.__cR, None, None)
+                                              self.__cR, self.__ccU, None, None)
 
             if self.__caC is not None and cache_path:
                 write_as_pickle(self.__caC, cache_path)
@@ -1186,7 +1186,7 @@ class NmrVrptUtility:
             self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
                                               self.__representative_model_id,
                                               self.__representative_alt_id,
-                                              self.__cR, None, None, False)
+                                              self.__cR, self.__ccU, None, None, False)
 
         return True
 

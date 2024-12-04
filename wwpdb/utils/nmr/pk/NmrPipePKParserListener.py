@@ -410,16 +410,18 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 digits = re.findall(r'\d+', axis_code)
                 for digit in digits:
                     num = int(digit)
-                    nuc = next((k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if num in v), None)
+                    nuc = next((k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if num == v[0]), None)
                     if nuc is not None:
                         cur_spectral_dim['atom_type'] = nuc
                         cur_spectral_dim['atom_isotope_number'] = num
                         break
                 if cur_spectral_dim['atom_type'] is None:
                     for a in axis_code:
+                        a = a.upper()
                         if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                             cur_spectral_dim['atom_type'] = a
                             cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
+                            break
 
             truncated = False
             first_point = last_point = None
@@ -550,9 +552,12 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             dheight = self.originalNumberSelection[13]
             vol = self.originalNumberSelection[14]
             # pchi2 = self.originalNumberSelection[15]
-            # type = int(str(ctx.Integer(5)))
-            ass = str(ctx.Any_name())
-            if ass in emptyValue or (self.null_string is not None and ass == self.null_string):
+            type = int(str(ctx.Integer(5)))
+            if ctx.Any_name():
+                ass = str(ctx.Any_name())
+                if ass in emptyValue or (self.null_string is not None and ass == self.null_string):
+                    ass = None
+            else:
                 ass = None
             # clustid = int(str(ctx.Integer(6)))
             # memcnt = int(str(ctx.Integer(7)))
@@ -560,11 +565,12 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if x_ppm is None or y_ppm is None:
+            if x_ppm is None or y_ppm is None or type != 1:
                 self.peaks2D -= 1
                 return
 
-            dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, x_hz, y_hz, xw_hz, yw_hz, height, dheight, vol)
+            dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, None, None, None, None,
+                                          x_hz, y_hz, xw_hz, yw_hz, height, dheight, vol)
 
             if dstFunc is None:
                 self.peaks2D -= 1
@@ -632,6 +638,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if self.createSfDict__ and sf is not None:
                 sf['index_id'] += 1
+                ambig_code1 = ambig_code2 = None
                 if has_assignments:
                     atom1 = self.atomSelectionSet[0][0]
                     atom2 = self.atomSelectionSet[1][0]
@@ -644,7 +651,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                         if ambig_code2 == 0:
                             ambig_code2 = None
                 else:
-                    atom1 = atom2 = ambig_code1 = ambig_code2 = None
+                    atom1 = atom2 = None
 
                 row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
                                sf['list_id'], self.entryId, dstFunc,
@@ -731,9 +738,12 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             dheight = self.originalNumberSelection[19]
             vol = self.originalNumberSelection[20]
             # pchi2 = self.originalNumberSelection[21]
-            # type = int(str(ctx.Integer(7)))
-            ass = str(ctx.Any_name())
-            if ass in emptyValue or (self.null_string is not None and ass == self.null_string):
+            type = int(str(ctx.Integer(7)))
+            if ctx.Any_name():
+                ass = str(ctx.Any_name())
+                if ass in emptyValue or (self.null_string is not None and ass == self.null_string):
+                    ass = None
+            else:
                 ass = None
             # clustid = int(str(ctx.Integer(8)))
             # memcnt = int(str(ctx.Integer(9)))
@@ -741,11 +751,12 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if x_ppm is None or y_ppm is None:
+            if x_ppm is None or y_ppm is None or type != 1:
                 self.peaks3D -= 1
                 return
 
-            dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, x_hz, y_hz, z_hz, xw_hz, yw_hz, zw_hz, height, dheight, vol)
+            dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, None, None, None, None, None, None,
+                                          x_hz, y_hz, z_hz, xw_hz, yw_hz, zw_hz, height, dheight, vol)
 
             if dstFunc is None:
                 self.peaks3D -= 1
@@ -824,6 +835,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if self.createSfDict__ and sf is not None:
                 sf['index_id'] += 1
+                ambig_code1 = ambig_code2 = ambig_code3 = None
                 if has_assignments:
                     atom1 = self.atomSelectionSet[0][0]
                     atom2 = self.atomSelectionSet[1][0]
@@ -841,7 +853,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                         if ambig_code3 == 0:
                             ambig_code3 = None
                 else:
-                    atom1 = atom2 = atom3 = ambig_code1 = ambig_code2 = ambig_code3 = None
+                    atom1 = atom2 = atom3 = None
 
                 row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
                                sf['list_id'], self.entryId, dstFunc,
@@ -936,9 +948,12 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             dheight = self.originalNumberSelection[25]
             vol = self.originalNumberSelection[26]
             # pchi2 = self.originalNumberSelection[27]
-            # type = int(str(ctx.Integer(9)))
-            ass = str(ctx.Any_name())
-            if ass in emptyValue or (self.null_string is not None and ass == self.null_string):
+            type = int(str(ctx.Integer(9)))
+            if ctx.Any_name():
+                ass = str(ctx.Any_name())
+                if ass in emptyValue or (self.null_string is not None and ass == self.null_string):
+                    ass = None
+            else:
                 ass = None
             # clustid = int(str(ctx.Integer(10)))
             # memcnt = int(str(ctx.Integer(11)))
@@ -946,12 +961,12 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if x_ppm is None or y_ppm is None:
+            if x_ppm is None or y_ppm is None or type != 1:
                 self.peaks4D -= 1
                 return
 
-            dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, x_hz, y_hz, z_hz, a_hz,
-                                          xw_hz, yw_hz, zw_hz, aw_hz, height, dheight, vol)
+            dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, None, None, None, None, None, None, None, None,
+                                          x_hz, y_hz, z_hz, a_hz, xw_hz, yw_hz, zw_hz, aw_hz, height, dheight, vol)
 
             if dstFunc is None:
                 self.peaks4D -= 1
@@ -1040,6 +1055,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if self.createSfDict__ and sf is not None:
                 sf['index_id'] += 1
+                ambig_code1 = ambig_code2 = ambig_code3 = ambig_code4 = None
                 if has_assignments:
                     atom1 = self.atomSelectionSet[0][0]
                     atom2 = self.atomSelectionSet[1][0]
@@ -1062,7 +1078,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                         if ambig_code4 == 0:
                             ambig_code4 = None
                 else:
-                    atom1 = atom2 = atom3 = atom4 = ambig_code1 = ambig_code2 = ambig_code3 = ambig_code4 = None
+                    atom1 = atom2 = atom3 = atom4 = None
 
                 row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
                                sf['list_id'], self.entryId, dstFunc,

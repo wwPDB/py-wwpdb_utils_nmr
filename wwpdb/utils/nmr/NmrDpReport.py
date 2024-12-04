@@ -98,7 +98,7 @@ import copy
 import re
 
 from operator import itemgetter
-from typing import Optional
+from typing import Any, Optional
 
 try:
     from wwpdb.utils.nmr.AlignUtil import emptyValue, monDict3, unknownResidue, getPrettyJson
@@ -106,7 +106,7 @@ except ImportError:
     from nmr.AlignUtil import emptyValue, monDict3, unknownResidue, getPrettyJson
 
 
-def get_value_safe(d=None, key=None) -> Optional[str]:
+def get_value_safe(d: Optional[dict] = None, key: Any = None) -> Optional[str]:
     """ Return value of a given dictionary for a key.
         @return: value for a key, None otherwise
     """

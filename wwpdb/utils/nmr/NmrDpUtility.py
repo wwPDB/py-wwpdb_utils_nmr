@@ -223,7 +223,7 @@ from packaging import version
 from munkres import Munkres
 from operator import itemgetter
 from striprtf.striprtf import rtf_to_text
-from typing import List, Tuple, Optional
+from typing import Any, List, Tuple, Optional
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -569,7 +569,7 @@ archival_mr_file_types = ('nmr-star',
                           'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
 
 
-def detect_bom(fPath: str, default='utf-8') -> str:
+def detect_bom(fPath: str, default: str = 'utf-8') -> str:
     """ Detect BOM of input file.
     """
 
@@ -586,7 +586,7 @@ def detect_bom(fPath: str, default='utf-8') -> str:
     return default
 
 
-def convert_codec(inPath: str, outPath: str, in_codec='utf-8', out_codec='utf-8'):
+def convert_codec(inPath: str, outPath: str, in_codec: str = 'utf-8', out_codec: str = 'utf-8'):
     """ Convert codec of input file.
     """
 
@@ -701,7 +701,7 @@ def get_type_of_star_file(fPath: str) -> str:
                 pass
 
 
-def has_key_value(d=None, key=None) -> bool:
+def has_key_value(d: Optional[dict] = None, key: Any = None) -> bool:
     """ Return whether a given dictionary has effective value for a key.
         @return: True if d[key] has effective value, False otherwise
     """
@@ -715,7 +715,7 @@ def has_key_value(d=None, key=None) -> bool:
     return False
 
 
-def get_first_sf_tag(sf=None, tag=None) -> str:
+def get_first_sf_tag(sf: Optional[pynmrstar.Saveframe] = None, tag: Optional[str] = None) -> str:
     """ Return the first value of a given saveframe tag.
         @return: The first tag value, empty string otherwise.
     """
@@ -731,7 +731,7 @@ def get_first_sf_tag(sf=None, tag=None) -> str:
     return array[0] if array[0] is not None else ''
 
 
-def set_sf_tag(sf, tag: str, value):
+def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value):
     """ Set saveframe tag.
     """
 
@@ -1062,7 +1062,7 @@ def concat_nmr_restraint_names(content_subtype: Optional[str]) -> str:
     return ', '.join(f)
 
 
-def is_peak_list(line: str, has_header=True) -> bool:
+def is_peak_list(line: str, has_header: bool = True) -> bool:
     """ Return whether a given input is derived from peak list in any native format.
     """
 
@@ -1082,7 +1082,7 @@ def is_peak_list(line: str, has_header=True) -> bool:
     return False
 
 
-def get_peak_list_format(line: str, has_header=True) -> Optional[str]:
+def get_peak_list_format(line: str, has_header: bool = True) -> Optional[str]:
     """ Return peak list format for a given input.
     """
 
@@ -1137,7 +1137,7 @@ def get_number_of_dimensions_of_peak_list(file_format: str, line: str) -> Option
     return None
 
 
-def is_like_planality_boundary(row, lower_limit_name: str, upper_limit_name: str) -> bool:
+def is_like_planality_boundary(row: dict, lower_limit_name: str, upper_limit_name: str) -> bool:
     """ Return whether boundary conditions like planality restraint.
     """
 
@@ -1165,7 +1165,7 @@ def is_like_planality_boundary(row, lower_limit_name: str, upper_limit_name: str
         return False
 
 
-def get_atom_name_mapping(lp, list_of_tags: List[List[str]]) -> Optional[List[dict]]:
+def get_atom_name_mapping(lp: pynmrstar.Loop, list_of_tags: List[List[str]]) -> Optional[List[dict]]:
     """ Return atom name mapping history for each comp_id.
         Each tags should be array of 'comp_id', 'atom_id', and 'atom_name'.
     """
@@ -29956,7 +29956,7 @@ class NmrDpUtility:
         self.__caC = coordAssemblyChecker(self.__verbose, self.__lfh,
                                           self.__representative_model_id,
                                           self.__representative_alt_id,
-                                          self.__cR, None, nmrPolySeq)
+                                          self.__cR, self.__ccU, None, nmrPolySeq)
 
         if self.__caC is not None and self.__asmChkCachePath is not None:
             write_as_pickle(self.__caC, self.__asmChkCachePath)

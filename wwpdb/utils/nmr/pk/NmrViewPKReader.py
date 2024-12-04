@@ -1,9 +1,9 @@
 ##
-# NmrPipePKReader.py
+# NmrViewPKReader.py
 #
 # Update:
 ##
-""" A collection of classes for parsing NMRPIPE PK files.
+""" A collection of classes for parsing NMRVIEW PK files.
 """
 import sys
 import os
@@ -13,9 +13,9 @@ from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-    from wwpdb.utils.nmr.pk.NmrPipePKLexer import NmrPipePKLexer
-    from wwpdb.utils.nmr.pk.NmrPipePKParser import NmrPipePKParser
-    from wwpdb.utils.nmr.pk.NmrPipePKParserListener import NmrPipePKParserListener
+    from wwpdb.utils.nmr.pk.NmrViewPKLexer import NmrViewPKLexer
+    from wwpdb.utils.nmr.pk.NmrViewPKParser import NmrViewPKParser
+    from wwpdb.utils.nmr.pk.NmrViewPKParserListener import NmrViewPKParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -27,9 +27,9 @@ try:
 except ImportError:
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
-    from nmr.pk.NmrPipePKLexer import NmrPipePKLexer
-    from nmr.pk.NmrPipePKParser import NmrPipePKParser
-    from nmr.pk.NmrPipePKParserListener import NmrPipePKParserListener
+    from nmr.pk.NmrViewPKLexer import NmrViewPKLexer
+    from nmr.pk.NmrViewPKParser import NmrViewPKParser
+    from nmr.pk.NmrViewPKParserListener import NmrViewPKParserListener
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID,
@@ -40,8 +40,8 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
-class NmrPipePKReader:
-    """ Accessor methods for parsing NMRPIPE PK files.
+class NmrViewPKReader:
+    """ Accessor methods for parsing NMRVIEW PK files.
     """
 
     def __init__(self, verbose=True, log=sys.stdout,
@@ -93,8 +93,8 @@ class NmrPipePKReader:
 
     def parse(self, pkFilePath, cifFilePath=None, isFilePath=True,
               createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
-        """ Parse NMRPIPE PK file.
-            @return: NmrPipePKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
+        """ Parse NMRVIEW PK file.
+            @return: NmrViewPKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
         ifh = None
@@ -106,7 +106,7 @@ class NmrPipePKReader:
 
                 if not os.access(pkFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"NmrPipePKReader.parse() {pkFilePath} is not accessible.\n")
+                        self.__lfh.write(f"NmrViewPKReader.parse() {pkFilePath} is not accessible.\n")
                     return None, None, None
 
                 ifh = open(pkFilePath, 'r')  # pylint: disable=consider-using-with
@@ -117,7 +117,7 @@ class NmrPipePKReader:
 
                 if pkString is None or len(pkString) == 0:
                     if self.__verbose:
-                        self.__lfh.write("NmrPipePKReader.parse() Empty string.\n")
+                        self.__lfh.write("NmrViewPKReader.parse() Empty string.\n")
                     return None, None, None
 
                 input = InputStream(pkString)
@@ -125,7 +125,7 @@ class NmrPipePKReader:
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"NmrPipePKReader.parse() {cifFilePath} is not accessible.\n")
+                        self.__lfh.write(f"NmrViewPKReader.parse() {cifFilePath} is not accessible.\n")
                     return None, None, None
 
                 if self.__cR is None:
@@ -133,7 +133,7 @@ class NmrPipePKReader:
                     if not self.__cR.parse(cifFilePath):
                         return None, None, None
 
-            lexer = NmrPipePKLexer(input)
+            lexer = NmrViewPKLexer(input)
             lexer.removeErrorListeners()
 
             lexer_error_listener = LexerErrorListener(pkFilePath, maxErrorReport=self.__maxLexerErrorReport)
@@ -149,16 +149,16 @@ class NmrPipePKReader:
                         self.__lfh.write(f"{description['marker']}\n")
 
             stream = CommonTokenStream(lexer)
-            parser = NmrPipePKParser(stream)
+            parser = NmrViewPKParser(stream)
             # try with simpler/faster SLL prediction mode
             # parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(pkFilePath, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)
-            tree = parser.nmrpipe_pk()
+            tree = parser.nmrview_pk()
 
             walker = ParseTreeWalker()
-            listener = NmrPipePKParserListener(self.__verbose, self.__lfh,
+            listener = NmrViewPKParserListener(self.__verbose, self.__lfh,
                                                self.__representativeModelId,
                                                self.__representativeAltId,
                                                self.__mrAtomNameMapping,
@@ -195,13 +195,13 @@ class NmrPipePKReader:
 
         except IOError as e:
             if self.__verbose:
-                self.__lfh.write(f"+NmrPipePKReader.parse() ++ Error - {str(e)}\n")
+                self.__lfh.write(f"+NmrViewPKReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
             # pylint: disable=unreachable
             """ debug code
         except Exception as e:
             if self.__verbose and isFilePath:
-                self.__lfh.write(f"+NmrPipePKReader.parse() ++ Error - {pkFilePath!r} - {str(e)}\n")
+                self.__lfh.write(f"+NmrViewPKReader.parse() ++ Error - {pkFilePath!r} - {str(e)}\n")
             return None, None, None
             """
         finally:
@@ -210,7 +210,7 @@ class NmrPipePKReader:
 
 
 if __name__ == "__main__":
-    reader = NmrPipePKReader(True)
+    reader = NmrViewPKReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6uy2/D_1000245510_nmr-peaks-upload_P1.dat.V1',
-                 '../../tests-nmr/mock-data-remediation/6uy2/D_1000245510_model-release_P1.cif.V1')
+    reader.parse('../../tests-nmr/mock-data-remediation/6iws/e170209_15n_noesy.xpk',
+                 '../../tests-nmr/mock-data-remediation/6iws/6iws.cif')

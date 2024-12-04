@@ -63,15 +63,15 @@ class XplorMRReader:
         self.__representativeAltId = representativeAltId
         self.__mrAtomNameMapping = mrAtomNameMapping
 
+        # CCD accessing utility
+        self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
+
         if cR is not None and caC is None:
             caC = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
-                                       cR, None, None, fullCheck=False)
+                                       cR, self.__ccU, None, None, fullCheck=False)
 
         self.__cR = cR
         self.__caC = caC
-
-        # CCD accessing utility
-        self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
 
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat

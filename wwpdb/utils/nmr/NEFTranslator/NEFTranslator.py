@@ -120,7 +120,7 @@ import collections
 
 from packaging import version
 from operator import itemgetter
-from typing import List
+from typing import List, Optional, Union
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
@@ -474,7 +474,7 @@ altRdcConstraintType = {'nef': {'RDC': 'measured',
                         }
 
 
-def get_first_sf_tag(sf=None, tag=None) -> str:
+def get_first_sf_tag(sf: Optional[pynmrstar.Saveframe] = None, tag: Optional[str] = None) -> str:
     """ Return the first value of a given saveframe tag.
         @return: The first tag value, empty string otherwise.
     """
@@ -490,7 +490,7 @@ def get_first_sf_tag(sf=None, tag=None) -> str:
     return array[0] if array[0] is not None else ''
 
 
-def get_idx_msg(idx_tag_ids: List[int], tags: List[str], row) -> str:
+def get_idx_msg(idx_tag_ids: List[int], tags: List[str], row: dict) -> str:
     """ Return description about current index.
         @author: Masashi Yokochi
         @return: description
@@ -512,7 +512,7 @@ def get_idx_msg(idx_tag_ids: List[int], tags: List[str], row) -> str:
         return ''
 
 
-def is_empty_loop(star_data, lp_category: str) -> bool:
+def is_empty_loop(star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str) -> bool:
     """ Return whether one of specified loops is empty loop.
         @return: True for empty loop exists, False otherwise
     """
@@ -530,7 +530,7 @@ def is_empty_loop(star_data, lp_category: str) -> bool:
     return len(star_data) == 0
 
 
-def count_non_empty_loops(star_data, lp_category: str) -> int:
+def count_non_empty_loops(star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str) -> int:
     """ Return the number of non-empty loops.
         @return: the number of non-empty loops.
     """
@@ -548,7 +548,7 @@ def count_non_empty_loops(star_data, lp_category: str) -> int:
     return 0 if len(star_data) == 0 else 1
 
 
-def get_sf_tag_values_with_empty_loop(star_data, lp_category: str, sf_category: str) -> List[str]:
+def get_sf_tag_values_with_empty_loop(star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str, sf_category: str) -> List[str]:
     """ Return list of saveframe tag values with empty loop.
         @return: list of saveframe tag values
     """

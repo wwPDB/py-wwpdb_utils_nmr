@@ -115,9 +115,12 @@ class CharmmCRDParserListener(ParseTreeListener):
 
         self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
+        # CCD accessing utility
+        self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
+
         if cR is not None:
             ret = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
-                                       cR, caC, None, fullCheck=True)
+                                       cR, self.__ccU, caC, None, fullCheck=True)
             self.__polySeqModel = ret['polymer_sequence']
             self.__nonPolyModel = ret['non_polymer']
             self.__branchedModel = ret['branched']
@@ -128,9 +131,6 @@ class CharmmCRDParserListener(ParseTreeListener):
         self.__hasNonPolyModel = self.__nonPolyModel is not None and len(self.__nonPolyModel) > 0
         self.__hasBranchedModel = self.__branchedModel is not None and len(self.__branchedModel) > 0
         self.__noWaterMol = not self.__hasNonPolyModel or not any(np['comp_id'][0] == 'HOH' for np in self.__nonPolyModel)
-
-        # CCD accessing utility
-        self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
 
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat

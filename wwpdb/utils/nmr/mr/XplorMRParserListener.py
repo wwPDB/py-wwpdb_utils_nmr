@@ -615,9 +615,12 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cR = cR
         self.__hasCoord = cR is not None
 
+        # CCD accessing utility
+        self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
+
         if self.__hasCoord:
             ret = coordAssemblyChecker(verbose, log, representativeModelId, representativeAltId,
-                                       cR, caC)
+                                       cR, self.__ccU, caC)
             self.__modelNumName = ret['model_num_name']
             self.__authAsymId = ret['auth_asym_id']
             self.__authSeqId = ret['auth_seq_id']
@@ -675,9 +678,6 @@ class XplorMRParserListener(ParseTreeListener):
         self.__largeModel = self.__hasPolySeq and len(self.__polySeq) > LEN_LARGE_ASYM_ID
         if self.__largeModel:
             self.__representativeAsymId = next(c for c in LARGE_ASYM_ID if any(ps for ps in self.__polySeq if ps['auth_chain_id'] == c))
-
-        # CCD accessing utility
-        self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
 
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat

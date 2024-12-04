@@ -10,7 +10,7 @@ else:
 
 def serializedATN():
     return [
-        4,1,36,136,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,37,136,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
         1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,5,0,37,8,0,10,0,12,0,40,9,0,1,0,
         1,0,1,1,1,1,1,1,1,1,1,2,1,2,1,2,1,2,1,2,1,3,1,3,1,3,1,3,1,4,1,4,
@@ -29,13 +29,13 @@ def serializedATN():
         0,0,36,29,1,0,0,0,36,30,1,0,0,0,36,31,1,0,0,0,36,32,1,0,0,0,36,33,
         1,0,0,0,36,34,1,0,0,0,36,35,1,0,0,0,37,40,1,0,0,0,38,36,1,0,0,0,
         38,39,1,0,0,0,39,41,1,0,0,0,40,38,1,0,0,0,41,42,5,0,0,1,42,1,1,0,
-        0,0,43,44,5,1,0,0,44,45,5,18,0,0,45,46,5,20,0,0,46,3,1,0,0,0,47,
-        48,5,3,0,0,48,49,5,24,0,0,49,50,5,25,0,0,50,51,5,27,0,0,51,5,1,0,
-        0,0,52,53,5,4,0,0,53,54,5,28,0,0,54,55,5,30,0,0,55,7,1,0,0,0,56,
-        58,5,5,0,0,57,59,5,31,0,0,58,57,1,0,0,0,59,60,1,0,0,0,60,58,1,0,
-        0,0,60,61,1,0,0,0,61,62,1,0,0,0,62,63,5,33,0,0,63,9,1,0,0,0,64,66,
-        5,6,0,0,65,67,5,34,0,0,66,65,1,0,0,0,67,68,1,0,0,0,68,66,1,0,0,0,
-        68,69,1,0,0,0,69,70,1,0,0,0,70,71,5,36,0,0,71,11,1,0,0,0,72,74,3,
+        0,0,43,44,5,1,0,0,44,45,5,19,0,0,45,46,5,21,0,0,46,3,1,0,0,0,47,
+        48,5,3,0,0,48,49,5,25,0,0,49,50,5,26,0,0,50,51,5,28,0,0,51,5,1,0,
+        0,0,52,53,5,4,0,0,53,54,5,29,0,0,54,55,5,31,0,0,55,7,1,0,0,0,56,
+        58,5,5,0,0,57,59,5,32,0,0,58,57,1,0,0,0,59,60,1,0,0,0,60,58,1,0,
+        0,0,60,61,1,0,0,0,61,62,1,0,0,0,62,63,5,34,0,0,63,9,1,0,0,0,64,66,
+        5,6,0,0,65,67,5,35,0,0,66,65,1,0,0,0,67,68,1,0,0,0,68,66,1,0,0,0,
+        68,69,1,0,0,0,69,70,1,0,0,0,70,71,5,37,0,0,71,11,1,0,0,0,72,74,3,
         14,7,0,73,72,1,0,0,0,74,75,1,0,0,0,75,73,1,0,0,0,75,76,1,0,0,0,76,
         13,1,0,0,0,77,78,5,7,0,0,78,79,5,8,0,0,79,80,5,8,0,0,80,81,5,7,0,
         0,81,82,5,13,0,0,82,83,3,24,12,0,83,84,3,24,12,0,84,85,5,13,0,0,
@@ -71,12 +71,12 @@ class XeasyPKParser ( Parser ):
     symbolicNames = [ "<INVALID>", "Num_of_dim", "Format", "Iname", "Cyana_format", 
                       "Spectrum", "Tolerance", "Integer", "Float", "Real", 
                       "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
-                      "Simple_name", "SPACE", "ENCLOSE_COMMENT", "SECTION_COMMENT", 
-                      "LINE_COMMENT", "Integer_ND", "SPACE_ND", "RETURN_ND", 
-                      "Simple_name_FO", "SPACE_FO", "RETURN_FO", "Integer_IN", 
-                      "Simple_name_IN", "SPACE_IN", "RETURN_IN", "Simple_name_CY", 
-                      "SPACE_CY", "RETURN_CY", "Simple_name_SP", "SPACE_SP", 
-                      "RETURN_SP", "Float_TO", "TOACE_TO", "RETURN_TO" ]
+                      "Simple_name", "SPACE", "RETURN", "ENCLOSE_COMMENT", 
+                      "SECTION_COMMENT", "LINE_COMMENT", "Integer_ND", "SPACE_ND", 
+                      "RETURN_ND", "Simple_name_FO", "SPACE_FO", "RETURN_FO", 
+                      "Integer_IN", "Simple_name_IN", "SPACE_IN", "RETURN_IN", 
+                      "Simple_name_CY", "SPACE_CY", "RETURN_CY", "Simple_name_SP", 
+                      "SPACE_SP", "RETURN_SP", "Float_TO", "TOACE_TO", "RETURN_TO" ]
 
     RULE_xeasy_pk = 0
     RULE_dimension = 1
@@ -112,28 +112,29 @@ class XeasyPKParser ( Parser ):
     SMCLN_COMMENT=12
     Simple_name=13
     SPACE=14
-    ENCLOSE_COMMENT=15
-    SECTION_COMMENT=16
-    LINE_COMMENT=17
-    Integer_ND=18
-    SPACE_ND=19
-    RETURN_ND=20
-    Simple_name_FO=21
-    SPACE_FO=22
-    RETURN_FO=23
-    Integer_IN=24
-    Simple_name_IN=25
-    SPACE_IN=26
-    RETURN_IN=27
-    Simple_name_CY=28
-    SPACE_CY=29
-    RETURN_CY=30
-    Simple_name_SP=31
-    SPACE_SP=32
-    RETURN_SP=33
-    Float_TO=34
-    TOACE_TO=35
-    RETURN_TO=36
+    RETURN=15
+    ENCLOSE_COMMENT=16
+    SECTION_COMMENT=17
+    LINE_COMMENT=18
+    Integer_ND=19
+    SPACE_ND=20
+    RETURN_ND=21
+    Simple_name_FO=22
+    SPACE_FO=23
+    RETURN_FO=24
+    Integer_IN=25
+    Simple_name_IN=26
+    SPACE_IN=27
+    RETURN_IN=28
+    Simple_name_CY=29
+    SPACE_CY=30
+    RETURN_CY=31
+    Simple_name_SP=32
+    SPACE_SP=33
+    RETURN_SP=34
+    Float_TO=35
+    TOACE_TO=36
+    RETURN_TO=37
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -503,7 +504,7 @@ class XeasyPKParser ( Parser ):
                 self.state = 60 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==31):
+                if not (_la==32):
                     break
 
             self.state = 62
@@ -568,7 +569,7 @@ class XeasyPKParser ( Parser ):
                 self.state = 68 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==34):
+                if not (_la==35):
                     break
 
             self.state = 70

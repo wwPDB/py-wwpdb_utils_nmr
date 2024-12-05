@@ -1,9 +1,9 @@
 ##
-# XwinNmrPKReader.py
+# TopSpinPKReader.py
 #
 # Update:
 ##
-""" A collection of classes for parsing XWINNMR PK files.
+""" A collection of classes for parsing TOPSPIN PK files.
 """
 import sys
 import os
@@ -13,9 +13,9 @@ from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-    from wwpdb.utils.nmr.pk.XwinNmrPKLexer import XwinNmrPKLexer
-    from wwpdb.utils.nmr.pk.XwinNmrPKParser import XwinNmrPKParser
-    from wwpdb.utils.nmr.pk.XwinNmrPKParserListener import XwinNmrPKParserListener
+    from wwpdb.utils.nmr.pk.XMLLexer import XMLLexer
+    from wwpdb.utils.nmr.pk.XMLParser import XMLParser
+    from wwpdb.utils.nmr.pk.TopSpinPKParserListener import TopSpinPKParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -27,9 +27,9 @@ try:
 except ImportError:
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
-    from nmr.pk.XwinNmrPKLexer import XwinNmrPKLexer
-    from nmr.pk.XwinNmrPKParser import XwinNmrPKParser
-    from nmr.pk.XwinNmrPKParserListener import XwinNmrPKParserListener
+    from nmr.pk.XMLLexer import XMLLexer
+    from nmr.pk.XMLParser import XMLParser
+    from nmr.pk.TopSpinPKParserListener import TopSpinPKParserListener
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID,
@@ -40,8 +40,8 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
-class XwinNmrPKReader:
-    """ Accessor methods for parsing XWINNMR PK files.
+class TopSpinPKReader:
+    """ Accessor methods for parsing TOPSPIN PK files.
     """
 
     def __init__(self, verbose=True, log=sys.stdout,
@@ -93,8 +93,8 @@ class XwinNmrPKReader:
 
     def parse(self, pkFilePath, cifFilePath=None, isFilePath=True,
               createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
-        """ Parse XWINNMR PK file.
-            @return: XwinNmrPKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
+        """ Parse TOPSPIN PK file.
+            @return: TopSpinPKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
         ifh = None
@@ -106,7 +106,7 @@ class XwinNmrPKReader:
 
                 if not os.access(pkFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"XwinNmrPKReader.parse() {pkFilePath} is not accessible.\n")
+                        self.__lfh.write(f"TopSpinPKReader.parse() {pkFilePath} is not accessible.\n")
                     return None, None, None
 
                 ifh = open(pkFilePath, 'r')  # pylint: disable=consider-using-with
@@ -117,7 +117,7 @@ class XwinNmrPKReader:
 
                 if pkString is None or len(pkString) == 0:
                     if self.__verbose:
-                        self.__lfh.write("XwinNmrPKReader.parse() Empty string.\n")
+                        self.__lfh.write("TopSpinPKReader.parse() Empty string.\n")
                     return None, None, None
 
                 input = InputStream(pkString)
@@ -125,7 +125,7 @@ class XwinNmrPKReader:
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"XwinNmrPKReader.parse() {cifFilePath} is not accessible.\n")
+                        self.__lfh.write(f"TopSpinPKReader.parse() {cifFilePath} is not accessible.\n")
                     return None, None, None
 
                 if self.__cR is None:
@@ -133,7 +133,7 @@ class XwinNmrPKReader:
                     if not self.__cR.parse(cifFilePath):
                         return None, None, None
 
-            lexer = XwinNmrPKLexer(input)
+            lexer = XMLLexer(input)
             lexer.removeErrorListeners()
 
             lexer_error_listener = LexerErrorListener(pkFilePath, maxErrorReport=self.__maxLexerErrorReport)
@@ -149,16 +149,16 @@ class XwinNmrPKReader:
                         self.__lfh.write(f"{description['marker']}\n")
 
             stream = CommonTokenStream(lexer)
-            parser = XwinNmrPKParser(stream)
+            parser = XMLParser(stream)
             # try with simpler/faster SLL prediction mode
             # parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(pkFilePath, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)
-            tree = parser.xwinnmr_pk()
+            tree = parser.document()
 
             walker = ParseTreeWalker()
-            listener = XwinNmrPKParserListener(self.__verbose, self.__lfh,
+            listener = TopSpinPKParserListener(self.__verbose, self.__lfh,
                                                self.__representativeModelId,
                                                self.__representativeAltId,
                                                self.__mrAtomNameMapping,
@@ -195,13 +195,13 @@ class XwinNmrPKReader:
 
         except IOError as e:
             if self.__verbose:
-                self.__lfh.write(f"+XwinNmrPKReader.parse() ++ Error - {str(e)}\n")
+                self.__lfh.write(f"+TopSpinPKReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
             # pylint: disable=unreachable
             """ debug code
         except Exception as e:
             if self.__verbose and isFilePath:
-                self.__lfh.write(f"+XwinNmrPKReader.parse() ++ Error - {pkFilePath!r} - {str(e)}\n")
+                self.__lfh.write(f"+TopSpinPKReader.parse() ++ Error - {pkFilePath!r} - {str(e)}\n")
             return None, None, None
             """
         finally:
@@ -210,7 +210,7 @@ class XwinNmrPKReader:
 
 
 if __name__ == "__main__":
-    reader = XwinNmrPKReader(True)
+    reader = TopSpinPKReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-bruker-peak-list/tspp-xwin.txt',
+    reader.parse('../../tests-nmr/mock-data-bruker-peak-list/tspp.xml',
                  '../../tests-nmr/mock-data-remediation/2js7/2js7.cif')  # dummy

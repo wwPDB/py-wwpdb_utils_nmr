@@ -2933,6 +2933,7 @@ class AriaMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AriaMRParser#atom_selection.
     def enterAtom_selection(self, ctx: AriaMRParser.Atom_selectionContext):
+
         try:
 
             atom_sel = {'atom_id': str(ctx.Simple_name(1)).upper()}

@@ -295,4 +295,12 @@ nm-res-xpl|nm-res-xpl|nmr-restraints/xplor-nih|Restraint file in XPLOR-NIH forma
 nm-res-oth|nm-res-oth|nmr-restraints/any|Restraint file in other format
 nm-res-mr|**not applicable**|nmr-restraints/pdb-mr|Restraint file in PDB-MR format
 nm-res-sax|**not applicable**|nmr-restraints/any|SAX CSV file
+nm-pea-ari|**not applicable**|nmr-peaks/any|Spectral peak list file in ARIA format
+nm-pea-pip|**not applicable**|nmr-peaks/any|Spectral peak list file in NMRPIPE format
+nm-pea-spa|**not applicable**|nmr-peaks/any|Spectral peak list file in SPARKY format
+nm-pea-top|**not applicable**|nmr-peaks/any|Spectral peak list file in TOPSPIN format
+nm-pea-vie|**not applicable**|nmr-peaks/any|Spectral peak list file in NMRVIEW format
+nm-aux-xea|**not applicable**|nmr-peaks/any|Assignment file in XEASY format
+nm-pea-xea|**not applicable**|nmr-peaks/any|Spectral peak list file in XEASY format
+nm-pea-xwi|**not applicable**|nmr-peaks/any|Spectral peak list file in XWINNMR format
 nm-pea-any|nm-pea-any|nmr-peaks/any|Any spectral peak list file

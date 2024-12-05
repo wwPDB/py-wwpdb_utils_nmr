@@ -345,7 +345,7 @@ class AmberPTParserListener(ParseTreeListener):
                         atomName = _atomName
                         retrievedAtomNumList.append(atomNum)
 
-                if (terminus[atomNum - 1] and ancAtomName.endswith('T'))\
+                if (0 < atomNum < len(terminus) + 1 and terminus[atomNum - 1] and ancAtomName.endswith('T'))\
                    or is_segment(prevCompId, prevAtomName, compId, atomName)\
                    or is_ligand(prevCompId, compId)\
                    or is_metal_ion(compId, atomName)\
@@ -1753,7 +1753,9 @@ class AmberPTParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by AmberPTParser#format_function.
     def enterFormat_function(self, ctx: AmberPTParser.Format_functionContext):
+
         try:
+
             if ctx.Fortran_format_A():
                 g = self.__a_format_pat.search(str(ctx.Fortran_format_A())).groups()
                 # self.__cur_column_len = int(g[0])
@@ -1766,6 +1768,7 @@ class AmberPTParserListener(ParseTreeListener):
                 g = self.__e_format_pat.search(str(ctx.Fortran_format_E())).groups()
                 # self.__cur_column_len = int(g[0])
                 self.__cur_word_len = int(g[1])
+
         except AttributeError:
             # self.__cur_column_len = None
             self.__cur_word_len = None

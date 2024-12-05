@@ -76,7 +76,7 @@ class CharmmCRDReader:
     def setParserMaxErrorReport(self, maxErrReport):
         self.__maxParserErrorReport = maxErrReport
 
-    def parse(self, ptFilePath, cifFilePath=None, isFilePath=True):
+    def parse(self, crdFilePath, cifFilePath=None, isFilePath=True):
         """ Parse CHARMM CRD file.
             @return: CharmmCRDParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
@@ -86,25 +86,25 @@ class CharmmCRDReader:
         try:
 
             if isFilePath:
-                ptString = None
+                crdString = None
 
-                if not os.access(ptFilePath, os.R_OK):
+                if not os.access(crdFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"CharmmCRDReader.parse() {ptFilePath} is not accessible.\n")
+                        self.__lfh.write(f"CharmmCRDReader.parse() {crdFilePath} is not accessible.\n")
                     return None, None, None
 
-                ifh = open(ptFilePath, 'r')  # pylint: disable=consider-using-with
+                ifh = open(crdFilePath, 'r')  # pylint: disable=consider-using-with
                 input = InputStream(ifh.read())
 
             else:
-                ptFilePath, ptString = None, ptFilePath
+                crdFilePath, crdString = None, crdFilePath
 
-                if ptString is None or len(ptString) == 0:
+                if crdString is None or len(crdString) == 0:
                     if self.__verbose:
                         self.__lfh.write("CharmmCRDReader.parse() Empty string.\n")
                     return None, None, None
 
-                input = InputStream(ptString)
+                input = InputStream(crdString)
 
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
@@ -120,7 +120,7 @@ class CharmmCRDReader:
             lexer = CharmmCRDLexer(input)
             lexer.removeErrorListeners()
 
-            lexer_error_listener = LexerErrorListener(ptFilePath, maxErrorReport=self.__maxLexerErrorReport)
+            lexer_error_listener = LexerErrorListener(crdFilePath, maxErrorReport=self.__maxLexerErrorReport)
             lexer.addErrorListener(lexer_error_listener)
 
             messageList = lexer_error_listener.getMessageList()
@@ -137,7 +137,7 @@ class CharmmCRDReader:
             # try with simpler/faster SLL prediction mode
             parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
-            parser_error_listener = ParserErrorListener(ptFilePath, maxErrorReport=self.__maxParserErrorReport)
+            parser_error_listener = ParserErrorListener(crdFilePath, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)
             tree = parser.charmm_crd()
 
@@ -159,7 +159,7 @@ class CharmmCRDReader:
                         self.__lfh.write(f"{description['input']}\n")
                         self.__lfh.write(f"{description['marker']}\n")
             elif messageList is None and cifFilePath is None:
-                parser_error_listener = ParserErrorListener(ptFilePath, maxErrorReport=self.__maxParserErrorReport)
+                parser_error_listener = ParserErrorListener(crdFilePath, maxErrorReport=self.__maxParserErrorReport)
 
             if self.__verbose:
                 if listener.warningMessage is not None and len(listener.warningMessage) > 0:
@@ -177,7 +177,7 @@ class CharmmCRDReader:
             """ debug code
         except Exception as e:
             if self.__verbose and isFilePath:
-                self.__lfh.write(f"+CharmmCRDReader.parse() ++ Error - {ptFilePath!r} - {str(e)}\n")
+                self.__lfh.write(f"+CharmmCRDReader.parse() ++ Error - {crdFilePath!r} - {str(e)}\n")
             return None, None, None
             """
         finally:

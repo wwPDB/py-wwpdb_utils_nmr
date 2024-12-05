@@ -20,7 +20,6 @@ try:
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        SPECTRAL_DIM_TEMPLATE,
-                                                       extractPeakAssignment,
                                                        getPkRow)
     from wwpdb.utils.nmr.AlignUtil import emptyValue
 
@@ -31,7 +30,6 @@ except ImportError:
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            SPECTRAL_DIM_TEMPLATE,
-                                           extractPeakAssignment,
                                            getPkRow)
     from nmr.AlignUtil import emptyValue
 
@@ -57,17 +55,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by NmrViewPKParser#nmrview_pk.
     def enterNmrview_pk(self, ctx: NmrViewPKParser.Nmrview_pkContext):  # pylint: disable=unused-argument
-        self.num_of_dim = -1
-        self.acq_dim_id = 1
-        self.spectral_dim = {}
-        self.listIdInternal = {}
-        self.chainNumberDict = {}
-        self.extResKey = []
-        self.polySeqRst = []
-        self.polySeqRstFailed = []
-        self.polySeqRstFailedAmbig = []
-        self.compIdMap = {}
-        self.f = []
+        self.enter()
 
     # Exit a parse tree produced by NmrViewPKParser#nmrview_pk.
     def exitNmrview_pk(self, ctx: NmrViewPKParser.Nmrview_pkContext):  # pylint: disable=unused-argument
@@ -286,13 +274,13 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if L1 is not None and L2 is not None:
             assignments = [{}] * self.num_of_dim
-            try:
-                assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-            except Exception:
-                pass
+
+            assignment0 = self.extractPeakAssignment(1, L1, index)
+            if assignment0 is not None:
+                assignments[0] = assignment0[0]
+            assignment1 = self.extractPeakAssignment(1, L2, index)
+            if assignment1 is not None:
+                assignments[1] = assignment1[0]
 
             if all(len(a) > 0 for a in assignments):
 
@@ -464,15 +452,16 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if L1 is not None and L2 is not None and L3 is not None:
             assignments = [{}] * self.num_of_dim
-            try:
-                assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                assignments[2] = extractPeakAssignment(1, L3, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-            except Exception:
-                pass
+
+            assignment0 = self.extractPeakAssignment(1, L1, index)
+            if assignment0 is not None:
+                assignments[0] = assignment0[0]
+            assignment1 = self.extractPeakAssignment(1, L2, index)
+            if assignment1 is not None:
+                assignments[1] = assignment1[0]
+            assignment2 = self.extractPeakAssignment(1, L3, index)
+            if assignment2 is not None:
+                assignments[2] = assignment2[0]
 
             if all(len(a) > 0 for a in assignments):
 
@@ -667,17 +656,19 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if L1 is not None and L2 is not None and L3 is not None and L4 is not None:
             assignments = [{}] * self.num_of_dim
-            try:
-                assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                assignments[2] = extractPeakAssignment(1, L3, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                assignments[3] = extractPeakAssignment(1, L4, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-            except Exception:
-                pass
+
+            assignment0 = self.extractPeakAssignment(1, L1, index)
+            if assignment0 is not None:
+                assignments[0] = assignment0[0]
+            assignment1 = self.extractPeakAssignment(1, L2, index)
+            if assignment1 is not None:
+                assignments[1] = assignment1[0]
+            assignment2 = self.extractPeakAssignment(1, L3, index)
+            if assignment2 is not None:
+                assignments[2] = assignment2[0]
+            assignment3 = self.extractPeakAssignment(1, L4, index)
+            if assignment3 is not None:
+                assignments[3] = assignment3[0]
 
             if all(len(a) > 0 for a in assignments):
 
@@ -835,13 +826,13 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if L1 is not None and L2 is not None:
             assignments = [{}] * self.num_of_dim
-            try:
-                assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-            except Exception:
-                pass
+
+            assignment0 = self.extractPeakAssignment(1, L1, index)
+            if assignment0 is not None:
+                assignments[0] = assignment0[0]
+            assignment1 = self.extractPeakAssignment(1, L2, index)
+            if assignment1 is not None:
+                assignments[1] = assignment1[0]
 
             if all(len(a) > 0 for a in assignments):
 
@@ -984,15 +975,16 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if L1 is not None and L2 is not None and L3 is not None:
             assignments = [{}] * self.num_of_dim
-            try:
-                assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                assignments[2] = extractPeakAssignment(1, L3, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-            except Exception:
-                pass
+
+            assignment0 = self.extractPeakAssignment(1, L1, index)
+            if assignment0 is not None:
+                assignments[0] = assignment0[0]
+            assignment1 = self.extractPeakAssignment(1, L2, index)
+            if assignment1 is not None:
+                assignments[1] = assignment1[0]
+            assignment2 = self.extractPeakAssignment(1, L3, index)
+            if assignment2 is not None:
+                assignments[2] = assignment2[0]
 
             if all(len(a) > 0 for a in assignments):
 
@@ -1155,17 +1147,19 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if L1 is not None and L2 is not None and L3 is not None and L4 is not None:
             assignments = [{}] * self.num_of_dim
-            try:
-                assignments[0] = extractPeakAssignment(1, L1, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                assignments[1] = extractPeakAssignment(1, L2, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                assignments[2] = extractPeakAssignment(1, L3, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                assignments[3] = extractPeakAssignment(1, L4, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                       self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-            except Exception:
-                pass
+
+            assignment0 = self.extractPeakAssignment(1, L1, index)
+            if assignment0 is not None:
+                assignments[0] = assignment0[0]
+            assignment1 = self.extractPeakAssignment(1, L2, index)
+            if assignment1 is not None:
+                assignments[1] = assignment1[0]
+            assignment2 = self.extractPeakAssignment(1, L3, index)
+            if assignment2 is not None:
+                assignments[2] = assignment2[0]
+            assignment3 = self.extractPeakAssignment(1, L4, index)
+            if assignment3 is not None:
+                assignments[3] = assignment3[0]
 
             if all(len(a) > 0 for a in assignments):
 

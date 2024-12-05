@@ -241,7 +241,7 @@ class CharmmCRDParserListener(ParseTreeListener):
                         atomName = _atomName
                         retrievedAtomNumList.append(atomNum)
 
-                if (terminus[atomNum - 1] and ancAtomName.endswith('T'))\
+                if (0 < atomNum < len(terminus) + 1 and terminus[atomNum - 1] and ancAtomName.endswith('T'))\
                    or is_segment(prevAsymId, prevCompId, prevAtomName, asymId, compId, atomName)\
                    or is_ligand(prevCompId, compId)\
                    or is_metal_ion(compId, atomName)\
@@ -956,6 +956,7 @@ class CharmmCRDParserListener(ParseTreeListener):
     def exitAtom_coordinate(self, ctx: CharmmCRDParser.Atom_coordinateContext):
 
         try:
+
             nr = int(str(ctx.Integer(0)))
             seqId = int(str(ctx.Integer(1)))
 

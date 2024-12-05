@@ -24,7 +24,6 @@ try:
                                                        SPECTRAL_DIM_TEMPLATE,
                                                        getMaxEffDigits,
                                                        roundString,
-                                                       extractPeakAssignment,
                                                        getPkRow)
     from wwpdb.utils.nmr.AlignUtil import emptyValue
 
@@ -37,7 +36,6 @@ except ImportError:
                                            SPECTRAL_DIM_TEMPLATE,
                                            getMaxEffDigits,
                                            roundString,
-                                           extractPeakAssignment,
                                            getPkRow)
     from nmr.AlignUtil import emptyValue
 
@@ -59,17 +57,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by NmrPipePKParser#nmrpipe_pk.
     def enterNmrpipe_pk(self, ctx: NmrPipePKParser.Nmrpipe_pkContext):  # pylint: disable=unused-argument
-        self.num_of_dim = -1
-        self.acq_dim_id = 1
-        self.spectral_dim = {}
-        self.listIdInternal = {}
-        self.chainNumberDict = {}
-        self.extResKey = []
-        self.polySeqRst = []
-        self.polySeqRstFailed = []
-        self.polySeqRstFailedAmbig = []
-        self.compIdMap = {}
-        self.f = []
+        self.enter()
 
     # Exit a parse tree produced by DynamoMRParser#dynamo_mr.
     def exitNmrpipe_pk(self, ctx: NmrPipePKParser.Nmrpipe_pkContext):  # pylint: disable=unused-argument
@@ -320,9 +308,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             has_assignments = False
 
             if ass is not None:
-                assignments =\
-                    extractPeakAssignment(self.num_of_dim, ass, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                          self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
+                assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
 
                 if assignments is not None:
 
@@ -515,9 +501,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             has_assignments = False
 
             if ass is not None:
-                assignments =\
-                    extractPeakAssignment(self.num_of_dim, ass, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                          self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
+                assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
 
                 if assignments is not None:
 
@@ -735,9 +719,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             has_assignments = False
 
             if ass is not None:
-                assignments =\
-                    extractPeakAssignment(self.num_of_dim, ass, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                          self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
+                assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
 
                 if assignments is not None:
 

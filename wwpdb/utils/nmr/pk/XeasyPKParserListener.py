@@ -20,7 +20,6 @@ try:
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        SPECTRAL_DIM_TEMPLATE,
-                                                       extractPeakAssignment,
                                                        getPkRow)
     from wwpdb.utils.nmr.AlignUtil import emptyValue
 
@@ -31,7 +30,6 @@ except ImportError:
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            SPECTRAL_DIM_TEMPLATE,
-                                           extractPeakAssignment,
                                            getPkRow)
     from nmr.AlignUtil import emptyValue
 
@@ -40,32 +38,25 @@ except ImportError:
 class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
     __labels = None
+    __atomNumberDict = None
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 reasons=None):
+                 atomNumberDict=None, reasons=None):
         super().__init__(verbose, log, representativeModelId, representativeAltId,
                          mrAtomNameMapping, cR, caC, ccU, csStat, nefT, reasons)
 
         self.file_type = 'nm-pea-xea'
         self.software_name = 'XEASY'
 
+        self.__atomNumberDict = atomNumberDict
+
     # Enter a parse tree produced by XeasyPKParser#xeasy_pk.
     def enterXeasy_pk(self, ctx: XeasyPKParser.Xeasy_pkContext):  # pylint: disable=unused-argument
-        self.num_of_dim = -1
-        self.acq_dim_id = 1
-        self.spectral_dim = {}
-        self.listIdInternal = {}
-        self.chainNumberDict = {}
-        self.extResKey = []
-        self.polySeqRst = []
-        self.polySeqRstFailed = []
-        self.polySeqRstFailedAmbig = []
-        self.compIdMap = {}
-        self.f = []
+        self.enter()
 
     # Exit a parse tree produced by XeasyPKParser#xeasy_pk.
     def exitXeasy_pk(self, ctx: XeasyPKParser.Xeasy_pkContext):  # pylint: disable=unused-argument
@@ -325,13 +316,13 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             if x_ass is not None and y_ass is not None:
                 assignments = [{}] * self.num_of_dim
-                try:
-                    assignments[0] = extractPeakAssignment(1, x_ass, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                           self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                    assignments[1] = extractPeakAssignment(1, y_ass, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                           self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                except Exception:
-                    pass
+
+                assignment0 = self.extractPeakAssignment(1, x_ass, index)
+                if assignment0 is not None:
+                    assignments[0] = assignment0[0]
+                assignment1 = self.extractPeakAssignment(1, y_ass, index)
+                if assignment1 is not None:
+                    assignments[1] = assignment1[0]
 
                 if all(len(a) > 0 for a in assignments):
 
@@ -488,15 +479,16 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             if x_ass is not None and y_ass is not None and z_ass is not None:
                 assignments = [{}] * self.num_of_dim
-                try:
-                    assignments[0] = extractPeakAssignment(1, x_ass, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                           self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                    assignments[1] = extractPeakAssignment(1, y_ass, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                           self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                    assignments[2] = extractPeakAssignment(1, z_ass, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                           self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                except Exception:
-                    pass
+
+                assignment0 = self.extractPeakAssignment(1, x_ass, index)
+                if assignment0 is not None:
+                    assignments[0] = assignment0[0]
+                assignment1 = self.extractPeakAssignment(1, y_ass, index)
+                if assignment1 is not None:
+                    assignments[1] = assignment1[0]
+                assignment2 = self.extractPeakAssignment(1, z_ass, index)
+                if assignment2 is not None:
+                    assignments[2] = assignment2[0]
 
                 if all(len(a) > 0 for a in assignments):
 
@@ -669,17 +661,19 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             if x_ass is not None and y_ass is not None and z_ass is not None and a_ass is not None:
                 assignments = [{}] * self.num_of_dim
-                try:
-                    assignments[0] = extractPeakAssignment(1, x_ass, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                           self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                    assignments[1] = extractPeakAssignment(1, y_ass, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                           self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                    assignments[2] = extractPeakAssignment(1, z_ass, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                           self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                    assignments[3] = extractPeakAssignment(1, a_ass, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                                           self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)[0]
-                except Exception:
-                    pass
+
+                assignment0 = self.extractPeakAssignment(1, x_ass, index)
+                if assignment0 is not None:
+                    assignments[0] = assignment0[0]
+                assignment1 = self.extractPeakAssignment(1, y_ass, index)
+                if assignment1 is not None:
+                    assignments[1] = assignment1[0]
+                assignment2 = self.extractPeakAssignment(1, z_ass, index)
+                if assignment2 is not None:
+                    assignments[2] = assignment2[0]
+                assignment3 = self.extractPeakAssignment(1, a_ass, index)
+                if assignment3 is not None:
+                    assignments[3] = assignment3[0]
 
                 if all(len(a) > 0 for a in assignments):
 
@@ -808,9 +802,15 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
     # Exit a parse tree produced by XeasyPKParser#assign.
     def exitAssign(self, ctx: XeasyPKParser.AssignContext):
         if ctx.Simple_name() and ctx.Integer():
-            self.assignmentSelection.append(str(ctx.Integer()) + str(ctx.Simple_name()))
+            self.assignmentSelection.append(f'{str(ctx.Integer())} {str(ctx.Simple_name())}')
         else:
-            self.assignmentSelection.append(None)
+            ai = int(str(ctx.Integer()))
+            if ai == 0 or self.__atomNumberDict is None or ai not in self.__atomNumberDict:
+                self.assignmentSelection.append(None)
+            else:
+                factor = self.__atomNumberDict[ai]
+                self.assignmentSelection.append(f"{factor['chain_id']} {factor['seq_id']} "
+                                                f"{factor['comp_id']} {factor['auth_atom_id']}")
 
     def fillCurrentSpectralDim(self):
         for _dim_id in range(1, self.num_of_dim + 1):

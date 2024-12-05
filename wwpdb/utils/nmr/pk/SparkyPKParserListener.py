@@ -18,7 +18,6 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        SPECTRAL_DIM_TEMPLATE,
-                                                       extractPeakAssignment,
                                                        getPkRow)
 
 except ImportError:
@@ -27,7 +26,6 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            SPECTRAL_DIM_TEMPLATE,
-                                           extractPeakAssignment,
                                            getPkRow)
 
 
@@ -50,16 +48,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by SparkyPKParser#sparky_pk.
     def enterSparky_pk(self, ctx: SparkyPKParser.Sparky_pkContext):  # pylint: disable=unused-argument
-        self.num_of_dim = -1
-        self.spectral_dim = {}
-        self.listIdInternal = {}
-        self.chainNumberDict = {}
-        self.extResKey = []
-        self.polySeqRst = []
-        self.polySeqRstFailed = []
-        self.polySeqRstFailedAmbig = []
-        self.compIdMap = {}
-        self.f = []
+        self.enter()
 
     # Exit a parse tree produced by SparkyPKParser#sparky_pk.
     def exitSparky_pk(self, ctx: SparkyPKParser.Sparky_pkContext):  # pylint: disable=unused-argument
@@ -250,9 +239,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             has_assignments = False
 
             if ass is not None:
-                assignments =\
-                    extractPeakAssignment(self.num_of_dim, ass, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                          self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
+                assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
 
                 if assignments is not None:
 
@@ -376,10 +363,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             has_assignments = False
 
             if ass is not None:
-                assignments =\
-                    extractPeakAssignment(self.num_of_dim, ass, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                          self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
-                print(f'{ass=} {assignments=}')
+                assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
 
                 if assignments is not None:
 
@@ -518,9 +502,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             has_assignments = False
 
             if ass is not None:
-                assignments =\
-                    extractPeakAssignment(self.num_of_dim, ass, self.authAsymIdSet, self.compIdSet, self.altCompIdSet,
-                                          self.polyPeptide, self.polyDeoxyribonucleotide, self.polyRibonucleotide, self.nefT)
+                assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
 
                 if assignments is not None:
 

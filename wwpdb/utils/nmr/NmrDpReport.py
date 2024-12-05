@@ -88,6 +88,7 @@
 # 14-Nov-2024  M. Yokochi - add 'nm-aux-cha' file type for CHARMM extended CRD (CARD) file acting as CHARMM topology definition
 # 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
 # 22-Nov-2024  M. Yokochi - add 'nm-res-noa' file type for CYANA NOA (NOE Assignment) file
+# 05-Dec-2024  M. Yokochi - add 'nm-aux-xea' file type for XEASY PROT (Assignment) file (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1752,7 +1753,7 @@ class NmrDpReportInputSource:
                       'stats_of_exptl_data')
         self.file_types = ('pdbx',
                            'nef', 'nmr-star',
-                           'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro',
+                           'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-xea',
                            'nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha', 'nm-res-cns',
                            'nm-res-cya', 'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-mr',
                            'nm-res-noa', 'nm-res-oth', 'nm-res-ros', 'nm-res-sax', 'nm-res-syb',

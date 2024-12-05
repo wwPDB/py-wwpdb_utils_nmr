@@ -52,6 +52,7 @@ try:
                                            zincIonCode,
                                            calciumIonCode,
                                            isReservedLigCode,
+                                           getOneLetterCode,
                                            updatePolySeqRst,
                                            revertPolySeqRst,
                                            sortPolySeqRst,
@@ -108,6 +109,7 @@ except ImportError:
                                zincIonCode,
                                calciumIonCode,
                                isReservedLigCode,
+                               getOneLetterCode,
                                updatePolySeqRst,
                                revertPolySeqRst,
                                sortPolySeqRst,
@@ -127,6 +129,11 @@ except ImportError:
                                retrieveRemappedNonPoly,
                                splitPolySeqRstForBranched,
                                retrieveOriginalSeqIdFromMRMap)
+
+
+PEAK_ASSIGNMENT_SEPARATOR_PAT = re.compile('[^0-9A-Za-z]+')
+PEAK_ASSIGNMENT_RESID_PAT = re.compile('[0-9]+')
+PEAK_HALF_SPIN_NUCLEUS = ('H', 'Q', 'M', 'C', 'N', 'P', 'F')
 
 
 class BasePKParserListener():
@@ -393,6 +400,19 @@ class BasePKParserListener():
 
     def setEntryId(self, entryId: str):
         self.entryId = entryId
+
+    def enter(self):
+        self.num_of_dim = -1
+        self.acq_dim_id = 1
+        self.spectral_dim = {}
+        self.listIdInternal = {}
+        self.chainNumberDict = {}
+        self.extResKey = []
+        self.polySeqRst = []
+        self.polySeqRstFailed = []
+        self.polySeqRstFailedAmbig = []
+        self.compIdMap = {}
+        self.f = []
 
     def exit(self):
 
@@ -896,6 +916,344 @@ class BasePKParserListener():
                                                       getMaxEffDigits([str(lw_hz_4), str(pos_4), str(cur_spectral_dim[4]['value_first_point'])]))
 
         return dstFunc
+
+    def extractPeakAssignment(self, numOfDim: int, string: str, src_index: int) -> Optional[List[dict]]:
+        """ Extract peak assignment from a given string.
+        """
+
+        if numOfDim not in (1, 2, 3, 4):
+            return None
+
+        _str = PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', string.upper()).split()
+        lenStr = len(_str)
+
+        segIdLike, resIdLike, resNameLike, atomNameLike, _atomNameLike, __atomNameLike, ___atomNameLike =\
+            [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr
+
+        segIdSpan, resIdSpan, resNameSpan, atomNameSpan, _atomNameSpan, __atomNameSpan, ___atomNameSpan =\
+            [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr
+
+        aaOnly = self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide
+        oneLetterCodeSet = [getOneLetterCode(compId) for compId in self.compIdSet] if aaOnly else []
+
+        for idx, term in enumerate(_str):
+            for segId in self.authAsymIdSet:
+                if term.startswith(segId):
+                    segIdLike[idx] = True
+                    segIdSpan[idx] = (0, len(segId))
+                    break
+
+            resIdTest = PEAK_ASSIGNMENT_RESID_PAT.search(term)
+            if resIdTest:
+                resIdLike[idx] = True
+                resIdSpan[idx] = resIdTest.span()
+
+            minIndex = len(term)
+
+            for compId in self.compIdSet:
+                if compId in term:
+                    resNameLike[idx] = True
+                    index = term.index(compId)
+                    if index < minIndex:
+                        resNameSpan[idx] = (index, index + len(compId))
+                        minIndex = index
+
+            if not resNameLike[idx]:
+                for compId in self.altCompIdSet:
+                    if compId in term:
+                        resNameLike[idx] = True
+                        index = term.index(compId)
+                        if index < minIndex:
+                            resNameSpan[idx] = (index, index + len(compId))
+                            minIndex = index
+
+            if not resNameLike[idx] and aaOnly:
+                for compId in oneLetterCodeSet:
+                    if compId in term:
+                        resNameLike[idx] = True
+                        index = term.index(compId)
+                        if index < minIndex:
+                            resNameSpan[idx] = (index, index + len(compId))
+                            minIndex = index
+
+            for elem in PEAK_HALF_SPIN_NUCLEUS:
+                if len(elem) == 1:
+                    if elem in term:
+                        index = term.rindex(elem)
+                        atomId = term[index:len(term)]
+                        if resNameLike[idx]:
+                            compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                            if len(compId) == 1 and aaOnly:
+                                compId = next(k for k, v in monDict3.items() if v == compId)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    atomNameLike[idx] = True
+                                    atomNameSpan[idx] = (index, len(term))
+                                    break
+                        for compId in self.compIdSet:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                atomNameLike[idx] = True
+                                atomNameSpan[idx] = (index, len(term))
+                                break
+                        if atomNameLike[idx]:
+                            break
+
+            if atomNameLike[idx]:
+                _term = term[0:atomNameSpan[idx][0]]
+                for elem in PEAK_HALF_SPIN_NUCLEUS:
+                    if len(elem) == 1:
+                        if elem in _term:
+                            index = _term.rindex(elem)
+                            atomId = _term[index:len(_term)]
+                            if resNameLike[idx]:
+                                compId = _term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                                if len(compId) == 1 and aaOnly:
+                                    compId = next(k for k, v in monDict3.items() if v == compId)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                    if details is None:
+                                        _atomNameLike[idx] = True
+                                        _atomNameSpan[idx] = (index, len(_term))
+                                        break
+                            for compId in self.compIdSet:
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    _atomNameLike[idx] = True
+                                    _atomNameSpan[idx] = (index, len(_term))
+                                    break
+                            if _atomNameLike[idx]:
+                                break
+
+            if numOfDim >= 3 and _atomNameLike[idx]:
+                __term = term[0:_atomNameSpan[idx][0]]
+                for elem in PEAK_HALF_SPIN_NUCLEUS:
+                    if len(elem) == 1:
+                        if elem in __term:
+                            index = __term.rindex(elem)
+                            atomId = __term[index:len(__term)]
+                            if resNameLike[idx]:
+                                compId = __term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                                if len(compId) == 1 and aaOnly:
+                                    compId = next(k for k, v in monDict3.items() if v == compId)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                    if details is None:
+                                        __atomNameLike[idx] = True
+                                        __atomNameSpan[idx] = (index, len(__term))
+                                        break
+                            for compId in self.compIdSet:
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    __atomNameLike[idx] = True
+                                    __atomNameSpan[idx] = (index, len(__term))
+                                    break
+                            if __atomNameLike[idx]:
+                                break
+
+            if numOfDim >= 4 and __atomNameLike[idx]:
+                ___term = term[0:__atomNameSpan[idx][0]]
+                for elem in PEAK_HALF_SPIN_NUCLEUS:
+                    if len(elem) == 1:
+                        if elem in ___term:
+                            index = ___term.rindex(elem)
+                            atomId = ___term[index:len(___term)]
+                            if resNameLike[idx]:
+                                compId = ___term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                                if len(compId) == 1 and aaOnly:
+                                    compId = next(k for k, v in monDict3.items() if v == compId)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                    if details is None:
+                                        ___atomNameLike[idx] = True
+                                        ___atomNameSpan[idx] = (index, len(___term))
+                                        break
+                            for compId in self.compIdSet:
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    ___atomNameLike[idx] = True
+                                    ___atomNameSpan[idx] = (index, len(___term))
+                                    break
+                            if ___atomNameLike[idx]:
+                                break
+
+        atomNameCount = 0
+        for idx in range(lenStr):
+            if atomNameLike[idx]:
+                atomNameCount += 1
+            if _atomNameLike[idx]:
+                atomNameCount += 1
+            if __atomNameLike[idx]:
+                atomNameCount += 1
+            if ___atomNameLike[idx]:
+                atomNameCount += 1
+
+        if atomNameCount < numOfDim:
+            return None
+
+        if atomNameCount > numOfDim:
+            atomNameCount = 0
+            ignoreBefore = False
+            for idx in range(lenStr - 1, 0, -1):
+                if ignoreBefore:
+                    atomNameLike[idx] = _atomNameLike[idx] = __atomNameLike[idx] = ___atomNameLike[idx] = False
+                else:
+                    if atomNameLike[idx]:
+                        atomNameCount += 1
+                    if _atomNameLike[idx]:
+                        atomNameCount += 1
+                    if __atomNameLike[idx]:
+                        atomNameCount += 1
+                    if ___atomNameLike[idx]:
+                        atomNameCount += 1
+                    if atomNameCount >= numOfDim:
+                        ignoreBefore = True
+
+        for idx in range(lenStr):
+            if ___atomNameLike[idx]:
+                if resNameLike[idx]:
+                    if resNameSpan[idx][1] > ___atomNameSpan[idx][0]:
+                        resNameLike[idx] = False
+                if resIdLike[idx]:
+                    if resIdSpan[idx][1] > ___atomNameSpan[idx][0]:
+                        resIdLike[idx] = False
+                if segIdLike[idx]:
+                    if segIdSpan[idx][1] > ___atomNameSpan[idx][0]:
+                        segIdLike[idx] = False
+
+            elif __atomNameLike[idx]:
+                if resNameLike[idx]:
+                    if resNameSpan[idx][1] > __atomNameSpan[idx][0]:
+                        resNameLike[idx] = False
+                if resIdLike[idx]:
+                    if resIdSpan[idx][1] > __atomNameSpan[idx][0]:
+                        resIdLike[idx] = False
+                if segIdLike[idx]:
+                    if segIdSpan[idx][1] > __atomNameSpan[idx][0]:
+                        segIdLike[idx] = False
+
+            elif _atomNameLike[idx]:
+                if resNameLike[idx]:
+                    if resNameSpan[idx][1] > _atomNameSpan[idx][0]:
+                        resNameLike[idx] = False
+                if resIdLike[idx]:
+                    if resIdSpan[idx][1] > _atomNameSpan[idx][0]:
+                        resIdLike[idx] = False
+                if segIdLike[idx]:
+                    if segIdSpan[idx][1] > _atomNameSpan[idx][0]:
+                        segIdLike[idx] = False
+
+            elif atomNameLike[idx]:
+                if resNameLike[idx]:
+                    if resNameSpan[idx][1] > atomNameSpan[idx][0]:
+                        resNameLike[idx] = False
+                if resIdLike[idx]:
+                    if resIdSpan[idx][1] > atomNameSpan[idx][0]:
+                        resIdLike[idx] = False
+                if segIdLike[idx]:
+                    if segIdSpan[idx][1] > atomNameSpan[idx][0]:
+                        segIdLike[idx] = False
+
+            if resNameLike[idx]:
+                if segIdLike[idx]:
+                    if segIdSpan[idx][1] > resNameSpan[idx][0]:
+                        if numOfDim > 1 or not any(resNameLike[_idx] for _idx in range(idx + 1, lenStr)):
+                            segIdLike[idx] = False
+                        else:
+                            resNameLike[idx] = False
+
+        resIdCount = 0
+        for idx in range(lenStr):
+            if resIdLike[idx]:
+                resIdCount += 1
+
+        if resIdCount == 0:
+            return None
+
+        ret = []
+
+        segId = resId = resName = atomName = None
+        dimId = 0
+        for idx, term in enumerate(_str):
+            if segIdLike[idx]:
+                segId = term[segIdSpan[idx][0]:segIdSpan[idx][1]]
+            if resIdLike[idx]:
+                resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
+            if resNameLike[idx]:
+                resName = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                if len(resName) == 1 and aaOnly:
+                    resName = next(k for k, v in monDict3.items() if v == resName)
+            if ___atomNameLike[idx]:
+                if resId is None:
+                    return None
+                atomName = term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]]
+                if segId is None and resName is None:
+                    chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
+                    if len(chainAssign) > 0:
+                        segId, _, resName, _ = chainAssign[0]
+                elif segId is None:
+                    chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
+                    if len(chainAssign) > 0:
+                        segId = chainAssign[0][0]
+                elif resName is None:
+                    chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
+                    if len(chainAssign) > 0:
+                        resName = chainAssign[0][2]
+                dimId += 1
+                ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+            if __atomNameLike[idx]:
+                if resId is None:
+                    return None
+                atomName = term[__atomNameSpan[idx][0]:__atomNameSpan[idx][1]]
+                if segId is None and resName is None:
+                    chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
+                    if len(chainAssign) > 0:
+                        segId, _, resName, _ = chainAssign[0]
+                elif segId is None:
+                    chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
+                    if len(chainAssign) > 0:
+                        segId = chainAssign[0][0]
+                elif resName is None:
+                    chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
+                    if len(chainAssign) > 0:
+                        resName = chainAssign[0][2]
+                dimId += 1
+                ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+            if _atomNameLike[idx]:
+                if resId is None:
+                    return None
+                atomName = term[_atomNameSpan[idx][0]:_atomNameSpan[idx][1]]
+                if segId is None and resName is None:
+                    chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
+                    if len(chainAssign) > 0:
+                        segId, _, resName, _ = chainAssign[0]
+                elif segId is None:
+                    chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
+                    if len(chainAssign) > 0:
+                        segId = chainAssign[0][0]
+                elif resName is None:
+                    chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
+                    if len(chainAssign) > 0:
+                        resName = chainAssign[0][2]
+                dimId += 1
+                ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+            if atomNameLike[idx]:
+                if resId is None:
+                    return None
+                atomName = term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]
+                if segId is None and resName is None:
+                    chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
+                    if len(chainAssign) > 0:
+                        segId, _, resName, _ = chainAssign[0]
+                elif segId is None:
+                    chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
+                    if len(chainAssign) > 0:
+                        segId = chainAssign[0][0]
+                elif resName is None:
+                    chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
+                    if len(chainAssign) > 0:
+                        resName = chainAssign[0][2]
+                dimId += 1
+                ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+
+        return ret if len(ret) == numOfDim else None  # ignore multiple assignments for a peak
 
     def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str], isPolySeq=True) -> Tuple[str, int, Optional[str]]:
         if compId is not None:

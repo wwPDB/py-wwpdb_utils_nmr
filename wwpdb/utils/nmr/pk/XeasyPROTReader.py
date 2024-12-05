@@ -1,9 +1,9 @@
 ##
-# XeasyPKReader.py
+# XeasyPROTReader.py
 #
 # Update:
 ##
-""" A collection of classes for parsing XEASY PK files.
+""" A collection of classes for parsing XEASY PROT files.
 """
 import sys
 import os
@@ -13,10 +13,9 @@ from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-    from wwpdb.utils.nmr.pk.XeasyPKLexer import XeasyPKLexer
-    from wwpdb.utils.nmr.pk.XeasyPKParser import XeasyPKParser
-    from wwpdb.utils.nmr.pk.XeasyPKParserListener import XeasyPKParserListener
-    from wwpdb.utils.nmr.pk.XeasyPROTReader import XeasyPROTReader
+    from wwpdb.utils.nmr.pk.XeasyPROTLexer import XeasyPROTLexer
+    from wwpdb.utils.nmr.pk.XeasyPROTParser import XeasyPROTParser
+    from wwpdb.utils.nmr.pk.XeasyPROTParserListener import XeasyPROTParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -28,10 +27,9 @@ try:
 except ImportError:
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
-    from nmr.pk.XeasyPKLexer import XeasyPKLexer
-    from nmr.pk.XeasyPKParser import XeasyPKParser
-    from nmr.pk.XeasyPKParserListener import XeasyPKParserListener
-    from nmr.pk.XeasyPROTReader import XeasyPROTReader
+    from nmr.pk.XeasyPROTLexer import XeasyPROTLexer
+    from nmr.pk.XeasyPROTParser import XeasyPROTParser
+    from nmr.pk.XeasyPROTParserListener import XeasyPROTParserListener
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID,
@@ -42,19 +40,17 @@ except ImportError:
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
 
-class XeasyPKReader:
-    """ Accessor methods for parsing XEASY PK files.
+class XeasyPROTReader:
+    """ Accessor methods for parsing XEASY PROT files.
     """
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
-                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 atomNumberDict=None, reasons=None):
+                 cR=None, caC=None, ccU=None, csStat=None, nefT=None):
         self.__verbose = verbose
         self.__lfh = log
-        self.__debug = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
         self.__maxParserErrorReport = MAX_ERROR_REPORT
@@ -78,17 +74,6 @@ class XeasyPKReader:
 
         # NEFTranslator
         self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
-        if nefT is None:
-            self.__nefT.set_remediation_mode(True)
-
-        # XeasyPROTParserListener.getAtomNumberDict()
-        self.__atomNumberDict = atomNumberDict
-
-        # reasons for re-parsing request from the previous trial
-        self.__reasons = reasons
-
-    def setDebugMode(self, debug):
-        self.__debug = debug
 
     def setLexerMaxErrorReport(self, maxErrReport):
         self.__maxLexerErrorReport = maxErrReport
@@ -96,10 +81,9 @@ class XeasyPKReader:
     def setParserMaxErrorReport(self, maxErrReport):
         self.__maxParserErrorReport = maxErrReport
 
-    def parse(self, pkFilePath, cifFilePath=None, protFilePath=None, isFilePath=True,
-              createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
-        """ Parse XEASY PK file.
-            @return: XeasyPKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
+    def parse(self, protFilePath, cifFilePath=None, isFilePath=True):
+        """ Parse XEASY PROT file.
+            @return: XeasyPROTParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
         ifh = None
@@ -107,30 +91,30 @@ class XeasyPKReader:
         try:
 
             if isFilePath:
-                pkString = None
+                protString = None
 
-                if not os.access(pkFilePath, os.R_OK):
+                if not os.access(protFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"XeasyPKReader.parse() {pkFilePath} is not accessible.\n")
+                        self.__lfh.write(f"XeasyPROTReader.parse() {protFilePath} is not accessible.\n")
                     return None, None, None
 
-                ifh = open(pkFilePath, 'r')  # pylint: disable=consider-using-with
+                ifh = open(protFilePath, 'r')  # pylint: disable=consider-using-with
                 input = InputStream(ifh.read())
 
             else:
-                pkFilePath, pkString = None, pkFilePath
+                protFilePath, protString = None, protFilePath
 
-                if pkString is None or len(pkString) == 0:
+                if protString is None or len(protString) == 0:
                     if self.__verbose:
-                        self.__lfh.write("XeasyPKReader.parse() Empty string.\n")
+                        self.__lfh.write("XeasyPROTReader.parse() Empty string.\n")
                     return None, None, None
 
-                input = InputStream(pkString)
+                input = InputStream(protString)
 
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"XeasyPKReader.parse() {cifFilePath} is not accessible.\n")
+                        self.__lfh.write(f"XeasyPROTReader.parse() {cifFilePath} is not accessible.\n")
                     return None, None, None
 
                 if self.__cR is None:
@@ -138,21 +122,10 @@ class XeasyPKReader:
                     if not self.__cR.parse(cifFilePath):
                         return None, None, None
 
-            if protFilePath is not None and self.__atomNumberDict is None:
-                ptR = XeasyPROTReader(self.__verbose, self.__lfh,
-                                      self.__representativeModelId,
-                                      self.__representativeAltId,
-                                      self.__mrAtomNameMapping,
-                                      self.__cR, self.__caC,
-                                      self.__ccU, self.__csStat, self.__nefT)
-                protPL, _, _ = ptR.parse(protFilePath, cifFilePath)
-                if protPL is not None:
-                    self.__atomNumberDict = protPL.getAtomNumberDict()
-
-            lexer = XeasyPKLexer(input)
+            lexer = XeasyPROTLexer(input)
             lexer.removeErrorListeners()
 
-            lexer_error_listener = LexerErrorListener(pkFilePath, maxErrorReport=self.__maxLexerErrorReport)
+            lexer_error_listener = LexerErrorListener(protFilePath, maxErrorReport=self.__maxLexerErrorReport)
             lexer.addErrorListener(lexer_error_listener)
 
             messageList = lexer_error_listener.getMessageList()
@@ -165,31 +138,21 @@ class XeasyPKReader:
                         self.__lfh.write(f"{description['marker']}\n")
 
             stream = CommonTokenStream(lexer)
-            parser = XeasyPKParser(stream)
+            parser = XeasyPROTParser(stream)
             # try with simpler/faster SLL prediction mode
             # parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
-            parser_error_listener = ParserErrorListener(pkFilePath, maxErrorReport=self.__maxParserErrorReport)
+            parser_error_listener = ParserErrorListener(protFilePath, maxErrorReport=self.__maxParserErrorReport)
             parser.addErrorListener(parser_error_listener)
-            tree = parser.xeasy_pk()
+            tree = parser.xeasy_prot()
 
             walker = ParseTreeWalker()
-            listener = XeasyPKParserListener(self.__verbose, self.__lfh,
-                                             self.__representativeModelId,
-                                             self.__representativeAltId,
-                                             self.__mrAtomNameMapping,
-                                             self.__cR, self.__caC,
-                                             self.__ccU, self.__csStat, self.__nefT,
-                                             self.__atomNumberDict, self.__reasons)
-            listener.setDebugMode(self.__debug)
-            listener.createSfDict(createSfDict)
-            if createSfDict:
-                if originalFileName is not None:
-                    listener.setOriginaFileName(originalFileName)
-                if listIdCounter is not None:
-                    listener.setListIdCounter(listIdCounter)
-                if entryId is not None:
-                    listener.setEntryId(entryId)
+            listener = XeasyPROTParserListener(self.__verbose, self.__lfh,
+                                               self.__representativeModelId,
+                                               self.__representativeAltId,
+                                               self.__mrAtomNameMapping,
+                                               self.__cR, self.__caC,
+                                               self.__ccU, self.__csStat, self.__nefT)
             walker.walk(listener, tree)
 
             messageList = parser_error_listener.getMessageList()
@@ -200,6 +163,8 @@ class XeasyPKReader:
                     if 'input' in description:
                         self.__lfh.write(f"{description['input']}\n")
                         self.__lfh.write(f"{description['marker']}\n")
+            elif messageList is None and cifFilePath is None:
+                parser_error_listener = ParserErrorListener(protFilePath, maxErrorReport=self.__maxParserErrorReport)
 
             if self.__verbose:
                 if listener.warningMessage is not None and len(listener.warningMessage) > 0:
@@ -211,13 +176,13 @@ class XeasyPKReader:
 
         except IOError as e:
             if self.__verbose:
-                self.__lfh.write(f"+XeasyPKReader.parse() ++ Error - {str(e)}\n")
+                self.__lfh.write(f"+XeasyPROTReader.parse() ++ Error - {str(e)}\n")
             return None, None, None
             # pylint: disable=unreachable
             """ debug code
         except Exception as e:
             if self.__verbose and isFilePath:
-                self.__lfh.write(f"+XeasyPKReader.parse() ++ Error - {pkFilePath!r} - {str(e)}\n")
+                self.__lfh.write(f"+XeasyPROTReader.parse() ++ Error - {protFilePath!r} - {str(e)}\n")
             return None, None, None
             """
         finally:
@@ -226,8 +191,6 @@ class XeasyPKReader:
 
 
 if __name__ == "__main__":
-    reader = XeasyPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/7a2d/aro.peaks',  # -ignored-as-pea-any',
-                 '../../tests-nmr/mock-data-remediation/7a2d/7a2d.cif',
-                 '../../tests-nmr/mock-data-remediation/7a2d/all.prot')
+    reader = XeasyPROTReader(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/7a2d/all.prot',
+                 '../../tests-nmr/mock-data-remediation/7a2d/7a2d.cif')

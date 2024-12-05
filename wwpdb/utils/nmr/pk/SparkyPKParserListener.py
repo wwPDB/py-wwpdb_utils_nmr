@@ -7,7 +7,6 @@
     @author: Masashi Yokochi
 """
 import sys
-import copy
 import numpy as np
 
 from antlr4 import ParseTreeListener
@@ -17,7 +16,6 @@ try:
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
-                                                       SPECTRAL_DIM_TEMPLATE,
                                                        getPkRow)
 
 except ImportError:
@@ -25,7 +23,6 @@ except ImportError:
     from nmr.pk.BasePKParserListener import BasePKParserListener
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
-                                           SPECTRAL_DIM_TEMPLATE,
                                            getPkRow)
 
 
@@ -797,30 +794,6 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
     # Exit a parse tree produced by SparkyPKParser#number.
     def exitNumber(self, ctx: SparkyPKParser.NumberContext):  # pylint: disable=unused-argument
         pass
-
-    def fillCurrentSpectralDim(self):
-        self.cur_subtype = f'peak{self.num_of_dim}d'
-        if self.num_of_dim not in self.listIdInternal:
-            self.listIdInternal[self.num_of_dim] = 0
-        self.listIdInternal[self.num_of_dim] += 1
-        self.cur_list_id = self.listIdInternal[self.num_of_dim]
-        if self.num_of_dim not in self.spectral_dim:
-            self.spectral_dim[self.num_of_dim] = {}
-        if self.cur_list_id not in self.spectral_dim[self.num_of_dim]:
-            self.spectral_dim[self.num_of_dim][self.cur_list_id] = {}
-        for _dim_id in range(1, self.num_of_dim + 1):
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id] =\
-                copy.copy(SPECTRAL_DIM_TEMPLATE
-                          if len(self.cur_spectral_dim) == 0
-                          or _dim_id not in self.cur_spectral_dim
-                          else self.cur_spectral_dim[_dim_id])
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]['freq_hint'] = []
-        if self.num_of_dim == 2:
-            self.peaks2D = 0
-        if self.num_of_dim == 3:
-            self.peaks3D = 0
-        if self.num_of_dim == 4:
-            self.peaks4D = 0
 
 
 # del SparkyPKParser

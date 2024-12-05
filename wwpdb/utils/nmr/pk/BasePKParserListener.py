@@ -38,7 +38,8 @@ try:
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        MAX_ALLOWED_EXT_SEQ,
                                                        UNREAL_AUTH_SEQ_NUM,
-                                                       HEME_LIKE_RES_NAMES)
+                                                       HEME_LIKE_RES_NAMES,
+                                                       SPECTRAL_DIM_TEMPLATE)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -95,7 +96,8 @@ except ImportError:
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            MAX_ALLOWED_EXT_SEQ,
                                            UNREAL_AUTH_SEQ_NUM,
-                                           HEME_LIKE_RES_NAMES)
+                                           HEME_LIKE_RES_NAMES,
+                                           SPECTRAL_DIM_TEMPLATE)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -710,6 +712,30 @@ class BasePKParserListener():
 
         finally:
             self.warningMessage = sorted(list(set(self.f)), key=self.f.index)
+
+    def fillCurrentSpectralDim(self):
+        self.cur_subtype = f'peak{self.num_of_dim}d'
+        if self.num_of_dim not in self.listIdInternal:
+            self.listIdInternal[self.num_of_dim] = 0
+        self.listIdInternal[self.num_of_dim] += 1
+        self.cur_list_id = self.listIdInternal[self.num_of_dim]
+        if self.num_of_dim not in self.spectral_dim:
+            self.spectral_dim[self.num_of_dim] = {}
+        if self.cur_list_id not in self.spectral_dim[self.num_of_dim]:
+            self.spectral_dim[self.num_of_dim][self.cur_list_id] = {}
+        for _dim_id in range(1, self.num_of_dim + 1):
+            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id] =\
+                copy.copy(SPECTRAL_DIM_TEMPLATE
+                          if len(self.cur_spectral_dim) == 0
+                          or _dim_id not in self.cur_spectral_dim
+                          else self.cur_spectral_dim[_dim_id])
+            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]['freq_hint'] = []
+        if self.num_of_dim == 2:
+            self.peaks2D = 0
+        if self.num_of_dim == 3:
+            self.peaks3D = 0
+        if self.num_of_dim == 4:
+            self.peaks4D = 0
 
     def validatePeak2D(self, index: int, pos_1: float, pos_2: float,
                        pos_unc_1: Optional[float], pos_unc_2: Optional[float],

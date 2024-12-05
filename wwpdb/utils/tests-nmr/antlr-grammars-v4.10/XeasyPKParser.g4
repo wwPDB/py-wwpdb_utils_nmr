@@ -59,7 +59,8 @@ peak_2d:
 	Integer Simple_name
 	number number
 	Simple_name Integer
-	assign assign;
+	assign assign RETURN
+	(assign assign RETURN)*;
 
 peak_list_3d:
 	peak_3d+;
@@ -70,7 +71,8 @@ peak_3d:
 	Integer Simple_name
 	number number
 	Simple_name Integer
-	assign assign assign;
+	assign assign assign RETURN
+	(assign assign assign RETURN)*;
 
 peak_list_4d:
 	peak_4d+;
@@ -81,7 +83,8 @@ peak_4d:
 	Integer Simple_name
 	number number
 	Simple_name Integer
-	assign assign assign assign;
+	assign assign assign assign RETURN
+	(assign assign assign assign RETURN)*;
 
 /* number expression in peak list */
 number: Float | Real | Integer | Simple_name;

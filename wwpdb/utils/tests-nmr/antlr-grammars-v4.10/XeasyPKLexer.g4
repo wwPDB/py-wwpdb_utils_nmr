@@ -50,7 +50,7 @@ fragment NAME_CHAR:	START_CHAR | '\'' | '"';
 //fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
-SPACE:			[ \t\r\n]+ -> skip;
+SPACE:			[ \t]+ -> skip;
 RETURN:			[\r\n]+;
 
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);

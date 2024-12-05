@@ -10006,26 +10006,33 @@ def extractPeakAssignment(numOfDim: int, string: str, segIdSet: Set[str], compId
             resIdLike[idx] = True
             resIdSpan[idx] = resIdTest.span()
 
+        minIndex = len(term)
+
         for compId in compIdSet:
             if compId in term:
                 resNameLike[idx] = True
                 index = term.index(compId)
-                resNameSpan[idx] = (index, index + len(compId))
-                break
+                if index < minIndex:
+                    resNameSpan[idx] = (index, index + len(compId))
+                    minIndex = index
+
         if not resNameLike[idx]:
             for compId in altCompIdSet:
                 if compId in term:
                     resNameLike[idx] = True
                     index = term.index(compId)
-                    resNameSpan[idx] = (index, index + len(compId))
-                    break
+                    if index < minIndex:
+                        resNameSpan[idx] = (index, index + len(compId))
+                        minIndex = index
+
         if not resNameLike[idx] and aaOnly:
             for compId in oneLetterCodeSet:
                 if compId in term:
                     resNameLike[idx] = True
                     index = term.index(compId)
-                    resNameSpan[idx] = (index, index + len(compId))
-                    break
+                    if index < minIndex:
+                        resNameSpan[idx] = (index, index + len(compId))
+                        minIndex = index
 
         for elem in PEAK_HALF_SPIN_NUCLEUS:
             if len(elem) == 1:
@@ -10247,4 +10254,4 @@ def extractPeakAssignment(numOfDim: int, string: str, segIdSet: Set[str], compId
             dimId += 1
             ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
 
-    return ret if len(ret) == numOfDim else None
+    return ret if len(ret) == numOfDim else None  # ignore multiple assignments for a peak

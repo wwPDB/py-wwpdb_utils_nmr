@@ -90,6 +90,10 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
                                         __v['atom_type'] = 'H'
                                         __v['atom_isotope_number'] = 1
                                         __v['axis_code'] = 'H'
+                                    elif 2 < center < 4:
+                                        __v['atom_type'] = 'H'
+                                        __v['atom_isotope_number'] = 1
+                                        __v['axis_code'] = 'H_ali'
                                     elif 60 < center < 90:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
@@ -122,6 +126,8 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
                                     __v['spectral_region'] = 'H_ami_or_aro'
                                 elif 4 < center < 6 and atom_type == 'H':
                                     __v['spectral_region'] = 'H_all'
+                                elif 2 < center < 4 and atom_type == 'H':
+                                    __v['spectral_region'] = 'H_ali'
                                 elif 60 < center < 90 and atom_type == 'C':
                                     __v['spectral_region'] = 'C_all'
                                 elif 30 < center < 50 and atom_type == 'C':

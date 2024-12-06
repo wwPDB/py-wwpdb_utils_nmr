@@ -2086,7 +2086,9 @@ SPECTRAL_DIM_TEMPLATE = {'axis_code': None,
                          'encoded_reduced_dimension_id': None
                          }
 
-SPECTRAL_DIM_TRANSFER_TEMPLATE = {'indirect': None,
+SPECTRAL_DIM_TRANSFER_TEMPLATE = {'spectral_dim_id_1': None,
+                                  'spectral_dim_id_2': None,
+                                  'indirect': None,
                                   'type': None}
 
 

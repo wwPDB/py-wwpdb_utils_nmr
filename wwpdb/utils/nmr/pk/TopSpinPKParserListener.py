@@ -182,15 +182,15 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if self.__cur_path == '/PeakList/PeakList2D':
             self.num_of_dim = 2
-            self.fillCurrentSpectralDim()
+            self.initSpectralDim()
 
         elif self.__cur_path == '/PeakList/PeakList3D':
             self.num_of_dim = 3
-            self.fillCurrentSpectralDim()
+            self.initSpectralDim()
 
         elif self.__cur_path == '/PeakList/PeakList4D':
             self.num_of_dim = 4
-            self.fillCurrentSpectralDim()
+            self.initSpectralDim()
 
         elif self.__cur_path == '/PeakList/PeakList2D/Peak2D':
             self.peaks2D += 1

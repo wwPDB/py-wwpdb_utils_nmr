@@ -164,7 +164,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
         if ctx.Volume_LA():
             self.__has_volume = True
 
-        self.fillCurrentSpectralDim()
+        self.initSpectralDim()
 
     # Exit a parse tree produced by SparkyPKParser#data_label.
     def exitData_label(self, ctx: SparkyPKParser.Data_labelContext):  # pylint: disable=unused-argument
@@ -186,7 +186,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
         if ctx.Volume_LA():
             self.__has_volume = True
 
-        self.fillCurrentSpectralDim()
+        self.initSpectralDim()
 
     # Exit a parse tree produced by SparkyPKParser#data_label_wo_assign.
     def exitData_label_wo_assign(self, ctx: SparkyPKParser.Data_label_wo_assignContext):  # pylint: disable=unused-argument
@@ -210,7 +210,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             index = self.peaks2D
 
             ass = str(ctx.Assignment_2d_ex())
-            if ass.startswith('?'):
+            if '?' in ass:
                 ass = None
 
             x_ppm = float(str(ctx.Float(0)))
@@ -278,6 +278,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
+                            has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
 
             if self.createSfDict__:
                 sf = self.getSf()
@@ -332,7 +334,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             index = self.peaks3D
 
             ass = str(ctx.Assignment_3d_ex())
-            if ass.startswith('?'):
+            if '?' in ass:
                 ass = None
 
             x_ppm = float(str(ctx.Float(0)))
@@ -408,6 +410,9 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
+                            has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
 
             if self.createSfDict__:
                 sf = self.getSf()
@@ -469,7 +474,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             index = self.peaks4D
 
             ass = str(ctx.Assignment_4d_ex())
-            if ass.startswith('?'):
+            if '?' in ass:
                 ass = None
 
             x_ppm = float(str(ctx.Float(0)))
@@ -553,6 +558,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
+                            has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(4, a4['atom_id'][0])
 
             if self.createSfDict__:
                 sf = self.getSf()

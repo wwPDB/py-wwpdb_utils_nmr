@@ -33,6 +33,7 @@ try:
                                                        getPkLoop,
                                                        getMaxEffDigits,
                                                        roundString,
+                                                       ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -91,6 +92,7 @@ except ImportError:
                                            getPkLoop,
                                            getMaxEffDigits,
                                            roundString,
+                                           ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -240,6 +242,7 @@ class BasePKParserListener():
     num_of_dim = -1
     acq_dim_id = 1
     spectral_dim = {}
+    spectral_dim_transfer = {}
 
     # whether to allow extended sequence temporary
     __allow_ext_seq = False
@@ -407,6 +410,7 @@ class BasePKParserListener():
         self.num_of_dim = -1
         self.acq_dim_id = 1
         self.spectral_dim = {}
+        self.spectral_dim_transfer = {}
         self.listIdInternal = {}
         self.chainNumberDict = {}
         self.extResKey = []
@@ -713,7 +717,7 @@ class BasePKParserListener():
         finally:
             self.warningMessage = sorted(list(set(self.f)), key=self.f.index)
 
-    def fillCurrentSpectralDim(self):
+    def initSpectralDim(self):
         self.cur_subtype = f'peak{self.num_of_dim}d'
         if self.num_of_dim not in self.listIdInternal:
             self.listIdInternal[self.num_of_dim] = 0
@@ -730,12 +734,31 @@ class BasePKParserListener():
                           or _dim_id not in self.cur_spectral_dim
                           else self.cur_spectral_dim[_dim_id])
             self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]['freq_hint'] = []
+            if self.file_type == 'nm-pea-pip':
+                self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]['obs_freq_hint'] = []
+        if self.num_of_dim not in self.spectral_dim_transfer:
+            self.spectral_dim_transfer[self.num_of_dim] = {}
+        if self.cur_list_id not in self.spectral_dim_transfer[self.num_of_dim]:
+            self.spectral_dim_transfer[self.num_of_dim][self.cur_list_id] = []
         if self.num_of_dim == 2:
             self.peaks2D = 0
         if self.num_of_dim == 3:
             self.peaks3D = 0
         if self.num_of_dim == 4:
             self.peaks4D = 0
+
+    def fillAtomTypeInCase(self, _dim_id: int, atom_type: str) -> bool:
+        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
+        if cur_spectral_dim['atom_type'] is not None:
+            return cur_spectral_dim['atom_type'] == atom_type
+        if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+            cur_spectral_dim['atom_type'] = atom_type
+            cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]
+            return True
+        return False
+
+    def fillSpectralDimTransfer(self):
+        pass
 
     def validatePeak2D(self, index: int, pos_1: float, pos_2: float,
                        pos_unc_1: Optional[float], pos_unc_2: Optional[float],

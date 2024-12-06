@@ -54,6 +54,11 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
     __volume = None
     __volume_error = None
 
+    __proton1_active = False
+    __proton2_active = False
+    __hetero1_active = False
+    __hetero2_active = False
+
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
                  representativeAltId=REPRESENTATIVE_ALT_ID,
@@ -253,61 +258,67 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if self.__cur_path == '/spectrum':
             self.num_of_dim = -1
+            self.__proton1_active, self.__proton2_active, self.__hetero1_active, self.__hetero2_active =\
+                False, False, False, False
 
         elif self.__cur_path == '/spectrum/peak':
             if self.num_of_dim == -1:
                 self.num_of_dim = 0
                 if self.__proton1_ppm is not None:
                     self.num_of_dim += 1
+                    self.__proton1_active = True
                 if self.__proton2_ppm is not None:
                     self.num_of_dim += 1
+                    self.__proton2_active = True
                 if self.__hetero1_ppm is not None:
                     self.num_of_dim += 1
+                    self.__hetero1_active = True
                 if self.__hetero2_ppm is not None:
                     self.num_of_dim += 1
-                self.fillCurrentSpectralDim()
+                    self.__hetero2_active = True
+                self.initSpectralDim()
+
+            index = self.__index
+
+            ppm = [None] * self.num_of_dim
+            ppm_error = [None] * self.num_of_dim
+            ass = [None] * self.num_of_dim
+
+            idx = 0
+            if self.__proton1_active:
+                ppm[idx] = self.__proton1_ppm
+                ppm_error[idx] = self.__proton1_ppm_error
+                if self.__proton1_atoms is not None and len(self.__proton1_atoms) == 1:
+                    ass[idx] = self.__proton1_atoms
+                idx += 1
+            if self.__proton2_active:
+                ppm[idx] = self.__proton2_ppm
+                ppm_error[idx] = self.__proton2_ppm_error
+                if self.__proton2_atoms is not None and len(self.__proton2_atoms) == 1:
+                    ass[idx] = self.__proton2_atoms
+                idx += 1
+            if self.__hetero1_active:
+                ppm[idx] = self.__hetero1_ppm
+                ppm_error[idx] = self.__hetero1_ppm_error
+                if self.__hetero1_atoms is not None and len(self.__hetero1_atoms) == 1:
+                    ass[idx] = self.__hetero1_atoms
+                idx += 1
+            if self.__hetero2_active:
+                ppm[idx] = self.__hetero2_ppm
+                ppm_error[idx] = self.__hetero2_ppm_error
+                if self.__hetero2_atoms is not None and len(self.__hetero2_atoms) == 1:
+                    ass[idx] = self.__hetero2_atoms
+
+            if not all(a is not None and len(a) == 1 and 'seq_id' in a[0] and 'atom_id' in a[0] for a in ass):
+                ass = [None] * self.num_of_dim
 
             if self.num_of_dim == 2:
                 self.peaks2D += 1
-
-                ppm = [None] * self.num_of_dim
-                ppm_error = [None] * self.num_of_dim
-                ass = [None] * self.num_of_dim
-
-                idx = 0
-                if self.__proton1_ppm is not None:
-                    ppm[idx] = self.__proton1_ppm
-                    ppm_error[idx] = self.__proton1_ppm_error
-                    if self.__proton1_atoms is not None and len(self.__proton1_atoms) == 1:
-                        ass[idx] = self.__proton1_atoms
-                    idx += 1
-                if self.__proton2_ppm is not None:
-                    ppm[idx] = self.__proton2_ppm
-                    ppm_error[idx] = self.__proton2_ppm_error
-                    if self.__proton2_atoms is not None and len(self.__proton2_atoms) == 1:
-                        ass[idx] = self.__proton2_atoms
-                    idx += 1
-                if self.__hetero1_ppm is not None:
-                    ppm[idx] = self.__hetero1_ppm
-                    ppm_error[idx] = self.__hetero1_ppm_error
-                    if self.__hetero1_atoms is not None and len(self.__hetero1_atoms) == 1:
-                        ass[idx] = self.__hetero1_atoms
-                    idx += 1
-                if self.__hetero2_ppm is not None:
-                    ppm[idx] = self.__hetero2_ppm
-                    ppm_error[idx] = self.__hetero2_ppm_error
-                    if self.__hetero2_atoms is not None and len(self.__hetero2_atoms) == 1:
-                        ass[idx] = self.__hetero2_atoms
-
-                if not all(a is not None and len(a) == 1 and 'seq_id' in a[0] and 'atom_id' in a[0] for a in ass):
-                    ass = [None] * self.num_of_dim
 
                 if None in (ppm[0], ppm[1])\
                    or (self.__intensity is None and self.__volume is None):
                     self.peaks2D -= 1
                     return
-
-                index = self.__index
 
                 dstFunc = self.validatePeak2D(index, ppm[0], ppm[1],
                                               ppm_error[0], ppm_error[1],
@@ -374,6 +385,8 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
                             if len(self.atomSelectionSet) == self.num_of_dim:
                                 has_assignments = True
+                                has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
 
                 if self.createSfDict__:
                     sf = self.getSf()
@@ -409,44 +422,10 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
             elif self.num_of_dim == 3:
                 self.peaks3D += 1
 
-                ppm = [None] * self.num_of_dim
-                ppm_error = [None] * self.num_of_dim
-                ass = [None] * self.num_of_dim
-
-                idx = 0
-                if self.__proton1_ppm is not None:
-                    ppm[idx] = self.__proton1_ppm
-                    ppm_error[idx] = self.__proton1_ppm_error
-                    if self.__proton1_atoms is not None and len(self.__proton1_atoms) == 1:
-                        ass[idx] = self.__proton1_atoms
-                    idx += 1
-                if self.__proton2_ppm is not None:
-                    ppm[idx] = self.__proton2_ppm
-                    ppm_error[idx] = self.__proton2_ppm_error
-                    if self.__proton2_atoms is not None and len(self.__proton2_atoms) == 1:
-                        ass[idx] = self.__proton2_atoms
-                    idx += 1
-                if self.__hetero1_ppm is not None:
-                    ppm[idx] = self.__hetero1_ppm
-                    ppm_error[idx] = self.__hetero1_ppm_error
-                    if self.__hetero1_atoms is not None and len(self.__hetero1_atoms) == 1:
-                        ass[idx] = self.__hetero1_atoms
-                    idx += 1
-                if self.__hetero2_ppm is not None:
-                    ppm[idx] = self.__hetero2_ppm
-                    ppm_error[idx] = self.__hetero2_ppm_error
-                    if self.__hetero2_atoms is not None and len(self.__hetero2_atoms) == 1:
-                        ass[idx] = self.__hetero2_atoms
-
-                if not all(a is not None and len(a) == 1 and 'seq_id' in a[0] and 'atom_id' in a[0] for a in ass):
-                    ass = [None] * self.num_of_dim
-
                 if None in (ppm[0], ppm[1], ppm[2])\
                    or (self.__intensity is None and self.__volume is None):
                     self.peaks3D -= 1
                     return
-
-                index = self.__index
 
                 dstFunc = self.validatePeak3D(index, ppm[0], ppm[1], ppm[2],
                                               ppm_error[0], ppm_error[1], ppm_error[2],
@@ -524,6 +503,9 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
                             if len(self.atomSelectionSet) == self.num_of_dim:
                                 has_assignments = True
+                                has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
 
                 if self.createSfDict__:
                     sf = self.getSf()
@@ -566,44 +548,10 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
             elif self.num_of_dim == 4:
                 self.peaks4D += 1
 
-                ppm = [None] * self.num_of_dim
-                ppm_error = [None] * self.num_of_dim
-                ass = [None] * self.num_of_dim
-
-                idx = 0
-                if self.__proton1_ppm is not None:
-                    ppm[idx] = self.__proton1_ppm
-                    ppm_error[idx] = self.__proton1_ppm_error
-                    if self.__proton1_atoms is not None and len(self.__proton1_atoms) == 1:
-                        ass[idx] = self.__proton1_atoms
-                    idx += 1
-                if self.__proton2_ppm is not None:
-                    ppm[idx] = self.__proton2_ppm
-                    ppm_error[idx] = self.__proton2_ppm_error
-                    if self.__proton2_atoms is not None and len(self.__proton2_atoms) == 1:
-                        ass[idx] = self.__proton2_atoms
-                    idx += 1
-                if self.__hetero1_ppm is not None:
-                    ppm[idx] = self.__hetero1_ppm
-                    ppm_error[idx] = self.__hetero1_ppm_error
-                    if self.__hetero1_atoms is not None and len(self.__hetero1_atoms) == 1:
-                        ass[idx] = self.__hetero1_atoms
-                    idx += 1
-                if self.__hetero2_ppm is not None:
-                    ppm[idx] = self.__hetero2_ppm
-                    ppm_error[idx] = self.__hetero2_ppm_error
-                    if self.__hetero2_atoms is not None and len(self.__hetero2_atoms) == 1:
-                        ass[idx] = self.__hetero2_atoms
-
-                if not all(a is not None and len(a) == 1 and 'seq_id' in a[0] and 'atom_id' in a[0] for a in ass):
-                    ass = [None] * self.num_of_dim
-
                 if None in (ppm[0], ppm[1], ppm[2], ppm[3])\
                    or (self.__intensity is None and self.__volume is None):
                     self.peaks4D -= 1
                     return
-
-                index = self.__index
 
                 dstFunc = self.validatePeak4D(index, ppm[0], ppm[1], ppm[2], ppm[3],
                                               ppm_error[0], ppm_error[1], ppm_error[2], ppm_error[3],
@@ -692,6 +640,10 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
                             if len(self.atomSelectionSet) == self.num_of_dim:
                                 has_assignments = True
+                                has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(4, a4['atom_id'][0])
 
                 if self.createSfDict__:
                     sf = self.getSf()

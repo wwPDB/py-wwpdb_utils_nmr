@@ -191,7 +191,7 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
     def enterDimension(self, ctx: XwinNmrPKParser.DimensionContext):
         if ctx.Integer_ND():
             self.num_of_dim = int(str(ctx.Integer_ND()))
-            self.fillCurrentSpectralDim()
+            self.initSpectralDim()
 
     # Exit a parse tree produced by XwinNmrPKParser#dimension.
     def exitDimension(self, ctx: XwinNmrPKParser.DimensionContext):  # pylint: disable=unused-argument

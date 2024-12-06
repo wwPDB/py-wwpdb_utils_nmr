@@ -8,7 +8,6 @@
 """
 import sys
 import re
-import copy
 import numpy as np
 
 from antlr4 import ParseTreeListener
@@ -243,27 +242,9 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by XeasyPKParser#peak_list_2d.
     def enterPeak_list_2d(self, ctx: XeasyPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
-        self.fillCurrentSpectralDim()
-
         self.num_of_dim = 2
-        self.cur_subtype = 'peak2d'
-        if self.num_of_dim not in self.listIdInternal:
-            self.listIdInternal[self.num_of_dim] = 0
-        self.listIdInternal[self.num_of_dim] += 1
-        self.cur_list_id = self.listIdInternal[self.num_of_dim]
-        if self.num_of_dim not in self.spectral_dim:
-            self.spectral_dim[self.num_of_dim] = {}
-        if self.cur_list_id not in self.spectral_dim[self.num_of_dim]:
-            self.spectral_dim[self.num_of_dim][self.cur_list_id] = {}
-        for _dim_id in range(1, self.num_of_dim + 1):
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id] =\
-                copy.copy(SPECTRAL_DIM_TEMPLATE
-                          if len(self.cur_spectral_dim) == 0
-                          or _dim_id not in self.cur_spectral_dim
-                          else self.cur_spectral_dim[_dim_id])
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]['freq_hint'] = []
-        self.peaks2D = 0
-        self.cur_spectral_dim = {}
+        self.initSpectralDim()
+        self.fillSpectralDimWithLabels()
 
     # Exit a parse tree produced by XeasyPKParser#peak_list_2d.
     def exitPeak_list_2d(self, ctx: XeasyPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
@@ -364,6 +345,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
+                            has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
 
             if self.createSfDict__:
                 sf = self.getSf()
@@ -403,27 +386,9 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by XeasyPKParser#peak_list_3d.
     def enterPeak_list_3d(self, ctx: XeasyPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
-        self.fillCurrentSpectralDim()
-
         self.num_of_dim = 3
-        self.cur_subtype = 'peak3d'
-        if self.num_of_dim not in self.listIdInternal:
-            self.listIdInternal[self.num_of_dim] = 0
-        self.listIdInternal[self.num_of_dim] += 1
-        self.cur_list_id = self.listIdInternal[self.num_of_dim]
-        if self.num_of_dim not in self.spectral_dim:
-            self.spectral_dim[self.num_of_dim] = {}
-        if self.cur_list_id not in self.spectral_dim[self.num_of_dim]:
-            self.spectral_dim[self.num_of_dim][self.cur_list_id] = {}
-        for _dim_id in range(1, self.num_of_dim + 1):
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id] =\
-                copy.copy(SPECTRAL_DIM_TEMPLATE
-                          if len(self.cur_spectral_dim) == 0
-                          or _dim_id not in self.cur_spectral_dim
-                          else self.cur_spectral_dim[_dim_id])
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]['freq_hint'] = []
-        self.peaks3D = 0
-        self.cur_spectral_dim = {}
+        self.initSpectralDim()
+        self.fillSpectralDimWithLabels()
 
     # Exit a parse tree produced by XeasyPKParser#peak_list_3d.
     def exitPeak_list_3d(self, ctx: XeasyPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
@@ -536,6 +501,9 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
+                            has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
 
             if self.createSfDict__:
                 sf = self.getSf()
@@ -582,27 +550,9 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by XeasyPKParser#peak_list_4d.
     def enterPeak_list_4d(self, ctx: XeasyPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
-        self.fillCurrentSpectralDim()
-
         self.num_of_dim = 4
-        self.cur_subtype = 'peak4d'
-        if self.num_of_dim not in self.listIdInternal:
-            self.listIdInternal[self.num_of_dim] = 0
-        self.listIdInternal[self.num_of_dim] += 1
-        self.cur_list_id = self.listIdInternal[self.num_of_dim]
-        if self.num_of_dim not in self.spectral_dim:
-            self.spectral_dim[self.num_of_dim] = {}
-        if self.cur_list_id not in self.spectral_dim[self.num_of_dim]:
-            self.spectral_dim[self.num_of_dim][self.cur_list_id] = {}
-        for _dim_id in range(1, self.num_of_dim + 1):
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id] =\
-                copy.copy(SPECTRAL_DIM_TEMPLATE
-                          if len(self.cur_spectral_dim) == 0
-                          or _dim_id not in self.cur_spectral_dim
-                          else self.cur_spectral_dim[_dim_id])
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]['freq_hint'] = []
-        self.peaks4D = 0
-        self.cur_spectral_dim = {}
+        self.initSpectralDim()
+        self.fillSpectralDimWithLabels()
 
     # Exit a parse tree produced by XeasyPKParser#peak_list_4d.
     def exitPeak_list_4d(self, ctx: XeasyPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
@@ -727,6 +677,10 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
+                            has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(4, a4['atom_id'][0])
 
             if self.createSfDict__:
                 sf = self.getSf()
@@ -818,39 +772,39 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.assignmentSelection.append(f"{factor['chain_id']} {factor['seq_id']} "
                                                 f"{factor['comp_id']} {factor['auth_atom_id']}")
 
-    def fillCurrentSpectralDim(self):
-        for _dim_id in range(1, self.num_of_dim + 1):
-            cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
-            if _dim_id in self.__labels:
-                cur_spectral_dim['axis_code'] = _axis_code = self.__labels[_dim_id]
+    def fillSpectralDimWithLabels(self):
+        if self.__labels is None or len(self.__label) == 0:
+            return
+        for _dim_id, _axis_code in self.__labels.items():
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
 
-                digits = re.findall(r'\d+', _axis_code)
-                for digit in digits:
-                    num = int(digit)
-                    nuc = next((k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if num == v[0]), None)
-                    if nuc is not None:
-                        cur_spectral_dim['atom_type'] = nuc
-                        cur_spectral_dim['atom_isotope_number'] = num
+            cur_spectral_dim['axis_code'] = _axis_code
+
+            digits = re.findall(r'\d+', _axis_code)
+            for digit in digits:
+                num = int(digit)
+                nuc = next((k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if num == v[0]), None)
+                if nuc is not None:
+                    cur_spectral_dim['atom_type'] = nuc
+                    cur_spectral_dim['atom_isotope_number'] = num
+                    break
+            if cur_spectral_dim['atom_type'] is None:
+                for a in _axis_code:
+                    a = a.upper()
+                    if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                        cur_spectral_dim['atom_type'] = a
+                        cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
                         break
-                if cur_spectral_dim['atom_type'] is None:
-                    for a in _axis_code:
-                        a = a.upper()
-                        if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                            cur_spectral_dim['atom_type'] = a
-                            cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
-                            break
 
-                isotope_number = cur_spectral_dim['atom_isotope_number']
+            isotope_number = cur_spectral_dim['atom_isotope_number']
 
-                cur_spectral_dim['acquisition'] = 'yes' if _dim_id == self.acq_dim_id\
-                    and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
+            cur_spectral_dim['acquisition'] = 'yes' if _dim_id == self.acq_dim_id\
+                and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
 
-                if _dim_id == 1 and cur_spectral_dim['acquisition'] == 'no':
-                    self.acq_dim_id = self.num_of_dim
+            if _dim_id == 1 and cur_spectral_dim['acquisition'] == 'no':
+                self.acq_dim_id = self.num_of_dim
 
-                cur_spectral_dim['under_sampling_type'] = 'not observed' if cur_spectral_dim['acquisition'] == 'yes' else 'aliased'
-
-                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
+            cur_spectral_dim['under_sampling_type'] = 'not observed' if cur_spectral_dim['acquisition'] == 'yes' else 'aliased'
 
 
 # del XeasyPKParser

@@ -205,26 +205,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by NmrPipePKParser#peak_list_2d.
     def enterPeak_list_2d(self, ctx: NmrPipePKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
-        self.num_of_dim = 2
-        self.cur_subtype = 'peak2d'
-        if self.num_of_dim not in self.listIdInternal:
-            self.listIdInternal[self.num_of_dim] = 0
-        self.listIdInternal[self.num_of_dim] += 1
-        self.cur_list_id = self.listIdInternal[self.num_of_dim]
-        if self.num_of_dim not in self.spectral_dim:
-            self.spectral_dim[self.num_of_dim] = {}
-        if self.cur_list_id not in self.spectral_dim[self.num_of_dim]:
-            self.spectral_dim[self.num_of_dim][self.cur_list_id] = {}
-        for _dim_id in range(1, self.num_of_dim + 1):
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id] =\
-                copy.copy(SPECTRAL_DIM_TEMPLATE
-                          if len(self.cur_spectral_dim) == 0
-                          or _dim_id not in self.cur_spectral_dim
-                          else self.cur_spectral_dim[_dim_id])
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]['freq_hint'] = []
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]['obs_freq_hint'] = []
-        self.peaks2D = 0
-        self.cur_spectral_dim = {}
+        self.initSpectralDim()
 
         self.null_value = str(ctx.Null_value()) if ctx.Null_value() else None
         self.null_string = str(ctx.Null_string()) if ctx.Null_string() else None
@@ -346,6 +327,8 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
+                            has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
 
             if self.createSfDict__:
                 sf = self.getSf()
@@ -385,26 +368,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by NmrPipePKParser#peak_list_3d.
     def enterPeak_list_3d(self, ctx: NmrPipePKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
-        self.num_of_dim = 3
-        self.cur_subtype = 'peak3d'
-        if self.num_of_dim not in self.listIdInternal:
-            self.listIdInternal[self.num_of_dim] = 0
-        self.listIdInternal[self.num_of_dim] += 1
-        self.cur_list_id = self.listIdInternal[self.num_of_dim]
-        if self.num_of_dim not in self.spectral_dim:
-            self.spectral_dim[self.num_of_dim] = {}
-        if self.cur_list_id not in self.spectral_dim[self.num_of_dim]:
-            self.spectral_dim[self.num_of_dim][self.cur_list_id] = {}
-        for _dim_id in range(1, self.num_of_dim + 1):
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id] =\
-                copy.copy(SPECTRAL_DIM_TEMPLATE
-                          if len(self.cur_spectral_dim) == 0
-                          or _dim_id not in self.cur_spectral_dim
-                          else self.cur_spectral_dim[_dim_id])
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]['freq_hint'] = []
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]['obs_freq_hint'] = []
-        self.peaks3D = 0
-        self.cur_spectral_dim = {}
+        self.initSpectralDim()
 
         self.null_value = str(ctx.Null_value()) if ctx.Null_value() else None
         self.null_string = str(ctx.Null_string()) if ctx.Null_string() else None
@@ -545,6 +509,9 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
+                            has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
 
             if self.createSfDict__:
                 sf = self.getSf()
@@ -590,26 +557,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by NmrPipePKParser#peak_list_4d.
     def enterPeak_list_4d(self, ctx: NmrPipePKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
-        self.num_of_dim = 4
-        self.cur_subtype = 'peak4d'
-        if self.num_of_dim not in self.listIdInternal:
-            self.listIdInternal[self.num_of_dim] = 0
-        self.listIdInternal[self.num_of_dim] += 1
-        self.cur_list_id = self.listIdInternal[self.num_of_dim]
-        if self.num_of_dim not in self.spectral_dim:
-            self.spectral_dim[self.num_of_dim] = {}
-        if self.cur_list_id not in self.spectral_dim[self.num_of_dim]:
-            self.spectral_dim[self.num_of_dim][self.cur_list_id] = {}
-        for _dim_id in range(1, self.num_of_dim + 1):
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id] =\
-                copy.copy(SPECTRAL_DIM_TEMPLATE
-                          if len(self.cur_spectral_dim) == 0
-                          or _dim_id not in self.cur_spectral_dim
-                          else self.cur_spectral_dim[_dim_id])
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]['freq_hint'] = []
-            self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]['obs_freq_hint'] = []
-        self.peaks4D = 0
-        self.cur_spectral_dim = {}
+        self.initSpectralDim()
 
         self.null_value = str(ctx.Null_value()) if ctx.Null_value() else None
         self.null_string = str(ctx.Null_string()) if ctx.Null_string() else None
@@ -769,6 +717,10 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
+                            has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(4, a4['atom_id'][0])
 
             if self.createSfDict__:
                 sf = self.getSf()

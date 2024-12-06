@@ -9,7 +9,6 @@
 import sys
 import re
 import copy
-import numpy as np
 
 from antlr4 import ParseTreeListener
 
@@ -59,51 +58,6 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by NmrViewPKParser#nmrview_pk.
     def exitNmrview_pk(self, ctx: NmrViewPKParser.Nmrview_pkContext):  # pylint: disable=unused-argument
-
-        if len(self.spectral_dim) > 0:
-            for d, v in self.spectral_dim.items():
-                for _id, _v in v.items():
-                    for __d, __v in _v.items():
-                        if 'freq_hint' in __v:
-                            if len(__v['freq_hint']) > 0:
-                                center = np.mean(np.array(__v['freq_hint']))
-
-                                if __v['spectral_region'] is None:
-                                    atom_type = __v['atom_type']
-                                    if 125 < center < 130 and atom_type == 'C':
-                                        __v['spectral_region'] = 'C_aro'
-                                    elif 115 < center < 125 and atom_type == 'N':
-                                        __v['spectral_region'] = 'N_ami'
-                                    elif 170 < center < 180 and atom_type == 'C':
-                                        __v['spectral_region'] = 'CO'
-                                    elif 6 < center < 9 and atom_type == 'H':
-                                        __v['spectral_region'] = 'H_ami_or_aro'
-                                    elif 4 < center < 6 and atom_type == 'H':
-                                        __v['spectral_region'] = 'H_all'
-                                    elif 2 < center < 4 and atom_type == 'H':
-                                        __v['spectral_region'] = 'H_ali'
-                                    elif 60 < center < 90 and atom_type == 'C':
-                                        __v['spectral_region'] = 'C_all'
-                                    elif 30 < center < 50 and atom_type == 'C':
-                                        __v['spectral_region'] = 'C_ali'
-
-                            if len(__v['freq_hint']) > 0 and d > 2 and __d >= 2\
-                               and self.exptlMethod != 'SOLID-STATE NMR' and __v['atom_isotope_number'] == 13:
-                                if center < 100.0 and __v['sweep_width'] / __v['spectrometer_frequency'] < 50.0:
-                                    __v['under_sampling_type'] = 'fold'
-
-                            del __v['freq_hint']
-
-                    for __v in _v.values():
-                        if __v['spectral_region'] == 'H_ami_or_aro':
-                            has_a = any(___v['spectral_region'] == 'C_aro' for ___v in _v.values())
-                            __v['spectral_region'] = 'H_aro' if has_a else 'H_ami'
-
-                    if self.debug:
-                        print(f'num_of_dim: {d}, list_id: {_id}')
-                        for __d, __v in _v.items():
-                            print(f'{__d} {__v}')
-
         self.exit()
 
     # Enter a parse tree produced by NmrViewPKParser#data_label.
@@ -176,13 +130,13 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         elif self.__cur_label_type == 'sw':
 
             for _dim_id, _spectral_width in enumerate(labels, start=1):
-                self.cur_spectral_dim[_dim_id]['sweep_width'] = _spectral_width
+                self.cur_spectral_dim[_dim_id]['sweep_width'] = float(_spectral_width)
                 self.cur_spectral_dim[_dim_id]['sweep_width_unit'] = 'Hz'
 
         elif self.__cur_label_type == 'sf':
 
             for _dim_id, _freq in enumerate(labels, start=1):
-                self.cur_spectral_dim[_dim_id]['spectrometer_frequency'] = _freq
+                self.cur_spectral_dim[_dim_id]['spectrometer_frequency'] = float(_freq)
 
     # Enter a parse tree produced by NmrViewPKParser#peak_list_2d.
     def enterPeak_list_2d(self, ctx: NmrViewPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument

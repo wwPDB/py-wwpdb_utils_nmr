@@ -9,8 +9,6 @@
 import sys
 import re
 import copy
-import collections
-import numpy as np
 import math
 
 from antlr4 import ParseTreeListener
@@ -61,52 +59,6 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by DynamoMRParser#dynamo_mr.
     def exitNmrpipe_pk(self, ctx: NmrPipePKParser.Nmrpipe_pkContext):  # pylint: disable=unused-argument
-
-        if len(self.spectral_dim) > 0:
-            for d, v in self.spectral_dim.items():
-                for _id, _v in v.items():
-                    for __v in _v.values():
-                        if 'freq_hint' in __v:
-                            if len(__v['freq_hint']) > 0:
-                                center = np.mean(np.array(__v['freq_hint']))
-
-                                if __v['spectral_region'] is None:
-                                    atom_type = __v['atom_type']
-                                    if 125 < center < 130 and atom_type == 'C':
-                                        __v['spectral_region'] = 'C_aro'
-                                    elif 115 < center < 125 and atom_type == 'N':
-                                        __v['spectral_region'] = 'N_ami'
-                                    elif 170 < center < 180 and atom_type == 'C':
-                                        __v['spectral_region'] = 'CO'
-                                    elif 6 < center < 9 and atom_type == 'H':
-                                        __v['spectral_region'] = 'H_ami_or_aro'
-                                    elif 4 < center < 6 and atom_type == 'H':
-                                        __v['spectral_region'] = 'H_all'
-                                    elif 2 < center < 4 and atom_type == 'H':
-                                        __v['spectral_region'] = 'H_ali'
-                                    elif 60 < center < 90 and atom_type == 'C':
-                                        __v['spectral_region'] = 'C_all'
-                                    elif 30 < center < 50 and atom_type == 'C':
-                                        __v['spectral_region'] = 'C_ali'
-
-                            del __v['freq_hint']
-
-                        if __v['spectrometer_frequency'] is None and 'obs_freq_hint' in __v and len(__v['obs_freq_hint']) > 0:
-                            __v['spectrometer_frequency'] = collections.Counter(__v['obs_freq_hint']).most_common()[0][0]
-
-                        if 'obs_freq_hint' in __v:
-                            del __v['obs_freq_hint']
-
-                    for __v in _v.values():
-                        if __v['spectral_region'] == 'H_ami_or_aro':
-                            has_a = any(___v['spectral_region'] == 'C_aro' for ___v in _v.values())
-                            __v['spectral_region'] = 'H_aro' if has_a else 'H_ami'
-
-                    if self.debug:
-                        print(f'num_of_dim: {d}, list_id: {_id}')
-                        for __d, __v in _v.items():
-                            print(f'{__d} {__v}')
-
         self.exit()
 
     # Enter a parse tree produced by NmrPipePKParser#data_label.
@@ -169,14 +121,30 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 cur_spectral_dim['center_frequency_offset'] = roundString(str((first_ppm + last_ppm) / 2.0),
                                                                           max_eff_digits)
 
-                if truncated:
+                if truncated and isotope_number in (1, 13, 15):
                     _last_point = int(pow(2.0, round_log2_last_point + 1.0))
                     scale = float(_last_point) / float(last_point - first_point - 1)
-                    cur_spectral_dim['sweep_width'] = roundString(str((first_ppm - last_ppm) * scale),
-                                                                  max_eff_digits)
+                    center = first_ppm - (first_ppm - last_ppm) * scale / 2
+
+                    if isotope_number == 1:
+                        if not 4 < center < 6:
+                            __last_point = _last_point + _last_point / 2
+                            _scale = float(__last_point) / float(last_point - first_point - 1)
+                            center = first_ppm - (first_ppm - last_ppm) * _scale / 2
+                            if 4 < center < 6:
+                                scale = _scale
+                            else:
+                                __last_point = _last_point + _last_point
+                                _scale = float(__last_point) / float(last_point - first_point - 1)
+                                center = first_ppm - (first_ppm - last_ppm) * _scale / 2
+                                if 4 < center < 6:
+                                    scale = _scale
+
+                    cur_spectral_dim['sweep_width'] = float(roundString(str((first_ppm - last_ppm) * scale),
+                                                                        max_eff_digits))
                 else:
-                    cur_spectral_dim['sweep_width'] = roundString(str(first_ppm - last_ppm),
-                                                                  max_eff_digits)
+                    cur_spectral_dim['sweep_width'] = float(roundString(str(first_ppm - last_ppm),
+                                                                        max_eff_digits))
 
                 cur_spectral_dim['sweep_width_unit'] = 'ppm'
 

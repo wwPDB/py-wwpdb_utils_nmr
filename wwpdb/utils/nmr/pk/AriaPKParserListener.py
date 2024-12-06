@@ -8,7 +8,6 @@
     @see: https://aria-test.pasteur.fr/documentation/input-format/version-2.1/spectrum
 """
 import sys
-import numpy as np
 
 from antlr4 import ParseTreeListener
 
@@ -31,6 +30,9 @@ except ImportError:
 class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
     __cur_path = None
+
+    __spectrum_names = None
+    __spectrum_name = None
 
     __index = None
     __proton1_ppm = None
@@ -74,111 +76,13 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
     # Enter a parse tree produced by XMLParser#document.
     def enterDocument(self, ctx: XMLParser.DocumentContext):  # pylint: disable=unused-argument
         self.__cur_path = ''
+        self.__spectrum_names = {}
 
         self.enter()
 
     # Exit a parse tree produced by XMLParser#document.
     def exitDocument(self, ctx: XMLParser.DocumentContext):  # pylint: disable=unused-argument
-
-        if len(self.spectral_dim) > 0:
-            for d, v in self.spectral_dim.items():
-                for _id, _v in v.items():
-                    self.acq_dim_id = 1
-                    for __d, __v in _v.items():
-                        if 'freq_hint' in __v:
-                            if len(__v['freq_hint']) > 0:
-                                center = np.mean(np.array(__v['freq_hint']))
-
-                                if __v['atom_isotope_number'] is None:
-                                    if 125 < center < 130:
-                                        __v['atom_type'] = 'C'
-                                        __v['atom_isotope_number'] = 13
-                                        __v['axis_code'] = 'C_aro'
-                                    elif 115 < center < 125:
-                                        __v['atom_type'] = 'N'
-                                        __v['atom_isotope_number'] = 15
-                                        __v['axis_code'] = 'N_ami'
-                                    elif 170 < center < 180:
-                                        __v['atom_type'] = 'C'
-                                        __v['atom_isotope_number'] = 13
-                                        __v['axis_code'] = 'CO'
-                                    elif 6 < center < 9:
-                                        __v['atom_type'] = 'H'
-                                        __v['atom_isotope_number'] = 1
-                                        __v['axis_code'] = 'H_ami_or_aro'
-                                    elif 4 < center < 6:
-                                        __v['atom_type'] = 'H'
-                                        __v['atom_isotope_number'] = 1
-                                        __v['axis_code'] = 'H'
-                                    elif 2 < center < 4:
-                                        __v['atom_type'] = 'H'
-                                        __v['atom_isotope_number'] = 1
-                                        __v['axis_code'] = 'H_ali'
-                                    elif 60 < center < 90:
-                                        __v['atom_type'] = 'C'
-                                        __v['atom_isotope_number'] = 13
-                                        __v['axis_code'] = 'C'
-                                    elif 30 < center < 50:
-                                        __v['atom_type'] = 'C'
-                                        __v['atom_isotope_number'] = 13
-                                        __v['axis_code'] = 'C_ali'
-
-                                isotope_number = __v['atom_isotope_number']
-
-                                if isotope_number is not None:
-                                    __v['acquisition'] = 'yes' if __d == self.acq_dim_id\
-                                        and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
-
-                                    if __d == 1 and __v['acquisition'] == 'no':
-                                        self.acq_dim_id = self.num_of_dim
-
-                                    __v['under_sampling_type'] = 'not observed' if __v['acquisition'] == 'yes' else 'aliased'
-
-                            if __v['spectral_region'] is None and len(__v['freq_hint']) > 0:
-                                atom_type = __v['atom_type']
-                                if 125 < center < 130 and atom_type == 'C':
-                                    __v['spectral_region'] = 'C_aro'
-                                elif 115 < center < 125 and atom_type == 'N':
-                                    __v['spectral_region'] = 'N_ami'
-                                elif 170 < center < 180 and atom_type == 'C':
-                                    __v['spectral_region'] = 'CO'
-                                elif 6 < center < 9 and atom_type == 'H':
-                                    __v['spectral_region'] = 'H_ami_or_aro'
-                                elif 4 < center < 6 and atom_type == 'H':
-                                    __v['spectral_region'] = 'H_all'
-                                elif 2 < center < 4 and atom_type == 'H':
-                                    __v['spectral_region'] = 'H_ali'
-                                elif 60 < center < 90 and atom_type == 'C':
-                                    __v['spectral_region'] = 'C_all'
-                                elif 30 < center < 50 and atom_type == 'C':
-                                    __v['spectral_region'] = 'C_ali'
-
-                            if len(__v['freq_hint']) > 0 and d > 2 and __d >= 2\
-                               and self.exptlMethod != 'SOLID-STATE NMR' and __v['atom_isotope_number'] == 13:
-                                max_ppm = max(__v['freq_hint'])
-                                min_ppm = min(__v['freq_hint'])
-                                width = max_ppm - min_ppm
-                                if center < 100.0 and width < 50.0:
-                                    __v['under_sampling_type'] = 'fold'
-
-                            del __v['freq_hint']
-
-                    for __v in _v.values():
-                        if __v['axis_code'] == 'H_ami_or_aro':
-                            has_a = any(___v['spectral_region'] == 'C_aro' for ___v in _v.values())
-                            __v['axis_code'] = 'H_aro' if has_a else 'H_ami'
-                        if __v['spectral_region'] == 'H_ami_or_aro':
-                            has_a = any(___v['spectral_region'] == 'C_aro' for ___v in _v.values())
-                            __v['spectral_region'] = 'H_aro' if has_a else 'H_ami'
-
-                    if self.debug:
-                        print(f'num_of_dim: {d}, list_id: {_id}')
-                        for __d, __v in _v.items():
-                            print(f'{__d} {__v}')
-
-        self.exit()
-
-        self.__cur_path = None
+        self.exit(self.__spectrum_names)
 
     # Enter a parse tree produced by XMLParser#prolog.
     def enterProlog(self, ctx: XMLParser.PrologContext):  # pylint: disable=unused-argument
@@ -202,6 +106,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if self.__cur_path == '/spectrum':
             self.num_of_dim = -1
+            self.__spectrum_name = None
 
         elif self.__cur_path == '/spectrum/peak':
             self.__volume = None
@@ -277,6 +182,10 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                     self.num_of_dim += 1
                     self.__hetero2_active = True
                 self.initSpectralDim()
+                if self.num_of_dim not in self.__spectrum_names:
+                    self.__spectrum_names[self.num_of_dim] = {}
+                if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
+                    self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.__spectrum_name
 
             index = self.__index
 
@@ -722,7 +631,12 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
             name = str(ctx.Name())
             string = str(ctx.STRING())[1:-1].strip()
 
-            if self.__cur_path == '/spectrum/peak':
+            if self.__cur_path == '/spectrum':
+
+                if name == 'name':
+                    self.__spectrum_name = string
+
+            elif self.__cur_path == '/spectrum/peak':
 
                 if name == 'number':
                     self.__index = int(string)

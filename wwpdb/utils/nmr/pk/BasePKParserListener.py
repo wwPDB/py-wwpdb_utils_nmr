@@ -32,6 +32,9 @@ try:
                                                        decListIdCounter,
                                                        getSaveframe,
                                                        getPkLoop,
+                                                       getAuxLoops,
+                                                       getSpectralDimRow,
+                                                       getSpectralDimTransferRow,
                                                        getMaxEffDigits,
                                                        roundString,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
@@ -91,6 +94,9 @@ except ImportError:
                                            decListIdCounter,
                                            getSaveframe,
                                            getPkLoop,
+                                           getAuxLoops,
+                                           getSpectralDimRow,
+                                           getSpectralDimTransferRow,
                                            getMaxEffDigits,
                                            roundString,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
@@ -423,7 +429,7 @@ class BasePKParserListener():
 
     def exit(self, spectrum_names: Optional[dict] = None):
 
-        self.fillSpectralDimTransfer(spectrum_names)
+        self.fillPkAuxLoops(spectrum_names)
 
         try:
 
@@ -760,7 +766,7 @@ class BasePKParserListener():
             return True
         return False
 
-    def fillSpectralDimTransfer(self, spectrum_names: Optional[dict]):
+    def fillPkAuxLoops(self, spectrum_names: Optional[dict]):
         if len(self.spectral_dim) > 0:
             for d, v in self.spectral_dim.items():
                 for _id, _v in v.items():
@@ -1140,7 +1146,7 @@ class BasePKParserListener():
                                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                         transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                     'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                                    'type': 'through-space?',
+                                                    'type': 'through-space',  # optimistic inferencing?
                                                     'indirect': 'yes'}
                                         cur_spectral_dim_transfer.append(transfer)
 
@@ -1156,7 +1162,7 @@ class BasePKParserListener():
                                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                                        'type': 'through-space?',
+                                                        'type': 'through-space',  # optimistic inferencing?
                                                         'indirect': 'yes'}
                                             cur_spectral_dim_transfer.append(transfer)
 
@@ -1172,6 +1178,35 @@ class BasePKParserListener():
                         print('spectral_dim_transfer')
                         for transfer in cur_spectral_dim_transfer:
                             print(transfer)
+
+                    if self.createSfDict__:
+                        self.cur_subtype = f'peak{d}d'
+                        self.cur_list_id = _id
+
+                        sf = self.getSf()
+
+                        list_id = sf['list_id']
+                        sf['aux_loops'] = getAuxLoops('spectral_peak')
+
+                        aux_lp = next((aux_lp for aux_lp in sf['aux_loops'] if aux_lp.category == '_Spectral_dim'), None)
+
+                        if aux_lp is None:
+                            continue
+
+                        for _dim_id, _dict in cur_spectral_dim.items():
+                            aux_lp.add_data(getSpectralDimRow(_dim_id, list_id, self.entryId, _dict))
+
+                        sf['saveframe'].add_loop(aux_lp)
+
+                        aux_lp = next((aux_lp for aux_lp in sf['aux_loops'] if aux_lp.category == '_Spectral_dim_transfer'), None)
+
+                        if aux_lp is None:
+                            continue
+
+                        for _dict in cur_spectral_dim_transfer:
+                            aux_lp.add_data(getSpectralDimTransferRow(list_id, self.entryId, _dict))
+
+                        sf['saveframe'].add_loop(aux_lp)
 
     def validatePeak2D(self, index: int, pos_1: float, pos_2: float,
                        pos_unc_1: Optional[float], pos_unc_2: Optional[float],

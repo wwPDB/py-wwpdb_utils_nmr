@@ -32240,7 +32240,7 @@ class NmrDpUtility:
                 sf = master_entry.get_saveframe_by_name(sf_framecode)
                 text_data = get_first_sf_tag(sf, 'Text_data')
 
-                if any(loop for loop in sf.loops if loop.category in ('_Peak_raw_format', '_Peak'))\
+                if any(loop for loop in sf.loops if loop.category in ('_Peak_row_format', '_Peak'))\
                         or text_data not in emptyValue:
 
                     list_id += 1

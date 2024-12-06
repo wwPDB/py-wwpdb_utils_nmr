@@ -2020,13 +2020,23 @@ NMR_STAR_LP_DATA_ITEMS_INS_CODE['rdc_restraint'].extend([{'name': 'PDB_ins_code_
                                                          {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                          ])
 
-NMR_STAR_AUX_LP_CATEGORIES = {'dist_restraint': ['_Gen_dist_constraint_software_param']
+NMR_STAR_AUX_LP_CATEGORIES = {'dist_restraint': ['_Gen_dist_constraint_software_param'
+                                                 ],
+                              'spectral_peak': ['_Spectral_dim', 'Spectral_dim_transfer'
+                                                ]
                               }
 
 NMR_STAR_AUX_LP_KEY_ITEMS = {'dist_restraint': {'_Gen_dist_constraint_software_param': [
-                                                {'name': 'Software_ID', 'type': 'int', 'mandatory': True},
-                                                {'name': 'Type', 'type': 'str', 'mandatory': True}]
-                                                }
+                                                {'name': 'Software_ID', 'type': 'int'},
+                                                {'name': 'Type', 'type': 'str'}]
+                                                },
+                             'spectral_peak': {'_Spectral_dim': [
+                                               {'name': 'ID', 'type': 'positive-int', 'auto-increment': True}
+                                               ],
+                                               '_Spectral_dim_transfer': [
+                                               {'name': 'Spectral_dim_ID_1', 'type': 'positive-int'},
+                                               {'name': 'Spectral_dim_ID_2', 'type': 'positive-int'}]
+                                               }
                              }
 
 NMR_STAR_AUX_LP_DATA_ITEMS = {'dist_restraint': {'_Gen_dist_constraint_software_param': [
@@ -2035,7 +2045,39 @@ NMR_STAR_AUX_LP_DATA_ITEMS = {'dist_restraint': {'_Gen_dist_constraint_software_
                                                  {'name': 'Gen_dist_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True,
                                                   'default': '1', 'default-from': 'parent'},
                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}]
-                                                 }
+                                                 },
+                              'spectral_peak': {'_Spectral_dim': [
+                                                {'name': 'Atom_type', 'type': 'enum', 'mandatory': True,
+                                                 'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                 'enforce-enum': True},
+                                                {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True,
+                                                 'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                 'enforce-enum': True},
+                                                {'name': 'Axis_code', 'type': 'str'},
+                                                {'name': 'Spectrometer_frequency', 'type': 'positive-float', 'mandatory': False,
+                                                 'enforce-non-zero': True},
+                                                {'name': 'Spectral_region', 'type': 'str', 'mandatory': True},
+                                                {'name': 'Sweep_width', 'type': 'positive-float', 'mandatory': False,
+                                                 'enforce-non-zero': True},
+                                                {'name': 'Sweep_width_units', 'type': 'enum', 'mandatory': True,
+                                                 'enum': ('ppm', 'Hz'),
+                                                 'enforce-enum': True},
+                                                {'name': 'Value_first_point', 'type': 'float', 'mandatory': False},
+                                                {'name': 'Absolute_peak_positions', 'type': 'bool', 'mandatory': False},
+                                                {'name': 'Acquisition', 'type': 'bool', 'mandatory': False},
+                                                {'name': 'Center_frequency_offset', 'type': 'float', 'mandatory': False},
+                                                {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                 'default': '1', 'default-from': 'parent'},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}],
+                                                'Spectral_dim_transfer': [
+                                                {'name': 'Type', 'type': 'enum', 'mandatory': True,
+                                                 'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
+                                                 'enforce-enum': True},
+                                                {'name': 'Indirect', 'type': 'bool', 'mandatory': False},
+                                                {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                 'default': '1', 'default-from': 'parent'},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}]
+                                                }
                               }
 
 CARTN_DATA_ITEMS = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
@@ -2075,15 +2117,15 @@ SPECTRAL_DIM_TEMPLATE = {'axis_code': None,
                          'atom_type': None,
                          'atom_isotope_number': None,
                          'spectral_region': None,
-                         'magnetization_linkage_id': None,
+                         # 'magnetization_linkage_id': None,  not required for _Peak_row_format loop
                          'sweep_width': None,
                          'sweep_width_unit': None,
                          'value_first_point': None,
                          'absolute_peak_positions': None,
                          'acquisition': None,
                          'center_frequency_offset': None,
-                         'encoding_code': None,
-                         'encoded_reduced_dimension_id': None
+                         # 'encoding_code': None,  not required for _Peak_row_format loop
+                         # 'encoded_reduced_dimension_id': None  not required for _Peak_row_format loop
                          }
 
 
@@ -8050,6 +8092,62 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         row[-4] = dstFunc['height_uncertainty']
     if details is not None:
         row[-3] = details
+    row[-2] = listId
+    row[-1] = entryId
+
+    return row
+
+
+def getSpectralDimRow(id: int, listId: int, entryId: str, meta: dict) -> List[Any]:
+    """ Return row data for a _Spectral_dim loop.
+        @return: data array
+    """
+
+    content_subtype = 'spectral_peak'
+    lp_category = '_Spectral_dim'
+
+    key_size = len(NMR_STAR_AUX_LP_KEY_ITEMS[content_subtype][lp_category])
+    data_items = NMR_STAR_AUX_LP_DATA_ITEMS[content_subtype][lp_category]
+
+    row = [None] * (key_size + len(data_items))
+
+    row[0] = id
+
+    for idx, data_item in enumerate(data_items, start=key_size):
+        data_name = data_item['name'].lower()
+        if data_name in meta:
+            row[idx] = meta[data_name]
+
+    row[-2] = listId
+    row[-1] = entryId
+
+    return row
+
+
+def getSpectralDimTransferRow(listId: int, entryId: str, meta: dict) -> List[Any]:
+    """ Return row data for a _Spectral_dim_transfer loop.
+        @return: data array
+    """
+
+    content_subtype = 'spectral_peak'
+    lp_category = '_Spectral_dim_transfer'
+
+    key_items = NMR_STAR_AUX_LP_KEY_ITEMS[content_subtype][lp_category]
+    data_items = NMR_STAR_AUX_LP_DATA_ITEMS[content_subtype][lp_category]
+
+    key_size = len(key_items)
+
+    row = [None] * (key_size + len(data_items))
+
+    for idx, key_item in enumerate(key_items):
+        key_name = key_item['name'].lower()
+        row[idx] = meta[key_name]
+
+    for idx, data_item in enumerate(data_items, start=key_size):
+        data_name = data_item['name'].lower()
+        if data_name in meta:
+            row[idx] = meta[data_name]
+
     row[-2] = listId
     row[-1] = entryId
 

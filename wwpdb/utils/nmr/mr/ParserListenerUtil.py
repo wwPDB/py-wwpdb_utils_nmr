@@ -616,7 +616,15 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                              {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                              {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
-                                             ]
+                                             ],
+                         'spectral_peak': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                           ]
                          }
 
 NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
@@ -7093,7 +7101,8 @@ def getSaveframe(mrSubtype: str, sf_framecode: str,
                  listId: Optional[int] = None, entryId: Optional[str] = None, fileName: Optional[str] = None,
                  constraintType: Optional[str] = None, potentialType: Optional[str] = None,
                  rdcCode: Optional[str] = None, alignCenter: Optional[dict] = None,
-                 cyanaParameter: Optional[dict] = None, reduced: bool = True) -> Optional[pynmrstar.Saveframe]:
+                 cyanaParameter: Optional[dict] = None, reduced: bool = True,
+                 spectrumName: Optional[str] = None) -> Optional[pynmrstar.Saveframe]:
     """ Return pynmrstar saveframe for a given internal restraint subtype (default)/content subtype (reduced=False).
         @return: pynmrstar saveframe
     """
@@ -7121,7 +7130,12 @@ def getSaveframe(mrSubtype: str, sf_framecode: str,
         elif tag_item_name == 'Entry_ID' and entryId is not None:
             sf.add_tag(tag_item_name, entryId)
         elif tag_item_name == 'Data_file_name' and fileName is not None:
-            sf.add_tag(tag_item_name, re.sub(r'-corrected$', '', fileName) if fileName.endswith('-corrected') else fileName)
+            if fileName.endswith('-corrected'):
+                sf.add_tag(tag_item_name, re.sub(r'-corrected$', '', fileName))
+            elif '-ignored-as' in fileName:
+                sf.add_tag(tag_item_name, re.sub(r'-ignored-as.*', '', fileName))
+            else:
+                sf.add_tag(tag_item_name, fileName)
         elif tag_item_name == 'Constraint_type' and (mrSubtype == 'hbond'
                                                      or (constraintType is not None
                                                          and constraintType == 'hydrogen bond')):
@@ -7176,6 +7190,8 @@ def getSaveframe(mrSubtype: str, sf_framecode: str,
             sf.add_tag(tag_item_name, f"Tensor_magnitude {cyanaParameter['magnitude']}, "
                        f"Tensor_rhombicity {cyanaParameter['rhombicity']}, "
                        f"Paramagnetic_center_seq_ID {cyanaParameter['orientation_center_seq_id']}")
+        elif tag_item_name == 'Experiment_type' and spectrumName is not None:
+            sf.add_tag(tag_item_name, spectrumName)
         else:
             sf.add_tag(tag_item_name, '.')
 

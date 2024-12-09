@@ -99,7 +99,7 @@ import copy
 import re
 
 from operator import itemgetter
-from typing import Any, Optional
+from typing import Any, List, IO, Tuple, Optional
 
 try:
     from wwpdb.utils.nmr.AlignUtil import emptyValue, monDict3, unknownResidue, getPrettyJson
@@ -107,7 +107,7 @@ except ImportError:
     from nmr.AlignUtil import emptyValue, monDict3, unknownResidue, getPrettyJson
 
 
-def get_value_safe(d: Optional[dict] = None, key: Any = None) -> Optional[str]:
+def get_value_safe(d: Optional[dict] = None, key: Any = None) -> Any:
     """ Return value of a given dictionary for a key.
         @return: value for a key, None otherwise
     """
@@ -125,7 +125,7 @@ class NmrDpReport:
     """ Wrapper class for data processing report of NMR data.
     """
 
-    def __init__(self, verbose=True, log=sys.stdout):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -160,49 +160,49 @@ class NmrDpReport:
 
         self.input_sources.append(NmrDpReportInputSource(self.__verbose, self.__lfh))
 
-    def insertInputSource(self, index):
-        """ Insert empty input source.
+    def insertInputSource(self, index: int):
+        """ Insert empty input source at a given index.
         """
 
         self.input_sources.insert(index, NmrDpReportInputSource(self.__verbose, self.__lfh))
 
-    def isOk(self):
+    def isOk(self) -> bool:
         """ Return whether processing status is OK.
         """
 
         return self.__report['information']['status'] == 'OK'
 
-    def isError(self):
+    def isError(self) -> bool:
         """ Return whether processing status is Error.
         """
 
         return self.__report['information']['status'] == 'Error'
 
-    def isDiamagnetic(self):
+    def isDiamagnetic(self) -> bool:
         """ Return whether molecular assembly is diamagnetic.
         """
 
         return self.__report['information']['diamagnetic']
 
-    def hasDisulfideBond(self):
+    def hasDisulfideBond(self) -> bool:
         """ Return whether molecular assembly has disulfide bond.
         """
 
         return self.__report['information']['disulfide_bond']
 
-    def hasOtherBond(self):
+    def hasOtherBond(self) -> bool:
         """ Return whether molecular assembly has other bond.
         """
 
         return self.__report['information']['other_bond']
 
-    def hasCyclicPolymer(self):
+    def hasCyclicPolymer(self) -> bool:
         """ Return whether molecular assembly contains cyclic polymer.
         """
 
         return self.__report['information']['cyclic_polymer']
 
-    def getInputSourceDict(self, src_id):
+    def getInputSourceDict(self, src_id: int) -> Optional[dict]:
         """ Return input source dictionary of a given index.
             @return: input source of a given index, None otherwise
         """
@@ -212,7 +212,7 @@ class NmrDpReport:
 
         return self.input_sources[src_id].get()
 
-    def getInputSourceIdOfNmrData(self):
+    def getInputSourceIdOfNmrData(self) -> int:
         """ Return input_source_id of NMR data file.
             @return: index of input source of NMR data file, -1 otherwise
         """
@@ -223,7 +223,7 @@ class NmrDpReport:
 
         return -1
 
-    def getInputSourceIdsOfNmrLegacyData(self):
+    def getInputSourceIdsOfNmrLegacyData(self) -> List[int]:
         """ Return array of input_source_id of NMR legacy data file.
             @return: array of index of input source of NMR legacy data file, [] otherwise
         """
@@ -231,7 +231,7 @@ class NmrDpReport:
         return [self.input_sources.index(in_src) for in_src in self.input_sources
                 if in_src.get()['content_type'] in ('nmr-chemical-shifts', 'nmr-restraints')]
 
-    def getInputSourceIdOfCoord(self):
+    def getInputSourceIdOfCoord(self) -> int:
         """ Return input_source_id of coordinate file.
             @return: index of input source of coordinate file, -1 otherwise
         """
@@ -242,7 +242,7 @@ class NmrDpReport:
 
         return -1
 
-    def getNmrContentSubTypes(self):
+    def getNmrContentSubTypes(self) -> Optional[dict]:
         """ Return effective NMR content subtypes.
         """
 
@@ -253,7 +253,7 @@ class NmrDpReport:
 
         return {k: v for k, v in content_subtype.items() if v > 0}
 
-    def getNmrLegacyContentSubTypes(self, src_id):
+    def getNmrLegacyContentSubTypes(self, src_id: int) -> Optional[dict]:
         """ Return effective NMR content subtypes.
         """
 
@@ -264,19 +264,19 @@ class NmrDpReport:
 
         return {k: v for k, v in content_subtype.items() if v > 0}
 
-    def getNmrStatsOfExptlData(self, content_subtype):
+    def getNmrStatsOfExptlData(self, content_subtype: str) -> Any:
         """ Return stats of experimental data of a given content subtype.
         """
 
         return get_value_safe(get_value_safe(self.getInputSourceDict(self.getInputSourceIdOfNmrData()), 'stats_of_exptl_data'), content_subtype)
 
-    def getNmrLegacyStatsOfExptlData(self, src_id, content_subtype):
+    def getNmrLegacyStatsOfExptlData(self, src_id: int, content_subtype: str) -> Any:
         """ Return stats of experimental data of a given content subtype.
         """
 
         return get_value_safe(get_value_safe(self.getInputSourceDict(src_id), 'stats_of_exptl_data'), content_subtype)
 
-    def getNmrRestraints(self):
+    def getNmrRestraints(self) -> Optional[dict]:
         """ Return stats of NMR restraints.
             @deprecated: Please extract _Constraint_file loop of converted NMR-STAR file instead (DAOTHER-7407)
         """
@@ -467,7 +467,7 @@ class NmrDpReport:
 
         return restraints if len(restraints) > 0 else None
 
-    def __getNmrRestraints(self):
+    def __getNmrRestraints(self) -> Optional[List[dict]]:
         """ Return stats of NMR restraints. (legacy)
         """
 
@@ -680,7 +680,7 @@ class NmrDpReport:
 
         return restraints if len(restraints) > 0 else None
 
-    def getNmrPeaks(self):
+    def getNmrPeaks(self) -> List[dict]:
         """ Return stats of NMR spectral peaks.
         """
 
@@ -711,7 +711,7 @@ class NmrDpReport:
 
         return spectral_peaks
 
-    def __getNmrPeaks(self):
+    def __getNmrPeaks(self) -> List[dict]:
         """ Return stats of NMR spectral peaks. (legacy)
         """
 
@@ -764,7 +764,7 @@ class NmrDpReport:
 
         return spectral_peaks
 
-    def getNmrIsotopes(self):
+    def getNmrIsotopes(self) -> Optional[dict]:
         """ Return set of isotopes in assigned chemical shifts.
         """
 
@@ -793,7 +793,7 @@ class NmrDpReport:
 
         return None if len(isotopes) == 0 else isotopes
 
-    def __getNmrIsotopes(self):
+    def __getNmrIsotopes(self) -> Optional[dict]:
         """ Return set of isotopes in assigned chemical shifts. (legacy)
         """
 
@@ -831,7 +831,7 @@ class NmrDpReport:
 
         return None if len(isotopes) == 0 else isotopes
 
-    def getNmrChemShiftRefs(self):
+    def getNmrChemShiftRefs(self) -> Optional[List[dict]]:
         """ Return stats of NMR chemical shift references.
         """
 
@@ -871,7 +871,7 @@ class NmrDpReport:
 
         return chem_shift_refs
 
-    def __getNmrChemShiftRefs(self):
+    def __getNmrChemShiftRefs(self) -> Optional[List[dict]]:
         """ Return stats of NMR chemical shift references. (legacy)
         """
 
@@ -920,13 +920,13 @@ class NmrDpReport:
 
         return None if len(chem_shift_refs) == 0 else chem_shift_refs
 
-    def getPolymerSequenceByInputSrcId(self, input_source_id):
+    def getPolymerSequenceByInputSrcId(self, input_source_id: int) -> Any:
         """ Retrieve polymer sequence of a given input_source_id.
         """
 
         return get_value_safe(self.getInputSourceDict(input_source_id), 'polymer_sequence')
 
-    def getNmrPolymerSequenceOf(self, nmr_chain_id):
+    def getNmrPolymerSequenceOf(self, nmr_chain_id: str) -> Optional[dict]:
         """ Retrieve NMR polymer sequence having a given chain_id.
         """
 
@@ -945,7 +945,7 @@ class NmrDpReport:
 
         return next((ps for ps in nmr_polymer_sequence if ps['chain_id'] == nmr_chain_id), None)
 
-    def getModelPolymerSequenceOf(self, cif_chain_id, label_scheme=True):
+    def getModelPolymerSequenceOf(self, cif_chain_id: str, label_scheme: bool = True) -> Optional[dict]:
         """ Retrieve model polymer sequence having a given chain_id.
         """
 
@@ -958,7 +958,7 @@ class NmrDpReport:
                      if (ps['chain_id'] == cif_chain_id and label_scheme)
                      or ('auth_chain_id' in ps and ps['auth_chain_id'] == cif_chain_id and not label_scheme)), None)
 
-    def getChainIdsForSameEntity(self):
+    def getChainIdsForSameEntity(self) -> Optional[dict]:
         """ Return mapping of chain_id in the NMR data, which share the same entity.
         """
 
@@ -986,7 +986,7 @@ class NmrDpReport:
 
         return ret
 
-    def getAsymIdsForSameEntity(self):
+    def getAsymIdsForSameEntity(self) -> Optional[dict]:
         """ Return mapping of asym_id in the coordinates, which share the same entity.
         """
 
@@ -1006,7 +1006,7 @@ class NmrDpReport:
 
         return ret
 
-    def getNmrSeq1LetterCodeOf(self, nmr_chain_id, fullSequence=True, unmappedSeqId=None):
+    def getNmrSeq1LetterCodeOf(self, nmr_chain_id: str, fullSequence: bool = True, unmappedSeqId: Optional[List] = None) -> Optional[str]:
         """ Retrieve NMR polymer sequence (1-letter code) having a given chain_id.
         """
 
@@ -1046,7 +1046,7 @@ class NmrDpReport:
 
         return ''.join(f)
 
-    def getModelSeq1LetterCodeOf(self, cif_chain_id, label_scheme=True):
+    def getModelSeq1LetterCodeOf(self, cif_chain_id: str, label_scheme: bool = True) -> Optional[str]:
         """ Retrieve model polymer sequence (1-letter code) having a given chain_id.
         """
 
@@ -1076,7 +1076,7 @@ class NmrDpReport:
 
         return ''.join(f)
 
-    def getNmrPolymerSequenceWithModelChainId(self, cif_chain_id, label_scheme=True):
+    def getNmrPolymerSequenceWithModelChainId(self, cif_chain_id: str, label_scheme: bool = True) -> Optional[dict]:
         """ Retrieve NMR polymer sequence corresponding to a given coordinate chain_id.
         """
 
@@ -1093,7 +1093,7 @@ class NmrDpReport:
 
         return None
 
-    def getSequenceAlignmentWithNmrChainId(self, nmr_chain_id):
+    def getSequenceAlignmentWithNmrChainId(self, nmr_chain_id: str) -> Optional[dict]:
         """ Retrieve sequence alignment (nmr vs model) of a given NMR chain_id.
         """
 
@@ -1129,7 +1129,7 @@ class NmrDpReport:
 
         return None
 
-    def getSequenceAlignmentWithModelChainId(self, cif_chain_id, label_scheme=True):
+    def getSequenceAlignmentWithModelChainId(self, cif_chain_id: str, label_scheme: bool = True) -> Optional[dict]:
         """ Retrieve sequence alignment (model vs nmr) of a given coordinate chain_id.
         """
 
@@ -1168,7 +1168,7 @@ class NmrDpReport:
 
         return None
 
-    def getModelPolymerSequenceWithNmrChainId(self, nmr_chain_id):
+    def getModelPolymerSequenceWithNmrChainId(self, nmr_chain_id: str) -> Optional[dict]:
         """ Retrieve coordinate polymer sequence corresponding to a given NMR chain_id.
         """
 
@@ -1184,7 +1184,7 @@ class NmrDpReport:
 
         return None
 
-    def getNmrSeq1LetterCodeWithModelChainId(self, cif_chain_id, label_scheme=True):
+    def getNmrSeq1LetterCodeWithModelChainId(self, cif_chain_id: str, label_scheme: bool = True) -> Optional[str]:
         """ Retrieve NMR polymer sequence (1-letter code) corresponding to a given coordinate chain_id.
         """
 
@@ -1224,7 +1224,7 @@ class NmrDpReport:
 
         return None
 
-    def getModelSeq1LetterCodeWithNmrChainId(self, nmr_chain_id):
+    def getModelSeq1LetterCodeWithNmrChainId(self, nmr_chain_id: str) -> Optional[str]:
         """ Retrieve coordinate polymer sequence (1-letter code) corresponding to a given NMR chain_id.
         """
 
@@ -1240,7 +1240,7 @@ class NmrDpReport:
 
         return None
 
-    def getAverageRMSDWithinRange(self, cif_chain_id, cif_beg_seq_id, cif_end_seq_id, label_scheme=True):
+    def getAverageRMSDWithinRange(self, cif_chain_id: str, cif_beg_seq_id: int, cif_end_seq_id: int, label_scheme: bool = True) -> Optional[float]:
         """ Calculate average RMSD of alpha carbons/phosphates within a given range in the ensemble.
         """
 
@@ -1275,7 +1275,7 @@ class NmrDpReport:
 
         return sum(rmsd) / len(rmsd)
 
-    def getNumberOfSubmittedConformers(self):
+    def getNumberOfSubmittedConformers(self) -> Optional[int]:
         """ Return number of submitted conformers for the ensemble.
         """
 
@@ -1311,7 +1311,7 @@ class NmrDpReport:
 
         return len(total_models)
 
-    def getLabelSeqSchemeOf(self, auth_asym_id, auth_seq_id):
+    def getLabelSeqSchemeOf(self, auth_asym_id: str, auth_seq_id: int) -> Tuple[Optional[str], Optional[int]]:
         """ Convert author sequence scheme to label sequence scheme of the coordinates.
         """
 
@@ -1360,19 +1360,19 @@ class NmrDpReport:
 
         return None, None
 
-    def getTotalErrors(self):
+    def getTotalErrors(self) -> int:
         """ Return total number of errors.
         """
 
         return self.error.getTotal()
 
-    def getTotalWarnings(self):
+    def getTotalWarnings(self) -> int:
         """ Return total number of warnings.
         """
 
         return self.warning.getTotal()
 
-    def __setStatus(self, status):
+    def __setStatus(self, status: str):
         """ Set processing status.
         """
 
@@ -1429,7 +1429,7 @@ class NmrDpReport:
                 self.__lfh.write('+NmrDpReport.clean() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
             raise UserWarning('+NmrDpReport.clean() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
-    def setDiamagnetic(self, diamagnetic):
+    def setDiamagnetic(self, diamagnetic: bool):
         """ Set diamagetism of molecular assembly.
         """
 
@@ -1441,7 +1441,7 @@ class NmrDpReport:
                 self.__lfh.write('+NmrDpReport.setDiamagnetic() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
             raise UserWarning('+NmrDpReport.setDiamagnetic() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
 
-    def setDisulfideBond(self, disulfide_bond):
+    def setDisulfideBond(self, disulfide_bond: bool):
         """ Set whether molecular assembly has a disulfide bond at least or not.
         """
 
@@ -1453,7 +1453,7 @@ class NmrDpReport:
                 self.__lfh.write('+NmrDpReport.setDisulfideBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
             raise UserWarning('+NmrDpReport.setDisulfideBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
 
-    def setOtherBond(self, other_bond):
+    def setOtherBond(self, other_bond: bool):
         """ Set whether molecular assemble has an other bond at least or not.
         """
 
@@ -1465,7 +1465,7 @@ class NmrDpReport:
                 self.__lfh.write('+NmrDpReport.setOtherBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
             raise UserWarning('+NmrDpReport.setOtherBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
 
-    def setCyclicPolymer(self, cyclic_polymer):
+    def setCyclicPolymer(self, cyclic_polymer: bool):
         """ Set whether molecular assemble contains a cyclic polymer or not.
         """
 
@@ -1483,7 +1483,7 @@ class NmrDpReport:
 
         self.__immutable = False
 
-    def get(self):
+    def get(self) -> dict:
         """ Return NMR data processing report.
         """
 
@@ -1496,7 +1496,7 @@ class NmrDpReport:
 
         return self.__report
 
-    def load(self, report):
+    def load(self, report: Optional[dict]) -> bool:
         """ Retrieve NMR data processing report from JSON content.
             @return: True for success or False otherwise
         """
@@ -1532,7 +1532,7 @@ class NmrDpReport:
 
         return True
 
-    def writeFile(self, out_path):
+    def writeFile(self, out_path: str) -> bool:
         """ Write NMR data processing report as JSON file.
             @return: True for success or False otherwise
         """
@@ -1545,7 +1545,7 @@ class NmrDpReport:
 
         return True
 
-    def loadFile(self, in_path):
+    def loadFile(self, in_path: str) -> bool:
         """ Retrieve NMR data processing report from JSON file.
             @return: True for success or False otherwise
         """
@@ -1743,7 +1743,7 @@ class NmrDpReportInputSource:
     """ Wrapper class for data processing report of NMR data (input source).
     """
 
-    def __init__(self, verbose=True, log=sys.stdout):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -1781,7 +1781,7 @@ class NmrDpReportInputSource:
 
         self.__contents = {item: None for item in self.items}
 
-    def setItemValue(self, item, value):
+    def setItemValue(self, item: str, value: Any):
         """ Set an item with a given value.
         """
 
@@ -1822,19 +1822,19 @@ class NmrDpReportInputSource:
                 self.__lfh.write(f'+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown item type {item}\n')
             raise KeyError(f"+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown item type {item}")
 
-    def get(self):
+    def get(self) -> dict:
         """ Retrieve contents.
         """
 
         return self.__contents
 
-    def put(self, contents):
+    def put(self, contents: dict):
         """ Set contents.
         """
 
         self.__contents = contents
 
-    def updateNonStandardResidueByExptlData(self, chain_id, seq_id, content_subtype):
+    def updateNonStandardResidueByExptlData(self, chain_id: str, seq_id: int, content_subtype: str):
         """ Update specified non_starndard_residue by experimental data.
         """
 
@@ -1863,7 +1863,7 @@ class NmrDpReportSequenceAlignment:
     """ Wrapper class for data processing report of NMR data (sequence alignment).
     """
 
-    def __init__(self, verbose=True, log=sys.stdout):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -1884,7 +1884,7 @@ class NmrDpReportSequenceAlignment:
 
         self.__contents = {item: None for item in self.items}
 
-    def setItemValue(self, item, value):
+    def setItemValue(self, item: str, value: Any):
         """ Set an item with a given value.
         """
 
@@ -1896,13 +1896,13 @@ class NmrDpReportSequenceAlignment:
                 self.__lfh.write(f'+NmrDpReportSequenceAlignment.setItemValue() ++ Error  - Unknown item type {item}\n')
             raise KeyError(f"+NmrDpReportSequenceAlignment.setItemValue() ++ Error  - Unknown item type {item}")
 
-    def get(self):
+    def get(self) -> dict:
         """ Retrieve contents.
         """
 
         return self.__contents
 
-    def put(self, contents):
+    def put(self, contents: dict):
         """ Set contents.
         """
 
@@ -1913,7 +1913,7 @@ class NmrDpReportChainAssignment:
     """ Wrapper class for data processing report of NMR data (chain assignment).
     """
 
-    def __init__(self, verbose=True, log=sys.stdout):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -1921,7 +1921,7 @@ class NmrDpReportChainAssignment:
 
         self.__contents = {item: None for item in self.items}
 
-    def setItemValue(self, item, value):
+    def setItemValue(self, item: str, value: Any):
         """ Set an item with a given value.
         """
 
@@ -1933,13 +1933,13 @@ class NmrDpReportChainAssignment:
                 self.__lfh.write(f'+NmrDpReportChainAssignment.setItemValue() ++ Error  - Unknown item type {item}\n')
             raise KeyError(f"+NmrDpReportChainAssignment.setItemValue() ++ Error  - Unknown item type {item}")
 
-    def get(self):
+    def get(self) -> dict:
         """ Retrieve contents.
         """
 
         return self.__contents
 
-    def put(self, contents):
+    def put(self, contents: dict):
         """ Set contents.
         """
 
@@ -1950,7 +1950,7 @@ class NmrDpReportError:
     """ Wrapper class for data processing report of NMR data (error).
     """
 
-    def __init__(self, verbose=True, log=sys.stdout):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -1971,7 +1971,7 @@ class NmrDpReportError:
         self.chk_row_pat = re.compile(r'^\[Check row of ([^\[]*)\] (.*)$')
         self.chk_rows_pat = re.compile(r'\[Check rows of ([^\[]*)\] (.*)$')
 
-    def appendDescription(self, item, value):
+    def appendDescription(self, item: str, value: Any):
         """ Append an error with a give description.
         """
 
@@ -2046,26 +2046,26 @@ class NmrDpReportError:
                 self.__lfh.write(f'+NmrDpReportError.appendDescription() ++ Error  - Unknown item type {item}\n')
             raise KeyError(f"+NmrDpReportError.appendDescription() ++ Error  - Unknown item type {item}")
 
-    def get(self):
+    def get(self) -> dict:
         """ Retrieve errors.
         """
 
         return {k: v for k, v in self.__contents.items() if v is not None}
 
-    def put(self, contents):
+    def put(self, contents: dict):
         """ Set errors.
         """
 
         self.__contents = contents
 
-    def getTotal(self):
+    def getTotal(self) -> int:
         """ Return total number of errors.
             @return: total number of errors
         """
 
         return self.__contents['total']
 
-    def exists(self, file_name, sf_framecode):
+    def exists(self, file_name: str, sf_framecode: str) -> bool:
         """ Return whether an error specified by file name and saveframe exists.
             @return: True for an error exists or False otherwise
         """
@@ -2080,7 +2080,7 @@ class NmrDpReportError:
 
         return False
 
-    def getValueList(self, item, file_name, key=None):
+    def getValueList(self, item: str, file_name: str, key: Optional[str] = None) -> Optional[List[dict]]:
         """ Return list of error values specified by item name and file name.
         """
 
@@ -2089,7 +2089,7 @@ class NmrDpReportError:
 
         return [c for c in self.__contents[item] if c['file_name'] == file_name or (key is None or key in c['description'])]
 
-    def getValueListWithSf(self, item, file_name, sf_framecode, key=None):
+    def getValueListWithSf(self, item: str, file_name: str, sf_framecode: str, key: Optional[str] = None) -> Optional[List[dict]]:
         """ Return list of error values specified by item name, file name, and saveframe.
         """
 
@@ -2099,7 +2099,7 @@ class NmrDpReportError:
         return [c for c in self.__contents[item]
                 if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode and (key is None or key in c['description'])]
 
-    def getUniqueValueList(self, item, file_name):
+    def getUniqueValueList(self, item: str, file_name: str) -> Optional[List[dict]]:
         """ Return list of error values having unique sf_framecode and description.
         """
 
@@ -2132,7 +2132,7 @@ class NmrDpReportError:
 
         return rlist
 
-    def getDescription(self, item, file_name, sf_framecode):
+    def getDescription(self, item: str, file_name: str, sf_framecode: str) -> Optional[str]:
         """ Return error description specified by item name, file name, and saveframe.
         """
 
@@ -2145,7 +2145,7 @@ class NmrDpReportError:
         except StopIteration:
             return None
 
-    def getCombinedDescriptions(self, file_name, sf_framecode):
+    def getCombinedDescriptions(self, file_name: str, sf_framecode: str) -> Optional[List[str]]:
         """ Return combined error descriptions specified by file name and saveframe.
         """
 
@@ -2169,7 +2169,7 @@ class NmrDpReportError:
 
         return d
 
-    def hasChemicalShiftError(self):
+    def hasChemicalShiftError(self) -> bool:
         """ Return whether errors for anomalous chemical shifts exist.
         """
 
@@ -2226,7 +2226,7 @@ class NmrDpReportWarning:
     """ Wrapper class for data processing report of NMR unified data (warning).
     """
 
-    def __init__(self, verbose=True, log=sys.stdout):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -2260,7 +2260,7 @@ class NmrDpReportWarning:
         self.chk_row_pat = re.compile(r'^\[Check row of ([^\[]*)\] (.*)$')
         self.chk_rows_pat = re.compile(r'\[Check rows of ([^\[]*)\] (.*)$')
 
-    def appendDescription(self, item, value):
+    def appendDescription(self, item: str, value: Any):
         """ Append a warning with a give description.
         """
 
@@ -2335,26 +2335,26 @@ class NmrDpReportWarning:
                 self.__lfh.write(f'+NmrDpReportWarning.appendDescription() ++ Error  - Unknown item type {item}\n')
             raise KeyError(f"+NmrDpReportWarning.appendDescription() ++ Error  - Unknown item type {item}")
 
-    def get(self):
+    def get(self) -> dict:
         """ Retrieve warnings.
         """
 
         return {k: v for k, v in self.__contents.items() if v is not None}
 
-    def put(self, contents):
+    def put(self, contents: dict):
         """ Set warnings.
         """
 
         self.__contents = contents
 
-    def getTotal(self):
+    def getTotal(self) -> int:
         """ Return total number of warnings.
             @return: total number of warnings
         """
 
         return self.__contents['total']
 
-    def exists(self, file_name, sf_framecode):
+    def exists(self, file_name: str, sf_framecode: str) -> bool:
         """ Return whether a warning specified by file name and saveframe exists.
             @return: True for a warning exists or False otherwise
         """
@@ -2369,7 +2369,7 @@ class NmrDpReportWarning:
 
         return False
 
-    def getValueList(self, item, file_name, key=None):
+    def getValueList(self, item: str, file_name: str, key: Optional[str] = None) -> Optional[List[dict]]:
         """ Return list of warning values specified by item name and file name.
         """
 
@@ -2378,7 +2378,7 @@ class NmrDpReportWarning:
 
         return [c for c in self.__contents[item] if c['file_name'] == file_name and (key is None or key in c['description'])]
 
-    def getValueListWithSf(self, item, file_name, sf_framecode, key=None):
+    def getValueListWithSf(self, item: str, file_name: str, sf_framecode: str, key: Optional[str] = None) -> Optional[List[dict]]:
         """ Return list of warning values specified by item name, file name, and saveframe.
         """
 
@@ -2388,7 +2388,7 @@ class NmrDpReportWarning:
         return [c for c in self.__contents[item]
                 if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode and (key is None or key in c['description'])]
 
-    def getUniqueValueList(self, item, file_name):
+    def getUniqueValueList(self, item: str, file_name: str) -> Optional[List[dict]]:
         """ Return list of warning values having unique sf_framecode and description.
         """
 
@@ -2421,7 +2421,7 @@ class NmrDpReportWarning:
 
         return rlist
 
-    def getDescription(self, item, file_name, sf_framecode):
+    def getDescription(self, item: str, file_name: str, sf_framecode: str) -> Optional[str]:
         """ Return warning description specified by item name, file name, and saveframe.
         """
 
@@ -2434,7 +2434,7 @@ class NmrDpReportWarning:
         except StopIteration:
             return None
 
-    def getCombinedDescriptions(self, file_name, sf_framecode):
+    def getCombinedDescriptions(self, file_name: str, sf_framecode: str) -> Optional[List[str]]:
         """ Return combined warning descriptions specified by file name and saveframe.
         """
 
@@ -2458,7 +2458,7 @@ class NmrDpReportWarning:
 
         return d
 
-    def hasChemicalShiftWarning(self):
+    def hasChemicalShiftWarning(self) -> bool:
         """ Return whether warnings for anomalous/unusual chemical shifts exist.
         """
 
@@ -2540,7 +2540,7 @@ class NmrDpReportWarning:
                 del c['sigma']
                 self.__contents[item].append(c)
 
-    def sortBySigma(self, item):
+    def sortBySigma(self, item: str):
         """ Sort warning about sigma.
         """
 

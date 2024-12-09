@@ -658,39 +658,39 @@ class NmrVrptUtility:
         # dictionary of processing tasks of each workflow operation
         self.__procTasksDict = {'nmr-restraint-validation': __checkTasks}
 
-    def setVerbose(self, verbose):
+    def setVerbose(self, verbose: bool):
         """ Set verbose mode.
         """
 
         self.__verbose = verbose
 
-    def setDebugMode(self, debug):
+    def setDebugMode(self, debug: bool):
         """ Set debug mode.
         """
 
         self.__debug = debug
 
-    def trustPdbxAuthAtomName(self, trust_pdbx_auth_atom_name):
+    def trustPdbxAuthAtomName(self, trust_pdbx_auth_atom_name: bool):
         """ Whether to trust _atom_site.pdbx_auth_atom_name rather than _atom_site.auth_atom_id.
             @note: Set True for OneDep validation package.
         """
 
         self.__trust_pdbx_auth_atom_name = trust_pdbx_auth_atom_name
 
-    def useCache(self, use_cache):
+    def useCache(self, use_cache: bool):
         """ Use cache file(s) of the previous run.
             Do not enable this for generation of wwPDB validation report because of no performance improvement.
         """
 
         self.__use_cache = use_cache
 
-    def getResults(self):
+    def getResults(self) -> Optional[dict]:
         """ Return NMR restraint analysis result.
         """
 
         return self.__results
 
-    def addInput(self, name=None, value=None, type='file'):  # pylint: disable=redefined-builtin
+    def addInput(self, name: Optional[str] = None, value: Any = None, type: str = 'file'):  # pylint: disable=redefined-builtin
         """ Add a named input and value to the dictionary of input parameters.
         """
 
@@ -706,7 +706,7 @@ class NmrVrptUtility:
         except Exception as e:
             raise ValueError("+NmrVrptUtility.addInput() ++ Error  - " + str(e))
 
-    def addOutput(self, name=None, value=None, type='file'):  # pylint: disable=redefined-builtin
+    def addOutput(self, name: Optional[str] = None, value: Any = None, type: str = 'file'):  # pylint: disable=redefined-builtin
         """ Add a named input and value to the dictionary of output parameters.
         """
 
@@ -726,7 +726,7 @@ class NmrVrptUtility:
         except Exception as e:
             raise ValueError("+NmrVrptUtility.addOutput() ++ Error  - " + str(e))
 
-    def op(self, op):
+    def op(self, op: str) -> Optional[dict]:
         """ Perform a series of tasks for a given workflow operation.
         """
 

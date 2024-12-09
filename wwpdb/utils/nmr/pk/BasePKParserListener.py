@@ -1179,6 +1179,73 @@ class BasePKParserListener():
                         for transfer in cur_spectral_dim_transfer:
                             print(transfer)
 
+                    primary_dim_transfer = ''
+                    for transfer in cur_spectral_dim_transfer:
+                        if transfer['type'] == 'through-space':
+                            primary_dim_transfer = transfer['type']
+                            break
+                        if transfer['type'].startswith('relayed')\
+                                and primary_dim_transfer != 'through-space':
+                            primary_dim_transfer = transfer['type']
+                        elif transfer['type'] == 'jmultibond'\
+                                and primary_dim_transfer not in ('through-space', 'relayed', 'relayed-alternate'):
+                            primary_dim_transfer = transfer['type']
+                        elif transfer['type'] == 'jcoupling'\
+                                and primary_dim_transfer not in ('through-space', 'relayed', 'relayed-alternate', 'jmultibond'):
+                            primary_dim_transfer = transfer['type']
+                        elif transfer['type'] == 'onebond'\
+                                and primary_dim_transfer == '':
+                            primary_dim_transfer = transfer['type']
+
+                    exp_class = '.'
+
+                    if primary_dim_transfer != 'onebond':
+                        onebonds, onebond_codes = [], []
+                        for transfer in cur_spectral_dim_transfer:
+                            if transfer['type'] == 'onebond':
+                                dim_id_1 = transfer['spectral_dim_id_1']
+                                dim_id_2 = transfer['spectral_dim_id_2']
+                                atom_type_1 = next(v['atom_type'] for k, v in cur_spectral_dim.items() if k == dim_id_1)
+                                atom_type_2 = next(v['atom_type'] for k, v in cur_spectral_dim.items() if k == dim_id_2)
+                                for _transfer in cur_spectral_dim_transfer:
+                                    if _transfer['type'] != 'onebond':
+                                        if dim_id_1 in (_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']):
+                                            onebonds.append((dim_id_1, dim_id_2))
+                                            onebond_codes.append(f'{atom_type_1}[{atom_type_2}]')
+                                        if dim_id_2 in (_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']):
+                                            onebonds.append((dim_id_2, dim_id_1))
+                                            onebond_codes.append(f'{atom_type_2}[{atom_type_1}]')
+
+                        for transfer in cur_spectral_dim_transfer:
+                            if transfer['type'] == primary_dim_transfer:
+                                dim_id_1 = transfer['spectral_dim_id_1']
+                                dim_id_2 = transfer['spectral_dim_id_2']
+                                onebond_1 = next((onebond for onebond in onebonds if dim_id_1 in onebond), None)
+                                v_1 = next(v for k, v in cur_spectral_dim.items() if k == dim_id_1)
+                                onebond_2 = next((onebond for onebond in onebonds if dim_id_2 in onebond), None)
+                                v_2 = next(v for k, v in cur_spectral_dim.items() if k == dim_id_2)
+                                if v_1['acquisition'] != v_2['acquisition'] and v_1['acquisition'] == 'no':
+                                    onebond_1, onebond_2 = onebond_2, onebond_1
+                                    v_1, v_2 = v_2, v_1
+                                exp_class = f'{onebond_codes[onebonds.index(onebond_1)] if onebond_1 is not None else v_1["atom_type"]}_'\
+                                    f'{onebond_codes[onebonds.index(onebond_2)] if onebond_2 is not None else v_2["atom_type"]}.{primary_dim_transfer}'
+                                break
+
+                    else:
+                        for transfer in cur_spectral_dim_transfer:
+                            if transfer['type'] == primary_dim_transfer:
+                                dim_id_1 = transfer['spectral_dim_id_1']
+                                dim_id_2 = transfer['spectral_dim_id_2']
+                                v_1 = next(v for k, v in cur_spectral_dim.items() if k == dim_id_1)
+                                v_2 = next(v for k, v in cur_spectral_dim.items() if k == dim_id_2)
+                                if v_1['acquisition'] != v_2['acquisition'] and v_1['acquisition'] == 'no':
+                                    v_1, v_2 = v_2, v_1
+                                exp_class = f'{v_1["atom_type"]}_{v_2["atom_type"]}.{primary_dim_transfer}'
+                                break
+
+                    if self.debug:
+                        print(f'experiment class: {exp_class}')
+
                     if self.createSfDict__:
                         self.cur_subtype = f'peak{d}d'
                         self.cur_list_id = _id
@@ -1207,6 +1274,11 @@ class BasePKParserListener():
                             aux_lp.add_data(getSpectralDimTransferRow(list_id, self.entryId, _dict))
 
                         sf['saveframe'].add_loop(aux_lp)
+
+                        if exp_class not in emptyValue:
+                            tags = [t[0] for t in sf['saveframe'].tags]
+                            if 'Experiment_class' in tags:
+                                sf['saveframe'].tags[tags.index('Experiment_class')][1] = exp_class
 
     def validatePeak2D(self, index: int, pos_1: float, pos_2: float,
                        pos_unc_1: Optional[float], pos_unc_2: Optional[float],
@@ -4085,7 +4157,7 @@ class BasePKParserListener():
         if key in self.reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.reasons['local_seq_scheme'][key]
 
-    def __addSf(self):
+    def __addSf(self, spectrumName: Optional[str] = None):
         content_subtype = contentSubtypeOf(self.cur_subtype)
 
         if content_subtype is None:
@@ -4108,7 +4180,8 @@ class BasePKParserListener():
 
         sf_framecode = f'{self.software_name}_' + restraint_name.replace(' ', '_') + f'_{list_id}'
 
-        sf = getSaveframe(self.cur_subtype, sf_framecode, list_id, self.entryId, self.__originalFileName)
+        sf = getSaveframe(self.cur_subtype, sf_framecode, list_id, self.entryId, self.__originalFileName,
+                          spectrumName=spectrumName)
 
         lp = getPkLoop(self.cur_subtype)
 
@@ -4117,11 +4190,11 @@ class BasePKParserListener():
 
         self.sfDict[key].append(item)
 
-    def getSf(self) -> dict:
+    def getSf(self, spectrumName: Optional[str] = None) -> dict:
         key = (self.cur_subtype, self.cur_list_id)
 
         if key not in self.sfDict:
-            self.__addSf()
+            self.__addSf(spectrumName)
 
         return self.sfDict[key][-1]
 

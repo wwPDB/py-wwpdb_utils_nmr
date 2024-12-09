@@ -10,7 +10,9 @@ import copy
 import json
 import re
 import io
+
 from itertools import zip_longest
+from typing import List, Tuple, Optional
 
 
 # criterion for low sequence coverage
@@ -88,7 +90,7 @@ LEN_LARGE_ASYM_ID = len(LARGE_ASYM_ID)
 MAX_MAG_IDENT_ASYM_ID = 2
 
 
-def isReservedLigCode(compId):
+def isReservedLigCode(compId: str) -> bool:
     """ Return a given comp_id is reserved for new ligands. (DAOTHER-7204, 7388)
     """
     if compId in reservedLigCode:
@@ -98,7 +100,7 @@ def isReservedLigCode(compId):
     return False
 
 
-def hasLargeInnerSeqGap(polySeq, seqIdName='seq_id'):
+def hasLargeInnerSeqGap(polySeq: List[dict], seqIdName: str = 'seq_id') -> bool:
     """ Return whether large gap in a sequence.
     """
 
@@ -111,7 +113,8 @@ def hasLargeInnerSeqGap(polySeq, seqIdName='seq_id'):
     return False
 
 
-def hasLargeSeqGap(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'):
+def hasLargeSeqGap(polySeq1: List[dict], polySeq2: List[dict],
+                   seqIdName1: str = 'seq_id', seqIdName2: str = 'seq_id') -> bool:
     """ Return whether large gap in combined sequence of polySeq1 and polySeq2.
     """
 
@@ -135,7 +138,7 @@ def hasLargeSeqGap(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id')
     return False
 
 
-def fillInnerBlankCompId(polySeq, seqIdName='seq_id'):
+def fillInnerBlankCompId(polySeq: List[dict], seqIdName: str = 'seq_id') -> List[dict]:
     """ Fill inner blanked comp_ID.
     """
 
@@ -176,7 +179,8 @@ def fillInnerBlankCompId(polySeq, seqIdName='seq_id'):
     return ps
 
 
-def fillBlankCompId(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'):
+def fillBlankCompId(polySeq1: List[dict], polySeq2: List[dict],
+                    seqIdName1: str = 'seq_id', seqIdName2: str = 'seq_id') -> List[dict]:
     """ Fill blanked comp_ID in polySeq2 against polySeq1.
     """
 
@@ -234,7 +238,7 @@ def fillBlankCompId(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'
     return ps
 
 
-def fillBlankCompIdWithOffset(polySeq, offset, seqIdName='seq_id'):
+def fillBlankCompIdWithOffset(polySeq: List[dict], offset: int, seqIdName: str = 'seq_id') -> List[dict]:
     """ Fill blanked comp_ID with offset.
     """
 
@@ -275,7 +279,8 @@ def fillBlankCompIdWithOffset(polySeq, offset, seqIdName='seq_id'):
     return ps
 
 
-def beautifyPolySeq(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'):
+def beautifyPolySeq(polySeq1: List[dict], polySeq2: List[dict],
+                    seqIdName1: str = 'seq_id', seqIdName2: str = 'seq_id') -> Tuple[List[dict], List[dict]]:
     """ Truncate negative seq_IDs and insert spacing between the large gap.
     """
 
@@ -358,19 +363,19 @@ def beautifyPolySeq(polySeq1, polySeq2, seqIdName1='seq_id', seqIdName2='seq_id'
     return ps1, ps2
 
 
-def getMiddleCode(seqIdList1, seqIdList2):
+def getMiddleCode(compIdCode1: str, compIdCode2: str) -> str:
     """ Return array of middle code of sequence alignment.
     """
 
     f = []
 
-    for idx, seqId in enumerate(seqIdList1):
-        f.append('|' if idx < len(seqIdList2) and seqId == seqIdList2[idx] and seqId != '.' else ' ')
+    for idx, compId in enumerate(compIdCode1):
+        f.append('|' if idx < len(compIdCode2) and compId == compIdCode2[idx] and compId != '.' else ' ')
 
     return ''.join(f)
 
 
-def getGaugeCode(seqIdList, offset=0):
+def getGaugeCode(seqIdList: List[int], offset: int = 0) -> str:
     """ Return gauge code for a give sequence.
     """
 
@@ -460,7 +465,7 @@ def getGaugeCode(seqIdList, offset=0):
     return gaugeCode[:_lenSeqId]
 
 
-def getScoreOfSeqAlign(myAlign):
+def getScoreOfSeqAlign(myAlign: list) -> Tuple[int, int, int, int, int]:
     """ Return score of sequence alignment.
     """
 
@@ -510,7 +515,7 @@ def getScoreOfSeqAlign(myAlign):
     return matched, unmapped, conflict, offset1, offset2
 
 
-def getOneLetterCodeCan(compId):
+def getOneLetterCodeCan(compId: str) -> str:
     """ Convert comp_ID to canonical one-letter code.
     """
 
@@ -525,7 +530,7 @@ def getOneLetterCodeCan(compId):
     return 'X'
 
 
-def getOneLetterCode(compId):
+def getOneLetterCode(compId: str) -> str:
     """ Convert comp_ID to one-letter code.
     """
 
@@ -540,21 +545,21 @@ def getOneLetterCode(compId):
     return f'({compId})'
 
 
-def getOneLetterCodeCanSequence(compIdList):
+def getOneLetterCodeCanSequence(compIdList: List[str]) -> str:
     """ Convert array of comp_IDs to canonical one-letter code sequence.
     """
 
     return ''.join([getOneLetterCodeCan(compId) for compId in compIdList])
 
 
-def getOneLetterCodeSequence(compIdList):
+def getOneLetterCodeSequence(compIdList: List[str]) -> str:
     """ Convert array of comp_IDs to one-letter code sequence.
     """
 
     return ''.join([getOneLetterCode(compId) for compId in compIdList])
 
 
-def letterToDigit(code, minDigit=0):
+def letterToDigit(code: str, minDigit: int = 0) -> int:
     """ Return digit from a given chain code.
     """
 
@@ -577,7 +582,7 @@ def letterToDigit(code, minDigit=0):
     return digit if digit > minDigit else minDigit
 
 
-def indexToLetter(index):
+def indexToLetter(index: int) -> str:
     """ Return chain code from a given index (0 based).
     """
 
@@ -599,7 +604,7 @@ def indexToLetter(index):
         + str(chr(65 + (index % 27)))
 
 
-def getRestraintFormatName(fileType, ambig=False):
+def getRestraintFormatName(fileType: str, ambig: bool = False) -> str:
     """ Return restraint format name.
     """
 
@@ -645,7 +650,7 @@ def getRestraintFormatName(fileType, ambig=False):
     return 'other restraint'
 
 
-def getRestraintFormatNames(fileTypes, ambig=False):
+def getRestraintFormatNames(fileTypes: str, ambig: bool = False) -> str:
     """ Return restraint format name.
     """
 
@@ -660,7 +665,7 @@ def getRestraintFormatNames(fileTypes, ambig=False):
     return ', or '.join(nameList)
 
 
-def updatePolySeqRst(polySeqRst, chainId, seqId, compId: str, authCompId=None):
+def updatePolySeqRst(polySeqRst: List[dict], chainId: str, seqId: int, compId: str, authCompId: Optional[str] = None):
     """ Update polymer sequence of the current MR file.
     """
 
@@ -683,7 +688,7 @@ def updatePolySeqRst(polySeqRst, chainId, seqId, compId: str, authCompId=None):
         ps['auth_comp_id'].append(compId if authCompId in emptyValue else authCompId)
 
 
-def revertPolySeqRst(polySeqRst, chainId, seqId, authCompId):
+def revertPolySeqRst(polySeqRst: List[dict], chainId: str, seqId: int, authCompId: str):
     """ Revert polymer sequence of the current MR file.
     """
 
@@ -705,7 +710,7 @@ def revertPolySeqRst(polySeqRst, chainId, seqId, authCompId):
         ps['auth_comp_id'].append(authCompId)
 
 
-def updatePolySeqRstAmbig(polySeqRstAmb, chainId, seqId, compIds: list):
+def updatePolySeqRstAmbig(polySeqRstAmb: List[dict], chainId: str, seqId: int, compIds: List[str]):
     """ Update polymer sequence of the current MR file.
     """
 
@@ -726,7 +731,7 @@ def updatePolySeqRstAmbig(polySeqRstAmb, chainId, seqId, compIds: list):
         ps['comp_ids'][ps['seq_id'].index(seqId)] &= _compIds
 
 
-def mergePolySeqRstAmbig(polySeqRst, polySeqRstAmb):
+def mergePolySeqRstAmbig(polySeqRst: List[dict], polySeqRstAmb: List[dict]):
     """ Merge polymer sequence and ambiguous polymer sequence of the curent MR file.
     """
 
@@ -766,7 +771,7 @@ def mergePolySeqRstAmbig(polySeqRst, polySeqRstAmb):
                 del _ps['comp_ids'][idx]
 
 
-def updatePolySeqRstFromAtomSelectionSet(polySeqRst, atomSelectionSet):
+def updatePolySeqRstFromAtomSelectionSet(polySeqRst: List[dict], atomSelectionSet: List[List[dict]]):
     """ Update polymer sequence of the current MR file.
     """
 
@@ -787,7 +792,7 @@ def updatePolySeqRstFromAtomSelectionSet(polySeqRst, atomSelectionSet):
             updatePolySeqRst(polySeqRst, chainId, seqId, compId)
 
 
-def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
+def sortPolySeqRst(polySeqRst: List[dict], nonPolyRemap: Optional[dict] = None):
     """ Sort polymer sequence of the current MR file by sequence number.
     """
 
@@ -897,7 +902,7 @@ def sortPolySeqRst(polySeqRst, nonPolyRemap=None):
             ps['auth_comp_id'] = _authCompIds
 
 
-def syncCompIdOfPolySeqRst(polySeqRst, compIdMap):
+def syncCompIdOfPolySeqRst(polySeqRst: List[dict], compIdMap: dict):
     """ Synchronize residue names of polymer sequence of the current MR file.
     """
 
@@ -910,7 +915,7 @@ def syncCompIdOfPolySeqRst(polySeqRst, compIdMap):
                 ps['comp_id'][idx] = compIdMap[compId]
 
 
-def stripPolySeqRst(polySeqRst):
+def stripPolySeqRst(polySeqRst: List[dict]):
     """ Strip polymer sequence of the current MR file.
     """
 
@@ -961,7 +966,7 @@ def stripPolySeqRst(polySeqRst):
                 ps['auth_comp_id'] = auth_comp_ids
 
 
-def updateSeqAtmRst(seqAtmRst, chainId, seqId, atoms):
+def updateSeqAtmRst(seqAtmRst: List[dict], chainId: str, seqId: int, atoms: List[str]):
     """ Update sequence with atom names of the current MR file.
     """
 
@@ -984,7 +989,8 @@ def updateSeqAtmRst(seqAtmRst, chainId, seqId, atoms):
                 s['atom_id'][idx].append(atom)
 
 
-def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolvedMultimer=False):
+def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
+                         conservative: bool = True, resolvedMultimer: bool = False) -> Tuple[List[dict], List[dict]]:
     """ Align polymer sequence of the coordinates and restraints.
     """
 
@@ -1411,7 +1417,8 @@ def alignPolymerSequence(pA, polySeqModel, polySeqRst, conservative=True, resolv
     return seqAlign, compIdMapping
 
 
-def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1):
+def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: List[dict],
+                                      conflictTh: int = 1) -> Tuple[List[dict], List[dict]]:
     """ Align polymer sequence of the coordinates and restraints allowing minor conflicts.
     """
 
@@ -1726,7 +1733,8 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel, polySeqRst, conflictTh=1
     return seqAlign, compIdMapping
 
 
-def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign):
+def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], polySeqRst: List[dict], seqAlign: List[dict]
+                          ) -> Tuple[Optional[List[dict]], List[str]]:
     """ Assign polymer sequences of restraints.
     """
 
@@ -2031,7 +2039,7 @@ def assignPolymerSequence(pA, ccU, fileType, polySeqModel, polySeqRst, seqAlign)
     return chainAssign, warnings
 
 
-def trimSequenceAlignment(seqAlign, chainAssign):
+def trimSequenceAlignment(seqAlign: List[dict], chainAssign: List[dict]):
     """ Trim ineffective sequence alignments.
     """
 
@@ -2056,8 +2064,9 @@ def trimSequenceAlignment(seqAlign, chainAssign):
             del seqAlign[idx]
 
 
-def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
-                               cifCompId=None, coordAtomSite=None, ignoreSeqId=False):
+def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, compId: str, atomId: str,
+                               cifCompId: Optional[str] = None, coordAtomSite: Optional[dict] = None,
+                               ignoreSeqId: bool = False) -> Tuple[int, str, str]:
     """ Retrieve atom identifiers from atom name mapping of public MR file.
     """
 
@@ -2342,8 +2351,8 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping, seqId, compId, atomId,
     return seqId, compId, atomId
 
 
-def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
-                            coordAtomSite=None, ignoreSeqId=False):
+def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, cifCompId: str, atomId: str,
+                            coordAtomSite: Optional[dict] = None, ignoreSeqId: bool = False) -> str:
     """ Retrieve atom_id from atom name mapping of public MR file.
     """
 
@@ -2616,7 +2625,8 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping, cifSeqId, cifCompId, atomId,
     return atomId
 
 
-def retrieveRemappedSeqId(seqIdRemap, chainId, seqId, compId=None):
+def retrieveRemappedSeqId(seqIdRemap: List[dict], chainId: str, seqId: int, compId: Optional[str] = None
+                          ) -> Tuple[Optional[str], Optional[int]]:
     """ Retrieve seq_id from mapping dictionary based on sequence alignments.
     """
 
@@ -2646,7 +2656,8 @@ def retrieveRemappedSeqId(seqIdRemap, chainId, seqId, compId=None):
         return None, None
 
 
-def retrieveRemappedSeqIdAndCompId(seqIdRemap, chainId, seqId, compId=None):
+def retrieveRemappedSeqIdAndCompId(seqIdRemap: List[dict], chainId: str, seqId: int, compId: Optional[str] = None
+                                   ) -> Tuple[Optional[str], Optional[int], Optional[str]]:
     """ Retrieve seq_id from mapping dictionary based on sequence alignments.
     """
 
@@ -2679,7 +2690,8 @@ def retrieveRemappedSeqIdAndCompId(seqIdRemap, chainId, seqId, compId=None):
         return None, None, None
 
 
-def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssign):
+def splitPolySeqRstForMultimers(pA, polySeqModel: List[dict], polySeqRst: List[dict], chainAssign: List[dict]
+                                ) -> Tuple[Optional[List[dict]], Optional[List[dict]]]:
     """ Split polymer sequence of the current MR file for multimers.
     """
 
@@ -2848,7 +2860,8 @@ def splitPolySeqRstForMultimers(pA, polySeqModel, polySeqRst, chainAssign):
     return _polySeqRst, _chainIdMapping
 
 
-def splitPolySeqRstForExactNoes(pA, polySeqModel, polySeqRst, chainAssign):
+def splitPolySeqRstForExactNoes(pA, polySeqModel: List[dict], polySeqRst: List[dict], chainAssign: List[dict]
+                                ) -> Tuple[Optional[List[dict]], Optional[dict], Optional[dict]]:
     """ Split polymer sequence of the current MR file for eNOEs-guided multiple conformers.
     """
 
@@ -3067,7 +3080,7 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel, polySeqRst, chainAssign):
     return _polySeqRst, _chainIdMapping, _modelChainIdExt
 
 
-def retrieveRemappedChainId(chainIdRemap, seqId):
+def retrieveRemappedChainId(chainIdRemap: dict, seqId: int) -> Tuple[Optional[str], Optional[int]]:
     """ Retrieve chain_id and seq_id from mapping dictionary based on sequence alignments.
     """
 
@@ -3079,14 +3092,15 @@ def retrieveRemappedChainId(chainIdRemap, seqId):
     return remap['chain_id'], remap['seq_id']
 
 
-def retrieveOriginalSeqIdFromMRMap(chainIdRemap, chainId, seqId):
+def retrieveOriginalSeqIdFromMRMap(chainIdRemap: dict, chainId: str, seqId: int) -> int:
     """ Retrieve the original seq_id from mapping dictionary based on sequence alignments.
     """
     return next((_seqId for _seqId, remap in chainIdRemap.items()
                  if remap['chain_id'] == chainId and remap['seq_id'] == seqId), seqId)
 
 
-def splitPolySeqRstForNonPoly(ccU, nonPolyModel, polySeqRst, seqAlign, chainAssign):
+def splitPolySeqRstForNonPoly(ccU, nonPolyModel: List[dict], polySeqRst: List[dict], seqAlign: List[dict], chainAssign: List[dict]
+                              ) -> Tuple[Optional[List[dict]], Optional[dict]]:
     """ Split polymer sequence of the current MR file for non-polymer.
     """
 
@@ -3202,7 +3216,7 @@ def splitPolySeqRstForNonPoly(ccU, nonPolyModel, polySeqRst, seqAlign, chainAssi
     return _polySeqRst, _nonPolyMapping
 
 
-def retrieveRemappedNonPoly(nonPolyRemap, chainId, seqId, compId):
+def retrieveRemappedNonPoly(nonPolyRemap: dict, chainId: str, seqId: int, compId: str) -> Tuple[Optional[str], Optional[int]]:
     """ Retrieve seq_id from mapping dictionary based on sequence alignments.
     """
 
@@ -3217,7 +3231,8 @@ def retrieveRemappedNonPoly(nonPolyRemap, chainId, seqId, compId):
     return None, None
 
 
-def splitPolySeqRstForBranched(pA, polySeqModel, branchedModel, polySeqRst, chainAssign):
+def splitPolySeqRstForBranched(pA, polySeqModel: List[dict], branchedModel: List[dict], polySeqRst: List[dict], chainAssign: List[dict]
+                               ) -> Tuple[Optional[List[dict]], Optional[dict]]:
     """ Split polymer sequence of the current MR file for branched polymer.
     """
 
@@ -3486,7 +3501,7 @@ def splitPolySeqRstForBranched(pA, polySeqModel, branchedModel, polySeqRst, chai
     return _polySeqRst, _branchedMapping
 
 
-def getPrettyJson(data):
+def getPrettyJson(data: dict) -> str:
     """ Return pretty JSON string.
     """
 

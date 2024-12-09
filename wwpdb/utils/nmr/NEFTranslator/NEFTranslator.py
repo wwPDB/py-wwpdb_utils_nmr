@@ -6627,7 +6627,7 @@ class NEFTranslator:
                     if len(grk_atoms) > 0:
                         atom_list = []
                         details = None
-                        for grk_atom in sorted(list(grk_atoms)):
+                        for grk_atom in grk_atoms:
                             _atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, grk_atom, details, coord_atom_site, methyl_only)
                             atom_list.extend(_atom_list)
                         if len(atom_list) >= 4:
@@ -6658,7 +6658,7 @@ class NEFTranslator:
                         if len(grk_atoms) > 0:
                             atom_list = []
                             details = None
-                            for grk_atom in sorted(list(grk_atoms)):
+                            for grk_atom in grk_atoms:
                                 _atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, grk_atom, details, coord_atom_site, methyl_only)
                                 atom_list.extend(_atom_list)
                             if len(atom_list) >= min_len:
@@ -6691,7 +6691,7 @@ class NEFTranslator:
             if len(grk_atoms) > 0:
                 atom_list = []
                 details = None
-                for grk_atom in sorted(list(grk_atoms)):
+                for grk_atom in grk_atoms:
                     _atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, grk_atom, details, coord_atom_site, methyl_only)
                     atom_list.extend(_atom_list)
 
@@ -7290,7 +7290,7 @@ class NEFTranslator:
                         if len(grk_atoms) > 0:
                             atom_list = []
                             details = None
-                            for grk_atom in sorted(list(grk_atoms)):
+                            for grk_atom in grk_atoms:
                                 _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
                                 atom_list.extend(_atom_list)
                             if len(atom_list) >= 4:
@@ -7327,7 +7327,7 @@ class NEFTranslator:
                             if len(grk_atoms) > 0:
                                 atom_list = []
                                 details = None
-                                for grk_atom in sorted(list(grk_atoms)):
+                                for grk_atom in grk_atoms:
                                     _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
                                     atom_list.extend(_atom_list)
                                 if len(atom_list) >= min_len:
@@ -7360,7 +7360,7 @@ class NEFTranslator:
                 if len(grk_atoms) > 0:
                     atom_list = []
                     details = None
-                    for grk_atom in sorted(list(grk_atoms)):
+                    for grk_atom in grk_atoms:
                         _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, grk_atom, details, leave_unmatched, methyl_only)
                         atom_list.extend(_atom_list)
 

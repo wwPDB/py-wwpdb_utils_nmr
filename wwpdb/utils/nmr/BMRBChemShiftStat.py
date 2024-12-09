@@ -31,6 +31,7 @@ import collections
 import shutil
 
 from operator import itemgetter
+from typing import List, IO, Set, Optional
 
 try:
     from wwpdb.utils.nmr.AlignUtil import (emptyValue,
@@ -50,7 +51,7 @@ class BMRBChemShiftStat:
     """ Wrapper class for retrieving BMRB chemical shift statistics.
     """
 
-    def __init__(self, verbose=False, log=sys.stderr, ccU=None):
+    def __init__(self, verbose: bool = False, log: IO = sys.stderr, ccU=None):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -111,7 +112,7 @@ class BMRBChemShiftStat:
         self.__cachedDictForNonRepMethylProtons = {}
         self.__cachedDictForProtonInSameGroup = {}
 
-    def hasCompId(self, comp_id):
+    def hasCompId(self, comp_id: str) -> bool:
         """ Return whether a given comp_id has BMRB chemical shift statistics.
         """
 
@@ -125,7 +126,7 @@ class BMRBChemShiftStat:
 
         return comp_id in self.__all_comp_ids
 
-    def peptideLike(self, comp_id):
+    def peptideLike(self, comp_id: str) -> bool:
         """ Return whether a given comp_id is peptide-like component.
         """
 
@@ -147,7 +148,7 @@ class BMRBChemShiftStat:
 
         return copy.deepcopy(result)
 
-    def getTypeOfCompId(self, comp_id):
+    def getTypeOfCompId(self, comp_id: str) -> bool:
         """ Return type of a given comp_id.
             @return: array of bool: peptide, nucleotide, carbohydrate
         """
@@ -170,7 +171,7 @@ class BMRBChemShiftStat:
 
         return copy.deepcopy(results)
 
-    def getSimilarCompIdFromAtomIds(self, atom_ids):
+    def getSimilarCompIdFromAtomIds(self, atom_ids: List[str]) -> Optional[str]:
         """ Return the most similar comp_id including atom_ids.
             @return: the most similar comp_id, otherwise None
         """
@@ -299,7 +300,7 @@ class BMRBChemShiftStat:
         finally:
             self.__cachedDictForSimilarCompId[key] = comp_id
 
-    def hasSufficientStat(self, comp_id, primary=True):
+    def hasSufficientStat(self, comp_id: str, primary: bool = True) -> bool:
         """ Return whether a given comp_id has sufficient chemical shift statistics.
         """
 
@@ -323,7 +324,7 @@ class BMRBChemShiftStat:
 
         return False
 
-    def get(self, comp_id, diamagnetic=True):
+    def get(self, comp_id: str, diamagnetic: bool = True) -> List[dict]:
         """ Return BMRB chemical shift statistics for a given comp_id.
         """
 
@@ -358,7 +359,7 @@ class BMRBChemShiftStat:
 
         return [item for item in self.others if item['comp_id'] == comp_id]
 
-    def __get(self, comp_id, diamagnetic=True):
+    def __get(self, comp_id: str, diamagnetic: bool = True) -> List[dict]:
         """ Return atom list for a given comp_id.
         """
 
@@ -399,7 +400,7 @@ class BMRBChemShiftStat:
 
         return []
 
-    def getMaxAmbigCodeWoSetId(self, comp_id, atom_id, default=0):
+    def getMaxAmbigCodeWoSetId(self, comp_id: str, atom_id: str, default: int = 0) -> int:
         """ Return maximum ambiguity code of a given atom that does not require declaration of ambiguity set ID.
             @return: one of (1, 2, 3), 0 for not found (by default)
         """
@@ -428,7 +429,7 @@ class BMRBChemShiftStat:
         except StopIteration:
             return default
 
-    def getGeminalAtom(self, comp_id, atom_id):
+    def getGeminalAtom(self, comp_id: str, atom_id: str) -> Optional[str]:
         """ Return geminal or aromatic opposite atom of a given atom.
         """
 
@@ -483,7 +484,7 @@ class BMRBChemShiftStat:
         except StopIteration:
             return None
 
-    def getAllAtoms(self, comp_id, excl_minor_atom=False, primary=False):
+    def getAllAtoms(self, comp_id: str, excl_minor_atom: bool = False, primary: bool = False):
         """ Return all atoms of a given comp_id.
         """
 
@@ -506,7 +507,8 @@ class BMRBChemShiftStat:
         return [item['atom_id'] for item in cs_stat
                 if (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
-    def getBackBoneAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False, carbohydrates_like=False):
+    def getBackBoneAtoms(self, comp_id: str, excl_minor_atom: bool = False, polypeptide_like: bool = False,
+                         polynucleotide_like: bool = False, carbohydrates_like: bool = False) -> List[str]:
         """ Return backbone atoms of a given comp_id.
         """
 
@@ -562,7 +564,7 @@ class BMRBChemShiftStat:
 
         return []
 
-    def getAromaticAtoms(self, comp_id, excl_minor_atom=False, primary=False):
+    def getAromaticAtoms(self, comp_id: str, excl_minor_atom: bool = False, primary: bool = False) -> List[str]:
         """ Return aromatic atoms of a given comp_id.
         """
 
@@ -584,7 +586,7 @@ class BMRBChemShiftStat:
         return [item['atom_id'] for item in cs_stat
                 if 'aroma' in item['desc'] and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
-    def getMethylAtoms(self, comp_id):
+    def getMethylAtoms(self, comp_id: str) -> List[str]:
         """ Return atoms in methyl group of a given comp_id.
         """
 
@@ -600,7 +602,7 @@ class BMRBChemShiftStat:
 
         return copy.deepcopy(result)
 
-    def getRepMethylProtons(self, comp_id):
+    def getRepMethylProtons(self, comp_id: str) -> List[str]:
         """ Return representative protons in methyl group of a given comp_id.
         """
 
@@ -616,7 +618,7 @@ class BMRBChemShiftStat:
 
         return copy.deepcopy(result)
 
-    def getNonRepMethylProtons(self, comp_id):
+    def getNonRepMethylProtons(self, comp_id: str) -> List[str]:
         """ Return non-representative protons in methyl group of a given comp_id.
         """
 
@@ -632,7 +634,7 @@ class BMRBChemShiftStat:
 
         return copy.deepcopy(result)
 
-    def getProtonsInSameGroup(self, comp_id, atom_id, excl_self=False):
+    def getProtonsInSameGroup(self, comp_id: str, atom_id: str, excl_self: bool = False) -> List[str]:
         """ Return protons in the same group of a given comp_id and atom_id.
         """
 
@@ -649,7 +651,8 @@ class BMRBChemShiftStat:
 
         return copy.deepcopy(result)
 
-    def getSideChainAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False, carbohydrates_like=False):
+    def getSideChainAtoms(self, comp_id: str, excl_minor_atom: bool = False, polypeptide_like: bool = False,
+                          polynucleotide_like: bool = False, carbohydrates_like: bool = False) -> List[str]:
         """ Return sidechain atoms of a given comp_id.
         """
 
@@ -684,7 +687,8 @@ class BMRBChemShiftStat:
         return [item['atom_id'] for item in cs_stat
                 if item['atom_id'] not in bb_atoms and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
-    def getCentroidAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False, carbohydrates_like=False):
+    def getCentroidAtoms(self, comp_id: str, excl_minor_atom: bool = False, polypeptide_like: bool = False,
+                         polynucleotide_like: bool = False, carbohydrates_like: bool = False) -> List[str]:
         """ Return ROSETTA 'CEN'troid atoms of a given comp_id.
         """
 
@@ -715,7 +719,7 @@ class BMRBChemShiftStat:
                 and item['atom_id'][0] not in protonBeginCode
                 and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
-    def getPseudoAtoms(self, comp_id, excl_minor_atom=False, primary=False):
+    def getPseudoAtoms(self, comp_id: str, excl_minor_atom: bool = False, primary: bool = False) -> List[str]:
         """ Return all pseudo atoms of a give comp_id.
         """
 
@@ -739,7 +743,7 @@ class BMRBChemShiftStat:
                 if (('methyl' in item['desc'] and item['atom_id'][0] in protonBeginCode) or 'geminal' in item['desc'] or item['desc'].startswith('aroma-opposite'))
                 and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
-    def loadStatFromCsvFiles(self):
+    def loadStatFromCsvFiles(self) -> bool:
         """ Load all BMRB chemical shift statistics from CSV files.
         """
 
@@ -762,7 +766,7 @@ class BMRBChemShiftStat:
 
         return True
 
-    def loadOtherStatFromCsvFiles(self, comp_id_interest=None):
+    def loadOtherStatFromCsvFiles(self, comp_id_interest: Optional[str] = None) -> bool:
         """ Load all BMRB chemical shift statistics from CSV files.
         """
 
@@ -783,7 +787,8 @@ class BMRBChemShiftStat:
 
         return True
 
-    def loadStatFromCsvFile(self, file_name, primary_th, secondary_th=None, comp_id_interest=None):
+    def loadStatFromCsvFile(self, file_name: str, primary_th: float, secondary_th: Optional[float] = None,
+                            comp_id_interest: Optional[str] = None) -> List[dict]:
         """ Load BMRB chemical shift statistics from a given CSV file.
         """
 
@@ -1626,7 +1631,7 @@ class BMRBChemShiftStat:
 
         self.extras.extend(atm_list)
 
-    def checkAtomNomenclature(self, atom_id, comp_id=None, verbose=False):
+    def checkAtomNomenclature(self, atom_id: str, comp_id: Optional[str] = None, verbose: bool = False):
         """ Check atom nomenclature.
             @return: status (bool), mapped comp_id, mapped atom_id
         """
@@ -2250,7 +2255,7 @@ class BMRBChemShiftStat:
 
         write_stat_as_pickle(sorted(self.others, key=itemgetter('comp_id')), self.stat_dir + 'others.pkl')
 
-    def loadStatFromPickleFiles(self):
+    def loadStatFromPickleFiles(self) -> bool:
         """ Load all BMRB chemical shift statistics from pickle files if possible.
         """
 
@@ -2307,7 +2312,7 @@ class BMRBChemShiftStat:
 
         self.__all_comp_ids |= self.__oth_comp_ids
 
-    def updateStatCsvFiles(self):
+    def updateStatCsvFiles(self) -> bool:
         """ Update BMRB chemical shift statistics.
         """
         import requests  # pylint: disable=import-outside-toplevel
@@ -2362,7 +2367,7 @@ class BMRBChemShiftStat:
 
         return True
 
-    def testAtomNomenclatureOfLibrary(self):
+    def testAtomNomenclatureOfLibrary(self) -> bool:
         """ Report inconsistencies between BMRB chemical shift statistics and current CCD.
             @return: status (bool)
         """
@@ -2514,7 +2519,7 @@ class BMRBChemShiftStat:
 
         return status
 
-    def getAtomLikeNameSet(self, excl_minor_atom=False, primary=False, minimum_len=1):
+    def getAtomLikeNameSet(self, excl_minor_atom: bool = False, primary: bool = False, minimum_len: int = 1) -> Set[str]:
         """ Return atom like names of all standard residues.
         """
 

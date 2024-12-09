@@ -6645,20 +6645,20 @@ class NmrDpUtility:
         # RCI
         self.__rci = RCI(False, self.__lfh)
 
-    def setVerbose(self, verbose):
+    def setVerbose(self, verbose: bool):
         """ Set verbose mode.
         """
 
         self.__verbose = verbose
         self.__debug = verbose
 
-    def setMrDebugMode(self, debug):
+    def setMrDebugMode(self, debug: bool):
         """ Set debug mode for MR splitter.
         """
 
         self.__mr_debug = debug
 
-    def setSource(self, fPath, originalName=None):
+    def setSource(self, fPath: str, originalName: str = None):
         """ Set primary source file path.
         """
 
@@ -6672,7 +6672,7 @@ class NmrDpUtility:
         else:
             raise IOError(f"+NmrDpUtility.setSource() ++ Error  - Could not access to file path {fPath}.")
 
-    def setDestination(self, fPath):
+    def setDestination(self, fPath: str):
         """ Set primary destination file path.
         """
 
@@ -6680,14 +6680,14 @@ class NmrDpUtility:
             self.__dstPath = os.path.abspath(fPath)
             self.__dstPath__ = copy.copy(self.__dstPath)
 
-    def setLog(self, fPath):
+    def setLog(self, fPath: str):
         """ Set a log file path for the primary input source.
         """
 
         if fPath is not None:
             self.__logPath = os.path.abspath(fPath)
 
-    def addInput(self, name=None, value=None, type='file'):  # pylint: disable=redefined-builtin
+    def addInput(self, name: Optional[str] = None, value: Any = None, type: str = 'file'):  # pylint: disable=redefined-builtin
         """ Add a named input and value to the dictionary of input parameters.
         """
 
@@ -6716,7 +6716,7 @@ class NmrDpUtility:
         except Exception as e:
             raise ValueError("+NmrDpUtility.addInput() ++ Error  - " + str(e))
 
-    def addOutput(self, name=None, value=None, type='file'):  # pylint: disable=redefined-builtin
+    def addOutput(self, name: Optional[str] = None, value: Any = None, type: str = 'file'):  # pylint: disable=redefined-builtin
         """ Add a named input and value to the dictionary of output parameters.
         """
 
@@ -6736,7 +6736,7 @@ class NmrDpUtility:
         except Exception as e:
             raise ValueError("+NmrDpUtility.addOutput() ++ Error  - " + str(e))
 
-    def op(self, op):
+    def op(self, op: str) -> bool:
         """ Perform a series of tasks for a given workflow operation.
         """
 

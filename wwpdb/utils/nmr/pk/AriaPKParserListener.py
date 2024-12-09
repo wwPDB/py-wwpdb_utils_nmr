@@ -298,7 +298,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                                 has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
 
                 if self.createSfDict__:
-                    sf = self.getSf()
+                    sf = self.getSf(self.__spectrum_name)
 
                 if self.debug:
                     print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) "
@@ -417,7 +417,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                                 has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
 
                 if self.createSfDict__:
-                    sf = self.getSf()
+                    sf = self.getSf(self.__spectrum_name)
 
                 if self.debug:
                     print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) "
@@ -555,7 +555,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                                 has_assignments &= self.fillAtomTypeInCase(4, a4['atom_id'][0])
 
                 if self.createSfDict__:
-                    sf = self.getSf()
+                    sf = self.getSf(self.__spectrum_name)
 
                 if self.debug:
                     print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) "

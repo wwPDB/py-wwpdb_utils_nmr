@@ -25,6 +25,7 @@ import collections
 
 from packaging import version
 from operator import itemgetter
+from typing import IO, Union, Optional
 
 try:
     from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
@@ -47,7 +48,7 @@ class CifToNmrStar:
     """ Simple CIF to NMR-STAR converter.
     """
 
-    def __init__(self, log=sys.stderr):
+    def __init__(self, log: IO = sys.stderr):
         self.__lfh = log
 
         # directory
@@ -127,7 +128,7 @@ class CifToNmrStar:
             ofh.write(schema.version)
         self.__lfh.write(f"version: {schema.version}\n")
 
-    def convert(self, cifPath=None, strPath=None, datablockName=None, maxRepeat=1):
+    def convert(self, cifPath: Optional[str] = None, strPath: Optional[str] = None, datablockName: Optional[str] = None, maxRepeat: int = 1) -> bool:
         """ Convert CIF formatted NMR data file to normalized NMR-STAR file.
         """
 
@@ -463,7 +464,7 @@ class CifToNmrStar:
 
             return False
 
-    def set_entry_id(self, strData, entryId):
+    def set_entry_id(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], entryId: str):
         """ Set entry ID without changing datablock name.
             @see: pynmrstar.entry
         """
@@ -609,7 +610,7 @@ class CifToNmrStar:
 
         return modified
 
-    def set_local_sf_id(self, strData, listId):
+    def set_local_sf_id(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], listId: int):
         """ Set list ID for a given saveframe or loop.
         """
 
@@ -656,7 +657,7 @@ class CifToNmrStar:
                 except KeyError:
                     pass
 
-    def normalize(self, strData):
+    def normalize(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]):
         """ Wrapper function of normalize_str() and normalize_nef().
         """
 
@@ -668,7 +669,7 @@ class CifToNmrStar:
         except (IndexError, AttributeError):
             return strData
 
-    def normalize_str(self, strData):
+    def normalize_str(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]):
         """ Sort saveframes, loops, and tags according to NMR-STAR schema.
             @see: pynmrstar.entry.normalize
         """
@@ -725,7 +726,7 @@ class CifToNmrStar:
 
         return strData
 
-    def normalize_nef(self, strData):
+    def normalize_nef(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]):
         """ Sort saveframes of NEF.
         """
 

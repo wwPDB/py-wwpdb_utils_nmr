@@ -18,6 +18,7 @@ import sys
 import pickle
 
 from rmsd.calculate_rmsd import NAMES_ELEMENT, ELEMENT_WEIGHTS  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
+from typing import List, IO, Tuple, Optional
 
 
 try:
@@ -41,7 +42,7 @@ class ChemCompUtil:
     """ Wrapper class for retrieving chemical component dictionary.
     """
 
-    def __init__(self, verbose=False, log=sys.stderr):
+    def __init__(self, verbose: bool = False, log: IO = sys.stderr):
 
         # pickle file name of cached dictionary for standard residues
         self.__cacheFile = os.path.dirname(__file__) + '/chem_comp_util/std_chem_comp.pkl'
@@ -148,7 +149,7 @@ class ChemCompUtil:
         self.__cachedDict = load_dict_from_pickle(self.__cacheFile)
         self.__failedCompId = []
 
-    def updateChemCompDict(self, compId):
+    def updateChemCompDict(self, compId: str) -> bool:
         """ Update CCD information for a given comp_id.
             @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
         """
@@ -183,7 +184,7 @@ class ChemCompUtil:
 
         return self.lastStatus
 
-    def getMethylAtoms(self, compId):
+    def getMethylAtoms(self, compId: str) -> List[str]:
         """ Return atoms in methyl group of a given comp_id.
         """
 
@@ -206,7 +207,7 @@ class ChemCompUtil:
 
         return atmList
 
-    def getRepMethylProtons(self, compId):
+    def getRepMethylProtons(self, compId: str) -> List[str]:
         """ Return representative protons in methyl group of a given comp_id.
         """
 
@@ -228,7 +229,7 @@ class ChemCompUtil:
 
         return atmList
 
-    def getNonRepMethylProtons(self, compId):
+    def getNonRepMethylProtons(self, compId: str) -> List[str]:
         """ Return non-representative protons in methyl group of a given comp_id.
         """
 
@@ -250,7 +251,7 @@ class ChemCompUtil:
 
         return atmList
 
-    def getRepMethyleneOrAminoProtons(self, compId):
+    def getRepMethyleneOrAminoProtons(self, compId: str) -> List[str]:
         """ Return representative protons in methylene/amino group of a given comp_id.
         """
 
@@ -272,7 +273,7 @@ class ChemCompUtil:
 
         return atmList
 
-    def getNonRepMethyleneOrAminoProtons(self, compId):
+    def getNonRepMethyleneOrAminoProtons(self, compId: str) -> List[str]:
         """ Return non-representative protons in methylene/amino group of a given comp_id.
         """
 
@@ -294,7 +295,7 @@ class ChemCompUtil:
 
         return atmList
 
-    def getRepAminoProtons(self, compId):
+    def getRepAminoProtons(self, compId: str) -> List[str]:
         """ Return representative protons in amino group of a given comp_id.
         """
 
@@ -316,7 +317,7 @@ class ChemCompUtil:
 
         return atmList
 
-    def getNonRepAminoProtons(self, compId):
+    def getNonRepAminoProtons(self, compId: str) -> List[str]:
         """ Return non-representative protons in amino group of a given comp_id.
         """
 
@@ -338,7 +339,7 @@ class ChemCompUtil:
 
         return atmList
 
-    def getImideProtons(self, compId):
+    def getImideProtons(self, compId: str) -> List[str]:
         """ Return imide protons of a given comp_id.
         """
 
@@ -372,7 +373,7 @@ class ChemCompUtil:
 
         return atmList
 
-    def getBondedAtoms(self, compId, atomId, exclProton=False, onlyProton=False):
+    def getBondedAtoms(self, compId: str, atomId: str, exclProton: bool = False, onlyProton: bool = False) -> List[str]:
         """ Return bonded atoms to a given atom.
         """
 
@@ -389,7 +390,7 @@ class ChemCompUtil:
 
         return [a for a in bondedAtoms if (exclProton and a not in allProtons) or (onlyProton and a in allProtons)]
 
-    def getProtonsInSameGroup(self, compId, atomId, exclSelf=False):
+    def getProtonsInSameGroup(self, compId: str, atomId: str, exclSelf: bool = False) -> List[str]:
         """ Return protons in the same group of a given comp_id and atom_id.
         """
 
@@ -405,39 +406,39 @@ class ChemCompUtil:
 
         return [p for p in attached if (exclSelf and p != atomId) or not exclSelf]
 
-    def getAtomsBasedOnGreekLetterSystem(self, compId, atomId):
+    def getAtomsBasedOnGreekLetterSystem(self, compId: str, atomId: str) -> List[str]:
         """ Return atoms match with greek letter system of a given comp_id.
         """
 
         if len(atomId) < 2:
-            return {}
+            return []
 
         elem = atomId[0]
 
         if elem not in ('H', 'C', 'N', 'O', 'S', 'P'):
-            return {}
+            return []
 
         greekLetter = atomId[1]
 
         if greekLetter not in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
-            return {}
+            return []
 
         if compId != self.lastCompId and not self.updateChemCompDict(compId):
-            return {}
+            return []
 
         touched = ['N', 'C', 'O', 'OXT']
         parents = ['CA']
 
         if not any(a[self.ccaAtomId] == 'CA' for a in self.lastAtomList):
             if not any(a[self.ccaAtomId] == 'C' for a in self.lastAtomList):  # ACA:QA -> H21, H22 (5nwu)
-                return {}
+                return []
             bonded = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != 'C' else b[self.ccbAtomId2])
                       for b in self.lastBonds if 'C' in (b[self.ccbAtomId1], b[self.ccbAtomId2])]
             if len(bonded) == 0:
-                return {}
+                return []
             parents = [b for b in bonded if b not in touched]
             if len(parents) == 0:
-                return {}
+                return []
 
         for letter in ['A', 'B', 'G', 'D', 'E', 'Z', 'H']:
 
@@ -445,7 +446,7 @@ class ChemCompUtil:
                 atoms = parents
                 for p in parents:
                     atoms.extend(self.getBondedAtoms(compId, p, onlyProton=True))
-                return {a for a in atoms if a[0] == elem}
+                return sorted(list(set(a for a in atoms if a[0] == elem)))
 
             touched.extend(parents)
 
@@ -454,18 +455,18 @@ class ChemCompUtil:
                 _parents.extend([a for a in self.getBondedAtoms(compId, p, exclProton=True) if a not in touched])
 
             if len(_parents) == 0:
-                return {}
+                return []
 
             parents = list(set(_parents))
 
-        return {}
+        return []
 
-    def hasBond(self, compId, atomId1, atomId2):
+    def hasBond(self, compId: str, atomId1: str, atomId2: str) -> bool:
         """ Return whether given two atoms are connected by a covalent bond.
         """
         return atomId2 in self.getBondedAtoms(compId, atomId1)
 
-    def peptideLike(self, compId=None):
+    def peptideLike(self, compId: Optional[str] = None) -> bool:
         """ Return whether a given comp_id is peptide-like component.
         """
 
@@ -496,7 +497,7 @@ class ChemCompUtil:
 
         return peptide_like > nucleotide_like and peptide_like > carbohydrate_like
 
-    def getTypeOfCompId(self, compId=None):
+    def getTypeOfCompId(self, compId: Optional[str] = None) -> Tuple[bool, bool, bool]:
         """ Return type of a given comp_id.
             @return: array of bool: peptide, nucleotide, carbohydrate
         """
@@ -540,7 +541,7 @@ class ChemCompUtil:
 
         return results
 
-    def getEffectiveFormulaWeight(self, compId):
+    def getEffectiveFormulaWeight(self, compId: str):
         """ Return effective formula weight of a given comp_id.
         """
 

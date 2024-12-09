@@ -52,6 +52,7 @@ import pickle
 
 import numpy as np
 from operator import itemgetter
+from typing import List, IO, Tuple, Optional
 
 from mmcif.io.PdbxReader import PdbxReader
 
@@ -209,9 +210,9 @@ class CifReader:
     """ Accessor methods for parsing CIF files.
     """
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 use_cache=True,
-                 sub_dir_name_for_cache='.'):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 use_cache: bool = True,
+                 sub_dir_name_for_cache: str = '.'):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -276,7 +277,7 @@ class CifReader:
         # criterion for detection of exactly overlaid models
         self.__rmsd_overlaid_exactly = 0.01
 
-    def parse(self, filePath, dirPath=None):
+    def parse(self, filePath: str, dirPath: Optional[str] = None) -> bool:
         """ Parse CIF file, and set internal active data block if possible.
             @return: True for success or False otherwise.
         """
@@ -309,7 +310,7 @@ class CifReader:
                 self.__lfh.write(f"+ERROR- CifReader.parse() Missing file {self.__filePath}\n")
             return False
 
-    def __getDataBlockFromFile(self, blockId=None):
+    def __getDataBlockFromFile(self, blockId: Optional[str] = None):
         """ Worker method to read cif file and set the target datablock.
             If no blockId is provided return the first data block.
             @return: target data block
@@ -356,7 +357,7 @@ class CifReader:
 
         return None
 
-    def __setDataBlock(self, dataBlock=None):
+    def __setDataBlock(self, dataBlock: Optional[str] = None) -> bool:
         """ Assigns the input data block as the active internal data block.
             @return: True for success or False otherwise.
         """
@@ -379,13 +380,13 @@ class CifReader:
 
         return ok
 
-    def getFilePath(self):
+    def getFilePath(self) -> str:
         """ Return cif file path.
         """
 
         return self.__filePath
 
-    def getHashCode(self):
+    def getHashCode(self) -> str:
         """ Return hash code of the cif file.
         """
 
@@ -395,13 +396,13 @@ class CifReader:
 
         return self.__hashCode
 
-    def getDataBlockList(self):
+    def getDataBlockList(self) -> list:
         """ Return whole list of datablock.
         """
 
         return self.__dBlockList
 
-    def getDataBlock(self, blockId=None):
+    def getDataBlock(self, blockId: Optional[str] = None):
         """ Return target datablock.
             Return None in case current blockId does not exist or no blockId does not match.
             @return: target data block
@@ -417,7 +418,7 @@ class CifReader:
 
         return dBlock if self.__setDataBlock(dBlock) else None
 
-    def hasCategory(self, catName, blockId=None):
+    def hasCategory(self, catName: str, blockId: Optional[str] = None) -> bool:
         """ Return whether a given category exists.
         """
 
@@ -429,7 +430,7 @@ class CifReader:
 
         return catName in self.__dBlock.getObjNameList()
 
-    def hasItem(self, catName, itName, blockId=None):
+    def hasItem(self, catName: str, itName: str, blockId: Optional[str] = None) -> bool:
         """ Return whether a given item exists in a category.
         """
 
@@ -449,7 +450,7 @@ class CifReader:
 
         return itName in [name[len_catName:] for name in catObj.getItemNameList()]
 
-    def getItemTags(self, catName, blockId=None):
+    def getItemTags(self, catName: str, blockId: Optional[str] = None) -> List[str]:
         """ Return item tag names of a given category.
         """
 
@@ -469,7 +470,7 @@ class CifReader:
 
         return [name[len_catName:] for name in catObj.getItemNameList()]
 
-    def getRowLength(self, catName, blockId=None):
+    def getRowLength(self, catName: str, blockId: Optional[str] = None) -> int:
         """ Return length of rows of a given category.
         """
 
@@ -487,7 +488,7 @@ class CifReader:
 
         return 0
 
-    def getDictList(self, catName, blockId=None):
+    def getDictList(self, catName: str, blockId: Optional[str] = None) -> List[dict]:
         """ Return a list of dictionaries of a given category.
         """
 
@@ -522,7 +523,8 @@ class CifReader:
 
         return dList
 
-    def getDictListWithFilter(self, catName, dataItems, filterItems=None, blockId=None):
+    def getDictListWithFilter(self, catName: str, dataItems: List[dict], filterItems: Optional[List[dict]] = None,
+                              blockId: Optional[str] = None) -> List[dict]:
         """ Return a list of dictionaries of a given category with filter.
         """
 
@@ -687,8 +689,9 @@ class CifReader:
 
         return dList
 
-    def getPolymerSequence(self, catName, keyItems, withStructConf=False, withRmsd=False, alias=False,
-                           totalModels=1, effModelIds: list = None, repAltId='A'):
+    def getPolymerSequence(self, catName: str, keyItems: List[dict],
+                           withStructConf: bool = False, withRmsd: bool = False, alias: bool = False,
+                           totalModels: int = 1, effModelIds: Optional[List[int]] = None, repAltId: str = 'A') -> List[dict]:
         """ Extracts sequence from a given loop in a CIF file
         """
 
@@ -1329,7 +1332,7 @@ class CifReader:
 
         return asm
 
-    def __extractStructConf(self, chain_id, seq_ids, label_scheme=True):
+    def __extractStructConf(self, chain_id: str, seq_ids: List[int], label_scheme: bool = True) -> List[Optional[str]]:
         """ Extract structure conformational annotations.
         """
 
@@ -1369,8 +1372,9 @@ class CifReader:
 
         return ret
 
-    def __calculateRmsd(self, chain_ids, lengths, total_models=1, eff_model_ids: list = None,
-                        atom_sites=None, bb_atom_sites=None, randomM=None):
+    def __calculateRmsd(self, chain_ids: List[str], lengths: List[int], total_models: int = 1, eff_model_ids: Optional[List[str]] = None,
+                        atom_sites: Optional[List[dict]] = None, bb_atom_sites: Optional[List[dict]] = None,
+                        randomM: Optional[List[list]] = None) -> Tuple[Optional[List[dict]], Optional[List[dict]]]:
         """ Calculate RMSD of alpha carbons/phosphates in the ensemble.
         """
 

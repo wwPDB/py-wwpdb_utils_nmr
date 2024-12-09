@@ -25,7 +25,7 @@ import copy
 import numpy as np
 
 from operator import itemgetter
-from typing import Any, List, Tuple, Optional
+from typing import Any, IO, List, Tuple, Optional
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 
@@ -519,7 +519,7 @@ class NmrVrptUtility:
 
     __version__ = "v1.2"
 
-    def __init__(self, verbose=False, log=sys.stderr,
+    def __init__(self, verbose: bool = False, log: IO = sys.stderr,
                  cR=None, caC=None, ccU=None, csStat=None):
         self.__verbose = verbose
         self.__lfh = log
@@ -721,8 +721,6 @@ class NmrVrptUtility:
             else:
                 raise ValueError(f"+NmrVrptUtility.addOutput() ++ Error  - Unknown output type {type}.")
 
-            return True
-
         except Exception as e:
             raise ValueError("+NmrVrptUtility.addOutput() ++ Error  - " + str(e))
 
@@ -755,7 +753,7 @@ class NmrVrptUtility:
 
         return self.__results
 
-    def __parseCoordinate(self):
+    def __parseCoordinate(self) -> bool:
         """ Parse coordinates.
         """
 
@@ -897,7 +895,7 @@ class NmrVrptUtility:
         except Exception:
             return False
 
-    def __checkCoordInputSource(self):
+    def __checkCoordInputSource(self) -> bool:
         """ Check input source of the coordinates.
         """
 
@@ -976,7 +974,7 @@ class NmrVrptUtility:
 
         return False
 
-    def __parseNmrData(self):
+    def __parseNmrData(self) -> bool:
         """ Parse NMR data.
         """
 
@@ -993,7 +991,7 @@ class NmrVrptUtility:
 
         return True
 
-    def __checkNmrDataInputSource(self):
+    def __checkNmrDataInputSource(self) -> bool:
         """ Check input source of NMR data.
         """
 
@@ -1136,7 +1134,7 @@ class NmrVrptUtility:
 
         return False
 
-    def __checkPreviousResultsIfAvailable(self):
+    def __checkPreviousResultsIfAvailable(self) -> bool:
         """ Retrieve the previous results using the identical data sources, if available.
         """
 
@@ -1147,14 +1145,13 @@ class NmrVrptUtility:
             if self.__debug:
                 if os.path.exists(cache_path):
                     os.remove(cache_path)
-                return True
 
             self.__results = load_from_pickle(cache_path)
             self.__has_prev_results = self.__results is not None
 
         return True
 
-    def __retrieveCoordAssemblyChecker(self):
+    def __retrieveCoordAssemblyChecker(self) -> bool:
         """ Wrapper function for ParserListenerUtil.coordAssemblyChecker.
         """
 
@@ -1190,7 +1187,7 @@ class NmrVrptUtility:
 
         return True
 
-    def __extractCoordAtomSite(self):
+    def __extractCoordAtomSite(self) -> bool:
         """ Extract atom_site of coordinate file.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.get_coordinates,
@@ -1324,7 +1321,7 @@ class NmrVrptUtility:
 
         return False
 
-    def __extractGenDistConstraint(self):
+    def __extractGenDistConstraint(self) -> bool:
         """ Extract Gen_dist_constraint category of NMR data file.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.get_restraints2,
@@ -1549,7 +1546,7 @@ class NmrVrptUtility:
 
         return False
 
-    def __extractTorsionAngleConstraint(self):
+    def __extractTorsionAngleConstraint(self) -> bool:
         """ Extract Torsion_angle_constraint category of NMR data file.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.get_restraints2,
@@ -1750,7 +1747,7 @@ class NmrVrptUtility:
 
         return False
 
-    def __extractRdcConstraint(self):
+    def __extractRdcConstraint(self) -> bool:
         """ Extract RDC_constraint category of NMR data file.
         """
 
@@ -1923,7 +1920,7 @@ class NmrVrptUtility:
 
         return False
 
-    def __calculateDistanceRestraintViolations(self):
+    def __calculateDistanceRestraintViolations(self) -> bool:
         """ Calculate distance restraint violations.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.calculate_distance_violations,
@@ -2215,7 +2212,7 @@ class NmrVrptUtility:
 
         return False
 
-    def __calculateDihedralAngleRestraintViolations(self):
+    def __calculateDihedralAngleRestraintViolations(self) -> bool:
         """ Calculate dihedral angle restraint violations.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.calculate_angle_violations,
@@ -2396,7 +2393,7 @@ class NmrVrptUtility:
 
         return False
 
-    def __calculateRdcRestraintViolations(self):
+    def __calculateRdcRestraintViolations(self) -> bool:
         """ Calculate RDC restraint violations.
             @author: Masashi Yokochi
         """
@@ -2557,7 +2554,7 @@ class NmrVrptUtility:
 
         return False
 
-    def __summarizeCommonResults(self):
+    def __summarizeCommonResults(self) -> bool:
         """ Summarize common results.
         """
 
@@ -2578,7 +2575,7 @@ class NmrVrptUtility:
 
         return True
 
-    def __summarizeDistanceRestraintAnalysis(self):
+    def __summarizeDistanceRestraintAnalysis(self) -> bool:
         """ Summarize distance restraint analysis results.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.generate_output,
@@ -2833,7 +2830,7 @@ class NmrVrptUtility:
 
         return False
 
-    def __summarizeDihedralAngleRestraintAnalysis(self):
+    def __summarizeDihedralAngleRestraintAnalysis(self) -> bool:
         """ Summarize dihedral angle restraint analysis results.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.generate_output,
@@ -3076,7 +3073,7 @@ class NmrVrptUtility:
 
         return False
 
-    def __summarizeRdcRestraintAnalysis(self):
+    def __summarizeRdcRestraintAnalysis(self) -> bool:
         """ Summarize RDC restraint analysis results.
             @author: Masashi Yokochi
         """
@@ -3304,7 +3301,7 @@ class NmrVrptUtility:
 
         return False
 
-    def __outputResultsAsPickleFileIfPossible(self):
+    def __outputResultsAsPickleFileIfPossible(self) -> bool:
         """ Output results if 'result_pickle_file_path' was set in output parameter.
         """
 

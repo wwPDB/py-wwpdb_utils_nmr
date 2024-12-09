@@ -24,12 +24,13 @@ import os
 import traceback
 
 from mmcif.io.PdbxReader import PdbxReader
+from typing import List, IO, Optional
 
 
 class ChemCompReader:
     """ Accessor methods chemical component definition data files.
     """
-    def __init__(self, verbose=True, log=sys.stdout):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__verbose = verbose
         self.__debug = False
         self.__lfh = log
@@ -113,12 +114,12 @@ class ChemCompReader:
             ]
         }
 
-    def setCachePath(self, topCachePath='/data/components/ligand-dict-v4'):
+    def setCachePath(self, topCachePath: str = '/data/components/ligand-dict-v4'):
         """ Set the top file tree of chemical component dictionary.
         """
         self.__topCachePath = topCachePath
 
-    def setCompId(self, compId):
+    def setCompId(self, compId: str) -> bool:
         """ Set chemical component definition data file path of the input chemical component.
         """
         self.__ccU = compId.upper()
@@ -130,7 +131,7 @@ class ChemCompReader:
             return False
         return True
 
-    def setFilePath(self, filePath, compId=None):
+    def setFilePath(self, filePath: str, compId: Optional[str] = None) -> bool:
         """ Set data file path directory with chemical component ID.
         """
         try:
@@ -147,19 +148,19 @@ class ChemCompReader:
                 self.__lfh.write(f"+ERROR- PdbxChemCompReader.setFilePath() Missing file {self.__filePath}\n")
             return False
 
-    def getAtomList(self):
+    def getAtomList(self) -> List[list]:
         """ Get a list of list of data from the chem_comp_atom category.
         """
         self.__getComp()
         return self.__getDataList(catName='chem_comp_atom')
 
-    def getBonds(self):
+    def getBonds(self) -> List[list]:
         """ Get a list of list of data from the chem_comp_bond category.
         """
         self.__getComp()
         return self.__getDataList(catName='chem_comp_bond')
 
-    def getChemCompDict(self):
+    def getChemCompDict(self) -> dict:
         """ Get a list of dictionaries of a chem_comp category.
         """
         try:
@@ -169,7 +170,7 @@ class ChemCompReader:
         except Exception:
             return {}
 
-    def __getComp(self):
+    def __getComp(self) -> bool:
         """ Get the definition data for the input chemical component.
             Data is read from chemical component definition file stored in the organization
             of CVS repository for chemical components.
@@ -184,7 +185,7 @@ class ChemCompReader:
             traceback.print_exc(file=sys.stdout)
             return False
 
-    def __getDataBlock(self, filePath, blockId=None):
+    def __getDataBlock(self, filePath: str, blockId: Optional[str] = None):
         """ Worker method to read chemical component definition file and set the target datablock
             corresponding to the target chemical component.
             If no blockId is provided return the first data block.
@@ -213,7 +214,7 @@ class ChemCompReader:
             traceback.print_exc(file=self.__lfh)
             return None
 
-    def __setDataBlock(self, dataBlock=None):
+    def __setDataBlock(self, dataBlock=None) -> bool:
         """ Assigns the input data block as the active internal data block containing the
             target chemical component definition.
         """
@@ -229,7 +230,7 @@ class ChemCompReader:
 
         return ok
 
-    def __getDictList(self, catName='chem_comp'):
+    def __getDictList(self, catName: str = 'chem_comp') -> List[dict]:
         """ Return a list of dictionaries of the input category
         """
         # Get category object - from current data block
@@ -266,7 +267,7 @@ class ChemCompReader:
 
         return dList
 
-    def __getDataList(self, catName='chem_comp_bond'):
+    def __getDataList(self, catName: str = 'chem_comp_bond') -> List[list]:
         """ Return a list a list of data from the input category including
             data types and default value replacement.
         """
@@ -302,7 +303,7 @@ class ChemCompReader:
 
         return dataList
 
-    def __applyType(self, ctype, default, val):  # pylint: disable=no-self-use
+    def __applyType(self, ctype: str, default, val):  # pylint: disable=no-self-use
         """ Apply type conversion to the input value and assign default values to
             missing values.
         """
@@ -321,7 +322,7 @@ class ChemCompReader:
 
         return tval
 
-    def __getCcdHash(self, idCode):  # pylint: disable=no-self-use
+    def __getCcdHash(self, idCode: str) -> str:  # pylint: disable=no-self-use
         """Returns the hash code for a CCD id.  Currently first letter"""
         if not idCode:
             return None

@@ -223,7 +223,7 @@ from packaging import version
 from munkres import Munkres
 from operator import itemgetter
 from striprtf.striprtf import rtf_to_text
-from typing import Any, List, Tuple, Optional
+from typing import Any, List, IO, Set, Tuple, Union, Optional
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -239,7 +239,7 @@ try:
                                                              NON_METAL_ELEMENTS,
                                                              MAX_DIM_NUM_OF_SPECTRA,
                                                              MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK)
-    from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+    from wwpdb.utils.nmr.NmrDpReport import (NmrDpReport, NmrDpReportInputSource)
     from wwpdb.utils.nmr.AlignUtil import (LOW_SEQ_COVERAGE,
                                            MIN_SEQ_COVERAGE_W_CONFLICT,
                                            LARGE_ASYM_ID,
@@ -348,7 +348,7 @@ except ImportError:
                                                  NON_METAL_ELEMENTS,
                                                  MAX_DIM_NUM_OF_SPECTRA,
                                                  MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK)
-    from nmr.NmrDpReport import NmrDpReport
+    from nmr.NmrDpReport import (NmrDpReport, NmrDpReportInputSource)
     from nmr.AlignUtil import (LOW_SEQ_COVERAGE,
                                MIN_SEQ_COVERAGE_W_CONFLICT,
                                LARGE_ASYM_ID,
@@ -1222,7 +1222,7 @@ class NmrDpUtility:
     """ Wrapper class for data processing for NMR data.
     """
 
-    def __init__(self, verbose=False, log=sys.stderr):
+    def __init__(self, verbose: bool = False, log: IO = sys.stderr):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -6731,8 +6731,6 @@ class NmrDpUtility:
             else:
                 raise ValueError(f"+NmrDpUtility.addOutput() ++ Error  - Unknown output type {type}.")
 
-            return True
-
         except Exception as e:
             raise ValueError("+NmrDpUtility.addOutput() ++ Error  - " + str(e))
 
@@ -7138,7 +7136,7 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __dumpDpReport(self):
+    def __dumpDpReport(self) -> bool:
         """ Dump current NMR data processing report.
         """
 
@@ -7165,7 +7163,7 @@ class NmrDpUtility:
 
         return self.report.writeFile(self.__logPath)
 
-    def __initializeDpReport(self, srcPath=None):
+    def __initializeDpReport(self, srcPath: str = None) -> bool:
         """ Initialize NMR data processing report.
         """
 
@@ -7511,7 +7509,7 @@ class NmrDpUtility:
         except Exception:
             pass
 
-    def __validateInputSource(self, srcPath=None):
+    def __validateInputSource(self, srcPath: str = None) -> bool:
         """ Validate NMR data as primary input source.
         """
 
@@ -8052,8 +8050,8 @@ class NmrDpUtility:
 
         return is_done
 
-    def __fixFormatIssueOfInputSource(self, file_list_id, file_name, file_type, srcPath=None, fileSubType='S',
-                                      message=None, tmpPaths=None, allowEmpty=False):
+    def __fixFormatIssueOfInputSource(self, file_list_id: int, file_name: str, file_type: str, srcPath: Optional[str] = None, fileSubType: str = 'S',
+                                      message: Optional[dict] = None, tmpPaths: Optional[List[str]] = None, allowEmpty: bool = False) -> bool:
         """ Fix format issue of NMR data.
         """
 
@@ -9029,7 +9027,7 @@ class NmrDpUtility:
 
         return is_done
 
-    def __rescueFormerNef(self, file_list_id):
+    def __rescueFormerNef(self, file_list_id: int) -> bool:
         """ Rescue former NEF version prior to 1.0.
         """
 
@@ -9157,7 +9155,9 @@ class NmrDpUtility:
 
         return True
 
-    def __rescueFormerNef__(self, file_name, file_type, content_subtype, sf, sf_framecode, sf_category, lp_category):
+    def __rescueFormerNef__(self, file_name: str, file_type: str, content_subtype: str,
+                            sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                            sf_framecode: str, sf_category: str, lp_category: str):
         """ Rescue former NEF version prior to 1.0.
         """
 
@@ -9389,7 +9389,7 @@ class NmrDpUtility:
         except KeyError:
             pass
 
-    def __rescueImmatureStr(self, file_list_id):
+    def __rescueImmatureStr(self, file_list_id: int) -> bool:
         """ Rescue immature NMR-STAR.
         """
 
@@ -9508,7 +9508,9 @@ class NmrDpUtility:
 
         return True
 
-    def __rescueImmatureStr__(self, file_name, file_type, content_subtype, sf, sf_framecode, lp_category):
+    def __rescueImmatureStr__(self, file_name: str, file_type: str, content_subtype: str,
+                              sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                              sf_framecode: str, lp_category: str):
         """ Rescue immature NMR-STAR.
         """
 
@@ -9747,7 +9749,7 @@ class NmrDpUtility:
         except KeyError:
             pass
 
-    def __detectContentSubType(self):
+    def __detectContentSubType(self) -> bool:
         """ Detect content subtype of NMR data file in any STAR format.
         """
 
@@ -9762,7 +9764,7 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __detectContentSubType__(self, file_list_id, input_source, dir_path=None):
+    def __detectContentSubType__(self, file_list_id: int, input_source: NmrDpReportInputSource, dir_path: Optional[str] = None):
         """ Detect content subtype of NMR data file in any STAR format.
         """
 
@@ -10214,7 +10216,7 @@ class NmrDpUtility:
 
         input_source.setItemValue('content_subtype', content_subtypes)
 
-    def __detectContentSubTypeOfLegacyMr(self):
+    def __detectContentSubTypeOfLegacyMr(self) -> bool:
         """ Detect content subtype of legacy NMR restraint files.
         """
 
@@ -11717,7 +11719,7 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __detectContentSubTypeOfLegacyPk(self):
+    def __detectContentSubTypeOfLegacyPk(self) -> bool:
         """ Detect content subtype of legacy NMR spectral peak files.
         """
 
@@ -12002,7 +12004,7 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __retrieveOriginalFileExtensionOfCyanaMrFile(self):
+    def __retrieveOriginalFileExtensionOfCyanaMrFile(self) -> Optional[str]:
         """ Retrieve original file extension of CYANA MR file.
         """
 
@@ -12064,7 +12066,7 @@ class NmrDpUtility:
 
         return file_ext
 
-    def __retrieveErroneousPreviousInput(self, err_desc):
+    def __retrieveErroneousPreviousInput(self, err_desc: dict) -> Optional[str]:
         """ Retrieve erroneous previous input if possible.
         """
 
@@ -12077,7 +12079,7 @@ class NmrDpUtility:
         except StopIteration:
             return None
 
-    def __getCorrectedMrFilePath(self, src_path):
+    def __getCorrectedMrFilePath(self, src_path: str) -> Tuple[Optional[str], bool]:
         """ Return corrected MR file path.
         """
 
@@ -12107,7 +12109,7 @@ class NmrDpUtility:
 
         return None, False
 
-    def __getSimpleMrPtFileReader(self, file_type, verbose, sll_pred=True, reasons=None):
+    def __getSimpleMrPtFileReader(self, file_type: str, verbose: bool, sll_pred: bool = True, reasons: Optional[dict] = None) -> Any:
         """ Return simple MR/PT file reader for a given format.
         """
 
@@ -12187,7 +12189,7 @@ class NmrDpUtility:
 
         return None
 
-    def __divideLegacyMrIfNecessary(self, file_path, file_type, err_desc, src_path, offset):
+    def __divideLegacyMrIfNecessary(self, file_path: str, file_type: str, err_desc: dict, src_path: str, offset: int) -> bool:
         """ Divive legacy NMR restraint file if necessary.
         """
 
@@ -13106,7 +13108,7 @@ class NmrDpUtility:
 
         return True
 
-    def __peelLegacyMrIfNecessary(self, file_path, file_type, err_desc, src_path, offset):
+    def __peelLegacyMrIfNecessary(self, file_path: str, file_type: str, err_desc: dict, src_path: str, offset: int) -> bool:
         """ Peel uninterpretable restraints from the legacy NMR file if necessary.
         """
 
@@ -13506,7 +13508,7 @@ class NmrDpUtility:
 
         return True
 
-    def __divideLegacyMr(self, file_path, file_type, err_desc, src_path, offset):
+    def __divideLegacyMr(self, file_path: str, file_type: str, err_desc: dict, src_path: str, offset: int) -> bool:
         """ Divive legacy NMR restraint file.
         """
 
@@ -14040,7 +14042,7 @@ class NmrDpUtility:
 
         return True
 
-    def __testFormatValidityOfLegacyMr(self, file_path, file_type, src_path, offset):
+    def __testFormatValidityOfLegacyMr(self, file_path: str, file_type: str, src_path: str, offset: int):
         """ Perform format check of a given MR file, then split MR recursively if necessary.
         """
 
@@ -14111,7 +14113,9 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__testFormatValidityOfLegacyMr() ++ Error  - {str(e)}\n")
 
-    def __detectOtherPossibleFormatAsErrorOfLegacyMr(self, file_path, file_name, file_type, dismiss_err_lines, multiple_check=False):
+    def __detectOtherPossibleFormatAsErrorOfLegacyMr(self, file_path: str, file_name: str, file_type: str,
+                                                     dismiss_err_lines: List[int], multiple_check: bool = False
+                                                     ) -> Tuple[bool, str, List[str], List[str]]:
         """ Report other possible format as error of a given legacy NMR restraint file.
         """
 
@@ -14325,8 +14329,9 @@ class NmrDpUtility:
 
         return is_valid, err, _valid_types, _possible_types
 
-    def __detectOtherPossibleFormatAsErrorOfLegacyMr__(self, file_path, file_name, file_type, dismiss_err_lines, _file_type,
-                                                       agreed_w_cns=False):
+    def __detectOtherPossibleFormatAsErrorOfLegacyMr__(self, file_path: str, file_name: str, file_type: str, dismiss_err_lines: List[int],
+                                                       _file_type: str, agreed_w_cns: bool = False
+                                                       ) -> Tuple[bool, str, Optional[str], dict, dict]:
         """ Report other possible format as error of a given legacy NMR restraint file.
         """
 
@@ -14453,7 +14458,7 @@ class NmrDpUtility:
 
         return is_valid, err, genuine_type, valid_types, possible_types
 
-    def __extractPublicMrFileIntoLegacyMr(self):
+    def __extractPublicMrFileIntoLegacyMr(self) -> bool:
         """ Extract/split public MR file into legacy NMR restraint files for NMR restraint remediation.
         """
 
@@ -16453,7 +16458,8 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __getPolymerSequence(self, file_list_id, sf, content_subtype):
+    def __getPolymerSequence(self, file_list_id: int, sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], content_subtype: str
+                             ) -> List[List[dict]]:
         """ Wrapper function to retrieve polymer sequence from loop of a specified saveframe and content subtype via NEFTranslator.
         """
 
@@ -16487,7 +16493,7 @@ class NmrDpUtility:
                                         check_identity=check_identity,
                                         coord_assembly_checker=self.__caC if self.__native_combined or not self.__combined_mode else None)
 
-    def __extractPolymerSequence(self):
+    def __extractPolymerSequence(self) -> bool:
         """ Extract reference polymer sequence.
         """
 
@@ -16700,7 +16706,7 @@ class NmrDpUtility:
 
         return is_done
 
-    def __extractPolymerSequenceInLoop(self):
+    def __extractPolymerSequenceInLoop(self) -> bool:
         """ Extract polymer sequence in interesting loops.
         """
 
@@ -16771,8 +16777,9 @@ class NmrDpUtility:
 
         return is_done
 
-    def __extractPolymerSequenceInLoop__(self, file_list_id, file_name, file_type, content_subtype, sf,
-                                         list_id, sf_framecode, lp_category, poly_seq_list_set):
+    def __extractPolymerSequenceInLoop__(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
+                                         sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                         list_id: int, sf_framecode: str, lp_category: str, poly_seq_list_set: dict) -> bool:
         """ Extract polymer sequence in interesting loops.
         """
 
@@ -16968,7 +16975,7 @@ class NmrDpUtility:
 
         return has_poly_seq
 
-    def __isConsistentSequence(self):
+    def __isConsistentSequence(self) -> bool:
         """ Perform sequence consistency test among extracted polymer sequences.
             @return: True for valid sequence, False otherwise
         """
@@ -17089,7 +17096,7 @@ class NmrDpUtility:
 
         return True
 
-    def __testSequenceConsistency(self):
+    def __testSequenceConsistency(self) -> bool:
         """ Perform sequence consistency test among extracted polymer sequences.
         """
 
@@ -17403,7 +17410,7 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __equalsRepCompId(self, comp_id, ref_comp_id):
+    def __equalsRepCompId(self, comp_id: str, ref_comp_id: str) -> bool:
         """ Return whether given representative comp IDs are equal.
             @return: True for representative comp IDs are matched, False otherwise
         """
@@ -17437,7 +17444,8 @@ class NmrDpUtility:
 
         return comp_id == ref_comp_id
 
-    def __fixCompIdInLoop(self, file_list_id, file_type, content_subtype, sf_framecode, chain_id, seq_id, comp_id_conv_dict):
+    def __fixCompIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str, sf_framecode: str,
+                          chain_id: str, seq_id: int, comp_id_conv_dict: dict):
         """ Fix comp ID of interesting loop.
         """
 
@@ -17472,7 +17480,9 @@ class NmrDpUtility:
 
                 self.__fixCompIdInLoop__(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
 
-    def __fixCompIdInLoop__(self, file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id, comp_id_conv_dict):
+    def __fixCompIdInLoop__(self, file_list_id: int, file_type: str, content_subtype: str,
+                            sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
+                            chain_id: str, seq_id: int, comp_id_conv_dict: dict) -> bool:
         """ Fix sequence ID of interesting loop.
         """
 
@@ -17559,7 +17569,7 @@ class NmrDpUtility:
                     if comp_id in comp_id_conv_dict:
                         row[comp_id_col] = comp_id_conv_dict[comp_id]
 
-    def __extractCommonPolymerSequence(self):
+    def __extractCommonPolymerSequence(self) -> bool:
         """ Extract common polymer sequence if required.
         """
 
@@ -17696,7 +17706,7 @@ class NmrDpUtility:
 
         return True
 
-    def __mergePolymerSequenceInCsLoop(self, file_list_id):
+    def __mergePolymerSequenceInCsLoop(self, file_list_id: int) -> bool:
         """ Merge polymer sequence in CS loops.
         """
 
@@ -17792,7 +17802,7 @@ class NmrDpUtility:
 
         return True
 
-    def __extractPolymerSequenceInEntityAssembly(self, file_list_id):
+    def __extractPolymerSequenceInEntityAssembly(self, file_list_id: int) -> bool:
         """ Extract polymer sequence in entity loops. (NMR combined deposition)
         """
 
@@ -17911,7 +17921,7 @@ class NmrDpUtility:
 
         return False
 
-    def __extractPolymerSequenceInEntityLoop(self, file_list_id):
+    def __extractPolymerSequenceInEntityLoop(self, file_list_id: int) -> bool:
         """ Extract polymer sequence in entity loops. (NMR conventional deposition)
         """
 
@@ -18025,7 +18035,7 @@ class NmrDpUtility:
 
         return False
 
-    def __extractPolymerSequenceInEntityLoopOfChain(self, file_list_id, chain_id):
+    def __extractPolymerSequenceInEntityLoopOfChain(self, file_list_id: int, chain_id: str) -> Optional[dict]:
         """ Extract polymer sequence in entity loops of a given chain id.
         """
 
@@ -18099,7 +18109,7 @@ class NmrDpUtility:
 
         return None
 
-    def __extractNonStandardResidue(self):
+    def __extractNonStandardResidue(self) -> bool:
         """ Extract non-standard residue.
         """
 
@@ -18145,7 +18155,7 @@ class NmrDpUtility:
 
         return True
 
-    def __extractNonStandardResidue__(self, file_name, sf_framecode, lp_category, input_source):
+    def __extractNonStandardResidue__(self, file_name: str, sf_framecode: str, lp_category: str, input_source: NmrDpReportInputSource):
         """ Extract non-standard residue.
         """
 
@@ -18213,7 +18223,7 @@ class NmrDpUtility:
         if len(asm) > 0:
             input_source.setItemValue('non_standard_residue', asm)
 
-    def __getChemCompNameAndStatusOf(self, comp_id):
+    def __getChemCompNameAndStatusOf(self, comp_id: str) -> Tuple[bool, Optional[str], Optional[str]]:
         """ Return _chem_comp.name and release status a given CCD ID, if possible.
         """
 
@@ -18247,7 +18257,7 @@ class NmrDpUtility:
 
         return is_valid, cc_name, cc_rel_status
 
-    def __appendPolymerSequenceAlignment(self):
+    def __appendPolymerSequenceAlignment(self) -> bool:
         """ Append polymer sequence alignment of interesting loops.
         """
 
@@ -19087,8 +19097,10 @@ class NmrDpUtility:
 
         return is_done
 
-    def __getSeqAlignCode(self, file_list_id, file_type, content_subtype, sf_framecode, chain_id, s1, s2, myAlign, mapping,
-                          ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code):
+    def __getSeqAlignCode(self, file_list_id: int, file_type: str, content_subtype: str, sf_framecode: str,
+                          chain_id: str, s1: dict, s2: dict, myAlign: list, mapping: dict,
+                          ref_gauge_code: str, ref_code: str, mid_code: str, test_code: str, test_gauge_code: str
+                          ) -> dict:
         """ Return human-readable seq align codes.
         """
 
@@ -19158,7 +19170,8 @@ class NmrDpUtility:
                 'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
-    def __fixChainIdInLoop(self, file_list_id, file_type, content_subtype, sf_framecode, chain_id, _chain_id):
+    def __fixChainIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str, sf_framecode: str,
+                           chain_id: str, _chain_id: str):
         """ Fix chain ID of interesting loop.
         """
 
@@ -19193,7 +19206,9 @@ class NmrDpUtility:
 
                 self.__fixChainIdInLoop__(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, _chain_id)
 
-    def __fixChainIdInLoop__(self, file_list_id, file_type, content_subtype, sf, lp_category, chain_id, _chain_id):
+    def __fixChainIdInLoop__(self, file_list_id: int, file_type: str, content_subtype: str,
+                             sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                             lp_category: str, chain_id: str, _chain_id: str):
         """ Fix sequence ID of interesting loop.
         """
 
@@ -19272,7 +19287,8 @@ class NmrDpUtility:
                     if uniq_chain_ids and entity_id_col != -1:
                         row[entity_id_col] = _chain_id
 
-    def __fixSeqIdInLoop(self, file_list_id, file_type, content_subtype, sf_framecode, chain_id, seq_id_conv_dict):
+    def __fixSeqIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str, sf_framecode: str,
+                         chain_id: str, seq_id_conv_dict: dict):
         """ Fix sequence ID of interesting loop.
         """
 
@@ -19307,7 +19323,9 @@ class NmrDpUtility:
 
                 self.__fixSeqIdInLoop__(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id_conv_dict)
 
-    def __fixSeqIdInLoop__(self, file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id_conv_dict):
+    def __fixSeqIdInLoop__(self, file_list_id: int, file_type: str, content_subtype: str,
+                           sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                           lp_category: str, chain_id: str, seq_id_conv_dict: dict):
         """ Fix sequence ID of interesting loop.
         """
 
@@ -19404,7 +19422,7 @@ class NmrDpUtility:
                     if seq_id_alt in seq_id_conv_dict:
                         row[seq_id_alt_col] = seq_id_conv_dict[seq_id_alt]
 
-    def __validateAtomNomenclature(self):
+    def __validateAtomNomenclature(self) -> bool:
         """ Validate atom nomenclature using NEFTranslator and CCD.
         """
 
@@ -19464,7 +19482,7 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __isNmrAtomName(self, comp_id, atom_id):
+    def __isNmrAtomName(self, comp_id: str, atom_id: str) -> bool:
         """ Return whether a given atom_id uses NMR conventional atom name.
         """
 
@@ -19473,7 +19491,7 @@ class NmrDpUtility:
                 or atom_id.endswith('%') or atom_id.endswith('#')
                 or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)
 
-    def __getRepAtomIdInXplor(self, comp_id, atom_id):
+    def __getRepAtomIdInXplor(self, comp_id: str, atom_id: str) -> str:
         """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclautre.
         """
 
@@ -19481,20 +19499,20 @@ class NmrDpUtility:
 
         return atom_id if len(_atom_id) == 0 else _atom_id[0]
 
-    def __getAtomIdListInXplor(self, comp_id, atom_id):
+    def __getAtomIdListInXplor(self, comp_id: str, atom_id: str) -> List[str]:
         """ Return atom ID list in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclature.
         """
 
         return self.__nefT.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)[0]
 
-    def __getAtomIdListInXplorForLigandRemap(self, comp_id, atom_id, coord_atom_site):
+    def __getAtomIdListInXplorForLigandRemap(self, comp_id: str, atom_id: str, coord_atom_site: dict) -> List[str]:
         """ Return atom ID list in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclature
             in reference to coordinates' alternative atom IDs. (DAOTHER-9286)
         """
 
         return self.__nefT.get_valid_star_atom_in_xplor_for_ligand_remap(comp_id, atom_id, coord_atom_site)[0]
 
-    def __getRepAtomId(self, comp_id, atom_id):
+    def __getRepAtomId(self, comp_id: str, atom_id: str) -> str:
         """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id.
         """
 
@@ -19502,20 +19520,22 @@ class NmrDpUtility:
 
         return atom_id if len(_atom_id) == 0 else _atom_id[0]
 
-    def __getAtomIdList(self, comp_id, atom_id):
+    def __getAtomIdList(self, comp_id: str, atom_id: str) -> List[str]:
         """ Return atom ID list in IUPAC atom nomenclature for a given atom_id.
         """
 
         return self.__nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
-    def __getAtomIdListWithAmbigCode(self, comp_id, atom_id, leave_unmatched=True):
+    def __getAtomIdListWithAmbigCode(self, comp_id: str, atom_id: str, leave_unmatched: bool = True) -> Tuple[List[str], Optional[int], Optional[str]]:
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
             @see: NEFTranslator.get_valid_star_atom()
         """
 
         return self.__nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=leave_unmatched)
 
-    def __validateAtomNomenclature__(self, file_name, file_type, content_subtype, sf, sf_framecode, lp_category):  # , first_comp_ids):
+    def __validateAtomNomenclature__(self, file_name: str, file_type: str, content_subtype: str,
+                                     sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                     sf_framecode: str, lp_category: str):  # , first_comp_ids):
         """ Validate atom nomenclature using NEFTranslator and CCD.
         """
 
@@ -20050,7 +20070,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Error  - {str(e)}\n")
 
-    def __fixAtomNomenclature(self, comp_id, atom_id_conv_dict):
+    def __fixAtomNomenclature(self, comp_id: str, atom_id_conv_dict: dict):
         """ Fix atom nomenclature.
         """
 
@@ -20097,7 +20117,9 @@ class NmrDpUtility:
 
                         self.__fixAtomNomenclature__(fileListId, file_type, content_subtype, sf, lp_category, comp_id, atom_id_conv_dict)
 
-    def __fixAtomNomenclature__(self, file_list_id, file_type, content_subtype, sf, lp_category, comp_id, atom_id_conv_dict):
+    def __fixAtomNomenclature__(self, file_list_id: int, file_type: str, content_subtype: str,
+                                sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                lp_category: str, comp_id: str, atom_id_conv_dict: dict):
         """ Fix atom nomenclature.
         """
 
@@ -20174,7 +20196,7 @@ class NmrDpUtility:
                     if atom_id in atom_id_conv_dict:
                         row[atom_id_col] = atom_id_conv_dict[atom_id]
 
-    def __validateAtomTypeOfCsLoop(self):
+    def __validateAtomTypeOfCsLoop(self) -> bool:
         """ Validate atom type, isotope number on assigned chemical shifts.
         """
 
@@ -20221,7 +20243,9 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __validateAtomTypeOfCsLoop__(self, file_name, file_type, sf, sf_framecode, lp_category):
+    def __validateAtomTypeOfCsLoop__(self, file_name: str, file_type: str,
+                                     sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                     sf_framecode: str, lp_category: str):
         """ Validate atom type, isotope number on assigned chemical shifts.
         """
 
@@ -20344,7 +20368,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__validateAtomTypeOfCsLoop() ++ Error  - {str(e)}\n")
 
-    def __validateAmbigCodeOfCsLoop(self):
+    def __validateAmbigCodeOfCsLoop(self) -> bool:
         """ Validate ambiguity code on assigned chemical shifts.
         """
 
@@ -20403,7 +20427,9 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __validateAmbigCodeOfCsLoop__(self, file_name, sf, sf_framecode, lp_category):
+    def __validateAmbigCodeOfCsLoop__(self, file_name: str,
+                                      sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                      sf_framecode: str, lp_category: str) -> bool:
         """ Validate ambiguity code on assigned chemical shifts.
         """
 
@@ -20656,7 +20682,7 @@ class NmrDpUtility:
 
         return False
 
-    def __testIndexConsistency(self):
+    def __testIndexConsistency(self) -> bool:
         """ Perform consistency test on index of interesting loops.
         """
 
@@ -20708,7 +20734,9 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __testIndexConsistency__(self, file_name, sf, sf_framecode, lp_category, index_tag):
+    def __testIndexConsistency__(self, file_name: str,
+                                 sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                 sf_framecode: str, lp_category: str, index_tag: str):
         """ Perform consistency test on index of interesting loops.
         """
 
@@ -20801,7 +20829,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__testIndexConsistency() ++ Error  - {str(e)}\n")
 
-    def __testDataConsistencyInLoop(self):
+    def __testDataConsistencyInLoop(self) -> bool:
         """ Perform consistency test on data of interesting loops.
         """
 
@@ -20853,7 +20881,9 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __testDataConsistencyInLoop__(self, file_list_id, file_name, file_type, content_subtype, sf, sf_framecode, lp_category, parent_pointer):
+    def __testDataConsistencyInLoop__(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
+                                      sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                      sf_framecode: str, lp_category: str, parent_pointer: int):
         """ Perform consistency test on data of interesting loops.
         """
 
@@ -21094,7 +21124,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - {str(e)}\n")
 
-    def __detectConflictDataInLoop(self):
+    def __detectConflictDataInLoop(self) -> bool:
         """ Detect redundant/inconsistent data of interesting loops.
         """
 
@@ -21142,7 +21172,9 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __detectConflictDataInLoop__(self, file_name, file_type, content_subtype, sf, sf_framecode, lp_category):
+    def __detectConflictDataInLoop__(self, file_name: str, file_type: str, content_subtype: str,
+                                     sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                     sf_framecode: str, lp_category: str):
         """ Detect redundant/inconsistent data of interesting loops.
         """
 
@@ -21394,7 +21426,7 @@ class NmrDpUtility:
                 if self.__verbose:
                     self.__lfh.write(f"+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - {warn}\n")
 
-    def __testNmrCovalentBond(self):
+    def __testNmrCovalentBond(self) -> bool:
         """ Perform consistency test on data of auxiliary loops.
         """
 
@@ -21882,7 +21914,7 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __testDataConsistencyInAuxLoop(self):
+    def __testDataConsistencyInAuxLoop(self) -> bool:
         """ Perform consistency test on data of auxiliary loops.
         """
 
@@ -22170,7 +22202,8 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __testDataConsistencyInAuxLoopOfSpectralPeak(self, file_name, file_type, sf_framecode, num_dim, lp_category, aux_data):
+    def __testDataConsistencyInAuxLoopOfSpectralPeak(self, file_name: str, file_type: str, sf_framecode: str,
+                                                     num_dim: int, lp_category: str, aux_data: List[List[dict]]):
         """ Perform consistency test on data of spectral peak loops.
         """
 
@@ -22344,7 +22377,10 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - {err}\n")
 
-    def __testDataConsistencyInAuxLoopOfSpectralPeakAlt(self, file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf, parent_pointer):
+    def __testDataConsistencyInAuxLoopOfSpectralPeakAlt(self, file_name: str, file_type: str, sf_framecode: str,
+                                                        num_dim: int, lp_category: str, aux_data: List[List[dict]],
+                                                        sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                                        parent_pointer: int):
         """ Perform consistency test on data of spectral peak loops.
         """
 
@@ -22529,7 +22565,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - {err}\n")
 
-    def __testSfTagConsistency(self):
+    def __testSfTagConsistency(self) -> bool:
         """ Perform consistency test on saveframe tags.
         """
 
@@ -22700,7 +22736,9 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __testParentChildRelation(self, file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_framecode_dict, sf_tag_data):
+    def __testParentChildRelation(self, file_name: str, file_type: str, content_subtype: str,
+                                  parent_keys: set, list_id: int, sf_framecode: str,
+                                  sf_framecode_dict: dict, sf_tag_data: dict) -> bool:
         """ Perform consistency test on saveframe category and loop category relationship of interesting loops.
         """
 
@@ -22805,7 +22843,7 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __validateCsValue(self):
+    def __validateCsValue(self) -> bool:
         """ Validate assigned chemical shift value based on BMRB chemical shift statistics.
         """
 
@@ -22859,7 +22897,9 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __validateCsValue__(self, file_list_id, file_name, file_type, content_subtype, sf, sf_framecode, lp_category):
+    def __validateCsValue__(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
+                            sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                            sf_framecode: str, lp_category: str) -> bool:
         """ Validate assigned chemical shift value based on BMRB chemical shift statistics.
         """
 
@@ -24411,7 +24451,7 @@ class NmrDpUtility:
 
         return modified
 
-    def __cleanUpSf(self):
+    def __cleanUpSf(self) -> bool:
         """ Clean-up third-party saveframes.
         """
 
@@ -24456,20 +24496,19 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __cleanUpSfTag__(self, file_type, content_subtype, sf):
+    def __cleanUpSfTag__(self, file_type: str, content_subtype: str,
+                         sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]):
         """ Remediate assigned chemical shift loop based on coordinates.
         """
 
         tags_to_be_removed = [t[0] for t in sf.tags if t[0] not in self.sf_allowed_tags[file_type][content_subtype]]
 
         if len(tags_to_be_removed) == 0:
-            return True
+            return
 
         sf.remove_tag(tags_to_be_removed)
 
-        return True
-
-    def __remediateCsLoop(self):
+    def __remediateCsLoop(self) -> bool:
         """ Remediate assigned chemical shift loop based on coordinates.
         """
 
@@ -24582,7 +24621,9 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __remediateCsLoop__(self, file_list_id, file_type, content_subtype, sf, list_id, sf_framecode, lp_category):
+    def __remediateCsLoop__(self, file_list_id: int, file_type: str, content_subtype: str,
+                            sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                            list_id: int, sf_framecode: str, lp_category: str) -> bool:
         """ Remediate assigned chemical shift loop based on coordinates.
         """
 
@@ -27383,7 +27424,7 @@ class NmrDpUtility:
 
         return True
 
-    def __removeUnusedPdbInsCode(self):
+    def __removeUnusedPdbInsCode(self) -> bool:
         """ Remove unused PDB_ind_code tags from loops.
         """
 
@@ -27436,7 +27477,9 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __removeUnusedPdbInsCode__(self, file_list_id, content_subtype, sf, lp_category):
+    def __removeUnusedPdbInsCode__(self, file_list_id: int, content_subtype: str,
+                                   sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                   lp_category: str) -> bool:
         """ Remove unused PDB_ind_code tags from loops.
         """
 
@@ -27482,7 +27525,7 @@ class NmrDpUtility:
 
         return False
 
-    def __syncMrLoop(self):
+    def __syncMrLoop(self) -> bool:
         """ Synchonize sequence scheme of restraint loop based on coordinates.
         """
 
@@ -27509,17 +27552,15 @@ class NmrDpUtility:
                 if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
                     lp_category = '_Assigned_peak_chem_shift'
 
-                modified = False
-
                 if self.__star_data_type[fileListId] == 'Loop':
                     sf = self.__star_data[fileListId]
 
-                    modified |= self.__syncMrLoop__(fileListId, file_type, content_subtype, sf, lp_category)
+                    self.__syncMrLoop__(fileListId, file_type, content_subtype, sf, lp_category)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
                     sf = self.__star_data[fileListId]
 
-                    modified |= self.__syncMrLoop__(fileListId, file_type, content_subtype, sf, lp_category)
+                    self.__syncMrLoop__(fileListId, file_type, content_subtype, sf, lp_category)
 
                 else:
 
@@ -27528,14 +27569,15 @@ class NmrDpUtility:
                         if not any(loop for loop in sf.loops if loop.category == lp_category):
                             continue
 
-                        modified |= self.__syncMrLoop__(fileListId, file_type, content_subtype, sf, lp_category)
+                        self.__syncMrLoop__(fileListId, file_type, content_subtype, sf, lp_category)
 
-                if modified:
-                    self.__depositNmrData()
+                self.__depositNmrData()
 
             return self.report.getTotalErrors() == __errors
 
-    def __syncMrLoop__(self, file_list_id, file_type, content_subtype, sf, lp_category):
+    def __syncMrLoop__(self, file_list_id: int, file_type: str, content_subtype: str,
+                       sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                       lp_category: str):
         """ Synchronize sequence scheme of restraint loop based on coordinates.
         """
 
@@ -27701,9 +27743,7 @@ class NmrDpUtility:
                                     if row[0] in self.__chain_id_map_for_remediation:
                                         row[0] = self.__chain_id_map_for_remediation[row[0]]
 
-        return True
-
-    def __testCsPseudoAtomNameConsistencyInMrLoop(self):
+    def __testCsPseudoAtomNameConsistencyInMrLoop(self) -> bool:
         """ Perform consistency test on pseudo atom names between assigned chemical shifts and NMR restraints. (DAOTHER-7681, issue #1)
         """
 
@@ -28030,7 +28070,7 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __testCsValueConsistencyInPkLoop(self):
+    def __testCsValueConsistencyInPkLoop(self) -> bool:
         """ Perform consistency test on peak position and assignment of spectral peaks.
         """
 
@@ -28495,7 +28535,7 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __testCsValueConsistencyInPkAltLoop(self):
+    def __testCsValueConsistencyInPkAltLoop(self) -> bool:
         """ Perform consistency test on peak position and assignment of spectral peaks.
         """
 
@@ -29007,7 +29047,7 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __testRdcVector(self):
+    def __testRdcVector(self) -> bool:
         """ Perform consistency test on RDC bond vectors.
         """
 
@@ -29056,7 +29096,7 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __testRdcVector__(self, file_name, file_type, content_subtype, sf_framecode, lp_category):
+    def __testRdcVector__(self, file_name: str, file_type: str, content_subtype: str, sf_framecode: str, lp_category: str):
         """ Perform consistency test on RDC bond vectors.
         """
 
@@ -29251,7 +29291,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {str(e)}\n")
 
-    def __testCoordCovalentBond(self):
+    def __testCoordCovalentBond(self) -> bool:
         """ Perform consistency test on covalent bonds.
         """
 
@@ -29300,7 +29340,7 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __testCoordCovalentBond__(self, file_name, file_type, content_subtype, sf_framecode, lp_category):
+    def __testCoordCovalentBond__(self, file_name: str, file_type: str, content_subtype: str, sf_framecode: str, lp_category: str):
         """ Perform consistency test on covalent bonds.
         """
 
@@ -29368,7 +29408,8 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__testCoordCovalentBond() ++ Error  - {str(e)}\n")
 
-    def __getNmrBondLength(self, nmr_chain_id_1, nmr_seq_id_1, nmr_atom_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_atom_id_2):
+    def __getNmrBondLength(self, nmr_chain_id_1: str, nmr_seq_id_1: int, nmr_atom_id_1: str,
+                           nmr_chain_id_2: str, nmr_seq_id_2: int, nmr_atom_id_2: str) -> Optional[List[dict]]:
         """ Return the bond length of given two NMR atoms.
             @return: the bond length
         """
@@ -29430,8 +29471,9 @@ class NmrDpUtility:
 
         return None
 
-    def __getCoordBondLength(self, cif_chain_id_1, cif_seq_id_1, cif_atom_id_1, cif_chain_id_2, cif_seq_id_2, cif_atom_id_2,
-                             label_scheme=True):
+    def __getCoordBondLength(self, cif_chain_id_1: str, cif_seq_id_1: int, cif_atom_id_1: str,
+                             cif_chain_id_2: str, cif_seq_id_2: int, cif_atom_id_2: str,
+                             label_scheme: bool = True) -> Optional[List[dict]]:
         """ Return the bond length of given two CIF atoms.
             @return: the bond length
         """
@@ -29490,7 +29532,7 @@ class NmrDpUtility:
 
         return None
 
-    def __testResidueVariant(self):
+    def __testResidueVariant(self) -> bool:
         """ Perform consistency test on residue variants.
         """
 
@@ -29598,7 +29640,9 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __testResidueVariant__(self, file_name, file_type, content_subtype, sf, sf_framecode, lp_category, cif_polymer_sequence, nmr2ca):
+    def __testResidueVariant__(self, file_name: str, file_type: str, content_subtype: str,
+                               sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                               sf_framecode: str, lp_category: str, cif_polymer_sequence: List[dict], nmr2ca: dict):
         """ Perform consistency test on residue variants.
         """
 
@@ -29884,7 +29928,8 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__testResidueVariant() ++ Error  - {str(e)}\n")
 
-    def __getReducedAtomNotation(self, chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_id):
+    def __getReducedAtomNotation(self, chain_id_name: str, chain_id: str, seq_id_name: str, seq_id: int,
+                                 comp_id_name: str, comp_id: str, atom_id_name: str, atom_id: str) -> str:
         """ Return reduced form of atom notation.
         """
 
@@ -29893,7 +29938,7 @@ class NmrDpUtility:
 
         return f"{chain_id_name} {chain_id}, {seq_id_name} {seq_id}, {comp_id_name} {comp_id}, {atom_id_name} {atom_id}"
 
-    def __getReducedAtomNotations(self, key_items, row_data):
+    def __getReducedAtomNotations(self, key_items: List[dict], row_data: dict) -> str:
         """ Return reduced from of series of atom notations.
         """
 
@@ -29966,7 +30011,7 @@ class NmrDpUtility:
                                        self.__caC['chem_comp_bond'],
                                        self.__caC['chem_comp_topo'])
 
-    def __validateStrMr(self):
+    def __validateStrMr(self) -> bool:
         """ Validate restraints of NMR-STAR restraint files.
         """
 
@@ -30131,7 +30176,9 @@ class NmrDpUtility:
 
         return True
 
-    def __validateStrMr__(self, file_list_id, file_type, original_file_name, content_subtype, _sf, sf_framecode, lp_category):
+    def __validateStrMr__(self, file_list_id: int, file_type: str, original_file_name: str, content_subtype: str,
+                          _sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                          sf_framecode: str, lp_category: str) -> bool:
         """ Validate data content of NMR-STAR restraint files.
         """
 
@@ -31664,7 +31711,7 @@ class NmrDpUtility:
 
         return True
 
-    def __updateGenDistConstIdInMrStr(self, sf_item):
+    def __updateGenDistConstIdInMrStr(self, sf_item: dict) -> bool:
         """ Update _Gen_dist_constraint.ID in NMR-STAR restraint file.
         """
 
@@ -31933,7 +31980,7 @@ class NmrDpUtility:
         except ValueError:
             return False
 
-    def __updateTorsionAngleConstIdInMrStr(self, sf_item):  # pylint: disable=no-self-use
+    def __updateTorsionAngleConstIdInMrStr(self, sf_item: dict) -> bool:  # pylint: disable=no-self-use
         """ Update _Torsion_angle_constraint.ID in NMR-STAR restraint file.
         """
 
@@ -32098,7 +32145,7 @@ class NmrDpUtility:
         except ValueError:
             return False
 
-    def __mergeStrPk(self):
+    def __mergeStrPk(self) -> bool:
         """ Merge spectral peak lists in NMR-STAR restraint files.
         """
 
@@ -32177,7 +32224,7 @@ class NmrDpUtility:
 
         return True
 
-    def __mergeAnyPkAsIs(self):
+    def __mergeAnyPkAsIs(self) -> bool:
         """ Merge spectral peak list file(s) in any plain text format (file type: nm-pea-any) into a single NMR-STAR file as is.
         """
 
@@ -32382,7 +32429,7 @@ class NmrDpUtility:
 
         return True
 
-    def __validateLegacyMr(self):
+    def __validateLegacyMr(self) -> bool:
         """ Validate data content of legacy NMR restraint files.
         """
 
@@ -34242,7 +34289,7 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __validateSaxsMr(self):
+    def __validateSaxsMr(self) -> bool:
         """ Validate SAXS restraint files.
         """
 
@@ -34419,7 +34466,7 @@ class NmrDpUtility:
 
         return True
 
-    def __validateStrPk(self):
+    def __validateStrPk(self) -> bool:
         """ Validate spectral peak lists in NMR-STAR restraint files.
         """
 
@@ -34567,7 +34614,9 @@ class NmrDpUtility:
 
         return True
 
-    def __validateStrPk__(self, file_list_id, file_type, content_subtype, list_id, sf, sf_framecode, lp_category):
+    def __validateStrPk__(self, file_list_id: int, file_type: str, content_subtype: str, list_id: int,
+                          sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                          sf_framecode: str, lp_category: str) -> bool:
         """ Validate spectral peak lists in NMR-STAR restraint files.
         """
 
@@ -35553,7 +35602,7 @@ class NmrDpUtility:
 
         return True
 
-    def __calculateStatsOfExptlData(self):
+    def __calculateStatsOfExptlData(self) -> bool:
         """ Calculate statistics of experimental data.
         """
 
@@ -35624,7 +35673,9 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __calculateStatsOfExptlData__(self, file_list_id, file_name, file_type, content_subtype, sf, list_id, sf_framecode, lp_category, seq_align_dic, asm):
+    def __calculateStatsOfExptlData__(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
+                                      sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                      list_id: int, sf_framecode: str, lp_category: str, seq_align_dic: dict, asm: list):
         """ Calculate statistics of experimental data.
         """
 
@@ -35941,7 +35992,8 @@ class NmrDpUtility:
 
         asm.append(ent)
 
-    def __calculateStatsOfAssignedChemShift(self, file_list_id, sf_framecode, lp_data, cs_ann, ent):
+    def __calculateStatsOfAssignedChemShift(self, file_list_id: int, sf_framecode: str,
+                                            lp_data: List[dict], cs_ann: List[dict], ent: dict):
         """ Calculate statistics of assigned chemical shifts.
         """
 
@@ -37498,7 +37550,8 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Error  - {str(e)}\n")
 
-    def __calculateStatsOfDistanceRestraint(self, file_list_id, sf_framecode, lp_data, conflict_id_set, inconsistent, redundant, ent):
+    def __calculateStatsOfDistanceRestraint(self, file_list_id: int, sf_framecode: str, lp_data: List[dict],
+                                            conflict_id_set: Optional[List[int]], inconsistent: Set[int], redundant: Set[int], ent: dict):
         """ Calculate statistics of distance restraints.
         """
 
@@ -38360,7 +38413,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Error  - {str(e)}\n")
 
-    def __calculateStatsOfCovalentBond(self, file_list_id, sf_framecode, lp_category, lp_data, ent):
+    def __calculateStatsOfCovalentBond(self, file_list_id: int, sf_framecode: str, lp_category: str, lp_data: List[dict], ent: dict):
         """ Calculate statistics of covalent bonds.
         """
 
@@ -38545,9 +38598,10 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfCovalentBond() ++ Error  - {str(e)}\n")
 
-    def __getTypeOfDistanceRestraint(self, file_type, lp_data, row_id, target_value, upper_limit, lower_limit,
-                                     member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
-                                     chain_id_2, seq_id_2, comp_id_2, atom_id_2):
+    def __getTypeOfDistanceRestraint(self, file_type: str, lp_data: List[dict], row_id: int,
+                                     target_value: float, upper_limit: float, lower_limit: float, member_id: Optional[int],
+                                     chain_id_1: str, seq_id_1: int, comp_id_1: str, atom_id_1: str,
+                                     chain_id_2: str, seq_id_2: int, comp_id_2: str, atom_id_2: str) -> str:
         """ Return type of distance restraint.
         """
 
@@ -38896,8 +38950,9 @@ class NmrDpUtility:
 
         return data_type
 
-    def __getTypeOfCovalentBond(self, file_type, lp_data, row_id, target_value,
-                                chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2):
+    def __getTypeOfCovalentBond(self, file_type: str, lp_data: List[dict], row_id: int, target_value: float,
+                                chain_id_1: str, seq_id_1: int, comp_id_1: str, atom_id_1: str,
+                                chain_id_2: str, seq_id_2: int, comp_id_2: str, atom_id_2: str) -> str:
         """ Return type of covalent bond.
         """
 
@@ -39229,7 +39284,8 @@ class NmrDpUtility:
 
         return data_type
 
-    def __calculateStatsOfDihedralRestraint(self, file_list_id, sf_framecode, lp_data, conflict_id_set, inconsistent, redundant, ent):
+    def __calculateStatsOfDihedralRestraint(self, file_list_id: int, sf_framecode: str, lp_data: List[dict],
+                                            conflict_id_set: Optional[List[int]], inconsistent: Set[int], redundant: Set[int], ent: dict):
         """ Calculate statistics of dihedral angle restraints.
         """
 
@@ -40003,8 +40059,8 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfDihedralRestraint() ++ Error  - {str(e)}\n")
 
-    def __getTypeOfDihedralRestraint(self, data_type, peptide, nucleotide, carbohydrate,  # pylint: disable=no-self-use
-                                     atoms, plane_like):
+    def __getTypeOfDihedralRestraint(self, data_type: str, peptide: bool, nucleotide: bool, carbohydrate: bool,  # pylint: disable=no-self-use
+                                     atoms: List[dict], plane_like: bool) -> str:
         """ Return type of dihedral angle restraint.
         """
 
@@ -40025,7 +40081,8 @@ class NmrDpUtility:
 
         return data_type
 
-    def __calculateStatsOfRdcRestraint(self, file_list_id, sf_framecode, lp_data, conflict_id_set, inconsistent, redundant, ent):
+    def __calculateStatsOfRdcRestraint(self, file_list_id: int, sf_framecode: str, lp_data: List[dict],
+                                       conflict_id_set: List[int], inconsistent: Set[int], redundant: Set[int], ent: dict):
         """ Calculate statistics of RDC restraints.
         """
 
@@ -40572,7 +40629,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfRdcRestraint() ++ Error  - {str(e)}\n")
 
-    def __getTypeOfRdcRestraint(self, atom_id_1, atom_id_2):  # pylint: disable=no-self-use
+    def __getTypeOfRdcRestraint(self, atom_id_1: str, atom_id_2: str) -> str:  # pylint: disable=no-self-use
         """ Return type of RDC restraint.
         """
 
@@ -40592,7 +40649,7 @@ class NmrDpUtility:
 
         return vector_type + '_bond_vectors'
 
-    def __calculateStatsOfSpectralPeak(self, file_list_id, sf_framecode, num_dim, lp_data, ent):
+    def __calculateStatsOfSpectralPeak(self, file_list_id: int, sf_framecode: str, num_dim: int, lp_data: List[dict], ent: dict):
         """ Calculate statistics of spectral peaks.
         """
 
@@ -40861,7 +40918,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfSpectralPeak() ++ Error  - {str(e)}\n")
 
-    def __calculateStatsOfSpectralPeakAlt(self, file_list_id, sf_framecode, num_dim, lp_data, ent):
+    def __calculateStatsOfSpectralPeakAlt(self, file_list_id: int, sf_framecode: str, num_dim: int, lp_data: List[dict], ent: dict):
         """ Calculate statistics of spectral peaks.
         """
 
@@ -41111,7 +41168,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfSpectralPeakAlt() ++ Error  - {str(e)}\n")
 
-    def __extractCoordStructConf(self, nmr_chain_id, nmr_seq_ids):
+    def __extractCoordStructConf(self, nmr_chain_id: str, nmr_seq_ids: List[int]) -> List[Optional[str]]:
         """ Extract conformational annotations of coordinate file.
         """
 
@@ -41159,7 +41216,7 @@ class NmrDpUtility:
 
         return nmr_struct_conf
 
-    def __getCoordCompId(self, nmr_chain_id, nmr_seq_id):
+    def __getCoordCompId(self, nmr_chain_id: str, nmr_seq_id: int) -> Optional[str]:
         """ Return comp ID of coordinate file for a given NMR sequence.
         """
 
@@ -41194,7 +41251,7 @@ class NmrDpUtility:
 
         return None
 
-    def __validateCoordInputSource(self):
+    def __validateCoordInputSource(self) -> bool:
         """ Validate coordinate file as secondary input resource.
         """
 
@@ -41219,7 +41276,7 @@ class NmrDpUtility:
 
         return False
 
-    def __parseCoordinate(self):
+    def __parseCoordinate(self) -> bool:
         """ Parse coordinate file.
         """
 
@@ -41470,7 +41527,7 @@ class NmrDpUtility:
 
             return False
 
-    def __parseCoordFilePath(self):
+    def __parseCoordFilePath(self) -> bool:
         """ Parse effective coordinate file path.
         """
 
@@ -41569,7 +41626,7 @@ class NmrDpUtility:
 
         return False
 
-    def __detectCoordContentSubType(self):
+    def __detectCoordContentSubType(self) -> bool:
         """ Detect content subtype of coordinate file.
         """
 
@@ -41611,7 +41668,7 @@ class NmrDpUtility:
 
         return True
 
-    def __extractCoordPolymerSequence(self):
+    def __extractCoordPolymerSequence(self) -> bool:
         """ Extract reference polymer sequence of coordinate file.
         """
 
@@ -41968,7 +42025,7 @@ class NmrDpUtility:
 
         return False
 
-    def __extractCoordAtomSite(self):
+    def __extractCoordAtomSite(self) -> bool:
         """ Extract atom_site of coordinate file.
         """
 
@@ -42198,7 +42255,7 @@ class NmrDpUtility:
 
             return False
 
-    def __extractCoordPolymerSequenceInLoop(self):
+    def __extractCoordPolymerSequenceInLoop(self) -> bool:
         """ Extract polymer sequence in interesting loops of coordinate file.
         """
 
@@ -42320,7 +42377,7 @@ class NmrDpUtility:
 
         return True
 
-    def __extractCoordCommonPolymerSequence(self):
+    def __extractCoordCommonPolymerSequence(self) -> bool:
         """ Extract common polymer sequence of coordinate file if required.
         """
 
@@ -42406,7 +42463,7 @@ class NmrDpUtility:
 
         return True
 
-    def __extractCoordNonStandardResidue(self):
+    def __extractCoordNonStandardResidue(self) -> bool:
         """ Extract non-standard residue of coordinate file.
         """
 
@@ -42462,7 +42519,7 @@ class NmrDpUtility:
 
         return True
 
-    def __appendCoordPolymerSequenceAlignment(self):
+    def __appendCoordPolymerSequenceAlignment(self) -> bool:
         """ Append polymer sequence alignment between coordinate and NMR data.
         """
 
@@ -42866,7 +42923,7 @@ class NmrDpUtility:
 
         return True
 
-    def __compensateLadderHistidinTag2(self, chain_id, s1, s2):
+    def __compensateLadderHistidinTag2(self, chain_id: str, s1: dict, s2: dict) -> dict:
         """ Compensate ladder-like Histidin tag in polymer sequence 2.
         """
 
@@ -42909,7 +42966,7 @@ class NmrDpUtility:
 
         return _s2
 
-    def __assignCoordPolymerSequence(self):
+    def __assignCoordPolymerSequence(self) -> bool:
         """ Assign polymer sequences of coordinate file.
         """
 
@@ -44289,7 +44346,7 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __updateCompIdInCsLoop(self, file_list_id, cif_ps, nmr_ps):
+    def __updateCompIdInCsLoop(self, file_list_id: int, cif_ps: List[dict], nmr_ps: List[dict]) -> bool:
         """ Update residue name in CS loop to follow CCD replacement.
         """
 
@@ -44377,7 +44434,9 @@ class NmrDpUtility:
 
         return modified
 
-    def __updateCompIdInCsLoop__(self, file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch):
+    def __updateCompIdInCsLoop__(self, file_list_id: int,
+                                 sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                 lp_category: str, cif_ps: List[dict], nmr_ps: List[dict], allow_chain_id_mismatch: bool) -> bool:
         """ Update residue name in CS loop to follow CCD replacement.
         """
 
@@ -44420,7 +44479,7 @@ class NmrDpUtility:
 
         return modified
 
-    def __resolveUnmappedAuthSequenceInCsLoop(self, file_list_id, cif_ps, nmr_ps):
+    def __resolveUnmappedAuthSequenceInCsLoop(self, file_list_id: int, cif_ps: List[dict], nmr_ps: List[dict]) -> bool:
         """ Resolve unmapped author sequence in CS loop based on sequence alignment.
         """
 
@@ -44505,7 +44564,9 @@ class NmrDpUtility:
 
         return modified
 
-    def __resolveUnmappedAuthSequenceInCsLoop__(self, file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch):
+    def __resolveUnmappedAuthSequenceInCsLoop__(self, file_list_id: int,
+                                                sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                                lp_category: str, cif_ps: List[dict], nmr_ps: List[dict], allow_chain_id_mismatch: bool) -> bool:
         """ Resolve unmapped author sequence in CS loop based on sequence alignment.
         """
 
@@ -44592,7 +44653,7 @@ class NmrDpUtility:
 
         return modified
 
-    def __testCoordAtomIdConsistency(self):
+    def __testCoordAtomIdConsistency(self) -> bool:
         """ Perform consistency test on atom names of coordinate file.
         """
 
@@ -44708,9 +44769,10 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __testCoordAtomIdConsistency__(self, file_list_id, file_name, file_type, content_subtype,
-                                       sf, list_id, sf_framecode, lp_category, cif_polymer_sequence,
-                                       seq_align_dic, nmr2ca, ref_chain_id):
+    def __testCoordAtomIdConsistency__(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
+                                       sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                       list_id: int, sf_framecode: str, lp_category: str, cif_polymer_sequence: List[dict],
+                                       seq_align_dic: dict, nmr2ca: dict, ref_chain_id: str) -> bool:
         """ Perform consistency test on atom names of coordinate file.
         """
 
@@ -45201,7 +45263,7 @@ class NmrDpUtility:
 
         return modified
 
-    def __retrieveDpReport(self):
+    def __retrieveDpReport(self) -> bool:
         """ Retrieve NMR data processing report from JSON file.
         """
 
@@ -45254,7 +45316,7 @@ class NmrDpUtility:
 
         return True
 
-    def __resolveConflictsInLoop(self):
+    def __resolveConflictsInLoop(self) -> bool:
         """ Resolve conflicted rows in loops.
         """
 
@@ -45376,7 +45438,7 @@ class NmrDpUtility:
 
         return True
 
-    def __resolveConflictsInAuxLoop(self):
+    def __resolveConflictsInAuxLoop(self) -> bool:
         """ Resolve conflicted rows in auxiliary loops.
         """
 
@@ -45453,12 +45515,12 @@ class NmrDpUtility:
 
         return True
 
-    def __appendIndexTag(self):
+    def __appendIndexTag(self) -> bool:
         """ Append index tag if required.
         """
 
         if not self.__combined_mode:
-            return
+            return True
 
         for fileListId in range(self.__file_path_list_len):
 
@@ -45524,7 +45586,9 @@ class NmrDpUtility:
 
                     sf.add_loop(lp)
 
-    def __deleteSkippedSf(self):
+        return True
+
+    def __deleteSkippedSf(self) -> bool:
         """ Delete skipped saveframes.
         """
 
@@ -45592,7 +45656,7 @@ class NmrDpUtility:
 
         return True
 
-    def __deleteSkippedLoop(self):
+    def __deleteSkippedLoop(self) -> bool:
         """ Delete skipped loops.
         """
 
@@ -45671,7 +45735,7 @@ class NmrDpUtility:
 
         return True
 
-    def __deleteUnparsedEntryLoop(self):
+    def __deleteUnparsedEntryLoop(self) -> bool:
         """ Delete unparsed entry loops.
         """
 
@@ -45725,7 +45789,8 @@ class NmrDpUtility:
 
         return True
 
-    def __convertCsToEntry(self, src_data=None, list_id=1):
+    def __convertCsToEntry(self, src_data: Optional[Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]] = None, list_id: int = 1
+                           ) -> Optional[pynmrstar.Entry]:
         """ Convert NMR-STAR CS loop/saveframe to pynmrstar Entry object.
         """
 
@@ -45799,7 +45864,7 @@ class NmrDpUtility:
 
         return src_data
 
-    def __updatePolymerSequence(self):
+    def __updatePolymerSequence(self) -> bool:
         """ Update polymer sequence.
         """
 
@@ -47825,7 +47890,7 @@ class NmrDpUtility:
 
         return True
 
-    def __updateAuthSequence(self):
+    def __updateAuthSequence(self) -> bool:
         """ Update auth sequence in NMR-STAR.
         """
 
@@ -47940,7 +48005,7 @@ class NmrDpUtility:
 
         return True
 
-    def __updateAuthSequence__(self, loop, tags):
+    def __updateAuthSequence__(self, loop: pynmrstar.Loop, tags: List[str]):
         """ Update auth sequence in NMR-STAR.
         """
 
@@ -47965,7 +48030,7 @@ class NmrDpUtility:
             if seq_key in self.authSeqMap:
                 row[auth_chain_index], row[auth_seq_index] = self.authSeqMap[seq_key]
 
-    def __hasCoordSeq(self, nmr_chain_id, nmr_seq_id):
+    def __hasCoordSeq(self, nmr_chain_id: str, nmr_seq_id: str) -> bool:
         """ Return whether a given sequence is in the coordinates.
             @return: True for corresponding sequence in the coordinates exist, False otherwise
         """
@@ -47995,7 +48060,7 @@ class NmrDpUtility:
 
         return False
 
-    def __isCyclicPolymer(self, nmr_chain_id):
+    def __isCyclicPolymer(self, nmr_chain_id: str) -> bool:
         """ Return whether a given chain is cyclic polymer based on coordinate annotation.
             @return: True for cyclic polymer, False otherwise
         """
@@ -48012,7 +48077,7 @@ class NmrDpUtility:
         finally:
             self.__is_cyclic_polymer[nmr_chain_id] = is_cyclic
 
-    def __isCyclicPolymer__(self, nmr_chain_id):
+    def __isCyclicPolymer__(self, nmr_chain_id: str) -> bool:
         """ Return whether a given chain is cyclic polymer based on coordinate annotation.
             @return: True for cyclic polymer, False otherwise
         """
@@ -48109,7 +48174,7 @@ class NmrDpUtility:
 
         return struct_conn[0]['conn_type_id'].startswith('covale')
 
-    def __isProtCis(self, nmr_chain_id, nmr_seq_id):
+    def __isProtCis(self, nmr_chain_id: str, nmr_seq_id: int) -> bool:
         """ Return whether type of peptide conformer of a given sequence is cis based on coordinate annotation.
             @return: True for cis peptide conformer, False otherwise
         """
@@ -48171,7 +48236,7 @@ class NmrDpUtility:
 
         return False
 
-    def __testTautomerOfHistidinePerModel(self):
+    def __testTautomerOfHistidinePerModel(self) -> bool:
         """ Check tautomeric state of a given histidine per model. (DAOTHER-9252)
         """
 
@@ -48333,7 +48398,7 @@ class NmrDpUtility:
 
         return True
 
-    def __getTautomerOfHistidine(self, nmr_chain_id, nmr_seq_id):
+    def __getTautomerOfHistidine(self, nmr_chain_id: str, nmr_seq_id: int) -> str:
         """ Return tautomeric state of a given histidine.
             @return: One of 'biprotonated', 'tau-tautomer', 'pi-tautomer', 'unknown'
         """
@@ -48418,7 +48483,7 @@ class NmrDpUtility:
         self.__cpC['tautomer'][seq_key] = 'unknown'
         return 'unknown'
 
-    def __getRotamerOfValine(self, nmr_chain_id, nmr_seq_id):
+    def __getRotamerOfValine(self, nmr_chain_id: str, nmr_seq_id: int) -> List[dict]:
         """ Return rotameric state distribution of a given valine.
             @return: One of 'gauche+', 'trans', 'gauche-', 'unknown'
         """
@@ -48527,7 +48592,7 @@ class NmrDpUtility:
         self.__cpC['rotamer'][seq_key] = none
         return none
 
-    def __getRotamerOfLeucine(self, nmr_chain_id, nmr_seq_id):
+    def __getRotamerOfLeucine(self, nmr_chain_id: str, nmr_seq_id: int) -> List[dict]:
         """ Return rotameric state distribution of a given leucine.
             @return: One of 'gauche+', 'trans', 'gauche-', 'unknown'
         """
@@ -48657,7 +48722,7 @@ class NmrDpUtility:
         self.__cpC['rotamer'][seq_key] = none
         return none
 
-    def __getRotamerOfIsoleucine(self, nmr_chain_id, nmr_seq_id):
+    def __getRotamerOfIsoleucine(self, nmr_chain_id: str, nmr_seq_id: int) -> List[dict]:
         """ Return rotameric state distribution of a given isoleucine.
             @return: One of 'gauche+', 'trans', 'gauche-', 'unknown'
         """
@@ -48787,7 +48852,7 @@ class NmrDpUtility:
         self.__cpC['rotamer'][seq_key] = none
         return none
 
-    def __extractCoordDisulfideBond(self):
+    def __extractCoordDisulfideBond(self) -> bool:
         """ Extract disulfide bond of coordinate file.
         """
 
@@ -48877,7 +48942,7 @@ class NmrDpUtility:
 
         return True
 
-    def __mapCoordDisulfideBond2Nmr(self, bond_list):
+    def __mapCoordDisulfideBond2Nmr(self, bond_list) -> bool:
         """ Map disulfide bond of coordinate file to NMR data.
         """
 
@@ -49116,8 +49181,12 @@ class NmrDpUtility:
 
         return is_done
 
-    def __mapCoordDisulfideBond2Nmr__(self, file_name, file_type, content_subtype, sf, sf_framecode, lp_category,
-                                      nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2):
+    def __mapCoordDisulfideBond2Nmr__(self, file_name: str, file_type: str, content_subtype: str,
+                                      sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                      sf_framecode: str, lp_category: str,
+                                      nmr_chain_id_1: str, nmr_seq_id_1: int, nmr_comp_id_1: str,
+                                      nmr_chain_id_2: str, nmr_seq_id_2: int, nmr_comp_id_2: str
+                                      ) -> Tuple[Optional[float], Optional[float], Optional[float], Optional[float]]:
         """ Map disulfide bond of coordinate file to NMR data.
         """
 
@@ -49178,7 +49247,7 @@ class NmrDpUtility:
 
         return ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2
 
-    def __extractCoordOtherBond(self):
+    def __extractCoordOtherBond(self) -> bool:
         """ Extract other bond (neither disulfide nor covalent bond) of coordinate file.
         """
 
@@ -49268,7 +49337,7 @@ class NmrDpUtility:
 
         return True
 
-    def __mapCoordOtherBond2Nmr(self, bond_list):
+    def __mapCoordOtherBond2Nmr(self, bond_list: List[dict]) -> bool:
         """ Map other bond (neither disulfide nor covalent bond) of coordinate file to NMR data.
         """
 
@@ -49508,8 +49577,12 @@ class NmrDpUtility:
 
         return is_done
 
-    def __mapCoordOtherBond2Nmr__(self, file_name, file_type, content_subtype, sf, sf_framecode, lp_category,
-                                  nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2):
+    def __mapCoordOtherBond2Nmr__(self, file_name: str, file_type: str, content_subtype: str,
+                                  sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                  sf_framecode: str, lp_category: str,
+                                  nmr_chain_id_1: str, nmr_seq_id_1: int, nmr_comp_id_1: str,
+                                  nmr_chain_id_2: str, nmr_seq_id_2: int, nmr_comp_id_2: str
+                                  ) -> Tuple[Optional[float], Optional[float], Optional[float], Optional[float]]:
         """ Map other bond (neither disulfide nor covalent bond) of coordinate file to NMR data.
         """
 
@@ -49570,7 +49643,7 @@ class NmrDpUtility:
 
         return ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2
 
-    def __getNearestAromaticRing(self, nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
+    def __getNearestAromaticRing(self, nmr_chain_id: str, nmr_seq_id: int, nmr_atom_id: str, cutoff: float) -> Optional[dict]:
         """ Return the nearest aromatic ring around a given atom.
             @return: the nearest aromatic ring
         """
@@ -49910,7 +49983,7 @@ class NmrDpUtility:
         self.__cpC['near_ring'][seq_key] = None
         return None
 
-    def __getNearestParaFerroMagneticAtom(self, nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
+    def __getNearestParaFerroMagneticAtom(self, nmr_chain_id: str, nmr_seq_id: int, nmr_atom_id: str, cutoff: float) -> Optional[dict]:
         """ Return the nearest paramagnetic/ferromagnetic atom around a given atom.
             @return: the nearest paramagnetic/ferromagnetic atom
         """
@@ -50078,7 +50151,7 @@ class NmrDpUtility:
         self.__cpC['near_para_ferro'][seq_key] = None
         return None
 
-    def __appendElemAndIsoNumOfNefCsLoop(self):
+    def __appendElemAndIsoNumOfNefCsLoop(self) -> bool:
         """ Append element and isotope_number columns in NEF CS loop if required.
         """
 
@@ -50208,7 +50281,7 @@ class NmrDpUtility:
 
             return False
 
-    def __appendWeightInLoop(self):
+    def __appendWeightInLoop(self) -> bool:
         """ Append weight column in interesting loops, if required.
         """
 
@@ -50287,7 +50360,7 @@ class NmrDpUtility:
 
             return False
 
-    def __appendDihedAngleType(self):
+    def __appendDihedAngleType(self) -> bool:
         """ Append dihedral angle type column, if required.
         """
 
@@ -50340,7 +50413,7 @@ class NmrDpUtility:
 
             return False
 
-    def __appendSfTagItem(self):
+    def __appendSfTagItem(self) -> bool:
         """ Append saveframe tag items, if required.
         """
 
@@ -50427,7 +50500,7 @@ class NmrDpUtility:
 
             return False
 
-    def __updateDihedralAngleType(self):
+    def __updateDihedralAngleType(self) -> bool:
         """ Update dihedral angle types if possible.
         """
 
@@ -50577,7 +50650,7 @@ class NmrDpUtility:
 
         return True
 
-    def __fixDisorderedIndex(self):
+    def __fixDisorderedIndex(self) -> bool:
         """ Fix disordered indices.
         """
 
@@ -50673,7 +50746,7 @@ class NmrDpUtility:
 
         return True
 
-    def __removeNonSenseZeroValue(self):
+    def __removeNonSenseZeroValue(self) -> bool:
         """ Remove non-sense zero values.
         """
 
@@ -50781,7 +50854,7 @@ class NmrDpUtility:
 
         return True
 
-    def __fixNonSenseNegativeValue(self):
+    def __fixNonSenseNegativeValue(self) -> bool:
         """ Fix non-sense negative values.
         """
 
@@ -50889,7 +50962,7 @@ class NmrDpUtility:
 
         return True
 
-    def __fixEnumMismatch(self):
+    def __fixEnumMismatch(self) -> bool:
         """ Fix enumeration mismatches if possible.
         """
 
@@ -50908,7 +50981,7 @@ class NmrDpUtility:
 
         return self.__fixEnumerationFailure(warnings)
 
-    def __fixEnumMismatchIgnorable(self):
+    def __fixEnumMismatchIgnorable(self) -> bool:
         """ Fix enumeration mismatches (ignorable) if possible.
         """
 
@@ -50927,7 +51000,7 @@ class NmrDpUtility:
 
         return self.__fixEnumerationFailure(warnings)
 
-    def __fixEnumerationFailure(self, warnings):
+    def __fixEnumerationFailure(self, warnings) -> bool:
         """ Fix enumeration failures if possible.
         """
 
@@ -51230,7 +51303,7 @@ class NmrDpUtility:
 
         return True
 
-    def __testDistRestraintAsHydrogenBond(self, lp_data):
+    def __testDistRestraintAsHydrogenBond(self, lp_data: List[dict]) -> bool:
         """ Detect whether given distance restraints are derived from hydrogen bonds.
         """
 
@@ -51363,7 +51436,7 @@ class NmrDpUtility:
 
         return True
 
-    def __testDistRestraintAsDisulfideBond(self, lp_data):
+    def __testDistRestraintAsDisulfideBond(self, lp_data: List[dict]) -> bool:
         """ Detect whether given distance restraints are derived from disulfide bonds.
         """
 
@@ -51466,7 +51539,7 @@ class NmrDpUtility:
 
         return True
 
-    def __testDistRestraintAsSymmetry(self, lp_data):
+    def __testDistRestraintAsSymmetry(self, lp_data: List[dict]) -> bool:
         """ Detect whether given distance restraints are derived from symmetric assembly.
         """
 
@@ -51543,7 +51616,7 @@ class NmrDpUtility:
 
         return True
 
-    def __testDihedRestraintAsBackBoneChemShifts(self, lp_data):
+    def __testDihedRestraintAsBackBoneChemShifts(self, lp_data: List[dict]) -> bool:
         """ Detect whether given dihedral angle restraints are derived from backbone chemical shifts.
         """
 
@@ -51719,7 +51792,7 @@ class NmrDpUtility:
 
         return True
 
-    def __testRestraintPotentialSWP(self, content_subtype, lp_data):
+    def __testRestraintPotentialSWP(self, content_subtype: str, lp_data: List[dict]) -> bool:
         """ Detect square-well-parabolic potential.
         """
 
@@ -51763,7 +51836,7 @@ class NmrDpUtility:
 
         return True
 
-    def __testRestraintPotentialSWPL(self, content_subtype, lp_data):
+    def __testRestraintPotentialSWPL(self, content_subtype: str, lp_data: List[str]) -> bool:
         """ Detect square-well-parabolic-linear potential.
         """
 
@@ -51807,7 +51880,7 @@ class NmrDpUtility:
 
         return True
 
-    def __testRestraintPotentialUBP(self, content_subtype, lp_data):
+    def __testRestraintPotentialUBP(self, content_subtype: str, lp_data: List[dict]) -> bool:
         """ Detect upper-bound-parabolic potential.
         """
 
@@ -51851,7 +51924,7 @@ class NmrDpUtility:
 
         return True
 
-    def __testRestraintPotentialLBP(self, content_subtype, lp_data):
+    def __testRestraintPotentialLBP(self, content_subtype: str, lp_data: List[str]) -> bool:
         """ Detect lower-bound-parabolic potential.
         """
 
@@ -51895,7 +51968,7 @@ class NmrDpUtility:
 
         return True
 
-    def __testRestraintPotentialUBPL(self, content_subtype, lp_data):
+    def __testRestraintPotentialUBPL(self, content_subtype: str, lp_data: List[dict]) -> bool:
         """ Detect upper-bound-parabolic-linear potential.
         """
 
@@ -51939,7 +52012,7 @@ class NmrDpUtility:
 
         return True
 
-    def __testRestraintPotentialLBPL(self, content_subtype, lp_data):
+    def __testRestraintPotentialLBPL(self, content_subtype: str, lp_data: List[dict]) -> bool:
         """ Detect lower-bound-parabolic-linear potential.
         """
 
@@ -51983,7 +52056,7 @@ class NmrDpUtility:
 
         return True
 
-    def __testRestraintPonentialLHorP(self, content_subtype, lp_data):
+    def __testRestraintPonentialLHorP(self, content_subtype: str, lp_data: List[dict]) -> bool:
         """ Detect log-harmonic or parabolic potential.
         """
 
@@ -52031,7 +52104,7 @@ class NmrDpUtility:
 
         return True
 
-    def __getSaveframeByName(self, file_list_id, sf_framecode):
+    def __getSaveframeByName(self, file_list_id: int, sf_framecode: str) -> Optional[pynmrstar.Saveframe]:
         """ Retrieve saveframe content from a given name.
         """
 
@@ -52058,7 +52131,7 @@ class NmrDpUtility:
                 except KeyError:
                     return None
 
-    def __resetCapitalStringInLoop(self):
+    def __resetCapitalStringInLoop(self) -> bool:
         """ Reset capital string values (chain_id, comp_id, atom_id) in loops depending on file type.
         """
 
@@ -52196,7 +52269,7 @@ class NmrDpUtility:
 
         return True
 
-    def __resetBoolValueInLoop(self):
+    def __resetBoolValueInLoop(self) -> bool:
         """ Reset bool values in loops depending on file type.
         """
 
@@ -52333,7 +52406,7 @@ class NmrDpUtility:
 
         return True
 
-    def __resetBoolValueInAuxLoop(self):
+    def __resetBoolValueInAuxLoop(self) -> bool:
         """ Reset bool values in auxiliary loops depending on file type.
         """
 
@@ -52433,7 +52506,7 @@ class NmrDpUtility:
 
         return True
 
-    def __appendParentSfTag(self):
+    def __appendParentSfTag(self) -> bool:
         """ Append parent tag of saveframe if not exists.
         """
 
@@ -52541,7 +52614,7 @@ class NmrDpUtility:
 
             return False
 
-    def __addUnnamedEntryId(self):
+    def __addUnnamedEntryId(self) -> bool:
         """ Add UNNAMED entry id.
         """
 
@@ -52572,7 +52645,7 @@ class NmrDpUtility:
 
         return True
 
-    def __sortCsLoop(self):
+    def __sortCsLoop(self) -> bool:
         """ Sort assigned chemical shift loop if required.
         """
 
@@ -52700,7 +52773,7 @@ class NmrDpUtility:
 
         return True
 
-    def __depositNmrData(self):
+    def __depositNmrData(self) -> bool:
         """ Deposit next NMR unified data file.
         """
 
@@ -52794,7 +52867,7 @@ class NmrDpUtility:
 
         return not self.report.isError()
 
-    def __depositLegacyNmrData(self):
+    def __depositLegacyNmrData(self) -> bool:
         """ Deposit next NMR legacy data files.
         """
 
@@ -52843,7 +52916,7 @@ class NmrDpUtility:
 
         return False
 
-    def __mergeLegacyCsAndMr(self):
+    def __mergeLegacyCsAndMr(self) -> bool:
         """ Merge CS+MR into next NMR unifed data files.
         """
 
@@ -54482,7 +54555,7 @@ class NmrDpUtility:
 
         return True
 
-    def __getDatumCounter(self, master_entry):
+    def __getDatumCounter(self, master_entry: pynmrstar.Entry) -> dict:
         """ Return Datum counter dictionary.
         """
 
@@ -54640,7 +54713,7 @@ class NmrDpUtility:
 
         return {k: v for k, v in datum_counter.items() if v > 0}
 
-    def __performBmrbOnlyAnnotation(self):
+    def __performBmrbOnlyAnnotation(self) -> bool:
         """ Perform a series of BMRB annotation.
         """
 
@@ -54666,7 +54739,7 @@ class NmrDpUtility:
 
         return ann.perform(self.__star_data[0])
 
-    def __updateConstraintStats(self):
+    def __updateConstraintStats(self) -> bool:
         """ Update _Constraint_stat_list saveframe.
         """
 
@@ -55963,7 +56036,7 @@ class NmrDpUtility:
 
         return True
 
-    def __detectSimpleDistanceRestraint(self):
+    def __detectSimpleDistanceRestraint(self) -> bool:
         """ Detect simple distance restraints.
         """
 
@@ -56137,19 +56210,19 @@ class NmrDpUtility:
         except IndexError:
             return True
 
-    def __initializeDpReportForNext(self):
+    def __initializeDpReportForNext(self) -> bool:
         """ Initialize NMR data processing report using the next version of NMR unified data.
         """
 
         return self.__initializeDpReport(srcPath=self.__dstPath)
 
-    def __validateInputSourceForNext(self):
+    def __validateInputSourceForNext(self) -> bool:
         """ Validate the next version of NMR unified data as primary input source.
         """
 
         return self.__validateInputSource(srcPath=self.__dstPath)
 
-    def __translateNef2Str(self):
+    def __translateNef2Str(self) -> bool:
         """ Translate NEF to NMR-STAR V3.2 file.
         """
 
@@ -56247,7 +56320,7 @@ class NmrDpUtility:
 
         return False
 
-    def __initResourceForNef2Str(self):
+    def __initResourceForNef2Str(self) -> bool:
         """ Initialize resources for the translated NMR-STAR V3.2 file.
         """
 
@@ -56282,7 +56355,7 @@ class NmrDpUtility:
 
         return False
 
-    def __translateStr2Nef(self):
+    def __translateStr2Nef(self) -> bool:
         """ Translate NMR-STAR V3.2 to NEF file.
         """
 
@@ -56355,7 +56428,7 @@ class NmrDpUtility:
 
         return False
 
-    def __initResourceForStr2Nef(self):
+    def __initResourceForStr2Nef(self) -> bool:
         """ Initialize resources for the translated NEF file.
         """
 

@@ -120,7 +120,7 @@ import collections
 
 from packaging import version
 from operator import itemgetter
-from typing import List, Optional, Union
+from typing import List, IO, Tuple, Union, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
@@ -596,7 +596,7 @@ class NEFTranslator:
     """ Bi-directional translator between NEF and NMR-STAR
     """
 
-    def __init__(self, verbose=False, log=sys.stderr, ccU=None, csStat=None, c2S=None):
+    def __init__(self, verbose: bool = False, log: IO = sys.stderr, ccU=None, csStat=None, c2S=None):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -1512,25 +1512,25 @@ class NEFTranslator:
         """
         return self.__ccU
 
-    def set_remediation_mode(self, flag):
+    def set_remediation_mode(self, flag: bool):
         """ Set remediation mode.
         """
 
         self.__remediation_mode = flag
 
-    def set_bmrb_only_mode(self, flag):
+    def set_bmrb_only_mode(self, flag: bool):
         """ Set BMRB-only mode.
         """
 
         self.__bmrb_only = flag
 
-    def allow_missing_dist_restraint(self, flag):
+    def allow_missing_dist_restraint(self, flag: bool):
         """ Whether allow missing distance restraint.
         """
 
         self.__allow_missing_dist_restraint = flag
 
-    def set_chem_comp_dict(self, chem_comp_atom, chem_comp_bond, chem_comp_topo):
+    def set_chem_comp_dict(self, chem_comp_atom: dict, chem_comp_bond: dict, chem_comp_topo: dict):
         """ Set chem_comp dictionary derived from ParserListerUtil.coordAssemblyChecker().
             DAOTHER-8817: construct pseudo CCD from the coordinates
         """
@@ -1570,7 +1570,7 @@ class NEFTranslator:
     #
     #     return data_map
 
-    def read_input_file(self, in_file):  # pylint: disable=no-self-use
+    def read_input_file(self, in_file: str) -> Tuple[bool, str, Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]]:  # pylint: disable=no-self-use
         """ Read input NEF/NMR-STAR file.
             @param in_file: input NEF/NMR-STAR file path
             @return: status, one of {'Entry', 'Saveframe', 'Loop', error message}, data object
@@ -1614,7 +1614,7 @@ class NEFTranslator:
 
         return is_ok, data_type, star_data
 
-    def check_mandatory_tags(self, in_file=None, file_type=None):
+    def check_mandatory_tags(self, in_file: str, file_type: str) -> Tuple[List[str], List[str]]:
         """ Returns list of missing mandatory saveframe/loop tags of the input file.
             @change: detect missing mandatory saveframe tags in Saveframe/Loop data as well as Entry data by Masashi Yokochi
             @param in_file: input NEF/NMR-STAR file path
@@ -1677,7 +1677,7 @@ class NEFTranslator:
 
         return missing_sf_tags, missing_lp_tags
 
-    def is_mandatory_tag(self, item, file_type):
+    def is_mandatory_tag(self, item: str, file_type: str) -> bool:
         """ Return whether a given tag is mandatory.
             @author: Masashi Yokochi
             @param item: item name
@@ -1692,7 +1692,7 @@ class NEFTranslator:
 
         return mandatoryTag[item]
 
-    def validate_file(self, in_file, file_subtype='A', allow_empty=False):
+    def validate_file(self, in_file: str, file_subtype: str = 'A', allow_empty: bool = False) -> Tuple[bool, dict]:
         """ Validate input NEF/NMR-STAR file.
             @param infile: input NEF/NMR-STAR file path
             @param file_subtype: should be 'A', 'S', 'R', or 'O'
@@ -2041,7 +2041,8 @@ class NEFTranslator:
 
         return is_valid, {'info': info, 'error': error, 'file_type': file_type}
 
-    def resolve_sf_names_for_cif(self, star_data):  # pylint: disable=no-self-use # DAOTHER-7389, issue #4
+    def resolve_sf_names_for_cif(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]  # pylint: disable=no-self-use # DAOTHER-7389, issue #4
+                                 ) -> Tuple[bool, List[str], dict]:  # DAOTHER-7389, issue #4
         """ Resolve saveframe names to prevent case-insensitive name collisions occur in CIF format.
             @return: status, list of correction messages, dictionary of saveframe name corrections
         """
@@ -2079,7 +2080,8 @@ class NEFTranslator:
 
         return len(messages) == 0, messages, corrections
 
-    def get_inventory_list(self, star_data):  # pylint: disable=no-self-use
+    def get_inventory_list(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]  # pylint: disable=no-self-use
+                           ) -> Tuple[List[str], List[str]]:
         """ Return lists of saveframe category names and loop category names in an NEF/NMR-STAR file.
             @change: rename the original get_data_content() to get_inventory_list() by Masashi Yokochi
             @return: list of saveframe category names, list of loop category names
@@ -2105,8 +2107,10 @@ class NEFTranslator:
 
         return sf_list, lp_list
 
-    def get_nef_seq(self, star_data, lp_category='nef_chemical_shift', seq_id='sequence_code', comp_id='residue_name',  # pylint: disable=no-self-use
-                    chain_id='chain_code', allow_empty=False, allow_gap=False, check_identity=True):
+    def get_nef_seq(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],  # pylint: disable=no-self-use
+                    lp_category: str = 'nef_chemical_shift', seq_id='sequence_code', comp_id='residue_name',
+                    chain_id: str = 'chain_code', allow_empty: bool = False, allow_gap: bool = False, check_identity: bool = True
+                    ) -> List[List[dict]]:
         """ Extract sequence from any given loops in an NEF file.
             @change: re-written by Masashi Yokochi
             @return: list of sequence information for each loop
@@ -2284,10 +2288,11 @@ class NEFTranslator:
 
         return data
 
-    def get_star_seq(self, star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',  # pylint: disable=no-self-use
+    def get_star_seq(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                     lp_category: str = 'Atom_chem_shift', seq_id: str = 'Comp_index_ID', comp_id: str = 'Comp_ID',  # pylint: disable=no-self-use
                      chain_id='Entity_assembly_ID', alt_seq_id='Seq_ID', alt_seq_id_offset=0, alt_chain_id='Auth_asym_ID',
-                     allow_empty=False, allow_gap=False, check_identity=True,
-                     coord_assembly_checker=None):
+                     allow_empty: bool = False, allow_gap: bool = False, check_identity: bool = True,
+                     coord_assembly_checker: Optional[dict] = None) -> List[List[dict]]:
         """ Extract sequence from any given loops in an NMR-STAR file.
             @change: re-written by Masashi Yokochi
             @return: list of sequence information for each loop
@@ -3451,8 +3456,10 @@ class NEFTranslator:
 
         return data
 
-    def get_star_auth_seq(self, star_data, lp_category='Atom_chem_shift', aseq_id='Auth_seq_ID', acomp_id='Auth_comp_ID',  # pylint: disable=no-self-use
-                          asym_id='Auth_asym_ID', seq_id='Comp_index_ID', chain_id='Entity_assembly_ID', allow_empty=True):
+    def get_star_auth_seq(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],  # pylint: disable=no-self-use
+                          lp_category: str = 'Atom_chem_shift', aseq_id: str = 'Auth_seq_ID', acomp_id: str = 'Auth_comp_ID',
+                          asym_id: str = 'Auth_asym_ID', seq_id: str = 'Comp_index_ID', chain_id: str = 'Entity_assembly_ID',
+                          allow_empty: bool = True) -> List[List[dict]]:
         """ Extract author sequence from any given loops in an NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of author sequence information for each loop
@@ -3608,31 +3615,35 @@ class NEFTranslator:
 
         return data
 
-    def get_nef_comp_atom_pair(self, star_data, lp_category='nef_chemical_shift', comp_id='residue_name', atom_id='atom_name',
-                               allow_empty=False):
+    def get_nef_comp_atom_pair(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                               lp_category: str = 'nef_chemical_shift', comp_id: str = 'residue_name', atom_id: str = 'atom_name',
+                               allow_empty: bool = False) -> List[List[dict]]:
         """ Wrapper function of get_comp_atom_pair() for an NEF file.
             @author: Masashi Yokochi
         """
 
         return self.get_comp_atom_pair(star_data, lp_category, comp_id, atom_id, allow_empty)
 
-    def get_star_comp_atom_pair(self, star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID',
-                                allow_empty=False):
+    def get_star_comp_atom_pair(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                lp_category: str = 'Atom_chem_shift', comp_id: str = 'Comp_ID', atom_id: str = 'Atom_ID',
+                                allow_empty: bool = False) -> List[List[dict]]:
         """ Wrapper function of get_comp_atom_pair() for an NMR-STAR file.
             @author: Masashi Yokochi
         """
 
         return self.get_comp_atom_pair(star_data, lp_category, comp_id, atom_id, allow_empty)
 
-    def get_star_auth_comp_atom_pair(self, star_data, lp_category='Atom_chem_shift', comp_id='Auth_comp_ID', atom_id='Auth_atom_ID',
-                                     allow_empty=True):
+    def get_star_auth_comp_atom_pair(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                     lp_category: str = 'Atom_chem_shift', comp_id: str = 'Auth_comp_ID', atom_id: str = 'Auth_atom_ID',
+                                     allow_empty: bool = True) -> List[List[dict]]:
         """ Wrapper function of get_comp_atom_pair() for pairs of author comp_id and author atom_id in an NMR-STAR file.
             @author: Masashi Yokochi
         """
 
         return self.get_comp_atom_pair(star_data, lp_category, comp_id, atom_id, allow_empty)
 
-    def get_comp_atom_pair(self, star_data, lp_category, comp_id, atom_id, allow_empty):  # pylint: disable=no-self-use
+    def get_comp_atom_pair(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],  # pylint: disable=no-self-use
+                           lp_category: str, comp_id: str, atom_id: str, allow_empty: bool) -> List[List[dict]]:
         """ Extract unique pairs of comp_id and atom_id from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of unique pairs of comp_id and atom_id for each loop
@@ -3736,25 +3747,29 @@ class NEFTranslator:
 
         return data
 
-    def get_nef_atom_type_from_cs_loop(self, star_data, lp_category='nef_chemical_shift',
-                                       atom_type='element', isotope_number='isotope_number', atom_id='atom_name',
-                                       allow_empty=False):
+    def get_nef_atom_type_from_cs_loop(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                       lp_category: str = 'nef_chemical_shift', atom_type: str = 'element',
+                                       isotope_number: str = 'isotope_number', atom_id: str = 'atom_name',
+                                       allow_empty: bool = False) -> List[List[dict]]:
         """ Wrapper function of get_atom_type_from_cs_loop() for an NEF file.
             @author: Masashi Yokochi
         """
 
         return self.get_atom_type_from_cs_loop(star_data, lp_category, atom_type, isotope_number, atom_id, allow_empty)
 
-    def get_star_atom_type_from_cs_loop(self, star_data, lp_category='Atom_chem_shift',
-                                        atom_type='Atom_type', isotope_number='Atom_isotope_number', atom_id='Atom_ID',
-                                        allow_empty=False):
+    def get_star_atom_type_from_cs_loop(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                        lp_category: str = 'Atom_chem_shift', atom_type: str = 'Atom_type',
+                                        isotope_number: str = 'Atom_isotope_number', atom_id: str = 'Atom_ID',
+                                        allow_empty: bool = False) -> List[List[dict]]:
         """ Wrapper function of get_atom_type_from_cs_loop() for an NMR-SAR file.
             @author: Masashi Yokochi
         """
 
         return self.get_atom_type_from_cs_loop(star_data, lp_category, atom_type, isotope_number, atom_id, allow_empty)
 
-    def get_atom_type_from_cs_loop(self, star_data, lp_category, atom_type, isotope_number, atom_id, allow_empty):  # pylint: disable=no-self-use
+    def get_atom_type_from_cs_loop(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],  # pylint: disable=no-self-use,
+                                   lp_category: str, atom_type: str, isotope_number: str, atom_id: str,
+                                   allow_empty: bool) -> List[List[dict]]:
         """ Extract unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in n NEF/NMR-SAR file.
             @author: Masashi Yokochi
             @return: list of unique pairs of atom_type, isotope number, and atom_id for each CS loop
@@ -3848,8 +3863,9 @@ class NEFTranslator:
 
         return data
 
-    def get_star_ambig_code_from_cs_loop(self, star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID',  # pylint: disable=no-self-use
-                                         ambig_code='Ambiguity_code', ambig_set_id='Ambiguity_set_ID'):
+    def get_star_ambig_code_from_cs_loop(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],  # pylint: disable=no-self-use
+                                         lp_category: str = 'Atom_chem_shift', comp_id: str = 'Comp_ID', atom_id: str = 'Atom_ID',
+                                         ambig_code: str = 'Ambiguity_code', ambig_set_id: str = 'Ambiguity_set_ID') -> List[List[dict]]:
         """ Extract unique pairs of comp_id, atom_id, and ambiguity code from assigned chemical shifts in an NMR-SAR file.
             @author: Masashi Yokochi
             @return: list of unique pairs of comp_id, atom_id, and ambiguity code for each CS loop
@@ -3976,7 +3992,8 @@ class NEFTranslator:
 
         return data
 
-    def get_index(self, star_data, lp_category, index_id, row_limit=MAX_ROWS_TO_PERFORM_INDEX_ORDER_CHECK):  # pylint: disable=no-self-use
+    def get_index(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],  # pylint: disable=no-self-use
+                  lp_category: str, index_id: str, row_limit: int = MAX_ROWS_TO_PERFORM_INDEX_ORDER_CHECK) -> List[List[int]]:
         """ Extract index_id from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of index for each loop
@@ -4048,10 +4065,11 @@ class NEFTranslator:
 
         return data
 
-    def check_data(self, star_data, lp_category, key_items, data_items,
-                   allowed_tags=None, disallowed_tags=None, parent_pointer=None,
-                   test_on_index=False, enforce_non_zero=False, enforce_sign=False, enforce_range=False,
-                   enforce_enum=False, enforce_allowed_tags=False, excl_missing_data=False):
+    def check_data(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                   lp_category: str, key_items: List[dict], data_items: List[dict],
+                   allowed_tags: Optional[List[str]] = None, disallowed_tags: Optional[List[str]] = None, parent_pointer: Optional[int] = None,
+                   test_on_index: bool = False, enforce_non_zero: bool = False, enforce_sign: bool = False, enforce_range: bool = False,
+                   enforce_enum: bool = False, enforce_allowed_tags: bool = False, excl_missing_data: bool = False) -> List[List[dict]]:
         """ Extract data with sanity check from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of extracted data for each loop
@@ -5572,7 +5590,8 @@ class NEFTranslator:
 
             return data
 
-    def get_conflict_id(self, star_data, lp_category, key_items):  # pylint: disable=no-self-use
+    def get_conflict_id(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],  # pylint: disable=no-self-use
+                        lp_category: str, key_items: List[dict]) -> List[List[int]]:
         """ Return list of conflicted row IDs except for rows of the first occurrence.
             @author: Masashi Yokochi
             @return: list of row IDs in reverse order for each loop
@@ -5633,7 +5652,8 @@ class NEFTranslator:
 
             return data
 
-    def get_conflict_id_set(self, star_data, lp_category, key_items):  # pylint: disable=no-self-use
+    def get_conflict_id_set(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],  # pylint: disable=no-self-use
+                            lp_category: str, key_items: List[dict]) -> List[List[int]]:
         """ Return list of conflicted row ID sets.
             @author: Masashi Yokochi
             @return: list of row ID sets for each loop
@@ -5730,7 +5750,8 @@ class NEFTranslator:
 
             return data
 
-    def get_conflict_atom_id(self, star_data, file_type, lp_category, key_items):
+    def get_conflict_atom_id(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                             file_type: str, lp_category: str, key_items: List[dict]) -> List[List[int]]:
         """ Return list of row IDs that include self atoms.
             @author: Masashi Yokochi
             @return: list of row IDs in reverse order for each loop
@@ -5814,7 +5835,8 @@ class NEFTranslator:
 
         return data
 
-    def get_bad_pattern_id(self, star_data, lp_category, key_items, data_items):  # pylint: disable=no-self-use
+    def get_bad_pattern_id(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],  # pylint: disable=no-self-use
+                           lp_category: str, key_items: List[dict], data_items: List[dict]) -> List[List[int]]:
         """ Return list of row IDs with bad patterns
             @author: Masashi Yokochi
             @return: list of row IDs in reverse order for each loop
@@ -5876,8 +5898,8 @@ class NEFTranslator:
 
         return data
 
-    def check_sf_tag(self, star_data, file_type, category, tag_items, allowed_tags=None,
-                     enforce_non_zero=False, enforce_sign=False, enforce_range=False, enforce_enum=False):
+    def check_sf_tag(self, star_data: pynmrstar.Saveframe, file_type: str, category: str, tag_items: List[dict], allowed_tags: List[str] = None,
+                     enforce_non_zero: bool = False, enforce_sign: bool = False, enforce_range: bool = False, enforce_enum: bool = False) -> dict:
         """ Extract saveframe tags with sanity check.
             @author: Masashi Yokochi
             @return: list of extracted saveframe tags
@@ -6175,7 +6197,7 @@ class NEFTranslator:
 
         return ent
 
-    def validate_comp_atom(self, comp_id, atom_id):
+    def validate_comp_atom(self, comp_id: str, atom_id: str) -> bool:
         """ Validate atom_id of comp_id.
             @change: support non-standard residue by Masashi Yokochi
             @return: True for valid atom_id of comp_id, False otherwise
@@ -6191,7 +6213,7 @@ class NEFTranslator:
 
         return False
 
-    def get_star_sf_cat(self, nef_sf_cat):
+    def get_star_sf_cat(self, nef_sf_cat: str) -> Optional[str]:
         """ Return NMR-STAR saveframe category corresponding to NEF saveframe category.
             @author: Masashi Yokochi
             @return: NEF saveframe category
@@ -6204,7 +6226,7 @@ class NEFTranslator:
         except StopIteration:
             return None
 
-    def get_nef_sf_cat(self, star_sf_cat):
+    def get_nef_sf_cat(self, star_sf_cat: str) -> Optional[str]:
         """ Return NEF saveframe category corresponding to NMR-STAR saveframe category.
             @author: Masashi Yokochi
             @return: NMR-STAR saveframe category
@@ -6217,7 +6239,7 @@ class NEFTranslator:
         except StopIteration:
             return None
 
-    def get_star_tag(self, nef_tag):
+    def get_star_tag(self, nef_tag: str) -> Tuple[Optional[str], Optional[str], Optional[int]]:
         """ Return NMR-STAR saveframe/loop tag corresponding to NEF tag.
             @change: rename the original get_nmrstar_tag() to get_star_tag() by Masashi Yokochi
             @return: NMR-STAR's author tag and data tag corresponding to a given NEF tag
@@ -6232,7 +6254,7 @@ class NEFTranslator:
         except StopIteration:
             return None, None, None
 
-    def get_nef_tag(self, star_tag):
+    def get_nef_tag(self, star_tag: str) -> Tuple[Optional[str], Optional[int]]:
         """ Return NEF saveframe/loop tag corresponding to NMR-STAR tag.
             @author: Masashi Yokochi
             @return: NEF data tag corresponding to a given NMR-STAR tag
@@ -6247,7 +6269,7 @@ class NEFTranslator:
         except StopIteration:  # None for NMR-STAR specific tag
             return None, None
 
-    def get_star_auth_tag(self, star_tag):
+    def get_star_auth_tag(self, star_tag: str) -> Tuple[Optional[str], Optional[int]]:
         """ Return NMR-STAR saveframe/loop author tag corresponding to NMR-STAR data tag.
             @return: NMR-STAR's author tag corresponding to a given NMR-STAR data tag
         """
@@ -6261,7 +6283,7 @@ class NEFTranslator:
         except ValueError:
             return None, None
 
-    def get_star_loop_tags(self, nef_loop_tags):
+    def get_star_loop_tags(self, nef_loop_tags: List[str]) -> List[str]:
         """ Return list of NMR-STAR loop tags corresponding to NEF loop tags.
             @change: rename the original get_nmrstar_loop_tags() to get_star_loop_tags() by Masashi Yokochi
             @return: list of NMR-STAR loop tags corresponding to given NEF loop tags
@@ -6342,7 +6364,7 @@ class NEFTranslator:
 
         return out_tag
 
-    def extend_star_loop_tags(self, star_loop_tags):
+    def extend_star_loop_tags(self, star_loop_tags: List[str]) -> List[str]:
         """ Return list of NMR-STAR loop tags in addition to given NMR-STAR loop tags.
             @return: list of extended NMR-STAR loop tags
         """
@@ -6455,7 +6477,7 @@ class NEFTranslator:
 
         return out_tag
 
-    def get_nef_loop_tags(self, star_loop_tags):
+    def get_nef_loop_tags(self, star_loop_tags: List[str]) -> List[str]:
         """ Return list of NEF loop tags corresponding to NMR-STAR loop tags.
             @author: Masashi Yokochi
             @return: list of NEF loop tags corresponding to given NMR-STAR loop tags
@@ -6478,7 +6500,8 @@ class NEFTranslator:
 
         return out_tag
 
-    def get_valid_star_atom_in_xplor_for_ligand_remap(self, comp_id, atom_id, coord_atom_site):
+    def get_valid_star_atom_in_xplor_for_ligand_remap(self, comp_id: str, atom_id: str, coord_atom_site: dict
+                                                      ) -> Tuple[List[str], Optional[int], Optional[str]]:
         """ Return lists of atom ID in IUPAC atom nomenclature for a given atom name in XPLOR atom nomenclature
             in reference to coordinates' alternative atom IDs.
             @author: Masashi Yokochi
@@ -6592,7 +6615,8 @@ class NEFTranslator:
 
         return (atom_list, ambiguity_code, details)
 
-    def get_valid_star_atom_for_ligand_remap(self, comp_id, atom_id, coord_atom_site, methyl_only=False):
+    def get_valid_star_atom_for_ligand_remap(self, comp_id: str, atom_id: str, coord_atom_site: dict, methyl_only: bool = False
+                                             ) -> Tuple[List[str], Optional[int], Optional[str]]:
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name
             in reference to coordinates' alternative atom IDs.
             @author: Masashi Yokochi
@@ -6697,7 +6721,8 @@ class NEFTranslator:
 
         return (atom_list, ambiguity_code, details)
 
-    def get_star_atom_for_ligand_remap(self, comp_id, nef_atom, details, coord_atom_site, methyl_only=False):
+    def get_star_atom_for_ligand_remap(self, comp_id: str, nef_atom: str, details: str, coord_atom_site: dict, methyl_only: bool = False
+                                       ) -> Tuple[List[str], Optional[int], Optional[str]]:
         """ Return list of instanced atom_id of a given NEF atom (including wildcard codes) and its ambiguity code.
             @change: support non-standard residue by Masashi Yokochi
             @return: list of instanced atom_id of a given NEF atom, ambiguity_code, and description
@@ -6988,7 +7013,8 @@ class NEFTranslator:
 
         return (atom_list, ambiguity_code, details)
 
-    def get_valid_star_atom_in_xplor(self, comp_id, atom_id, details=None, leave_unmatched=True):
+    def get_valid_star_atom_in_xplor(self, comp_id: str, atom_id: str, details: Optional[str] = None, leave_unmatched: bool = True
+                                     ) -> Tuple[List[str], Optional[int], Optional[str]]:
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given atom name in XPLOR atom nomenclature.
             @author: Masashi Yokochi
             @return: list of instanced atom_id, ambiguity_code, and description
@@ -7219,7 +7245,8 @@ class NEFTranslator:
                 key = (comp_id, atom_id, details, False, methyl_only)
                 self.__cachedDictForValidStarAtomInXplor[key] = (_atom_list, ambiguity_code, details)
 
-    def get_valid_star_atom(self, comp_id, atom_id, details=None, leave_unmatched=True, methyl_only=False):
+    def get_valid_star_atom(self, comp_id: str, atom_id: str, details: Optional[str] = None, leave_unmatched: bool = True, methyl_only: bool = False
+                            ) -> Tuple[List[str], Optional[int], Optional[str]]:
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
             @author: Masashi Yokochi
             @return: list of instanced atom_id, ambiguity_code, and description
@@ -7373,7 +7400,8 @@ class NEFTranslator:
                 key = (comp_id, atom_id, details, False, methyl_only)
                 self.__cachedDictForValidStarAtom[key] = (_atom_list, ambiguity_code, details)
 
-    def get_star_atom(self, comp_id, nef_atom, details=None, leave_unmatched=True, methyl_only=False):
+    def get_star_atom(self, comp_id: str, nef_atom: str, details: Optional[str] = None, leave_unmatched: bool = True, methyl_only: bool = False
+                      ) -> Tuple[List[str], Optional[int], Optional[str]]:
         """ Return list of instanced atom_id of a given NEF atom (including wildcard codes) and its ambiguity code.
             @change: support non-standard residue by Masashi Yokochi
             @change: rename the original get_nmrstar_atom() to get_star_atom() by Masashi Yokochi
@@ -7682,7 +7710,8 @@ class NEFTranslator:
                 key = (comp_id, nef_atom, details, False, methyl_only)
                 self.__cachedDictForStarAtom[key] = (_atom_list, ambiguity_code, details)
 
-    def get_nef_atom(self, comp_id, star_atom_list, details=None, leave_unmatched=True):
+    def get_nef_atom(self, comp_id: str, star_atom_list: List[str], details: Optional[str] = None, leave_unmatched: bool = True
+                     ) -> Tuple[List[str], Optional[str], Optional[dict]]:
         """ Return list of all instanced atom_id of given NMR-STAR atoms with ambiguity code and CS value in a given comp_id.
             @author: Masashi Yokochi
             @return: list of instanced atom_id of given NMR-STAR atoms, descriptions, and atom conversion dictionary for conversion of other loops
@@ -8115,7 +8144,7 @@ class NEFTranslator:
                 key = (comp_id, str(star_atom_list), str(details), False)
                 self.__cachedDictForNefAtom[key] = (_atom_list, details, atom_id_map)
 
-    def get_group(self, comp_id, atom_id):
+    def get_group(self, comp_id: str, atom_id: str) -> Tuple[Optional[str], Optional[List[str]]]:
         """ Return heavy atom name and list of proton names bonded to the heavy atom.
             @author: Masashi Yokochi
             @return: heavy atom name and list of proton names
@@ -8146,7 +8175,7 @@ class NEFTranslator:
         except StopIteration:
             return None, None
 
-    def get_geminal_group(self, comp_id, atom_id):
+    def get_geminal_group(self, comp_id: str, atom_id: str) -> Tuple[Optional[str], Optional[List[str]]]:
         """ Return geminal heavy atom and list of proton names bonded to the geminal heavy atom.
             @author: Masashi Yokochi
             @return: geminal heavy atom name and list of geminal proton names
@@ -8190,7 +8219,8 @@ class NEFTranslator:
         except StopIteration:
             return None, None
 
-    def nef2star_seq_row(self, nef_tags, star_tags, loop_data, report=None):
+    def nef2star_seq_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list],
+                         report=None) -> Tuple[List[list], List[list]]:
         """ Translate rows in sequence loop from NEF into NMR-STAR.
             @change: rename the original translate_seq_row() to nef2star_seq_row() by Masashi Yokochi
             @param nef_tags: list of NEF tags
@@ -8333,7 +8363,8 @@ class NEFTranslator:
 
         return out_row, aux_row
 
-    def star2nef_seq_row(self, star_tags, nef_tags, loop_data, report=None, entity_del_atom_loop=None):
+    def star2nef_seq_row(self, star_tags: List[str], nef_tags: List[str], loop_data: List[list],
+                         report=None, entity_del_atom_loop: Optional[pynmrstar.Loop] = None) -> List[list]:
         """ Translate rows in sequence loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
@@ -8518,142 +8549,7 @@ class NEFTranslator:
 
         return out_row
 
-    def star2star_seq_row(self, in_star_tags, star_tags, loop_data, report=None):
-        """ Translate rows in sequence loop from PyNMRSTAR data object into NMR-STAR.
-            @author: Masashi Yokochi
-            @param in_star_tags: list of input NMR-STAR tags
-            @param star_tags: list of NMR-STAR tags
-            @param loop_data: loop data of input NMR-STAR
-            @param report: NMR data processing report
-            @return: rows of NMR-STAR, rows of _Entity_deleted_atom loop (residue variants), otherwise None
-        """
-
-        out_row, aux_row = [], []
-
-        chain_index = in_star_tags.index('_Chem_comp_assembly.Entity_assembly_ID')
-        seq_index = in_star_tags.index('_Chem_comp_assembly.Comp_index_ID')
-        comp_index = in_star_tags.index('_Chem_comp_assembly.Comp_ID')
-
-        for _star_chain, in_star_chain in enumerate(self.authChainId, start=1):
-
-            seq_list = sorted(set(int(row[seq_index]) for row in loop_data if row[chain_index] == in_star_chain))
-
-            if len(seq_list) == 0:
-                continue
-
-            cif_chain = cif_ps = None
-            if report is not None:
-                seq_align = report.getSequenceAlignmentWithNmrChainId(in_star_chain)
-                if seq_align is not None:
-                    cif_chain = seq_align['test_chain_id']  # label_asym_id
-                    cif_ps = report.getModelPolymerSequenceOf(cif_chain, label_scheme=True)
-                    if cif_ps is not None and 'auth_chain_id' in cif_ps:
-                        cif_chain = cif_ps['auth_chain_id']  # auth_asym_id
-
-            offset = None
-
-            for _in_star_seq in seq_list:
-
-                _cif_seq = None
-                if cif_chain is not None:
-                    try:
-                        if seq_align is not None:
-                            _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_in_star_seq)]  # label_seq_id
-                            if offset is None:
-                                offset = _cif_seq - _in_star_seq
-                        if cif_ps is not None and 'auth_seq_id' in cif_ps:
-                            _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
-                    except IndexError:
-                        pass
-
-                in_star_seq = str(_in_star_seq)
-
-                if offset is None:
-                    offset = 1 - _in_star_seq
-
-                _star_seq = _in_star_seq + offset
-
-                row = next(row for row in loop_data if row[chain_index] == in_star_chain and row[seq_index] == in_star_seq)
-
-                out = [None] * len(star_tags)
-
-                variant = None
-
-                for data_tag in in_star_tags:
-
-                    auth_tag, _ = self.get_star_auth_tag(data_tag)
-
-                    if auth_tag is None:
-                        continue
-
-                    data = row[in_star_tags.index(data_tag)]
-
-                    if data_tag == '_Chem_comp_assembly.Entity_assembly_ID':
-                        if cif_chain is None:
-                            out[star_tags.index(auth_tag)] = data
-                        else:
-                            out[star_tags.index(auth_tag)] = cif_chain
-                    elif data_tag == '_Chem_comp_assembly.Comp_index_ID':
-                        if _cif_seq is None:
-                            out[star_tags.index(auth_tag)] = data
-                        else:
-                            out[star_tags.index(auth_tag)] = str(_cif_seq)
-                    else:
-                        out[star_tags.index(auth_tag)] = data
-                        if data_tag == '_Chem_comp_assembly.Auth_variant_ID' and data not in emptyValue and '-' in data:
-                            variant = data
-
-                    if auth_tag != data_tag:
-
-                        data_index = star_tags.index(data_tag)
-
-                        if data_tag == '_Chem_comp_assembly.Entity_assembly_ID':
-                            out[data_index] = _star_chain
-                        elif data_tag == '_Chem_comp_assembly.Comp_index_ID':
-                            out[data_index] = _star_seq
-                        elif data_tag == '_Chem_comp_assembly.Comp_ID':
-                            out[data_index] = data.upper()
-                        else:
-                            out[data_index] = data
-
-                out_row.append(out)
-
-                if variant is not None:
-                    aux = [None] * len(ENTITY_DELETED_ATOM_ITEMS)
-                    for col, aux_tag in enumerate(ENTITY_DELETED_ATOM_ITEMS):
-                        if aux_tag == 'Entity_assembly_ID':
-                            aux[col] = _star_chain
-                        elif aux_tag == 'Comp_index_ID':
-                            aux[col] = _star_seq
-                        elif aux_tag == 'Auth_entity_assembly_ID':
-                            aux[col] = in_star_chain
-                        elif aux_tag == 'Auth_seq_ID':
-                            aux[col] = _in_star_seq
-                        elif aux_tag == 'Comp_ID':
-                            aux[col] = row[comp_index].upper()
-                        elif aux_tag == 'Auth_comp_ID':
-                            aux[col] = row[comp_index]
-
-                    for _variant in variant.split(','):
-                        _variant_ = _variant.strip(' ')
-                        if _variant_.startswith('-'):
-                            atom_list = self.get_valid_star_atom_in_xplor(row[comp_index].upper(), _variant_[1:])[0]
-                            if len(atom_list) > 0:
-                                for atom in atom_list:
-                                    _aux = copy.copy(aux)
-                                    for col, aux_tag in enumerate(ENTITY_DELETED_ATOM_ITEMS):
-                                        if aux_tag == 'ID':
-                                            _aux[col] = len(aux_row) + 1
-                                        elif aux_tag == 'Atom_ID':
-                                            _aux[col] = atom
-                                        elif aux_tag == 'Auth_variant_ID':
-                                            _aux[col] = _variant_[1:]
-
-                                    aux_row.append(_aux)
-
-        return out_row, aux_row
-
-    def nef2star_bond_row(self, nef_tags, star_tags, loop_data):
+    def nef2star_bond_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list]) -> List[list]:
         """ Translate rows in bond loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
@@ -8825,181 +8721,7 @@ class NEFTranslator:
 
             return out_row
 
-    def star2star_bond_row(self, in_star_tags, star_tags, loop_data):
-        """ Translate rows in bond loop from PyNMRSTAR data object into NMR-STAR.
-            @author: Masashi Yokochi
-            @param in_star_tags: list of input NMR-STAR tags
-            @param star_tags: list of NMR-STAR tags
-            @param loop_data: loop data of input NMR-STAR
-            @return: rows of NMR-STAR
-        """
-
-        out_row = []
-
-        in_star_comp_index_1 = in_star_tags.index('_Bond.Comp_ID_1')
-        in_star_atom_index_1 = in_star_tags.index('_Bond.Atom_ID_1')
-        in_star_comp_index_2 = in_star_tags.index('_Bond.Comp_ID_2')
-        in_star_atom_index_2 = in_star_tags.index('_Bond.Atom_ID_2')
-
-        if '_Bond.ID' in star_tags:
-            star_id_index = star_tags.index('_Bond.ID')
-        else:
-            star_id_index = -1
-
-        star_type_index = star_tags.index('_Bond.Type')
-        star_value_order_index = star_tags.index('_Bond.Value_order')
-
-        seq_ident_tags = self.get_seq_ident_tags(in_star_tags, 'nmr-star')
-
-        chain_tag_1 = chain_tag_2 = None
-        seq_tag_1 = seq_tag_2 = None
-
-        for tag in seq_ident_tags:
-            chain_tag = tag['chain_tag']
-            seq_tag = tag['seq_tag']
-
-            if chain_tag.endswith('_1'):
-                chain_tag_1 = chain_tag
-                seq_tag_1 = seq_tag
-            else:
-                chain_tag_2 = chain_tag
-                seq_tag_2 = seq_tag
-
-        with io.StringIO() as key_f:
-
-            key_indices = [star_tags.index(tag) for tag in ['_Bond.Entity_assembly_ID_1', '_Bond.Comp_index_ID_1', '_Bond.Atom_ID_1',
-                                                            '_Bond.Entity_assembly_ID_2', '_Bond.Comp_index_ID_2', '_Bond.Atom_ID_2']]
-
-            index = 1
-
-            for row in loop_data:
-
-                buf_row = []
-
-                tag_map, self_tag_map = {}, {}
-
-                for tag in seq_ident_tags:
-                    chain_tag = tag['chain_tag']
-                    seq_tag = tag['seq_tag']
-
-                    in_star_chain = row[in_star_tags.index(chain_tag)]
-                    _in_star_seq = row[in_star_tags.index(seq_tag)]
-                    if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
-                        _in_star_seq = int(_in_star_seq)
-
-                    seq_key = (in_star_chain, _in_star_seq)
-
-                    try:
-                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                        self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-                    except KeyError:
-                        tag_map[chain_tag] = in_star_chain
-                        tag_map[seq_tag] = _in_star_seq
-                        self_tag_map[chain_tag] = in_star_chain
-                        self_tag_map[seq_tag] = _in_star_seq
-
-                intra_residue = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_2)]\
-                    and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_2)]
-
-                atom_list_1 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_1], row[in_star_atom_index_1])[0]
-                atom_list_2 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_2], row[in_star_atom_index_2])[0]
-
-                for atom_1 in atom_list_1:
-
-                    for atom_2 in atom_list_2:
-
-                        if intra_residue and atom_2 == atom_1:
-                            continue
-
-                        buf = [None] * len(star_tags)
-
-                        for data_tag in in_star_tags:
-
-                            auth_tag, _ = self.get_star_auth_tag(data_tag)
-
-                            if auth_tag is None:
-                                continue
-
-                            data = row[in_star_tags.index(data_tag)]
-
-                            if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                                buf[star_tags.index(auth_tag)] = self_tag_map[data_tag]
-                            else:
-                                buf[star_tags.index(auth_tag)] = data
-
-                            if auth_tag != data_tag:
-
-                                data_index = star_tags.index(data_tag)
-
-                                if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                                    buf[data_index] = tag_map[data_tag]
-                                elif 'Comp_ID' in data_tag:
-                                    buf[data_index] = data.upper()
-                                elif data_tag == '_Bond.Atom_ID_1':
-                                    buf[data_index] = atom_1
-                                elif data_tag == '_Bond.Atom_ID_2':
-                                    buf[data_index] = atom_2
-                                else:
-                                    buf[data_index] = data
-
-                        # 'amide': (C=O)-N
-                        # 'directed': N-O
-                        # 'disulfide': S-S
-                        # 'ester': (C=O)-O
-                        # 'ether': -O-
-                        # 'hydrogen': (O/N/F)-H-(O/N/F)
-                        # 'metal coordination': (N/O/S)-Metal
-                        # 'peptide': (C=O)-N
-                        # 'thioether': -S-
-                        # 'oxime': >C=N-OH
-                        # 'thioester': -(C=O)-S-
-                        # 'phosphoester': ?
-                        # 'phosphodiester': -(PO4)-
-                        # 'diselenide': Se-Se
-                        buf[star_type_index] = 'covalent'
-                        if atom_1 == 'SG' and atom_2 == 'SG':
-                            buf[star_type_index] = 'disulfide'
-                        elif atom_1 == 'SE' and atom_2 == 'SE':
-                            buf[star_type_index] = 'diselenide'
-                        elif (atom_1 in NON_METAL_ELEMENTS and (atom_2 in PARAMAGNETIC_ELEMENTS or atom_2 in FERROMAGNETIC_ELEMENTS)) or\
-                             (atom_2 in NON_METAL_ELEMENTS and (atom_1 in PARAMAGNETIC_ELEMENTS or atom_1 in FERROMAGNETIC_ELEMENTS)):
-                            buf[star_type_index] = 'metal coordination'
-                        elif {atom_1, atom_2} == {'C', 'N'}\
-                                and row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_2)]\
-                                and row[in_star_tags.index(seq_tag_1)] != row[in_star_tags.index(seq_tag_2)]:
-                            buf[star_type_index] = 'peptide'
-                        buf[star_value_order_index] = 'sing'
-
-                        buf_row.append(buf)
-
-                keys = set()
-
-                for b in buf_row:
-
-                    if key_f.tell() > 0:
-                        key_f.truncate(0)
-                        key_f.seek(0)
-
-                    for j in key_indices:
-                        key_f.write(f'{b[j]} ')
-
-                    key = key_f.getvalue()
-
-                    if key in keys:
-                        continue
-
-                    keys.add(key)
-
-                    if star_id_index != -1:
-                        b[star_id_index] = index
-
-                    index += 1
-
-                    out_row.append(b)
-
-            return out_row
-
-    def nef2star_cs_row(self, nef_tags, star_tags, loop_data, leave_unmatched=False):
+    def nef2star_cs_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list], leave_unmatched: bool = False) -> List[list]:
         """ Translate rows in chemical shift loop from NEF into NMR-STAR.
             @change: rename from original translate_cs_row() to nef2star_cs_row() by Masashi Yokochi
             @param nef_tags: list of NEF tags
@@ -9122,7 +8844,7 @@ class NEFTranslator:
 
         return out_row
 
-    def star2nef_cs_row(self, star_tags, nef_tags, loop_data):
+    def star2nef_cs_row(self, star_tags: List[str], nef_tags: List[str], loop_data: List[list]) -> List[list]:
         """ Translate rows in chemical shift loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
@@ -9235,149 +8957,7 @@ class NEFTranslator:
 
         return out_row
 
-    def star2star_cs_row(self, in_star_tags, star_tags, loop_data, leave_unmatched=False):
-        """ Translate rows in chemical shift loop from PyNMRSTAR data object into NMR-STAR.
-            @author: Masashi Yokochi
-            @param in_star_tags: list of input NMR-STAR tags
-            @param star_tags: list of NMR-STAR tags
-            @param loop_data: loop data of input NMR-STAR
-            @return: rows of NMR-STAR
-        """
-
-        out_row = []
-
-        chain_index = in_star_tags.index('_Atom_chem_shift.Entity_assembly_ID')
-        seq_index = in_star_tags.index('_Atom_chem_shift.Comp_index_ID')
-        comp_index = in_star_tags.index('_Atom_chem_shift.Comp_ID')
-        atom_index = in_star_tags.index('_Atom_chem_shift.Atom_ID')
-        value_index = in_star_tags.index('_Atom_chem_shift.Val')
-
-        if '_Atom_chem_shift.ID' in star_tags:
-            star_id_index = star_tags.index('_Atom_chem_shift.ID')
-        else:
-            star_id_index = -1
-
-        star_ambig_code_index = star_tags.index('_Atom_chem_shift.Ambiguity_code')
-        star_ambig_set_id_index = star_tags.index('_Atom_chem_shift.Ambiguity_set_ID')
-        star_details_index = star_tags.index('_Atom_chem_shift.Details')
-
-        if self.insert_original_pdb_cs_items:
-            in_star_original_chain_index = in_star_tags.index('_Atom_chem_shift.Original_PDB_strand_ID')\
-                if '_Atom_chem_shift.Original_PDB_strand_ID' in in_star_tags else -1
-            in_star_original_seq_index = in_star_tags.index('_Atom_chem_shift.Original_PDB_residue_no')\
-                if '_Atom_chem_shift.Original_PDB_residue_no' in in_star_tags else -1
-            in_star_original_comp_index = in_star_tags.index('_Atom_chem_shift.Original_PDB_residue_name')\
-                if '_Atom_chem_shift.Original_PDB_residue_name' in in_star_tags else -1
-            in_star_original_atom_index = in_star_tags.index('_Atom_chem_shift.Original_PDB_atom_name')\
-                if '_Atom_chem_shift.Original_PDB_atom_name' in in_star_tags else -1
-
-            star_original_chain_index = star_tags.index('_Atom_chem_shift.Original_PDB_strand_ID')
-            star_original_seq_index = star_tags.index('_Atom_chem_shift.Original_PDB_residue_no')
-            star_original_comp_index = star_tags.index('_Atom_chem_shift.Original_PDB_residue_name')
-            star_original_atom_index = star_tags.index('_Atom_chem_shift.Original_PDB_atom_name')
-
-        index = 1
-
-        for in_star_chain in self.authChainId:
-
-            mapped_seq_id = [s for c, s in self.authSeqMap if c == in_star_chain]
-            unmapped_seq_id = sorted(set(int(row[seq_index]) for row in loop_data
-                                         if row[chain_index] == in_star_chain
-                                         and row[seq_index] not in emptyValue
-                                         and intPattern.match(row[seq_index]) is not None
-                                         and int(row[seq_index]) not in mapped_seq_id))
-
-            if len(unmapped_seq_id) > 0:
-                mapped_seq_id.extend(unmapped_seq_id)
-
-            for _in_star_seq in sorted(mapped_seq_id):
-
-                in_star_seq = str(_in_star_seq)
-
-                try:
-                    star_chain, _star_seq = self.authSeqMap[(in_star_chain, _in_star_seq)]
-                    cif_chain, _cif_seq = self.selfSeqMap[(in_star_chain, _in_star_seq)]
-                except KeyError:
-                    star_chain = in_star_chain
-                    _star_seq = _in_star_seq
-                    cif_chain = in_star_chain
-                    _cif_seq = _in_star_seq
-
-                in_row = [row for row in loop_data
-                          if (row[chain_index] == in_star_chain or row[chain_index] in emptyValue)
-                          and row[seq_index] == in_star_seq
-                          and row[value_index] not in emptyValue]
-
-                if len(in_row) == 0:
-                    continue
-
-                for row in in_row:
-
-                    atom_list, ambiguity_code, details = self.get_valid_star_atom_in_xplor(row[comp_index], row[atom_index], None, leave_unmatched)
-
-                    for atom in atom_list:
-
-                        out = [None] * len(star_tags)
-
-                        for data_tag in in_star_tags:
-
-                            auth_tag, _ = self.get_star_auth_tag(data_tag)
-
-                            if auth_tag is None:
-                                continue
-
-                            data = row[in_star_tags.index(data_tag)]
-
-                            if data_tag == '_Atom_chem_shift.Entity_assembly_ID':
-                                out[star_tags.index(auth_tag)] = cif_chain
-                            elif data_tag == '_Atom_chem_shift.Comp_index_ID':
-                                out[star_tags.index(auth_tag)] = _cif_seq
-                            else:
-                                out[star_tags.index(auth_tag)] = data
-
-                            if auth_tag != data_tag:
-
-                                if data_tag == '_Atom_chem_shift.Atom_ID':
-                                    out[star_tags.index(data_tag)] = atom
-                                    if self.insert_original_pdb_cs_items:
-                                        out[star_original_atom_index] = row[atom_index]\
-                                            if in_star_original_atom_index == -1 or row[in_star_original_atom_index] in emptyValue\
-                                            else row[in_star_original_atom_index]
-                                elif data_tag == '_Atom_chem_shift.Entity_assembly_ID':
-                                    out[star_tags.index(data_tag)] = star_chain
-                                    if self.insert_original_pdb_cs_items:
-                                        out[star_original_chain_index] = in_star_chain\
-                                            if in_star_original_chain_index == -1 or row[in_star_original_chain_index] in emptyValue\
-                                            else row[in_star_original_chain_index]
-                                elif data_tag == '_Atom_chem_shift.Comp_index_ID':
-                                    out[star_tags.index(data_tag)] = _star_seq
-                                    if self.insert_original_pdb_cs_items:
-                                        out[star_original_seq_index] = _in_star_seq\
-                                            if in_star_original_seq_index == -1 or row[in_star_original_seq_index] in emptyValue\
-                                            else row[in_star_original_seq_index]
-                                elif data_tag == '_Atom_chem_shift.Comp_ID':
-                                    out[star_tags.index(data_tag)] = data.upper()
-                                    if self.insert_original_pdb_cs_items:
-                                        out[star_original_comp_index] = row[comp_index]\
-                                            if in_star_original_comp_index == -1 or row[in_star_original_comp_index] in emptyValue\
-                                            else row[in_star_original_comp_index]
-                                else:
-                                    out[star_tags.index(data_tag)] = data
-
-                        if star_id_index != -1:
-                            out[star_id_index] = index
-
-                        out[star_ambig_code_index] = ambiguity_code
-                        out[star_ambig_set_id_index] = None
-                        out[star_details_index] = details
-
-                        index += 1
-
-                        out_row.append(out)
-
-        return out_row
-
-    def get_seq_ident_tags(self, in_tags, file_type):  # pylint: disable=no-self-use
+    def get_seq_ident_tags(self, in_tags: List[str], file_type: str) -> List[dict]:  # pylint: disable=no-self-use
         """ Return list of tags utilized for sequence identification.
             @change: rename from original get_residue_identifier() to get_seq_ident_tags() by Masashi Yokochi
             @change: return list of dictionary
@@ -9408,7 +8988,7 @@ class NEFTranslator:
 
         return out_tags
 
-    def get_atom_keys(self, in_tags, file_type):  # pylint: disable=no-self-use
+    def get_atom_keys(self, in_tags: List[str], file_type: str) -> List[dict]:  # pylint: disable=no-self-use
         """ Return list of keys utilized for atom identification.
             @change: return list of dictionary
             @param in_tags: list of tags
@@ -9445,7 +9025,7 @@ class NEFTranslator:
 
         return out_tags
 
-    def nef2star_dist_row(self, nef_tags, star_tags, loop_data):
+    def nef2star_dist_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list]) -> List[list]:
         """ Translate rows in distance restraint loop from NEF into NMR-STAR.
             @change: rename the original translate_restraint_row() to nef2star_dist_row() by Masashi Yokochi
             @param nef_tags: list of NEF tags
@@ -9622,7 +9202,7 @@ class NEFTranslator:
 
             return out_row
 
-    def star2nef_dist_row(self, star_tags, nef_tags, loop_data):
+    def star2nef_dist_row(self, star_tags: List[str], nef_tags: List[str], loop_data: List[list]) -> List[list]:
         """ Translate rows in distance restraint loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
@@ -9793,195 +9373,7 @@ class NEFTranslator:
 
             return out_row
 
-    def star2star_dist_row(self, in_star_tags, star_tags, loop_data):
-        """ Translate rows in distance restraint loop from PyNMRSTAR data object into NMR-STAR.
-            @author: Masashi Yokochi
-            @param in_star_tags: list of input NMR-STAR tags
-            @param star_tags: list of NMR-STAR tags
-            @param loop_data: loop data of input NMR-STAR
-            @return: rows of NMR-STAR
-        """
-
-        out_row = []
-
-        in_star_comp_index_1 = in_star_tags.index('_Gen_dist_constraint.Comp_ID_1')
-        in_star_atom_index_1 = in_star_tags.index('_Gen_dist_constraint.Atom_ID_1')
-        in_star_comp_index_2 = in_star_tags.index('_Gen_dist_constraint.Comp_ID_2')
-        in_star_atom_index_2 = in_star_tags.index('_Gen_dist_constraint.Atom_ID_2')
-
-        if self.insert_original_atom_name_items:
-            in_star_original_atom_index_1 = in_star_tags.index('_Gen_dist_constraint.Auth_atom_name_1')\
-                if '_Gen_dist_constraint.Auth_atom_name_1' in in_star_tags else -1
-            in_star_original_atom_index_2 = in_star_tags.index('_Gen_dist_constraint.Auth_atom_name_2')\
-                if '_Gen_dist_constraint.Auth_atom_name_2' in in_star_tags else -1
-
-        seq_ident_tags = self.get_seq_ident_tags(in_star_tags, 'nmr-star')
-
-        chain_tag_1 = chain_tag_2 = None
-        seq_tag_1 = seq_tag_2 = None
-
-        for tag in seq_ident_tags:
-            chain_tag = tag['chain_tag']
-            seq_tag = tag['seq_tag']
-
-            if chain_tag.endswith('_1'):
-                chain_tag_1 = chain_tag
-                seq_tag_1 = seq_tag
-            else:
-                chain_tag_2 = chain_tag
-                seq_tag_2 = seq_tag
-
-        with io.StringIO() as key_f:
-
-            try:
-                index_index = star_tags.index('_Gen_dist_constraint.Index_ID')
-            except ValueError:
-                index_index = -1
-
-            try:
-                id_index = star_tags.index('_Gen_dist_constraint.ID')
-            except ValueError:
-                id_index = -1
-
-            try:
-                member_code_index = star_tags.index('_Gen_dist_constraint.Member_logic_code')
-            except ValueError:
-                member_code_index = -1
-
-            key_indices = [star_tags.index(tag) for tag in ['_Gen_dist_constraint.Entity_assembly_ID_1',
-                                                            '_Gen_dist_constraint.Comp_index_ID_1',
-                                                            '_Gen_dist_constraint.Atom_ID_1',
-                                                            '_Gen_dist_constraint.Entity_assembly_ID_2',
-                                                            '_Gen_dist_constraint.Comp_index_ID_2',
-                                                            '_Gen_dist_constraint.Atom_ID_2']]
-
-            in_id_index = in_star_tags.index('_Gen_dist_constraint.ID')
-
-            id_list = sorted(set(int(row[in_id_index]) for row in loop_data))
-
-            index = 1
-
-            for _id, row_id in enumerate(id_list, start=1):
-
-                in_row = [row for row in loop_data if row[in_id_index] == str(row_id)]
-
-                buf_row = []
-
-                for row in in_row:
-
-                    tag_map, self_tag_map = {}, {}
-
-                    for tag in seq_ident_tags:
-                        chain_tag = tag['chain_tag']
-                        seq_tag = tag['seq_tag']
-
-                        in_star_chain = row[in_star_tags.index(chain_tag)]
-                        _in_star_seq = row[in_star_tags.index(seq_tag)]
-                        if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
-                            _in_star_seq = int(_in_star_seq)
-
-                        seq_key = (in_star_chain, _in_star_seq)
-
-                        try:
-                            tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                            self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-                        except KeyError:
-                            tag_map[chain_tag] = in_star_chain
-                            tag_map[seq_tag] = _in_star_seq
-                            self_tag_map[chain_tag] = in_star_chain
-                            self_tag_map[seq_tag] = _in_star_seq
-
-                    intra_residue = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_2)]\
-                        and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_2)]
-
-                    atom_list_1 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_1], row[in_star_atom_index_1])[0]
-                    atom_list_2 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_2], row[in_star_atom_index_2])[0]
-
-                    or_code = len(in_row) > 1 or len(atom_list_1) * len(atom_list_2) > 1
-
-                    for atom_1 in atom_list_1:
-
-                        for atom_2 in atom_list_2:
-
-                            if intra_residue and atom_2 == atom_1:
-                                continue
-
-                            buf = [None] * len(star_tags)
-
-                            for data_tag in in_star_tags:
-
-                                auth_tag, _ = self.get_star_auth_tag(data_tag)
-
-                                if auth_tag is None:
-                                    continue
-
-                                data = row[in_star_tags.index(data_tag)]
-
-                                if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                                    buf[star_tags.index(auth_tag)] = self_tag_map[data_tag]
-                                else:
-                                    buf[star_tags.index(auth_tag)] = data
-
-                                if auth_tag != data_tag:
-
-                                    data_index = star_tags.index(data_tag)
-
-                                    if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                                        buf[data_index] = tag_map[data_tag]
-                                    elif 'Comp_ID' in data_tag:
-                                        buf[data_index] = data.upper()
-                                    elif data_tag == '_Gen_dist_constraint.Atom_ID_1':
-                                        buf[data_index] = atom_1
-                                        if self.insert_original_atom_name_items:
-                                            buf[star_tags.index(auth_tag)] = atom_1
-                                            buf[star_tags.index('_Gen_dist_constraint.Auth_atom_name_1')] = row[in_star_atom_index_1]\
-                                                if in_star_original_atom_index_1 == -1 or row[in_star_original_atom_index_1] in emptyValue\
-                                                else row[in_star_original_atom_index_1]
-                                    elif data_tag == '_Gen_dist_constraint.Atom_ID_2':
-                                        buf[data_index] = atom_2
-                                        if self.insert_original_atom_name_items:
-                                            buf[star_tags.index(auth_tag)] = atom_2
-                                            buf[star_tags.index('_Gen_dist_constraint.Auth_atom_name_2')] = row[in_star_atom_index_2]\
-                                                if in_star_original_atom_index_2 == -1 or row[in_star_original_atom_index_2] in emptyValue\
-                                                else row[in_star_original_atom_index_2]
-                                    else:
-                                        buf[data_index] = data
-
-                            if id_index != -1:
-                                buf[id_index] = _id
-                            if or_code and member_code_index != -1:
-                                buf[member_code_index] = 'OR'
-
-                            buf_row.append(buf)
-
-                keys = set()
-
-                for row in buf_row:
-
-                    if key_f.tell() > 0:
-                        key_f.truncate(0)
-                        key_f.seek(0)
-
-                    for j in key_indices:
-                        key_f.write(f'{row[j]} ')
-
-                    key = key_f.getvalue()
-
-                    if key in keys:
-                        continue
-
-                    keys.add(key)
-
-                    if index_index != -1:
-                        row[index_index] = index
-
-                    index += 1
-
-                    out_row.append(row)
-
-            return out_row
-
-    def nef2star_dihed_row(self, nef_tags, star_tags, loop_data):
+    def nef2star_dihed_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list]) -> List[list]:
         """ Translate rows in dihedral angle restraint loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
@@ -10196,242 +9588,7 @@ class NEFTranslator:
 
             return out_row
 
-    def star2star_dihed_row(self, in_star_tags, star_tags, loop_data):
-        """ Translate rows in dihedral angle restraint loop from PyNMRSTAR data object into NMR-STAR.
-            @author: Masashi Yokochi
-            @param in_star_tags: list of input NMR-STAR tags
-            @param star_tags: list of NMR-STAR tags
-            @param loop_data: loop data of input NMR-STAR
-            @return: rows of NMR-STAR
-        """
-
-        out_row = []
-
-        in_star_comp_index_1 = in_star_tags.index('_Torsion_angle_constraint.Comp_ID_1')
-        in_star_atom_index_1 = in_star_tags.index('_Torsion_angle_constraint.Atom_ID_1')
-        in_star_comp_index_2 = in_star_tags.index('_Torsion_angle_constraint.Comp_ID_2')
-        in_star_atom_index_2 = in_star_tags.index('_Torsion_angle_constraint.Atom_ID_2')
-        in_star_comp_index_3 = in_star_tags.index('_Torsion_angle_constraint.Comp_ID_3')
-        in_star_atom_index_3 = in_star_tags.index('_Torsion_angle_constraint.Atom_ID_3')
-        in_star_comp_index_4 = in_star_tags.index('_Torsion_angle_constraint.Comp_ID_4')
-        in_star_atom_index_4 = in_star_tags.index('_Torsion_angle_constraint.Atom_ID_4')
-
-        if self.insert_original_atom_name_items:
-            in_star_original_atom_index_1 = in_star_tags.index('_Torsion_angle_constraint.Auth_atom_name_1')\
-                if '_Torsion_angle_constraint.Auth_atom_name_1' in in_star_tags else -1
-            in_star_original_atom_index_2 = in_star_tags.index('_Torsion_angle_constraint.Auth_atom_name_2')\
-                if '_Torsion_angle_constraint.Auth_atom_name_2' in in_star_tags else -1
-            in_star_original_atom_index_3 = in_star_tags.index('_Torsion_angle_constraint.Auth_atom_name_3')\
-                if '_Torsion_angle_constraint.Auth_atom_name_3' in in_star_tags else -1
-            in_star_original_atom_index_4 = in_star_tags.index('_Torsion_angle_constraint.Auth_atom_name_4')\
-                if '_Torsion_angle_constraint.Auth_atom_name_4' in in_star_tags else -1
-
-        seq_ident_tags = self.get_seq_ident_tags(in_star_tags, 'nmr-star')
-
-        chain_tag_1 = chain_tag_2 = chain_tag_3 = chain_tag_4 = None
-        seq_tag_1 = seq_tag_2 = seq_tag_3 = seq_tag_4 = None
-
-        for tag in seq_ident_tags:
-            chain_tag = tag['chain_tag']
-            seq_tag = tag['seq_tag']
-
-            if chain_tag.endswith('_1'):
-                chain_tag_1 = chain_tag
-                seq_tag_1 = seq_tag
-            elif chain_tag.endswith('_2'):
-                chain_tag_2 = chain_tag
-                seq_tag_2 = seq_tag
-            elif chain_tag.endswith('_3'):
-                chain_tag_3 = chain_tag
-                seq_tag_3 = seq_tag
-            else:
-                chain_tag_4 = chain_tag
-                seq_tag_4 = seq_tag
-
-        with io.StringIO() as key_f:
-
-            try:
-                index_index = star_tags.index('_Torsion_angle_constraint.Index_ID')
-            except ValueError:
-                index_index = -1
-
-            try:
-                id_index = star_tags.index('_Torsion_angle_constraint.ID')
-            except ValueError:
-                id_index = -1
-
-            key_indices = [star_tags.index(tag) for tag in ['_Torsion_angle_constraint.Entity_assembly_ID_1',
-                                                            '_Torsion_angle_constraint.Comp_index_ID_1',
-                                                            '_Torsion_angle_constraint.Atom_ID_1',
-                                                            '_Torsion_angle_constraint.Entity_assembly_ID_2',
-                                                            '_Torsion_angle_constraint.Comp_index_ID_2',
-                                                            '_Torsion_angle_constraint.Atom_ID_2',
-                                                            '_Torsion_angle_constraint.Entity_assembly_ID_3',
-                                                            '_Torsion_angle_constraint.Comp_index_ID_3',
-                                                            '_Torsion_angle_constraint.Atom_ID_3',
-                                                            '_Torsion_angle_constraint.Entity_assembly_ID_4',
-                                                            '_Torsion_angle_constraint.Comp_index_ID_4',
-                                                            '_Torsion_angle_constraint.Atom_ID_4']]
-
-            in_id_index = in_star_tags.index('_Torsion_angle_constraint.ID')
-
-            id_list = sorted(set(int(row[in_id_index]) for row in loop_data))
-
-            index = 1
-
-            for _id, row_id in enumerate(id_list, start=1):
-
-                in_row = [row for row in loop_data if row[in_id_index] == str(row_id)]
-
-                buf_row = []
-
-                for row in in_row:
-
-                    tag_map, self_tag_map = {}, {}
-
-                    for tag in seq_ident_tags:
-                        chain_tag = tag['chain_tag']
-                        seq_tag = tag['seq_tag']
-
-                        in_star_chain = row[in_star_tags.index(chain_tag)]
-                        _in_star_seq = row[in_star_tags.index(seq_tag)]
-                        if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
-                            _in_star_seq = int(_in_star_seq)
-
-                        seq_key = (in_star_chain, _in_star_seq)
-
-                        try:
-                            tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                            self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-                        except KeyError:
-                            tag_map[chain_tag] = in_star_chain
-                            tag_map[seq_tag] = _in_star_seq
-                            self_tag_map[chain_tag] = in_star_chain
-                            self_tag_map[seq_tag] = _in_star_seq
-
-                    intra_residue_12 = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_2)]\
-                        and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_2)]
-                    intra_residue_13 = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_3)]\
-                        and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_3)]
-                    intra_residue_14 = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_4)]\
-                        and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_4)]
-                    intra_residue_23 = row[in_star_tags.index(chain_tag_2)] == row[in_star_tags.index(chain_tag_3)]\
-                        and row[in_star_tags.index(seq_tag_2)] == row[in_star_tags.index(seq_tag_3)]
-                    intra_residue_24 = row[in_star_tags.index(chain_tag_2)] == row[in_star_tags.index(chain_tag_4)]\
-                        and row[in_star_tags.index(seq_tag_2)] == row[in_star_tags.index(seq_tag_4)]
-                    intra_residue_34 = row[in_star_tags.index(chain_tag_3)] == row[in_star_tags.index(chain_tag_4)]\
-                        and row[in_star_tags.index(seq_tag_3)] == row[in_star_tags.index(seq_tag_4)]
-
-                    atom_list_1 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_1], row[in_star_atom_index_1])[0]
-                    atom_list_2 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_2], row[in_star_atom_index_2])[0]
-                    atom_list_3 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_3], row[in_star_atom_index_3])[0]
-                    atom_list_4 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_4], row[in_star_atom_index_4])[0]
-
-                    for atom_1 in atom_list_1:
-
-                        for atom_2 in atom_list_2:
-
-                            if intra_residue_12 and atom_2 == atom_1:
-                                continue
-
-                            for atom_3 in atom_list_3:
-
-                                if (intra_residue_13 and atom_3 == atom_1) or (intra_residue_23 and atom_3 == atom_2):
-                                    continue
-
-                                for atom_4 in atom_list_4:
-
-                                    if (intra_residue_14 and atom_4 == atom_1) or (intra_residue_24 and atom_4 == atom_2) or (intra_residue_34 and atom_4 == atom_3):
-                                        continue
-
-                                    buf = [None] * len(star_tags)
-
-                                    for data_tag in in_star_tags:
-
-                                        auth_tag, _ = self.get_star_auth_tag(data_tag)
-
-                                        if auth_tag is None:
-                                            continue
-
-                                        data = row[in_star_tags.index(data_tag)]
-
-                                        if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                                            buf[star_tags.index(auth_tag)] = self_tag_map[data_tag]
-                                        else:
-                                            buf[star_tags.index(auth_tag)] = data
-
-                                        if auth_tag != data_tag:
-
-                                            data_index = star_tags.index(data_tag)
-
-                                            if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                                                buf[data_index] = tag_map[data_tag]
-                                            elif 'Comp_ID' in data_tag:
-                                                buf[data_index] = data.upper()
-                                            elif data_tag == '_Torsion_angle_constraint.Atom_ID_1':
-                                                buf[data_index] = atom_1
-                                                if self.insert_original_atom_name_items:
-                                                    buf[star_tags.index(auth_tag)] = atom_1
-                                                    buf[star_tags.index('_Torsion_angle_constraint.Auth_atom_name_1')] = row[in_star_atom_index_1]\
-                                                        if in_star_original_atom_index_1 == -1 or row[in_star_original_atom_index_1] in emptyValue\
-                                                        else row[in_star_original_atom_index_1]
-                                            elif data_tag == '_Torsion_angle_constraint.Atom_ID_2':
-                                                buf[data_index] = atom_2
-                                                if self.insert_original_atom_name_items:
-                                                    buf[star_tags.index(auth_tag)] = atom_2
-                                                    buf[star_tags.index('_Torsion_angle_constraint.Auth_atom_name_2')] = row[in_star_atom_index_2]\
-                                                        if in_star_original_atom_index_2 == -1 or row[in_star_original_atom_index_2] in emptyValue\
-                                                        else row[in_star_original_atom_index_2]
-                                            elif data_tag == '_Torsion_angle_constraint.Atom_ID_3':
-                                                buf[data_index] = atom_3
-                                                if self.insert_original_atom_name_items:
-                                                    buf[star_tags.index(auth_tag)] = atom_3
-                                                    buf[star_tags.index('_Torsion_angle_constraint.Auth_atom_name_3')] = row[in_star_atom_index_3]\
-                                                        if in_star_original_atom_index_3 == -1 or row[in_star_original_atom_index_3] in emptyValue\
-                                                        else row[in_star_original_atom_index_3]
-                                            elif data_tag == '_Torsion_angle_constraint.Atom_ID_4':
-                                                buf[data_index] = atom_4
-                                                if self.insert_original_atom_name_items:
-                                                    buf[star_tags.index(auth_tag)] = atom_4
-                                                    buf[star_tags.index('_Torsion_angle_constraint.Auth_atom_name_4')] = row[in_star_atom_index_4]\
-                                                        if in_star_original_atom_index_4 == -1 or row[in_star_original_atom_index_4] in emptyValue\
-                                                        else row[in_star_original_atom_index_4]
-                                            else:
-                                                buf[data_index] = data
-
-                                    if id_index != -1:
-                                        buf_row[id_index] = _id
-
-                                    buf_row.append(buf)
-
-                keys = set()
-
-                for row in buf_row:
-
-                    if key_f.tell() > 0:
-                        key_f.truncate(0)
-                        key_f.seek(0)
-
-                    for j in key_indices:
-                        key_f.write(f'{row[j]} ')
-
-                    key = key_f.getvalue()
-
-                    if key in keys:
-                        continue
-
-                    keys.add(key)
-
-                    if index_index != -1:
-                        row[index_index] = index
-
-                    index += 1
-
-                    out_row.append(row)
-
-            return out_row
-
-    def nef2star_rdc_row(self, nef_tags, star_tags, loop_data):
+    def nef2star_rdc_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list]) -> List[list]:
         """ Translate rows in RDC restraint loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
@@ -10598,186 +9755,7 @@ class NEFTranslator:
 
             return out_row
 
-    def star2star_rdc_row(self, in_star_tags, star_tags, loop_data):
-        """ Translate rows in RDC restraint loop from PyNMRSTAR data object into NMR-STAR.
-            @author: Masashi Yokochi
-            @param in_star_tags: list of input NMR-STAR tags
-            @param star_tags: list of NMR-STAR tags
-            @param loop_data: loop data of input NMR-STAR
-            @return: rows of NMR-STAR
-        """
-
-        out_row = []
-
-        in_star_comp_index_1 = in_star_tags.index('_RDC_constraint.Comp_ID_1')
-        in_star_atom_index_1 = in_star_tags.index('_RDC_constraint.Atom_ID_1')
-        in_star_comp_index_2 = in_star_tags.index('_RDC_constraint.Comp_ID_2')
-        in_star_atom_index_2 = in_star_tags.index('_RDC_constraint.Atom_ID_2')
-
-        if self.insert_original_atom_name_items:
-            in_star_original_atom_index_1 = in_star_tags.index('_RDC_constraint.Auth_atom_name_1')\
-                if '_RDC_constraint.Auth_atom_name_1' in in_star_tags else -1
-            in_star_original_atom_index_2 = in_star_tags.index('_RDC_constraint.Auth_atom_name_2')\
-                if '_RDC_constraint.Auth_atom_name_2' in in_star_tags else -1
-
-        seq_ident_tags = self.get_seq_ident_tags(in_star_tags, 'nmr-star')
-
-        chain_tag_1 = chain_tag_2 = None
-        seq_tag_1 = seq_tag_2 = None
-
-        for tag in seq_ident_tags:
-            chain_tag = tag['chain_tag']
-            seq_tag = tag['seq_tag']
-
-            if chain_tag.endswith('_1'):
-                chain_tag_1 = chain_tag
-                seq_tag_1 = seq_tag
-            else:
-                chain_tag_2 = chain_tag
-                seq_tag_2 = seq_tag
-
-        with io.StringIO() as key_f:
-
-            try:
-                index_index = star_tags.index('_RDC_constraint.Index_ID')
-            except ValueError:
-                index_index = -1
-
-            try:
-                id_index = star_tags.index('_RDC_constraint.ID')
-            except ValueError:
-                id_index = -1
-
-            key_indices = [star_tags.index(tag) for tag in ['_RDC_constraint.Entity_assembly_ID_1',
-                                                            '_RDC_constraint.Comp_index_ID_1',
-                                                            '_RDC_constraint.Atom_ID_1',
-                                                            '_RDC_constraint.Entity_assembly_ID_2',
-                                                            '_RDC_constraint.Comp_index_ID_2',
-                                                            '_RDC_constraint.Atom_ID_2']]
-
-            in_id_index = in_star_tags.index('_RDC_constraint.ID')
-
-            id_list = sorted(set(int(row[in_id_index]) for row in loop_data))
-
-            index = 1
-
-            for _id, row_id in enumerate(id_list, start=1):
-
-                in_row = [row for row in loop_data if row[in_id_index] == str(row_id)]
-
-                buf_row = []
-
-                for row in in_row:
-
-                    tag_map, self_tag_map = {}, {}
-
-                    for tag in seq_ident_tags:
-                        chain_tag = tag['chain_tag']
-                        seq_tag = tag['seq_tag']
-
-                        in_star_chain = row[in_star_tags.index(chain_tag)]
-                        _in_star_seq = row[in_star_tags.index(seq_tag)]
-                        if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
-                            _in_star_seq = int(_in_star_seq)
-
-                        seq_key = (in_star_chain, _in_star_seq)
-
-                        try:
-                            tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                            self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-                        except KeyError:
-                            tag_map[chain_tag] = in_star_chain
-                            tag_map[seq_tag] = _in_star_seq
-                            self_tag_map[chain_tag] = in_star_chain
-                            self_tag_map[seq_tag] = _in_star_seq
-
-                    intra_residue = row[in_star_tags.index(chain_tag_1)] == row[in_star_tags.index(chain_tag_2)]\
-                        and row[in_star_tags.index(seq_tag_1)] == row[in_star_tags.index(seq_tag_2)]
-
-                    atom_list_1 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_1], row[in_star_atom_index_1])[0]
-                    atom_list_2 = self.get_valid_star_atom_in_xplor(row[in_star_comp_index_2], row[in_star_atom_index_2])[0]
-
-                    for atom_1 in atom_list_1:
-
-                        for atom_2 in atom_list_2:
-
-                            if intra_residue and atom_2 == atom_1:
-                                continue
-
-                            buf = [None] * len(star_tags)
-
-                            for data_tag in in_star_tags:
-
-                                auth_tag, _ = self.get_star_auth_tag(data_tag)
-
-                                if auth_tag is None:
-                                    continue
-
-                                data = row[in_star_tags.index(data_tag)]
-
-                                if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                                    buf[star_tags.index(auth_tag)] = self_tag_map[data_tag]
-                                else:
-                                    buf[star_tags.index(auth_tag)] = data
-
-                                if auth_tag != data_tag:
-
-                                    data_index = star_tags.index(data_tag)
-
-                                    if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                                        buf[data_index] = tag_map[data_tag]
-                                    elif 'Comp_ID' in data_tag:
-                                        buf[data_index] = data.upper()
-                                    elif data_tag == '_RDC_constraint.Atom_ID_1':
-                                        buf[data_index] = atom_1
-                                        if self.insert_original_atom_name_items:
-                                            buf[star_tags.index(auth_tag)] = atom_1
-                                            buf[star_tags.index('_RDC_constraint.Auth_atom_name_1')] = row[in_star_atom_index_1]\
-                                                if in_star_original_atom_index_1 == -1 or row[in_star_original_atom_index_1] in emptyValue\
-                                                else row[in_star_original_atom_index_1]
-                                    elif data_tag == '_RDC_constraint.Atom_ID_2':
-                                        buf[data_index] = atom_2
-                                        if self.insert_original_atom_name_items:
-                                            buf[star_tags.index(auth_tag)] = atom_2
-                                            buf[star_tags.index('_RDC_constraint.Auth_atom_name_2')] = row[in_star_atom_index_2]\
-                                                if in_star_original_atom_index_2 == -1 or row[in_star_original_atom_index_2] in emptyValue\
-                                                else row[in_star_original_atom_index_2]
-                                    else:
-                                        buf[data_index] = data
-
-                            if id_index != -1:
-                                buf[id_index] = _id
-
-                            buf_row.append(buf)
-
-                keys = set()
-
-                for row in buf_row:
-
-                    if key_f.tell() > 0:
-                        key_f.truncate(0)
-                        key_f.seek(0)
-
-                    for j in key_indices:
-                        key_f.write(f'{row[j]} ')
-
-                    key = key_f.getvalue()
-
-                    if key in keys:
-                        continue
-
-                    keys.add(key)
-
-                    if index_index != -1:
-                        row[index_index] = index
-
-                    index += 1
-
-                    out_row.append(row)
-
-            return out_row
-
-    def nef2star_peak_row(self, nef_tags, star_tags, loop_data, leave_unmatched=False):
+    def nef2star_peak_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list], leave_unmatched: bool = False) -> List[list]:
         """ Translate rows in spectral peak loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
@@ -10971,7 +9949,7 @@ class NEFTranslator:
 
             return out_row
 
-    def __nef2star_peak_row(self, nef_tags, star_tags, tag_map, self_tag_map, row, details, comb):
+    def __nef2star_peak_row(self, nef_tags: List[str], star_tags: List[str], tag_map: dict, self_tag_map: dict, row: list, details, comb: List[str]) -> list:
         """ Translate rows in spectral peak loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
         """
@@ -11010,7 +9988,7 @@ class NEFTranslator:
 
         return buf
 
-    def star2nef_peak_row(self, star_tags, nef_tags, loop_data):
+    def star2nef_peak_row(self, star_tags: List[str], nef_tags: List[str], loop_data: List[list]) -> List[list]:
         """ Translate rows in spectral peak loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
@@ -11150,242 +10128,7 @@ class NEFTranslator:
 
             return out_row
 
-    def star2star_peak_row(self, in_star_tags, star_tags, loop_data, leave_unmatched=False):
-        """ Translate rows in spectral peak loop from PyNMRSTAR data object into NMR-STAR.
-            @author: Masashi Yokochi
-            @param in_star_tags: list of input NMR-STAR tags
-            @param star_tags: list of NMR-STAR tags
-            @param loop_data: loop data of input NMR-STAR
-            @return: rows of NMR-STAR
-        """
-
-        out_row = []
-
-        in_star_comp_indices, in_star_atom_indices = [], []
-
-        seq_ident_tags = self.get_seq_ident_tags(in_star_tags, 'nmr-star')
-
-        num_dim = len(seq_ident_tags)
-
-        for d in range(1, num_dim + 1):
-            in_star_comp_indices.append(in_star_tags.index(f"_Peak_row_format.Comp_ID_{d}"))
-            in_star_atom_indices.append(in_star_tags.index(f"_Peak_row_format.Atom_ID_{d}"))
-
-        with io.StringIO() as key_f, io.StringIO() as msg_f:
-
-            try:
-                index_index = star_tags.index('_Peak_row_format.Index_ID')
-            except ValueError:
-                index_index = -1
-
-            key_indices = [star_tags.index(tag) for tag in [k for k in star_tags
-                                                            if k.startswith('_Peak_row_format.Entity_assembly_ID')
-                                                            or k.startswith('_Peak_row_format.Comp_index_ID')
-                                                            or k.startswith('_Peak_row_format.Atom_ID')]]
-
-            id_index = in_star_tags.index('_Peak_row_format.ID')
-
-            id_list = sorted(set(int(row[id_index]) for row in loop_data))
-
-            index = 1
-
-            for row_id in id_list:
-
-                in_row = [row for row in loop_data if row[id_index] == str(row_id)]
-
-                buf_row = []
-
-                for row in in_row:
-
-                    tag_map, self_tag_map = {}, {}
-
-                    for tag in seq_ident_tags:
-                        chain_tag = tag['chain_tag']
-                        seq_tag = tag['seq_tag']
-
-                        in_star_chain = row[in_star_tags.index(chain_tag)]
-                        _in_star_seq = row[in_star_tags.index(seq_tag)]
-                        if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
-                            _in_star_seq = int(_in_star_seq)
-
-                        seq_key = (in_star_chain, _in_star_seq)
-
-                        try:
-                            tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                            self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-                        except KeyError:
-                            tag_map[chain_tag] = in_star_chain
-                            tag_map[seq_tag] = _in_star_seq
-                            self_tag_map[chain_tag] = in_star_chain
-                            self_tag_map[seq_tag] = _in_star_seq
-
-                    if msg_f.tell() > 0:
-                        msg_f.truncate(0)
-                        msg_f.seek(0)
-
-                    a = []
-
-                    for in_star_comp_index, in_star_atom_index in zip(in_star_comp_indices, in_star_atom_indices):
-                        atom_list = self.get_valid_star_atom_in_xplor(row[in_star_comp_index], row[in_star_atom_index])[0]
-                        len_atom_list = len(atom_list)
-                        if len_atom_list == 0:
-                            atom_list.append('.')
-                        elif len_atom_list > 1 and leave_unmatched:
-                            msg_f.write(f"{row[in_star_atom_index]} -> {atom_list}, ")
-
-                        a.append(atom_list)
-
-                    pos = msg_f.tell() - 2
-                    if pos > 0:
-                        msg_f.truncate(pos)
-                        msg_f.seek(pos)
-
-                    details = msg_f.getvalue()
-
-                    if num_dim == 1:
-
-                        for comb in itertools.product(a[0]):
-                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
-
-                    elif num_dim == 2:
-
-                        for comb in itertools.product(a[0], a[1]):
-                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
-
-                    elif num_dim == 3:
-
-                        for comb in itertools.product(a[0], a[1], a[2]):
-                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
-
-                    elif num_dim == 4:
-
-                        for comb in itertools.product(a[0], a[1], a[2], a[3]):
-                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
-
-                    elif num_dim == 5:
-
-                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4]):
-                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
-
-                    elif num_dim == 6:
-
-                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5]):
-                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
-
-                    elif num_dim == 7:
-
-                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6]):
-                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
-
-                    elif num_dim == 8:
-
-                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]):
-                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
-
-                    elif num_dim == 9:
-
-                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]):
-                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
-
-                    elif num_dim == 10:
-
-                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9]):
-                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
-
-                    elif num_dim == 11:
-
-                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10]):
-                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
-
-                    elif num_dim == 12:
-
-                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11]):
-                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
-
-                    elif num_dim == 13:
-
-                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12]):
-                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
-
-                    elif num_dim == 14:
-
-                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13]):
-                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
-
-                    elif num_dim == 15:
-
-                        for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13], a[14]):
-                            buf_row.append(self.__star2star_peak_row(in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb))
-
-                keys = set()
-
-                for row in buf_row:
-
-                    if key_f.tell() > 0:
-                        key_f.truncate(0)
-                        key_f.seek(0)
-
-                    for j in key_indices:
-                        key_f.write(f'{row[j]} ')
-
-                    key = key_f.getvalue()
-
-                    if key in keys:
-                        continue
-
-                    keys.add(key)
-
-                    if index_index != -1:
-                        row[index_index] = index
-
-                    index += 1
-
-                    out_row.append(row)
-
-            return out_row
-
-    def __star2star_peak_row(self, in_star_tags, star_tags, tag_map, self_tag_map, row, details, comb):
-        """ Translate rows in spectral peak loop from PyNMRSTAR data object into NMR-STAR.
-            @author: Masashi Yokochi
-        """
-
-        buf = [None] * len(star_tags)
-
-        for data_tag in in_star_tags:
-
-            auth_tag, _ = self.get_star_auth_tag(data_tag)
-
-            if auth_tag is None:
-                continue
-
-            data = row[in_star_tags.index(data_tag)]
-
-            if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                buf[star_tags.index(auth_tag)] = self_tag_map[data_tag]
-            else:
-                buf[star_tags.index(auth_tag)] = data
-
-            if auth_tag != data_tag:
-
-                data_index = star_tags.index(data_tag)
-
-                if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                    buf[data_index] = tag_map[data_tag]
-                elif 'Comp_ID' in data_tag:
-                    buf[data_index] = data.upper()
-                elif data_tag.startswith('_Peak_row_format.Atom_ID'):
-                    buf[data_index] = comb[int(data_tag[25:]) - 1]
-                else:
-                    buf[data_index] = data
-
-            if len(details) > 0:
-                details_index = star_tags.index('_Peak_row_format.Details')
-
-                buf[details_index] = details
-
-        return buf
-
-    def nef2star_row(self, nef_tags, star_tags, in_row):
+    def nef2star_row(self, nef_tags: List[str], star_tags: List[str], in_row: List[list]) -> List[list]:
         """ Translate rows in a loop from NEF into NMR-STAR.
             @change: rename from original translate_row() to nef2star_row() by Masashi Yokochi
             @param nef_tags: list of NEF tags
@@ -11454,7 +10197,7 @@ class NEFTranslator:
 
         return out_row
 
-    def star2nef_row(self, star_tags, nef_tags, in_row):
+    def star2nef_row(self, star_tags: List[str], nef_tags: List[str], in_row: List[list]) -> List[list]:
         """ Translate rows in a loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
@@ -11521,76 +10264,7 @@ class NEFTranslator:
 
         return out_row
 
-    def star2star_row(self, in_star_tags, star_tags, in_row):
-        """ Translate rows in a loop from PyNMRSTAR data object into NMR-STAR.
-            @author: Masashi Yokochi
-            @param in_star_tags: list of input NMR-STAR tags
-            @param star_tags: list of NMR-STAR tags
-            @param in_row: rows of input NMR-STAR
-            @return: rows of NMR-STAR
-        """
-
-        out_row = []
-
-        tag_map, self_tag_map = {}, {}
-
-        for tag in self.get_seq_ident_tags(in_star_tags, 'nmr-star'):
-            chain_tag = tag['chain_tag']
-            seq_tag = tag['seq_tag']
-
-            in_star_chain = in_row[in_star_tags.index(chain_tag)]
-            _in_star_seq = in_row[in_star_tags.index(seq_tag)]
-            if isinstance(_in_star_seq, str) and _in_star_seq not in emptyValue:
-                _in_star_seq = int(_in_star_seq)
-
-            seq_key = (in_star_chain, _in_star_seq)
-
-            try:
-                tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
-                self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
-            except KeyError:
-                tag_map[chain_tag] = in_star_chain
-                tag_map[seq_tag] = _in_star_seq
-                self_tag_map[chain_tag] = in_star_chain
-                self_tag_map[seq_tag] = _in_star_seq
-
-        if len(in_star_tags) != len(star_tags):
-
-            out = [None] * len(star_tags)
-
-            for data_tag in in_star_tags:
-
-                auth_tag, _ = self.get_star_auth_tag(data_tag)
-
-                if auth_tag is None:
-                    continue
-
-                data = in_row[in_star_tags.index(data_tag)]
-
-                if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                    out[star_tags.index(auth_tag)] = self_tag_map[data_tag]
-                else:
-                    out[star_tags.index(auth_tag)] = data
-
-                if auth_tag != data_tag:
-
-                    data_index = star_tags.index(data_tag)
-
-                    if 'Entity_assembly_ID' in data_tag or 'Comp_index_ID' in data_tag:
-                        out[data_index] = tag_map[data_tag]
-                    elif 'Comp_ID' in data_tag:
-                        out[data_index] = data.upper()
-                    else:
-                        out[data_index] = data
-
-            out_row.append(out)
-
-        else:
-            out_row.append(in_row)
-
-        return out_row
-
-    def star2nef_peak_can(self, in_sf, out_sf):
+    def star2nef_peak_can(self, in_sf: pynmrstar.Saveframe, out_sf: pynmrstar.Saveframe) -> Optional[int]:
         """ Translate NMR-STAR canonical spectral peak loops (_Peak, _Peak_general_char, _Peak.char, _Assigned_peak_chem_shift) into NEF.
             @author: Masashi Yokochi
             @param in_sf: input saveframe
@@ -11764,7 +10438,8 @@ class NEFTranslator:
 
         return None if len(cs_list_id_set) == 0 else list(cs_list_id_set)[0]
 
-    def nef_to_nmrstar(self, nef_file, star_file=None, report=None, leave_unmatched=False):
+    def nef_to_nmrstar(self, nef_file: str, star_file: Optional[str] = None,
+                       report=None, leave_unmatched: bool = False) -> Tuple[bool, dict]:
         """ Convert NEF file to NMR-STAR file.
             @param nef_file: input NEF file path
             @param star_file: output NMR-STAR file path
@@ -12284,7 +10959,8 @@ class NEFTranslator:
 
         return True, {'info': info, 'error': error}
 
-    def nmrstar_to_nef(self, star_file, nef_file=None, report=None):
+    def nmrstar_to_nef(self, star_file: str, nef_file: Optional[str] = None,
+                       report=None) -> Tuple[bool, dict]:
         """ Convert NMR-STAR file to NEF file.
             @author: Masashi Yokochi
             @param star_file: input NMR-STAR file path

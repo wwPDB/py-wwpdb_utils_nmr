@@ -1405,7 +1405,6 @@ class NmrDpUtility:
                            self.__detectCoordContentSubType,
                            self.__extractCoordPolymerSequence,
                            self.__extractCoordPolymerSequenceInLoop,
-                           self.__extractCoordAtomSite,
                            self.__extractCoordCommonPolymerSequence,
                            self.__extractCoordNonStandardResidue,
                            self.__appendCoordPolymerSequenceAlignment,
@@ -1445,7 +1444,6 @@ class NmrDpUtility:
                           self.__parseCoordinate,
                           self.__detectCoordContentSubType,
                           self.__extractCoordPolymerSequence,
-                          self.__extractCoordAtomSite,
                           # resolve conflict
                           self.__resolveConflictsInLoop,
                           self.__resolveConflictsInAuxLoop,
@@ -6587,14 +6585,6 @@ class NmrDpUtility:
         self.__eff_model_ids = None
         # item tag names of 'atom_site' category of the coordinates
         self.__coord_atom_site_tags = None
-        # atom id list in model
-        self.__coord_atom_site = None
-        # residues not observed in the coordinates (DAOTHER-7665)
-        self.__coord_unobs_res = None
-        # conversion dictionary from auth_seq_id to label_seq_id of the coordinates
-        self.__auth_to_label_seq = None
-        # conversion dictionary from label_seq_id to auth_seq_id of the coordinates
-        self.__label_to_auth_seq = None
 
         # sub-directory name for cache file
         self.__sub_dir_name_for_cache = 'utils_nmr'
@@ -6630,9 +6620,6 @@ class NmrDpUtility:
         self.__chain_id_map_for_remediation = {}
         # mapping of chain_id and seq_id for remediation
         self.__seq_id_map_for_remediation = {}
-
-        # used for debuging only, it should be empty for production
-        self.__target_framecode = ''
 
         # suspended error items for lazy evaluation
         self.__suspended_errors_for_lazy_eval = []
@@ -17237,11 +17224,6 @@ class NmrDpUtility:
 
                                             if comp_id != '.':
 
-                                                if self.__target_framecode not in emptyValue:
-                                                    self.__lfh.write(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
-                                                                     f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id} {comp_id}\n")
-                                                    sys.exit(1)
-
                                                 if not self.__remediation_mode\
                                                    and ((min(set(s2['seq_id']) - set(s1['seq_id'])) > 0 and seq_id > 0) or not self.__nonblk_bad_nterm):
 
@@ -17273,11 +17255,6 @@ class NmrDpUtility:
                                             _comp_id = s1['comp_id'][i]
 
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
-
-                                                if self.__target_framecode not in emptyValue:
-                                                    self.__lfh.write(f"{sf_framecode2} s1:{s1['chain_id']} {s1['seq_id']} {s1['comp_id']} "
-                                                                     f"s2: {s2['chain_id']} {s2['seq_id']} {s2['comp_id']} {seq_id} {comp_id}\n")
-                                                    sys.exit(1)
 
                                                 err = f"Invalid comp_id {comp_id!r} vs {_comp_id!r} (seq_id {seq_id}, chain_id {chain_id}) in a loop {lp_category2}."
 
@@ -18405,10 +18382,6 @@ class NmrDpUtility:
 
                                 map_chain_ids[sf_framecode2][chain_id] = __chain_id
 
-                                if sf_framecode2 == self.__target_framecode:
-                                    self.__lfh.write(f"+NmrDpUtility.__appendPolymerSequenceAlignment() map-chain {chain_id} -> {__chain_id}, "
-                                                     f"{__length} {__matched} {__unmapped} {__conflict} {__offset_1} {__offset_2}\n")
-
                                 length = __length
                                 _matched = __matched
                                 unmapped = __unmapped
@@ -18436,10 +18409,6 @@ class NmrDpUtility:
                                     map_chain_ids[sf_framecode2] = {}
 
                                 map_chain_ids[sf_framecode2][s2['chain_id']] = chain_id
-
-                                if sf_framecode2 == self.__target_framecode:
-                                    self.__lfh.write(f"+NmrDpUtility.__appendPolymerSequenceAlignment() map-chain-alt {s2['chain_id']} -> {chain_id}, "
-                                                     f"{length} {_matched} {unmapped} {conflict} {offset_1} {offset_2}\n")
 
                                 alt_chain = True
 
@@ -18505,10 +18474,6 @@ class NmrDpUtility:
                                         chain_id2 = chain_id
                                         if sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2].values():
                                             chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == chain_id)
-
-                                        if sf_framecode2 == self.__target_framecode:
-                                            self.__lfh.write("+NmrDpUtility.__appendPolymerSequenceAlignment() test "
-                                                             f"{chain_id2} {_matched} {offset_1} {offset_2} {seq_id_conv_dict}\n")
 
                                         if sf_framecode2 not in proc_chain_ids:
                                             proc_chain_ids[sf_framecode2] = set()
@@ -18721,10 +18686,6 @@ class NmrDpUtility:
 
                                 map_chain_ids[sf_framecode2][chain_id] = __chain_id
 
-                                if sf_framecode2 == self.__target_framecode:
-                                    self.__lfh.write(f"+NmrDpUtility.__appendPolymerSequenceAlignment() map-chain-rest {chain_id} -> {__chain_id}, "
-                                                     f"{__length} {__matched} {__unmapped} {__conflict} {__offset_1} {__offset_2}\n")
-
                                 length = __length
                                 _matched = __matched
                                 unmapped = __unmapped
@@ -18907,9 +18868,6 @@ class NmrDpUtility:
 
                                             break
 
-                            if sf_framecode2 == self.__target_framecode:
-                                self.__lfh.write(f"+NmrDpUtility.__appendPolymerSequenceAlignment() alt-chain {mapping} {cross} {circular}\n")
-
                             for s1 in polymer_sequence:
                                 chain_id = s1['chain_id']
 
@@ -18986,10 +18944,6 @@ class NmrDpUtility:
                                                 chain_id2 = chain_id
                                                 if chain_id in mapping.values():
                                                     chain_id2 = next(k for k, v in mapping.items() if v == chain_id)
-
-                                                if sf_framecode2 == self.__target_framecode:
-                                                    self.__lfh.write("+NmrDpUtility.__appendPolymerSequenceAlignment() test-alt "
-                                                                     f"{chain_id2} {_matched} {offset_1} {offset_2} {seq_id_conv_dict}\n")
 
                                                 if sf_framecode2 not in proc_chain_ids:
                                                     proc_chain_ids[sf_framecode2] = set()
@@ -19490,14 +19444,6 @@ class NmrDpUtility:
                 or atom_id.startswith('Q') or atom_id.startswith('M')
                 or atom_id.endswith('%') or atom_id.endswith('#')
                 or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)
-
-    def __getRepAtomIdInXplor(self, comp_id: str, atom_id: str) -> str:
-        """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclautre.
-        """
-
-        _atom_id = self.__nefT.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)[0]
-
-        return atom_id if len(_atom_id) == 0 else _atom_id[0]
 
     def __getAtomIdListInXplor(self, comp_id: str, atom_id: str) -> List[str]:
         """ Return atom ID list in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclature.
@@ -29698,10 +29644,10 @@ class NmrDpUtility:
 
                     seq_key = (cif_chain_id, cif_seq_id)
 
-                    if seq_key in self.__coord_unobs_res:  # DAOTHER-7665
+                    if seq_key in self.__caC['coord_unobs_res']:  # DAOTHER-7665
                         continue
 
-                    coord_atom_site_ = self.__coord_atom_site.get(seq_key)
+                    coord_atom_site_ = self.__caC['coord_atom_site'].get(seq_key)
 
                     self.__ccU.updateChemCompDict(comp_id)
 
@@ -41605,10 +41551,6 @@ class NmrDpUtility:
 
             finally:
                 self.__symmetric = None
-                self.__coord_atom_site = None
-                self.__coord_unobs_res = None
-                self.__auth_to_label_seq = None
-                self.__label_to_auth_seq = None
                 self.__caC = None
                 self.__cpC = copy.copy(default_coord_properties)
                 self.__ent_asym_id_with_exptl_data = set()
@@ -42024,236 +41966,6 @@ class NmrDpUtility:
                 self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - {str(e)}\n")
 
         return False
-
-    def __extractCoordAtomSite(self) -> bool:
-        """ Extract atom_site of coordinate file.
-        """
-
-        src_id = self.report.getInputSourceIdOfCoord()
-
-        if src_id < 0:
-            return False
-
-        if self.__coord_atom_site is not None:
-            return True
-
-        atom_site_cache_path = unobs_res_cache_path =\
-            auth_to_label_cache_path = label_to_auth_cache_path = None
-
-        if self.__cifHashCode is not None:
-            atom_site_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_atom_site.pkl")
-            self.__coord_atom_site = load_from_pickle(atom_site_cache_path, None)
-
-            unobs_res_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_unobs_res.pkl")
-            self.__coord_unobs_res = load_from_pickle(unobs_res_cache_path, [])
-
-            auth_to_label_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_auth_to_label.pkl")
-            self.__auth_to_label_seq = load_from_pickle(auth_to_label_cache_path, {})
-
-            label_to_auth_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_label_to_auth.pkl")
-            self.__label_to_auth_seq = load_from_pickle(label_to_auth_cache_path, {})
-
-            if self.__coord_atom_site is not None:
-                return True
-
-        cif_input_source = self.report.input_sources[src_id]
-        cif_input_source_dic = cif_input_source.get()
-
-        file_name = cif_input_source_dic['file_name']
-
-        has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
-
-        polymer_sequence = cif_input_source_dic['polymer_sequence'] if has_poly_seq else []
-
-        if has_poly_seq and any('auth_chain_id' not in ps for ps in polymer_sequence):
-            has_poly_seq = False
-
-        try:
-
-            model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
-            has_pdbx_auth_atom_name = 'pdbx_auth_atom_name' in self.__coord_atom_site_tags
-
-            data_items = [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                          {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                          {'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                          {'name': 'auth_seq_id', 'type': 'int'},  # non-polymer
-                          {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
-                          {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
-                          {'name': 'type_symbol', 'type': 'str'}  # DAOTHER-9084
-                          ]
-
-            if has_pdbx_auth_atom_name:  # DAOTHER-7665
-                data_items.append({'name': 'pdbx_auth_atom_name', 'type': 'str', 'alt_name': 'auth_atom_id'})
-
-            filter_items = [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id},
-                            {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}
-                            ]
-
-            if len(polymer_sequence) >= LEN_MAJOR_ASYM_ID:
-                filter_items.append({'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID, 'alt_name': 'chain_id',
-                                     'fetch_first_match': True})  # to process large assembly avoiding forced timeout
-
-            coord = self.__cR.getDictListWithFilter('atom_site', data_items, filter_items)
-
-            if has_poly_seq:
-                label_to_auth_chain = {ps['chain_id']: ps['auth_chain_id'] for ps in polymer_sequence}
-            else:
-                label_to_auth_chain = {}
-                for c in coord:
-                    if c['chain_id'] not in emptyValue and c['auth_chain_id'] not in emptyValue and c['chain_id'] not in label_to_auth_chain:
-                        label_to_auth_chain[c['chain_id']] = c['auth_chain_id']
-
-            self.__coord_atom_site = {}
-            self.__auth_to_label_seq = {}
-            chain_ids = set(c['chain_id'] for c in coord)
-            for chain_id in chain_ids:
-                seq_ids = set((int(c['seq_id']) if c['seq_id'] is not None else c['auth_seq_id']) for c in coord if c['chain_id'] == chain_id)
-                for seq_id in seq_ids:
-                    seq_key = (chain_id, seq_id)
-                    comp_id = next(c['comp_id'] for c in coord
-                                   if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
-                                                                     or (c['seq_id'] is None and c['auth_seq_id'] == seq_id)))
-                    atom_ids = [c['atom_id'] for c in coord
-                                if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
-                                                                  or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
-                    self.__coord_atom_site[seq_key] = {'comp_id': comp_id, 'atom_id': atom_ids}
-                    if has_pdbx_auth_atom_name:
-                        auth_atom_ids = [c['auth_atom_id'] for c in coord
-                                         if c['chain_id'] == chain_id and ((c['seq_id'] is not None and int(c['seq_id']) == seq_id)
-                                                                           or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
-                        self.__coord_atom_site[seq_key]['auth_atom_id'] = auth_atom_ids
-                    elif any(not self.__nefT.validate_comp_atom(comp_id, atom_id) for atom_id in atom_ids):
-                        auth_atom_ids = [self.__getRepAtomIdInXplor(comp_id, atom_id) for atom_id in atom_ids]
-                        self.__coord_atom_site[seq_key]['auth_atom_id'] = auth_atom_ids
-                    auth_seq_id = next((c['auth_seq_id'] for c in coord if c['chain_id'] == chain_id and c['seq_id'] is not None and int(c['seq_id']) == seq_id), None)
-                    if auth_seq_id is not None:
-                        self.__auth_to_label_seq[(label_to_auth_chain[chain_id], auth_seq_id)] = seq_key
-                    else:
-                        self.__auth_to_label_seq[seq_key] = seq_key
-            self.__label_to_auth_seq = {v: k for k, v in self.__auth_to_label_seq.items()}
-
-            # DAOTHER-9084
-            for c in coord:
-                comp_id = c['comp_id']
-                atom_id = c['atom_id']
-                type_symbol = c['type_symbol']
-
-                if atom_id in emptyValue or type_symbol in emptyValue:
-                    continue
-
-                if atom_id == type_symbol and atom_id[0] not in protonBeginCode and comp_id in monDict3:
-
-                    is_valid, cc_name, cc_rel_status = self.__getChemCompNameAndStatusOf(comp_id)
-
-                    if is_valid and cc_rel_status == 'REL' or cc_name is not None:
-                        self.__ccU.updateChemCompDict(comp_id)
-
-                        try:
-                            next(cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaTypeSymbol] == type_symbol)
-                        except StopIteration:
-
-                            err = f'Type symbol {type_symbol!r} for a specified atom {c} is not valid. Please re-upload the model file.'
-
-                            self.report.error.appendDescription('coordinate_issue',
-                                                                {'file_name': file_name, 'category': 'atom_site',
-                                                                 'description': err})
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__extractCoordAtomSite() ++ Error  - {err}\n")
-
-                elif type_symbol[0] not in protonBeginCode and atom_id[0] in protonBeginCode:
-
-                    err = f'Type symbol {type_symbol!r} for a specified atom {c} is not valid. Please re-upload the model file.'
-
-                    self.report.error.appendDescription('coordinate_issue',
-                                                        {'file_name': file_name, 'category': 'atom_site',
-                                                         'description': err})
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractCoordAtomSite() ++ Error  - {err}\n")
-
-            # DAOTHER-7665
-            self.__coord_unobs_res = []
-
-            if self.__cR.hasCategory('pdbx_unobs_or_zero_occ_residues'):
-
-                tags = self.__cR.getItemTags('pdbx_unobs_or_zero_occ_residues')
-
-                unobs_has_label_seq = 'label_asym_id' in tags and 'label_seq_id' in tags
-                unobs_has_auth_seq = 'auth_asym_id' in tags and 'auth_seq_id' in tags
-
-                filter_item_by_rep_model_id = [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id}]
-
-                if unobs_has_auth_seq and unobs_has_label_seq:
-                    unobs = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
-                                                            [{'name': 'auth_asym_id', 'type': 'str'},
-                                                             {'name': 'auth_seq_id', 'type': 'str'},
-                                                             {'name': 'label_asym_id', 'type': 'str'},
-                                                             {'name': 'label_seq_id', 'type': 'str'}
-                                                             ],
-                                                            filter_item_by_rep_model_id)
-
-                    if len(unobs) > 0:
-                        for u in unobs:
-                            if u['auth_asym_id'] is not None and u['auth_seq_id'] is not None and u['label_asym_id'] is not None and u['label_seq_id'] is not None:
-                                auth_seq_key = (u['auth_asym_id'], int(u['auth_seq_id']))
-                                label_seq_key = (u['label_asym_id'], int(u['label_seq_id']))
-
-                                if auth_seq_key not in self.__auth_to_label_seq:
-                                    self.__auth_to_label_seq[auth_seq_key] = label_seq_key
-                                if label_seq_key not in self.__label_to_auth_seq:
-                                    self.__label_to_auth_seq[label_seq_key] = auth_seq_key
-
-                if unobs_has_label_seq:
-                    unobs = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'}
-                                                             ],
-                                                            filter_item_by_rep_model_id)
-
-                    if len(unobs) > 0:
-                        for chain_id in chain_ids:
-                            seq_ids = set(int(u['seq_id']) for u in unobs if u['chain_id'] == chain_id and u['seq_id'] is not None)
-                            for seq_id in seq_ids:
-                                seq_key = (chain_id, seq_id)
-                                self.__coord_unobs_res.append(seq_key)
-
-                if unobs_has_auth_seq:
-                    unobs = self.__cR.getDictListWithFilter('pdbx_unobs_or_zero_occ_residues',
-                                                            [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                             {'name': 'auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'}
-                                                             ],
-                                                            filter_item_by_rep_model_id)
-
-                    if len(unobs) > 0:
-                        for chain_id in chain_ids:
-                            seq_ids = set(int(u['seq_id']) for u in unobs if u['chain_id'] == chain_id and u['seq_id'] is not None)
-                            for seq_id in seq_ids:
-                                seq_key = (chain_id, seq_id)
-                                if seq_key in self.__auth_to_label_seq:
-                                    _seq_key = self.__auth_to_label_seq[seq_key]
-                                    if _seq_key not in self.__coord_unobs_res:
-                                        self.__coord_unobs_res.append(_seq_key)
-
-            if self.__cifHashCode is not None:
-                write_as_pickle(self.__coord_atom_site, atom_site_cache_path)
-                write_as_pickle(self.__coord_unobs_res, unobs_res_cache_path)
-                write_as_pickle(self.__auth_to_label_seq, auth_to_label_cache_path)
-                write_as_pickle(self.__label_to_auth_seq, label_to_auth_cache_path)
-
-            return True
-
-        except Exception as e:
-
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordAtomSite() ++ Error  - " + str(e))
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__extractCoordAtomSite() ++ Error  - {str(e)}\n")
-
-            return False
 
     def __extractCoordPolymerSequenceInLoop(self) -> bool:
         """ Extract polymer sequence in interesting loops of coordinate file.
@@ -45088,10 +44800,10 @@ class NmrDpUtility:
 
                     seq_key = (cif_chain_id, cif_seq_id)
 
-                    if seq_key in self.__coord_unobs_res:  # DAOTHER-7665
+                    if seq_key in self.__caC['coord_unobs_res']:  # DAOTHER-7665
                         continue
 
-                    coord_atom_site_ = self.__coord_atom_site.get(seq_key)
+                    coord_atom_site_ = self.__caC['coord_atom_site'].get(seq_key)
 
                     if file_type == 'nmr-star' and seq_id != alt_seq_id:
 
@@ -45118,10 +44830,10 @@ class NmrDpUtility:
 
                             seq_key = (cif_chain_id, cif_seq_id)
 
-                            if seq_key in self.__coord_unobs_res:  # DAOTHER-7665
+                            if seq_key in self.__caC['coord_unobs_res']:  # DAOTHER-7665
                                 continue
 
-                            coord_atom_site_ = self.__coord_atom_site.get(seq_key)
+                            coord_atom_site_ = self.__caC['coord_atom_site'].get(seq_key)
 
                 if coord_atom_site_ is None or coord_atom_site_['comp_id'] != cif_comp_id\
                    or (atom_id_ not in coord_atom_site_['atom_id']
@@ -45140,7 +44852,7 @@ class NmrDpUtility:
                     cyclic = self.__isCyclicPolymer(ref_chain_id)
 
                     if self.__nonblk_bad_nterm\
-                       and (seq_id == 1 or cif_seq_id == 1 or (cif_chain_id, cif_seq_id - 1) in self.__coord_unobs_res)\
+                       and (seq_id == 1 or cif_seq_id == 1 or (cif_chain_id, cif_seq_id - 1) in self.__caC['coord_unobs_res'])\
                        and atom_id_ in aminoProtonCode and (cyclic or comp_id == 'PRO'
                                                             or (atom_id_ in protonBeginCode
                                                                 or (coord_atom_site_ is not None and 'auth_atom_id' not in coord_atom_site_))):  # DAOTHER-7665
@@ -45174,7 +44886,7 @@ class NmrDpUtility:
                                 modified = True
 
                     elif self.__nonblk_bad_nterm\
-                            and (seq_id == 1 or cif_seq_id == 1 or (cif_chain_id, cif_seq_id - 1) in self.__coord_unobs_res)\
+                            and (seq_id == 1 or cif_seq_id == 1 or (cif_chain_id, cif_seq_id - 1) in self.__caC['coord_unobs_res'])\
                             and atom_id_ == 'P':
                         continue
 
@@ -48127,9 +47839,9 @@ class NmrDpUtility:
             seq_key_2 = (cif_chain_id, end_cif_seq_id)
             close_contact = []
 
-            if seq_key_1 in self.__label_to_auth_seq and seq_key_2 in self.__label_to_auth_seq:
-                auth_cif_chain_id, auth_beg_cif_seq_id = self.__label_to_auth_seq[seq_key_1]
-                _, auth_end_cif_seq_id = self.__label_to_auth_seq[seq_key_2]
+            if seq_key_1 in self.__caC['label_to_auth_seq'] and seq_key_2 in self.__caC['label_to_auth_seq']:
+                auth_cif_chain_id, auth_beg_cif_seq_id = self.__caC['label_to_auth_seq'][seq_key_1]
+                _, auth_end_cif_seq_id = self.__caC['label_to_auth_seq'][seq_key_2]
 
                 try:
 

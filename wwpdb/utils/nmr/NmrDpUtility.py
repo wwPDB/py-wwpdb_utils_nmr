@@ -1070,7 +1070,7 @@ def is_peak_list(line: str, has_header: bool = True) -> bool:
         s = line.split()
         return 'U' in s or 'T' in s
 
-    if 'Assignment' in line and 'w1' in line and 'w2' in line:  # Sparky peak list
+    if 'w1' in line and 'w2' in line:  # Sparky peak list
         return True
 
     if 'label' in line and 'dataset' in line and 'sw' in line and 'sf' in line:  # NMRView peak list
@@ -1091,7 +1091,7 @@ def get_peak_list_format(line: str, has_header: bool = True) -> Optional[str]:
         if 'U' in s or 'T' in s:
             return 'XEASY'
 
-    if 'Assignment' in line and 'w1' in line and 'w2' in line:  # Sparky peak list
+    if 'w1' in line and 'w2' in line:  # Sparky peak list
         return 'Sparky'
 
     if 'label' in line and 'dataset' in line and 'sw' in line and 'sf' in line:  # NMRView peak list
@@ -14471,7 +14471,9 @@ class NmrDpUtility:
         settled_mr_file_types = ('nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha',
                                  'nm-res-cns', 'nm-res-cya', 'nm-res-dyn', 'nm-res-gro',
                                  'nm-res-isd', 'nm-res-noa', 'nm-res-ros', 'nm-res-sax',
-                                 'nm-res-syb', 'nm-res-xpl')
+                                 'nm-res-syb', 'nm-res-xpl',
+                                 'nm-pea-ari', 'nm-pea-pip', 'nm-pea-spa', 'nm-pea-top',
+                                 'nm-pea-vie', 'nm-aux-xea', 'nm-pea-xea', 'nm-pea-xwi')
 
         for ar in self.__inputParamDict[ar_file_path_list]:
 
@@ -14587,7 +14589,7 @@ class NmrDpUtility:
 
             for _file_type in settled_mr_file_types:
 
-                sel_res_file = src_basename + f'-selected-as-res-{_file_type[-3:]}.mr'
+                sel_res_file = src_basename + f'-selected-as-{_file_type[-7:]}.mr'
 
                 if os.path.exists(sel_res_file):
                     _ar = ar.copy()
@@ -15342,7 +15344,7 @@ class NmrDpUtility:
 
                         for _file_type in settled_mr_file_types:
 
-                            sel_res_file = dst_file + f'-selected-as-res-{_file_type[-3:]}'
+                            sel_res_file = dst_file + f'-selected-as-{_file_type[-7:]}'
 
                             if os.path.exists(sel_res_file):
                                 _ar = ar.copy()
@@ -15723,7 +15725,7 @@ class NmrDpUtility:
 
                     for _file_type in settled_mr_file_types:
 
-                        sel_res_file = dst_file + f'-selected-as-res-{_file_type[-3:]}'
+                        sel_res_file = dst_file + f'-selected-as-{_file_type[-7:]}'
 
                         if os.path.exists(sel_res_file):
                             _ar = ar.copy()
@@ -16073,7 +16075,7 @@ class NmrDpUtility:
 
                         for _file_type in settled_mr_file_types:
 
-                            sel_res_file = _dst_file + f'-selected-as-res-{_file_type[-3:]}'
+                            sel_res_file = _dst_file + f'-selected-as-{_file_type[-7:]}'
 
                             if os.path.exists(sel_res_file):
                                 _ar = ar.copy()
@@ -17172,10 +17174,6 @@ class NmrDpUtility:
                                 chain_id = to_entity_id.get(chain_id, chain_id)
 
                             if chain_id not in ref_chain_ids and not chain_id.isdigit() and self.__combined_mode:
-
-                                if self.__caC is None:
-                                    self.__retrieveCoordAssemblyChecker()
-
                                 chain_id = next((str(item['entity_assembly_id']) for item in self.__caC['entity_assembly']
                                                  if chain_id in item['auth_asym_id'].split(',')), chain_id)
 
@@ -21180,6 +21178,16 @@ class NmrDpUtility:
             lower_limit_name = dh_item_names['lower_limit']
             upper_limit_name = dh_item_names['upper_limit']
 
+            def ext_atoms(row):
+                return ({'chain_id': row[chain_id_1_name], 'seq_id': row[seq_id_1_name],
+                         'comp_id': row[comp_id_1_name], 'atom_id': row[atom_id_1_name]},
+                        {'chain_id': row[chain_id_2_name], 'seq_id': row[seq_id_2_name],
+                         'comp_id': row[comp_id_2_name], 'atom_id': row[atom_id_2_name]},
+                        {'chain_id': row[chain_id_3_name], 'seq_id': row[seq_id_3_name],
+                         'comp_id': row[comp_id_3_name], 'atom_id': row[atom_id_3_name]},
+                        {'chain_id': row[chain_id_4_name], 'seq_id': row[seq_id_4_name],
+                         'comp_id': row[comp_id_4_name], 'atom_id': row[atom_id_4_name]})
+
         elif content_subtype == 'rdc_restraint':
             max_inclusive = RDC_UNCERT_MAX
 
@@ -21257,31 +21265,12 @@ class NmrDpUtility:
                                     if val_1 > val_2:
                                         r = abs(val_1 - (val_2 + 360.0))
 
-                                chain_id_1 = row_1[chain_id_1_name]
-                                chain_id_2 = row_1[chain_id_2_name]
-                                chain_id_3 = row_1[chain_id_3_name]
-                                chain_id_4 = row_1[chain_id_4_name]
-                                seq_id_1 = row_1[seq_id_1_name]
-                                seq_id_2 = row_1[seq_id_2_name]
-                                seq_id_3 = row_1[seq_id_3_name]
-                                seq_id_4 = row_1[seq_id_4_name]
-                                comp_id_1 = row_1[comp_id_1_name]
-                                comp_id_2 = row_1[comp_id_2_name]
-                                comp_id_3 = row_1[comp_id_3_name]
-                                comp_id_4 = row_1[comp_id_4_name]
-                                atom_id_1 = row_1[atom_id_1_name]
-                                atom_id_2 = row_1[atom_id_2_name]
-                                atom_id_3 = row_1[atom_id_3_name]
-                                atom_id_4 = row_1[atom_id_4_name]
+                                atom1, atom2, atom3, atom4 = ext_atoms(row_1)
+
                                 data_type = row_1[angle_type_name]
 
-                                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_2)
+                                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(atom2['comp_id'])
                                 plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
-
-                                atom1 = {'chain_id': chain_id_1, 'seq_id': seq_id_1, 'comp_id': comp_id_1, 'atom_id': atom_id_1}
-                                atom2 = {'chain_id': chain_id_2, 'seq_id': seq_id_2, 'comp_id': comp_id_2, 'atom_id': atom_id_2}
-                                atom3 = {'chain_id': chain_id_3, 'seq_id': seq_id_3, 'comp_id': comp_id_3, 'atom_id': atom_id_3}
-                                atom4 = {'chain_id': chain_id_4, 'seq_id': seq_id_4, 'comp_id': comp_id_4, 'atom_id': atom_id_4}
 
                                 data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
                                                                               [atom1, atom2, atom3, atom4], plane_like)[0]
@@ -21416,6 +21405,12 @@ class NmrDpUtility:
             auth_atom_id_1_name = 'Auth_atom_ID_1'
             auth_atom_id_2_name = 'Auth_atom_ID_2'
 
+            def ext_atom_names(row):
+                return (row[chain_id_1_name], row[chain_id_2_name],  # pylint: disable=cell-var-from-loop
+                        row[seq_id_1_name], row[seq_id_2_name],  # pylint: disable=cell-var-from-loop
+                        row[comp_id_1_name], row[comp_id_2_name],  # pylint: disable=cell-var-from-loop
+                        row[atom_id_1_name], row[atom_id_2_name])  # pylint: disable=cell-var-from-loop
+
             content_subtype = 'chem_shift'
 
             cs_sf_category = self.sf_categories[file_type][content_subtype]
@@ -21468,25 +21463,9 @@ class NmrDpUtility:
 
                             disulf_asm, other_asm = [], []
 
-                            item_names = self.item_names_in_rdc_loop[file_type]
-                            chain_id_1_name = item_names['chain_id_1']
-                            chain_id_2_name = item_names['chain_id_2']
-                            seq_id_1_name = item_names['seq_id_1']
-                            seq_id_2_name = item_names['seq_id_2']
-                            comp_id_1_name = item_names['comp_id_1']
-                            comp_id_2_name = item_names['comp_id_2']
-                            atom_id_1_name = item_names['atom_id_1']
-                            atom_id_2_name = item_names['atom_id_2']
-
                             for row in aux_data:
-                                chain_id_1 = row[chain_id_1_name]
-                                seq_id_1 = row[seq_id_1_name]
-                                comp_id_1 = row[comp_id_1_name]
-                                atom_id_1 = row[atom_id_1_name]
-                                chain_id_2 = row[chain_id_2_name]
-                                seq_id_2 = row[seq_id_2_name]
-                                comp_id_2 = row[comp_id_2_name]
-                                atom_id_2 = row[atom_id_2_name]
+                                chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
+                                    comp_id_1, comp_id_2, atom_id_1, atom_id_2 = ext_atom_names(row)
 
                                 if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                                     continue
@@ -29057,6 +29036,12 @@ class NmrDpUtility:
         atom_id_1_name = item_names['atom_id_1']
         atom_id_2_name = item_names['atom_id_2']
 
+        def ext_atom_names(row):
+            return (row[chain_id_1_name], row[chain_id_2_name],
+                    row[seq_id_1_name], row[seq_id_2_name],
+                    row[comp_id_1_name], row[comp_id_2_name],
+                    row[atom_id_1_name], row[atom_id_2_name])
+
         try:
 
             lp_data = next((lp['data'] for lp in self.__lp_data[content_subtype]
@@ -29065,14 +29050,8 @@ class NmrDpUtility:
             if lp_data is not None:
 
                 for row in lp_data:
-                    chain_id_1 = row[chain_id_1_name]
-                    seq_id_1 = row[seq_id_1_name]
-                    comp_id_1 = row[comp_id_1_name]
-                    atom_id_1 = row[atom_id_1_name]
-                    chain_id_2 = row[chain_id_2_name]
-                    seq_id_2 = row[seq_id_2_name]
-                    comp_id_2 = row[comp_id_2_name]
-                    atom_id_2 = row[atom_id_2_name]
+                    chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
+                        comp_id_1, comp_id_2, atom_id_1, atom_id_2 = ext_atom_names(row)
 
                     if atom_id_1 in emptyValue or atom_id_2 in emptyValue:
                         continue
@@ -29300,6 +29279,12 @@ class NmrDpUtility:
         atom_id_1_name = item_names['atom_id_1']
         atom_id_2_name = item_names['atom_id_2']
 
+        def ext_atom_names(row):
+            return (row[chain_id_1_name], row[chain_id_2_name],
+                    row[seq_id_1_name], row[seq_id_2_name],
+                    row[comp_id_1_name], row[comp_id_2_name],
+                    row[atom_id_1_name], row[atom_id_2_name])
+
         try:
 
             aux_data = next((lp['data'] for lp in self.__aux_data[content_subtype]
@@ -29309,14 +29294,8 @@ class NmrDpUtility:
             if aux_data is not None:
 
                 for row in aux_data:
-                    chain_id_1 = row[chain_id_1_name]
-                    seq_id_1 = row[seq_id_1_name]
-                    comp_id_1 = row[comp_id_1_name]
-                    atom_id_1 = row[atom_id_1_name]
-                    chain_id_2 = row[chain_id_2_name]
-                    seq_id_2 = row[seq_id_2_name]
-                    comp_id_2 = row[comp_id_2_name]
-                    atom_id_2 = row[atom_id_2_name]
+                    chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
+                        comp_id_1, comp_id_2, atom_id_1, atom_id_2 = ext_atom_names(row)
 
                     bond = self.__getNmrBondLength(chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2)
 
@@ -34201,7 +34180,7 @@ class NmrDpUtility:
             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
         if len(self.__nmr_ext_poly_seq) > 0:
-            entity_assembly = self.__caC['entity_assembly'] if self.__caC is not None else []
+            entity_assembly = self.__caC['entity_assembly']
             auth_chain_ids = list(set(d['auth_chain_id'] for d in self.__nmr_ext_poly_seq))
             for auth_chain_id in auth_chain_ids:
                 item = next(item for item in entity_assembly if auth_chain_id in item['auth_asym_id'].split(','))
@@ -37532,6 +37511,73 @@ class NmrDpUtility:
         weight_name = self.weight_tags[file_type][content_subtype]
         id_tag = self.consist_id_tags[file_type][content_subtype]
 
+        def ext_atom_names(row):
+            return (row[chain_id_1_name], row[chain_id_2_name],
+                    row[seq_id_1_name], row[seq_id_2_name],
+                    row[comp_id_1_name], row[comp_id_2_name],
+                    row[atom_id_1_name], row[atom_id_2_name])
+
+        def get_est_value_range(row):
+            target_value = row.get(target_value_name)
+            upper_limit = lower_limit = None
+
+            if target_value is None:
+
+                if has_key_value(row, lower_limit_name)\
+                        and has_key_value(row, upper_limit_name):
+                    target_value = (row[lower_limit_name] + row[upper_limit_name]) / 2.0
+                    upper_limit = row[lower_limit_name]
+                    lower_limit = row[upper_limit_name]
+
+                elif has_key_value(row, lower_linear_limit_name)\
+                        and has_key_value(row, upper_linear_limit_name):
+                    target_value = (row[lower_linear_limit_name] + row[upper_linear_limit_name]) / 2.0
+
+                elif has_key_value(row, upper_linear_limit_name):
+                    target_value = row[upper_linear_limit_name]
+                    upper_limit = target_value
+
+                elif has_key_value(row, upper_limit_name):
+                    target_value = row[upper_limit_name]
+                    upper_limit = target_value
+
+                elif has_key_value(row, lower_linear_limit_name):
+                    target_value = row[lower_linear_limit_name]
+                    lower_limit = target_value
+
+                elif has_key_value(row, lower_limit_name):
+                    target_value = row[lower_limit_name]
+                    lower_limit = target_value
+
+            return target_value, upper_limit, lower_limit
+
+        def get_est_target_value(row):
+            value = row.get(target_value_name)
+
+            if value is None:
+
+                if has_key_value(row, lower_limit_name)\
+                        and has_key_value(row, upper_limit_name):
+                    value = (row[lower_limit_name] + row[upper_limit_name]) / 2.0
+
+                elif has_key_value(row, lower_linear_limit_name)\
+                        and has_key_value(row, upper_linear_limit_name):
+                    value = (row[lower_linear_limit_name] + row[upper_linear_limit_name]) / 2.0
+
+                elif has_key_value(row, upper_linear_limit_name):
+                    value = row[upper_linear_limit_name]
+
+                elif has_key_value(row, upper_limit_name):
+                    value = row[upper_limit_name]
+
+                elif has_key_value(row, lower_linear_limit_name):
+                    value = row[lower_linear_limit_name]
+
+                elif has_key_value(row, lower_limit_name):
+                    value = row[lower_limit_name]
+
+            return value
+
         len_lp_data = len(lp_data)
 
         try:
@@ -37576,18 +37622,12 @@ class NmrDpUtility:
                 member_id = row.get(member_id_name) if file_type == 'nmr-star' else None
                 member_logic_code = row.get(member_logic_code_name) if file_type == 'nmr-star' else None
 
-                comp_id_1 = row[comp_id_1_name]
-                comp_id_2 = row[comp_id_2_name]
+                chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
+                    comp_id_1, comp_id_2, atom_id_1, atom_id_2 = ext_atom_names(row)
 
                 if 'HOH' in (comp_id_1, comp_id_2):
                     continue
 
-                chain_id_1 = row[chain_id_1_name]
-                chain_id_2 = row[chain_id_2_name]
-                seq_id_1 = row[seq_id_1_name]
-                seq_id_2 = row[seq_id_2_name]
-                atom_id_1 = row[atom_id_1_name]
-                atom_id_2 = row[atom_id_2_name]
                 weight = row.get(weight_name)
 
                 rest_id = row[id_tag]
@@ -37611,40 +37651,10 @@ class NmrDpUtility:
 
                 _rest_id = rest_id
 
-                target_value = row.get(target_value_name)
-
-                upper_limit = lower_limit = None
+                target_value, upper_limit, lower_limit = get_est_value_range(row)
 
                 if target_value is None:
-
-                    if has_key_value(row, lower_limit_name)\
-                            and has_key_value(row, upper_limit_name):
-                        target_value = (row[lower_limit_name] + row[upper_limit_name]) / 2.0
-                        upper_limit = row[lower_limit_name]
-                        lower_limit = row[upper_limit_name]
-
-                    elif has_key_value(row, lower_linear_limit_name)\
-                            and has_key_value(row, upper_linear_limit_name):
-                        target_value = (row[lower_linear_limit_name] + row[upper_linear_limit_name]) / 2.0
-
-                    elif has_key_value(row, upper_linear_limit_name):
-                        target_value = row[upper_linear_limit_name]
-                        upper_limit = target_value
-
-                    elif has_key_value(row, upper_limit_name):
-                        target_value = row[upper_limit_name]
-                        upper_limit = target_value
-
-                    elif has_key_value(row, lower_linear_limit_name):
-                        target_value = row[lower_linear_limit_name]
-                        lower_limit = target_value
-
-                    elif has_key_value(row, lower_limit_name):
-                        target_value = row[lower_limit_name]
-                        lower_limit = target_value
-
-                    else:
-                        continue
+                    continue
 
                 max_val = max(max_val, target_value)
                 min_val = min(min_val, target_value)
@@ -37934,51 +37944,12 @@ class NmrDpUtility:
                 for idx, row in enumerate(lp_data):
                     member_id = row.get(member_id_name) if file_type == 'nmr-star' else None
 
-                    chain_id_1 = row[chain_id_1_name]
-                    chain_id_2 = row[chain_id_2_name]
-                    seq_id_1 = row[seq_id_1_name]
-                    seq_id_2 = row[seq_id_2_name]
-                    comp_id_1 = row[comp_id_1_name]
-                    comp_id_2 = row[comp_id_2_name]
-                    atom_id_1 = row[atom_id_1_name]
-                    atom_id_2 = row[atom_id_2_name]
+                    chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
+                        comp_id_1, comp_id_2, atom_id_1, atom_id_2 = ext_atom_names(row)
 
-                    target_value = row.get(target_value_name)
+                    target_value, upper_limit, lower_limit = get_est_value_range(row)
 
-                    upper_limit = lower_limit = None
-
-                    if target_value is None:
-
-                        if has_key_value(row, lower_limit_name)\
-                                and has_key_value(row, upper_limit_name):
-                            target_value = (row[lower_limit_name] + row[upper_limit_name]) / 2.0
-                            upper_limit = row[lower_limit_name]
-                            lower_limit = row[upper_limit_name]
-
-                        elif has_key_value(row, lower_linear_limit_name)\
-                                and has_key_value(row, upper_linear_limit_name):
-                            target_value = (row[lower_linear_limit_name] + row[upper_linear_limit_name]) / 2.0
-
-                        elif has_key_value(row, upper_linear_limit_name):
-                            target_value = row[upper_linear_limit_name]
-                            upper_limit = target_value
-
-                        elif has_key_value(row, upper_limit_name):
-                            target_value = row[upper_limit_name]
-                            upper_limit = target_value
-
-                        elif has_key_value(row, lower_linear_limit_name):
-                            target_value = row[lower_linear_limit_name]
-                            lower_limit = target_value
-
-                        elif has_key_value(row, lower_limit_name):
-                            target_value = row[lower_limit_name]
-                            lower_limit = target_value
-
-                        else:
-                            continue
-
-                    if target_value < v or target_value >= v + scale:
+                    if target_value is None or target_value < v or target_value >= v + scale:
                         continue
 
                     data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, idx, target_value, upper_limit, lower_limit,
@@ -38028,53 +37999,8 @@ class NmrDpUtility:
                             row_1 = lp_data[id_set[i]]
                             row_2 = lp_data[id_set[j]]
 
-                            target_value_1 = row_1.get(target_value_name)
-
-                            if target_value_1 is None:
-
-                                if has_key_value(row_1, lower_limit_name)\
-                                        and has_key_value(row_1, upper_limit_name):
-                                    target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
-
-                                elif has_key_value(row_1, lower_linear_limit_name)\
-                                        and has_key_value(row_1, upper_linear_limit_name):
-                                    target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
-
-                                elif has_key_value(row_1, upper_linear_limit_name):
-                                    target_value_1 = row_1[upper_linear_limit_name]
-
-                                elif has_key_value(row_1, upper_limit_name):
-                                    target_value_1 = row_1[upper_limit_name]
-
-                                elif has_key_value(row_1, lower_linear_limit_name):
-                                    target_value_1 = row_1[lower_linear_limit_name]
-
-                                elif has_key_value(row_1, lower_limit_name):
-                                    target_value_1 = row_1[lower_limit_name]
-
-                            target_value_2 = row_2.get(target_value_name)
-
-                            if target_value_2 is None:
-
-                                if has_key_value(row_2, lower_limit_name)\
-                                        and has_key_value(row_2, upper_limit_name):
-                                    target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
-
-                                elif has_key_value(row_2, lower_linear_limit_name)\
-                                        and has_key_value(row_2, upper_linear_limit_name):
-                                    target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
-
-                                elif has_key_value(row_2, upper_linear_limit_name):
-                                    target_value_2 = row_2[upper_linear_limit_name]
-
-                                elif has_key_value(row_2, upper_limit_name):
-                                    target_value_2 = row_2[upper_limit_name]
-
-                                elif has_key_value(row_2, lower_linear_limit_name):
-                                    target_value_2 = row_2[lower_linear_limit_name]
-
-                                elif has_key_value(row_2, lower_limit_name):
-                                    target_value_2 = row_2[lower_limit_name]
+                            target_value_1 = get_est_target_value(row_1)
+                            target_value_2 = get_est_target_value(row_2)
 
                             if target_value_1 is None or target_value_2 is None:
                                 continue
@@ -38150,53 +38076,8 @@ class NmrDpUtility:
                                     row_1 = lp_data[row_id_1]
                                     row_2 = lp_data[row_id_2]
 
-                                    target_value_1 = row_1.get(target_value_name)
-
-                                    if target_value_1 is None:
-
-                                        if has_key_value(row_1, lower_limit_name)\
-                                                and has_key_value(row_1, upper_limit_name):
-                                            target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
-
-                                        elif has_key_value(row_1, lower_linear_limit_name)\
-                                                and has_key_value(row_1, upper_linear_limit_name):
-                                            target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
-
-                                        elif has_key_value(row_1, upper_linear_limit_name):
-                                            target_value_1 = row_1[upper_linear_limit_name]
-
-                                        elif has_key_value(row_1, upper_limit_name):
-                                            target_value_1 = row_1[upper_limit_name]
-
-                                        elif has_key_value(row_1, lower_linear_limit_name):
-                                            target_value_1 = row_1[lower_linear_limit_name]
-
-                                        elif has_key_value(row_1, lower_limit_name):
-                                            target_value_1 = row_1[lower_limit_name]
-
-                                    target_value_2 = row_2.get(target_value_name)
-
-                                    if target_value_2 is None:
-
-                                        if has_key_value(row_2, lower_limit_name)\
-                                                and has_key_value(row_2, upper_limit_name):
-                                            target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
-
-                                        elif has_key_value(row_2, lower_linear_limit_name)\
-                                                and has_key_value(row_2, upper_linear_limit_name):
-                                            target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
-
-                                        elif has_key_value(row_2, upper_linear_limit_name):
-                                            target_value_2 = row_2[upper_linear_limit_name]
-
-                                        elif has_key_value(row_2, upper_limit_name):
-                                            target_value_2 = row_2[upper_limit_name]
-
-                                        elif has_key_value(row_2, lower_linear_limit_name):
-                                            target_value_2 = row_2[lower_linear_limit_name]
-
-                                        elif has_key_value(row_2, lower_limit_name):
-                                            target_value_2 = row_2[lower_limit_name]
+                                    target_value_1 = get_est_target_value(row_1)
+                                    target_value_2 = get_est_target_value(row_2)
 
                                     if target_value_1 is None and target_value_2 is None:
                                         continue
@@ -38215,51 +38096,15 @@ class NmrDpUtility:
                                     if discrepancy < v or discrepancy >= v + scale:
                                         continue
 
-                                    target_value = row_1.get(target_value_name)
-
-                                    upper_limit = lower_limit = None
+                                    target_value = get_est_target_value(row_1)
 
                                     if target_value is None:
-
-                                        if has_key_value(row_1, lower_limit_name)\
-                                                and has_key_value(row_1, upper_limit_name):
-                                            target_value = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
-                                            upper_limit = row_1[lower_limit_name]
-                                            lower_limit = row_1[upper_limit_name]
-
-                                        elif has_key_value(row_1, lower_linear_limit_name)\
-                                                and has_key_value(row_1, upper_linear_limit_name):
-                                            target_value = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
-
-                                        elif has_key_value(row_1, upper_linear_limit_name):
-                                            target_value = row_1[upper_linear_limit_name]
-                                            upper_limit = target_value
-
-                                        elif has_key_value(row_1, upper_limit_name):
-                                            target_value = row_1[upper_limit_name]
-                                            upper_limit = target_value
-
-                                        elif has_key_value(row_1, lower_linear_limit_name):
-                                            target_value = row_1[lower_linear_limit_name]
-                                            lower_limit = target_value
-
-                                        elif has_key_value(row_1, lower_limit_name):
-                                            target_value = row_1[lower_limit_name]
-                                            lower_limit = target_value
-
-                                        else:
-                                            continue
+                                        continue
 
                                     member_id = row_1.get(member_id_name) if file_type == 'nmr-star' else None
 
-                                    chain_id_1 = row_1[chain_id_1_name]
-                                    chain_id_2 = row_1[chain_id_2_name]
-                                    seq_id_1 = row_1[seq_id_1_name]
-                                    seq_id_2 = row_1[seq_id_2_name]
-                                    comp_id_1 = row_1[comp_id_1_name]
-                                    comp_id_2 = row_1[comp_id_2_name]
-                                    atom_id_1 = row_1[atom_id_1_name]
-                                    atom_id_2 = row_1[atom_id_2_name]
+                                    chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
+                                        comp_id_1, comp_id_2, atom_id_1, atom_id_2 = ext_atom_names(row_1)
 
                                     data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, row_id_1, target_value, upper_limit, lower_limit,
                                                                                   member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
@@ -38272,51 +38117,15 @@ class NmrDpUtility:
 
                             if 0.0 <= v < scale and redundant:
 
-                                target_value = row_1.get(target_value_name)
-
-                                upper_limit = lower_limit = None
+                                target_value, upper_limit, lower_limit = get_est_value_range(row_1)
 
                                 if target_value is None:
-
-                                    if has_key_value(row_1, lower_limit_name)\
-                                            and has_key_value(row_1, upper_limit_name):
-                                        target_value = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
-                                        upper_limit = row_1[lower_limit_name]
-                                        lower_limit = row_1[upper_limit_name]
-
-                                    elif has_key_value(row_1, lower_linear_limit_name)\
-                                            and has_key_value(row_1, upper_linear_limit_name):
-                                        target_value = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
-
-                                    elif has_key_value(row_1, upper_linear_limit_name):
-                                        target_value = row_1[upper_linear_limit_name]
-                                        upper_limit = target_value
-
-                                    elif has_key_value(row_1, upper_limit_name):
-                                        target_value = row_1[upper_limit_name]
-                                        upper_limit = target_value
-
-                                    elif has_key_value(row_1, lower_linear_limit_name):
-                                        target_value = row_1[lower_linear_limit_name]
-                                        lower_limit = target_value
-
-                                    elif has_key_value(row_1, lower_limit_name):
-                                        target_value = row_1[lower_limit_name]
-                                        lower_limit = target_value
-
-                                    else:
-                                        continue
+                                    continue
 
                                 member_id = row_1.get(member_id_name) if file_type == 'nmr-star' else None
 
-                                chain_id_1 = row_1[chain_id_1_name]
-                                chain_id_2 = row_1[chain_id_2_name]
-                                seq_id_1 = row_1[seq_id_1_name]
-                                seq_id_2 = row_1[seq_id_2_name]
-                                comp_id_1 = row_1[comp_id_1_name]
-                                comp_id_2 = row_1[comp_id_2_name]
-                                atom_id_1 = row_1[atom_id_1_name]
-                                atom_id_2 = row_1[atom_id_2_name]
+                                chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
+                                    comp_id_1, comp_id_2, atom_id_1, atom_id_2 = ext_atom_names(row_1)
 
                                 data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, row_id_1, target_value, upper_limit, lower_limit,
                                                                               member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
@@ -38379,6 +38188,12 @@ class NmrDpUtility:
         atom_id_1_name = item_names['atom_id_1']
         atom_id_2_name = item_names['atom_id_2']
 
+        def ext_atom_names(row):
+            return (row[chain_id_1_name], row[chain_id_2_name],
+                    row[seq_id_1_name], row[seq_id_2_name],
+                    row[comp_id_1_name], row[comp_id_2_name],
+                    row[atom_id_1_name], row[atom_id_2_name])
+
         try:
 
             count = {}
@@ -38405,14 +38220,8 @@ class NmrDpUtility:
                                                   'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})
 
             for idx, row in enumerate(lp_data):
-                chain_id_1 = row[chain_id_1_name]
-                chain_id_2 = row[chain_id_2_name]
-                seq_id_1 = row[seq_id_1_name]
-                seq_id_2 = row[seq_id_2_name]
-                comp_id_1 = row[comp_id_1_name]
-                comp_id_2 = row[comp_id_2_name]
-                atom_id_1 = row[atom_id_1_name]
-                atom_id_2 = row[atom_id_2_name]
+                chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
+                    comp_id_1, comp_id_2, atom_id_1, atom_id_2 = ext_atom_names(row)
 
                 bond = self.__getNmrBondLength(chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2)
 
@@ -38558,6 +38367,11 @@ class NmrDpUtility:
         seq_id_2_name = item_names['seq_id_2']
         comp_id_1_name = item_names['comp_id_1']
         comp_id_2_name = item_names['comp_id_2']
+
+        def ext_comp_names(row):
+            return (row[chain_id_1_name], row[chain_id_2_name],
+                    row[seq_id_1_name], row[seq_id_2_name],
+                    row[comp_id_1_name], row[comp_id_2_name])
 
         hydrogen_bond_type = disulfide_bond_type = diselenide_bond_type = other_bond_type = None
 
@@ -38780,12 +38594,8 @@ class NmrDpUtility:
                         if idx == row_id:
                             continue
 
-                        _chain_id_1 = row[chain_id_1_name]
-                        _chain_id_2 = row[chain_id_2_name]
-                        _seq_id_1 = row[seq_id_1_name]
-                        _seq_id_2 = row[seq_id_2_name]
-                        _comp_id_1 = row[comp_id_1_name]
-                        _comp_id_2 = row[comp_id_2_name]
+                        _chain_id_1, _chain_id_2, _seq_id_1, _seq_id_2, \
+                            _comp_id_1, _comp_id_2 = ext_comp_names(row)
 
                         if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
 
@@ -38909,6 +38719,11 @@ class NmrDpUtility:
         seq_id_2_name = item_names['seq_id_2']
         comp_id_1_name = item_names['comp_id_1']
         comp_id_2_name = item_names['comp_id_2']
+
+        def ext_comp_names(row):
+            return (row[chain_id_1_name], row[chain_id_2_name],
+                    row[seq_id_1_name], row[seq_id_2_name],
+                    row[comp_id_1_name], row[comp_id_2_name])
 
         hydrogen_bond_type = disulfide_bond_type = diselenide_bond_type = other_bond_type = None
 
@@ -39114,12 +38929,8 @@ class NmrDpUtility:
                     if idx == row_id:
                         continue
 
-                    _chain_id_1 = row[chain_id_1_name]
-                    _chain_id_2 = row[chain_id_2_name]
-                    _seq_id_1 = row[seq_id_1_name]
-                    _seq_id_2 = row[seq_id_2_name]
-                    _comp_id_1 = row[comp_id_1_name]
-                    _comp_id_2 = row[comp_id_2_name]
+                    _chain_id_1, _chain_id_2, _seq_id_1, _seq_id_2, \
+                        _comp_id_1, _comp_id_2 = ext_comp_names(row)
 
                     if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
 
@@ -39250,6 +39061,33 @@ class NmrDpUtility:
         lower_linear_limit_name = item_names['lower_linear_limit']
         upper_linear_limit_name = item_names['upper_linear_limit']
 
+        def get_est_target_value(row):
+            value = row.get(target_value_name)
+
+            if value is None:
+
+                if has_key_value(row, lower_limit_name)\
+                        and has_key_value(row, upper_limit_name):
+                    value = (row[lower_limit_name] + row[upper_limit_name]) / 2.0
+
+                elif has_key_value(row, lower_linear_limit_name)\
+                        and has_key_value(row, upper_linear_limit_name):
+                    value = (row[lower_linear_limit_name] + row[upper_linear_limit_name]) / 2.0
+
+                elif has_key_value(row, upper_linear_limit_name):
+                    value = row[upper_linear_limit_name]
+
+                elif has_key_value(row, upper_limit_name):
+                    value = row[upper_limit_name]
+
+                elif has_key_value(row, lower_linear_limit_name):
+                    value = row[lower_linear_limit_name]
+
+                elif has_key_value(row, lower_limit_name):
+                    value = row[lower_limit_name]
+
+            return value
+
         dh_item_names = self.item_names_in_dh_loop[file_type]
         combination_id_name = dh_item_names['combination_id']
         chain_id_1_name = dh_item_names['chain_id_1']
@@ -39271,6 +39109,16 @@ class NmrDpUtility:
         angle_type_name = dh_item_names['angle_type']
         weight_name = self.weight_tags[file_type][content_subtype]
         id_tag = self.consist_id_tags[file_type][content_subtype]
+
+        def ext_atoms(row):
+            return ({'chain_id': row[chain_id_1_name], 'seq_id': row[seq_id_1_name],
+                     'comp_id': row[comp_id_1_name], 'atom_id': row[atom_id_1_name]},
+                    {'chain_id': row[chain_id_2_name], 'seq_id': row[seq_id_2_name],
+                     'comp_id': row[comp_id_2_name], 'atom_id': row[atom_id_2_name]},
+                    {'chain_id': row[chain_id_3_name], 'seq_id': row[seq_id_3_name],
+                     'comp_id': row[comp_id_3_name], 'atom_id': row[atom_id_3_name]},
+                    {'chain_id': row[chain_id_4_name], 'seq_id': row[seq_id_4_name],
+                     'comp_id': row[comp_id_4_name], 'atom_id': row[atom_id_4_name]})
 
         try:
 
@@ -39354,32 +39202,13 @@ class NmrDpUtility:
                 if data_type == 'PPA':
                     continue
 
-                chain_id_1 = row[chain_id_1_name]
-                chain_id_2 = row[chain_id_2_name]
-                chain_id_3 = row[chain_id_3_name]
-                chain_id_4 = row[chain_id_4_name]
-                seq_id_1 = row[seq_id_1_name]
-                seq_id_2 = row[seq_id_2_name]
-                seq_id_3 = row[seq_id_3_name]
-                seq_id_4 = row[seq_id_4_name]
-                comp_id_1 = row[comp_id_1_name]
-                comp_id_2 = row[comp_id_2_name]
-                comp_id_3 = row[comp_id_3_name]
-                comp_id_4 = row[comp_id_4_name]
-                atom_id_1 = row[atom_id_1_name]
-                atom_id_2 = row[atom_id_2_name]
-                atom_id_3 = row[atom_id_3_name]
-                atom_id_4 = row[atom_id_4_name]
+                atom1, atom2, atom3, atom4 = ext_atoms(row)
+
                 weight = row.get(weight_name)
                 set_id.add(row[id_tag])
 
-                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_2)
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(atom2['comp_id'])
                 plane_like = is_like_planality_boundary(row, lower_limit_name, upper_limit_name)
-
-                atom1 = {'chain_id': chain_id_1, 'seq_id': seq_id_1, 'comp_id': comp_id_1, 'atom_id': atom_id_1}
-                atom2 = {'chain_id': chain_id_2, 'seq_id': seq_id_2, 'comp_id': comp_id_2, 'atom_id': atom_id_2}
-                atom3 = {'chain_id': chain_id_3, 'seq_id': seq_id_3, 'comp_id': comp_id_3, 'atom_id': atom_id_3}
-                atom4 = {'chain_id': chain_id_4, 'seq_id': seq_id_4, 'comp_id': comp_id_4, 'atom_id': atom_id_4}
 
                 data_type =\
                     self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
@@ -39434,25 +39263,15 @@ class NmrDpUtility:
                     else:
                         polymer_types['other'] = 1
 
-                seq_ids, comp_ids = [], []
-
-                seq_ids.append(seq_id_1)
-                seq_ids.append(seq_id_2)
-                seq_ids.append(seq_id_3)
-                seq_ids.append(seq_id_4)
-
+                chain_id = atom1['chain_id']
+                seq_ids = [atom1['seq_id'], atom2['seq_id'], atom3['seq_id'], atom4['seq_id']]
+                comp_ids = [atom1['comp_id'], atom2['comp_id'], atom3['comp_id'], atom4['comp_id']]
                 seq_id_common = collections.Counter(seq_ids).most_common()
-
-                comp_ids.append(comp_id_1)
-                comp_ids.append(comp_id_2)
-                comp_ids.append(comp_id_3)
-                comp_ids.append(comp_id_4)
-
                 comp_id_common = collections.Counter(comp_ids).most_common()
 
                 if data_type.startswith('phi_'):
                     phi = {}
-                    phi['chain_id'] = chain_id_1
+                    phi['chain_id'] = chain_id
                     phi['seq_id'] = seq_id_common[0][0]
                     phi['comp_id'] = comp_id_common[0][0]
                     phi['value'] = target_value
@@ -39461,7 +39280,7 @@ class NmrDpUtility:
 
                 elif data_type.startswith('psi_'):
                     psi = {}
-                    psi['chain_id'] = chain_id_1
+                    psi['chain_id'] = chain_id
                     psi['seq_id'] = seq_id_common[0][0]
                     psi['comp_id'] = comp_id_common[0][0]
                     psi['value'] = target_value
@@ -39470,18 +39289,18 @@ class NmrDpUtility:
 
                 elif data_type.startswith('chi1_'):
                     chi1 = {}
-                    chi1['chain_id'] = chain_id_1
-                    chi1['seq_id'] = seq_id_1
-                    chi1['comp_id'] = comp_id_1
+                    chi1['chain_id'] = chain_id
+                    chi1['seq_id'] = seq_ids[0]
+                    chi1['comp_id'] = comp_ids[0]
                     chi1['value'] = target_value
                     chi1['error'] = None if lower_limit is None or upper_limit is None else [lower_limit, upper_limit]
                     chi1_list.append(chi1)
 
                 elif data_type.startswith('chi2_'):
                     chi2 = {}
-                    chi2['chain_id'] = chain_id_1
-                    chi2['seq_id'] = seq_id_1
-                    chi2['comp_id'] = comp_id_1
+                    chi2['chain_id'] = chain_id
+                    chi2['seq_id'] = seq_ids[0]
+                    chi2['comp_id'] = comp_ids[0]
                     chi2['value'] = target_value
                     chi2['error'] = None if lower_limit is None or upper_limit is None else [lower_limit, upper_limit]
                     chi2_list.append(chi2)
@@ -39536,7 +39355,7 @@ class NmrDpUtility:
                     for c in value_per_residue:
                         if data_type not in c:
                             c[data_type] = [None] * len(c['seq_id'])
-                        if c['chain_id'] == chain_id_1 and target_value is not None and seq_id_common[0][0] in c['seq_id']:
+                        if c['chain_id'] == chain_id and target_value is not None and seq_id_common[0][0] in c['seq_id']:
                             b = c['seq_id'].index(seq_id_common[0][0])
                             if c[data_type][b] is None:
                                 c[data_type][b] = float(target_value)
@@ -39668,53 +39487,8 @@ class NmrDpUtility:
                             row_1 = lp_data[id_set[i]]
                             row_2 = lp_data[id_set[j]]
 
-                            target_value_1 = row_1.get(target_value_name)
-
-                            if target_value_1 is None:
-
-                                if has_key_value(row_1, lower_limit_name)\
-                                        and has_key_value(row_1, upper_limit_name):
-                                    target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
-
-                                elif has_key_value(row_1, lower_linear_limit_name)\
-                                        and has_key_value(row_1, upper_linear_limit_name):
-                                    target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
-
-                                elif has_key_value(row_1, upper_linear_limit_name):
-                                    target_value_1 = row_1[upper_linear_limit_name]
-
-                                elif has_key_value(row_1, upper_limit_name):
-                                    target_value_1 = row_1[upper_limit_name]
-
-                                elif has_key_value(row_1, lower_linear_limit_name):
-                                    target_value_1 = row_1[lower_linear_limit_name]
-
-                                elif has_key_value(row_1, lower_limit_name):
-                                    target_value_1 = row_1[lower_limit_name]
-
-                            target_value_2 = row_2.get(target_value_name)
-
-                            if target_value_2 is None:
-
-                                if has_key_value(row_2, lower_limit_name)\
-                                        and has_key_value(row_2, upper_limit_name):
-                                    target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
-
-                                elif has_key_value(row_2, lower_linear_limit_name)\
-                                        and has_key_value(row_2, upper_linear_limit_name):
-                                    target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
-
-                                elif has_key_value(row_2, upper_linear_limit_name):
-                                    target_value_2 = row_2[upper_linear_limit_name]
-
-                                elif has_key_value(row_2, upper_limit_name):
-                                    target_value_2 = row_2[upper_limit_name]
-
-                                elif has_key_value(row_2, lower_linear_limit_name):
-                                    target_value_2 = row_2[lower_linear_limit_name]
-
-                                elif has_key_value(row_2, lower_limit_name):
-                                    target_value_2 = row_2[lower_limit_name]
+                            target_value_1 = get_est_target_value(row_1)
+                            target_value_2 = get_est_target_value(row_2)
 
                             if target_value_1 is None or target_value_2 is None:
                                 continue
@@ -39740,31 +39514,12 @@ class NmrDpUtility:
                                 if target_value_1 > target_value_2:
                                     discrepancy = abs(target_value_1 - (target_value_2 + 360.0))
 
-                            chain_id_1 = row_1[chain_id_1_name]
-                            chain_id_2 = row_1[chain_id_2_name]
-                            chain_id_3 = row_1[chain_id_3_name]
-                            chain_id_4 = row_1[chain_id_4_name]
-                            seq_id_1 = row_1[seq_id_1_name]
-                            seq_id_2 = row_1[seq_id_2_name]
-                            seq_id_3 = row_1[seq_id_3_name]
-                            seq_id_4 = row_1[seq_id_4_name]
-                            comp_id_1 = row_1[comp_id_1_name]
-                            comp_id_2 = row_1[comp_id_2_name]
-                            comp_id_3 = row_1[comp_id_3_name]
-                            comp_id_4 = row_1[comp_id_4_name]
-                            atom_id_1 = row_1[atom_id_1_name]
-                            atom_id_2 = row_1[atom_id_2_name]
-                            atom_id_3 = row_1[atom_id_3_name]
-                            atom_id_4 = row_1[atom_id_4_name]
+                            atom1, atom2, atom3, atom4 = ext_atoms(row_1)
+
                             data_type = row_1[angle_type_name]
 
-                            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_2)
+                            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(atom2['comp_id'])
                             plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
-
-                            atom1 = {'chain_id': chain_id_1, 'seq_id': seq_id_1, 'comp_id': comp_id_1, 'atom_id': atom_id_1}
-                            atom2 = {'chain_id': chain_id_2, 'seq_id': seq_id_2, 'comp_id': comp_id_2, 'atom_id': atom_id_2}
-                            atom3 = {'chain_id': chain_id_3, 'seq_id': seq_id_3, 'comp_id': comp_id_3, 'atom_id': atom_id_3}
-                            atom4 = {'chain_id': chain_id_4, 'seq_id': seq_id_4, 'comp_id': comp_id_4, 'atom_id': atom_id_4}
 
                             data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
                                                                           [atom1, atom2, atom3, atom4], plane_like)[0]
@@ -39776,13 +39531,13 @@ class NmrDpUtility:
                                 if discrepancy > max_inclusive * self.inconsist_over_conflicted:
                                     ann = {}
                                     ann['level'] = 'conflicted' if discrepancy > max_inclusive else 'inconsistent'
-                                    ann['chain_id'] = row_1[chain_id_2_name]
-                                    ann['seq_id'] = row_1[seq_id_2_name]
-                                    ann['comp_id'] = row_1[comp_id_2_name]
-                                    ann['atom_id_1'] = row_1[atom_id_1_name]
-                                    ann['atom_id_2'] = row_1[atom_id_2_name]
-                                    ann['atom_id_3'] = row_1[atom_id_3_name]
-                                    ann['atom_id_4'] = row_1[atom_id_4_name]
+                                    ann['chain_id'] = atom2['chain_id']
+                                    ann['seq_id'] = atom2['seq_id']
+                                    ann['comp_id'] = atom2['comp_id']
+                                    ann['atom_id_1'] = atom1['atom_id']
+                                    ann['atom_id_2'] = atom2['atom_id']
+                                    ann['atom_id_3'] = atom3['atom_id']
+                                    ann['atom_id_4'] = atom4['atom_id']
                                     ann['discrepancy'] = float(f"{discrepancy:.1f}")
 
                                     dihed_ann.append(ann)
@@ -39828,53 +39583,8 @@ class NmrDpUtility:
                                     row_1 = lp_data[id_set[i]]
                                     row_2 = lp_data[id_set[j]]
 
-                                    target_value_1 = row_1.get(target_value_name)
-
-                                    if target_value_1 is None:
-
-                                        if has_key_value(row_1, lower_limit_name)\
-                                                and has_key_value(row_1, upper_limit_name):
-                                            target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
-
-                                        elif has_key_value(row_1, lower_linear_limit_name)\
-                                                and has_key_value(row_1, upper_linear_limit_name):
-                                            target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
-
-                                        elif has_key_value(row_1, upper_linear_limit_name):
-                                            target_value_1 = row_1[upper_linear_limit_name]
-
-                                        elif has_key_value(row_1, upper_limit_name):
-                                            target_value_1 = row_1[upper_limit_name]
-
-                                        elif has_key_value(row_1, lower_linear_limit_name):
-                                            target_value_1 = row_1[lower_linear_limit_name]
-
-                                        elif has_key_value(row_1, lower_limit_name):
-                                            target_value_1 = row_1[lower_limit_name]
-
-                                    target_value_2 = row_2.get(target_value_name)
-
-                                    if target_value_2 is None:
-
-                                        if has_key_value(row_2, lower_limit_name)\
-                                                and has_key_value(row_2, upper_limit_name):
-                                            target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
-
-                                        elif has_key_value(row_2, lower_linear_limit_name)\
-                                                and has_key_value(row_2, upper_linear_limit_name):
-                                            target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
-
-                                        elif has_key_value(row_2, upper_linear_limit_name):
-                                            target_value_2 = row_2[upper_linear_limit_name]
-
-                                        elif has_key_value(row_2, upper_limit_name):
-                                            target_value_2 = row_2[upper_limit_name]
-
-                                        elif has_key_value(row_2, lower_linear_limit_name):
-                                            target_value_2 = row_2[lower_linear_limit_name]
-
-                                        elif has_key_value(row_2, lower_limit_name):
-                                            target_value_2 = row_2[lower_limit_name]
+                                    target_value_1 = get_est_target_value(row_1)
+                                    target_value_2 = get_est_target_value(row_2)
 
                                     if target_value_1 is None and target_value_2 is None:
                                         continue
@@ -39903,30 +39613,10 @@ class NmrDpUtility:
                                     if discrepancy < v or discrepancy >= v + scale:
                                         continue
 
-                                    chain_id_1 = row_1[chain_id_1_name]
-                                    chain_id_2 = row_1[chain_id_2_name]
-                                    chain_id_3 = row_1[chain_id_3_name]
-                                    chain_id_4 = row_1[chain_id_4_name]
-                                    seq_id_1 = row_1[seq_id_1_name]
-                                    seq_id_2 = row_1[seq_id_2_name]
-                                    seq_id_3 = row_1[seq_id_3_name]
-                                    seq_id_4 = row_1[seq_id_4_name]
-                                    comp_id_1 = row_1[comp_id_1_name]
-                                    comp_id_2 = row_1[comp_id_2_name]
-                                    comp_id_3 = row_1[comp_id_3_name]
-                                    comp_id_4 = row_1[comp_id_4_name]
-                                    atom_id_1 = row_1[atom_id_1_name]
-                                    atom_id_2 = row_1[atom_id_2_name]
-                                    atom_id_3 = row_1[atom_id_3_name]
-                                    atom_id_4 = row_1[atom_id_4_name]
+                                    atom1, atom2, atom3, atom4 = ext_atoms(row_1)
 
-                                    peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_2)
+                                    peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(atom2['comp_id'])
                                     plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
-
-                                    atom1 = {'chain_id': chain_id_1, 'seq_id': seq_id_1, 'comp_id': comp_id_1, 'atom_id': atom_id_1}
-                                    atom2 = {'chain_id': chain_id_2, 'seq_id': seq_id_2, 'comp_id': comp_id_2, 'atom_id': atom_id_2}
-                                    atom3 = {'chain_id': chain_id_3, 'seq_id': seq_id_3, 'comp_id': comp_id_3, 'atom_id': atom_id_3}
-                                    atom4 = {'chain_id': chain_id_4, 'seq_id': seq_id_4, 'comp_id': comp_id_4, 'atom_id': atom_id_4}
 
                                     data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
                                                                                   [atom1, atom2, atom3, atom4], plane_like)[0]
@@ -39938,30 +39628,10 @@ class NmrDpUtility:
 
                             if 0.0 <= v < scale and redundant:
 
-                                chain_id_1 = row_1[chain_id_1_name]
-                                chain_id_2 = row_1[chain_id_2_name]
-                                chain_id_3 = row_1[chain_id_3_name]
-                                chain_id_4 = row_1[chain_id_4_name]
-                                seq_id_1 = row_1[seq_id_1_name]
-                                seq_id_2 = row_1[seq_id_2_name]
-                                seq_id_3 = row_1[seq_id_3_name]
-                                seq_id_4 = row_1[seq_id_4_name]
-                                comp_id_1 = row_1[comp_id_1_name]
-                                comp_id_2 = row_1[comp_id_2_name]
-                                comp_id_3 = row_1[comp_id_3_name]
-                                comp_id_4 = row_1[comp_id_4_name]
-                                atom_id_1 = row_1[atom_id_1_name]
-                                atom_id_2 = row_1[atom_id_2_name]
-                                atom_id_3 = row_1[atom_id_3_name]
-                                atom_id_4 = row_1[atom_id_4_name]
+                                atom1, atom2, atom3, atom4 = ext_atoms(row_1)
 
-                                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_2)
+                                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(atom2['comp_id'])
                                 plane_like = is_like_planality_boundary(row_1, lower_limit_name, upper_limit_name)
-
-                                atom1 = {'chain_id': chain_id_1, 'seq_id': seq_id_1, 'comp_id': comp_id_1, 'atom_id': atom_id_1}
-                                atom2 = {'chain_id': chain_id_2, 'seq_id': seq_id_2, 'comp_id': comp_id_2, 'atom_id': atom_id_2}
-                                atom3 = {'chain_id': chain_id_3, 'seq_id': seq_id_3, 'comp_id': comp_id_3, 'atom_id': atom_id_3}
-                                atom4 = {'chain_id': chain_id_4, 'seq_id': seq_id_4, 'comp_id': comp_id_4, 'atom_id': atom_id_4}
 
                                 data_type = self.__getTypeOfDihedralRestraint(data_type, peptide, nucleotide, carbohydrate,
                                                                               [atom1, atom2, atom3, atom4], plane_like)[0]
@@ -40049,6 +39719,33 @@ class NmrDpUtility:
         lower_linear_limit_name = item_names['lower_linear_limit']
         upper_linear_limit_name = item_names['upper_linear_limit']
 
+        def get_est_target_value(row):
+            value = row.get(target_value_name)
+
+            if value is None:
+
+                if has_key_value(row, lower_limit_name)\
+                        and has_key_value(row, upper_limit_name):
+                    value = (row[lower_limit_name] + row[upper_limit_name]) / 2.0
+
+                elif has_key_value(row, lower_linear_limit_name)\
+                        and has_key_value(row, upper_linear_limit_name):
+                    value = (row[lower_linear_limit_name] + row[upper_linear_limit_name]) / 2.0
+
+                elif has_key_value(row, upper_linear_limit_name):
+                    value = row[upper_linear_limit_name]
+
+                elif has_key_value(row, upper_limit_name):
+                    value = row[upper_limit_name]
+
+                elif has_key_value(row, lower_linear_limit_name):
+                    value = row[lower_linear_limit_name]
+
+                elif has_key_value(row, lower_limit_name):
+                    value = row[lower_limit_name]
+
+            return value
+
         try:
 
             max_val = min_val = 0.0
@@ -40057,32 +39754,10 @@ class NmrDpUtility:
             min_val_ = 100.0
 
             for row in lp_data:
-                target_value = row.get(target_value_name)
+                target_value = get_est_target_value(row)
 
                 if target_value is None:
-
-                    if has_key_value(row, lower_limit_name)\
-                            and has_key_value(row, upper_limit_name):
-                        target_value = (row[lower_limit_name] + row[upper_limit_name]) / 2.0
-
-                    elif has_key_value(row, lower_linear_limit_name)\
-                            and has_key_value(row, upper_linear_limit_name):
-                        target_value = (row[lower_linear_limit_name] + row[upper_linear_limit_name]) / 2.0
-
-                    elif has_key_value(row, upper_linear_limit_name):
-                        target_value = row[upper_linear_limit_name]
-
-                    elif has_key_value(row, upper_limit_name):
-                        target_value = row[upper_limit_name]
-
-                    elif has_key_value(row, lower_linear_limit_name):
-                        target_value = row[lower_linear_limit_name]
-
-                    elif has_key_value(row, lower_limit_name):
-                        target_value = row[lower_limit_name]
-
-                    else:
-                        continue
+                    continue
 
                 max_val = max(max_val, target_value)
                 min_val = min(min_val, target_value)
@@ -40099,6 +39774,10 @@ class NmrDpUtility:
             atom_id_2_name = item_names['atom_id_2']
             weight_name = self.weight_tags[file_type][content_subtype]
             id_tag = self.consist_id_tags[file_type][content_subtype]
+
+            def ext_atom_names(row):
+                return (row[chain_id_1_name], row[seq_id_1_name],
+                        row[atom_id_1_name], row[atom_id_2_name])
 
             count, comb_count, inco_count, redu_count, weights, potential_types =\
                 {}, {}, {}, {}, {}, {}
@@ -40120,10 +39799,8 @@ class NmrDpUtility:
                 index = row.get(index_tag)
                 combination_id = row.get(combination_id_name)
 
-                chain_id_1 = row[chain_id_1_name]
-                seq_id_1 = row[seq_id_1_name]
-                atom_id_1 = row[atom_id_1_name]
-                atom_id_2 = row[atom_id_2_name]
+                chain_id_1, seq_id_1, atom_id_1, atom_id_2 = ext_atom_names(row)
+
                 weight = row.get(weight_name)
                 set_id.add(row[id_tag])
 
@@ -40275,34 +39952,9 @@ class NmrDpUtility:
                     _count[k] = 0
 
                 for row in lp_data:
-                    target_value = row.get(target_value_name)
+                    target_value = get_est_target_value(row)
 
-                    if target_value is None:
-
-                        if has_key_value(row, lower_limit_name)\
-                                and has_key_value(row, upper_limit_name):
-                            target_value = (row[lower_limit_name] + row[upper_limit_name]) / 2.0
-
-                        elif has_key_value(row, lower_linear_limit_name)\
-                                and has_key_value(row, upper_linear_limit_name):
-                            target_value = (row[lower_linear_limit_name] + row[upper_linear_limit_name]) / 2.0
-
-                        elif has_key_value(row, upper_linear_limit_name):
-                            target_value = row[upper_linear_limit_name]
-
-                        elif has_key_value(row, upper_limit_name):
-                            target_value = row[upper_limit_name]
-
-                        elif has_key_value(row, lower_linear_limit_name):
-                            target_value = row[lower_linear_limit_name]
-
-                        elif has_key_value(row, lower_limit_name):
-                            target_value = row[lower_limit_name]
-
-                        else:
-                            continue
-
-                    if target_value < v or target_value >= v + scale:
+                    if targe_value is None or target_value < v or target_value >= v + scale:
                         continue
 
                     atom_id_1 = row[atom_id_1_name]
@@ -40351,53 +40003,8 @@ class NmrDpUtility:
                             row_1 = lp_data[id_set[i]]
                             row_2 = lp_data[id_set[j]]
 
-                            target_value_1 = row_1.get(target_value_name)
-
-                            if target_value_1 is None:
-
-                                if has_key_value(row_1, lower_limit_name)\
-                                        and has_key_value(row_1, upper_limit_name):
-                                    target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
-
-                                elif has_key_value(row_1, lower_linear_limit_name)\
-                                        and has_key_value(row_1, upper_linear_limit_name):
-                                    target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
-
-                                elif has_key_value(row_1, upper_linear_limit_name):
-                                    target_value_1 = row_1[upper_linear_limit_name]
-
-                                elif has_key_value(row_1, upper_limit_name):
-                                    target_value_1 = row_1[upper_limit_name]
-
-                                elif has_key_value(row_1, lower_linear_limit_name):
-                                    target_value_1 = row_1[lower_linear_limit_name]
-
-                                elif has_key_value(row_1, lower_limit_name):
-                                    target_value_1 = row_1[lower_limit_name]
-
-                            target_value_2 = row_2.get(target_value_name)
-
-                            if target_value_2 is None:
-
-                                if has_key_value(row_2, lower_limit_name)\
-                                        and has_key_value(row_2, upper_limit_name):
-                                    target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
-
-                                elif has_key_value(row_2, lower_linear_limit_name)\
-                                        and has_key_value(row_2, upper_linear_limit_name):
-                                    target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
-
-                                elif has_key_value(row_2, upper_linear_limit_name):
-                                    target_value_2 = row_2[upper_linear_limit_name]
-
-                                elif has_key_value(row_2, upper_limit_name):
-                                    target_value_2 = row_2[upper_limit_name]
-
-                                elif has_key_value(row_2, lower_linear_limit_name):
-                                    target_value_2 = row_2[lower_linear_limit_name]
-
-                                elif has_key_value(row_2, lower_limit_name):
-                                    target_value_2 = row_2[lower_limit_name]
+                            target_value_1 = get_est_target_value(row_1)
+                            target_value_2 = get_est_target_value(row_2)
 
                             if target_value_1 is None or target_value_2 is None:
                                 continue
@@ -40462,53 +40069,8 @@ class NmrDpUtility:
                                     row_1 = lp_data[id_set[i]]
                                     row_2 = lp_data[id_set[j]]
 
-                                    target_value_1 = row_1.get(target_value_name)
-
-                                    if target_value_1 is None:
-
-                                        if has_key_value(row_1, lower_limit_name)\
-                                                and has_key_value(row_1, upper_limit_name):
-                                            target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
-
-                                        elif has_key_value(row_1, lower_linear_limit_name)\
-                                                and has_key_value(row_1, upper_linear_limit_name):
-                                            target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
-
-                                        elif has_key_value(row_1, upper_linear_limit_name):
-                                            target_value_1 = row_1[upper_linear_limit_name]
-
-                                        elif has_key_value(row_1, upper_limit_name):
-                                            target_value_1 = row_1[upper_limit_name]
-
-                                        elif has_key_value(row_1, lower_linear_limit_name):
-                                            target_value_1 = row_1[lower_linear_limit_name]
-
-                                        elif has_key_value(row_1, lower_limit_name):
-                                            target_value_1 = row_1[lower_limit_name]
-
-                                    target_value_2 = row_2.get(target_value_name)
-
-                                    if target_value_2 is None:
-
-                                        if has_key_value(row_2, lower_limit_name)\
-                                                and has_key_value(row_2, upper_limit_name):
-                                            target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
-
-                                        elif has_key_value(row_2, lower_linear_limit_name)\
-                                                and has_key_value(row_2, upper_linear_limit_name):
-                                            target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
-
-                                        elif has_key_value(row_2, upper_linear_limit_name):
-                                            target_value_2 = row_2[upper_linear_limit_name]
-
-                                        elif has_key_value(row_2, upper_limit_name):
-                                            target_value_2 = row_2[upper_limit_name]
-
-                                        elif has_key_value(row_2, lower_linear_limit_name):
-                                            target_value_2 = row_2[lower_linear_limit_name]
-
-                                        elif has_key_value(row_2, lower_limit_name):
-                                            target_value_2 = row_2[lower_limit_name]
+                                    target_value_1 = get_est_target_value(row_1)
+                                    target_value_2 = get_est_target_value(row_2)
 
                                     if target_value_1 is None and target_value_2 is None:
                                         continue
@@ -41513,7 +41075,6 @@ class NmrDpUtility:
                 if self.__dirPath is None:
                     self.__dirPath = os.path.dirname(fPath)
 
-                # rename old chche directory name 'nmr_dp_util' to 'utils_nmr' (temporaly code)
                 if self.__sub_dir_name_for_cache != 'nmr_dp_util' and os.path.isdir(os.path.join(self.__dirPath, 'nmr_dp_util')):
                     os.rename(os.path.join(self.__dirPath, 'nmr_dp_util'),
                               os.path.join(self.__dirPath, self.__sub_dir_name_for_cache))
@@ -41522,14 +41083,6 @@ class NmrDpUtility:
 
                 if not os.path.isdir(self.__cacheDirPath):
                     os.makedirs(self.__cacheDirPath)
-
-                # move curernt cache files to sub-directory (temporaly code)
-                # for cache_file_name in os.listdir(self.__dirPath):
-                #     if cache_file_name.endswith('.pkl') and len(cache_file_name) >= 36:
-                #         src_path = os.path.join(self.__dirPath, cache_file_name)
-                #         dst_path = os.path.join(self.__cacheDirPath, cache_file_name)
-                #         if not os.path.exists(dst_path):
-                #             shutil.move(src_path, dst_path)
 
                 self.__cifPath = fPath
 
@@ -44579,6 +44132,13 @@ class NmrDpUtility:
         if not has_seq_align and content_subtype != 'poly_seq':
             return False
 
+        auth_to_star_seq = self.__caC['auth_to_star_seq']
+        auth_to_label_seq = self.__caC['auth_to_label_seq']
+        label_to_auth_seq = self.__caC['label_to_auth_seq']
+        coord_atom_site = self.__caC['coord_atom_site']
+        coord_unobs_res = self.__caC['coord_unobs_res']
+        coord_unobs_atom = self.__caC['coord_unobs_atom'] if 'coord_unobs_atom' in self.__caC else {}
+
         item_names = []
 
         if content_subtype == 'chem_shift':
@@ -44645,41 +44205,41 @@ class NmrDpUtility:
 
         def get_coord_atom_site_of(chain_id, seq_id, comp_id):
 
-            if (chain_id, seq_id, comp_id) in self.__caC['auth_to_star_seq']:
+            if (chain_id, seq_id, comp_id) in auth_to_star_seq:
                 seq_key = (chain_id, seq_id)
 
-                if seq_key in self.__caC['coord_unobs_res']:  # DAOTHER-7665
+                if seq_key in coord_unobs_res:  # DAOTHER-7665
                     return True, None, None
 
-                if seq_key not in self.__caC['coord_atom_site']:
+                if seq_key not in coord_atom_site:
                     return True, None, None
 
-                if seq_key not in self.__caC['auth_to_label_seq']:
+                if seq_key not in auth_to_label_seq:
                     return True, None, None
 
-                coord_atom_site_ = self.__caC['coord_atom_site'][seq_key]
+                coord_atom_site_ = coord_atom_site[seq_key]
 
                 cif_comp_id = coord_atom_site_['comp_id']
 
                 if comp_id == cif_comp_id:
                     return True, seq_key, coord_atom_site_
 
-            if (chain_id, seq_id) in self.__caC['label_to_auth_seq']:
-                _chain_id, _seq_id = self.__caC['label_to_auth_seq'][(chain_id, seq_id)]
+            if (chain_id, seq_id) in label_to_auth_seq:
+                _chain_id, _seq_id = label_to_auth_seq[(chain_id, seq_id)]
 
-                if (_chain_id, _seq_id, comp_id) in self.__caC['auth_to_star_seq']:
+                if (_chain_id, _seq_id, comp_id) in auth_to_star_seq:
                     seq_key = (_chain_id, _seq_id)
 
-                    if seq_key in self.__caC['coord_unobs_res']:  # DAOTHER-7665
+                    if seq_key in coord_unobs_res:  # DAOTHER-7665
                         return True, None, None
 
-                    if seq_key not in self.__caC['coord_atom_site']:
+                    if seq_key not in coord_atom_site:
                         return True, None, None
 
-                    if seq_key not in self.__caC['auth_to_label_seq']:
+                    if seq_key not in auth_to_label_seq:
                         return True, None, None
 
-                    coord_atom_site_ = self.__caC['coord_atom_site'][seq_key]
+                    coord_atom_site_ = coord_atom_site[seq_key]
 
                     cif_comp_id = coord_atom_site_['comp_id']
 
@@ -44793,17 +44353,17 @@ class NmrDpUtility:
                     if seq_key is None:
                         continue
 
-                    cif_chain_id, cif_seq_id = self.__caC['auth_to_label_seq'][seq_key]
+                    cif_chain_id, cif_seq_id = auth_to_label_seq[seq_key]
                     cif_comp_id = comp_id
 
                 else:
 
                     seq_key = (cif_chain_id, cif_seq_id)
 
-                    if seq_key in self.__caC['coord_unobs_res']:  # DAOTHER-7665
+                    if seq_key in coord_unobs_res:  # DAOTHER-7665
                         continue
 
-                    coord_atom_site_ = self.__caC['coord_atom_site'].get(seq_key)
+                    coord_atom_site_ = coord_atom_site.get(seq_key)
 
                     if file_type == 'nmr-star' and seq_id != alt_seq_id:
 
@@ -44830,10 +44390,10 @@ class NmrDpUtility:
 
                             seq_key = (cif_chain_id, cif_seq_id)
 
-                            if seq_key in self.__caC['coord_unobs_res']:  # DAOTHER-7665
+                            if seq_key in coord_unobs_res:  # DAOTHER-7665
                                 continue
 
-                            coord_atom_site_ = self.__caC['coord_atom_site'].get(seq_key)
+                            coord_atom_site_ = coord_atom_site.get(seq_key)
 
                 if coord_atom_site_ is None or coord_atom_site_['comp_id'] != cif_comp_id\
                    or (atom_id_ not in coord_atom_site_['atom_id']
@@ -44852,7 +44412,7 @@ class NmrDpUtility:
                     cyclic = self.__isCyclicPolymer(ref_chain_id)
 
                     if self.__nonblk_bad_nterm\
-                       and (seq_id == 1 or cif_seq_id == 1 or (cif_chain_id, cif_seq_id - 1) in self.__caC['coord_unobs_res'])\
+                       and (seq_id == 1 or cif_seq_id == 1 or (cif_chain_id, cif_seq_id - 1) in coord_unobs_res)\
                        and atom_id_ in aminoProtonCode and (cyclic or comp_id == 'PRO'
                                                             or (atom_id_ in protonBeginCode
                                                                 or (coord_atom_site_ is not None and 'auth_atom_id' not in coord_atom_site_))):  # DAOTHER-7665
@@ -44886,7 +44446,7 @@ class NmrDpUtility:
                                 modified = True
 
                     elif self.__nonblk_bad_nterm\
-                            and (seq_id == 1 or cif_seq_id == 1 or (cif_chain_id, cif_seq_id - 1) in self.__caC['coord_unobs_res'])\
+                            and (seq_id == 1 or cif_seq_id == 1 or (cif_chain_id, cif_seq_id - 1) in coord_unobs_res)\
                             and atom_id_ == 'P':
                         continue
 
@@ -44927,7 +44487,7 @@ class NmrDpUtility:
                                         coord_issue = True
 
                                 elif 'coord_unobs_atom' in self.__caC:
-                                    if seq_key in self.__caC['coord_unobs_atom'] and atom_id_ in self.__caC['coord_unobs_atom'][seq_key]['atom_ids']:
+                                    if seq_key in coord_unobs_atom and atom_id_ in coord_unobs_atom[seq_key]['atom_ids']:
                                         coord_issue = True
 
                             self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'coordinate_issue' if coord_issue else 'atom_not_found',
@@ -45713,19 +45273,21 @@ class NmrDpUtility:
         if self.__caC is None:
             self.__retrieveCoordAssemblyChecker()
 
-        if self.__caC['entity_assembly'] is None:
+        entity_assembly = self.__caC['entity_assembly']
+
+        if entity_assembly is None:
             return False
 
         components_ex_water = 0
-        for item in self.__caC['entity_assembly']:
+        for item in entity_assembly:
             if isinstance(item['entity_copies'], int):
                 components_ex_water += item['entity_copies']
 
         ligand_total = sum(len(item['label_asym_id'].split(',') if 'fixed_label_asym_id' not in item else item['fixed_label_asym_id'].split(','))
-                           for item in self.__caC['entity_assembly']
+                           for item in entity_assembly
                            if item['entity_type'] == 'non-polymer' and 'ION' not in item['entity_desc'])
         ion_total = sum(len(item['label_asym_id'].split(',') if 'fixed_label_asym_id' not in item else item['fixed_label_asym_id'].split(','))
-                        for item in self.__caC['entity_assembly']
+                        for item in entity_assembly
                         if item['entity_type'] == 'non-polymer' and 'ION' in item['entity_desc'])
 
         self.__sail_flag = False
@@ -45798,7 +45360,7 @@ class NmrDpUtility:
             thiol_state = 'not present'
 
         formula_weight = 0.0
-        for item in self.__caC['entity_assembly']:
+        for item in entity_assembly:
             fw = item['entity_fw']
             num = item['entity_copies']
             if isinstance(fw, float) and isinstance(num, int):
@@ -45808,7 +45370,7 @@ class NmrDpUtility:
                 break
 
         ec_numbers = []
-        for item in self.__caC['entity_assembly']:
+        for item in entity_assembly:
             if 'entity_ec' in item and item['entity_ec'] not in emptyValue and item['entity_ec'] not in ec_numbers:
                 ec_numbers.append(item['entity_ec'])
         if len(ec_numbers) == 0:
@@ -45817,7 +45379,7 @@ class NmrDpUtility:
             ec_number = ','.join(ec_numbers)
 
         details = ''
-        for item in self.__caC['entity_assembly']:
+        for item in entity_assembly:
             if 'entity_details' in item and item['entity_details'] not in emptyValue and item['entity_details'] + '\n' not in details:
                 if len(details.strip()) > 0:
                     details += details + '\n'
@@ -45861,8 +45423,8 @@ class NmrDpUtility:
             asm_sf.add_tag('DB_query_date', None)
             asm_sf.add_tag('DB_query_revised_last_date', None)
 
-        entity_type_of = {item['entity_id']: item['entity_type'] for item in self.__caC['entity_assembly']}
-        entity_total = {entity_id: len([item for item in self.__caC['entity_assembly'] if item['entity_id'] == entity_id])
+        entity_type_of = {item['entity_id']: item['entity_type'] for item in entity_assembly}
+        entity_total = {entity_id: len([item for item in entity_assembly if item['entity_id'] == entity_id])
                         for entity_id in entity_type_of.keys()}
         entity_count = {entity_id: 0 for entity_id in entity_type_of.keys()}
 
@@ -45903,7 +45465,7 @@ class NmrDpUtility:
             for tag in tags:
                 ea_loop.add_tag(tag)
 
-            for item in self.__caC['entity_assembly']:
+            for item in entity_assembly:
                 entity_id = item['entity_id']
                 entity_type = item['entity_type']
                 entity_count[entity_id] += 1
@@ -45931,7 +45493,7 @@ class NmrDpUtility:
                            if auth_asym_id in self.__auth_asym_ids_with_chem_exch.keys()):
                         row[8] = row[9] = 'yes'
                 if entity_total[entity_id] > 0 and entity_type == 'polymer' and len(self.__label_asym_id_with_exptl_data) > 0:
-                    equiv_entity_assemblies = [_item for _item in self.__caC['entity_assembly'] if _item['entity_id'] == entity_id]
+                    equiv_entity_assemblies = [_item for _item in entity_assembly if _item['entity_id'] == entity_id]
                     _item = next((_item for _item in equiv_entity_assemblies if any(label_asym_id for label_asym_id in _item[_label_asym_id].split(',')
                                                                                     if label_asym_id in self.__label_asym_id_with_exptl_data)), None)
                     if _item is not None:
@@ -45959,7 +45521,7 @@ class NmrDpUtility:
 
             if len(self.__auth_asym_ids_with_chem_exch) > 0:
                 _entity_assembly_id = ea_loop.data[-1][0]
-                for idx, item in enumerate(self.__caC['entity_assembly']):
+                for idx, item in enumerate(entity_assembly):
                     entity_type = item['entity_type']
                     if entity_type in ('non-polymer', 'water'):
                         continue
@@ -46008,9 +45570,9 @@ class NmrDpUtility:
             loop.add_tag(lp_category + '.Entry_ID')
 
         cif_polymer_sequence = self.__caC['polymer_sequence']
-        entity_assembly = self.__caC['entity_assembly'] if self.__caC is not None else []
-        auth_to_star_seq = self.__caC['auth_to_star_seq'] if self.__caC is not None else {}
-        auth_to_orig_seq = self.__caC['auth_to_orig_seq'] if self.__caC is not None else {}
+        entity_assembly = self.__caC['entity_assembly']
+        auth_to_star_seq = self.__caC['auth_to_star_seq']
+        auth_to_orig_seq = self.__caC['auth_to_orig_seq']
         asym_to_orig_seq = {}
         if self.__caC is not None:
             if 'asym_to_orig_seq' in self.__caC:
@@ -47835,13 +47397,15 @@ class NmrDpUtility:
 
         if len(struct_conn) == 0:
 
+            label_to_auth_seq = self.__caC['label_to_auth_seq']
+
             seq_key_1 = (cif_chain_id, beg_cif_seq_id)
             seq_key_2 = (cif_chain_id, end_cif_seq_id)
             close_contact = []
 
-            if seq_key_1 in self.__caC['label_to_auth_seq'] and seq_key_2 in self.__caC['label_to_auth_seq']:
-                auth_cif_chain_id, auth_beg_cif_seq_id = self.__caC['label_to_auth_seq'][seq_key_1]
-                _, auth_end_cif_seq_id = self.__caC['label_to_auth_seq'][seq_key_2]
+            if seq_key_1 in label_to_auth_seq and seq_key_2 in label_to_auth_seq:
+                auth_cif_chain_id, auth_beg_cif_seq_id = label_to_auth_seq[seq_key_1]
+                _, auth_end_cif_seq_id = label_to_auth_seq[seq_key_2]
 
                 try:
 
@@ -50243,6 +49807,9 @@ class NmrDpUtility:
             seq_id_3_name = item_names['seq_id_3']
             seq_id_4_name = item_names['seq_id_4']
             comp_id_1_name = item_names['comp_id_1']
+            comp_id_2_name = item_names['comp_id_2']
+            comp_id_3_name = item_names['comp_id_3']
+            comp_id_4_name = item_names['comp_id_4']
             atom_id_1_name = item_names['atom_id_1']
             atom_id_2_name = item_names['atom_id_2']
             atom_id_3_name = item_names['atom_id_3']
@@ -50250,6 +49817,16 @@ class NmrDpUtility:
             angle_type_name = item_names['angle_type']
             lower_limit_name = item_names['lower_limit']
             upper_limit_name = item_names['upper_limit']
+
+            def ext_atoms(row):
+                return ({'chain_id': row[chain_id_1_name], 'seq_id': row[seq_id_1_name],  # pylint: disable=cell-var-from-loop
+                         'comp_id': row[comp_id_1_name], 'atom_id': row[atom_id_1_name]},  # pylint: disable=cell-var-from-loop
+                        {'chain_id': row[chain_id_2_name], 'seq_id': row[seq_id_2_name],  # pylint: disable=cell-var-from-loop
+                         'comp_id': row[comp_id_2_name], 'atom_id': row[atom_id_2_name]},  # pylint: disable=cell-var-from-loop
+                        {'chain_id': row[chain_id_3_name], 'seq_id': row[seq_id_3_name],  # pylint: disable=cell-var-from-loop
+                         'comp_id': row[comp_id_3_name], 'atom_id': row[atom_id_3_name]},  # pylint: disable=cell-var-from-loop
+                        {'chain_id': row[chain_id_4_name], 'seq_id': row[seq_id_4_name],  # pylint: disable=cell-var-from-loop
+                         'comp_id': row[comp_id_4_name], 'atom_id': row[atom_id_4_name]})  # pylint: disable=cell-var-from-loop
 
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
@@ -50285,38 +49862,15 @@ class NmrDpUtility:
 
                         for row in lp_data:
                             index_id = row[index_id_name]
-                            chain_id_1 = row[chain_id_1_name]
-                            chain_id_2 = row[chain_id_2_name]
-                            chain_id_3 = row[chain_id_3_name]
-                            chain_id_4 = row[chain_id_4_name]
-                            seq_id_1 = row[seq_id_1_name]
-                            seq_id_2 = row[seq_id_2_name]
-                            seq_id_3 = row[seq_id_3_name]
-                            seq_id_4 = row[seq_id_4_name]
-                            comp_id_1 = row[comp_id_1_name]
-                            atom_id_1 = row[atom_id_1_name]
-                            atom_id_2 = row[atom_id_2_name]
-                            atom_id_3 = row[atom_id_3_name]
-                            atom_id_4 = row[atom_id_4_name]
+
+                            atom1, atom2, atom3, atom4 = ext_atoms(row)
+
                             angle_type = row[angle_type_name]
 
                             if angle_type not in emptyValue:
                                 continue
 
-                            atom1 = {'chain_id': chain_id_1,
-                                     'seq_id': seq_id_1,
-                                     'atom_id': atom_id_1}
-                            atom2 = {'chain_id': chain_id_2,
-                                     'seq_id': seq_id_2,
-                                     'atom_id': atom_id_2}
-                            atom3 = {'chain_id': chain_id_3,
-                                     'seq_id': seq_id_3,
-                                     'atom_id': atom_id_3}
-                            atom4 = {'chain_id': chain_id_4,
-                                     'seq_id': seq_id_4,
-                                     'atom_id': atom_id_4}
-
-                            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(atom2['comp_id'])
                             plane_like = is_like_planality_boundary(row, lower_limit_name, upper_limit_name)
 
                             data_type = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
@@ -51037,6 +50591,12 @@ class NmrDpUtility:
         seq_id_2_name = item_names['seq_id_2']
         atom_id_1_name = item_names['atom_id_1']
         atom_id_2_name = item_names['atom_id_2']
+
+        def ext_atom_types(row):
+            return (row[chain_id_1_name], row[chain_id_2_name],
+                    row[seq_id_1_name], row[seq_id_2_name],
+                    row[atom_id_1_name][0], row[atom_id_2_name][0])
+
         target_value_name = item_names['target_value']
         if 'target_value_alt' in item_names and target_value_name not in lp_data[0].keys():
             target_value_name = item_names['target_value_alt']
@@ -51045,52 +50605,54 @@ class NmrDpUtility:
         lower_linear_limit_name = item_names['lower_linear_limit']
         upper_linear_limit_name = item_names['upper_linear_limit']
 
+        def get_est_value_range(row):
+            target_value = row.get(target_value_name)
+            upper_limit = lower_limit = None
+
+            if target_value is None:
+
+                if has_key_value(row, lower_limit_name)\
+                        and has_key_value(row, upper_limit_name):
+                    target_value = (row[lower_limit_name] + row[upper_limit_name]) / 2.0
+                    upper_limit = row[lower_limit_name]
+                    lower_limit = row[upper_limit_name]
+
+                elif has_key_value(row, lower_linear_limit_name)\
+                        and has_key_value(row, upper_linear_limit_name):
+                    target_value = (row[lower_linear_limit_name] + row[upper_linear_limit_name]) / 2.0
+
+                elif has_key_value(row, upper_linear_limit_name):
+                    target_value = row[upper_linear_limit_name]
+                    upper_limit = target_value
+
+                elif has_key_value(row, upper_limit_name):
+                    target_value = row[upper_limit_name]
+                    upper_limit = target_value
+
+                elif has_key_value(row, lower_linear_limit_name):
+                    target_value = row[lower_linear_limit_name]
+                    lower_limit = target_value
+
+                elif has_key_value(row, lower_limit_name):
+                    target_value = row[lower_limit_name]
+                    lower_limit = target_value
+
+            return target_value, upper_limit, lower_limit
+
         try:
 
             for row in lp_data:
-                chain_id_1 = row[chain_id_1_name]
-                chain_id_2 = row[chain_id_2_name]
-                seq_id_1 = row[seq_id_1_name]
-                seq_id_2 = row[seq_id_2_name]
+
+                chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
+                    atom_id_1_, atom_id_2_ = ext_atom_types(row)
 
                 if chain_id_1 == chain_id_2 and seq_id_1 == seq_id_2:
                     return False
 
-                target_value = row.get(target_value_name)
-
-                upper_limit = lower_limit = None
+                target_value, upper_limit, lower_limit = get_est_value_range(row)
 
                 if target_value is None:
-
-                    if has_key_value(row, lower_limit_name)\
-                            and has_key_value(row, upper_limit_name):
-                        target_value = (row[lower_limit_name] + row[upper_limit_name]) / 2.0
-
-                    elif has_key_value(row, lower_linear_limit_name)\
-                            and has_key_value(row, upper_linear_limit_name):
-                        target_value = (row[lower_linear_limit_name] + row[upper_linear_limit_name]) / 2.0
-
-                    elif has_key_value(row, upper_linear_limit_name):
-                        target_value = row[upper_linear_limit_name]
-                        upper_limit = target_value
-
-                    elif has_key_value(row, upper_limit_name):
-                        target_value = row[upper_limit_name]
-                        upper_limit = target_value
-
-                    elif has_key_value(row, lower_linear_limit_name):
-                        target_value = row[lower_linear_limit_name]
-                        lower_limit = target_value
-
-                    elif has_key_value(row, lower_limit_name):
-                        target_value = row[lower_limit_name]
-                        lower_limit = target_value
-
-                    else:
-                        return False
-
-                atom_id_1_ = row[atom_id_1_name][0]
-                atom_id_2_ = row[atom_id_2_name][0]
+                    return False
 
                 if upper_limit is not None:
                     target_value -= 0.4
@@ -51170,6 +50732,12 @@ class NmrDpUtility:
         seq_id_2_name = item_names['seq_id_2']
         atom_id_1_name = item_names['atom_id_1']
         atom_id_2_name = item_names['atom_id_2']
+
+        def ext_atom_types(row):
+            return (row[chain_id_1_name], row[chain_id_2_name],
+                    row[seq_id_1_name], row[seq_id_2_name],
+                    row[atom_id_1_name][0], row[atom_id_2_name][0])
+
         target_value_name = item_names['target_value']
         if 'target_value_alt' in item_names and target_value_name not in lp_data[0].keys():
             target_value_name = item_names['target_value_alt']
@@ -51178,52 +50746,53 @@ class NmrDpUtility:
         lower_linear_limit_name = item_names['lower_linear_limit']
         upper_linear_limit_name = item_names['upper_linear_limit']
 
+        def get_est_value_range(row):
+            target_value = row.get(target_value_name)
+            upper_limit = lower_limit = None
+
+            if target_value is None:
+
+                if has_key_value(row, lower_limit_name)\
+                        and has_key_value(row, upper_limit_name):
+                    target_value = (row[lower_limit_name] + row[upper_limit_name]) / 2.0
+                    upper_limit = row[lower_limit_name]
+                    lower_limit = row[upper_limit_name]
+
+                elif has_key_value(row, lower_linear_limit_name)\
+                        and has_key_value(row, upper_linear_limit_name):
+                    target_value = (row[lower_linear_limit_name] + row[upper_linear_limit_name]) / 2.0
+
+                elif has_key_value(row, upper_linear_limit_name):
+                    target_value = row[upper_linear_limit_name]
+                    upper_limit = target_value
+
+                elif has_key_value(row, upper_limit_name):
+                    target_value = row[upper_limit_name]
+                    upper_limit = target_value
+
+                elif has_key_value(row, lower_linear_limit_name):
+                    target_value = row[lower_linear_limit_name]
+                    lower_limit = target_value
+
+                elif has_key_value(row, lower_limit_name):
+                    target_value = row[lower_limit_name]
+                    lower_limit = target_value
+
+            return target_value, upper_limit, lower_limit
+
         try:
 
             for row in lp_data:
-                chain_id_1 = row[chain_id_1_name]
-                chain_id_2 = row[chain_id_2_name]
-                seq_id_1 = row[seq_id_1_name]
-                seq_id_2 = row[seq_id_2_name]
+                chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
+                    atom_id_1_, atom_id_2_ = ext_atom_types(row)
 
                 if chain_id_1 == chain_id_2 and seq_id_1 == seq_id_2:
                     return False
 
-                target_value = row.get(target_value_name)
-
-                upper_limit = lower_limit = None
+                target_value, upper_limit, lower_limit = get_est_value_range(row)
 
                 if target_value is None:
-
-                    if has_key_value(row, lower_limit_name)\
-                            and has_key_value(row, upper_limit_name):
-                        target_value = (row[lower_limit_name] + row[upper_limit_name]) / 2.0
-
-                    elif has_key_value(row, lower_linear_limit_name)\
-                            and has_key_value(row, upper_linear_limit_name):
-                        target_value = (row[lower_linear_limit_name] + row[upper_linear_limit_name]) / 2.0
-
-                    elif has_key_value(row, upper_linear_limit_name):
-                        target_value = row[upper_linear_limit_name]
-                        upper_limit = target_value
-
-                    elif has_key_value(row, upper_limit_name):
-                        target_value = row[upper_limit_name]
-                        upper_limit = target_value
-
-                    elif has_key_value(row, lower_linear_limit_name):
-                        target_value = row[lower_linear_limit_name]
-                        lower_limit = target_value
-
-                    elif has_key_value(row, lower_limit_name):
-                        target_value = row[lower_limit_name]
-                        lower_limit = target_value
-
-                    else:
-                        return False
-
-                atom_id_1_ = row[atom_id_1_name][0]
-                atom_id_2_ = row[atom_id_2_name][0]
+                    return False
 
                 if upper_limit is not None:
                     target_value -= 0.4
@@ -51274,15 +50843,16 @@ class NmrDpUtility:
         comp_id_1_name = item_names['comp_id_1']
         comp_id_2_name = item_names['comp_id_2']
 
+        def ext_comp_names(row):
+            return (row[chain_id_1_name], row[chain_id_2_name],
+                    row[seq_id_1_name], row[seq_id_2_name],
+                    row[comp_id_1_name], row[comp_id_2_name])
+
         try:
 
             for row in lp_data:
-                chain_id_1 = row[chain_id_1_name]
-                chain_id_2 = row[chain_id_2_name]
-                seq_id_1 = row[seq_id_1_name]
-                seq_id_2 = row[seq_id_2_name]
-                comp_id_1 = row[comp_id_1_name]
-                comp_id_2 = row[comp_id_2_name]
+                chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
+                    comp_id_1, comp_id_2 = ext_comp_names(row)
 
                 if chain_id_1 == chain_id_2:
                     return False
@@ -51294,12 +50864,8 @@ class NmrDpUtility:
                     if _row is row:
                         continue
 
-                    _chain_id_1 = _row[chain_id_1_name]
-                    _chain_id_2 = _row[chain_id_2_name]
-                    _seq_id_1 = _row[seq_id_1_name]
-                    _seq_id_2 = _row[seq_id_2_name]
-                    _comp_id_1 = _row[comp_id_1_name]
-                    _comp_id_2 = _row[comp_id_2_name]
+                    _chain_id_1, _chain_id_2, _seq_id_1, _seq_id_2, \
+                        _comp_id_1, _comp_id_2 = ext_comp_names(_row)
 
                     if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
 
@@ -51354,6 +50920,9 @@ class NmrDpUtility:
         seq_id_3_name = item_names['seq_id_3']
         seq_id_4_name = item_names['seq_id_4']
         comp_id_1_name = item_names['comp_id_1']
+        comp_id_2_name = item_names['comp_id_2']
+        comp_id_3_name = item_names['comp_id_3']
+        comp_id_4_name = item_names['comp_id_4']
         atom_id_1_name = item_names['atom_id_1']
         atom_id_2_name = item_names['atom_id_2']
         atom_id_3_name = item_names['atom_id_3']
@@ -51362,25 +50931,24 @@ class NmrDpUtility:
         lower_limit_name = item_names['lower_limit']
         upper_limit_name = item_names['upper_limit']
 
+        def ext_atoms(row):
+            return ({'chain_id': row[chain_id_1_name], 'seq_id': row[seq_id_1_name],
+                     'comp_id': row[comp_id_1_name], 'atom_id': row[atom_id_1_name]},
+                    {'chain_id': row[chain_id_2_name], 'seq_id': row[seq_id_2_name],
+                     'comp_id': row[comp_id_2_name], 'atom_id': row[atom_id_2_name]},
+                    {'chain_id': row[chain_id_3_name], 'seq_id': row[seq_id_3_name],
+                     'comp_id': row[comp_id_3_name], 'atom_id': row[atom_id_3_name]},
+                    {'chain_id': row[chain_id_4_name], 'seq_id': row[seq_id_4_name],
+                     'comp_id': row[comp_id_4_name], 'atom_id': row[atom_id_4_name]})
+
         dh_chain_ids, cs_chain_ids = set(), set()
         dh_seq_ids, cs_seq_ids = {}, {}
 
         try:
 
             for row in lp_data:
-                chain_id_1 = row[chain_id_1_name]
-                chain_id_2 = row[chain_id_2_name]
-                chain_id_3 = row[chain_id_3_name]
-                chain_id_4 = row[chain_id_4_name]
-                seq_id_1 = row[seq_id_1_name]
-                seq_id_2 = row[seq_id_2_name]
-                seq_id_3 = row[seq_id_3_name]
-                seq_id_4 = row[seq_id_4_name]
-                comp_id_1 = row[comp_id_1_name]
-                atom_id_1 = row[atom_id_1_name]
-                atom_id_2 = row[atom_id_2_name]
-                atom_id_3 = row[atom_id_3_name]
-                atom_id_4 = row[atom_id_4_name]
+                atom1, atom2, atom3, atom4 = ext_atoms(row)
+
                 angle_type = row[angle_type_name]
 
                 if angle_type in emptyValue:
@@ -51391,20 +50959,7 @@ class NmrDpUtility:
                 if angle_type not in ('phi', 'psi'):
                     return False
 
-                atom1 = {'chain_id': chain_id_1,
-                         'seq_id': seq_id_1,
-                         'atom_id': atom_id_1}
-                atom2 = {'chain_id': chain_id_2,
-                         'seq_id': seq_id_2,
-                         'atom_id': atom_id_2}
-                atom3 = {'chain_id': chain_id_3,
-                         'seq_id': seq_id_3,
-                         'atom_id': atom_id_3}
-                atom4 = {'chain_id': chain_id_4,
-                         'seq_id': seq_id_4,
-                         'atom_id': atom_id_4}
-
-                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_1)
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(atom2['comp_id'])
 
                 if not peptide:
                     return False
@@ -51417,12 +50972,11 @@ class NmrDpUtility:
                 if data_type is None or data_type.lower() not in ('phi', 'psi'):
                     return False
 
-                dh_chain_ids.add(chain_id_1)
+                chain_id = atom1['chain_id']
+                dh_chain_ids.add(chain_id)
 
-                seq_ids = [seq_id_1, seq_id_2, seq_id_3, seq_id_4]
+                seq_ids = [atom1['seq_id'], atom2['seq_id'], atom3['seq_id'], atom4['seq_id']]
                 seq_id_common = collections.Counter(seq_ids).most_common()
-
-                chain_id = chain_id_1
 
                 if chain_id not in dh_seq_ids:
                     dh_seq_ids[chain_id] = set()
@@ -52807,7 +52361,6 @@ class NmrDpUtility:
                             upper_limit_col = -1
 
                         prev_id = -1
-                        # _atom1 = _atom2 = None
 
                         for row in lp:
                             _id = int(row[id_col])
@@ -52951,7 +52504,6 @@ class NmrDpUtility:
                             upper_limit_col = -1
 
                         prev_id = -1
-                        # _atom1 = _atom2 = None
 
                         for row in lp:
                             _id = int(row[id_col])
@@ -53016,7 +52568,7 @@ class NmrDpUtility:
 
             content_subtype = 'dihed_restraint'
 
-            auth_to_entity_type = self.__caC['auth_to_entity_type'] if self.__caC is not None else {}
+            auth_to_entity_type = self.__caC['auth_to_entity_type']
 
             Dihedral_angle_tot_num = 0
             if content_subtype in self.__mr_sf_dict_holder:
@@ -54817,7 +54369,6 @@ class NmrDpUtility:
                                 upper_limit_col = -1
 
                             prev_id = -1
-                            # _atom1 = _atom2 = None
 
                             for row in lp:
                                 _id = int(row[id_col])
@@ -54961,7 +54512,6 @@ class NmrDpUtility:
                                 upper_limit_col = -1
 
                             prev_id = -1
-                            # _atom1 = _atom2 = None
 
                             for row in lp:
                                 _id = int(row[id_col])
@@ -55029,7 +54579,7 @@ class NmrDpUtility:
                     sf_category = self.sf_categories[file_type][content_subtype]
                     lp_category = self.lp_categories[file_type][content_subtype]
 
-                    auth_to_entity_type = self.__caC['auth_to_entity_type'] if self.__caC is not None else {}
+                    auth_to_entity_type = self.__caC['auth_to_entity_type']
 
                     Dihedral_angle_tot_num = 0
                     for sf in master_entry.get_saveframes_by_category(sf_category):

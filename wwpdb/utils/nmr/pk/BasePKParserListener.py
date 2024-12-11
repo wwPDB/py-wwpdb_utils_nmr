@@ -792,11 +792,11 @@ class BasePKParserListener():
                                     if 125 < center < 130:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
-                                        __v['axis_code'] = 'C_aro'
+                                        __v['axis_code'] = 'C-aromatic'
                                     elif 115 < center < 125:
                                         __v['atom_type'] = 'N'
                                         __v['atom_isotope_number'] = 15
-                                        __v['axis_code'] = 'N_ami'
+                                        __v['axis_code'] = 'N'
                                     elif 170 < center < 180:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
@@ -804,23 +804,31 @@ class BasePKParserListener():
                                     elif 6 < center < 9:
                                         __v['atom_type'] = 'H'
                                         __v['atom_isotope_number'] = 1
-                                        __v['axis_code'] = 'H_ami_or_aro'
+                                        __v['axis_code'] = 'HN/H-aromatic'
                                     elif 4 < center < 6:
                                         __v['atom_type'] = 'H'
                                         __v['atom_isotope_number'] = 1
-                                        __v['axis_code'] = 'H'
+                                        __v['axis_code'] = 'H'  # all
                                     elif 2 < center < 4:
                                         __v['atom_type'] = 'H'
                                         __v['atom_isotope_number'] = 1
-                                        __v['axis_code'] = 'H_ali'
+                                        __v['axis_code'] = 'H-aliphatic'
+                                    elif 0 < center < 2:
+                                        __v['atom_type'] = 'H'
+                                        __v['atom_isotope_number'] = 1
+                                        __v['axis_code'] = 'H-methyl'
                                     elif 60 < center < 90:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
-                                        __v['axis_code'] = 'C'
+                                        __v['axis_code'] = 'C'  # all
                                     elif 30 < center < 50:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
-                                        __v['axis_code'] = 'C_ali'
+                                        __v['axis_code'] = 'C-aliphatic'
+                                    elif 10 < center < 30:
+                                        __v['atom_type'] = 'C'
+                                        __v['atom_isotope_number'] = 13
+                                        __v['axis_code'] = 'C-methyl'
 
                                 isotope_number = __v['atom_isotope_number']
 
@@ -836,21 +844,25 @@ class BasePKParserListener():
                             if __v['spectral_region'] is None and __v['freq_hint'].size > 0:
                                 atom_type = __v['atom_type']
                                 if 125 < center < 130 and atom_type == 'C':
-                                    __v['spectral_region'] = 'C_aro'
+                                    __v['spectral_region'] = 'C-aromatic'
                                 elif 115 < center < 125 and atom_type == 'N':
-                                    __v['spectral_region'] = 'N_ami'
+                                    __v['spectral_region'] = 'N'
                                 elif 170 < center < 180 and atom_type == 'C':
                                     __v['spectral_region'] = 'CO'
                                 elif 6 < center < 9 and atom_type == 'H':
-                                    __v['spectral_region'] = 'H_ami_or_aro'
+                                    __v['spectral_region'] = 'HN/H-aromatic'
                                 elif 4 < center < 6 and atom_type == 'H':
-                                    __v['spectral_region'] = 'H_all'
+                                    __v['spectral_region'] = 'H'  # all
                                 elif 2 < center < 4 and atom_type == 'H':
-                                    __v['spectral_region'] = 'H_ali'
+                                    __v['spectral_region'] = 'H-aliphatic'
+                                elif 0 < center < 2 and atom_type == 'H':
+                                    __v['spectral_region'] = 'H-methyl'
                                 elif 60 < center < 90 and atom_type == 'C':
-                                    __v['spectral_region'] = 'C_all'
+                                    __v['spectral_region'] = 'C'  # all
                                 elif 30 < center < 50 and atom_type == 'C':
-                                    __v['spectral_region'] = 'C_ali'
+                                    __v['spectral_region'] = 'C-aliphatic'
+                                elif 10 < center < 20 and atom_type == 'C':
+                                    __v['spectral_region'] = 'C-methyl'
 
                             if __v['freq_hint'].size > 0 and d > 2 and __d >= 2\
                                and self.exptlMethod != 'SOLID-STATE NMR' and __v['atom_isotope_number'] == 13:
@@ -875,12 +887,12 @@ class BasePKParserListener():
                                 __v['sweep_width_units'] = 'Hz'
 
                     for __v in _v.values():
-                        if __v['axis_code'] == 'H_ami_or_aro':
-                            has_a = any(___v['spectral_region'] == 'C_aro' for ___v in _v.values())
-                            __v['axis_code'] = 'H_aro' if has_a else 'H_ami'
-                        if __v['spectral_region'] == 'H_ami_or_aro':
-                            has_a = any(___v['spectral_region'] == 'C_aro' for ___v in _v.values())
-                            __v['spectral_region'] = 'H_aro' if has_a else 'H_ami'
+                        if __v['axis_code'] == 'HN/H-aromatic':
+                            has_a = any(___v['spectral_region'] == 'C-aromatic' for ___v in _v.values())
+                            __v['axis_code'] = 'H-aromatic' if has_a else 'HN'
+                        if __v['spectral_region'] == 'HN/H-aromatic':
+                            has_a = any(___v['spectral_region'] == 'C-aromatic' for ___v in _v.values())
+                            __v['spectral_region'] = 'H-aromatic' if has_a else 'HN'
 
             for d, v in self.spectral_dim.items():
                 for _id, cur_spectral_dim in v.items():
@@ -895,14 +907,15 @@ class BasePKParserListener():
                     # onebond: 'Any transfer that connects only directly bonded atoms in this experiment'
                     for _dim_id1, _dict1 in cur_spectral_dim.items():
                         _region1 = _dict1['spectral_region']
-                        if _region1 in ('H_ami', 'H_ali', 'H_aro'):
+                        if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl'):
                             cases = 0
                             max_corr_eff = 0.0
                             for _dim_id2, _dict2 in cur_spectral_dim.items():
                                 _region2 = _dict2['spectral_region']
-                                if (_region1 == 'H_ami' and _region2 == 'N_ami')\
-                                   or (_region1 == 'H_ali' and _region2 == 'C_ali')\
-                                   or (_region1 == 'H_aro' and _region2 == 'C_aro'):
+                                if (_region1 == 'HN' and _region2 == 'N')\
+                                   or (_region1 == 'H-aliphatic' and _region2 == 'C-aliphatic')\
+                                   or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
+                                   or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                         if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                                    if _transfer['type'] == 'onebond'
@@ -914,9 +927,10 @@ class BasePKParserListener():
                             if cases == 1:
                                 for _dim_id2, _dict2 in cur_spectral_dim.items():
                                     _region2 = _dict2['spectral_region']
-                                    if (_region1 == 'H_ami' and _region2 == 'N_ami')\
-                                       or (_region1 == 'H_ali' and _region2 == 'C_ali')\
-                                       or (_region1 == 'H_aro' and _region2 == 'C_aro'):
+                                    if (_region1 == 'HN' and _region2 == 'N')\
+                                       or (_region1 == 'H-aliphatic' and _region2 == 'C-aliphatic')\
+                                       or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
+                                       or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                             if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                                        if _transfer['type'] == 'onebond'
@@ -931,9 +945,10 @@ class BasePKParserListener():
                             elif cases > 1:
                                 for _dim_id2, _dict2 in cur_spectral_dim.items():
                                     _region2 = _dict2['spectral_region']
-                                    if (_region1 == 'H_ami' and _region2 == 'N_ami')\
-                                       or (_region1 == 'H_ali' and _region2 == 'C_ali')\
-                                       or (_region1 == 'H_aro' and _region2 == 'C_aro'):
+                                    if (_region1 == 'HN' and _region2 == 'N')\
+                                       or (_region1 == 'H-aliphatic' and _region2 == 'C-aliphatic')\
+                                       or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
+                                       or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                             if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                                        if _transfer['type'] == 'onebond'
@@ -949,12 +964,13 @@ class BasePKParserListener():
 
                     for _dim_id1, _dict1 in cur_spectral_dim.items():
                         _region1 = _dict1['spectral_region']
-                        if _region1 in ('H_ami', 'H_ali', 'H_aro'):
+                        if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl'):
                             for _dim_id2, _dict2 in cur_spectral_dim.items():
                                 _region2 = _dict2['spectral_region']
-                                if (_region1 == 'H_ami' and _region2 == 'N_ami')\
-                                   or (_region1 == 'H_ali' and _region2 == 'C_ali')\
-                                   or (_region1 == 'H_aro' and _region2 == 'C_aro'):
+                                if (_region1 == 'HN' and _region2 == 'N')\
+                                   or (_region1 == 'H-aliphatic' and _region2 == 'C-aliphatic')\
+                                   or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
+                                   or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                                     if _dict1['acquisition'] == 'no' and _dict2['acquisition'] == 'no':
                                         if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                                    if _transfer['type'] == 'onebond'
@@ -985,7 +1001,7 @@ class BasePKParserListener():
                         elif d == 3:
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _region1 = _dict1['spectral_region']
-                                if _region1 == 'H_ami':
+                                if _region1 == 'HN':
                                     for _dim_id2, _dict2 in cur_spectral_dim.items():
                                         if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] not in (1, 13):
                                             continue
@@ -997,7 +1013,7 @@ class BasePKParserListener():
                                             cur_spectral_dim_transfer.append(transfer)
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _region1 = _dict1['spectral_region']
-                                if _region1 == 'H_ali':
+                                if _region1 == 'H-aliphatic':
                                     for _dim_id2, _dict2 in cur_spectral_dim.items():
                                         _isotope2 = _dict2['atom_isotope']
                                         if _dim_id1 == _dim_id2 or _isotope2 not in (1, 13):
@@ -1016,7 +1032,7 @@ class BasePKParserListener():
                         elif d == 4:
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _region1 = _dict1['spectral_region']
-                                if _region1 == 'H_ami':
+                                if _region1 == 'HN':
                                     for _dim_id2, _dict2 in cur_spectral_dim.items():
                                         if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] != 1:
                                             continue
@@ -1028,7 +1044,7 @@ class BasePKParserListener():
                                             cur_spectral_dim_transfer.append(transfer)
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _region1 = _dict1['spectral_region']
-                                if _region1 == 'H_ali':
+                                if _region1 == 'H-aliphatic':
                                     for _dim_id2, _dict2 in cur_spectral_dim.items():
                                         if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] != 1:
                                             continue
@@ -1060,7 +1076,7 @@ class BasePKParserListener():
                         elif d == 3:
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _region1 = _dict1['spectral_region']
-                                if _region1 == 'H_ami':
+                                if _region1 == 'HN':
                                     for _dim_id2, _dict2 in cur_spectral_dim.items():
                                         if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] not in (1, 13):
                                             continue
@@ -1072,7 +1088,7 @@ class BasePKParserListener():
                                             cur_spectral_dim_transfer.append(transfer)
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _region1 = _dict1['spectral_region']
-                                if _region1 == 'H_ali':
+                                if _region1 == 'H-aliphatic':
                                     for _dim_id2, _dict2 in cur_spectral_dim.items():
                                         _isotope2 = _dict2['atom_isotope']
                                         if _dim_id1 == _dim_id2 or _isotope2 not in (1, 13):
@@ -1091,7 +1107,7 @@ class BasePKParserListener():
                         elif d == 4:
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _region1 = _dict1['spectral_region']
-                                if _region1 == 'H_ami':
+                                if _region1 == 'HN':
                                     for _dim_id2, _dict2 in cur_spectral_dim.items():
                                         if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] != 1:
                                             continue
@@ -1103,7 +1119,7 @@ class BasePKParserListener():
                                             cur_spectral_dim_transfer.append(transfer)
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _region1 = _dict1['spectral_region']
-                                if _region1 == 'H_ali':
+                                if _region1 == 'H-aliphatic':
                                     for _dim_id2, _dict2 in cur_spectral_dim.items():
                                         if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] != 1:
                                             continue
@@ -1121,7 +1137,7 @@ class BasePKParserListener():
                        or 'noe' in alt_file_name or 'roe' in alt_file_name or 'rfdr' in alt_file_name:
                         for _dim_id1, _dict1 in cur_spectral_dim.items():
                             _region1 = _dict1['spectral_region']
-                            if _region1 in ('H_ami', 'H_ali', 'H_aro') and d > 2:
+                            if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl') and d > 2:
                                 for _dim_id2, _dict2 in cur_spectral_dim.items():
                                     if _dim_id1 == _dim_id2 or _dict1['atom_isotope_number'] != _dict2['atom_isotope_number']:
                                         continue
@@ -1148,7 +1164,7 @@ class BasePKParserListener():
 
                     for _dim_id1, _dict1 in cur_spectral_dim.items():
                         _region1 = _dict1['spectral_region']
-                        if _region1 in ('H_ami', 'H_ali', 'H_aro') and d > 2:
+                        if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl') and d > 2:
                             for _dim_id2, _dict2 in cur_spectral_dim.items():
                                 if _dim_id1 == _dim_id2 or _dict1['atom_isotope_number'] != _dict2['atom_isotope_number']:
                                     continue
@@ -1163,7 +1179,7 @@ class BasePKParserListener():
 
                     for _dim_id1, _dict1 in cur_spectral_dim.items():
                         _region1 = _dict1['spectral_region']
-                        if _region1 == 'H_all' and d == 2:
+                        if _region1 == 'H' and d == 2:  # all
                             for _dim_id2, _dict2 in cur_spectral_dim.items():
                                 if _dim_id1 == _dim_id2 or _dict1['spectral_region'] != _region1:
                                     continue
@@ -1179,7 +1195,7 @@ class BasePKParserListener():
                     if self.exptlMethod == 'SOLID-STATE NMR':
                         for _dim_id1, _dict1 in cur_spectral_dim.items():
                             _region1 = _dict1['spectral_region']
-                            if _region1 == 'C_all' and d == 2:
+                            if _region1 == 'C' and d == 2:  # all
                                 for _dim_id2, _dict2 in cur_spectral_dim.items():
                                     if _dim_id1 == _dim_id2 or _dict1['spectral_region'] != _region1:
                                         continue

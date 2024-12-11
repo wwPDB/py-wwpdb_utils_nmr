@@ -1202,6 +1202,19 @@ def get_number_of_dimensions_of_peak_list(file_format: str, line: str) -> Option
     return None
 
 
+def get_prompt_file_format(line: str) -> str:
+    """ Return prompt file type for a given input.
+    """
+
+    if 'X-PLOR>{====>}' in line:
+        return 'X-PLOR NIH'
+
+    if '{===>}' in line and ';' in line:
+        return 'CNS'
+
+    return None
+
+
 def is_like_planality_boundary(row: dict, lower_limit_name: str, upper_limit_name: str) -> bool:
     """ Return whether boundary conditions like planality restraint.
     """
@@ -11233,9 +11246,51 @@ class NmrDpUtility:
             valid = True
             div_test = False
 
+            prompt_type = None
+
             try:
 
-                if file_type in parsable_mr_file_types:
+                with open(file_path, 'r', encoding='utf-8') as ifh:
+                    for idx, line in enumerate(ifh):
+                        if line.isspace():
+                            continue
+                        prompt_type = get_prompt_file_format(line)
+                        if prompt_type is not None:
+                            break
+                        if idx >= self.mr_max_spacer_lines:
+                            break
+
+            except UnicodeDecodeError:  # catch exception due to binary format (DAOTHER-9425)
+
+                err = f"The {mr_format_name} restraint file {file_name!r} is not plain text file."
+
+                self.report.error.appendDescription('format_issue',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+
+                valid = False
+
+            if prompt_type is not None:
+
+                err = f"The {mr_format_name} restraint file {file_name!r} appears to be {prompt_type} prompt message dump file. "\
+                    f"Did you accidentally upload the wrong file? Please re-upload valid {mr_format_name} restraint file(s) "\
+                    "used for the structure determination."
+
+                self.report.error.appendDescription('format_issue',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+
+                valid = False
+
+            try:
+
+                if file_type in parsable_mr_file_types and valid:
 
                     sll_pred = False
                     if file_path in self.__sll_pred_holder and file_type in self.__sll_pred_holder[file_path]:

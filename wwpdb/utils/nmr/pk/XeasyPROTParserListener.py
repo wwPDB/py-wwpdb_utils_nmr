@@ -964,12 +964,21 @@ class XeasyPROTParserListener(ParseTreeListener):
             atomId = str(ctx.Simple_name())
             ass = f'{self.__cur_residue} {atomId}'
 
-            assignment = self.__base_parser_listener.extractPeakAssignment(1, ass, nr)[0]
+            assignment = self.__base_parser_listener.extractPeakAssignment(1, ass, nr)
+
+            if assignment is None:
+                self.protStatements -= 1
+                return
+
+            if not self.__hasPolySeqModel and not self.__hasNonPolyModel:
+                return
+
+            factor = assignment[0]
 
             atom = {'atom_number': nr,
-                    'auth_chain_id': assignment['chain_id'],
-                    'auth_seq_id': assignment['seq_id'],
-                    'auth_comp_id': assignment['comp_id'],
+                    'auth_chain_id': factor['chain_id'],
+                    'auth_seq_id': factor['seq_id'],
+                    'auth_comp_id': factor['comp_id'],
                     'auth_atom_id': atomId}
 
             if any(v is None for v in atom.values()):

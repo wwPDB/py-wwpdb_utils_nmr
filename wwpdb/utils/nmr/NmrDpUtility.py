@@ -200,6 +200,7 @@
 # 22-Nov-2024  M. Yokochi - add support for CYANA NOA (NOE Assignment) file. file type: 'nm-res-noa'
 # 27-Nov-2024  M. Yokochi - implement atom name mapping history as requirement of standalone NMR data conversion service
 # 28-Nov-2024  M. Yokochi - drop support for old pynmrstar versions less than 3.2
+# 11-Dec-2024  M. Yokochi - Add support for spectral peak list file in native formats (NMR restraint remediation Phase 2 for legacy entries with public MR and new deposition)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -320,22 +321,30 @@ try:
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                                        PLANE_LIKE_LOWER_LIMIT,
                                                        PLANE_LIKE_UPPER_LIMIT)
-    from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
     from wwpdb.utils.nmr.mr.AmberMRReader import AmberMRReader
+    from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
+    from wwpdb.utils.nmr.mr.AriaMRReader import AriaMRReader
     from wwpdb.utils.nmr.mr.BiosymMRReader import BiosymMRReader
-    from wwpdb.utils.nmr.mr.CnsMRReader import CnsMRReader
-    from wwpdb.utils.nmr.mr.CyanaMRReader import CyanaMRReader
-    from wwpdb.utils.nmr.mr.GromacsPTReader import GromacsPTReader
-    from wwpdb.utils.nmr.mr.GromacsMRReader import GromacsMRReader
-    from wwpdb.utils.nmr.mr.RosettaMRReader import RosettaMRReader
-    from wwpdb.utils.nmr.mr.XplorMRReader import XplorMRReader
-    from wwpdb.utils.nmr.mr.DynamoMRReader import DynamoMRReader
-    from wwpdb.utils.nmr.mr.SybylMRReader import SybylMRReader
-    from wwpdb.utils.nmr.mr.IsdMRReader import IsdMRReader
     from wwpdb.utils.nmr.mr.CharmmCRDReader import CharmmCRDReader
     from wwpdb.utils.nmr.mr.CharmmMRReader import CharmmMRReader
-    from wwpdb.utils.nmr.mr.AriaMRReader import AriaMRReader
+    from wwpdb.utils.nmr.mr.CnsMRReader import CnsMRReader
+    from wwpdb.utils.nmr.mr.CyanaMRReader import CyanaMRReader
     from wwpdb.utils.nmr.mr.CyanaNOAReader import CyanaNOAReader
+    from wwpdb.utils.nmr.mr.DynamoMRReader import DynamoMRReader
+    from wwpdb.utils.nmr.mr.GromacsMRReader import GromacsMRReader
+    from wwpdb.utils.nmr.mr.GromacsPTReader import GromacsPTReader
+    from wwpdb.utils.nmr.mr.IsdMRReader import IsdMRReader
+    from wwpdb.utils.nmr.mr.RosettaMRReader import RosettaMRReader
+    from wwpdb.utils.nmr.mr.SybylMRReader import SybylMRReader
+    from wwpdb.utils.nmr.mr.XplorMRReader import XplorMRReader
+    from wwpdb.utils.nmr.pk.AriaPKReader import AriaPKReader
+    from wwpdb.utils.nmr.pk.NmrPipePKReader import NmrPipePKReader
+    from wwpdb.utils.nmr.pk.NmrViewPKReader import NmrViewPKReader
+    from wwpdb.utils.nmr.pk.SparkyPKReader import SparkyPKReader
+    from wwpdb.utils.nmr.pk.TopSpinPKReader import TopSpinPKReader
+    from wwpdb.utils.nmr.pk.XeasyPKReader import XeasyPKReader
+    from wwpdb.utils.nmr.pk.XeasyPROTReader import XeasyPROTReader
+    from wwpdb.utils.nmr.pk.XwinNmrPKReader import XwinNmrPKReader
 
 except ImportError:
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -429,22 +438,30 @@ except ImportError:
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                            PLANE_LIKE_LOWER_LIMIT,
                                            PLANE_LIKE_UPPER_LIMIT)
-    from nmr.mr.AmberPTReader import AmberPTReader
     from nmr.mr.AmberMRReader import AmberMRReader
+    from nmr.mr.AmberPTReader import AmberPTReader
+    from nmr.mr.AriaMRReader import AriaMRReader
     from nmr.mr.BiosymMRReader import BiosymMRReader
-    from nmr.mr.CnsMRReader import CnsMRReader
-    from nmr.mr.CyanaMRReader import CyanaMRReader
-    from nmr.mr.GromacsPTReader import GromacsPTReader
-    from nmr.mr.GromacsMRReader import GromacsMRReader
-    from nmr.mr.RosettaMRReader import RosettaMRReader
-    from nmr.mr.XplorMRReader import XplorMRReader
-    from nmr.mr.DynamoMRReader import DynamoMRReader
-    from nmr.mr.SybylMRReader import SybylMRReader
-    from nmr.mr.IsdMRReader import IsdMRReader
     from nmr.mr.CharmmCRDReader import CharmmCRDReader
     from nmr.mr.CharmmMRReader import CharmmMRReader
-    from nmr.mr.AriaMRReader import AriaMRReader
+    from nmr.mr.CnsMRReader import CnsMRReader
+    from nmr.mr.CyanaMRReader import CyanaMRReader
     from nmr.mr.CyanaNOAReader import CyanaNOAReader
+    from nmr.mr.DynamoMRReader import DynamoMRReader
+    from nmr.mr.GromacsMRReader import GromacsMRReader
+    from nmr.mr.GromacsPTReader import GromacsPTReader
+    from nmr.mr.IsdMRReader import IsdMRReader
+    from nmr.mr.RosettaMRReader import RosettaMRReader
+    from nmr.mr.SybylMRReader import SybylMRReader
+    from nmr.mr.XplorMRReader import XplorMRReader
+    from nmr.pk.AriaPKReader import AriaPKReader
+    from nmr.pk.NmrPipePKReader import NmrPipePKReader
+    from nmr.pk.NmrViewPKReader import NmrViewPKReader
+    from nmr.pk.SparkyPKReader import SparkyPKReader
+    from nmr.pk.TopSpinPKReader import TopSpinPKReader
+    from nmr.pk.XeasyPKReader import XeasyPKReader
+    from nmr.pk.XeasyPROTReader import XeasyPROTReader
+    from nmr.pk.XwinNmrPKReader import XwinNmrPKReader
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
@@ -567,6 +584,10 @@ archival_mr_file_types = ('nmr-star',
                           'nm-res-cns', 'nm-res-cya', 'nm-res-dyn', 'nm-res-gro',
                           'nm-res-isd', 'nm-res-noa', 'nm-res-oth', 'nm-res-sax',
                           'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
+
+parsable_pk_file_types = ('nm-aux-xea',
+                          'nm-pea-ari', 'nm-pea-pip', 'nm-pea-vie', 'nm-pea-spa',
+                          'nm-pea-top', 'nm-pea-xea', 'nm-pea-xwi')
 
 
 def detect_bom(fPath: str, default: str = 'utf-8') -> str:
@@ -1079,26 +1100,44 @@ def is_peak_list(line: str, has_header: bool = True) -> bool:
     if 'VARS' in line and 'X_PPM' in line and 'Y_PPM' in line:  # NMRPipe peak list
         return True
 
+    if '<!DOCTYPE spectrum SYSTEM' in line or '<spectrum name=' in line:  # ARIA peak list
+        return True
+
+    if '# PEAKLIST_VERSION' in line or '# PEAKLIST_DIMENSION' in line:  # XwinNMR peak list
+        return True
+
+    if '<PeakList>' in line:  # TopSpin peak list
+        return True
+
     return False
 
 
-def get_peak_list_format(line: str, has_header: bool = True) -> Optional[str]:
+def get_peak_list_format(line: str, has_header: bool = True, in_type: bool = False) -> Optional[str]:
     """ Return peak list format for a given input.
     """
 
     if has_header:  # and line.count('E') + line.count('e') >= 2:  # XEASY peak list
         s = line.split()
         if 'U' in s or 'T' in s:
-            return 'XEASY'
+            return 'nm-pea-xea' if in_type else 'XEASY'
 
     if 'w1' in line and 'w2' in line:  # Sparky peak list
-        return 'Sparky'
+        return 'nm-pea-spa' if in_type else 'Sparky'
 
     if 'label' in line and 'dataset' in line and 'sw' in line and 'sf' in line:  # NMRView peak list
-        return 'NMRView'
+        return 'nm-pea-vie' if in_type else 'NMRView'
 
-    if 'VARS' in line and 'X_PPM' in line and 'Y_PPM' in line:
-        return 'NMRPipe'
+    if 'VARS' in line and 'X_PPM' in line and 'Y_PPM' in line:  # NMRPipe peak list
+        return 'nm-pea-pip' if in_type else 'NMRPipe'
+
+    if '<!DOCTYPE spectrum SYSTEM' in line or '<spectrum name=' in line:  # ARIA peak list
+        return 'ARIA'
+
+    if '# PEAKLIST_VERSION' in line or '# PEAKLIST_DIMENSION' in line:  # XwinNMR peak list
+        return 'nm-pea-xwi' if in_type else 'XwinNMR'
+
+    if '<PeakList>' in line:  # TopSpin peak list
+        return 'nm-pea-top' if in_type else 'TopSpin'
 
     return None
 
@@ -1133,6 +1172,32 @@ def get_number_of_dimensions_of_peak_list(file_format: str, line: str) -> Option
                 return 3
             if 'Y_PPM' in col:
                 return 2
+
+    if file_format == 'XwinNMR':
+        if '# PEAKLIST_DIMENSION' in line:
+            col = line.split()
+            if '2' in col:
+                return 2
+            if '3' in col:
+                return 3
+            if '4' in col:
+                return 4
+        if 'F2[ppm]' in line:
+            col = line.split()
+            if 'F4[ppm]' in col:
+                return 4
+            if 'F3[ppm]' in col:
+                return 3
+            if 'F2[ppm]' in col:
+                return 2
+
+    if file_format == 'TopSpin':
+        if '<PeakList2D>' in line:
+            return 2
+        if '<PeakList3D>' in line:
+            return 3
+        if '<PeakList4D>' in line:
+            return 4
 
     return None
 
@@ -1422,6 +1487,7 @@ class NmrDpUtility:
                              self.__extractCoordOtherBond,
                              self.__validateStrMr,
                              self.__validateLegacyMr,
+                             self.__validateLegacyPk,
                              self.__validateSaxsMr,
                              self.__validateStrPk,
                              self.__updateConstraintStats,
@@ -5105,20 +5171,20 @@ class NmrDpUtility:
                                                             ],
                                           'spectral_peak': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                            {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
-                                                            {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Number_of_spectral_dimensions', 'type': 'enum-int', 'mandatory': True,
                                                              'enum': set(range(1, MAX_DIM_NUM_OF_SPECTRA)),
                                                              'enforce-enum': True},
+                                                            {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Chemical_shift_list', 'type': 'str', 'mandatory': True}
                                                             ],
                                           'spectral_peak_alt': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                                 {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                                {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
-                                                                {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
                                                                 {'name': 'Number_of_spectral_dimensions', 'type': 'enum-int', 'mandatory': True,
                                                                  'enum': set(range(1, MAX_DIM_NUM_OF_SPECTRA)),
-                                                                 'enforce-enum': True}
+                                                                 'enforce-enum': True},
+                                                                {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
                                                                 ],
                                           'noepk_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
@@ -6041,13 +6107,19 @@ class NmrDpUtility:
                                             'rdc_restraint': None,
                                             'spectral_peak': {
                                                 '_Spectral_dim': [{'name': 'Axis_code', 'type': 'str', 'mandatory': True},
+                                                                  {'name': 'Atom_type', 'type': 'enum', 'mandatory': True,
+                                                                   'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                                   'enforce-enum': True},
+                                                                  {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True,
+                                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                                   'enforce-enum': True},
                                                                   {'name': 'Spectrometer_frequency', 'type': 'positive-float', 'mandatory': False,
                                                                    'enforce-non-zero': True},
                                                                   {'name': 'Under_sampling_type', 'type': 'enum', 'mandatory': False,
                                                                    'enum': ('aliased', 'folded', 'not observed')},
                                                                   {'name': 'Sweep_width', 'type': 'positive-float', 'mandatory': False,
                                                                    'enforce-non-zero': True},
-                                                                  {'name': 'Sweep_width_units', 'type': 'enum', 'mandatory': True,
+                                                                  {'name': 'Sweep_width_units', 'type': 'enum', 'mandatory': False, 'default': 'Hz',
                                                                    'enum': ('ppm', 'Hz'),
                                                                    'enforce-enum': True},
                                                                   {'name': 'Value_first_point', 'type': 'float', 'mandatory': False},
@@ -6064,13 +6136,19 @@ class NmrDpUtility:
                                             },
                                             'spectral_peak_alt': {
                                                 '_Spectral_dim': [{'name': 'Axis_code', 'type': 'str', 'mandatory': True},
+                                                                  {'name': 'Atom_type', 'type': 'enum', 'mandatory': True,
+                                                                   'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                                   'enforce-enum': True},
+                                                                  {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True,
+                                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                                   'enforce-enum': True},
                                                                   {'name': 'Spectrometer_frequency', 'type': 'positive-float', 'mandatory': False,
                                                                    'enforce-non-zero': True},
                                                                   {'name': 'Under_sampling_type', 'type': 'enum', 'mandatory': False,
                                                                    'enum': ('aliased', 'folded', 'not observed')},
                                                                   {'name': 'Sweep_width', 'type': 'positive-float', 'mandatory': False,
                                                                    'enforce-non-zero': True},
-                                                                  {'name': 'Sweep_width_units', 'type': 'enum', 'mandatory': True,
+                                                                  {'name': 'Sweep_width_units', 'type': 'enum', 'mandatory': True, 'default': 'Hz',
                                                                    'enum': ('ppm', 'Hz'),
                                                                    'enforce-enum': True},
                                                                   {'name': 'Value_first_point', 'type': 'float', 'mandatory': False},
@@ -7440,9 +7518,33 @@ class NmrDpUtility:
                         if atom_names > 0:
                             ar['file_type'] = 'nm-aux-noa'
 
+                    if ar['file_type'] == 'nm-pea-any':
+
+                        if not is_binary_file(arPath):
+
+                            codec = detect_bom(arPath, 'utf-8')
+
+                            if codec != 'utf-8':
+                                _arPath = arPath + '~'
+                                convert_codec(arPath, _arPath, codec, 'utf-8')
+                                arPath = _arPath
+
+                            for _file_type in parsable_pk_file_types:
+
+                                reader = self.__getSimpleFileReader(_file_type, False)
+
+                                listener, parser_err_listener, lexer_err_listener = reader.parse(arPath, None)
+
+                                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                                content_subtype = listener.getContentSubtype() if listener is not None else None
+                                if not has_lexer_error and not has_parser_error and content_subtype is not None and len(content_subtype) > 0:
+                                    ar['file_type'] = _file_type
+                                    break
+
                     input_source.setItemValue('file_name', os.path.basename(arPath))
                     input_source.setItemValue('file_type', ar['file_type'])
-                    input_source.setItemValue('content_type', 'nmr-restraints')
+                    input_source.setItemValue('content_type', 'nmr-restraints' if ar['file_type'] not in parsable_pk_file_types else 'nmr-peaks')
                     if 'original_file_name' in ar:
                         input_source.setItemValue('original_file_name', ar['original_file_name'])
 
@@ -11011,6 +11113,8 @@ class NmrDpUtility:
                             if line.isspace() or comment_pattern.match(line):
                                 if line.startswith('#INAME'):
                                     has_header = True
+                                elif is_peak_list(line):  # XwinNMR
+                                    has_spectral_peak = True
                                 continue
                             if is_peak_list(line, has_header):
                                 has_spectral_peak = True
@@ -11137,7 +11241,7 @@ class NmrDpUtility:
                     if file_path in self.__sll_pred_holder and file_type in self.__sll_pred_holder[file_path]:
                         sll_pred = self.__sll_pred_holder[file_path][file_type]
 
-                    reader = self.__getSimpleMrPtFileReader(file_type, self.__verbose, sll_pred=sll_pred)
+                    reader = self.__getSimpleFileReader(file_type, self.__verbose, sll_pred=sll_pred)
 
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -11145,7 +11249,7 @@ class NmrDpUtility:
                         reasons = listener.getReasonsForReparsing()
 
                         if reasons is not None:
-                            reader = self.__getSimpleMrPtFileReader(file_type, self.__verbose, sll_pred=sll_pred, reasons=reasons)
+                            reader = self.__getSimpleFileReader(file_type, self.__verbose, sll_pred=sll_pred, reasons=reasons)
 
                             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -11734,6 +11838,61 @@ class NmrDpUtility:
             if not file_type.startswith('nm-pea'):
                 continue
 
+            if is_binary_file(file_path):  # DAOTHER-9425
+
+                err = f"The spectal peak list file {file_name!r} is not plain text file."
+
+                self.report.error.appendDescription('format_issue',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+
+                continue
+
+            codec = detect_bom(file_path, 'utf-8')
+
+            if codec != 'utf-8':
+                _file_path = file_path + '~'
+                convert_codec(file_path, _file_path, codec, 'utf-8')
+                file_path = _file_path
+
+            if file_type != 'nm-pea-any':
+
+                reader = self.__getSimpleFileReader(file_type, False)
+
+                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                content_subtype = listener.getContentSubtype() if listener is not None else None
+                if not has_lexer_error and not has_parser_error and content_subtype is not None and len(content_subtype) > 0:
+                    input_source_dic['content_subtype'] = content_subtype
+                    continue
+
+            else:
+
+                settled = False
+
+                for _file_type in parsable_pk_file_types:
+
+                    reader = self.__getSimpleFileReader(_file_type, False)
+
+                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                    content_subtype = listener.getContentSubtype() if listener is not None else None
+                    if not has_lexer_error and not has_parser_error and content_subtype is not None and len(content_subtype) > 0:
+                        input_source_dic['file_type'] = _file_type
+                        input_source_dic['content_subtype'] = content_subtype
+                        settled = True
+                        break
+
+                if settled:
+                    continue
+
             content_subtype = input_source_dic['content_subtype']
             if content_subtype is None:
                 input_source_dic['content_subtype'] = {'spectral_peak': 1}
@@ -11755,6 +11914,8 @@ class NmrDpUtility:
                         if line.isspace() or comment_pattern.match(line):
                             if line.startswith('#INAME'):
                                 has_header = True
+                            elif is_peak_list(line):  # XwinNMR
+                                has_spectral_peak = True
                             continue
                         if is_peak_list(line, has_header):
                             has_spectral_peak = True
@@ -11773,6 +11934,48 @@ class NmrDpUtility:
                     self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
 
                 continue
+
+            codec = detect_bom(file_path, 'utf-8')
+
+            if codec != 'utf-8':
+                _file_path = file_path + '~'
+                convert_codec(file_path, _file_path, codec, 'utf-8')
+                file_path = _file_path
+
+            if file_type != 'nm-pea-any':
+
+                reader = self.__getSimpleFileReader(file_type, False)
+
+                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                content_subtype = listener.getContentSubtype() if listener is not None else None
+                if not has_lexer_error and not has_parser_error and content_subtype is not None and len(content_subtype) > 0:
+                    input_source_dic['content_subtype'] = content_subtype
+                    continue
+
+            else:
+
+                settled = False
+
+                for _file_type in parsable_pk_file_types:
+
+                    reader = self.__getSimpleFileReader(_file_type, False)
+
+                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                    content_subtype = listener.getContentSubtype() if listener is not None else None
+                    if not has_lexer_error and not has_parser_error and content_subtype is not None and len(content_subtype) > 0:
+                        input_source_dic['file_type'] = _file_type
+                        input_source_dic['content_subtype'] = content_subtype
+                        settled = True
+                        break
+
+                if settled:
+                    continue
 
             if has_spectral_peak:
                 continue
@@ -12096,8 +12299,8 @@ class NmrDpUtility:
 
         return None, False
 
-    def __getSimpleMrPtFileReader(self, file_type: str, verbose: bool, sll_pred: bool = True, reasons: Optional[dict] = None) -> Any:
-        """ Return simple MR/PT file reader for a given format.
+    def __getSimpleFileReader(self, file_type: str, verbose: bool, sll_pred: bool = True, reasons: Optional[dict] = None) -> Any:
+        """ Return simple file reader for a given format.
         """
 
         if file_type == 'nm-aux-amb':
@@ -12123,8 +12326,7 @@ class NmrDpUtility:
                                   reasons)
         if file_type == 'nm-res-cha':
             reader = CharmmMRReader(verbose, self.__lfh, None, None, None, None, None,
-                                    self.__ccU, self.__csStat, self.__nefT,
-                                    reasons)
+                                    self.__ccU, self.__csStat, self.__nefT)
             reader.setSllPredMode(sll_pred)
             return reader
         if file_type == 'nm-res-cns':
@@ -12172,6 +12374,46 @@ class NmrDpUtility:
                                    self.__ccU, self.__csStat, self.__nefT,
                                    reasons)
             reader.setSllPredMode(sll_pred)
+            return reader
+
+        if file_type == 'nm-aux-xea':
+            reader = XeasyPROTReader(verbose, self.__lfh, None, None, None, None, None,
+                                     self.__ccU, self.__csStat, self.__nefT)
+            return reader
+
+        if file_type == 'nm-pea-ari':
+            reader = AriaPKReader(verbose, self.__lfh, None, None, None, None, None,
+                                  self.__ccU, self.__csStat, self.__nefT,
+                                  reasons)
+            return reader
+        if file_type == 'nm-pea-pip':
+            reader = NmrPipePKReader(verbose, self.__lfh, None, None, None, None, None,
+                                     self.__ccU, self.__csStat, self.__nefT,
+                                     reasons)
+            return reader
+        if file_type == 'nm-pea-vie':
+            reader = NmrViewPKReader(verbose, self.__lfh, None, None, None, None, None,
+                                     self.__ccU, self.__csStat, self.__nefT,
+                                     reasons)
+            return reader
+        if file_type == 'nm-pea-spa':
+            reader = SparkyPKReader(verbose, self.__lfh, None, None, None, None, None,
+                                    self.__ccU, self.__csStat, self.__nefT,
+                                    reasons)
+            return reader
+        if file_type == 'nm-pea-top':
+            reader = TopSpinPKReader(verbose, self.__lfh, None, None, None, None, None,
+                                     self.__ccU, self.__csStat, self.__nefT,
+                                     reasons)
+            return reader
+        if file_type == 'nm-pea-xea':
+            reader = XeasyPKReader(verbose, self.__lfh, None, None, None, None, None,
+                                   self.__ccU, self.__csStat, self.__nefT)
+            return reader
+        if file_type == 'nm-pea-xwi':
+            reader = XwinNmrPKReader(verbose, self.__lfh, None, None, None, None, None,
+                                     self.__ccU, self.__csStat, self.__nefT,
+                                     reasons)
             return reader
 
         return None
@@ -12279,7 +12521,7 @@ class NmrDpUtility:
                 test_line = err_input[0:err_column_position]
 
                 if reader is None:
-                    reader = self.__getSimpleMrPtFileReader(file_type, False)
+                    reader = self.__getSimpleFileReader(file_type, False)
 
                 _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -12585,7 +12827,7 @@ class NmrDpUtility:
                         typo_for_comment_out = bool(possible_typo_for_comment_out_pattern.match(test_line))
 
                         if reader is None:
-                            reader = self.__getSimpleMrPtFileReader(file_type, False)
+                            reader = self.__getSimpleFileReader(file_type, False)
 
                         _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -12629,7 +12871,7 @@ class NmrDpUtility:
 
                 if len(test_line) > 0:
 
-                    test_reader = self.__getSimpleMrPtFileReader('nm-res-gro', False)
+                    test_reader = self.__getSimpleFileReader('nm-res-gro', False)
 
                     _, _parser_err_listener, _lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
 
@@ -12642,7 +12884,7 @@ class NmrDpUtility:
 
                         return self.__divideLegacyMr(file_path, file_type, err_desc, src_path, offset)
 
-                    test_reader = self.__getSimpleMrPtFileReader('nm-aux-gro', False)
+                    test_reader = self.__getSimpleFileReader('nm-aux-gro', False)
 
                     _, _parser_err_listener, _lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
 
@@ -12670,7 +12912,7 @@ class NmrDpUtility:
                     test_line = err_input[0:comment_code_index]
 
                     if reader is None:
-                        reader = self.__getSimpleMrPtFileReader(file_type, False)
+                        reader = self.__getSimpleFileReader(file_type, False)
 
                     _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -12788,7 +13030,7 @@ class NmrDpUtility:
                 test_line = err_input
 
                 if reader is None:
-                    reader = self.__getSimpleMrPtFileReader(file_type, False)
+                    reader = self.__getSimpleFileReader(file_type, False)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -12860,7 +13102,7 @@ class NmrDpUtility:
                 test_line = err_input[0:err_column_position]
 
                 if reader is None:
-                    reader = self.__getSimpleMrPtFileReader(file_type, False)
+                    reader = self.__getSimpleFileReader(file_type, False)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -12886,7 +13128,7 @@ class NmrDpUtility:
                 test_line = next_input
 
                 if reader is None:
-                    reader = self.__getSimpleMrPtFileReader(file_type, False)
+                    reader = self.__getSimpleFileReader(file_type, False)
 
                 _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -12897,7 +13139,7 @@ class NmrDpUtility:
                     if err_column_position == 0 and file_type not in linear_mr_file_types:
 
                         for test_file_type in linear_mr_file_types:
-                            test_reader = self.__getSimpleMrPtFileReader(test_file_type, False)
+                            test_reader = self.__getSimpleFileReader(test_file_type, False)
 
                             listener, parser_err_listener, lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
 
@@ -13038,7 +13280,7 @@ class NmrDpUtility:
                 test_line = g[0]
 
                 if reader is None:
-                    reader = self.__getSimpleMrPtFileReader(file_type, False)
+                    reader = self.__getSimpleFileReader(file_type, False)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -13124,7 +13366,7 @@ class NmrDpUtility:
         if self.__mr_debug:
             self.__lfh.write('PEEL-MR\n')
 
-        reader = self.__getSimpleMrPtFileReader(file_type, False)
+        reader = self.__getSimpleFileReader(file_type, False)
 
         if reader is None:
             return False
@@ -13202,7 +13444,7 @@ class NmrDpUtility:
                 if test_file_type == file_type:
                     continue
 
-                test_reader = self.__getSimpleMrPtFileReader(test_file_type, False)
+                test_reader = self.__getSimpleFileReader(test_file_type, False)
 
                 _, _parser_err_listener, _lexer_err_listener = test_reader.parse(test_line, None, isFilePath=False)
 
@@ -13260,7 +13502,7 @@ class NmrDpUtility:
 
                 if has_lexer_error or has_parser_error or not has_content:
 
-                    test_reader = self.__getSimpleMrPtFileReader('nm-res-xpl', False)
+                    test_reader = self.__getSimpleFileReader('nm-res-xpl', False)
 
                     _, _parser_err_listener, _lexer_err_listener = test_reader.parse(prev_input, None, isFilePath=False)
 
@@ -13407,7 +13649,7 @@ class NmrDpUtility:
                 test_line = err_input[0:err_column_position]
 
                 if reader is None:
-                    reader = self.__getSimpleMrPtFileReader(file_type, False)
+                    reader = self.__getSimpleFileReader(file_type, False)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -13415,7 +13657,11 @@ class NmrDpUtility:
 
                 if not has_lexer_error:
                     if j3 == 0 and is_peak_list(err_input):
-                        shutil.copyfile(div_ext_file, div_ext_file + '-ignored-as-pea-any')
+                        file_format = get_peak_list_format(err_input, in_type=True)
+                        if file_format is not None:
+                            shutil.copyfile(div_ext_file, div_ext_file + f'-selected-as-{file_format[-7:0]}')
+                        else:
+                            shutil.copyfile(div_ext_file, div_ext_file + '-ignored-as-pea-any')
                         os.remove(div_try_file)
                         os.remove(file_path)
 
@@ -13727,7 +13973,7 @@ class NmrDpUtility:
                         typo_for_comment_out = bool(possible_typo_for_comment_out_pattern.match(test_line))
 
                         if reader is None:
-                            reader = self.__getSimpleMrPtFileReader(file_type, False)
+                            reader = self.__getSimpleFileReader(file_type, False)
 
                         _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -13781,7 +14027,7 @@ class NmrDpUtility:
                     test_line = err_input[0:comment_code_index]
 
                     if reader is None:
-                        reader = self.__getSimpleMrPtFileReader(file_type, False)
+                        reader = self.__getSimpleFileReader(file_type, False)
 
                     _, parser_err_listener, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -13899,7 +14145,7 @@ class NmrDpUtility:
                 test_line = err_input
 
                 if reader is None:
-                    reader = self.__getSimpleMrPtFileReader(file_type, False)
+                    reader = self.__getSimpleFileReader(file_type, False)
 
                 _, _, lexer_err_listener = reader.parse(test_line, None, isFilePath=False)
 
@@ -14037,7 +14283,7 @@ class NmrDpUtility:
 
         try:
 
-            reader = self.__getSimpleMrPtFileReader(file_type, False, sll_pred=False)
+            reader = self.__getSimpleFileReader(file_type, False, sll_pred=False)
 
             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -14046,7 +14292,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        reader = self.__getSimpleMrPtFileReader(file_type, False, sll_pred=False, reasons=reasons)
+                        reader = self.__getSimpleFileReader(file_type, False, sll_pred=False, reasons=reasons)
 
                         listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -14307,6 +14553,110 @@ class NmrDpUtility:
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
+        has_spectral_peak = False
+        if not is_valid:
+            with open(file_path, 'r', encoding='utf-8') as ifh:
+                has_header = False
+                for idx, line in enumerate(ifh):
+                    if line.isspace() or comment_pattern.match(line):
+                        if line.startswith('#INAME'):
+                            has_header = True
+                        elif is_peak_list(line):  # XwinNMR
+                            has_spectral_peak = True
+                        continue
+                    if is_peak_list(line, has_header):
+                        has_spectral_peak = True
+                    if has_spectral_peak or idx >= self.mr_max_spacer_lines:
+                        break
+
+        if has_spectral_peak and file_type != 'nm-pea-ari':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-ari')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if has_spectral_peak and file_type != 'nm-pea-pip':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-pip')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if has_spectral_peak and file_type != 'nm-pea-vie':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-vie')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if has_spectral_peak and file_type != 'nm-pea-spa':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-spa')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if has_spectral_peak and file_type != 'nm-pea-top':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-top')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if has_spectral_peak and file_type != 'nm-pea-xea':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-xea')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if has_spectral_peak and file_type != 'nm-pea-xwi':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-xwi')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if not is_valid and not has_spectral_peak and file_type != 'nm-aux-xea':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-xea')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
         if len(genuine_type) != 1:
             _valid_types = [k for k, v in sorted(valid_types.items(), key=itemgetter(1), reverse=True)]
             _possible_types = [k for k, v in sorted(possible_types.items(), key=itemgetter(1), reverse=True)]
@@ -14338,7 +14688,7 @@ class NmrDpUtility:
 
             sll_pred = not agreed_w_cns
 
-            reader = self.__getSimpleMrPtFileReader(_file_type, False, sll_pred=sll_pred)
+            reader = self.__getSimpleFileReader(_file_type, False, sll_pred=sll_pred)
 
             listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
 
@@ -14468,12 +14818,8 @@ class NmrDpUtility:
         src_basename = mr_core_path = mr_file_path = mr_file_link = None
         mr_part_paths, pk_list_paths = [], []
 
-        settled_mr_file_types = ('nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha',
-                                 'nm-res-cns', 'nm-res-cya', 'nm-res-dyn', 'nm-res-gro',
-                                 'nm-res-isd', 'nm-res-noa', 'nm-res-ros', 'nm-res-sax',
-                                 'nm-res-syb', 'nm-res-xpl',
-                                 'nm-pea-ari', 'nm-pea-pip', 'nm-pea-spa', 'nm-pea-top',
-                                 'nm-pea-vie', 'nm-aux-xea', 'nm-pea-xea', 'nm-pea-xwi')
+        settled_file_types = list(parsable_mr_file_types)
+        settled_file_types.extend(list(parsable_pk_file_types))
 
         for ar in self.__inputParamDict[ar_file_path_list]:
 
@@ -14570,13 +14916,39 @@ class NmrDpUtility:
             ign_pk_file = src_basename + '-ignored-as-pea-any.mr'
 
             if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
+
+                settled_file_type = None
+
+                for _file_type in parsable_pk_file_types:
+
+                    reader = self.__getSimpleFileReader(_file_type, False)
+
+                    listener, parser_err_listener, lexer_err_listener = reader.parse(ign_pk_file, None)
+
+                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                    content_subtype = listener.getContentSubtype() if listener is not None else None
+                    if not has_lexer_error and not has_parser_error and content_subtype is not None and len(content_subtype) > 0:
+                        settled_file_type = _file_type
+                        break
+
                 _ar = ar.copy()
 
-                _ar['file_name'] = ign_pk_file
-                _ar['file_type'] = 'nm-pea-any'
+                if settled_file_type is not None:
+                    sel_pk_file = src_basename + f'-selected-as-{settled_file_type[-7:]}.mr'
+                    os.rename(ign_pk_file, sel_pk_file)
+
+                    _ar['file_name'] = sel_pk_file
+                    _ar['file_type'] = settled_file_type
+
+                else:
+
+                    _ar['file_name'] = ign_pk_file
+                    _ar['file_type'] = 'nm-pea-any'
+
                 peak_file_list.append(_ar)
 
-                pk_list_paths.append({'nm-pea-any': src_basename + '.mr'})
+                pk_list_paths.append({'nmr-peaks': src_basename + '.mr'})
 
                 touch_file = os.path.join(dir_path, '.entry_with_pk')
                 if not os.path.exists(touch_file):
@@ -14587,14 +14959,14 @@ class NmrDpUtility:
 
             designated = False
 
-            for _file_type in settled_mr_file_types:
+            for _file_type in settled_file_types:
 
-                sel_res_file = src_basename + f'-selected-as-{_file_type[-7:]}.mr'
+                sel_file = src_basename + f'-selected-as-{_file_type[-7:]}.mr'
 
-                if os.path.exists(sel_res_file):
+                if os.path.exists(sel_file):
                     _ar = ar.copy()
 
-                    _ar['file_name'] = sel_res_file
+                    _ar['file_name'] = sel_file
                     _ar['file_type'] = _file_type
                     split_file_list.append(_ar)
 
@@ -15328,13 +15700,39 @@ class NmrDpUtility:
                         ign_pk_file = dst_file + '-ignored-as-pea-any'
 
                         if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
+
+                            settled_file_type = None
+
+                            for _file_type in parsable_pk_file_types:
+
+                                reader = self.__getSimpleFileReader(_file_type, False)
+
+                                listener, parser_err_listener, lexer_err_listener = reader.parse(ign_pk_file, None)
+
+                                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                                content_subtype = listener.getContentSubtype() if listener is not None else None
+                                if not has_lexer_error and not has_parser_error and content_subtype is not None and len(content_subtype) > 0:
+                                    settled_file_type = _file_type
+                                    break
+
                             _ar = ar.copy()
 
-                            _ar['file_name'] = dst_file
-                            _ar['file_type'] = 'nm-pea-any'
+                            if settled_file_type is not None:
+                                sel_pk_file = dst_file + f'-selected-as-{settled_file_type[-7:]}'
+                                os.rename(ign_pk_file, sel_pk_file)
+
+                                _ar['file_name'] = dst_file
+                                _ar['file_type'] = settled_file_type
+
+                            else:
+
+                                _ar['file_name'] = dst_file
+                                _ar['file_type'] = 'nm-pea-any'
+
                             peak_file_list.append(_ar)
 
-                            pk_list_paths.append({'nm-pea-any': dst_file})
+                            pk_list_paths.append({'nmr-peaks': dst_file})
 
                             remediated = True
 
@@ -15342,11 +15740,11 @@ class NmrDpUtility:
 
                         designated = False
 
-                        for _file_type in settled_mr_file_types:
+                        for _file_type in settled_file_types:
 
-                            sel_res_file = dst_file + f'-selected-as-{_file_type[-7:]}'
+                            sel_file = dst_file + f'-selected-as-{_file_type[-7:]}'
 
-                            if os.path.exists(sel_res_file):
+                            if os.path.exists(sel_file):
                                 _ar = ar.copy()
 
                                 _ar['file_name'] = dst_file
@@ -15383,13 +15781,39 @@ class NmrDpUtility:
                         ign_pk_file = dst_file + '-ignored-as-pea-any'
 
                         if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
+
+                            settled_file_type = None
+
+                            for _file_type in parsable_pk_file_types:
+
+                                reader = self.__getSimpleFileReader(_file_type, False)
+
+                                listener, parser_err_listener, lexer_err_listener = reader.parse(ign_pk_file, None)
+
+                                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                                content_subtype = listener.getContentSubtype() if listener is not None else None
+                                if not has_lexer_error and not has_parser_error and content_subtype is not None and len(content_subtype) > 0:
+                                    settled_file_type = _file_type
+                                    break
+
                             _ar = ar.copy()
 
-                            _ar['file_name'] = dst_file
-                            _ar['file_type'] = 'nm-pea-any'
+                            if settled_file_type is not None:
+                                sel_pk_file = dst_file + f'-selected-as-{settled_file_type[-7:]}'
+                                os.rename(ign_pk_file, sel_pk_file)
+
+                                _ar['file_name'] = dst_file
+                                _ar['file_type'] = settled_file_type
+
+                            else:
+
+                                _ar['file_name'] = dst_file
+                                _ar['file_type'] = 'nm-pea-any'
+
                             peak_file_list.append(_ar)
 
-                            pk_list_paths.append({'nm-pea-any': dst_file})
+                            pk_list_paths.append({'nmr-peaks': dst_file})
 
                             remediated = True
 
@@ -15694,13 +16118,39 @@ class NmrDpUtility:
                     ign_pk_file = dst_file + '-ignored-as-pea-any'
 
                     if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
-                        _ar = ar.copy()
 
-                        _ar['file_name'] = dst_file
-                        _ar['file_type'] = 'nm-pea-any'
+                        settled_file_type = None
+
+                        for _file_type in parsable_pk_file_types:
+
+                            reader = self.__getSimpleFileReader(_file_type, False)
+
+                            listener, parser_err_listener, lexer_err_listener = reader.parse(ign_pk_file, None)
+
+                            has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                            has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                            content_subtype = listener.getContentSubtype() if listener is not None else None
+                            if not has_lexer_error and not has_parser_error and content_subtype is not None and len(content_subtype) > 0:
+                                settled_file_type = _file_type
+                                break
+
+                        _ar.copy()
+
+                        if settled_file_type is not None:
+                            sel_pk_file = dst_file + f'-selected-as-{settled_file_type[-7:]}'
+                            os.rename(ign_pk_file, sel_pk_file)
+
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = settled_file_type
+
+                        else:
+
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = 'nm-pea-any'
+
                         peak_file_list.append(_ar)
 
-                        pk_list_paths.append({'nm-pea-any': dst_file,
+                        pk_list_paths.append({'nmr-peaks': dst_file,
                                               'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
 
                         remediated = True
@@ -15723,11 +16173,11 @@ class NmrDpUtility:
 
                     designated = False
 
-                    for _file_type in settled_mr_file_types:
+                    for _file_type in settled_file_types:
 
-                        sel_res_file = dst_file + f'-selected-as-{_file_type[-7:]}'
+                        sel_file = dst_file + f'-selected-as-{_file_type[-7:]}'
 
-                        if os.path.exists(sel_res_file):
+                        if os.path.exists(sel_file):
                             _ar = ar.copy()
 
                             _ar['file_name'] = dst_file
@@ -15753,28 +16203,30 @@ class NmrDpUtility:
 
                     has_spectral_peak = False
 
-                    with open(dst_file, 'r') as ifh:
-                        has_header = False
-                        for line in ifh:
-                            if line.isspace() or comment_pattern.match(line):
-                                if line.startswith('#INAME'):
-                                    has_header = True
-                                continue
-                            if is_peak_list(line, has_header):
-                                has_spectral_peak = True
+                    for _file_type in parsable_pk_file_types:
 
-                                shutil.copyfile(dst_file, ign_pk_file)
+                        reader = self.__getSimpleFileReader(_file_type, False)
 
-                                _ar = ar.copy()
+                        listener, parser_err_listener, lexer_err_listener = reader.parse(dst_file, None)
 
-                                _ar['file_name'] = dst_file
-                                _ar['file_type'] = 'nm-pea-any'
-                                peak_file_list.append(_ar)
+                        has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                        has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                        content_subtype = listener.getContentSubtype() if listener is not None else None
+                        if not has_lexer_error and not has_parser_error and content_subtype is not None and len(content_subtype) > 0:
+                            has_spectral_peak = True
 
-                                pk_list_paths.append({'nm-pea-any': dst_file,
-                                                      'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
+                            shutil.copyfile(dst_file, dst_file + f'-selected-as-{_file_type[-7:]}')
 
-                                remediated = True
+                            _ar = ar.copy()
+
+                            _ar['file_name'] = dst_file
+                            _ar['file_type'] = _file_type
+                            peak_file_list.append(_ar)
+
+                            pk_list_paths.append({_file_type: dst_file,
+                                                  'original_file_name': None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
+
+                            remediated = True
 
                             break
 
@@ -16058,13 +16510,39 @@ class NmrDpUtility:
                         ign_pk_file = _dst_file + '-ignored-as-pea-any'
 
                         if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
+
+                            settled_file_type = None
+
+                            for _file_type in parsable_pk_file_types:
+
+                                reader = self.__getSimpleFileReader(_file_type, False)
+
+                                listener, parser_err_listener, lexer_err_listener = reader.parse(ign_pk_file, None)
+
+                                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+                                content_subtype = listener.getContentSubtype() if listener is not None else None
+                                if not has_lexer_error and not has_parser_error and content_subtype is not None and len(content_subtype) > 0:
+                                    settled_file_type = _file_type
+                                    break
+
                             _ar = ar.copy()
 
-                            _ar['file_name'] = _dst_file
-                            _ar['file_type'] = 'nm-pea-any'
+                            if settled_file_type is not None:
+                                sel_pk_file = _dst_file + f'-selected-as-{settled_file_type[-7:]}'
+                                os.rename(ign_pk_file, sel_pk_file)
+
+                                _ar['file_name'] = _dst_file
+                                _ar['file_type'] = settled_file_type
+
+                            else:
+
+                                _ar['file_name'] = _dst_file
+                                _ar['file_type'] = 'nm-pea-any'
+
                             peak_file_list.append(_ar)
 
-                            pk_list_paths.append({'nm-pea-any': _dst_file,
+                            pk_list_paths.append({'nmr-peaks': _dst_file,
                                                   'original_file_name': None if file_name.endswith('-noname.mr') else os.path.basename(file_name)})
 
                             remediated = True
@@ -16073,11 +16551,11 @@ class NmrDpUtility:
 
                         designated = False
 
-                        for _file_type in settled_mr_file_types:
+                        for _file_type in settled_file_types:
 
-                            sel_res_file = _dst_file + f'-selected-as-{_file_type[-7:]}'
+                            sel_file = _dst_file + f'-selected-as-{_file_type[-7:]}'
 
-                            if os.path.exists(sel_res_file):
+                            if os.path.exists(sel_file):
                                 _ar = ar.copy()
 
                                 _ar['file_name'] = _dst_file
@@ -16429,7 +16907,7 @@ class NmrDpUtility:
 
                     for pk_list_path in pk_list_paths:
 
-                        pk_file_path = pk_list_path['nm-pea-any']
+                        pk_file_path = pk_list_path['nmr-peaks']
                         if 'original_file_name' in pk_list_path and pk_list_path['original_file_name'] is not None:
                             original_file_name = pk_list_path['original_file_name']
                         else:
@@ -32227,6 +32705,10 @@ class NmrDpUtility:
                         if line.isspace() or comment_pattern.match(line):
                             if line.startswith('#INAME'):
                                 has_header = True
+                            else:  # XwinNMR
+                                file_format = get_peak_list_format(line)
+                                if file_format is not None:
+                                    break
                             continue
                         file_format = get_peak_list_format(line, has_header)
                         if file_format is not None or idx >= self.mr_max_spacer_lines:
@@ -32307,6 +32789,10 @@ class NmrDpUtility:
                         if line.isspace() or comment_pattern.match(line):
                             if line.startswith('#INAME'):
                                 has_header = True
+                            else:  # XwinNMR
+                                file_format = get_peak_list_format(line)
+                                if file_format is not None:
+                                    break
                             continue
                         file_format = get_peak_list_format(line, has_header)
                         if file_format is not None or idx >= self.mr_max_spacer_lines:
@@ -32328,7 +32814,13 @@ class NmrDpUtility:
 
                 sf.add_tag('Number_of_spectral_dimensions', dimensions)
 
-                sf.add_tag('Chemical_shift_list', None)
+                cs_list = get_first_sf_tag(sf, 'Chemical_shift_list')
+
+                if cs_list in emptyValue:
+                    sf_category = self.sf_categories['nmr-star']['chem_shift']
+                    cs_sf_list = master_entry.get_saveframes_by_category(sf_category)
+                    if len(cs_sf_list) == 1:
+                        set_sf_tag(sf, 'Chemical_shift_list', get_first_sf_tag(cs_sf_list[0], 'Sf_framecode'))
 
                 _sf_id = _sf_framecode = None
                 _sf_category = self.sf_categories['nmr-star']['chem_shift']
@@ -32589,7 +33081,6 @@ class NmrDpUtility:
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
-            content_subtype = input_source_dic['content_subtype']
 
             if fileListId == self.__file_path_list_len and file_type == 'nm-res-mr':
                 derived_from_public_mr = True
@@ -32601,6 +33092,8 @@ class NmrDpUtility:
 
             if self.__remediation_mode and os.path.exists(file_path + '-ignored'):
                 continue
+
+            content_subtype = input_source_dic['content_subtype']
 
             if content_subtype is None or len(content_subtype) == 0:
                 continue
@@ -34180,6 +34673,1006 @@ class NmrDpUtility:
             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
         if len(self.__nmr_ext_poly_seq) > 0:
+            entity_assembly = self.__caC['entity_assembly']
+            auth_chain_ids = list(set(d['auth_chain_id'] for d in self.__nmr_ext_poly_seq))
+            for auth_chain_id in auth_chain_ids:
+                item = next(item for item in entity_assembly if auth_chain_id in item['auth_asym_id'].split(','))
+                if item['entity_type'] == 'polymer':
+                    poly_type = item['entity_poly_type']
+                    if poly_type.startswith('polypeptide'):
+                        unknown_residue = 'UNK'
+                    elif any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('DA', 'DC', 'DG', 'DT'))\
+                            and any(comp_id for comp_id in item['comp_id_set'] if comp_id in ('A', 'C', 'G', 'U')):
+                        unknown_residue = 'DN'
+                    elif poly_type == 'polydeoxyribonucleotide':
+                        unknown_residue = 'DN'
+                    elif poly_type == 'polyribonucleotide':
+                        unknown_residue = 'N'
+                    else:
+                        continue
+                    ps = next(ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_chain_id)
+                    auth_seq_ids = [d['auth_seq_id'] for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] == auth_chain_id]
+                    auth_seq_ids.extend(list(filter(None, ps['auth_seq_id'])))
+                    min_auth_seq_id = min(auth_seq_ids)
+                    max_auth_seq_id = max(auth_seq_ids)
+                    for auth_seq_id in range(min_auth_seq_id, max_auth_seq_id + 1):
+                        if auth_seq_id not in ps['auth_seq_id']\
+                           and not any(d for d in self.__nmr_ext_poly_seq
+                                       if d['auth_chain_id'] == auth_chain_id and d['auth_seq_id'] == auth_seq_id):
+                            self.__nmr_ext_poly_seq.append({'auth_chain_id': auth_chain_id,
+                                                            'auth_seq_id': auth_seq_id,
+                                                            'auth_comp_id': unknown_residue})
+
+            self.__nmr_ext_poly_seq = sorted(self.__nmr_ext_poly_seq, key=itemgetter('auth_chain_id', 'auth_seq_id'))
+
+        return not self.report.isError()
+
+    def __validateLegacyPk(self) -> bool:
+        """ Validate data content of legacy NMR spectral peak files and merge them if possible.
+        """
+
+        if self.__combined_mode:
+            return True
+
+        ar_file_path_list = 'atypical_restraint_file_path_list'
+
+        if ar_file_path_list not in self.__inputParamDict:
+            return True
+
+        src_id = self.report.getInputSourceIdOfCoord()
+
+        if src_id < 0:
+            return False
+
+        cif_input_source = self.report.input_sources[src_id]
+        cif_input_source_dic = cif_input_source.get()
+
+        has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
+
+        if not has_poly_seq:
+            return False
+
+        content_subtype = 'spectral_peak'
+
+        xeasyAtomNumberDict = None
+
+        has_nm_aux_xea_file = False
+
+        fileListId = self.__file_path_list_len
+
+        def deal_aux_warn_message(listener):
+
+            if listener.warningMessage is not None:
+
+                for warn in listener.warningMessage:
+
+                    if warn.startswith('[Concatenated sequence]'):
+                        self.report.warning.appendDescription('concatenated_sequence',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Sequence mismatch]'):
+                        self.report.error.appendDescription('sequence_mismatch',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Unknown atom name]'):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Unknown residue name]'):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+
+                    else:
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ KeyError  - " + warn)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ KeyError  - {warn}\n")
+
+        for ar in self.__inputParamDict[ar_file_path_list]:
+
+            file_path = ar['file_name']
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+
+            fileListId += 1
+
+            if file_type == 'nm-aux-xea':
+                has_nm_aux_xea_file = True
+
+                file_name = input_source_dic['file_name']
+
+                original_file_name = None
+                if 'original_file_name' in input_source_dic:
+                    if input_source_dic['original_file_name'] is not None:
+                        original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                    if file_name != original_file_name and original_file_name is not None:
+                        file_name = f"{original_file_name} ({file_name})"
+
+                self.__cur_original_ar_file_name = original_file_name
+
+                reader = XeasyPROTReader(self.__verbose, self.__lfh,
+                                         self.__representative_model_id,
+                                         self.__representative_alt_id,
+                                         self.__mr_atom_name_mapping,
+                                         self.__cR, self.__caC,
+                                         self.__ccU, self.__csStat, self.__nefT)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                if listener is not None:
+
+                    deal_aux_warn_message(listener)
+
+                    xeasyAtomNumberDict = listener.getAtomNumberDict()
+
+        poly_seq_set = []
+
+        create_sf_dict = self.__remediation_mode
+
+        if self.__list_id_counter is None:
+            self.__list_id_counter = {}
+
+        pk_sf_dict_holder = {}
+
+        proc_nmr_ext_poly_seq = False
+
+        if self.__nmr_ext_poly_seq is None and not self.__bmrb_only or not self.__internal_mode:  # nmrPolySeq is None in __retrieveCoordAssemblyChecker()
+            proc_nmr_ext_poly_seq = True
+
+            self.__nmr_ext_poly_seq = []
+
+            input_source = self.report.input_sources[0]
+            input_source_dic = input_source.get()
+
+            has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+
+            nmr_poly_seq = input_source_dic['polymer_sequence']
+            cif_poly_seq = self.__caC['polymer_sequence']
+
+            seq_align, _ = alignPolymerSequence(self.__pA, cif_poly_seq, nmr_poly_seq)
+            chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_poly_seq, nmr_poly_seq, seq_align)
+
+            if chain_assign is not None:
+
+                for ca in chain_assign:
+                    ref_chain_id = ca['ref_chain_id']
+                    test_chain_id = ca['test_chain_id']
+
+                    sa = next(sa for sa in seq_align
+                              if sa['ref_chain_id'] == ref_chain_id
+                              and sa['test_chain_id'] == test_chain_id)
+
+                    if sa['conflict'] > 0 or sa['unmapped'] == 0:
+                        continue
+
+                    s1 = next(s for s in nmr_poly_seq if s['chain_id'] == test_chain_id)
+                    s2 = next(s for s in cif_poly_seq if s['auth_chain_id'] == ref_chain_id)
+
+                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + test_chain_id)
+                    self.__pA.addTestSequence(s2['comp_id'], test_chain_id)
+                    self.__pA.doAlign()
+
+                    myAlign = self.__pA.getAlignment(test_chain_id)
+
+                    length = len(myAlign)
+
+                    _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
+
+                    if conflict == 0 and unmapped > 0:
+
+                        nmr_seq_ids, cif_auth_seq_ids = [], []
+
+                        for i in range(length):
+                            if str(myAlign[i][0]) != '.' and i < len(s1['seq_id']):
+                                nmr_seq_ids.append(s1['seq_id'][i])
+                            else:
+                                nmr_seq_ids.append(None)
+
+                        for i in range(length):
+                            if str(myAlign[i][1]) != '.' and i < len(s2['seq_id']):
+                                cif_auth_seq_ids.append(s2['auth_seq_id'][i])
+                            else:
+                                cif_auth_seq_ids.append(None)
+
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            if myPr[0] == myPr[1]:
+                                continue
+
+                            nmr_comp_id = str(myPr[0])
+                            cif_comp_id = str(myPr[1])
+
+                            if cif_comp_id == '.' and nmr_comp_id != '.':
+                                nmr_seq_id = nmr_seq_ids[i] - offset_1 if nmr_seq_ids[i] is not None else None
+                                if nmr_seq_id is not None:
+                                    offset = None
+                                    for _offset in range(1, 20):
+                                        if i + _offset < length:
+                                            _myPr = myAlign[i + _offset]
+                                            if _myPr[0] == _myPr[1]:
+                                                offset = _offset
+                                                break
+                                        if i - _offset >= 0:
+                                            _myPr = myAlign[i - _offset]
+                                            if _myPr[0] == _myPr[1]:
+                                                offset = -_offset
+                                                break
+
+                                    if offset is not None and cif_auth_seq_ids[i + offset] is not None:
+                                        cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
+                                        self.__nmr_ext_poly_seq.append({'auth_chain_id': s2['auth_chain_id'],
+                                                                        'auth_seq_id': cif_auth_seq_id,
+                                                                        'auth_comp_id': nmr_comp_id})
+
+        suspended_errors_for_lazy_eval = []
+
+        def consume_suspended_message():
+
+            if len(suspended_errors_for_lazy_eval) > 0:
+                for msg in suspended_errors_for_lazy_eval:
+                    for k, v in msg.items():
+                        self.report.error.appendDescription(k, v)
+                        self.report.setError()
+                suspended_errors_for_lazy_eval.clear()
+
+        def deal_pea_warn_message(listener):
+
+            if listener.warningMessage is not None:
+
+                for warn in listener.warningMessage:
+
+                    if warn.startswith('[Concatenated sequence]'):
+                        self.report.warning.appendDescription('concatenated_sequence',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Sequence mismatch]'):
+                        # consume_suspended_message()
+
+                        self.report.error.appendDescription('sequence_mismatch',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Atom not found]'):
+                        if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                            consume_suspended_message()
+
+                            self.report.error.appendDescription('atom_not_found',
+                                                                {'file_name': file_name, 'description': warn})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {warn}\n")
+                        else:
+                            self.report.warning.appendDescription('sequence_mismatch',
+                                                                  {'file_name': file_name, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Hydrogen not instantiated]'):
+                        if self.__remediation_mode:
+                            self.report.warning.appendDescription('hydrogen_not_instantiated',
+                                                                  {'file_name': file_name, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+                        else:
+                            consume_suspended_message()
+
+                            self.report.error.appendDescription('hydrogen_not_instantiated',
+                                                                {'file_name': file_name, 'description': warn})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Coordinate issue]'):
+                        # consume_suspended_message()
+
+                        self.report.error.appendDescription('coordinate_issue',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Invalid atom nomenclature]'):
+                        consume_suspended_message()
+
+                        self.report.error.appendDescription('invalid_atom_nomenclature',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                        consume_suspended_message()
+
+                        self.report.error.appendDescription('invalid_data',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ ValueError  - {warn}\n")
+
+                    elif warn.startswith('[Sequence mismatch warning]'):
+                        self.report.warning.appendDescription('sequence_mismatch',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+
+                        if seq_mismatch_warning_pattern.match(warn):
+                            g = seq_mismatch_warning_pattern.search(warn).groups()
+                            d = {'auth_chain_id': g[2],
+                                 'auth_seq_id': int(g[0]),
+                                 'auth_comp_id': g[1]}
+                            if d not in self.__nmr_ext_poly_seq:
+                                self.__nmr_ext_poly_seq.append(d)
+
+                    elif warn.startswith('[Missing data]'):
+                        # consume_suspended_message()
+
+                        self.report.error.appendDescription('missing_data',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ ValueError  - {warn}\n")
+
+                    elif warn.startswith('[Range value error]') and not self.__remediation_mode:
+                        # consume_suspended_message()
+
+                        self.report.error.appendDescription('anomalous_data',
+                                                            {'file_name': file_name, 'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ ValueError  - {warn}\n")
+
+                    elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+
+                    else:
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ KeyError  - " + warn)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ KeyError  - {warn}\n")
+
+        def deal_pea_warn_message_for_lazy_eval(listener):
+
+            if listener.warningMessage is not None:
+
+                for warn in listener.warningMessage:
+
+                    if warn.startswith('[Sequence mismatch]'):
+                        suspended_errors_for_lazy_eval.append({'sequence_mismatch':
+                                                               {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Atom not found]'):
+                        if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                            suspended_errors_for_lazy_eval.append({'atom_not_found':
+                                                                   {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Hydrogen not instantiated]'):
+                        if self.__remediation_mode:
+                            pass
+                        else:
+                            suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated':
+                                                                   {'file_name': file_name, 'description': warn}})
+
+                    # elif warn.startswith('[Coordinate issue]'):
+                    #     suspended_errors_for_lazy_eval.append({'coordinate_issue':
+                    #                                            {'file_name': file_name, 'description': warn}})
+
+                    # elif warn.startswith('[Invalid atom nomenclature]'):
+                    #     suspended_errors_for_lazy_eval.append({'invalid_atom_nomenclature':
+                    #                                            {'file_name': file_name, 'description': warn}})
+
+                    elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                        suspended_errors_for_lazy_eval.append({'invalid_data':
+                                                               {'file_name': file_name, 'description': warn}})
+
+                    # elif warn.startswith('[Missing data]'):
+                    #     suspended_errors_for_lazy_eval.append({'missing_data':
+                    #                                            {'file_name': file_name, 'description': warn}})
+
+                    # elif warn.startswith('[Range value error]') and not self.__remediation_mode:
+                    #     suspended_errors_for_lazy_eval.append({'anomalous_data':
+                    #                                            {'file_name': file_name, 'description': warn}})
+
+        fileListId = self.__file_path_list_len
+
+        for ar in self.__inputParamDict[ar_file_path_list]:
+
+            file_path = ar['file_name']
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+
+            fileListId += 1
+
+            if file_type.startswith('nm-res') or file_type.startswith('nm-aux') or file_type == 'nm-pea-any':
+                continue
+
+            if self.__remediation_mode and os.path.exists(file_path + '-ignored'):
+                continue
+
+            file_name = input_source_dic['file_name']
+
+            original_file_name = None
+            if 'original_file_name' in input_source_dic:
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                if file_name != original_file_name and original_file_name is not None:
+                    file_name = f"{original_file_name} ({file_name})"
+
+            if file_type == 'nm-pea-xea' and not has_nm_aux_xea_file:
+
+                err = f"XEASY PROT file should be uploaded to verify XEASY spectral peak list file {file_name!r}."
+
+                suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
+                                                       {'file_name': file_name, 'description': err}})
+
+            content_subtype = input_source_dic['content_subtype']
+
+            if content_subtype is None or len(content_subtype) == 0:
+                continue
+
+            self.__cur_original_ar_file_name = original_file_name
+
+            suspended_errors_for_lazy_eval.clear()
+
+            if file_type == 'nm-pea-ari':
+                reader = AriaPKReader(self.__verbose, self.__lfh,
+                                      self.__representative_model_id,
+                                      self.__representative_alt_id,
+                                      self.__mr_atom_name_mapping,
+                                      self.__cR, self.__caC,
+                                      self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_pea_warn_message_for_lazy_eval(listener)
+
+                        reader = AriaPKReader(self.__verbose, self.__lfh,
+                                              self.__representative_model_id,
+                                              self.__representative_alt_id,
+                                              self.__mr_atom_name_mapping,
+                                              self.__cR, self.__caC,
+                                              self.__ccU, self.__csStat, self.__nefT,
+                                              reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                    deal_pea_warn_message(listener)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR spectral peak list file (ARIA) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in pk_sf_dict_holder:
+                                    pk_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in pk_sf_dict_holder[content_subtype]:
+                                        pk_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-pea-pip':
+                reader = NmrPipePKReader(self.__verbose, self.__lfh,
+                                         self.__representative_model_id,
+                                         self.__representative_alt_id,
+                                         self.__mr_atom_name_mapping,
+                                         self.__cR, self.__caC,
+                                         self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_pea_warn_message_for_lazy_eval(listener)
+
+                        reader = NmrPipePKReader(self.__verbose, self.__lfh,
+                                                 self.__representative_model_id,
+                                                 self.__representative_alt_id,
+                                                 self.__mr_atom_name_mapping,
+                                                 self.__cR, self.__caC,
+                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                 reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                    deal_pea_warn_message(listener)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR spectral peak list file (NMRPIPE) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in pk_sf_dict_holder:
+                                    pk_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in pk_sf_dict_holder[content_subtype]:
+                                        pk_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-pea-vie':
+                reader = NmrViewPKReader(self.__verbose, self.__lfh,
+                                         self.__representative_model_id,
+                                         self.__representative_alt_id,
+                                         self.__mr_atom_name_mapping,
+                                         self.__cR, self.__caC,
+                                         self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_pea_warn_message_for_lazy_eval(listener)
+
+                        reader = NmrViewPKReader(self.__verbose, self.__lfh,
+                                                 self.__representative_model_id,
+                                                 self.__representative_alt_id,
+                                                 self.__mr_atom_name_mapping,
+                                                 self.__cR, self.__caC,
+                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                 reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                    deal_pea_warn_message(listener)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR spectral peak list file (NMRVIEW) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in pk_sf_dict_holder:
+                                    pk_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in pk_sf_dict_holder[content_subtype]:
+                                        pk_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-pea-spa':
+                reader = SparkyPKReader(self.__verbose, self.__lfh,
+                                        self.__representative_model_id,
+                                        self.__representative_alt_id,
+                                        self.__mr_atom_name_mapping,
+                                        self.__cR, self.__caC,
+                                        self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_pea_warn_message_for_lazy_eval(listener)
+
+                        reader = SparkyPKReader(self.__verbose, self.__lfh,
+                                                self.__representative_model_id,
+                                                self.__representative_alt_id,
+                                                self.__mr_atom_name_mapping,
+                                                self.__cR, self.__caC,
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                    deal_pea_warn_message(listener)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR spectral peak list file (SPARKY) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in pk_sf_dict_holder:
+                                    pk_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in pk_sf_dict_holder[content_subtype]:
+                                        pk_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-pea-top':
+                reader = TopSpinPKReader(self.__verbose, self.__lfh,
+                                         self.__representative_model_id,
+                                         self.__representative_alt_id,
+                                         self.__mr_atom_name_mapping,
+                                         self.__cR, self.__caC,
+                                         self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_pea_warn_message_for_lazy_eval(listener)
+
+                        reader = TopSpinPKReader(self.__verbose, self.__lfh,
+                                                 self.__representative_model_id,
+                                                 self.__representative_alt_id,
+                                                 self.__mr_atom_name_mapping,
+                                                 self.__cR, self.__caC,
+                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                 reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                    deal_pea_warn_message(listener)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR spectral peak list file (TOPSPIN) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in pk_sf_dict_holder:
+                                    pk_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in pk_sf_dict_holder[content_subtype]:
+                                        pk_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-pea-xea':
+                reader = XeasyPKReader(self.__verbose, self.__lfh,
+                                       self.__representative_model_id,
+                                       self.__representative_alt_id,
+                                       self.__mr_atom_name_mapping,
+                                       self.__cR, self.__caC,
+                                       self.__ccU, self.__csStat, self.__nefT,
+                                       xeasyAtomNumberDict)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None and listener.warningMessage is not None and len(listener.warningMessage) > 0:
+                        deal_pea_warn_message_for_lazy_eval(listener)
+
+                        reader = XeasyPKReader(self.__verbose, self.__lfh,
+                                               self.__representative_model_id,
+                                               self.__representative_alt_id,
+                                               self.__mr_atom_name_mapping,
+                                               self.__cR, self.__caC,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               xeasyAtomNumberDict,
+                                               reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                    deal_pea_warn_message(listener)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR spectral peak list file (XEASY) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in pk_sf_dict_holder:
+                                    pk_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in pk_sf_dict_holder[content_subtype]:
+                                        pk_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-pea-xwi':
+                reader = XwinNmrPKReader(self.__verbose, self.__lfh,
+                                         self.__representative_model_id,
+                                         self.__representative_alt_id,
+                                         self.__mr_atom_name_mapping,
+                                         self.__cR, self.__caC,
+                                         self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_pea_warn_message_for_lazy_eval(listener)
+
+                        reader = XwinNmrPKReader(self.__verbose, self.__lfh,
+                                                 self.__representative_model_id,
+                                                 self.__representative_alt_id,
+                                                 self.__mr_atom_name_mapping,
+                                                 self.__cR, self.__caC,
+                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                 reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                    deal_pea_warn_message(listener)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0:
+                            err = f"Failed to validate NMR spectral peak list file (XWINNMR) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in pk_sf_dict_holder:
+                                    pk_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in pk_sf_dict_holder[content_subtype]:
+                                        pk_sf_dict_holder[content_subtype].append(sf)
+
+        if content_subtype in pk_sf_dict_holder:
+
+            master_entry = self.__star_data[0]
+
+            for sf in pk_sf_dict_holder[content_subtype]:
+
+                cs_list = get_first_sf_tag(sf['saveframe'], 'Chemical_shift_list')
+
+                if cs_list in emptyValue:
+                    sf_category = self.sf_categories['nmr-star']['chem_shift']
+                    cs_sf_list = master_entry.get_saveframes_by_category(sf_category)
+                    if len(cs_sf_list) == 1:
+                        set_sf_tag(sf['saveframe'], 'Chemical_shift_list', get_first_sf_tag(cs_sf_list[0], 'Sf_framecode'))
+
+                master_entry.add_saveframe(sf['saveframe'])
+
+            self.__pk_sf_holder = pk_sf_dict_holder['spectral_peak']
+
+        if len(poly_seq_set) > 1:
+
+            poly_seq_rst = None
+            for idx, poly_seq in enumerate(poly_seq_set):
+                if idx == 0:
+                    poly_seq_rst = poly_seq
+                    continue
+                for ps in poly_seq:
+                    chain_id = ps['chain_id']
+                    for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
+                        updatePolySeqRst(poly_seq_rst, chain_id, seq_id, comp_id)
+
+            poly_seq_model = self.__caC['polymer_sequence']
+
+            sortPolySeqRst(poly_seq_rst)
+
+            file_type = 'nm-pea-any'
+
+            seq_align, _ = alignPolymerSequence(self.__pA, poly_seq_model, poly_seq_rst, conservative=False)
+            chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
+
+            if chain_assign is not None:
+
+                if len(poly_seq_model) == len(poly_seq_rst):
+
+                    chain_mapping = {}
+
+                    for ca in chain_assign:
+                        ref_chain_id = ca['ref_chain_id']
+                        test_chain_id = ca['test_chain_id']
+
+                        if ref_chain_id != test_chain_id:
+                            chain_mapping[test_chain_id] = ref_chain_id
+
+                    if len(chain_mapping) == len(poly_seq_model):
+
+                        for ps in poly_seq_rst:
+                            if ps['chain_id'] in chain_mapping:
+                                ps['chain_id'] = chain_mapping[ps['chain_id']]
+
+                        seq_align, _ = alignPolymerSequence(self.__pA, poly_seq_model, poly_seq_rst, conservative=False)
+                        chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, poly_seq_model, poly_seq_rst, seq_align)
+
+                    trimSequenceAlignment(seq_align, chain_assign)
+
+            input_source.setItemValue('polymer_sequence', poly_seq_rst)
+
+            self.report.sequence_alignment.setItemValue('model_poly_seq_vs_spectral_peak', seq_align)
+
+        if proc_nmr_ext_poly_seq and len(self.__nmr_ext_poly_seq) > 0:
             entity_assembly = self.__caC['entity_assembly']
             auth_chain_ids = list(set(d['auth_chain_id'] for d in self.__nmr_ext_poly_seq))
             for auth_chain_id in auth_chain_ids:
@@ -40231,8 +41724,18 @@ class NmrDpUtility:
                             if sp_dim['ID'] != i:
                                 continue
                             axis_code = sp_dim['Axis_code']
-                            atom_type = ''.join(j for j in axis_code if not j.isdigit())
-                            atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
+                            atom_type = sp_dim['Atom_type']
+                            if atom_type in emptyValue:
+                                atom_type = ''.join(j for j in axis_code if not j.isdigit())
+                            atom_isotope_number = sp_dim['Atom_isotope_number']
+                            if atom_isotope_number in emptyValue:
+                                if atom_type not in emptyValue and atom_type[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                    atom_isotope_number = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type[0]][0]
+                                else:
+                                    try:
+                                        atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
+                                    except ValueError:
+                                        pass
                             axis_unit = 'Hz' if 'Sweep_width_units' not in sp_dim else sp_dim['Sweep_width_units']
                             first_point = sp_dim.get('Value_first_point')
                             sp_width = sp_dim.get('Sweep_width')
@@ -40313,7 +41816,9 @@ class NmrDpUtility:
                                         if _sp_dim['ID'] != hvy_dim:
                                             continue
                                         _axis_code = _sp_dim['Axis_code']
-                                        _atom_type = ''.join(j for j in _axis_code if not j.isdigit())
+                                        _atom_type = _sp_dim['Atom_type']
+                                        if _atom_type in emptyValue:
+                                            _atom_type = ''.join(j for j in _axis_code if not j.isdigit())
 
                                     if _atom_type == 'C':
                                         _center_point = None
@@ -40478,8 +41983,18 @@ class NmrDpUtility:
                         if sp_dim['ID'] != i:
                             continue
                         axis_code = sp_dim['Axis_code']
-                        atom_type = ''.join(j for j in axis_code if not j.isdigit())
-                        atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
+                        atom_type = sp_dim['Atom_type']
+                        if atom_type in emptyValue:
+                            atom_type = ''.join(j for j in axis_code if not j.isdigit())
+                        atom_isotope_number = sp_dim['Atom_isotope_number']
+                        if atom_isotope_number in emptyValue:
+                            if atom_type not in emptyValue and atom_type[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                atom_isotope_number = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type[0]][0]
+                            else:
+                                try:
+                                    atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
+                                except ValueError:
+                                    pass
                         axis_unit = 'Hz' if 'Sweep_width_units' not in sp_dim else sp_dim['Sweep_width_units']
                         first_point = sp_dim.get('Value_first_point')
                         sp_width = sp_dim.get('Sweep_width')
@@ -40553,7 +42068,9 @@ class NmrDpUtility:
                                     if _sp_dim['ID'] != hvy_dim:
                                         continue
                                     _axis_code = _sp_dim['Axis_code']
-                                    _atom_type = ''.join(j for j in _axis_code if not j.isdigit())
+                                    _atom_type = _sp_dim['Atom_type']
+                                    if _atom_type in emptyValue:
+                                        _atom_type = ''.join(j for j in _axis_code if not j.isdigit())
 
                                     if _atom_type == 'C':
                                         _center_point = None

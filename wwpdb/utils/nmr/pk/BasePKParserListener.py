@@ -43,6 +43,8 @@ try:
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
                                                        MAX_ALLOWED_EXT_SEQ,
                                                        UNREAL_AUTH_SEQ_NUM,
+                                                       CS_RESTRAINT_RANGE,
+                                                       CS_RESTRAINT_ERROR,
                                                        HEME_LIKE_RES_NAMES,
                                                        SPECTRAL_DIM_TEMPLATE)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -105,6 +107,8 @@ except ImportError:
                                            MAX_PREF_LABEL_SCHEME_COUNT,
                                            MAX_ALLOWED_EXT_SEQ,
                                            UNREAL_AUTH_SEQ_NUM,
+                                           CS_RESTRAINT_RANGE,
+                                           CS_RESTRAINT_ERROR,
                                            HEME_LIKE_RES_NAMES,
                                            SPECTRAL_DIM_TEMPLATE)
     from nmr.ChemCompUtil import ChemCompUtil
@@ -140,6 +144,13 @@ except ImportError:
                                retrieveRemappedNonPoly,
                                splitPolySeqRstForBranched,
                                retrieveOriginalSeqIdFromMRMap)
+
+
+CS_RANGE_MIN = CS_RESTRAINT_RANGE['min_inclusive']
+CS_RANGE_MAX = CS_RESTRAINT_RANGE['max_inclusive']
+
+CS_ERROR_MIN = CS_RESTRAINT_ERROR['min_exclusive']
+CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_exclusive']
 
 
 PEAK_ASSIGNMENT_SEPARATOR_PAT = re.compile('[^0-9A-Za-z]+')
@@ -855,13 +866,13 @@ class BasePKParserListener():
                             if 'obs_freq_hint' in __v:
                                 del __v['obs_freq_hint']
 
-                            if __v['spectrometer_frequency'] is not None and __v['sweep_width_unit'] == 'ppm':
+                            if __v['spectrometer_frequency'] is not None and __v['sweep_width_units'] == 'ppm':
                                 row = [str(__v['sweep_width']), str(__v['spectrometer_frequency'])]
                                 max_eff_digits = getMaxEffDigits(row)
 
                                 __v['sweep_width'] = float(roundString(str(__v['sweep_width'] * __v['spectrometer_frequency']),
                                                                        max_eff_digits))
-                                __v['sweep_width_unit'] = 'Hz'
+                                __v['sweep_width_units'] = 'Hz'
 
                     for __v in _v.values():
                         if __v['axis_code'] == 'H_ami_or_aro':
@@ -1150,12 +1161,27 @@ class BasePKParserListener():
                                                     'indirect': 'yes'}
                                         cur_spectral_dim_transfer.append(transfer)
 
+                    for _dim_id1, _dict1 in cur_spectral_dim.items():
+                        _region1 = _dict1['spectral_region']
+                        if _region1 == 'H_all' and d == 2:
+                            for _dim_id2, _dict2 in cur_spectral_dim.items():
+                                if _dim_id1 == _dim_id2 or _dict1['spectral_region'] != _region1:
+                                    continue
+                                if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                           if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
+                                    if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                                        transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                                    'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                                    'type': 'through-space',  # optimistic inferencing?
+                                                    'indirect': 'yes'}
+                                        cur_spectral_dim_transfer.append(transfer)
+
                     if self.exptlMethod == 'SOLID-STATE NMR':
                         for _dim_id1, _dict1 in cur_spectral_dim.items():
-                            _iso_num1 = _dict1['atom_isotope_number']
-                            if _iso_num1 in (1, 13):
+                            _region1 = _dict1['spectral_region']
+                            if _region1 == 'C_all' and d == 2:
                                 for _dim_id2, _dict2 in cur_spectral_dim.items():
-                                    if _dim_id1 == _dim_id2 or _iso_num1 != _dict2['atom_isotope_number']:
+                                    if _dim_id1 == _dim_id2 or _dict1['spectral_region'] != _region1:
                                         continue
                                     if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                                if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
@@ -1288,7 +1314,37 @@ class BasePKParserListener():
                        height: Optional[str], height_uncertainty: Optional[str],
                        volume: Optional[str], volume_uncertainty: Optional[str]) -> Optional[dict]:
 
-        dstFunc = {'position_1': str(pos_1), 'position_2': str(pos_2)}
+        validRange = True
+        dstFunc = {}
+
+        if CS_ERROR_MIN < pos_1 < CS_ERROR_MAX:
+            dstFunc['position_1'] = str(pos_1)
+        else:
+            validRange = False
+            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_1='{pos_1}' must be within range {CS_RESTRAINT_ERROR}.")
+
+        if CS_ERROR_MIN < pos_2 < CS_ERROR_MAX:
+            dstFunc['position_2'] = str(pos_2)
+        else:
+            validRange = False
+            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_2='{pos_2}' must be within range {CS_RESTRAINT_ERROR}.")
+
+        if not validRange:
+            return None
+
+        if CS_RANGE_MIN <= pos_1 <= CS_RANGE_MAX:
+            pass
+        else:
+            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_1='{pos_1}' should be within range {CS_RESTRAINT_RANGE}.")
+
+        if CS_RANGE_MIN <= pos_2 <= CS_RANGE_MAX:
+            pass
+        else:
+            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_2='{pos_2}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if height is not None and float(height) != 0.0:
             dstFunc['height'] = height
@@ -1343,7 +1399,50 @@ class BasePKParserListener():
                        height: Optional[str], height_uncertainty: Optional[str],
                        volume: Optional[str], volume_uncertainty: Optional[str]) -> Optional[dict]:
 
-        dstFunc = {'position_1': str(pos_1), 'position_2': str(pos_2), 'position_3': str(pos_3)}
+        validRange = True
+        dstFunc = {}
+
+        if CS_ERROR_MIN < pos_1 < CS_ERROR_MAX:
+            dstFunc['position_1'] = str(pos_1)
+        else:
+            validRange = False
+            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_1='{pos_1}' must be within range {CS_RESTRAINT_ERROR}.")
+
+        if CS_ERROR_MIN < pos_2 < CS_ERROR_MAX:
+            dstFunc['position_2'] = str(pos_2)
+        else:
+            validRange = False
+            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_2='{pos_2}' must be within range {CS_RESTRAINT_ERROR}.")
+
+        if CS_ERROR_MIN < pos_3 < CS_ERROR_MAX:
+            dstFunc['position_3'] = str(pos_3)
+        else:
+            validRange = False
+            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_3='{pos_3}' must be within range {CS_RESTRAINT_ERROR}.")
+
+        if not validRange:
+            return None
+
+        if CS_RANGE_MIN <= pos_1 <= CS_RANGE_MAX:
+            pass
+        else:
+            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_1='{pos_1}' should be within range {CS_RESTRAINT_RANGE}.")
+
+        if CS_RANGE_MIN <= pos_2 <= CS_RANGE_MAX:
+            pass
+        else:
+            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_2='{pos_2}' should be within range {CS_RESTRAINT_RANGE}.")
+
+        if CS_RANGE_MIN <= pos_3 <= CS_RANGE_MAX:
+            pass
+        else:
+            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_3='{pos_3}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if height is not None and float(height) != 0.0:
             dstFunc['height'] = height
@@ -1414,7 +1513,63 @@ class BasePKParserListener():
                        height: Optional[str], height_uncertainty: Optional[str],
                        volume: Optional[str], volume_uncertainty: Optional[str]) -> Optional[dict]:
 
-        dstFunc = {'position_1': str(pos_1), 'position_2': str(pos_2), 'position_3': str(pos_3), 'position_4': str(pos_4)}
+        validRange = True
+        dstFunc = {}
+
+        if CS_ERROR_MIN < pos_1 < CS_ERROR_MAX:
+            dstFunc['position_1'] = str(pos_1)
+        else:
+            validRange = False
+            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_1='{pos_1}' must be within range {CS_RESTRAINT_ERROR}.")
+
+        if CS_ERROR_MIN < pos_2 < CS_ERROR_MAX:
+            dstFunc['position_2'] = str(pos_2)
+        else:
+            validRange = False
+            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_2='{pos_2}' must be within range {CS_RESTRAINT_ERROR}.")
+
+        if CS_ERROR_MIN < pos_3 < CS_ERROR_MAX:
+            dstFunc['position_3'] = str(pos_3)
+        else:
+            validRange = False
+            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_3='{pos_3}' must be within range {CS_RESTRAINT_ERROR}.")
+
+        if CS_ERROR_MIN < pos_4 < CS_ERROR_MAX:
+            dstFunc['position_4'] = str(pos_4)
+        else:
+            validRange = False
+            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_4='{pos_4}' must be within range {CS_RESTRAINT_ERROR}.")
+
+        if not validRange:
+            return None
+
+        if CS_RANGE_MIN <= pos_1 <= CS_RANGE_MAX:
+            pass
+        else:
+            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_1='{pos_1}' should be within range {CS_RESTRAINT_RANGE}.")
+
+        if CS_RANGE_MIN <= pos_2 <= CS_RANGE_MAX:
+            pass
+        else:
+            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_2='{pos_2}' should be within range {CS_RESTRAINT_RANGE}.")
+
+        if CS_RANGE_MIN <= pos_3 <= CS_RANGE_MAX:
+            pass
+        else:
+            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_3='{pos_3}' should be within range {CS_RESTRAINT_RANGE}.")
+
+        if CS_RANGE_MIN <= pos_4 <= CS_RANGE_MAX:
+            pass
+        else:
+            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+                          f"The position_4='{pos_4}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if height is not None and float(height) != 0.0:
             dstFunc['height'] = height
@@ -1501,6 +1656,12 @@ class BasePKParserListener():
 
         segIdSpan, resIdSpan, resNameSpan, atomNameSpan, _atomNameSpan, __atomNameSpan, ___atomNameSpan =\
             [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr
+
+        if not self.__hasCoord:
+            if self.authAsymIdSet is None:
+                self.authAsymIdSet = set()
+            if self.compIdSet is None:
+                self.compIdSet = self.altCompIdSet = set(monDict3.keys())
 
         aaOnly = self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide
         oneLetterCodeSet = [getOneLetterCode(compId) for compId in self.compIdSet] if aaOnly else []
@@ -1753,74 +1914,114 @@ class BasePKParserListener():
                 if resId is None:
                     return None
                 atomName = term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]]
-                if segId is None and resName is None:
-                    chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
-                    if len(chainAssign) > 0:
-                        segId, _, resName, _ = chainAssign[0]
-                elif segId is None:
-                    chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
-                    if len(chainAssign) > 0:
-                        segId = chainAssign[0][0]
-                elif resName is None:
-                    chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
-                    if len(chainAssign) > 0:
-                        resName = chainAssign[0][2]
+                if self.__hasCoord:
+                    if segId is None and resName is None:
+                        chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
+                        if len(chainAssign) > 0:
+                            segId, _, resName, _ = chainAssign[0]
+                    elif segId is None:
+                        chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
+                        if len(chainAssign) > 0:
+                            segId = chainAssign[0][0]
+                    elif resName is None:
+                        chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
+                        if len(chainAssign) > 0:
+                            resName = chainAssign[0][2]
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+                else:
+                    ass = {'dim': dimId, 'atom_id': atomName}
+                    if segId is not None:
+                        ass['chain_id'] = segId
+                    if resId is not None:
+                        ass['seq_id'] = resId
+                    if resName is not None:
+                        ass['comp_id'] = resName
+                    ret.append(ass)
                 dimId += 1
-                ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
             if __atomNameLike[idx]:
                 if resId is None:
                     return None
                 atomName = term[__atomNameSpan[idx][0]:__atomNameSpan[idx][1]]
-                if segId is None and resName is None:
-                    chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
-                    if len(chainAssign) > 0:
-                        segId, _, resName, _ = chainAssign[0]
-                elif segId is None:
-                    chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
-                    if len(chainAssign) > 0:
-                        segId = chainAssign[0][0]
-                elif resName is None:
-                    chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
-                    if len(chainAssign) > 0:
-                        resName = chainAssign[0][2]
+                if self.__hasCoord:
+                    if segId is None and resName is None:
+                        chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
+                        if len(chainAssign) > 0:
+                            segId, _, resName, _ = chainAssign[0]
+                    elif segId is None:
+                        chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
+                        if len(chainAssign) > 0:
+                            segId = chainAssign[0][0]
+                    elif resName is None:
+                        chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
+                        if len(chainAssign) > 0:
+                            resName = chainAssign[0][2]
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+                else:
+                    ass = {'dim': dimId, 'atom_id': atomName}
+                    if segId is not None:
+                        ass['chain_id'] = segId
+                    if resId is not None:
+                        ass['seq_id'] = resId
+                    if resName is not None:
+                        ass['comp_id'] = resName
+                    ret.append(ass)
                 dimId += 1
-                ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
             if _atomNameLike[idx]:
                 if resId is None:
                     return None
                 atomName = term[_atomNameSpan[idx][0]:_atomNameSpan[idx][1]]
-                if segId is None and resName is None:
-                    chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
-                    if len(chainAssign) > 0:
-                        segId, _, resName, _ = chainAssign[0]
-                elif segId is None:
-                    chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
-                    if len(chainAssign) > 0:
-                        segId = chainAssign[0][0]
-                elif resName is None:
-                    chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
-                    if len(chainAssign) > 0:
-                        resName = chainAssign[0][2]
+                if self.__hasCoord:
+                    if segId is None and resName is None:
+                        chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
+                        if len(chainAssign) > 0:
+                            segId, _, resName, _ = chainAssign[0]
+                    elif segId is None:
+                        chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
+                        if len(chainAssign) > 0:
+                            segId = chainAssign[0][0]
+                    elif resName is None:
+                        chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
+                        if len(chainAssign) > 0:
+                            resName = chainAssign[0][2]
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+                else:
+                    ass = {'dim': dimId, 'atom_id': atomName}
+                    if segId is not None:
+                        ass['chain_id'] = segId
+                    if resId is not None:
+                        ass['seq_id'] = resId
+                    if resName is not None:
+                        ass['comp_id'] = resName
+                    ret.append(ass)
                 dimId += 1
-                ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
             if atomNameLike[idx]:
                 if resId is None:
                     return None
                 atomName = term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]
-                if segId is None and resName is None:
-                    chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
-                    if len(chainAssign) > 0:
-                        segId, _, resName, _ = chainAssign[0]
-                elif segId is None:
-                    chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
-                    if len(chainAssign) > 0:
-                        segId = chainAssign[0][0]
-                elif resName is None:
-                    chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
-                    if len(chainAssign) > 0:
-                        resName = chainAssign[0][2]
+                if self.__hasCoord:
+                    if segId is None and resName is None:
+                        chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
+                        if len(chainAssign) > 0:
+                            segId, _, resName, _ = chainAssign[0]
+                    elif segId is None:
+                        chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
+                        if len(chainAssign) > 0:
+                            segId = chainAssign[0][0]
+                    elif resName is None:
+                        chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
+                        if len(chainAssign) > 0:
+                            resName = chainAssign[0][2]
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+                else:
+                    ass = {'dim': dimId, 'atom_id': atomName}
+                    if segId is not None:
+                        ass['chain_id'] = segId
+                    if resId is not None:
+                        ass['seq_id'] = resId
+                    if resName is not None:
+                        ass['comp_id'] = resName
+                    ret.append(ass)
                 dimId += 1
-                ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
 
         return ret if len(ret) == numOfDim else None  # ignore multiple assignments for a peak
 
@@ -4181,9 +4382,10 @@ class BasePKParserListener():
         sf_framecode = f'{self.software_name}_' + restraint_name.replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.cur_subtype, sf_framecode, list_id, self.entryId, self.__originalFileName,
-                          spectrumName=spectrumName)
+                          numOfDim=self.num_of_dim, spectrumName=spectrumName)
 
         lp = getPkLoop(self.cur_subtype)
+        sf.add_loop(lp)
 
         item = {'file_type': self.file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
                 'id': 0, 'index_id': 0, 'num_of_dim': self.num_of_dim}

@@ -288,6 +288,9 @@ LEGACY_PDB_RECORDS = ['HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND'
 
 CYANA_MR_FILE_EXTS = (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cco')
 
+# limit number of dimensions, note: defined MAX_DIM_NUM_OF_SPECTRA here to avoid circular import
+MAX_DIM_NUM_OF_SPECTRA = 16
+
 NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
                             'dihed_restraint': '_Torsion_angle_constraint_list',
                             'rdc_restraint': '_RDC_constraint_list',
@@ -311,7 +314,8 @@ NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
                             'ccr_dd_restraint': '_Cross_correlation_DD_list',
                             'fchiral_restraint': '_Floating_chirality_assign',
                             'saxs_restraint': '_SAXS_constraint_list',
-                            'other_restraint': '_Other_data_type_list'
+                            'other_restraint': '_Other_data_type_list',
+                            'spectral_peak': '_Spectral_peak_list'
                             }
 
 NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
@@ -337,7 +341,8 @@ NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
                           'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
                           'fchiral_restraint': 'floating_chiral_stereo_assign',
                           'saxs_restraint': 'saxs_constraints',
-                          'other_restraint': 'other_data_types'
+                          'other_restraint': 'other_data_types',
+                          'spectral_peak': 'spectral_peak_list'
                           }
 
 NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
@@ -619,8 +624,12 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                              ],
                          'spectral_peak': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Number_of_spectral_dimensions', 'type': 'enum-int', 'mandatory': True,
+                                            'enum': set(range(1, MAX_DIM_NUM_OF_SPECTRA)),
+                                            'enforce-enum': True},
                                            {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
                                            {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Chemical_shift_list', 'type': 'str', 'mandatory': True},
                                            {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                            {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -2030,7 +2039,7 @@ NMR_STAR_LP_DATA_ITEMS_INS_CODE['rdc_restraint'].extend([{'name': 'PDB_ins_code_
 
 NMR_STAR_AUX_LP_CATEGORIES = {'dist_restraint': ['_Gen_dist_constraint_software_param'
                                                  ],
-                              'spectral_peak': ['_Spectral_dim', 'Spectral_dim_transfer'
+                              'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer'
                                                 ]
                               }
 
@@ -2064,10 +2073,12 @@ NMR_STAR_AUX_LP_DATA_ITEMS = {'dist_restraint': {'_Gen_dist_constraint_software_
                                                 {'name': 'Axis_code', 'type': 'str'},
                                                 {'name': 'Spectrometer_frequency', 'type': 'positive-float', 'mandatory': False,
                                                  'enforce-non-zero': True},
+                                                {'name': 'Under_sampling_type', 'type': 'enum', 'mandatory': False,
+                                                 'enum': ('aliased', 'folded', 'not observed')},
                                                 {'name': 'Spectral_region', 'type': 'str', 'mandatory': True},
                                                 {'name': 'Sweep_width', 'type': 'positive-float', 'mandatory': False,
                                                  'enforce-non-zero': True},
-                                                {'name': 'Sweep_width_units', 'type': 'enum', 'mandatory': True,
+                                                {'name': 'Sweep_width_units', 'type': 'enum', 'mandatory': True, 'default': 'Hz',
                                                  'enum': ('ppm', 'Hz'),
                                                  'enforce-enum': True},
                                                 {'name': 'Value_first_point', 'type': 'float', 'mandatory': False},
@@ -2077,7 +2088,7 @@ NMR_STAR_AUX_LP_DATA_ITEMS = {'dist_restraint': {'_Gen_dist_constraint_software_
                                                 {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
                                                  'default': '1', 'default-from': 'parent'},
                                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}],
-                                                'Spectral_dim_transfer': [
+                                                '_Spectral_dim_transfer': [
                                                 {'name': 'Type', 'type': 'enum', 'mandatory': True,
                                                  'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
                                                  'enforce-enum': True},
@@ -2122,12 +2133,13 @@ REMEDIATE_BACKBONE_ANGLE_NAME_PAT = re.compile(r'pseudo (PHI|PSI|OMEGA) \(0, (0|
 
 SPECTRAL_DIM_TEMPLATE = {'axis_code': None,
                          'spectrometer_frequency': None,
+                         'under_sampling_type': None,
                          'atom_type': None,
                          'atom_isotope_number': None,
                          'spectral_region': None,
                          # 'magnetization_linkage_id': None,  not required for _Peak_row_format loop
                          'sweep_width': None,
-                         'sweep_width_unit': None,
+                         'sweep_width_units': 'Hz',
                          'value_first_point': None,
                          'absolute_peak_positions': None,
                          'acquisition': None,
@@ -7007,7 +7019,8 @@ def contentSubtypeOf(mrSubtype: str) -> str:
     if mrSubtype in ('plane', 'adist', 'rama', 'radi', 'diff', 'nbase', 'ang', 'pang', 'geo'):
         return 'other_restraint'
 
-    if mrSubtype.startswth('peak'):
+    if mrSubtype.startswith('peak')\
+       or mrSubtype == 'spectral_peak':  # for getAuxLoops()
         return 'spectral_peak'
 
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
@@ -7102,7 +7115,7 @@ def getSaveframe(mrSubtype: str, sf_framecode: str,
                  constraintType: Optional[str] = None, potentialType: Optional[str] = None,
                  rdcCode: Optional[str] = None, alignCenter: Optional[dict] = None,
                  cyanaParameter: Optional[dict] = None, reduced: bool = True,
-                 spectrumName: Optional[str] = None) -> Optional[pynmrstar.Saveframe]:
+                 numOfDim: Optional[int] = None, spectrumName: Optional[str] = None) -> Optional[pynmrstar.Saveframe]:
     """ Return pynmrstar saveframe for a given internal restraint subtype (default)/content subtype (reduced=False).
         @return: pynmrstar saveframe
     """
@@ -7190,6 +7203,8 @@ def getSaveframe(mrSubtype: str, sf_framecode: str,
             sf.add_tag(tag_item_name, f"Tensor_magnitude {cyanaParameter['magnitude']}, "
                        f"Tensor_rhombicity {cyanaParameter['rhombicity']}, "
                        f"Paramagnetic_center_seq_ID {cyanaParameter['orientation_center_seq_id']}")
+        elif tag_item_name == 'Number_of_spectral_dimensions' and numOfDim is not None:
+            sf.add_tag(tag_item_name, numOfDim)
         elif tag_item_name == 'Experiment_type' and spectrumName is not None:
             sf.add_tag(tag_item_name, spectrumName)
         else:
@@ -7272,7 +7287,7 @@ def getPkLoop(pkSubtype: str) -> Optional[pynmrstar.Loop]:
     if contentSubtype is None:
         return None
 
-    if contentSubtype in NMR_STAR_LP_CATEGORIES:
+    if contentSubtype not in NMR_STAR_LP_CATEGORIES:
         return None
 
     prefix = NMR_STAR_LP_CATEGORIES[contentSubtype] + '.'

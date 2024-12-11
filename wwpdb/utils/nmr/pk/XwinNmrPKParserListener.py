@@ -161,6 +161,7 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
             print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) {dstFunc}")
 
         if self.createSfDict__ and sf is not None:
+            sf['id'] = index
             sf['index_id'] += 1
 
             row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
@@ -238,6 +239,7 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
             print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) {dstFunc}")
 
         if self.createSfDict__ and sf is not None:
+            sf['id'] = index
             sf['index_id'] += 1
 
             row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
@@ -322,6 +324,7 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
             print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) {dstFunc}")
 
         if self.createSfDict__ and sf is not None:
+            sf['id'] = index
             sf['index_id'] += 1
 
             row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],

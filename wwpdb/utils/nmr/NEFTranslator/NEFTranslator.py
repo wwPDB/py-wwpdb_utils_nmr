@@ -4989,6 +4989,9 @@ class NEFTranslator:
                                 try:
                                     enum = k['enum']
                                     if val not in enum:
+                                        if 'default' in k:
+                                            val = k['default']
+                                            row[j] = val
                                         if 'default-from' in k and k['default-from'] in tags:
                                             if row[tags.index(k['default-from'])][0].upper() in enum:
                                                 val = row[tags.index(k['default-from'])][0].upper()
@@ -5021,6 +5024,8 @@ class NEFTranslator:
                                 try:
                                     enum = k['enum']
                                     if int(val) not in enum:
+                                        if 'default' in k:
+                                            val = str(k['default'])
                                         if 'default-from' in k and k['default-from'] in tags:
                                             if row[tags.index(k['default-from'])][0].upper() in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                                 val = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[row[tags.index(k['default-from'])][0].upper()][0]
@@ -5416,7 +5421,10 @@ class NEFTranslator:
                                         try:
                                             enum = d['enum']
                                             if val not in enum:
-                                                if 'default-from' in d and d['default-from'] in tags:
+                                                if 'default' in d:
+                                                    val = d['default']
+                                                    row[j] = val
+                                                elif 'default-from' in d and d['default-from'] in tags:
                                                     if row[tags.index(d['default-from'])][0].upper() in enum:
                                                         val = row[tags.index(d['default-from'])][0].upper()
                                                 elif 'enum-alt' in d and val in d['enum-alt']:
@@ -5454,6 +5462,8 @@ class NEFTranslator:
                                         try:
                                             enum = d['enum']
                                             if int(val) not in enum:
+                                                if 'default' in d:
+                                                    val = str(d['default'])
                                                 if 'default-from' in d and d['default-from'] in tags:
                                                     if row[tags.index(d['default-from'])][0].upper() in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                                         val = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[row[tags.index(d['default-from'])][0].upper()][0]

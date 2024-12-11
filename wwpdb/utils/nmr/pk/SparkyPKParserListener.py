@@ -143,6 +143,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             has_assignments = False
 
+            asis1 = asis2 = None
+
             if ass is not None:
                 assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
 
@@ -163,7 +165,6 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                     elif hasChainId:
                         chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
                         chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
-                        asis1 = asis2 = False
 
                     elif hasCompId:
                         chainAssign1, asis1 = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -172,7 +173,6 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                     else:
                         chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
                         chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
-                        asis1 = asis2 = False
 
                     if len(chainAssign1) > 0 and len(chainAssign2) > 0:
                         self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -269,6 +269,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             has_assignments = False
 
+            asis1 = asis2 = asis3 = None
+
             if ass is not None:
                 assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
 
@@ -292,7 +294,6 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
                         chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
                         chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a3['chain_id'], a3['seq_id'], a3['atom_id'], index)
-                        asis1 = asis2 = asis3 = False
 
                     elif hasCompId:
                         chainAssign1, asis1 = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -303,7 +304,6 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
                         chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
                         chainAssign3 = self.assignCoordPolymerSequenceWithoutCompId(a3['seq_id'], a3['atom_id'], index)
-                        asis1 = asis2 = asis3 = False
 
                     if len(chainAssign1) > 0 and len(chainAssign2) > 0 and len(chainAssign3) > 0:
                         self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -325,6 +325,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                       f"{self.atomSelectionSet[2] if has_assignments else None} {dstFunc}")
 
             if self.createSfDict__ and sf is not None:
+                sf['id'] = index
                 sf['index_id'] += 1
                 ambig_code1 = ambig_code2 = ambig_code3 = None
                 if has_assignments:
@@ -411,6 +412,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             has_assignments = False
 
+            asis1 = asis2 = asis3 = asis4 = None
+
             if ass is not None:
                 assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
 
@@ -437,7 +440,6 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
                         chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a3['chain_id'], a3['seq_id'], a3['atom_id'], index)
                         chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a4['chain_id'], a4['seq_id'], a4['atom_id'], index)
-                        asis1 = asis2 = asis3 = asis4 = False
 
                     elif hasCompId:
                         chainAssign1, asis1 = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -450,7 +452,6 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
                         chainAssign3 = self.assignCoordPolymerSequenceWithoutCompId(a3['seq_id'], a3['atom_id'], index)
                         chainAssign4 = self.assignCoordPolymerSequenceWithoutCompId(a4['seq_id'], a4['atom_id'], index)
-                        asis1 = asis2 = asis3 = asis4 = False
 
                     if len(chainAssign1) > 0 and len(chainAssign2) > 0 and len(chainAssign3) > 0 and len(chainAssign4) > 0:
                         self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -474,6 +475,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                       f"{self.atomSelectionSet[2] if has_assignments else None} {self.atomSelectionSet[3] if has_assignments else None} {dstFunc}")
 
             if self.createSfDict__ and sf is not None:
+                sf['id'] = index
                 sf['index_id'] += 1
                 ambig_code1 = ambig_code2 = ambig_code3 = ambig_code4 = None
                 if has_assignments:
@@ -574,6 +576,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) {dstFunc}")
 
                     if self.createSfDict__ and sf is not None:
+                        sf['id'] = index
                         sf['index_id'] += 1
 
                         row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
@@ -624,6 +627,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) {dstFunc}")
 
                     if self.createSfDict__ and sf is not None:
+                        sf['id'] = index
                         sf['index_id'] += 1
 
                         row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
@@ -676,6 +680,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) {dstFunc}")
 
                     if self.createSfDict__ and sf is not None:
+                        sf['id'] = index
                         sf['index_id'] += 1
 
                         row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],

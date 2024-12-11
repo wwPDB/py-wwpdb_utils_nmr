@@ -33,6 +33,7 @@ except ImportError:
 # This class defines a complete listener for a parse tree produced by XeasyPKParser.
 class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
+    __index = None
     __labels = None
     __atomNumberDict = None
 
@@ -63,6 +64,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         if ctx.Integer_ND():
             self.num_of_dim = int(str(ctx.Integer_ND()))
             self.acq_dim_id = 1
+        self.__index = None
         self.__labels = {}
 
     # Exit a parse tree produced by XeasyPKParser#dimension.
@@ -165,7 +167,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            index = int(str(ctx.Integer(0)))
+            index = self.__index = int(str(ctx.Integer(0)))
             x_ppm = float(str(ctx.Float(0)))
             y_ppm = float(str(ctx.Float(1)))
             # color_code = int(str(ctx.Integer(1)))
@@ -201,6 +203,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             has_assignments = False
 
+            asis1 = asis2 = None
+
             if x_ass is not None and y_ass is not None:
                 assignments = [{}] * self.num_of_dim
 
@@ -228,7 +232,6 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                     elif hasChainId:
                         chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
                         chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
-                        asis1 = asis2 = False
 
                     elif hasCompId:
                         chainAssign1, asis1 = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -237,7 +240,6 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                     else:
                         chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
                         chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
-                        asis1 = asis2 = False
 
                     if len(chainAssign1) > 0 and len(chainAssign2) > 0:
                         self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -256,6 +258,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                       f"{x_ass}, {y_ass} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} {dstFunc}")
 
             if self.createSfDict__ and sf is not None:
+                sf['id'] = index
                 sf['index_id'] += 1
                 ambig_code1 = ambig_code2 = None
                 if has_assignments:
@@ -309,7 +312,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            index = int(str(ctx.Integer(0)))
+            index = self.__index = int(str(ctx.Integer(0)))
             x_ppm = float(str(ctx.Float(0)))
             y_ppm = float(str(ctx.Float(1)))
             z_ppm = float(str(ctx.Float(2)))
@@ -348,6 +351,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             has_assignments = False
 
+            asis1 = asis2 = asis3 = None
+
             if x_ass is not None and y_ass is not None and z_ass is not None:
                 assignments = [{}] * self.num_of_dim
 
@@ -381,7 +386,6 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                         chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
                         chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
                         chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a3['chain_id'], a3['seq_id'], a3['atom_id'], index)
-                        asis1 = asis2 = asis3 = False
 
                     elif hasCompId:
                         chainAssign1, asis1 = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -392,7 +396,6 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                         chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
                         chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
                         chainAssign3 = self.assignCoordPolymerSequenceWithoutCompId(a3['seq_id'], a3['atom_id'], index)
-                        asis1 = asis2 = asis3 = False
 
                     if len(chainAssign1) > 0 and len(chainAssign2) > 0 and len(chainAssign3) > 0:
                         self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -414,6 +417,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                       f"{self.atomSelectionSet[2] if has_assignments else None} {dstFunc}")
 
             if self.createSfDict__ and sf is not None:
+                sf['id'] = index
                 sf['index_id'] += 1
                 ambig_code1 = ambig_code2 = ambig_code3 = None
                 if has_assignments:
@@ -473,7 +477,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            index = int(str(ctx.Integer(0)))
+            index = self.__index = int(str(ctx.Integer(0)))
             x_ppm = float(str(ctx.Float(0)))
             y_ppm = float(str(ctx.Float(1)))
             z_ppm = float(str(ctx.Float(2)))
@@ -515,6 +519,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             has_assignments = False
 
+            asis1 = asis2 = asis3 = asis4 = None
+
             if x_ass is not None and y_ass is not None and z_ass is not None and a_ass is not None:
                 assignments = [{}] * self.num_of_dim
 
@@ -554,7 +560,6 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                         chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
                         chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a3['chain_id'], a3['seq_id'], a3['atom_id'], index)
                         chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a4['chain_id'], a4['seq_id'], a4['atom_id'], index)
-                        asis1 = asis2 = asis3 = asis4 = False
 
                     elif hasCompId:
                         chainAssign1, asis1 = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -567,7 +572,6 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                         chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
                         chainAssign3 = self.assignCoordPolymerSequenceWithoutCompId(a3['seq_id'], a3['atom_id'], index)
                         chainAssign4 = self.assignCoordPolymerSequenceWithoutCompId(a4['seq_id'], a4['atom_id'], index)
-                        asis1 = asis2 = asis3 = asis4 = False
 
                     if len(chainAssign1) > 0 and len(chainAssign2) > 0 and len(chainAssign3) > 0 and len(chainAssign4) > 0:
                         self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -591,6 +595,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                       f"{self.atomSelectionSet[2] if has_assignments else None} {self.atomSelectionSet[3] if has_assignments else None} {dstFunc}")
 
             if self.createSfDict__ and sf is not None:
+                sf['id'] = index
                 sf['index_id'] += 1
                 ambig_code1 = ambig_code2 = ambig_code3 = ambig_code4 = None
                 if has_assignments:
@@ -663,6 +668,17 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
     def exitAssign(self, ctx: XeasyPKParser.AssignContext):
         if ctx.Simple_name() and ctx.Integer():
             self.assignmentSelection.append(f'{str(ctx.Integer())} {str(ctx.Simple_name())}')
+        elif ctx.Simple_name():
+            assignment = self.extractPeakAssignment(1, str(ctx.Simple_name()),
+                                                    self.__index - 1 if isinstance(self.__index, int) else 1)
+            if assignment is None:
+                self.assignmentSelection.append(None)
+            else:
+                factor = assignment[0]
+                self.assignmentSelection.append(f"{factor['chain_id'] if 'chain_id' in factor else ''} "
+                                                f"{factor['seq_id'] if 'seq_id' in factor else ''} "
+                                                f"{factor['comp_id'] if 'comp_id' in factor else ''} "
+                                                f"{factor['atom_id']}")
         else:
             ai = int(str(ctx.Integer()))
             if ai == 0 or self.__atomNumberDict is None or ai not in self.__atomNumberDict:
@@ -673,7 +689,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                                                 f"{factor['comp_id']} {factor['auth_atom_id']}")
 
     def fillSpectralDimWithLabels(self):
-        if self.__labels is None or len(self.__label) == 0:
+        if self.__labels is None or len(self.__labels) == 0:
             return
         for _dim_id, _axis_code in self.__labels.items():
             cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]

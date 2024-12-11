@@ -244,7 +244,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                 cur_spectral_dim[2]['freq_hint'].append(ppm[1])
 
                 has_assignments = False
-                L1 = L2 = None
+                L1 = L2 = asis1 = asis2 = None
 
                 if ass[0] is not None and ass[1] is not None:
                     assignments = [{}] * self.num_of_dim
@@ -277,7 +277,6 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                         elif hasChainId:
                             chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
                             chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
-                            asis1 = asis2 = False
 
                         elif hasCompId:
                             chainAssign1, asis1 = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -286,7 +285,6 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                         else:
                             chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
                             chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
-                            asis1 = asis2 = False
 
                         if len(chainAssign1) > 0 and len(chainAssign2) > 0:
                             self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -305,6 +303,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                           f"{L1}, {L2} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} {dstFunc}")
 
                 if self.createSfDict__ and sf is not None:
+                    sf['id'] = index
                     sf['index_id'] += 1
                     ambig_code1 = ambig_code2 = None
                     if has_assignments:
@@ -352,7 +351,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                 cur_spectral_dim[3]['freq_hint'].append(ppm[2])
 
                 has_assignments = False
-                L1 = L2 = L3 = None
+                L1 = L2 = L3 = asis1 = asis2 = asis3 = None
 
                 if ass[0] is not None and ass[1] is not None and ass[2] is not None:
                     assignments = [{}] * self.num_of_dim
@@ -392,7 +391,6 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                             chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
                             chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
                             chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a3['chain_id'], a3['seq_id'], a3['atom_id'], index)
-                            asis1 = asis2 = asis3 = False
 
                         elif hasCompId:
                             chainAssign1, asis1 = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -403,7 +401,6 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                             chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
                             chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
                             chainAssign3 = self.assignCoordPolymerSequenceWithoutCompId(a3['seq_id'], a3['atom_id'], index)
-                            asis1 = asis2 = asis3 = False
 
                         if len(chainAssign1) > 0 and len(chainAssign2) > 0 and len(chainAssign3) > 0:
                             self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -425,6 +422,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                           f"{self.atomSelectionSet[2] if has_assignments else None} {dstFunc}")
 
                 if self.createSfDict__ and sf is not None:
+                    sf['id'] = index
                     sf['index_id'] += 1
                     ambig_code1 = ambig_code2 = ambig_code3 = None
                     if has_assignments:
@@ -479,7 +477,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                 cur_spectral_dim[4]['freq_hint'].append(ppm[3])
 
                 has_assignments = False
-                L1 = L2 = L3 = L4 = None
+                L1 = L2 = L3 = L4 = asis1 = asis2 = asis3 = asis4 = None
 
                 if ass[0] is not None and ass[1] is not None and ass[2] is not None and ass[3] is not None:
                     assignments = [{}] * self.num_of_dim
@@ -526,7 +524,6 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                             chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
                             chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a3['chain_id'], a3['seq_id'], a3['atom_id'], index)
                             chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a4['chain_id'], a4['seq_id'], a4['atom_id'], index)
-                            asis1 = asis2 = asis3 = asis4 = False
 
                         elif hasCompId:
                             chainAssign1, asis1 = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -539,7 +536,6 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                             chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
                             chainAssign3 = self.assignCoordPolymerSequenceWithoutCompId(a3['seq_id'], a3['atom_id'], index)
                             chainAssign4 = self.assignCoordPolymerSequenceWithoutCompId(a4['seq_id'], a4['atom_id'], index)
-                            asis1 = asis2 = asis3 = asis4 = False
 
                         if len(chainAssign1) > 0 and len(chainAssign2) > 0 and len(chainAssign3) > 0 and len(chainAssign4) > 0:
                             self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -563,6 +559,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                           f"{self.atomSelectionSet[2] if has_assignments else None} {self.atomSelectionSet[3] if has_assignments else None} {dstFunc}")
 
                 if self.createSfDict__ and sf is not None:
+                    sf['id'] = index
                     sf['index_id'] += 1
                     ambig_code1 = ambig_code2 = ambig_code3 = ambig_code4 = None
                     if has_assignments:

@@ -1056,15 +1056,11 @@ class CyanaNOAParserListener(ParseTreeListener):
         """
 
         chainAssign = set()
-        asis = False
+        asis = preferNonPoly = False
         _seqId = seqId
         _compId = compId
 
-        fixedChainId = None
-        fixedSeqId = None
-        fixedCompId = None
-
-        preferNonPoly = False
+        fixedChainId = fixedSeqId = fixedCompId = None
 
         if self.__hasNonPoly:
 

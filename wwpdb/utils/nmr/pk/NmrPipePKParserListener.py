@@ -295,8 +295,8 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
-                            has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
 
             if self.createSfDict__:
                 sf = self.getSf()
@@ -478,9 +478,9 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
-                            has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
 
             if self.createSfDict__:
                 sf = self.getSf()
@@ -687,10 +687,10 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
-                            has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(4, a4['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(4, self.atomSelectionSet[3][0]['atom_id'][0])
 
             if self.createSfDict__:
                 sf = self.getSf()

@@ -97,7 +97,7 @@ class XeasyPKReader:
         self.__maxParserErrorReport = maxErrReport
 
     def parse(self, pkFilePath, cifFilePath=None, protFilePath=None, isFilePath=True,
-              createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
+              createSfDict=False, originalFileName=None, listIdCounter=None, reservedListIds=None, entryId=None):
         """ Parse XEASY PK file.
             @return: XeasyPKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
@@ -188,6 +188,8 @@ class XeasyPKReader:
                     listener.setOriginaFileName(originalFileName)
                 if listIdCounter is not None:
                     listener.setListIdCounter(listIdCounter)
+                if reservedListIds is not None:
+                    listener.setReservedListIds(reservedListIds)
                 if entryId is not None:
                     listener.setEntryId(entryId)
             walker.walk(listener, tree)
@@ -226,6 +228,11 @@ class XeasyPKReader:
 
 
 if __name__ == "__main__":
+    reader = XeasyPKReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2kj5/2kj5-corrected-div_ext.mr',
+                 '../../tests-nmr/mock-data-remediation/2kj5/2kj5.cif')
+
     reader = XeasyPKReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/7a2d/aro.peaks',  # -ignored-as-pea-any',

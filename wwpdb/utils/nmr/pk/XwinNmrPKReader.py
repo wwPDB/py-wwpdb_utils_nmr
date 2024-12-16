@@ -92,7 +92,7 @@ class XwinNmrPKReader:
         self.__maxParserErrorReport = maxErrReport
 
     def parse(self, pkFilePath, cifFilePath=None, isFilePath=True,
-              createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
+              createSfDict=False, originalFileName=None, listIdCounter=None, reservedListIds=None, entryId=None):
         """ Parse XWINNMR PK file.
             @return: XwinNmrPKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
@@ -172,6 +172,8 @@ class XwinNmrPKReader:
                     listener.setOriginaFileName(originalFileName)
                 if listIdCounter is not None:
                     listener.setListIdCounter(listIdCounter)
+                if reservedListIds is not None:
+                    listener.setReservedListIds(reservedListIds)
                 if entryId is not None:
                     listener.setEntryId(entryId)
             walker.walk(listener, tree)

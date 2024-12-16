@@ -19,6 +19,7 @@ parser grammar XeasyPROTParser;
 options { tokenVocab=XeasyPROTLexer; }
 
 xeasy_prot:
+	RETURN?
 	prot+
 	EOF;
 

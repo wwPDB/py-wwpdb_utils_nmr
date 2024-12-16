@@ -1449,8 +1449,7 @@ class RosettaMRParserListener(ParseTreeListener):
         chainAssign = set()
         _seqId = seqId
 
-        fixedSeqId = None
-        fixedCompId = None
+        fixedSeqId = fixedCompId = None
 
         self.__allow_ext_seq = False
 

@@ -302,15 +302,15 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
                     self.__annotation = string
 
     # Exit a parse tree produced by XMLParser#attribute.
-    def exitAttribute(self, ctx: XMLParser.AttributeContext):
+    def exitAttribute(self, ctx: XMLParser.AttributeContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by XMLParser#chardata.
-    def enterChardata(self, ctx: XMLParser.ChardataContext):
+    def enterChardata(self, ctx: XMLParser.ChardataContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by XMLParser#chardata.
-    def exitChardata(self, ctx: XMLParser.ChardataContext):
+    def exitChardata(self, ctx: XMLParser.ChardataContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by XMLParser#misc.

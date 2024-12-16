@@ -647,6 +647,28 @@ def getRestraintFormatName(fileType: str, ambig: bool = False) -> str:
     if fileType == 'nm-res-xpl':
         return 'XPLOR-NIH/CNS restraint' if ambig else 'XPLOR-NIH restraint'
 
+    if fileType == 'nm-aux-xea':
+        return 'XEASY PROT assignment'
+
+    if fileType == 'nm-pea-ari':
+        return 'ARIA spectral peak list'
+    if fileType == 'nm-pea-pip':
+        return 'NMRPIPE spectral peak list'
+    if fileType == 'nm-pea-spa':
+        return 'SPARKY spectral peak list'
+    if fileType == 'nm-pea-top':
+        return 'TOPSPIN spectral peak list'
+    if fileType == 'nm-pea-viw':
+        return 'NMRVIEW spectral peak list'
+    if fileType == 'nm-pea-vnm':
+        return 'VNMR spectral peak list'
+    if fileType == 'nm-pea-xea':
+        return 'XEASY spectral peak list'
+    if fileType == 'nm-pea-xwi':
+        return 'XWINNMR spectral peak list'
+    if fileType == 'nm-pea-any':
+        return 'other spectral peak list'
+
     return 'other restraint'
 
 

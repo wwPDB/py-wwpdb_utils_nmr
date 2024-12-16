@@ -92,7 +92,7 @@ class SparkyPKReader:
         self.__maxParserErrorReport = maxErrReport
 
     def parse(self, pkFilePath, cifFilePath=None, isFilePath=True,
-              createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
+              createSfDict=False, originalFileName=None, listIdCounter=None, reservedListIds=None, entryId=None):
         """ Parse SPARKY PK file.
             @return: SparkyPKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
@@ -172,6 +172,8 @@ class SparkyPKReader:
                     listener.setOriginaFileName(originalFileName)
                 if listIdCounter is not None:
                     listener.setListIdCounter(listIdCounter)
+                if reservedListIds is not None:
+                    listener.setReservedListIds(reservedListIds)
                 if entryId is not None:
                     listener.setEntryId(entryId)
             walker.walk(listener, tree)
@@ -210,6 +212,11 @@ class SparkyPKReader:
 
 
 if __name__ == "__main__":
+    reader = SparkyPKReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2k5w/2k5w-corrected-div_dst.mr',
+                 '../../tests-nmr/mock-data-remediation/2k5w/2k5w.cif')
+
     reader = SparkyPKReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2js7/2js7-trimmed-div_ext.mr',

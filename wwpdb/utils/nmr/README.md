@@ -300,6 +300,7 @@ nm-pea-pip|**not applicable**|nmr-peaks/any|Spectral peak list file in NMRPIPE f
 nm-pea-spa|**not applicable**|nmr-peaks/any|Spectral peak list file in SPARKY format
 nm-pea-top|**not applicable**|nmr-peaks/any|Spectral peak list file in TOPSPIN format
 nm-pea-vie|**not applicable**|nmr-peaks/any|Spectral peak list file in NMRVIEW format
+nm-pea-vnm|**not applicable**|nmr-peaks/any|Spectral peak list file in VNMR format
 nm-aux-xea|**not applicable**|nmr-peaks/any|Assignment file in XEASY format
 nm-pea-xea|**not applicable**|nmr-peaks/any|Spectral peak list file in XEASY format
 nm-pea-xwi|**not applicable**|nmr-peaks/any|Spectral peak list file in XWINNMR format

@@ -1,5 +1,5 @@
 /*
- Sparky PK (Spectral peak list) lexer grammar for ANTLR v4.
+ Vnmr PK (Spectral peak list) lexer grammar for ANTLR v4.
  Copyright 2024 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
@@ -14,10 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-lexer grammar SparkyPKLexer;
+lexer grammar VnmrPKLexer;
 
-Assignment:		'Assignment' -> pushMode(LABEL_MODE);
-W1:			'w1' -> pushMode(LABEL_MODE);
+Peak_id:		'peak id.' -> pushMode(LABEL_MODE);
 
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
@@ -55,16 +54,22 @@ ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
 SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
 LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
 
+/* Vnmr: Peak list format
+ See also https://sites.google.com/site/ccpnwiki/home/documentation/contributed-software/bruce-d-ray-utility-programs/readme
+*/
+
 mode LABEL_MODE;
 
-W1_LA:			'w1';
-W2_LA:			'w2';
-W3_LA:			'w3';
-W4_LA:			'w4';
-
-Height_LA:		'Data '? 'Height';
-Volume_LA:		'Volume';
-S_N_LA:			'S/N';
+Dim_0_ppm:		'Dim 0 (ppm)';
+Dim_1_ppm:		'Dim 1 (ppm)';
+Dim_2_ppm:		'Dim 2 (ppm)';
+Dim_3_ppm:		'Dim 3 (ppm)';
+Dev_0:			'Dev. 0';
+Dev_1:			'Dev. 1';
+Dev_2:			'Dev. 2';
+Dev_3:			'Dev. 3';
+Amplitude:		'Amplitude';
+Assignment:		'Assignment';
 
 SPACE_LA:		[ \t]+ -> skip;
 RETURN_LA:		[\r\n]+ -> popMode;

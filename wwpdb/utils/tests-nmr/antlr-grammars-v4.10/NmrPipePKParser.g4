@@ -19,6 +19,7 @@ parser grammar NmrPipePKParser;
 options { tokenVocab=NmrPipePKLexer; }
 
 nmrpipe_pk:
+	RETURN?
 	(
 	data_label |
 	peak_list_2d |

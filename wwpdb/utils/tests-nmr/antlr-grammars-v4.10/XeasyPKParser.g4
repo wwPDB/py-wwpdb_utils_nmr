@@ -19,6 +19,7 @@ parser grammar XeasyPKParser;
 options { tokenVocab=XeasyPKLexer; }
 
 xeasy_pk:
+	RETURN?
 	(
 	dimension |
 	format |
@@ -59,8 +60,8 @@ peak_2d:
 	Integer Simple_name
 	number number
 	Simple_name Integer
-	assign assign RETURN
-	(assign assign RETURN)*;
+	assign assign Integer? (RETURN | comment)
+	(assign assign Integer? (RETURN | comment))*;
 
 peak_list_3d:
 	peak_3d+;
@@ -71,8 +72,8 @@ peak_3d:
 	Integer Simple_name
 	number number
 	Simple_name Integer
-	assign assign assign RETURN
-	(assign assign assign RETURN)*;
+	assign assign assign Integer? (RETURN | comment)
+	(assign assign assign Integer? (RETURN | comment))*;
 
 peak_list_4d:
 	peak_4d+;
@@ -83,12 +84,15 @@ peak_4d:
 	Integer Simple_name
 	number number
 	Simple_name Integer
-	assign assign assign assign RETURN
-	(assign assign assign assign RETURN)*;
+	assign assign assign assign Integer? (RETURN | comment)
+	(assign assign assign assign Integer? (RETURN | comment))*;
 
 /* number expression in peak list */
 number: Float | Real | Integer | Simple_name;
 
 /* assignment expression in peak list */
 assign: Integer | (Simple_name Integer?);
+
+comment:
+	COMMENT Any_name* (RETURN_CM | EOF);
 

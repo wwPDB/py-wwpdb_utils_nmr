@@ -19,6 +19,7 @@ parser grammar XwinNmrPKParser;
 options { tokenVocab=XwinNmrPKLexer; }
 
 xwinnmr_pk:
+	RETURN?
 	(
 	comment |
 	dimension |

@@ -2454,15 +2454,11 @@ class CyanaMRParserListener(ParseTreeListener):
         """
 
         chainAssign = set()
-        asis = False
+        asis = preferNonPoly = False
         _seqId = seqId
         _compId = compId
 
-        fixedChainId = None
-        fixedSeqId = None
-        fixedCompId = None
-
-        preferNonPoly = False
+        fixedChainId = fixedSeqId = fixedCompId = None
 
         if self.__hasNonPoly:
 
@@ -3077,15 +3073,11 @@ class CyanaMRParserListener(ParseTreeListener):
         _refChainId = refChainId
 
         chainAssign = set()
-        asis = False
+        asis = preferNonPoly = False
         _seqId = seqId
         _compId = compId
 
-        fixedChainId = None
-        fixedSeqId = None
-        fixedCompId = None
-
-        preferNonPoly = False
+        fixedChainId = fixedSeqId = fixedCompId = None
 
         if self.__hasNonPoly:
 
@@ -3765,9 +3757,7 @@ class CyanaMRParserListener(ParseTreeListener):
         chainAssign = set()
         _seqId = seqId
 
-        fixedChainId = None
-        fixedSeqId = None
-        fixedCompId = None
+        fixedChainId = fixedSeqId = fixedCompId = None
 
         self.__allow_ext_seq = False
 
@@ -3980,8 +3970,7 @@ class CyanaMRParserListener(ParseTreeListener):
         chainAssign = set()
         _seqId = seqId
 
-        fixedSeqId = None
-        fixedCompId = None
+        fixedSeqId = fixedCompId = None
 
         self.__allow_ext_seq = False
 

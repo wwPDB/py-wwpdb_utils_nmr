@@ -6199,7 +6199,6 @@ class AmberMRParserListener(ParseTreeListener):
                            and authAtomId in self.unambigAtomNameMapping[authCompId]:
                             atomIds = self.unambigAtomNameMapping[authCompId][authAtomId]
                             fixed = True
-
                     if not fixed:
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, authAtomId)[0]
 

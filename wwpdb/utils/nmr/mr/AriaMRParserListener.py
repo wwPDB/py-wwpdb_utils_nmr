@@ -1047,15 +1047,11 @@ class AriaMRParserListener(ParseTreeListener):
         """
 
         chainAssign = set()
-        asis = False
+        asis = preferNonPoly = False
         _seqId = seqId
         _compId = compId
 
-        fixedChainId = None
-        fixedSeqId = None
-        fixedCompId = None
-
-        preferNonPoly = False
+        fixedChainId = fixedSeqId = fixedCompId = None
 
         self.__allow_ext_seq = False
 
@@ -1622,15 +1618,11 @@ class AriaMRParserListener(ParseTreeListener):
         _refChainId = refChainId
 
         chainAssign = set()
-        asis = False
+        asis = preferNonPoly = False
         _seqId = seqId
         _compId = compId
 
-        fixedChainId = None
-        fixedSeqId = None
-        fixedCompId = None
-
-        preferNonPoly = False
+        fixedChainId = fixedSeqId = fixedCompId = None
 
         self.__allow_ext_seq = False
 

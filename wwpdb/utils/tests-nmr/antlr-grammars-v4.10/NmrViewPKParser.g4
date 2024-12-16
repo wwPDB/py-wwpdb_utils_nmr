@@ -19,6 +19,7 @@ parser grammar NmrViewPKParser;
 options { tokenVocab=NmrViewPKLexer; }
 
 nmrview_pk:
+	RETURN?
 	(
 	data_label |
 	peak_list_2d |
@@ -52,8 +53,8 @@ peak_list_2d:
 
 peak_2d:
 	Integer
-	ENCLOSE_DATA Float Float Float Simple_name ENCLOSE_DATA ENCLOSE_DATA
-	ENCLOSE_DATA Float Float Float Simple_name ENCLOSE_DATA ENCLOSE_DATA
+	ENCLOSE_DATA Float Float Float Simple_name jcoupling ENCLOSE_DATA
+	ENCLOSE_DATA Float Float Float Simple_name jcoupling ENCLOSE_DATA
 	Float Float Integer ENCLOSE_DATA? Integer RETURN;
 
 peak_list_3d:
@@ -65,9 +66,9 @@ peak_list_3d:
 
 peak_3d:
 	Integer
-	ENCLOSE_DATA Float Float Float Simple_name ENCLOSE_DATA ENCLOSE_DATA
-	ENCLOSE_DATA Float Float Float Simple_name ENCLOSE_DATA ENCLOSE_DATA
-	ENCLOSE_DATA Float Float Float Simple_name ENCLOSE_DATA ENCLOSE_DATA
+	ENCLOSE_DATA Float Float Float Simple_name jcoupling ENCLOSE_DATA
+	ENCLOSE_DATA Float Float Float Simple_name jcoupling ENCLOSE_DATA
+	ENCLOSE_DATA Float Float Float Simple_name jcoupling ENCLOSE_DATA
 	Float Float Integer ENCLOSE_DATA? Integer RETURN;
 
 peak_list_4d:
@@ -80,10 +81,10 @@ peak_list_4d:
 
 peak_4d:
 	Integer
-	ENCLOSE_DATA Float Float Float Simple_name ENCLOSE_DATA ENCLOSE_DATA
-	ENCLOSE_DATA Float Float Float Simple_name ENCLOSE_DATA ENCLOSE_DATA
-	ENCLOSE_DATA Float Float Float Simple_name ENCLOSE_DATA ENCLOSE_DATA
-	ENCLOSE_DATA Float Float Float Simple_name ENCLOSE_DATA ENCLOSE_DATA
+	ENCLOSE_DATA Float Float Float Simple_name jcoupling ENCLOSE_DATA
+	ENCLOSE_DATA Float Float Float Simple_name jcoupling ENCLOSE_DATA
+	ENCLOSE_DATA Float Float Float Simple_name jcoupling ENCLOSE_DATA
+	ENCLOSE_DATA Float Float Float Simple_name jcoupling ENCLOSE_DATA
 	Float Float Integer ENCLOSE_DATA? Integer RETURN;
 
 peak_list_wo_eju_2d:
@@ -130,4 +131,7 @@ peak_wo_eju_4d:
 
 label:
 	Float_LA | Simple_name_LA | ENCLOSE_DATA_LA;
+
+jcoupling:
+	Float | Simple_name | ENCLOSE_DATA;
 

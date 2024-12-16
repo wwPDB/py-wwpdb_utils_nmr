@@ -89,6 +89,7 @@
 # 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
 # 22-Nov-2024  M. Yokochi - add 'nm-res-noa' file type for CYANA NOA (NOE Assignment) file
 # 05-Dec-2024  M. Yokochi - add 'nm-aux-xea' file type for XEASY PROT (Assignment) file (NMR restraint remediation)
+# 16-Dec-2024  M. Yokochi - add 'nm-pea-vnm' file types for VNMR spectral list file (NMR restraint remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1759,7 +1760,7 @@ class NmrDpReportInputSource:
                            'nm-res-noa', 'nm-res-oth', 'nm-res-ros', 'nm-res-sax', 'nm-res-syb',
                            'nm-res-xpl',
                            'nm-pea-any', 'nm-pea-ari', 'nm-pea-pip', 'nm-pea-spa', 'nm-pea-top',
-                           'nm-pea-vie', 'nm-pea-xea', 'nm-pea-xwi')
+                           'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',
                               'nmr-chemical-shifts', 'nmr-restraints', 'nmr-peaks')
@@ -1868,7 +1869,7 @@ class NmrDpReportSequenceAlignment:
         self.__lfh = log
 
         self.items = ('model_poly_seq_vs_coordinate', 'model_poly_seq_vs_nmr_poly_seq', 'nmr_poly_seq_vs_model_poly_seq',
-                      'model_poly_seq_vs_mr_restraint', 'model_poly_seq_vs_mr_topology',
+                      'model_poly_seq_vs_mr_restraint', 'model_poly_seq_vs_mr_topology', 'model_poly_seq_vs_spectral_peak',
                       'nmr_poly_seq_vs_chem_shift', 'nmr_poly_seq_vs_dist_restraint', 'nmr_poly_seq_vs_dihed_restraint',
                       'nmr_poly_seq_vs_rdc_restraint', 'nmr_poly_seq_vs_spectral_peak', 'nmr_poly_seq_vs_spectral_peak_alt',
                       'nmr_poly_seq_vs_noepk_restraint', 'nmr_poly_seq_vs_jcoup_restraint',

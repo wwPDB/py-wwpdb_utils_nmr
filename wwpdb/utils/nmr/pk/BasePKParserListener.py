@@ -164,6 +164,7 @@ class BasePKParserListener():
     software_name = None
 
     debug = False
+    ass_expr_debug = False
 
     createSfDict__ = False
 
@@ -288,6 +289,9 @@ class BasePKParserListener():
 
     # list id counter
     __listIdCounter = {}
+
+    # reserved list ids for NMR data remediation Phase 2
+    __reservedListIds = {}
 
     listIdInternal = {}
 
@@ -420,6 +424,9 @@ class BasePKParserListener():
 
     def setListIdCounter(self, listIdCounter: dict):
         self.__listIdCounter = listIdCounter
+
+    def setReservedListIds(self, reservedListIds: dict):
+        self.__reservedListIds = reservedListIds
 
     def setEntryId(self, entryId: str):
         self.entryId = entryId
@@ -770,8 +777,17 @@ class BasePKParserListener():
     def fillAtomTypeInCase(self, _dim_id: int, atom_type: str) -> bool:
         cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
         if cur_spectral_dim['atom_type'] is not None:
-            return cur_spectral_dim['atom_type'] == atom_type
+            if cur_spectral_dim['atom_type'] == atom_type:
+                return True
+            if 'reset' in cur_spectral_dim:  # XEASY INNAME label is not reliable (2kj5)
+                return False
+            if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                cur_spectral_dim['reset'] = True
+                cur_spectral_dim['atom_type'] = None
+                cur_spectral_dim['axis_code'] = None
+                cur_spectral_dim['atom_isotope_number'] = None
         if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+            cur_spectral_dim['axis_code'] = atom_type
             cur_spectral_dim['atom_type'] = atom_type
             cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]
             return True
@@ -983,7 +999,7 @@ class BasePKParserListener():
                                             cur_spectral_dim_transfer.append(transfer)
 
                     # jcoupling: 'Transfer via direct J coupling over one or more bonds'
-                    if 'copy' in file_name or 'copy' in alt_file_name:
+                    if 'cosy' in file_name or 'cosy' in alt_file_name:
                         if d == 2:
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _iso_num1 = _dict1['atom_isotope_number']
@@ -1133,8 +1149,8 @@ class BasePKParserListener():
                     # relayed-alternate: 'Relayed transfer where peaks from an odd resp. even number of transfer steps have opposite sign'
 
                     # through-space: 'Any transfer that does not go through the covalent bonded skeleton
-                    if 'noe' in file_name or 'roe' in file_name or 'rfdr' in file_name\
-                       or 'noe' in alt_file_name or 'roe' in alt_file_name or 'rfdr' in alt_file_name:
+                    if 'noe' in file_name or 'roe' in file_name\
+                       or 'noe' in alt_file_name or 'roe' in alt_file_name:
                         for _dim_id1, _dict1 in cur_spectral_dim.items():
                             _region1 = _dict1['spectral_region']
                             if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl') and d > 2:
@@ -1149,18 +1165,34 @@ class BasePKParserListener():
                                         cur_spectral_dim_transfer.append(transfer)
 
                     if self.exptlMethod == 'SOLID-STATE NMR':
-                        for _dim_id1, _dict1 in cur_spectral_dim.items():
-                            _iso_num1 = _dict1['atom_isotope_number']
-                            if _iso_num1 in (1, 13):
-                                for _dim_id2, _dict2 in cur_spectral_dim.items():
-                                    if _dim_id1 == _dim_id2 or _iso_num1 != _dict2['atom_isotope_number']:
-                                        continue
-                                    if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
-                                        transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
-                                                    'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                                    'type': 'through-space',
-                                                    'indirect': 'yes'}
-                                        cur_spectral_dim_transfer.append(transfer)
+                        if 'rfdr' in file_name or 'rfdr' in alt_file_name:
+                            for _dim_id1, _dict1 in cur_spectral_dim.items():
+                                _iso_num1 = _dict1['atom_isotope_number']
+                                if _iso_num1 in (1, 13):
+                                    for _dim_id2, _dict2 in cur_spectral_dim.items():
+                                        if _dim_id1 == _dim_id2 or _iso_num1 != _dict2['atom_isotope_number']:
+                                            continue
+                                        if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                                            transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                                        'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                                        'type': 'through-space',
+                                                        'indirect': 'yes'}
+                                            cur_spectral_dim_transfer.append(transfer)
+
+                        elif 'redor' in file_name or 'redor' in alt_file_name:
+                            for _dim_id1, _dict1 in cur_spectral_dim.items():
+                                _iso_num1 = _dict1['atom_isotope_number']
+                                if _iso_num1 in (13, 15, 19, 31):
+                                    for _dim_id2, _dict2 in cur_spectral_dim.items():
+                                        _iso_num2 = _dict2['atom_isotope_number']
+                                        if _dim_id1 == _dim_id2 or _iso_num2 not in (13, 15, 19, 31) or _iso_num1 == _iso_num2:
+                                            continue
+                                        if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                                            transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                                        'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                                        'type': 'through-space',
+                                                        'indirect': 'yes'}
+                                            cur_spectral_dim_transfer.append(transfer)
 
                     for _dim_id1, _dict1 in cur_spectral_dim.items():
                         _region1 = _dict1['spectral_region']
@@ -1192,10 +1224,10 @@ class BasePKParserListener():
                                                     'indirect': 'yes'}
                                         cur_spectral_dim_transfer.append(transfer)
 
-                    if self.exptlMethod == 'SOLID-STATE NMR':
+                    if self.exptlMethod == 'SOLID-STATE NMR' and d == 2:
                         for _dim_id1, _dict1 in cur_spectral_dim.items():
                             _region1 = _dict1['spectral_region']
-                            if _region1 == 'C' and d == 2:  # all
+                            if _region1 == 'C':  # all
                                 for _dim_id2, _dict2 in cur_spectral_dim.items():
                                     if _dim_id1 == _dim_id2 or _dict1['spectral_region'] != _region1:
                                         continue
@@ -1207,6 +1239,20 @@ class BasePKParserListener():
                                                         'type': 'through-space',  # optimistic inferencing?
                                                         'indirect': 'yes'}
                                             cur_spectral_dim_transfer.append(transfer)
+
+                        for _dim_id1, _dict1 in cur_spectral_dim.items():
+                            _iso_num1 = _dict1['atom_isotope_number']
+                            if _iso_num1 in (13, 15, 19, 31):
+                                for _dim_id2, _dict2 in cur_spectral_dim.items():
+                                    _iso_num2 = _dict2['atom_isotope_number']
+                                    if _dim_id1 == _dim_id2 or _iso_num2 not in (13, 15, 19, 31) or _iso_num1 == _iso_num2:
+                                        continue
+                                    if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                                        transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                                    'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                                    'type': 'through-space',  # optimistic inferencing?
+                                                    'indirect': 'yes'}
+                                        cur_spectral_dim_transfer.append(transfer)
 
                     for __v in cur_spectral_dim.values():
                         if 'freq_hint' in __v:
@@ -1376,14 +1422,14 @@ class BasePKParserListener():
                           "Neither height nor volume value is set.")
             return None
 
-        if pos_unc_1 is not None:
+        if pos_unc_1 is not None and pos_unc_1 != 0.0:
             dstFunc['position_uncertainty_1'] = str(pos_unc_1)
-        if pos_unc_2 is not None:
+        if pos_unc_2 is not None and pos_unc_2 != 0.0:
             dstFunc['position_uncertainty_2'] = str(pos_unc_2)
 
-        if lw_1 is not None:
+        if lw_1 is not None and lw_1 != 0.0:
             dstFunc['line_width_1'] = str(lw_1)
-        if lw_2 is not None:
+        if lw_2 is not None and lw_2 != 0.0:
             dstFunc['line_width_2'] = str(lw_2)
 
         if (lw_1 is None and lw_hz_1 is not None) or (lw_2 is None and lw_hz_2 is not None):
@@ -1474,18 +1520,18 @@ class BasePKParserListener():
                           "Neither height nor volume value is set.")
             return None
 
-        if pos_unc_1 is not None:
+        if pos_unc_1 is not None and pos_unc_1 != 0.0:
             dstFunc['position_uncertainty_1'] = str(pos_unc_1)
-        if pos_unc_2 is not None:
+        if pos_unc_2 is not None and pos_unc_2 != 0.0:
             dstFunc['position_uncertainty_2'] = str(pos_unc_2)
-        if pos_unc_3 is not None:
+        if pos_unc_3 is not None and pos_unc_3 != 0.0:
             dstFunc['position_uncertainty_3'] = str(pos_unc_3)
 
-        if lw_1 is not None:
+        if lw_1 is not None and lw_1 != 0.0:
             dstFunc['line_width_1'] = str(lw_1)
-        if lw_2 is not None:
+        if lw_2 is not None and lw_2 != 0.0:
             dstFunc['line_width_2'] = str(lw_2)
-        if lw_3 is not None:
+        if lw_3 is not None and lw_3 != 0.0:
             dstFunc['line_width_3'] = str(lw_3)
 
         if (lw_1 is None and lw_hz_1 is not None) or (lw_2 is None and lw_hz_2 is not None)\
@@ -1601,22 +1647,22 @@ class BasePKParserListener():
                           "Neither height nor volume value is set.")
             return None
 
-        if pos_unc_1 is not None:
+        if pos_unc_1 is not None and pos_unc_1 != 0.0:
             dstFunc['position_uncertainty_1'] = str(pos_unc_1)
-        if pos_unc_2 is not None:
+        if pos_unc_2 is not None and pos_unc_2 != 0.0:
             dstFunc['position_uncertainty_2'] = str(pos_unc_2)
-        if pos_unc_3 is not None:
+        if pos_unc_3 is not None and pos_unc_3 != 0.0:
             dstFunc['position_uncertainty_3'] = str(pos_unc_3)
-        if pos_unc_4 is not None:
+        if pos_unc_4 is not None and pos_unc_4 != 0.0:
             dstFunc['position_uncertainty_4'] = str(pos_unc_4)
 
-        if lw_1 is not None:
+        if lw_1 is not None and lw_1 != 0.0:
             dstFunc['line_width_1'] = str(lw_1)
-        if lw_2 is not None:
+        if lw_2 is not None and lw_2 != 0.0:
             dstFunc['line_width_2'] = str(lw_2)
-        if lw_3 is not None:
+        if lw_3 is not None and lw_3 != 0.0:
             dstFunc['line_width_3'] = str(lw_3)
-        if lw_4 is not None:
+        if lw_4 is not None and lw_4 != 0.0:
             dstFunc['line_width_4'] = str(lw_4)
 
         if (lw_1 is None and lw_hz_1 is not None) or (lw_2 is None and lw_hz_2 is not None)\
@@ -1820,6 +1866,10 @@ class BasePKParserListener():
                             if ___atomNameLike[idx]:
                                 break
 
+            if self.ass_expr_debug:
+                print(f'{idx} {term!r} segid:{segIdLike[idx]}, resid:{resIdLike[idx]}, resname:{resNameLike[idx]}, '
+                      f'atomname:{atomNameLike[idx]}, _atomname:{_atomNameLike[idx]}, __atomname:{__atomNameLike[idx]}, ___atomname:{___atomNameLike[idx]}')
+
         atomNameCount = 0
         for idx in range(lenStr):
             if atomNameLike[idx]:
@@ -1905,6 +1955,10 @@ class BasePKParserListener():
                         else:
                             resNameLike[idx] = False
 
+            if self.ass_expr_debug:
+                print(f' -> {idx} segid:{segIdLike[idx]}, resid:{resIdLike[idx]}, resname:{resNameLike[idx]}, '
+                      f'atomname:{atomNameLike[idx]}, _atomname:{_atomNameLike[idx]}, __atomname:{__atomNameLike[idx]}, ___atomname:{___atomNameLike[idx]}')
+
         resIdCount = 0
         for idx in range(lenStr):
             if resIdLike[idx]:
@@ -1913,10 +1967,30 @@ class BasePKParserListener():
         if resIdCount == 0:
             return None
 
+        resIdLater = resIdCount == numOfDim
+        if resIdLater:
+            atomNameCount = 0
+            for idx in range(lenStr):
+                if atomNameLike[idx]:
+                    atomNameCount += 1
+            resIdLater = atomNameCount == numOfDim
+            if resIdLater:
+                anyResId = False
+                for idx in range(lenStr):
+                    if resIdLike[idx]:
+                        anyResId = True
+                    if atomNameLike[idx]:
+                        if anyResId:
+                            resIdLater = False
+                        break
+
+        if self.ass_expr_debug:
+            print(f'num_of_dim: {numOfDim}, resid_count: {resIdCount}, resid_later:{resIdLater}')
+
         ret = []
 
         segId = resId = resName = atomName = None
-        dimId = 0
+        dimId = 1
         for idx, term in enumerate(_str):
             if segIdLike[idx]:
                 segId = term[segIdSpan[idx][0]:segIdSpan[idx][1]]
@@ -1927,6 +2001,12 @@ class BasePKParserListener():
                 if len(resName) == 1 and aaOnly:
                     resName = next(k for k, v in monDict3.items() if v == resName)
             if ___atomNameLike[idx]:
+                if resIdLater:
+                    for _idx, _term in enumerate(_str):
+                        if _idx > idx and resIdLike[_idx]:
+                            resId = int(_term[resIdSpan[_idx][0]:resIdSpan[_idx][1]])
+                            segId = resName = None
+                            break
                 if resId is None:
                     return None
                 atomName = term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]]
@@ -1955,6 +2035,12 @@ class BasePKParserListener():
                     ret.append(ass)
                 dimId += 1
             if __atomNameLike[idx]:
+                if resIdLater:
+                    for _idx, _term in enumerate(_str):
+                        if _idx > idx and resIdLike[_idx]:
+                            resId = int(_term[resIdSpan[_idx][0]:resIdSpan[_idx][1]])
+                            segId = resName = None
+                            break
                 if resId is None:
                     return None
                 atomName = term[__atomNameSpan[idx][0]:__atomNameSpan[idx][1]]
@@ -1983,6 +2069,12 @@ class BasePKParserListener():
                     ret.append(ass)
                 dimId += 1
             if _atomNameLike[idx]:
+                if resIdLater:
+                    for _idx, _term in enumerate(_str):
+                        if _idx > idx and resIdLike[_idx]:
+                            resId = int(_term[resIdSpan[_idx][0]:resIdSpan[_idx][1]])
+                            segId = resName = None
+                            break
                 if resId is None:
                     return None
                 atomName = term[_atomNameSpan[idx][0]:_atomNameSpan[idx][1]]
@@ -2011,6 +2103,12 @@ class BasePKParserListener():
                     ret.append(ass)
                 dimId += 1
             if atomNameLike[idx]:
+                if resIdLater:
+                    for _idx, _term in enumerate(_str):
+                        if _idx > idx and resIdLike[_idx]:
+                            resId = int(_term[resIdSpan[_idx][0]:resIdSpan[_idx][1]])
+                            segId = resName = None
+                            break
                 if resId is None:
                     return None
                 atomName = term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]
@@ -2107,9 +2205,7 @@ class BasePKParserListener():
         _seqId = seqId
         _compId = compId
 
-        fixedChainId = None
-        fixedSeqId = None
-        fixedCompId = None
+        fixedChainId = fixedSeqId = fixedCompId = None
 
         preferNonPoly = False
 
@@ -2762,9 +2858,7 @@ class BasePKParserListener():
         _seqId = seqId
         _compId = compId
 
-        fixedChainId = None
-        fixedSeqId = None
-        fixedCompId = None
+        fixedChainId = fixedSeqId = fixedCompId = None
 
         preferNonPoly = False
 
@@ -3418,9 +3512,7 @@ class BasePKParserListener():
         chainAssign = set()
         _seqId = seqId
 
-        fixedChainId = None
-        fixedSeqId = None
-        fixedCompId = None
+        fixedChainId = fixedSeqId = fixedCompId = None
 
         self.__allow_ext_seq = False
 
@@ -3631,8 +3723,7 @@ class BasePKParserListener():
         chainAssign = set()
         _seqId = seqId
 
-        fixedSeqId = None
-        fixedCompId = None
+        fixedSeqId = fixedCompId = None
 
         self.__allow_ext_seq = False
 
@@ -4380,13 +4471,13 @@ class BasePKParserListener():
         if content_subtype is None:
             return
 
-        self.__listIdCounter = incListIdCounter(self.cur_subtype, self.__listIdCounter)
+        self.__listIdCounter = incListIdCounter(self.cur_subtype, self.__listIdCounter, reservedListIds=self.__reservedListIds)
 
         key = (self.cur_subtype, self.cur_list_id)
 
         if key in self.sfDict:
             if len(self.sfDict[key]) > 0:
-                decListIdCounter(self.cur_subtype, self.__listIdCounter)
+                decListIdCounter(self.cur_subtype, self.__listIdCounter, reservedListIds=self.__reservedListIds)
                 return
         else:
             self.sfDict[key] = []
@@ -4456,7 +4547,7 @@ class BasePKParserListener():
                     v.remove(item)
                     if len(v) == 0:
                         ign_keys.append(k)
-                    self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
+                    self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter, reservedListIds=self.__reservedListIds)
         for k in ign_keys:
             del self.sfDict[k]
         return self.__listIdCounter, None if len(self.sfDict) == 0 else self.sfDict

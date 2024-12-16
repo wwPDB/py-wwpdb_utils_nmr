@@ -8,6 +8,7 @@
 """
 import sys
 import re
+import copy
 
 from antlr4 import ParseTreeListener
 
@@ -36,6 +37,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
     __index = None
     __labels = None
     __atomNumberDict = None
+    __lastComment = None
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -157,6 +159,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.peaks2D += 1
 
         self.atomSelectionSet.clear()
+        self.__lastComment = None
 
     # Exit a parse tree produced by XeasyPKParser#peak_2d.
     def exitPeak_2d(self, ctx: XeasyPKParser.Peak_2dContext):
@@ -177,10 +180,11 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             # integral_method = str(ctx.Simple_name(1))
             type = int(str(ctx.Integer(2)))
 
-            x_ass = self.assignmentSelection[0]
-            y_ass = self.assignmentSelection[1]
-            if len(self.assignmentSelection) > self.num_of_dim:  # ignore multiple assignments for a peak
-                x_ass = y_ass = None
+            a1 = self.assignmentSelection[0]
+            a2 = self.assignmentSelection[1]
+
+            if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):  # ignore multiple assignments for a peak
+                a1 = a2 = None
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -205,15 +209,20 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             asis1 = asis2 = None
 
-            if x_ass is not None and y_ass is not None:
-                assignments = [{}] * self.num_of_dim
+            if a1 is not None and a2 is not None:
 
-                assignment0 = self.extractPeakAssignment(1, x_ass, index)
-                if assignment0 is not None:
-                    assignments[0] = assignment0[0]
-                assignment1 = self.extractPeakAssignment(1, y_ass, index)
-                if assignment1 is not None:
-                    assignments[1] = assignment1[0]
+                if isinstance(a1, dict) and isinstance(a2, dict):
+                    assignments = [a1, a2]
+
+                else:
+                    assignments = [{}] * self.num_of_dim
+
+                    assignment0 = self.extractPeakAssignment(1, a1, index)
+                    if assignment0 is not None:
+                        a1 = assignment0[0]
+                    assignment1 = self.extractPeakAssignment(1, a2, index)
+                    if assignment1 is not None:
+                        a2 = assignment1[0]
 
                 if all(len(a) > 0 for a in assignments):
 
@@ -221,9 +230,6 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
                     hasChainId = all(a['chain_id'] is not None for a in assignments)
                     hasCompId = all(a['comp_id'] is not None for a in assignments)
-
-                    a1 = assignments[0]
-                    a2 = assignments[1]
 
                     if hasChainId and hasCompId:
                         chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -255,7 +261,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             if self.debug:
                 print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) "
-                      f"{x_ass}, {y_ass} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} {dstFunc}")
+                      f"{a1}, {a2} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} {dstFunc}")
 
             if self.createSfDict__ and sf is not None:
                 sf['id'] = index
@@ -279,7 +285,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                                sf['list_id'], self.entryId, dstFunc,
                                self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                atom1, atom2, asis1=asis1, asis2=asis2,
-                               ambig_code1=ambig_code1, ambig_code2=ambig_code2)
+                               ambig_code1=ambig_code1, ambig_code2=ambig_code2, details=self.__lastComment)
                 sf['loop'].add_data(row)
 
         finally:
@@ -302,6 +308,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.peaks3D += 1
 
         self.atomSelectionSet.clear()
+        self.__lastComment = None
 
     # Exit a parse tree produced by XeasyPKParser#peak_3d.
     def exitPeak_3d(self, ctx: XeasyPKParser.Peak_3dContext):
@@ -323,11 +330,12 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             # integral_method = str(ctx.Simple_name(1))
             type = int(str(ctx.Integer(2)))
 
-            x_ass = self.assignmentSelection[0]
-            y_ass = self.assignmentSelection[1]
-            z_ass = self.assignmentSelection[2]
-            if len(self.assignmentSelection) > self.num_of_dim:  # ignore multiple assignments for a peak
-                x_ass = y_ass = z_ass = None
+            a1 = self.assignmentSelection[0]
+            a2 = self.assignmentSelection[1]
+            a3 = self.assignmentSelection[2]
+
+            if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):  # ignore multiple assignments for a peak
+                a1 = a2 = a3 = None
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -353,18 +361,23 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             asis1 = asis2 = asis3 = None
 
-            if x_ass is not None and y_ass is not None and z_ass is not None:
-                assignments = [{}] * self.num_of_dim
+            if a1 is not None and a2 is not None and a3 is not None:
 
-                assignment0 = self.extractPeakAssignment(1, x_ass, index)
-                if assignment0 is not None:
-                    assignments[0] = assignment0[0]
-                assignment1 = self.extractPeakAssignment(1, y_ass, index)
-                if assignment1 is not None:
-                    assignments[1] = assignment1[0]
-                assignment2 = self.extractPeakAssignment(1, z_ass, index)
-                if assignment2 is not None:
-                    assignments[2] = assignment2[0]
+                if isinstance(a1, dict) and isinstance(a2, dict) and isinstance(a3, dict):
+                    assignments = [a1, a2, a3]
+
+                else:
+                    assignments = [{}] * self.num_of_dim
+
+                    assignment0 = self.extractPeakAssignment(1, a1, index)
+                    if assignment0 is not None:
+                        a1 = assignment0[0]
+                    assignment1 = self.extractPeakAssignment(1, a2, index)
+                    if assignment1 is not None:
+                        a2 = assignment1[0]
+                    assignment2 = self.extractPeakAssignment(1, a3, index)
+                    if assignment2 is not None:
+                        a3 = assignment2[0]
 
                 if all(len(a) > 0 for a in assignments):
 
@@ -372,10 +385,6 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
                     hasChainId = all(a['chain_id'] is not None for a in assignments)
                     hasCompId = all(a['comp_id'] is not None for a in assignments)
-
-                    a1 = assignments[0]
-                    a2 = assignments[1]
-                    a3 = assignments[2]
 
                     if hasChainId and hasCompId:
                         chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -404,16 +413,16 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
-                            has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
 
             if self.createSfDict__:
                 sf = self.getSf()
 
             if self.debug:
                 print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) "
-                      f"{x_ass}, {y_ass}, {z_ass} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} "
+                      f"{a1}, {a2}, {a3} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} "
                       f"{self.atomSelectionSet[2] if has_assignments else None} {dstFunc}")
 
             if self.createSfDict__ and sf is not None:
@@ -444,7 +453,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                                self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                atom1, atom2, atom3, asis1=asis1, asis2=asis2, asis3=asis3,
                                ambig_code1=ambig_code1, ambig_code2=ambig_code2,
-                               ambig_code3=ambig_code3)
+                               ambig_code3=ambig_code3, details=self.__lastComment)
                 sf['loop'].add_data(row)
 
         finally:
@@ -467,6 +476,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.peaks4D += 1
 
         self.atomSelectionSet.clear()
+        self.__lastComment = None
 
     # Exit a parse tree produced by XeasyPKParser#peak_4d.
     def exitPeak_4d(self, ctx: XeasyPKParser.Peak_4dContext):
@@ -489,12 +499,13 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             # integral_method = str(ctx.Simple_name(1))
             type = int(str(ctx.Integer(2)))
 
-            x_ass = self.assignmentSelection[0]
-            y_ass = self.assignmentSelection[1]
-            z_ass = self.assignmentSelection[2]
-            a_ass = self.assignmentSelection[3]
-            if len(self.assignmentSelection) > self.num_of_dim:  # ignore multiple assignments for a peak
-                x_ass = y_ass = z_ass = a_ass = None
+            a1 = self.assignmentSelection[0]
+            a2 = self.assignmentSelection[1]
+            a3 = self.assignmentSelection[2]
+            a4 = self.assignmentSelection[3]
+
+            if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):  # ignore multiple assignments for a peak
+                a1 = a2 = a3 = a4 = None
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -521,21 +532,26 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             asis1 = asis2 = asis3 = asis4 = None
 
-            if x_ass is not None and y_ass is not None and z_ass is not None and a_ass is not None:
-                assignments = [{}] * self.num_of_dim
+            if a1 is not None and a2 is not None and a3 is not None and a4 is not None:
 
-                assignment0 = self.extractPeakAssignment(1, x_ass, index)
-                if assignment0 is not None:
-                    assignments[0] = assignment0[0]
-                assignment1 = self.extractPeakAssignment(1, y_ass, index)
-                if assignment1 is not None:
-                    assignments[1] = assignment1[0]
-                assignment2 = self.extractPeakAssignment(1, z_ass, index)
-                if assignment2 is not None:
-                    assignments[2] = assignment2[0]
-                assignment3 = self.extractPeakAssignment(1, a_ass, index)
-                if assignment3 is not None:
-                    assignments[3] = assignment3[0]
+                if isinstance(a1, dict) and isinstance(a2, dict) and isinstance(a3, dict) and isinstance(a4, dict):
+                    assignments = [a1, a2, a3, a4]
+
+                else:
+                    assignments = [{}] * self.num_of_dim
+
+                    assignment0 = self.extractPeakAssignment(1, a1, index)
+                    if assignment0 is not None:
+                        a1 = assignment0[0]
+                    assignment1 = self.extractPeakAssignment(1, a2, index)
+                    if assignment1 is not None:
+                        a2 = assignment1[0]
+                    assignment2 = self.extractPeakAssignment(1, a3, index)
+                    if assignment2 is not None:
+                        a3 = assignment2[0]
+                    assignment3 = self.extractPeakAssignment(1, a4, index)
+                    if assignment3 is not None:
+                        a4 = assignment3[0]
 
                 if all(len(a) > 0 for a in assignments):
 
@@ -543,11 +559,6 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
                     hasChainId = all(a['chain_id'] is not None for a in assignments)
                     hasCompId = all(a['comp_id'] is not None for a in assignments)
-
-                    a1 = assignments[0]
-                    a2 = assignments[1]
-                    a3 = assignments[2]
-                    a4 = assignments[3]
 
                     if hasChainId and hasCompId:
                         chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -581,17 +592,17 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
-                            has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(4, a4['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
+                            has_assignments &= self.fillAtomTypeInCase(4, self.atomSelectionSet[3][0]['atom_id'][0])
 
             if self.createSfDict__:
                 sf = self.getSf()
 
             if self.debug:
                 print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) "
-                      f"{x_ass}, {y_ass}, {z_ass}, {a_ass} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} "
+                      f"{a1}, {a2}, {a3}, {a4} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} "
                       f"{self.atomSelectionSet[2] if has_assignments else None} {self.atomSelectionSet[3] if has_assignments else None} {dstFunc}")
 
             if self.createSfDict__ and sf is not None:
@@ -627,7 +638,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                                self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                atom1, atom2, atom3, atom4, asis1=asis1, asis2=asis2, asis3=asis3, asis4=asis4,
                                ambig_code1=ambig_code1, ambig_code2=ambig_code2,
-                               ambig_code3=ambig_code3, ambig_code4=ambig_code4)
+                               ambig_code3=ambig_code3, ambig_code4=ambig_code4, details=self.__lastComment)
                 sf['loop'].add_data(row)
 
         finally:
@@ -675,18 +686,44 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.assignmentSelection.append(None)
             else:
                 factor = assignment[0]
-                self.assignmentSelection.append(f"{factor['chain_id'] if 'chain_id' in factor else ''} "
-                                                f"{factor['seq_id'] if 'seq_id' in factor else ''} "
-                                                f"{factor['comp_id'] if 'comp_id' in factor else ''} "
-                                                f"{factor['atom_id']}")
+                self.assignmentSelection.append(factor)
         else:
             ai = int(str(ctx.Integer()))
             if ai == 0 or self.__atomNumberDict is None or ai not in self.__atomNumberDict:
                 self.assignmentSelection.append(None)
             else:
-                factor = self.__atomNumberDict[ai]
-                self.assignmentSelection.append(f"{factor['chain_id']} {factor['seq_id']} "
-                                                f"{factor['comp_id']} {factor['auth_atom_id']}")
+                _factor = copy.copy(self.__atomNumberDict[ai])
+                _factor['atom_id'] = _factor['auth_atom_id']
+                del _factor['auth_atom_id']
+                self.assignmentSelection.append(_factor)
+
+    # Enter a parse tree produced by XeasyPKParser#comment.
+    def enterComment(self, ctx: XeasyPKParser.CommentContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by XeasyPKParser#comment.
+    def exitComment(self, ctx: XeasyPKParser.CommentContext):
+        comment = []
+        for col in range(20):
+            if ctx.Any_name(col):
+                text = str(ctx.Any_name(col))
+                if text[0] in ('#', '!'):
+                    break
+                if text[0] in ('>', '<'):
+                    continue
+                comment.append(str(ctx.Any_name(col)))
+            else:
+                break
+        self.__lastComment = None if len(comment) == 0 else ' '.join(comment)
+        assignments = self.extractPeakAssignment(self.num_of_dim, self.__lastComment,
+                                                 self.__index - 1 if isinstance(self.__index, int) else 1)
+        if assignments is not None and self.__atomNumberDict is None:
+            if self.ass_expr_debug:
+                print(f'{self.__lastComment!r} -> {assignments}')
+            self.assignmentSelection.clear()
+            for factor in assignments:
+                self.assignmentSelection.append(factor)
+            self.__lastComment = None
 
     def fillSpectralDimWithLabels(self):
         if self.__labels is None or len(self.__labels) == 0:

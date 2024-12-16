@@ -45,6 +45,7 @@
             "nm-pea-spa",
             "nm-pea-top",
             "nm-pea-vie",
+            "nm-pea-vnm",
             "nm-pea-xea",
             "nm-pea-xwi"
           ]
@@ -4605,7 +4606,7 @@
               }
             },
             "model_poly_seq_vs_mr_topology": {
-              "description": "The object provides sequence alignment between sequence of the coordinates and sequence of parameter/topology file.",
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence of topology.",
               "type": [
                 "array",
                 "null"
@@ -4622,7 +4623,24 @@
               }
             },
             "model_poly_seq_vs_mr_restraint": {
-              "description": "The object provides sequence alignment between sequence of the coordinates and sequence of overall restraint files.",
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence of restraints.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_coord"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "model_poly_seq_vs_spectral_peak": {
+              "description": "The object provides sequence alignment between sequence of the coordinates and sequence of spectral peak lists.",
               "type": [
                 "array",
                 "null"

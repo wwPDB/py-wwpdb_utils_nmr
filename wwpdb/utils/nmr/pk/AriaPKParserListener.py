@@ -244,21 +244,11 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                 cur_spectral_dim[2]['freq_hint'].append(ppm[1])
 
                 has_assignments = False
-                L1 = L2 = asis1 = asis2 = None
+                a1 = a2 = asis1 = asis2 = None
 
                 if ass[0] is not None and ass[1] is not None:
-                    assignments = [{}] * self.num_of_dim
-
-                    _a1, _a2 = ass[0][0], ass[1][0]
-                    L1 = f"{_a1['chain_id']} {_a1['seq_id']} {_a1['atom_id']}" if 'chain_id' in _a1 else f"{_a1['seq_id']} {_a1['atom_id']}"
-                    L2 = f"{_a2['chain_id']} {_a2['seq_id']} {_a2['atom_id']}" if 'chain_id' in _a2 else f"{_a2['seq_id']} {_a2['atom_id']}"
-
-                    assignment0 = self.extractPeakAssignment(1, L1, index)
-                    if assignment0 is not None:
-                        assignments[0] = assignment0[0]
-                    assignment1 = self.extractPeakAssignment(1, L2, index)
-                    if assignment1 is not None:
-                        assignments[1] = assignment1[0]
+                    a1, a2 = ass[0][0], ass[1][0]
+                    assignments = [a1, a2]
 
                     if all(len(a) > 0 for a in assignments):
 
@@ -266,9 +256,6 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
                         hasChainId = all(a['chain_id'] is not None for a in assignments)
                         hasCompId = all(a['comp_id'] is not None for a in assignments)
-
-                        a1 = assignments[0]
-                        a2 = assignments[1]
 
                         if hasChainId and hasCompId:
                             chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -292,15 +279,15 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
                             if len(self.atomSelectionSet) == self.num_of_dim:
                                 has_assignments = True
-                                has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
-                                has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
 
                 if self.createSfDict__:
                     sf = self.getSf(self.__spectrum_name)
 
                 if self.debug:
                     print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) "
-                          f"{L1}, {L2} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} {dstFunc}")
+                          f"{a1}, {a2} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} {dstFunc}")
 
                 if self.createSfDict__ and sf is not None:
                     sf['id'] = index
@@ -351,25 +338,11 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                 cur_spectral_dim[3]['freq_hint'].append(ppm[2])
 
                 has_assignments = False
-                L1 = L2 = L3 = asis1 = asis2 = asis3 = None
+                a1 = a2 = a3 = asis1 = asis2 = asis3 = None
 
                 if ass[0] is not None and ass[1] is not None and ass[2] is not None:
-                    assignments = [{}] * self.num_of_dim
-
-                    _a1, _a2, _a3 = ass[0][0], ass[1][0], ass[2][0]
-                    L1 = f"{_a1['chain_id']} {_a1['seq_id']} {_a1['atom_id']}" if 'chain_id' in _a1 else f"{_a1['seq_id']} {_a1['atom_id']}"
-                    L2 = f"{_a2['chain_id']} {_a2['seq_id']} {_a2['atom_id']}" if 'chain_id' in _a2 else f"{_a2['seq_id']} {_a2['atom_id']}"
-                    L3 = f"{_a3['chain_id']} {_a3['seq_id']} {_a3['atom_id']}" if 'chain_id' in _a3 else f"{_a3['seq_id']} {_a3['atom_id']}"
-
-                    assignment0 = self.extractPeakAssignment(1, L1, index)
-                    if assignment0 is not None:
-                        assignments[0] = assignment0[0]
-                    assignment1 = self.extractPeakAssignment(1, L2, index)
-                    if assignment1 is not None:
-                        assignments[1] = assignment1[0]
-                    assignment2 = self.extractPeakAssignment(1, L3, index)
-                    if assignment2 is not None:
-                        assignments[2] = assignment2[0]
+                    a1, a2, a3 = ass[0][0], ass[1][0], ass[2][0]
+                    assignments = [a1, a2, a3]
 
                     if all(len(a) > 0 for a in assignments):
 
@@ -377,10 +350,6 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
                         hasChainId = all(a['chain_id'] is not None for a in assignments)
                         hasCompId = all(a['comp_id'] is not None for a in assignments)
-
-                        a1 = assignments[0]
-                        a2 = assignments[1]
-                        a3 = assignments[2]
 
                         if hasChainId and hasCompId:
                             chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -409,16 +378,17 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
                             if len(self.atomSelectionSet) == self.num_of_dim:
                                 has_assignments = True
-                                has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
-                                has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
-                                has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
 
                 if self.createSfDict__:
                     sf = self.getSf(self.__spectrum_name)
 
                 if self.debug:
                     print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) "
-                          f"{L1}, {L2}, {L3} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} "
+                          f"{a1}, {a2}, {a3} -> "
+                          f"{self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} "
                           f"{self.atomSelectionSet[2] if has_assignments else None} {dstFunc}")
 
                 if self.createSfDict__ and sf is not None:
@@ -477,29 +447,11 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                 cur_spectral_dim[4]['freq_hint'].append(ppm[3])
 
                 has_assignments = False
-                L1 = L2 = L3 = L4 = asis1 = asis2 = asis3 = asis4 = None
+                a1 = a2 = a3 = a4 = asis1 = asis2 = asis3 = asis4 = None
 
                 if ass[0] is not None and ass[1] is not None and ass[2] is not None and ass[3] is not None:
-                    assignments = [{}] * self.num_of_dim
-
-                    _a1, _a2, _a3, _a4 = ass[0][0], ass[1][0], ass[2][0], ass[3][0]
-                    L1 = f"{_a1['chain_id']} {_a1['seq_id']} {_a1['atom_id']}" if 'chain_id' in _a1 else f"{_a1['seq_id']} {_a1['atom_id']}"
-                    L2 = f"{_a2['chain_id']} {_a2['seq_id']} {_a2['atom_id']}" if 'chain_id' in _a2 else f"{_a2['seq_id']} {_a2['atom_id']}"
-                    L3 = f"{_a3['chain_id']} {_a3['seq_id']} {_a3['atom_id']}" if 'chain_id' in _a3 else f"{_a3['seq_id']} {_a3['atom_id']}"
-                    L4 = f"{_a4['chain_id']} {_a4['seq_id']} {_a4['atom_id']}" if 'chain_id' in _a4 else f"{_a4['seq_id']} {_a4['atom_id']}"
-
-                    assignment0 = self.extractPeakAssignment(1, L1, index)
-                    if assignment0 is not None:
-                        assignments[0] = assignment0[0]
-                    assignment1 = self.extractPeakAssignment(1, L2, index)
-                    if assignment1 is not None:
-                        assignments[1] = assignment1[0]
-                    assignment2 = self.extractPeakAssignment(1, L3, index)
-                    if assignment2 is not None:
-                        assignments[2] = assignment2[0]
-                    assignment3 = self.extractPeakAssignment(1, L4, index)
-                    if assignment3 is not None:
-                        assignments[3] = assignment3[0]
+                    a1, a2, a3, a4 = ass[0][0], ass[1][0], ass[2][0], ass[3][0]
+                    assignments = [a1, a2, a3, a4]
 
                     if all(len(a) > 0 for a in assignments):
 
@@ -507,11 +459,6 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
                         hasChainId = all(a['chain_id'] is not None for a in assignments)
                         hasCompId = all(a['comp_id'] is not None for a in assignments)
-
-                        a1 = assignments[0]
-                        a2 = assignments[1]
-                        a3 = assignments[2]
-                        a4 = assignments[3]
 
                         if hasChainId and hasCompId:
                             chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -545,17 +492,18 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
                             if len(self.atomSelectionSet) == self.num_of_dim:
                                 has_assignments = True
-                                has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
-                                has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
-                                has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
-                                has_assignments &= self.fillAtomTypeInCase(4, a4['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(4, self.atomSelectionSet[3][0]['atom_id'][0])
 
                 if self.createSfDict__:
                     sf = self.getSf(self.__spectrum_name)
 
                 if self.debug:
                     print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) "
-                          f"{L1}, {L2}, {L3}, {L4} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} "
+                          f"{a1}, {a2}, {a3}, {a4} -> "
+                          f"{self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} "
                           f"{self.atomSelectionSet[2] if has_assignments else None} {self.atomSelectionSet[3] if has_assignments else None} {dstFunc}")
 
                 if self.createSfDict__ and sf is not None:
@@ -731,15 +679,15 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                     self.__hetero2_ass['atom_id'] = string
 
     # Exit a parse tree produced by XMLParser#attribute.
-    def exitAttribute(self, ctx: XMLParser.AttributeContext):
+    def exitAttribute(self, ctx: XMLParser.AttributeContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by XMLParser#chardata.
-    def enterChardata(self, ctx: XMLParser.ChardataContext):
+    def enterChardata(self, ctx: XMLParser.ChardataContext):  # pylint: disable=unused-argument
         pass
 
     # Exit a parse tree produced by XMLParser#chardata.
-    def exitChardata(self, ctx: XMLParser.ChardataContext):
+    def exitChardata(self, ctx: XMLParser.ChardataContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by XMLParser#misc.

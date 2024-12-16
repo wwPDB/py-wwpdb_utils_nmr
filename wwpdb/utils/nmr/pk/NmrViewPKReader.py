@@ -92,7 +92,7 @@ class NmrViewPKReader:
         self.__maxParserErrorReport = maxErrReport
 
     def parse(self, pkFilePath, cifFilePath=None, isFilePath=True,
-              createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
+              createSfDict=False, originalFileName=None, listIdCounter=None, reservedListIds=None, entryId=None):
         """ Parse NMRVIEW PK file.
             @return: NmrViewPKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
@@ -172,6 +172,8 @@ class NmrViewPKReader:
                     listener.setOriginaFileName(originalFileName)
                 if listIdCounter is not None:
                     listener.setListIdCounter(listIdCounter)
+                if reservedListIds is not None:
+                    listener.setReservedListIds(reservedListIds)
                 if entryId is not None:
                     listener.setEntryId(entryId)
             walker.walk(listener, tree)
@@ -210,6 +212,11 @@ class NmrViewPKReader:
 
 
 if __name__ == "__main__":
+    reader = NmrViewPKReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2la0/2la0-corrected-div_ext.mr',
+                 '../../tests-nmr/mock-data-remediation/2la0/2la0.cif')
+
     reader = NmrViewPKReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6iws/e170209_15n_noesy.xpk',

@@ -1,9 +1,9 @@
 ##
-# File: SparkyPKParserListener.py
-# Date: 04-Dec-2024
+# File: VnmrPKParserListener.py
+# Date: 16-Dec-2024
 #
 # Updates:
-""" ParserLister class for SPARKY PK files.
+""" ParserLister class for VNMR PK files.
     @author: Masashi Yokochi
 """
 import sys
@@ -11,24 +11,24 @@ import sys
 from antlr4 import ParseTreeListener
 
 try:
-    from wwpdb.utils.nmr.pk.SparkyPKParser import SparkyPKParser
+    from wwpdb.utils.nmr.pk.VnmrPKParser import VnmrPKParser
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        getPkRow)
 
 except ImportError:
-    from nmr.pk.SparkyPKParser import SparkyPKParser
+    from nmr.pk.VnmrPKParser import VnmrPKParser
     from nmr.pk.BasePKParserListener import BasePKParserListener
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            getPkRow)
 
 
-# This class defines a complete listener for a parse tree produced by SparkyPKParser.
-class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
+# This class defines a complete listener for a parse tree produced by VnmrPKParser.
+class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
-    __has_volume = False
+    __has_assign = False
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -39,63 +39,41 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
         super().__init__(verbose, log, representativeModelId, representativeAltId,
                          mrAtomNameMapping, cR, caC, ccU, csStat, nefT, reasons)
 
-        self.file_type = 'nm-pea-spa'
-        self.software_name = 'SPARKY'
+        self.file_type = 'nm-pea-vnm'
+        self.software_name = 'VNMR'
 
-    # Enter a parse tree produced by SparkyPKParser#sparky_pk.
-    def enterSparky_pk(self, ctx: SparkyPKParser.Sparky_pkContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by VnmrPKParser#vnmr_pk.
+    def enterVnmr_pk(self, ctx: VnmrPKParser.Vnmr_pkContext):  # pylint: disable=unused-argument
         self.enter()
 
-    # Exit a parse tree produced by SparkyPKParser#sparky_pk.
-    def exitSparky_pk(self, ctx: SparkyPKParser.Sparky_pkContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by VnmrPKParser#vnmr_pk.
+    def exitVnmr_pk(self, ctx: VnmrPKParser.Vnmr_pkContext):  # pylint: disable=unused-argument
         self.exit()
 
-    # Enter a parse tree produced by SparkyPKParser#data_label.
-    def enterData_label(self, ctx: SparkyPKParser.Data_labelContext):
-        if ctx.W1_LA():
+    # Enter a parse tree produced by VnmrPKParser#data_label.
+    def enterData_label(self, ctx: VnmrPKParser.Data_labelContext):
+        if ctx.Dim_0_ppm():
             self.num_of_dim = max(self.num_of_dim, 1)
-        if ctx.W2_LA():
+        if ctx.Dim_1_ppm():
             self.num_of_dim = max(self.num_of_dim, 2)
-        if ctx.W3_LA():
+        if ctx.Dim_2_ppm():
             self.num_of_dim = max(self.num_of_dim, 3)
-        if ctx.W4_LA():
+        if ctx.Dim_3_ppm():
             self.num_of_dim = max(self.num_of_dim, 4)
 
-        self.__has_volume = False
+        self.__has_assign = False
 
-        if ctx.Volume_LA():
-            self.__has_volume = True
+        if ctx.Assignment():
+            self.__has_assign = True
 
         self.initSpectralDim()
 
-    # Exit a parse tree produced by SparkyPKParser#data_label.
-    def exitData_label(self, ctx: SparkyPKParser.Data_labelContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by VnmrPKParser#data_label.
+    def exitData_label(self, ctx: VnmrPKParser.Data_labelContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by SparkyPKParser#data_label_wo_assign.
-    def enterData_label_wo_assign(self, ctx: SparkyPKParser.Data_label_wo_assignContext):
-        if ctx.W1():
-            self.num_of_dim = max(self.num_of_dim, 1)
-        if ctx.W2_LA():
-            self.num_of_dim = max(self.num_of_dim, 2)
-        if ctx.W3_LA():
-            self.num_of_dim = max(self.num_of_dim, 3)
-        if ctx.W4_LA():
-            self.num_of_dim = max(self.num_of_dim, 4)
-
-        self.__has_volume = False
-
-        if ctx.Volume_LA():
-            self.__has_volume = True
-
-        self.initSpectralDim()
-
-    # Exit a parse tree produced by SparkyPKParser#data_label_wo_assign.
-    def exitData_label_wo_assign(self, ctx: SparkyPKParser.Data_label_wo_assignContext):  # pylint: disable=unused-argument
-        pass
-
-    # Enter a parse tree produced by SparkyPKParser#peak_2d.
-    def enterPeak_2d(self, ctx: SparkyPKParser.Peak_2dContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by VnmrPKParser#peak_2d.
+    def enterPeak_2d(self, ctx: VnmrPKParser.Peak_2dContext):  # pylint: disable=unused-argument
         if self.cur_subtype != 'peak2d':
             self.num_of_dim = 2
             self.initSpectralDim()
@@ -104,8 +82,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by SparkyPKParser#peak_2d.
-    def exitPeak_2d(self, ctx: SparkyPKParser.Peak_2dContext):
+    # Exit a parse tree produced by VnmrPKParser#peak_2d.
+    def exitPeak_2d(self, ctx: VnmrPKParser.Peak_2dContext):
 
         try:
 
@@ -113,18 +91,20 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            index = self.peaks2D
+            index = int(str(ctx.Integer()))
 
-            ass = str(ctx.Assignment_2d_ex())
-            if '?' in ass:
-                ass = None
+            ass = None
+            if self.__has_assign:
+                ass = str(ctx.Assignment_2d_ex())
+                if '?' in ass:
+                    ass = None
 
             x_ppm = float(str(ctx.Float(0)))
-            y_ppm = float(str(ctx.Float(1)))
+            x_dev = abs(float(str(ctx.Float(1))))
+            y_ppm = float(str(ctx.Float(2)))
+            y_dev = abs(float(str(ctx.Float(3))))
 
             height = self.originalNumberSelection[0]
-            if self.__has_volume:
-                volume = self.originalNumberSelection[1]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -133,8 +113,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, None, None, None, None,
-                                          None, None, None, None, height, None, volume if self.__has_volume else None, None)
+            dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, x_dev, y_dev, None, None,
+                                          None, None, None, None, height, None, None, None)
 
             if dstFunc is None:
                 self.peaks2D -= 1
@@ -222,8 +202,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by SparkyPKParser#peak_3d.
-    def enterPeak_3d(self, ctx: SparkyPKParser.Peak_3dContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by VnmrPKParser#peak_3d.
+    def enterPeak_3d(self, ctx: VnmrPKParser.Peak_3dContext):  # pylint: disable=unused-argument
         if self.cur_subtype != 'peak3d':
             self.num_of_dim = 3
             self.initSpectralDim()
@@ -232,8 +212,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by SparkyPKParser#peak_3d.
-    def exitPeak_3d(self, ctx: SparkyPKParser.Peak_3dContext):
+    # Exit a parse tree produced by VnmrPKParser#peak_3d.
+    def exitPeak_3d(self, ctx: VnmrPKParser.Peak_3dContext):
 
         try:
 
@@ -241,19 +221,22 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            index = self.peaks3D
+            index = int(str(ctx.Integer()))
 
-            ass = str(ctx.Assignment_3d_ex())
-            if '?' in ass:
-                ass = None
+            ass = None
+            if self.__has_assign:
+                ass = str(ctx.Assignment_3d_ex())
+                if '?' in ass:
+                    ass = None
 
             x_ppm = float(str(ctx.Float(0)))
-            y_ppm = float(str(ctx.Float(1)))
-            z_ppm = float(str(ctx.Float(2)))
+            x_dev = abs(float(str(ctx.Float(1))))
+            y_ppm = float(str(ctx.Float(2)))
+            y_dev = abs(float(str(ctx.Float(3))))
+            z_ppm = float(str(ctx.Float(4)))
+            z_dev = abs(float(str(ctx.Float(5))))
 
             height = self.originalNumberSelection[0]
-            if self.__has_volume:
-                volume = self.originalNumberSelection[1]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -262,8 +245,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, None, None, None, None, None, None,
-                                          None, None, None, None, None, None, height, None, volume if self.__has_volume else None, None)
+            dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, x_dev, y_dev, z_dev, None, None, None,
+                                          None, None, None, None, None, None, height, None, None, None)
 
             if dstFunc is None:
                 self.peaks3D -= 1
@@ -367,8 +350,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by SparkyPKParser#peak_4d.
-    def enterPeak_4d(self, ctx: SparkyPKParser.Peak_4dContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by VnmrPKParser#peak_4d.
+    def enterPeak_4d(self, ctx: VnmrPKParser.Peak_4dContext):  # pylint: disable=unused-argument
         if self.cur_subtype != 'peak4d':
             self.num_of_dim = 4
             self.initSpectralDim()
@@ -377,8 +360,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.atomSelectionSet.clear()
 
-    # Exit a parse tree produced by SparkyPKParser#peak_4d.
-    def exitPeak_4d(self, ctx: SparkyPKParser.Peak_4dContext):
+    # Exit a parse tree produced by VnmrPKParser#peak_4d.
+    def exitPeak_4d(self, ctx: VnmrPKParser.Peak_4dContext):
 
         try:
 
@@ -386,20 +369,24 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            index = self.peaks4D
+            index = int(str(ctx.Integer()))
 
-            ass = str(ctx.Assignment_4d_ex())
-            if '?' in ass:
-                ass = None
+            ass = None
+            if self.__has_assign:
+                ass = str(ctx.Assignment_4d_ex())
+                if '?' in ass:
+                    ass = None
 
             x_ppm = float(str(ctx.Float(0)))
-            y_ppm = float(str(ctx.Float(1)))
-            z_ppm = float(str(ctx.Float(2)))
-            a_ppm = float(str(ctx.Float(3)))
+            x_dev = abs(float(str(ctx.Float(1))))
+            y_ppm = float(str(ctx.Float(2)))
+            y_dev = abs(float(str(ctx.Float(3))))
+            z_ppm = float(str(ctx.Float(4)))
+            z_dev = abs(float(str(ctx.Float(5))))
+            a_ppm = float(str(ctx.Float(6)))
+            a_dev = abs(float(str(ctx.Float(7))))
 
             height = self.originalNumberSelection[0]
-            if self.__has_volume:
-                volume = self.originalNumberSelection[1]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -408,8 +395,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, None, None, None, None, None, None, None, None,
-                                          None, None, None, None, None, None, None, None, height, None, volume if self.__has_volume else None, None)
+            dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, x_dev, y_dev, z_dev, a_dev, None, None, None, None,
+                                          None, None, None, None, None, None, None, None, height, None, None, None)
 
             if dstFunc is None:
                 self.peaks4D -= 1
@@ -526,190 +513,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by SparkyPKParser#peak_wo_assign.
-    def enterPeak_wo_assign(self, ctx: SparkyPKParser.Peak_wo_assignContext):  # pylint: disable=unused-argument
-        if self.num_of_dim == 2:
-            self.peaks2D += 1
-        elif self.num_of_dim == 3:
-            self.peaks3D += 1
-        elif self.num_of_dim == 4:
-            self.peaks4D += 1
-
-        self.atomSelectionSet.clear()
-
-    # Exit a parse tree produced by SparkyPKParser#peak_wo_assign.
-    def exitPeak_wo_assign(self, ctx: SparkyPKParser.Peak_wo_assignContext):  # pylint: disable=unused-argument
-
-        try:
-
-            if len(self.numberSelection) == 0:
-                if self.num_of_dim == 2:
-                    self.peaks2D -= 1
-                elif self.num_of_dim == 3:
-                    self.peaks3D -= 1
-                elif self.num_of_dim == 4:
-                    self.peaks4D -= 1
-                return
-
-            if self.num_of_dim == 2:
-
-                try:
-
-                    index = self.peaks2D
-                    x_ppm = self.numberSelection[0]
-                    y_ppm = self.numberSelection[1]
-                    height = self.originalNumberSelection[2]
-                    if self.__has_volume:
-                        volume = self.originalNumberSelection[3]
-
-                    if not self.hasPolySeq and not self.hasNonPolySeq:
-                        return
-
-                    if x_ppm is None or y_ppm is None:
-                        self.peaks2D -= 1
-                        return
-
-                    dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, None, None, None, None,
-                                                  None, None, None, None, height, None, volume if self.__has_volume else None, None)
-
-                    if dstFunc is None:
-                        self.peaks2D -= 1
-                        return
-
-                    cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-                    cur_spectral_dim[1]['freq_hint'].append(x_ppm)
-                    cur_spectral_dim[2]['freq_hint'].append(y_ppm)
-
-                    if self.createSfDict__:
-                        sf = self.getSf()
-
-                    if self.debug:
-                        print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) {dstFunc}")
-
-                    if self.createSfDict__ and sf is not None:
-                        sf['id'] = index
-                        sf['index_id'] += 1
-
-                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                                       sf['list_id'], self.entryId, dstFunc,
-                                       self.authToStarSeq, self.authToOrigSeq, self.offsetHolder)
-                        sf['loop'].add_data(row)
-
-                except IndexError:
-                    self.peaks2D -= 1
-                    return
-
-            elif self.num_of_dim == 3:
-
-                try:
-
-                    index = self.peaks3D
-                    x_ppm = self.numberSelection[0]
-                    y_ppm = self.numberSelection[1]
-                    z_ppm = self.numberSelection[2]
-                    height = self.originalNumberSelection[3]
-                    if self.__has_volume:
-                        volume = self.originalNumberSelection[4]
-
-                    if not self.hasPolySeq and not self.hasNonPolySeq:
-                        return
-
-                    if x_ppm is None or y_ppm is None or z_ppm is None:
-                        self.peaks3D -= 1
-                        return
-
-                    dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, None, None, None, None, None, None,
-                                                  None, None, None, None, None, None, height, None, volume if self.__has_volume else None, None)
-
-                    if dstFunc is None:
-                        self.peaks3D -= 1
-                        return
-
-                    cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-                    cur_spectral_dim[1]['freq_hint'].append(x_ppm)
-                    cur_spectral_dim[2]['freq_hint'].append(y_ppm)
-                    cur_spectral_dim[3]['freq_hint'].append(z_ppm)
-
-                    if self.createSfDict__:
-                        sf = self.getSf()
-
-                    if self.debug:
-                        print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) {dstFunc}")
-
-                    if self.createSfDict__ and sf is not None:
-                        sf['id'] = index
-                        sf['index_id'] += 1
-
-                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                                       sf['list_id'], self.entryId, dstFunc,
-                                       self.authToStarSeq, self.authToOrigSeq, self.offsetHolder)
-                        sf['loop'].add_data(row)
-
-                except IndexError:
-                    self.peaks3D -= 1
-                    return
-
-            elif self.num_of_dim == 4:
-
-                try:
-
-                    index = self.peaks4D
-                    x_ppm = self.numberSelection[0]
-                    y_ppm = self.numberSelection[1]
-                    z_ppm = self.numberSelection[2]
-                    a_ppm = self.numberSelection[3]
-                    height = self.originalNumberSelection[4]
-                    if self.__has_volume:
-                        volume = self.originalNumberSelection[5]
-
-                    if not self.hasPolySeq and not self.hasNonPolySeq:
-                        return
-
-                    if x_ppm is None or y_ppm is None or z_ppm is None or a_ppm is None:
-                        self.peaks4D -= 1
-                        return
-
-                    dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, None, None, None, None, None, None, None, None,
-                                                  None, None, None, None, None, None, None, None, height, None, volume if self.__has_volume else None, None)
-
-                    if dstFunc is None:
-                        self.peaks4D -= 1
-                        return
-
-                    cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-                    cur_spectral_dim[1]['freq_hint'].append(x_ppm)
-                    cur_spectral_dim[2]['freq_hint'].append(y_ppm)
-                    cur_spectral_dim[3]['freq_hint'].append(z_ppm)
-                    cur_spectral_dim[4]['freq_hint'].append(a_ppm)
-
-                    if self.createSfDict__:
-                        sf = self.getSf()
-
-                    if self.debug:
-                        print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) {dstFunc}")
-
-                    if self.createSfDict__ and sf is not None:
-                        sf['id'] = index
-                        sf['index_id'] += 1
-
-                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                                       sf['list_id'], self.entryId, dstFunc,
-                                       self.authToStarSeq, self.authToOrigSeq, self.offsetHolder)
-                        sf['loop'].add_data(row)
-
-                except IndexError:
-                    self.peaks4D -= 1
-                    return
-
-        finally:
-            self.numberSelection.clear()
-            self.originalNumberSelection.clear()
-
-    # Enter a parse tree produced by SparkyPKParser#number.
-    def enterNumber(self, ctx: SparkyPKParser.NumberContext):
+    # Enter a parse tree produced by VnmrPKParser#number.
+    def enterNumber(self, ctx: VnmrPKParser.NumberContext):
         if ctx.Float():
             value = str(ctx.Float())
             self.numberSelection.append(float(value))
@@ -725,9 +530,9 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.append(int(value))
             self.originalNumberSelection.append(value)
 
-    # Exit a parse tree produced by SparkyPKParser#number.
-    def exitNumber(self, ctx: SparkyPKParser.NumberContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by VnmrPKParser#number.
+    def exitNumber(self, ctx: VnmrPKParser.NumberContext):  # pylint: disable=unused-argument
         pass
 
 
-# del SparkyPKParser
+# del VnmrPKParser

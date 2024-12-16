@@ -39,6 +39,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     __cur_label_type = None
 
     __labels = None
+    __jcouplings = None
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -96,6 +97,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             for _dim_id, _axis_code in enumerate(labels, start=1):
                 if _dim_id not in self.cur_spectral_dim:
                     cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
+                else:
+                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
 
                 cur_spectral_dim['axis_code'] = _axis_code
 
@@ -141,6 +144,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     # Enter a parse tree produced by NmrViewPKParser#peak_list_2d.
     def enterPeak_list_2d(self, ctx: NmrViewPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
         self.initSpectralDim()
+        self.__jcouplings = []
 
     # Exit a parse tree produced by NmrViewPKParser#peak_list_2d.
     def exitPeak_list_2d(self, ctx: NmrViewPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
@@ -151,6 +155,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         self.peaks2D += 1
 
         self.atomSelectionSet.clear()
+        self.__jcouplings.clear()
 
     # Exit a parse tree produced by NmrViewPKParser#peak_2d.
     def exitPeak_2d(self, ctx: NmrViewPKParser.Peak_2dContext):
@@ -162,22 +167,22 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         W1 = float(str(ctx.Float(1)))
         B1 = float(str(ctx.Float(2)))
         # E1 = str(ctx.Simple_name(0))
-        # J1 = str(ctx.ENCLOSE_DATA(1))[1:-1]
-        # U1 = str(ctx.ENCLOSE_DATA(2))[1:-1]
+        # J1 = self.__jcouplings[0]
+        # U1 = str(ctx.ENCLOSE_DATA(1))[1:-1]
 
-        L2 = str(ctx.ENCLOSE_DATA(3))[1:-1]
+        L2 = str(ctx.ENCLOSE_DATA(2))[1:-1]
         P2 = float(str(ctx.Float(3)))
         W2 = float(str(ctx.Float(4)))
         B2 = float(str(ctx.Float(5)))
         # E2 = str(ctx.Simple_name(1))
-        # J2 = str(ctx.ENCLOSE_DATA(4))[1:-1]
-        # U2 = str(ctx.ENCLOSE_DATA(5))[1:-1]
+        # J2 = self.__jcouplings[1]
+        # U2 = str(ctx.ENCLOSE_DATA(3))[1:-1]
 
         vol = str(ctx.Float(6))
         _int = str(ctx.Float(7))
         stat = int(str(ctx.Integer(1)))
-        if ctx.ENCLOSE_DATA(6):
-            comment = str(ctx.ENCLOSE_DATA(6))[1:-1]
+        if ctx.ENCLOSE_DATA(4):
+            comment = str(ctx.ENCLOSE_DATA(4))[1:-1]
             if comment in emptyValue:
                 comment = None
         else:
@@ -217,10 +222,10 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             assignment0 = self.extractPeakAssignment(1, L1, index)
             if assignment0 is not None:
-                assignments[0] = assignment0[0]
+                a1 = assignment0[0]
             assignment1 = self.extractPeakAssignment(1, L2, index)
             if assignment1 is not None:
-                assignments[1] = assignment1[0]
+                a2 = assignment1[0]
 
             if all(len(a) > 0 for a in assignments):
 
@@ -228,9 +233,6 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
                 hasChainId = all(a['chain_id'] is not None for a in assignments)
                 hasCompId = all(a['comp_id'] is not None for a in assignments)
-
-                a1 = assignments[0]
-                a2 = assignments[1]
 
                 if hasChainId and hasCompId:
                     chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -254,8 +256,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
                     if len(self.atomSelectionSet) == self.num_of_dim:
                         has_assignments = True
-                        has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
-                        has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
 
         if self.createSfDict__:
             sf = self.getSf()
@@ -293,6 +295,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     # Enter a parse tree produced by NmrViewPKParser#peak_list_3d.
     def enterPeak_list_3d(self, ctx: NmrViewPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
         self.initSpectralDim()
+        self.__jcouplings = []
 
     # Exit a parse tree produced by NmrViewPKParser#peak_list_3d.
     def exitPeak_list_3d(self, ctx: NmrViewPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
@@ -303,6 +306,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         self.peaks3D += 1
 
         self.atomSelectionSet.clear()
+        self.__jcouplings.clear()
 
     # Exit a parse tree produced by NmrViewPKParser#peak_3d.
     def exitPeak_3d(self, ctx: NmrViewPKParser.Peak_3dContext):
@@ -314,30 +318,30 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         W1 = float(str(ctx.Float(1)))
         B1 = float(str(ctx.Float(2)))
         # E1 = str(ctx.Simple_name(0))
-        # J1 = str(ctx.ENCLOSE_DATA(1))[1:-1]
-        # U1 = str(ctx.ENCLOSE_DATA(2))[1:-1]
+        # J1 = self.__jcouplings[0]
+        # U1 = str(ctx.ENCLOSE_DATA(1))[1:-1]
 
-        L2 = str(ctx.ENCLOSE_DATA(3))[1:-1]
+        L2 = str(ctx.ENCLOSE_DATA(2))[1:-1]
         P2 = float(str(ctx.Float(3)))
         W2 = float(str(ctx.Float(4)))
         B2 = float(str(ctx.Float(5)))
         # E2 = str(ctx.Simple_name(1))
-        # J2 = str(ctx.ENCLOSE_DATA(4))[1:-1]
-        # U2 = str(ctx.ENCLOSE_DATA(5))[1:-1]
+        # J2 = self.__jcouplings[1]
+        # U2 = str(ctx.ENCLOSE_DATA(3))[1:-1]
 
-        L3 = str(ctx.ENCLOSE_DATA(6))[1:-1]
+        L3 = str(ctx.ENCLOSE_DATA(4))[1:-1]
         P3 = float(str(ctx.Float(6)))
         W3 = float(str(ctx.Float(7)))
         B3 = float(str(ctx.Float(8)))
         # E3 = str(ctx.Simple_name(2))
-        # J3 = str(ctx.ENCLOSE_DATA(7))[1:-1]
-        # U3 = str(ctx.ENCLOSE_DATA(8))[1:-1]
+        # J3 = self.__jcouplings[2]
+        # U3 = str(ctx.ENCLOSE_DATA(5))[1:-1]
 
         vol = str(ctx.Float(9))
         _int = str(ctx.Float(10))
         stat = int(str(ctx.Integer(1)))
-        if ctx.ENCLOSE_DATA(9):
-            comment = str(ctx.ENCLOSE_DATA(9))[1:-1]
+        if ctx.ENCLOSE_DATA(6):
+            comment = str(ctx.ENCLOSE_DATA(6))[1:-1]
             if comment in emptyValue:
                 comment = None
         else:
@@ -380,13 +384,13 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             assignment0 = self.extractPeakAssignment(1, L1, index)
             if assignment0 is not None:
-                assignments[0] = assignment0[0]
+                a1 = assignment0[0]
             assignment1 = self.extractPeakAssignment(1, L2, index)
             if assignment1 is not None:
-                assignments[1] = assignment1[0]
+                a2 = assignment1[0]
             assignment2 = self.extractPeakAssignment(1, L3, index)
             if assignment2 is not None:
-                assignments[2] = assignment2[0]
+                a3 = assignment2[0]
 
             if all(len(a) > 0 for a in assignments):
 
@@ -394,10 +398,6 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
                 hasChainId = all(a['chain_id'] is not None for a in assignments)
                 hasCompId = all(a['comp_id'] is not None for a in assignments)
-
-                a1 = assignments[0]
-                a2 = assignments[1]
-                a3 = assignments[2]
 
                 if hasChainId and hasCompId:
                     chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -426,9 +426,9 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
                     if len(self.atomSelectionSet) == self.num_of_dim:
                         has_assignments = True
-                        has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
-                        has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
-                        has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
 
         if self.createSfDict__:
             sf = self.getSf()
@@ -472,6 +472,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     # Enter a parse tree produced by NmrViewPKParser#peak_list_4d.
     def enterPeak_list_4d(self, ctx: NmrViewPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
         self.initSpectralDim()
+        self.__jcouplings = []
 
     # Exit a parse tree produced by NmrViewPKParser#peak_list_4d.
     def exitPeak_list_4d(self, ctx: NmrViewPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
@@ -482,6 +483,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         self.peaks4D += 1
 
         self.atomSelectionSet.clear()
+        self.__jcouplings.clear()
 
     # Exit a parse tree produced by NmrViewPKParser#peak_4d.
     def exitPeak_4d(self, ctx: NmrViewPKParser.Peak_4dContext):
@@ -493,38 +495,38 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         W1 = float(str(ctx.Float(1)))
         B1 = float(str(ctx.Float(2)))
         # E1 = str(ctx.Simple_name(0))
-        # J1 = str(ctx.ENCLOSE_DATA(1))[1:-1]
-        # U1 = str(ctx.ENCLOSE_DATA(2))[1:-1]
+        # J1 = self.__jcouplings[0]
+        # U1 = str(ctx.ENCLOSE_DATA(1))[1:-1]
 
-        L2 = str(ctx.ENCLOSE_DATA(3))[1:-1]
+        L2 = str(ctx.ENCLOSE_DATA(2))[1:-1]
         P2 = float(str(ctx.Float(3)))
         W2 = float(str(ctx.Float(4)))
         B2 = float(str(ctx.Float(5)))
         # E2 = str(ctx.Simple_name(1))
-        # J2 = str(ctx.ENCLOSE_DATA(4))[1:-1]
-        # U2 = str(ctx.ENCLOSE_DATA(5))[1:-1]
+        # J2 = self.__jcouplings[1]
+        # U2 = str(ctx.ENCLOSE_DATA(3))[1:-1]
 
-        L3 = str(ctx.ENCLOSE_DATA(6))[1:-1]
+        L3 = str(ctx.ENCLOSE_DATA(4))[1:-1]
         P3 = float(str(ctx.Float(6)))
         W3 = float(str(ctx.Float(7)))
         B3 = float(str(ctx.Float(8)))
         # E3 = str(ctx.Simple_name(2))
-        # J3 = str(ctx.ENCLOSE_DATA(7))[1:-1]
-        # U3 = str(ctx.ENCLOSE_DATA(8))[1:-1]
+        # J3 = self.__jcouplings[2]
+        # U3 = str(ctx.ENCLOSE_DATA(5))[1:-1]
 
-        L4 = str(ctx.ENCLOSE_DATA(9))[1:-1]
+        L4 = str(ctx.ENCLOSE_DATA(6))[1:-1]
         P4 = float(str(ctx.Float(9)))
         W4 = float(str(ctx.Float(10)))
         B4 = float(str(ctx.Float(11)))
         # E4 = str(ctx.Simple_name(3))
-        # J4 = str(ctx.ENCLOSE_DATA(10))[1:-1]
-        # U4 = str(ctx.ENCLOSE_DATA(11))[1:-1]
+        # J4 = self.__jcouplings[3]
+        # U4 = str(ctx.ENCLOSE_DATA(7))[1:-1]
 
         vol = str(ctx.Float(12))
         _int = str(ctx.Float(13))
         stat = int(str(ctx.Integer(1)))
-        if ctx.ENCLOSE_DATA(12):
-            comment = str(ctx.ENCLOSE_DATA(12))[1:-1]
+        if ctx.ENCLOSE_DATA(8):
+            comment = str(ctx.ENCLOSE_DATA(8))[1:-1]
             if comment in emptyValue:
                 comment = None
         else:
@@ -570,16 +572,16 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             assignment0 = self.extractPeakAssignment(1, L1, index)
             if assignment0 is not None:
-                assignments[0] = assignment0[0]
+                a1 = assignment0[0]
             assignment1 = self.extractPeakAssignment(1, L2, index)
             if assignment1 is not None:
-                assignments[1] = assignment1[0]
+                a2 = assignment1[0]
             assignment2 = self.extractPeakAssignment(1, L3, index)
             if assignment2 is not None:
-                assignments[2] = assignment2[0]
+                a3 = assignment2[0]
             assignment3 = self.extractPeakAssignment(1, L4, index)
             if assignment3 is not None:
-                assignments[3] = assignment3[0]
+                a4 = assignment3[0]
 
             if all(len(a) > 0 for a in assignments):
 
@@ -587,11 +589,6 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
                 hasChainId = all(a['chain_id'] is not None for a in assignments)
                 hasCompId = all(a['comp_id'] is not None for a in assignments)
-
-                a1 = assignments[0]
-                a2 = assignments[1]
-                a3 = assignments[2]
-                a4 = assignments[3]
 
                 if hasChainId and hasCompId:
                     chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -625,10 +622,10 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
                     if len(self.atomSelectionSet) == self.num_of_dim:
                         has_assignments = True
-                        has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
-                        has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
-                        has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
-                        has_assignments &= self.fillAtomTypeInCase(4, a4['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(4, self.atomSelectionSet[3][0]['atom_id'][0])
 
         if self.createSfDict__:
             sf = self.getSf()
@@ -745,10 +742,10 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             assignment0 = self.extractPeakAssignment(1, L1, index)
             if assignment0 is not None:
-                assignments[0] = assignment0[0]
+                a1 = assignment0[0]
             assignment1 = self.extractPeakAssignment(1, L2, index)
             if assignment1 is not None:
-                assignments[1] = assignment1[0]
+                a2 = assignment1[0]
 
             if all(len(a) > 0 for a in assignments):
 
@@ -756,9 +753,6 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
                 hasChainId = all(a['chain_id'] is not None for a in assignments)
                 hasCompId = all(a['comp_id'] is not None for a in assignments)
-
-                a1 = assignments[0]
-                a2 = assignments[1]
 
                 if hasChainId and hasCompId:
                     chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -782,8 +776,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
                     if len(self.atomSelectionSet) == self.num_of_dim:
                         has_assignments = True
-                        has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
-                        has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
 
         if self.createSfDict__:
             sf = self.getSf()
@@ -897,13 +891,13 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             assignment0 = self.extractPeakAssignment(1, L1, index)
             if assignment0 is not None:
-                assignments[0] = assignment0[0]
+                a1 = assignment0[0]
             assignment1 = self.extractPeakAssignment(1, L2, index)
             if assignment1 is not None:
-                assignments[1] = assignment1[0]
+                a2 = assignment1[0]
             assignment2 = self.extractPeakAssignment(1, L3, index)
             if assignment2 is not None:
-                assignments[2] = assignment2[0]
+                a3 = assignment2[0]
 
             if all(len(a) > 0 for a in assignments):
 
@@ -911,10 +905,6 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
                 hasChainId = all(a['chain_id'] is not None for a in assignments)
                 hasCompId = all(a['comp_id'] is not None for a in assignments)
-
-                a1 = assignments[0]
-                a2 = assignments[1]
-                a3 = assignments[2]
 
                 if hasChainId and hasCompId:
                     chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -943,9 +933,9 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
                     if len(self.atomSelectionSet) == self.num_of_dim:
                         has_assignments = True
-                        has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
-                        has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
-                        has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
 
         if self.createSfDict__:
             sf = self.getSf()
@@ -1073,16 +1063,16 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             assignment0 = self.extractPeakAssignment(1, L1, index)
             if assignment0 is not None:
-                assignments[0] = assignment0[0]
+                a1 = assignment0[0]
             assignment1 = self.extractPeakAssignment(1, L2, index)
             if assignment1 is not None:
-                assignments[1] = assignment1[0]
+                a2 = assignment1[0]
             assignment2 = self.extractPeakAssignment(1, L3, index)
             if assignment2 is not None:
-                assignments[2] = assignment2[0]
+                a3 = assignment2[0]
             assignment3 = self.extractPeakAssignment(1, L4, index)
             if assignment3 is not None:
-                assignments[3] = assignment3[0]
+                a4 = assignment3[0]
 
             if all(len(a) > 0 for a in assignments):
 
@@ -1090,11 +1080,6 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
                 hasChainId = all(a['chain_id'] is not None for a in assignments)
                 hasCompId = all(a['comp_id'] is not None for a in assignments)
-
-                a1 = assignments[0]
-                a2 = assignments[1]
-                a3 = assignments[2]
-                a4 = assignments[3]
 
                 if hasChainId and hasCompId:
                     chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -1128,10 +1113,10 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
                     if len(self.atomSelectionSet) == self.num_of_dim:
                         has_assignments = True
-                        has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
-                        has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
-                        has_assignments &= self.fillAtomTypeInCase(3, a3['atom_id'][0])
-                        has_assignments &= self.fillAtomTypeInCase(4, a4['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
+                        has_assignments &= self.fillAtomTypeInCase(4, self.atomSelectionSet[3][0]['atom_id'][0])
 
         if self.createSfDict__:
             sf = self.getSf()
@@ -1191,7 +1176,25 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.__labels[self.__cur_label_type].append(float(value))
 
     # Exit a parse tree produced by NmrViewPKParser#label.
-    def exitLabel(self, ctx: NmrViewPKParser.LabelContext):
+    def exitLabel(self, ctx: NmrViewPKParser.LabelContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by NmrViewPKParser#jcoupling.
+    def enterJcoupling(self, ctx: NmrViewPKParser.JcouplingContext):
+        if ctx.Float():
+            self.__jcouplings.append(float(str(ctx.Float())))
+        elif ctx.Simple_name():
+            self.__jcouplings.append(str(ctx.Simple_name()))
+        else:
+            value = str(ctx.ENCLOSE_DATA())[1:-1].strip()
+            try:
+                _value = float(value)
+                self.__jcouplings.append(_value)
+            except ValueError:
+                self.__jcouplings.append(value)
+
+    # Exit a parse tree produced by NmrViewPKParser#jcoupling.
+    def exitJcoupling(self, ctx: NmrViewPKParser.JcouplingContext):  # pylint: disable=unused-argument
         pass
 
 

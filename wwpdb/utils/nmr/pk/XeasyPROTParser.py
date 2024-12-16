@@ -10,13 +10,14 @@ else:
 
 def serializedATN():
     return [
-        4,1,11,23,2,0,7,0,2,1,7,1,2,2,7,2,1,0,4,0,8,8,0,11,0,12,0,9,1,0,
-        1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,2,1,2,0,0,3,0,2,4,0,1,2,0,
-        1,1,6,6,20,0,7,1,0,0,0,2,13,1,0,0,0,4,20,1,0,0,0,6,8,3,2,1,0,7,6,
-        1,0,0,0,8,9,1,0,0,0,9,7,1,0,0,0,9,10,1,0,0,0,10,11,1,0,0,0,11,12,
-        5,0,0,1,12,1,1,0,0,0,13,14,5,1,0,0,14,15,5,2,0,0,15,16,5,2,0,0,16,
-        17,5,6,0,0,17,18,3,4,2,0,18,19,5,8,0,0,19,3,1,0,0,0,20,21,7,0,0,
-        0,21,5,1,0,0,0,1,9
+        4,1,11,26,2,0,7,0,2,1,7,1,2,2,7,2,1,0,3,0,8,8,0,1,0,4,0,11,8,0,11,
+        0,12,0,12,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,2,1,2,0,0,3,
+        0,2,4,0,1,2,0,1,1,6,6,24,0,7,1,0,0,0,2,16,1,0,0,0,4,23,1,0,0,0,6,
+        8,5,8,0,0,7,6,1,0,0,0,7,8,1,0,0,0,8,10,1,0,0,0,9,11,3,2,1,0,10,9,
+        1,0,0,0,11,12,1,0,0,0,12,10,1,0,0,0,12,13,1,0,0,0,13,14,1,0,0,0,
+        14,15,5,0,0,1,15,1,1,0,0,0,16,17,5,1,0,0,17,18,5,2,0,0,18,19,5,2,
+        0,0,19,20,5,6,0,0,20,21,3,4,2,0,21,22,5,8,0,0,22,3,1,0,0,0,23,24,
+        7,0,0,0,24,5,1,0,0,0,2,7,12
     ]
 
 class XeasyPROTParser ( Parser ):
@@ -73,6 +74,9 @@ class XeasyPROTParser ( Parser ):
         def EOF(self):
             return self.getToken(XeasyPROTParser.EOF, 0)
 
+        def RETURN(self):
+            return self.getToken(XeasyPROTParser.RETURN, 0)
+
         def prot(self, i:int=None):
             if i is None:
                 return self.getTypedRuleContexts(XeasyPROTParser.ProtContext)
@@ -101,19 +105,27 @@ class XeasyPROTParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 7 
+            self.state = 7
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if _la==8:
+                self.state = 6
+                self.match(XeasyPROTParser.RETURN)
+
+
+            self.state = 10 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 6
+                self.state = 9
                 self.prot()
-                self.state = 9 
+                self.state = 12 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==1):
                     break
 
-            self.state = 11
+            self.state = 14
             self.match(XeasyPROTParser.EOF)
         except RecognitionException as re:
             localctx.exception = re
@@ -170,17 +182,17 @@ class XeasyPROTParser ( Parser ):
         self.enterRule(localctx, 2, self.RULE_prot)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 13
-            self.match(XeasyPROTParser.Integer)
-            self.state = 14
-            self.match(XeasyPROTParser.Float)
-            self.state = 15
-            self.match(XeasyPROTParser.Float)
             self.state = 16
-            self.match(XeasyPROTParser.Simple_name)
+            self.match(XeasyPROTParser.Integer)
             self.state = 17
-            self.residue()
+            self.match(XeasyPROTParser.Float)
             self.state = 18
+            self.match(XeasyPROTParser.Float)
+            self.state = 19
+            self.match(XeasyPROTParser.Simple_name)
+            self.state = 20
+            self.residue()
+            self.state = 21
             self.match(XeasyPROTParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
@@ -225,7 +237,7 @@ class XeasyPROTParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 20
+            self.state = 23
             _la = self._input.LA(1)
             if not(_la==1 or _la==6):
                 self._errHandler.recoverInline(self)

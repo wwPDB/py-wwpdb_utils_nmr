@@ -35,6 +35,8 @@ fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
+COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
+
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
@@ -45,7 +47,7 @@ Simple_name:		SIMPLE_NAME;
 
 fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
-fragment START_CHAR:	ALPHA_NUM | '_' | '-' | '+' | '.' | '*' | '#' | '?';
+fragment START_CHAR:	ALPHA_NUM | '_' | '-' | '+' | '.' | '*' | '?';
 fragment NAME_CHAR:	START_CHAR | '\'' | '"';
 //fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
@@ -54,8 +56,8 @@ SPACE:			[ \t]+ -> skip;
 RETURN:			[\r\n]+;
 
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
-LINE_COMMENT:		('!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
+SECTION_COMMENT:	(';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
+LINE_COMMENT:		(';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
 
 mode NUM_OF_DIM_MODE;
 
@@ -99,4 +101,11 @@ Float_TO:		Float;
 
 TOACE_TO:		[ \t]+ -> skip;
 RETURN_TO:		[\r\n]+ -> popMode;
+
+mode COMMENT_MODE;
+
+Any_name:		~[ \t\r\n]+;
+
+SPACE_CM:		[ \t]+ -> skip;
+RETURN_CM:		[\r\n]+ -> mode(DEFAULT_MODE);
 

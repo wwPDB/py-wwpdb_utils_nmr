@@ -3650,7 +3650,7 @@ def translateToLigandName(compId: str, refCompId: str, ccU) -> str:
 def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                          representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                          representativeAltId: str = REPRESENTATIVE_ALT_ID,
-                         cR=None, ccU=None, prevResult: dict = None,
+                         cR=None, ccU=None, prevResult: Optional[dict] = None,
                          nmrPolySeq: Optional[list] = None, fullCheck: bool = True) -> dict:
     """ Check assembly of the coordinates for MR/PT parser listener.
     """
@@ -7026,7 +7026,8 @@ def contentSubtypeOf(mrSubtype: str) -> str:
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
 
-def incListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True) -> dict:
+def incListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True,
+                     reservedListIds: Optional[dict] = None) -> dict:  # for NMR data remediation upgrade to Phase 2
     """ Increment list id counter for a given internal restraint subtype (default)/content subtype (reduced=False).
     """
 
@@ -7065,10 +7066,17 @@ def incListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True) 
 
     listIdCounter[contentSubtype] += 1
 
+    if reservedListIds is not None and contentSubtype in reservedListIds:
+        while True:
+            if listIdCounter[contentSubtype] not in reservedListIds[contentSubtype]:
+                break
+            listIdCounter[contentSubtype] += 1
+
     return listIdCounter
 
 
-def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True) -> dict:
+def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True,
+                     reservedListIds: Optional[dict] = None) -> dict:  # for NMR data remediation upgrade to Phase 2
     """ Decrement list id counter for a given internal restraint subtype (default)/content subtype (reduced=False).
     """
 
@@ -7106,6 +7114,12 @@ def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True) 
         return listIdCounter
 
     listIdCounter[contentSubtype] -= 1
+
+    if reservedListIds is not None and contentSubtype in reservedListIds:
+        while True:
+            if listIdCounter[contentSubtype] not in reservedListIds[contentSubtype]:
+                break
+            listIdCounter[contentSubtype] -= 1
 
     return listIdCounter
 
@@ -7147,6 +7161,8 @@ def getSaveframe(mrSubtype: str, sf_framecode: str,
                 sf.add_tag(tag_item_name, re.sub(r'-corrected$', '', fileName))
             elif '-ignored-as' in fileName:
                 sf.add_tag(tag_item_name, re.sub(r'-ignored-as.*', '', fileName))
+            elif '-selected-as' in fileName:
+                sf.add_tag(tag_item_name, re.sub(r'-selected-as.*', '', fileName))
             else:
                 sf.add_tag(tag_item_name, fileName)
         elif tag_item_name == 'Constraint_type' and (mrSubtype == 'hbond'

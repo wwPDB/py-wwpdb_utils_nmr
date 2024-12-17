@@ -8,7 +8,9 @@
     @see: https://aria-test.pasteur.fr/documentation/input-format/version-2.1/spectrum
 """
 import sys
+import copy
 
+from itertools import zip_longest
 from antlr4 import ParseTreeListener
 
 try:
@@ -16,14 +18,20 @@ try:
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
-                                                       getPkRow)
+                                                       getPkRow,
+                                                       getPkGenCharRow,
+                                                       getPkCharRow,
+                                                       getPkChemShiftRow)
 
 except ImportError:
     from nmr.pk.XMLParser import XMLParser
     from nmr.pk.BasePKParserListener import BasePKParserListener
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
-                                           getPkRow)
+                                           getPkRow,
+                                           getPkGenCharRow,
+                                           getPkCharRow,
+                                           getPkChemShiftRow)
 
 
 # This class defines a complete listener for a parse tree produced by XMLParser.
@@ -191,51 +199,51 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
             ppm = [None] * self.num_of_dim
             ppm_error = [None] * self.num_of_dim
-            ass = [None] * self.num_of_dim
+            assignments = [None] * self.num_of_dim
 
             idx = 0
             if self.__proton1_active:
                 ppm[idx] = self.__proton1_ppm
                 ppm_error[idx] = self.__proton1_ppm_error
                 if self.__proton1_atoms is not None:
-                    if len(self.__proton1_atoms) == 1:
-                        ass[idx] = self.__proton1_atoms
-                    else:
-                        self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=index)}"
-                                      "Multiple assignments to a spectral peak are ignored.")
+                    assignments[idx] = self.__proton1_atoms
+                    if len(self.__proton1_atoms) > 1:
+                        if self.createSfDict__ and self.use_peak_row_format:
+                            sf = self.getSf()
+                            sf['peak_row_format'] = self.use_peak_row_format = False
                 idx += 1
             if self.__proton2_active:
                 ppm[idx] = self.__proton2_ppm
                 ppm_error[idx] = self.__proton2_ppm_error
                 if self.__proton2_atoms is not None:
-                    if len(self.__proton2_atoms) == 1:
-                        ass[idx] = self.__proton2_atoms
-                    else:
-                        self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=index)}"
-                                      "Multiple assignments to a spectral peak are ignored.")
+                    assignments[idx] = self.__proton2_atoms
+                    if len(self.__proton2_atoms) > 1:
+                        if self.createSfDict__ and self.use_peak_row_format:
+                            sf = self.getSf()
+                            sf['peak_row_format'] = self.use_peak_row_format = False
                 idx += 1
             if self.__hetero1_active:
                 ppm[idx] = self.__hetero1_ppm
                 ppm_error[idx] = self.__hetero1_ppm_error
                 if self.__hetero1_atoms is not None:
-                    if len(self.__hetero1_atoms) == 1:
-                        ass[idx] = self.__hetero1_atoms
-                    else:
-                        self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=index)}"
-                                      "Multiple assignments to a spectral peak are ignored.")
+                    assignments[idx] = self.__hetero1_atoms
+                    if len(self.__hetero1_atoms) > 1:
+                        if self.createSfDict__ and self.use_peak_row_format:
+                            sf = self.getSf()
+                            sf['peak_row_format'] = self.use_peak_row_format = False
                 idx += 1
             if self.__hetero2_active:
                 ppm[idx] = self.__hetero2_ppm
                 ppm_error[idx] = self.__hetero2_ppm_error
                 if self.__hetero2_atoms is not None:
-                    if len(self.__hetero2_atoms) == 1:
-                        ass[idx] = self.__hetero2_atoms
-                    else:
-                        self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=index)}"
-                                      "Multiple assignments to a spectral peak are ignored.")
+                    assignments[idx] = self.__hetero2_atoms
+                    if len(self.__hetero2_atoms) > 1:
+                        if self.createSfDict__ and self.use_peak_row_format:
+                            sf = self.getSf()
+                            sf['peak_row_format'] = self.use_peak_row_format = False
 
-            if not all(a is not None and len(a) == 1 and 'seq_id' in a[0] and 'atom_id' in a[0] for a in ass):
-                ass = [None] * self.num_of_dim
+            if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0] for a in assignments):
+                assignments = [None] * self.num_of_dim
 
             if self.num_of_dim == 2:
                 self.peaks2D += 1
@@ -259,19 +267,22 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                 cur_spectral_dim[1]['freq_hint'].append(ppm[0])
                 cur_spectral_dim[2]['freq_hint'].append(ppm[1])
 
-                has_assignments = False
-                a1 = a2 = asis1 = asis2 = None
+                has_assignments = has_multiple_assignments = False
+                asis1 = asis2 = None
 
-                if ass[0] is not None and ass[1] is not None:
-                    a1, a2 = ass[0][0], ass[1][0]
-                    assignments = [a1, a2]
+                if all(assignment is not None for assignment in assignments):
 
-                    if all(len(a) > 0 for a in assignments):
+                    self.retrieveLocalSeqScheme()
 
-                        self.retrieveLocalSeqScheme()
+                    hasChainId = all(a[0]['chain_id'] is not None for a in assignments)
+                    hasCompId = all(a[0]['comp_id'] is not None for a in assignments)
 
-                        hasChainId = all(a['chain_id'] is not None for a in assignments)
-                        hasCompId = all(a['comp_id'] is not None for a in assignments)
+                    has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
+
+                    for a1, a2 in zip_longest(assignments[0], assignments[1]):
+
+                        self.atomSelectionSet.clear()
+                        asis1 = asis2 = None
 
                         if hasChainId and hasCompId:
                             chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -297,19 +308,37 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                                 has_assignments = True
                                 has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
                                 has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                                if has_assignments:
+                                    self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
+                                    self.asIsSets.append([asis1, asis2])
+                                else:
+                                    break
+                            else:
+                                has_assignments = False
+                                break
 
                 if self.createSfDict__:
-                    sf = self.getSf(self.__spectrum_name)
+                    sf = self.getSf()
 
                 if self.debug:
-                    print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) "
-                          f"{a1}, {a2} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} {dstFunc}")
+                    if not has_assignments:
+                        print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) "
+                              f"None None {dstFunc}")
+                    for idx, atomSelectionSet in enumerate(self.atomSelectionSets, start=1):
+                        if has_multiple_assignments:
+                            print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) combination_id={idx} "
+                                  f"{atomSelectionSet[0]} "
+                                  f"{atomSelectionSet[1]} {dstFunc}")
+                        else:
+                            print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) "
+                                  f"{atomSelectionSet[0]} "
+                                  f"{atomSelectionSet[1]} {dstFunc}")
 
                 if self.createSfDict__ and sf is not None:
                     sf['id'] = index
                     sf['index_id'] += 1
                     ambig_code1 = ambig_code2 = None
-                    if has_assignments:
+                    if has_assignments and not has_multiple_assignments:
                         atom1 = self.atomSelectionSet[0][0]
                         atom2 = self.atomSelectionSet[1][0]
                         if len(self.atomSelectionSet[0]) > 1:
@@ -329,6 +358,29 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                                    atom1, atom2, asis1=asis1, asis2=asis2,
                                    ambig_code1=ambig_code1, ambig_code2=ambig_code2)
                     sf['loop'].add_data(row)
+
+                    row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc)
+                    sf['alt_loop'][0].add_data(row)
+                    for idx in range(self.num_of_dim):
+                        row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
+                        sf['alt_loop'][1].add_data(row)
+                    if has_assignments:
+                        for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
+                            uniqAtoms = []
+                            for idx in range(self.num_of_dim):
+                                atom = atomSelectionSet[idx]
+                                if atom not in uniqAtoms:
+                                    asis = asIsSet[idx]
+                                    ambig_code = None
+                                    if len(atomSelectionSet) > 1:
+                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom['comp_id'], atom['atom_id'])
+                                        if ambig_code == 0:
+                                            ambig_code = None
+                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1,
+                                                            self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                                            atom, asis, ambig_code)
+                                    sf['alt_loop'][2].add_data(row)
+                                    uniqAtoms.append(atom)
 
             elif self.num_of_dim == 3:
                 self.peaks3D += 1
@@ -353,19 +405,22 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                 cur_spectral_dim[2]['freq_hint'].append(ppm[1])
                 cur_spectral_dim[3]['freq_hint'].append(ppm[2])
 
-                has_assignments = False
-                a1 = a2 = a3 = asis1 = asis2 = asis3 = None
+                has_assignments = has_multiple_assignments = False
+                asis1 = asis2 = asis3 = None
 
-                if ass[0] is not None and ass[1] is not None and ass[2] is not None:
-                    a1, a2, a3 = ass[0][0], ass[1][0], ass[2][0]
-                    assignments = [a1, a2, a3]
+                if all(assignment is not None for assignment in assignments):
 
-                    if all(len(a) > 0 for a in assignments):
+                    self.retrieveLocalSeqScheme()
 
-                        self.retrieveLocalSeqScheme()
+                    hasChainId = all(a[0]['chain_id'] is not None for a in assignments)
+                    hasCompId = all(a[0]['comp_id'] is not None for a in assignments)
 
-                        hasChainId = all(a['chain_id'] is not None for a in assignments)
-                        hasCompId = all(a['comp_id'] is not None for a in assignments)
+                    has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
+
+                    for a1, a2, a3 in zip_longest(assignments[0], assignments[1], assignments[2]):
+
+                        self.atomSelectionSet.clear()
+                        asis1 = asis2 = asis3 = None
 
                         if hasChainId and hasCompId:
                             chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -397,21 +452,39 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                                 has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
                                 has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
                                 has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
+                                if has_assignments:
+                                    self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
+                                    self.asIsSets.append([asis1, asis2, asis3])
+                                else:
+                                    break
+                            else:
+                                has_assignments = False
+                                break
 
                 if self.createSfDict__:
-                    sf = self.getSf(self.__spectrum_name)
+                    sf = self.getSf()
 
                 if self.debug:
-                    print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) "
-                          f"{a1}, {a2}, {a3} -> "
-                          f"{self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} "
-                          f"{self.atomSelectionSet[2] if has_assignments else None} {dstFunc}")
+                    if not has_assignments:
+                        print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) "
+                              f"None None None {dstFunc}")
+                    for idx, atomSelectionSet in enumerate(self.atomSelectionSets, start=1):
+                        if has_multiple_assignments:
+                            print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) combination_id={idx} "
+                                  f"{atomSelectionSet[0]} "
+                                  f"{atomSelectionSet[1]} "
+                                  f"{atomSelectionSet[2]} {dstFunc}")
+                        else:
+                            print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) "
+                                  f"{atomSelectionSet[0]} "
+                                  f"{atomSelectionSet[1]} "
+                                  f"{atomSelectionSet[2]} {dstFunc}")
 
                 if self.createSfDict__ and sf is not None:
                     sf['id'] = index
                     sf['index_id'] += 1
                     ambig_code1 = ambig_code2 = ambig_code3 = None
-                    if has_assignments:
+                    if has_assignments and not has_multiple_assignments:
                         atom1 = self.atomSelectionSet[0][0]
                         atom2 = self.atomSelectionSet[1][0]
                         atom3 = self.atomSelectionSet[2][0]
@@ -438,6 +511,29 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                                    ambig_code3=ambig_code3)
                     sf['loop'].add_data(row)
 
+                    row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc)
+                    sf['alt_loop'][0].add_data(row)
+                    for idx in range(self.num_of_dim):
+                        row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
+                        sf['alt_loop'][1].add_data(row)
+                    if has_assignments:
+                        for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
+                            uniqAtoms = []
+                            for idx in range(self.num_of_dim):
+                                atom = atomSelectionSet[idx]
+                                if atom not in uniqAtoms:
+                                    asis = asIsSet[idx]
+                                    ambig_code = None
+                                    if len(atomSelectionSet) > 1:
+                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom['comp_id'], atom['atom_id'])
+                                        if ambig_code == 0:
+                                            ambig_code = None
+                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1,
+                                                            self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                                            atom, asis, ambig_code)
+                                    sf['alt_loop'][2].add_data(row)
+                                    uniqAtoms.append(atom)
+
             elif self.num_of_dim == 4:
                 self.peaks4D += 1
 
@@ -462,19 +558,22 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                 cur_spectral_dim[3]['freq_hint'].append(ppm[2])
                 cur_spectral_dim[4]['freq_hint'].append(ppm[3])
 
-                has_assignments = False
-                a1 = a2 = a3 = a4 = asis1 = asis2 = asis3 = asis4 = None
+                has_assignments = has_multiple_assignments = False
+                asis1 = asis2 = asis3 = asis4 = None
 
-                if ass[0] is not None and ass[1] is not None and ass[2] is not None and ass[3] is not None:
-                    a1, a2, a3, a4 = ass[0][0], ass[1][0], ass[2][0], ass[3][0]
-                    assignments = [a1, a2, a3, a4]
+                if all(assignment is not None for assignment in assignments):
 
-                    if all(len(a) > 0 for a in assignments):
+                    self.retrieveLocalSeqScheme()
 
-                        self.retrieveLocalSeqScheme()
+                    hasChainId = all(a[0]['chain_id'] is not None for a in assignments)
+                    hasCompId = all(a[0]['comp_id'] is not None for a in assignments)
 
-                        hasChainId = all(a['chain_id'] is not None for a in assignments)
-                        hasCompId = all(a['comp_id'] is not None for a in assignments)
+                    has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
+
+                    for a1, a2, a3, a4 in zip_longest(assignments[0], assignments[1], assignments[2], assignments[3]):
+
+                        self.atomSelectionSet.clear()
+                        asis1 = asis2 = asis3 = asis4 = None
 
                         if hasChainId and hasCompId:
                             chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
@@ -512,21 +611,41 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                                 has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
                                 has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
                                 has_assignments &= self.fillAtomTypeInCase(4, self.atomSelectionSet[3][0]['atom_id'][0])
+                                if has_assignments:
+                                    self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
+                                    self.asIsSets.append([asis1, asis2, asis3, asis4])
+                                else:
+                                    break
+                            else:
+                                has_assignments = False
+                                break
 
                 if self.createSfDict__:
-                    sf = self.getSf(self.__spectrum_name)
+                    sf = self.getSf()
 
                 if self.debug:
-                    print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) "
-                          f"{a1}, {a2}, {a3}, {a4} -> "
-                          f"{self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} "
-                          f"{self.atomSelectionSet[2] if has_assignments else None} {self.atomSelectionSet[3] if has_assignments else None} {dstFunc}")
+                    if not has_assignments:
+                        print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) "
+                              f"None None None None {dstFunc}")
+                    for idx, atomSelectionSet in enumerate(self.atomSelectionSets, start=1):
+                        if has_multiple_assignments:
+                            print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) combination_id={idx} "
+                                  f"{atomSelectionSet[0]} "
+                                  f"{atomSelectionSet[1]} "
+                                  f"{atomSelectionSet[2]} "
+                                  f"{atomSelectionSet[3]} {dstFunc}")
+                        else:
+                            print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) "
+                                  f"{atomSelectionSet[0]} "
+                                  f"{atomSelectionSet[1]} "
+                                  f"{atomSelectionSet[2]} "
+                                  f"{atomSelectionSet[3]} {dstFunc}")
 
                 if self.createSfDict__ and sf is not None:
                     sf['id'] = index
                     sf['index_id'] += 1
                     ambig_code1 = ambig_code2 = ambig_code3 = ambig_code4 = None
-                    if has_assignments:
+                    if has_assignments and not has_multiple_assignments:
                         atom1 = self.atomSelectionSet[0][0]
                         atom2 = self.atomSelectionSet[1][0]
                         atom3 = self.atomSelectionSet[2][0]
@@ -558,6 +677,29 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                                    ambig_code1=ambig_code1, ambig_code2=ambig_code2,
                                    ambig_code3=ambig_code3, ambig_code4=ambig_code4)
                     sf['loop'].add_data(row)
+
+                    row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc)
+                    sf['alt_loop'][0].add_data(row)
+                    for idx in range(self.num_of_dim):
+                        row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
+                        sf['alt_loop'][1].add_data(row)
+                    if has_assignments:
+                        for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
+                            uniqAtoms = []
+                            for idx in range(self.num_of_dim):
+                                atom = atomSelectionSet[idx]
+                                if atom not in uniqAtoms:
+                                    asis = asIsSet[idx]
+                                    ambig_code = None
+                                    if len(atomSelectionSet) > 1:
+                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom['comp_id'], atom['atom_id'])
+                                        if ambig_code == 0:
+                                            ambig_code = None
+                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1,
+                                                            self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                                            atom, asis, ambig_code)
+                                    sf['alt_loop'][2].add_data(row)
+                                    uniqAtoms.append(atom)
 
         elif self.__cur_path == '/spectrum/peak/proton1/assignment/atom':
             if len(self.__proton1_ass) > 0:

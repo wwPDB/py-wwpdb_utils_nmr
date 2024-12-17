@@ -6330,6 +6330,7 @@ class NmrDpUtility:
                                                                                'range': WEIGHT_RANGE},
                                                                               {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': False},
                                                                               {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'mandatory': False},
+                                                                              {'name': 'Entity_ID', 'type': 'positive-int'},
                                                                               {'name': 'Comp_index_ID', 'type': 'int', 'mandatory': False},
                                                                               {'name': 'Comp_ID', 'type': 'str', 'mandatory': False, 'uppercase': True},
                                                                               {'name': 'Atom_ID', 'type': 'str', 'mandatory': False},
@@ -35140,14 +35141,6 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                         self.report.warning.appendDescription('inconsistent_mr_data',
-                                                              {'file_name': file_name, 'description': warn})
-                        self.report.setWarning()
-
-                        if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
-
-                    elif warn.startswith('[Unsupported data]'):
-                        self.report.warning.appendDescription('unsupported_mr_data',
                                                               {'file_name': file_name, 'description': warn})
                         self.report.setWarning()
 

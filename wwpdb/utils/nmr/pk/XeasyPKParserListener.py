@@ -10,6 +10,7 @@ import sys
 import re
 import copy
 
+from itertools import zip_longest
 from antlr4 import ParseTreeListener
 
 try:
@@ -18,7 +19,10 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
-                                                       getPkRow)
+                                                       getPkRow,
+                                                       getPkGenCharRow,
+                                                       getPkCharRow,
+                                                       getPkChemShiftRow)
     from wwpdb.utils.nmr.AlignUtil import emptyValue
 
 except ImportError:
@@ -27,7 +31,10 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
-                                           getPkRow)
+                                           getPkRow,
+                                           getPkGenCharRow,
+                                           getPkCharRow,
+                                           getPkChemShiftRow)
     from nmr.AlignUtil import emptyValue
 
 
@@ -161,7 +168,9 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
     def enterPeak_2d(self, ctx: XeasyPKParser.Peak_2dContext):  # pylint: disable=unused-argument
         self.peaks2D += 1
 
-        self.atomSelectionSet.clear()
+        self.atomSelectionSets.clear()
+        self.asIsSets.clear()
+
         self.__index = int(str(ctx.Integer(0)))
         self.__lastComment = None
         self.__commentOffset = 0
@@ -186,13 +195,10 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             # integral_method = str(ctx.Simple_name(1))
             type = int(str(ctx.Integer(2)))
 
-            a1 = self.assignmentSelection[0]
-            a2 = self.assignmentSelection[1]
-
-            if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):  # ignore multiple assignments for a peak
-                a1 = a2 = None
-                self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=index)}"
-                              "Multiple assignments to a spectral peak are ignored.")
+            if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):
+                if self.createSfDict__ and self.use_peak_row_format:
+                    sf = self.getSf()
+                    sf['peak_row_format'] = self.use_peak_row_format = False
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -213,69 +219,93 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             cur_spectral_dim[1]['freq_hint'].append(x_ppm)
             cur_spectral_dim[2]['freq_hint'].append(y_ppm)
 
-            has_assignments = False
-
+            has_assignments = has_multiple_assignments = False
             asis1 = asis2 = None
 
-            if a1 is not None and a2 is not None:
+            if len(self.assignmentSelection) >= self.num_of_dim:
+                assignments = [None] * self.num_of_dim
+                for idx, assignment in enumerate(self.assignmentSelection):
+                    if isinstance(assignment, dict):
+                        if assignments[idx % self.num_of_dim] is None:
+                            assignments[idx % self.num_of_dim] = []
+                        assignments[idx % self.num_of_dim].append(assignment)
+                    elif assignment is not None:
+                        ext = self.extractPeakAssignment(1, assignment, index)
+                        if ext is not None:
+                            if assignments[idx % self.num_of_dim] is None:
+                                assignments[idx % self.num_of_dim] = []
+                            for a in ext:
+                                assignments[idx % self.num_of_dim].append(a)
 
-                if isinstance(a1, dict) and isinstance(a2, dict):
-                    assignments = [a1, a2]
-
-                else:
-                    assignments = [{}] * self.num_of_dim
-
-                    assignment0 = self.extractPeakAssignment(1, a1, index)
-                    if assignment0 is not None:
-                        a1 = assignment0[0]
-                    assignment1 = self.extractPeakAssignment(1, a2, index)
-                    if assignment1 is not None:
-                        a2 = assignment1[0]
-
-                if all(len(a) > 0 for a in assignments):
+                if all(assignment is not None for assignment in assignments):
 
                     self.retrieveLocalSeqScheme()
 
-                    hasChainId = all(a['chain_id'] is not None for a in assignments)
-                    hasCompId = all(a['comp_id'] is not None for a in assignments)
+                    hasChainId = all(a[0]['chain_id'] is not None for a in assignments)  # pylint: disable=unsubscriptable-object
+                    hasCompId = all(a[0]['comp_id'] is not None for a in assignments)  # pylint: disable=unsubscriptable-object
 
-                    if hasChainId and hasCompId:
-                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
-                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(a2['chain_id'], a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+                    has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
 
-                    elif hasChainId:
-                        chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
-                        chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
+                    for a1, a2 in zip_longest(assignments[0], assignments[1]):
 
-                    elif hasCompId:
-                        chainAssign1, asis1 = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
-                        chainAssign2, asis2 = self.assignCoordPolymerSequence(a2['chain_id'], a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+                        self.atomSelectionSet.clear()
+                        asis1 = asis2 = None
 
-                    else:
-                        chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
-                        chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
+                        if hasChainId and hasCompId:
+                            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(a2['chain_id'], a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
 
-                    if len(chainAssign1) > 0 and len(chainAssign2) > 0:
-                        self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+                        elif hasChainId:
+                            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
+                            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
 
-                        if len(self.atomSelectionSet) == self.num_of_dim:
-                            has_assignments = True
-                            has_assignments &= self.fillAtomTypeInCase(1, a1['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(2, a2['atom_id'][0])
+                        elif hasCompId:
+                            chainAssign1, asis1 = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                            chainAssign2, asis2 = self.assignCoordPolymerSequence(a2['chain_id'], a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+
+                        else:
+                            chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
+                            chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
+
+                        if len(chainAssign1) > 0 and len(chainAssign2) > 0:
+                            self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                            self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+
+                            if len(self.atomSelectionSet) == self.num_of_dim:
+                                has_assignments = True
+                                has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                                if has_assignments:
+                                    self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
+                                    self.asIsSets.append([asis1, asis2])
+                                else:
+                                    break
+                            else:
+                                has_assignments = False
+                                break
 
             if self.createSfDict__:
                 sf = self.getSf()
 
             if self.debug:
-                print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) "
-                      f"{a1}, {a2} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} {dstFunc}")
+                if not has_assignments:
+                    print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) "
+                          f"None None {dstFunc}")
+                for idx, atomSelectionSet in enumerate(self.atomSelectionSets, start=1):
+                    if has_multiple_assignments:
+                        print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) combination_id={idx} "
+                              f"{atomSelectionSet[0]} "
+                              f"{atomSelectionSet[1]} {dstFunc}")
+                    else:
+                        print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) "
+                              f"{atomSelectionSet[0]} "
+                              f"{atomSelectionSet[1]} {dstFunc}")
 
             if self.createSfDict__ and sf is not None:
                 sf['id'] = index
                 sf['index_id'] += 1
                 ambig_code1 = ambig_code2 = None
-                if has_assignments:
+                if has_assignments and not has_multiple_assignments:
                     atom1 = self.atomSelectionSet[0][0]
                     atom2 = self.atomSelectionSet[1][0]
                     if len(self.atomSelectionSet[0]) > 1:
@@ -288,15 +318,36 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                             ambig_code2 = None
                 else:
                     atom1 = atom2 = None
-                    if len(self.__g) > 0:
-                        self.f.extend(self.__g)
 
                 row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
                                sf['list_id'], self.entryId, dstFunc,
                                self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                atom1, atom2, asis1=asis1, asis2=asis2,
-                               ambig_code1=ambig_code1, ambig_code2=ambig_code2, details=self.__lastComment)
+                               ambig_code1=ambig_code1, ambig_code2=ambig_code2)
                 sf['loop'].add_data(row)
+
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc)
+                sf['alt_loop'][0].add_data(row)
+                for idx in range(self.num_of_dim):
+                    row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
+                    sf['alt_loop'][1].add_data(row)
+                if has_assignments:
+                    for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
+                        uniqAtoms = []
+                        for idx in range(self.num_of_dim):
+                            atom = atomSelectionSet[idx]
+                            if atom not in uniqAtoms:
+                                asis = asIsSet[idx]
+                                ambig_code = None
+                                if len(atomSelectionSet) > 1:
+                                    ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom['comp_id'], atom['atom_id'])
+                                    if ambig_code == 0:
+                                        ambig_code = None
+                                row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1,
+                                                        self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                                        atom, asis, ambig_code)
+                                sf['alt_loop'][2].add_data(row)
+                                uniqAtoms.append(atom)
 
         finally:
             self.numberSelection.clear()
@@ -317,7 +368,9 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
     def enterPeak_3d(self, ctx: XeasyPKParser.Peak_3dContext):  # pylint: disable=unused-argument
         self.peaks3D += 1
 
-        self.atomSelectionSet.clear()
+        self.atomSelectionSets.clear()
+        self.asIsSets.clear()
+
         self.__index = int(str(ctx.Integer(0)))
         self.__lastComment = None
         self.__commentOffset = 0
@@ -343,16 +396,10 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             # integral_method = str(ctx.Simple_name(1))
             type = int(str(ctx.Integer(2)))
 
-            a1 = self.assignmentSelection[0]
-            a2 = self.assignmentSelection[1]
-            a3 = self.assignmentSelection[2]
-
-            if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):  # ignore multiple assignments for a peak
-                print(self.__lastComment)
-                a1 = a2 = a3 = None
-                self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=index)}"
-                              "Multiple assignments to a spectral peak are ignored.")
-                sys.exit()
+            if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):
+                if self.createSfDict__ and self.use_peak_row_format:
+                    sf = self.getSf()
+                    sf['peak_row_format'] = self.use_peak_row_format = False
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -374,79 +421,101 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             cur_spectral_dim[2]['freq_hint'].append(y_ppm)
             cur_spectral_dim[3]['freq_hint'].append(z_ppm)
 
-            has_assignments = False
-
+            has_assignments = has_multiple_assignments = False
             asis1 = asis2 = asis3 = None
 
-            if a1 is not None and a2 is not None and a3 is not None:
+            if len(self.assignmentSelection) >= self.num_of_dim:
+                assignments = [None] * self.num_of_dim
+                for idx, assignment in enumerate(self.assignmentSelection):
+                    if isinstance(assignment, dict):
+                        if assignments[idx % self.num_of_dim] is None:
+                            assignments[idx % self.num_of_dim] = []
+                        assignments[idx % self.num_of_dim].append(assignment)
+                    elif assignment is not None:
+                        ext = self.extractPeakAssignment(1, assignment, index)
+                        if ext is not None:
+                            if assignments[idx % self.num_of_dim] is None:
+                                assignments[idx % self.num_of_dim] = []
+                            for a in ext:
+                                assignments[idx % self.num_of_dim].append(a)
 
-                if isinstance(a1, dict) and isinstance(a2, dict) and isinstance(a3, dict):
-                    assignments = [a1, a2, a3]
-
-                else:
-                    assignments = [{}] * self.num_of_dim
-
-                    assignment0 = self.extractPeakAssignment(1, a1, index)
-                    if assignment0 is not None:
-                        a1 = assignment0[0]
-                    assignment1 = self.extractPeakAssignment(1, a2, index)
-                    if assignment1 is not None:
-                        a2 = assignment1[0]
-                    assignment2 = self.extractPeakAssignment(1, a3, index)
-                    if assignment2 is not None:
-                        a3 = assignment2[0]
-
-                if all(len(a) > 0 for a in assignments):
+                if all(assignment is not None for assignment in assignments):
 
                     self.retrieveLocalSeqScheme()
 
-                    hasChainId = all(a['chain_id'] is not None for a in assignments)
-                    hasCompId = all(a['comp_id'] is not None for a in assignments)
+                    hasChainId = all(a[0]['chain_id'] is not None for a in assignments)  # pylint: disable=unsubscriptable-object
+                    hasCompId = all(a[0]['comp_id'] is not None for a in assignments)  # pylint: disable=unsubscriptable-object
 
-                    if hasChainId and hasCompId:
-                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
-                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(a2['chain_id'], a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
-                        chainAssign3, asis3 = self.assignCoordPolymerSequenceWithChainId(a3['chain_id'], a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
+                    has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
 
-                    elif hasChainId:
-                        chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
-                        chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
-                        chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a3['chain_id'], a3['seq_id'], a3['atom_id'], index)
+                    for a1, a2, a3 in zip_longest(assignments[0], assignments[1], assignments[2]):
 
-                    elif hasCompId:
-                        chainAssign1, asis1 = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
-                        chainAssign2, asis2 = self.assignCoordPolymerSequence(a2['chain_id'], a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
-                        chainAssign3, asis3 = self.assignCoordPolymerSequence(a3['chain_id'], a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
+                        self.atomSelectionSet.clear()
+                        asis1 = asis2 = asis3 = None
 
-                    else:
-                        chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
-                        chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
-                        chainAssign3 = self.assignCoordPolymerSequenceWithoutCompId(a3['seq_id'], a3['atom_id'], index)
+                        if hasChainId and hasCompId:
+                            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(a2['chain_id'], a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+                            chainAssign3, asis3 = self.assignCoordPolymerSequenceWithChainId(a3['chain_id'], a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
 
-                    if len(chainAssign1) > 0 and len(chainAssign2) > 0 and len(chainAssign3) > 0:
-                        self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign3, a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
+                        elif hasChainId:
+                            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
+                            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
+                            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a3['chain_id'], a3['seq_id'], a3['atom_id'], index)
 
-                        if len(self.atomSelectionSet) == self.num_of_dim:
-                            has_assignments = True
-                            has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
+                        elif hasCompId:
+                            chainAssign1, asis1 = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                            chainAssign2, asis2 = self.assignCoordPolymerSequence(a2['chain_id'], a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+                            chainAssign3, asis3 = self.assignCoordPolymerSequence(a3['chain_id'], a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
+
+                        else:
+                            chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
+                            chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
+                            chainAssign3 = self.assignCoordPolymerSequenceWithoutCompId(a3['seq_id'], a3['atom_id'], index)
+
+                        if len(chainAssign1) > 0 and len(chainAssign2) > 0 and len(chainAssign3) > 0:
+                            self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                            self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+                            self.selectCoordAtoms(chainAssign3, a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
+
+                            if len(self.atomSelectionSet) == self.num_of_dim:
+                                has_assignments = True
+                                has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
+                                if has_assignments:
+                                    self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
+                                    self.asIsSets.append([asis1, asis2, asis3])
+                                else:
+                                    break
+                            else:
+                                has_assignments = False
+                                break
 
             if self.createSfDict__:
                 sf = self.getSf()
 
             if self.debug:
-                print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) "
-                      f"{a1}, {a2}, {a3} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} "
-                      f"{self.atomSelectionSet[2] if has_assignments else None} {dstFunc}")
+                if not has_assignments:
+                    print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) "
+                          f"None None None {dstFunc}")
+                for idx, atomSelectionSet in enumerate(self.atomSelectionSets, start=1):
+                    if has_multiple_assignments:
+                        print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) combination_id={idx} "
+                              f"{atomSelectionSet[0]} "
+                              f"{atomSelectionSet[1]} "
+                              f"{atomSelectionSet[2]} {dstFunc}")
+                    else:
+                        print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) "
+                              f"{atomSelectionSet[0]} "
+                              f"{atomSelectionSet[1]} "
+                              f"{atomSelectionSet[2]} {dstFunc}")
 
             if self.createSfDict__ and sf is not None:
                 sf['id'] = index
                 sf['index_id'] += 1
                 ambig_code1 = ambig_code2 = ambig_code3 = None
-                if has_assignments:
+                if has_assignments and not has_multiple_assignments:
                     atom1 = self.atomSelectionSet[0][0]
                     atom2 = self.atomSelectionSet[1][0]
                     atom3 = self.atomSelectionSet[2][0]
@@ -464,16 +533,37 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                             ambig_code3 = None
                 else:
                     atom1 = atom2 = atom3 = None
-                    if len(self.__g) > 0:
-                        self.f.extend(self.__g)
 
                 row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
                                sf['list_id'], self.entryId, dstFunc,
                                self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                atom1, atom2, atom3, asis1=asis1, asis2=asis2, asis3=asis3,
                                ambig_code1=ambig_code1, ambig_code2=ambig_code2,
-                               ambig_code3=ambig_code3, details=self.__lastComment)
+                               ambig_code3=ambig_code3)
                 sf['loop'].add_data(row)
+
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc)
+                sf['alt_loop'][0].add_data(row)
+                for idx in range(self.num_of_dim):
+                    row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
+                    sf['alt_loop'][1].add_data(row)
+                if has_assignments:
+                    for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
+                        uniqAtoms = []
+                        for idx in range(self.num_of_dim):
+                            atom = atomSelectionSet[idx]
+                            if atom not in uniqAtoms:
+                                asis = asIsSet[idx]
+                                ambig_code = None
+                                if len(atomSelectionSet) > 1:
+                                    ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom['comp_id'], atom['atom_id'])
+                                    if ambig_code == 0:
+                                        ambig_code = None
+                                row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1,
+                                                        self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                                        atom, asis, ambig_code)
+                                sf['alt_loop'][2].add_data(row)
+                                uniqAtoms.append(atom)
 
         finally:
             self.numberSelection.clear()
@@ -494,7 +584,9 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
     def enterPeak_4d(self, ctx: XeasyPKParser.Peak_4dContext):  # pylint: disable=unused-argument
         self.peaks4D += 1
 
-        self.atomSelectionSet.clear()
+        self.atomSelectionSets.clear()
+        self.asIsSets.clear()
+
         self.__index = int(str(ctx.Integer(0)))
         self.__lastComment = None
         self.__commentOffset = 0
@@ -521,15 +613,10 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             # integral_method = str(ctx.Simple_name(1))
             type = int(str(ctx.Integer(2)))
 
-            a1 = self.assignmentSelection[0]
-            a2 = self.assignmentSelection[1]
-            a3 = self.assignmentSelection[2]
-            a4 = self.assignmentSelection[3]
-
-            if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):  # ignore multiple assignments for a peak
-                a1 = a2 = a3 = a4 = None
-                self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=index)}"
-                              "Multiple assignments to a spectral peak are ignored.")
+            if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):
+                if self.createSfDict__ and self.use_peak_row_format:
+                    sf = self.getSf()
+                    sf['peak_row_format'] = self.use_peak_row_format = False
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -552,88 +639,109 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             cur_spectral_dim[3]['freq_hint'].append(z_ppm)
             cur_spectral_dim[4]['freq_hint'].append(a_ppm)
 
-            has_assignments = False
+            has_assignments = has_multiple_assignments = False
+            asis1 = asis2 = asis3 = None
 
-            asis1 = asis2 = asis3 = asis4 = None
+            if len(self.assignmentSelection) >= self.num_of_dim:
+                assignments = [None] * self.num_of_dim
+                for idx, assignment in enumerate(self.assignmentSelection):
+                    if isinstance(assignment, dict):
+                        if assignments[idx % self.num_of_dim] is None:
+                            assignments[idx % self.num_of_dim] = []
+                        assignments[idx % self.num_of_dim].append(assignment)
+                    elif assignment is not None:
+                        ext = self.extractPeakAssignment(1, assignment, index)
+                        if ext is not None:
+                            if assignments[idx % self.num_of_dim] is None:
+                                assignments[idx % self.num_of_dim] = []
+                            for a in ext:
+                                assignments[idx % self.num_of_dim].append(a)
 
-            if a1 is not None and a2 is not None and a3 is not None and a4 is not None:
-
-                if isinstance(a1, dict) and isinstance(a2, dict) and isinstance(a3, dict) and isinstance(a4, dict):
-                    assignments = [a1, a2, a3, a4]
-
-                else:
-                    assignments = [{}] * self.num_of_dim
-
-                    assignment0 = self.extractPeakAssignment(1, a1, index)
-                    if assignment0 is not None:
-                        a1 = assignment0[0]
-                    assignment1 = self.extractPeakAssignment(1, a2, index)
-                    if assignment1 is not None:
-                        a2 = assignment1[0]
-                    assignment2 = self.extractPeakAssignment(1, a3, index)
-                    if assignment2 is not None:
-                        a3 = assignment2[0]
-                    assignment3 = self.extractPeakAssignment(1, a4, index)
-                    if assignment3 is not None:
-                        a4 = assignment3[0]
-
-                if all(len(a) > 0 for a in assignments):
+                if all(assignment is not None for assignment in assignments):
 
                     self.retrieveLocalSeqScheme()
 
-                    hasChainId = all(a['chain_id'] is not None for a in assignments)
-                    hasCompId = all(a['comp_id'] is not None for a in assignments)
+                    hasChainId = all(a[0]['chain_id'] is not None for a in assignments)  # pylint: disable=unsubscriptable-object
+                    hasCompId = all(a[0]['comp_id'] is not None for a in assignments)  # pylint: disable=unsubscriptable-object
 
-                    if hasChainId and hasCompId:
-                        chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
-                        chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(a2['chain_id'], a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
-                        chainAssign3, asis3 = self.assignCoordPolymerSequenceWithChainId(a3['chain_id'], a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
-                        chainAssign4, asis4 = self.assignCoordPolymerSequenceWithChainId(a4['chain_id'], a4['seq_id'], a4['comp_id'], a4['atom_id'], index)
+                    has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
 
-                    elif hasChainId:
-                        chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
-                        chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
-                        chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a3['chain_id'], a3['seq_id'], a3['atom_id'], index)
-                        chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a4['chain_id'], a4['seq_id'], a4['atom_id'], index)
+                    for a1, a2, a3, a4 in zip_longest(assignments[0], assignments[1], assignments[2], assignments[3]):
 
-                    elif hasCompId:
-                        chainAssign1, asis1 = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
-                        chainAssign2, asis2 = self.assignCoordPolymerSequence(a2['chain_id'], a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
-                        chainAssign3, asis3 = self.assignCoordPolymerSequence(a3['chain_id'], a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
-                        chainAssign4, asis4 = self.assignCoordPolymerSequence(a4['chain_id'], a4['seq_id'], a4['comp_id'], a4['atom_id'], index)
+                        self.atomSelectionSet.clear()
+                        asis1 = asis2 = asis3 = asis4 = None
 
-                    else:
-                        chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
-                        chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
-                        chainAssign3 = self.assignCoordPolymerSequenceWithoutCompId(a3['seq_id'], a3['atom_id'], index)
-                        chainAssign4 = self.assignCoordPolymerSequenceWithoutCompId(a4['seq_id'], a4['atom_id'], index)
+                        if hasChainId and hasCompId:
+                            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(a2['chain_id'], a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+                            chainAssign3, asis3 = self.assignCoordPolymerSequenceWithChainId(a3['chain_id'], a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
+                            chainAssign4, asis4 = self.assignCoordPolymerSequenceWithChainId(a4['chain_id'], a4['seq_id'], a4['comp_id'], a4['atom_id'], index)
 
-                    if len(chainAssign1) > 0 and len(chainAssign2) > 0 and len(chainAssign3) > 0 and len(chainAssign4) > 0:
-                        self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign3, a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign4, a4['seq_id'], a4['comp_id'], a4['atom_id'], index)
+                        elif hasChainId:
+                            chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
+                            chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a2['chain_id'], a2['seq_id'], a2['atom_id'], index)
+                            chainAssign3 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a3['chain_id'], a3['seq_id'], a3['atom_id'], index)
+                            chainAssign4 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a4['chain_id'], a4['seq_id'], a4['atom_id'], index)
 
-                        if len(self.atomSelectionSet) == self.num_of_dim:
-                            has_assignments = True
-                            has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(4, self.atomSelectionSet[3][0]['atom_id'][0])
+                        elif hasCompId:
+                            chainAssign1, asis1 = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                            chainAssign2, asis2 = self.assignCoordPolymerSequence(a2['chain_id'], a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+                            chainAssign3, asis3 = self.assignCoordPolymerSequence(a3['chain_id'], a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
+                            chainAssign4, asis4 = self.assignCoordPolymerSequence(a4['chain_id'], a4['seq_id'], a4['comp_id'], a4['atom_id'], index)
+
+                        else:
+                            chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
+                            chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
+                            chainAssign3 = self.assignCoordPolymerSequenceWithoutCompId(a3['seq_id'], a3['atom_id'], index)
+                            chainAssign4 = self.assignCoordPolymerSequenceWithoutCompId(a4['seq_id'], a4['atom_id'], index)
+
+                        if len(chainAssign1) > 0 and len(chainAssign2) > 0 and len(chainAssign3) > 0 and len(chainAssign4) > 0:
+                            self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                            self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+                            self.selectCoordAtoms(chainAssign3, a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
+                            self.selectCoordAtoms(chainAssign4, a4['seq_id'], a4['comp_id'], a4['atom_id'], index)
+
+                            if len(self.atomSelectionSet) == self.num_of_dim:
+                                has_assignments = True
+                                has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
+                                has_assignments &= self.fillAtomTypeInCase(4, self.atomSelectionSet[3][0]['atom_id'][0])
+                                if has_assignments:
+                                    self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
+                                    self.asIsSets.append([asis1, asis2, asis3, asis4])
+                                else:
+                                    break
+                            else:
+                                has_assignments = False
+                                break
 
             if self.createSfDict__:
                 sf = self.getSf()
 
             if self.debug:
-                print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) "
-                      f"{a1}, {a2}, {a3}, {a4} -> {self.atomSelectionSet[0] if has_assignments else None} {self.atomSelectionSet[1] if has_assignments else None} "
-                      f"{self.atomSelectionSet[2] if has_assignments else None} {self.atomSelectionSet[3] if has_assignments else None} {dstFunc}")
+                if not has_assignments:
+                    print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) "
+                          f"None None None None {dstFunc}")
+                for idx, atomSelectionSet in enumerate(self.atomSelectionSets, start=1):
+                    if has_multiple_assignments:
+                        print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) combination_id={idx} "
+                              f"{atomSelectionSet[0]} "
+                              f"{atomSelectionSet[1]} "
+                              f"{atomSelectionSet[2]} "
+                              f"{atomSelectionSet[3]} {dstFunc}")
+                    else:
+                        print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) "
+                              f"{atomSelectionSet[0]} "
+                              f"{atomSelectionSet[1]} "
+                              f"{atomSelectionSet[2]} "
+                              f"{atomSelectionSet[3]} {dstFunc}")
 
             if self.createSfDict__ and sf is not None:
                 sf['id'] = index
                 sf['index_id'] += 1
                 ambig_code1 = ambig_code2 = ambig_code3 = ambig_code4 = None
-                if has_assignments:
+                if has_assignments and not has_multiple_assignments:
                     atom1 = self.atomSelectionSet[0][0]
                     atom2 = self.atomSelectionSet[1][0]
                     atom3 = self.atomSelectionSet[2][0]
@@ -656,16 +764,38 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                             ambig_code4 = None
                 else:
                     atom1 = atom2 = atom3 = atom4 = None
-                    if len(self.__g) > 0:
-                        self.f.extend(self.__g)
 
                 row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
                                sf['list_id'], self.entryId, dstFunc,
                                self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                               atom1, atom2, atom3, atom4, asis1=asis1, asis2=asis2, asis3=asis3, asis4=asis4,
+                               atom1, atom2, atom3, atom4,
+                               asis1=asis1, asis2=asis2, asis3=asis3, asis4=asis4,
                                ambig_code1=ambig_code1, ambig_code2=ambig_code2,
-                               ambig_code3=ambig_code3, ambig_code4=ambig_code4, details=self.__lastComment)
+                               ambig_code3=ambig_code3, ambig_code4=ambig_code4)
                 sf['loop'].add_data(row)
+
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc)
+                sf['alt_loop'][0].add_data(row)
+                for idx in range(self.num_of_dim):
+                    row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
+                    sf['alt_loop'][1].add_data(row)
+                if has_assignments:
+                    for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
+                        uniqAtoms = []
+                        for idx in range(self.num_of_dim):
+                            atom = atomSelectionSet[idx]
+                            if atom not in uniqAtoms:
+                                asis = asIsSet[idx]
+                                ambig_code = None
+                                if len(atomSelectionSet) > 1:
+                                    ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom['comp_id'], atom['atom_id'])
+                                    if ambig_code == 0:
+                                        ambig_code = None
+                                row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1,
+                                                        self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                                        atom, asis, ambig_code)
+                                sf['alt_loop'][2].add_data(row)
+                                uniqAtoms.append(atom)
 
         finally:
             self.numberSelection.clear()

@@ -139,7 +139,8 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        ALLOWED_AMBIGUITY_CODES,
                                                        translateToStdResName,
-                                                       translateToStdAtomName)
+                                                       translateToStdAtomName,
+                                                       isLikePheOrTyr)
 except ImportError:
     from nmr.AlignUtil import (LEN_LARGE_ASYM_ID, LOW_SEQ_COVERAGE,
                                emptyValue, trueValue, monDict3,
@@ -155,7 +156,8 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            ALLOWED_AMBIGUITY_CODES,
                                            translateToStdResName,
-                                           translateToStdAtomName)
+                                           translateToStdAtomName,
+                                           isLikePheOrTyr)
 
 
 __package_name__ = 'wwpdb.utils.nmr'
@@ -7346,6 +7348,11 @@ class NEFTranslator:
                         _atom_list, ambiguity_code, details = self.get_star_atom(comp_id, qr_atom, details, leave_unmatched, methyl_only)
                         atom_list.extend(_atom_list)
                     if len(atom_list) >= 4:
+                        return (atom_list, ambiguity_code, details)
+
+                if atom_id in ('QCD', 'QCE') and isLikePheOrTyr(comp_id, self.__ccU):  # 2js7 - peak list
+                    atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id[1:] + '%', details, leave_unmatched, methyl_only)
+                    if len(atom_list) > 1:
                         return (atom_list, ambiguity_code, details)
 
                 if comp_id in monDict3 and atom_id.upper() == 'ME':

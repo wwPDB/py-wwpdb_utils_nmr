@@ -2037,10 +2037,68 @@ NMR_STAR_LP_DATA_ITEMS_INS_CODE['rdc_restraint'].extend([{'name': 'PDB_ins_code_
                                                          {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                          ])
 
-NMR_STAR_AUX_LP_CATEGORIES = {'dist_restraint': ['_Gen_dist_constraint_software_param'
-                                                 ],
-                              'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer'
-                                                ]
+NMR_STAR_ALT_LP_CATEGORIES = {'spctral_peak': ['_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift']
+                              }
+
+NMR_STAR_ALT_LP_KEY_ITEMS = {'spectral_peak': {'_Peak_general_char': [
+                                               {'name': 'Peak_ID', 'type': 'positive-int'}],
+                                               '_Peak_char': [
+                                               {'name': 'Peak_ID', 'type': 'positive-int'},
+                                               {'name': 'Spectral_dim_ID', 'type': 'positive-int'}],
+                                               '_Assigned_peak_chem_shift': [
+                                               {'name': 'Peak_ID', 'type': 'positive-int'},
+                                               {'name': 'Spectral_dim_ID', 'type': 'positive-int'}]
+                                               }
+                             }
+
+NMR_STAR_ALT_LP_DATA_ITEMS = {'spectral_peak': {'_Peak_general_char': [
+                                                {'name': 'Intensity_val', 'type': 'float', 'mandatory': True},
+                                                {'name': 'Intensity_val_err', 'type': 'float', 'mandatory': False},
+                                                {'name': 'Measurement_method', 'type': 'enum', 'mandatory': False,
+                                                 'enum': ('absolute height', 'height', 'relative height', 'volume', 'number of contours', 'integration')},
+                                                {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                 'default': '1', 'default-from': 'parent'},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}],
+                                                '_Peak_char': [
+                                                {'name': 'Chem_shift_val', 'type': 'range-float', 'mandatory': True,
+                                                 'range': CS_RESTRAINT_RANGE},
+                                                {'name': 'Chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                 'range': CS_UNCERTAINTY_RANGE},
+                                                {'name': 'Line_width_val', 'type': 'positive-float', 'mandatory': False},
+                                                {'name': 'Line_width_val_err', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
+                                                {'name': 'Coupling_pattern', 'type': 'enum', 'mandatory': False,
+                                                 'enum': ('d', 'dd', 'ddd', 'dm', 'dt', 'hxt', 'hpt', 'm', 'q', 'qd', 'qn', 's', 'sxt', 't', 'td', 'LR', '1JCH')},
+                                                {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                 'default': '1', 'default-from': 'parent'},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}],
+                                                '_Assigned_peak_chem_shift': [
+                                                {'name': 'Set_ID', 'type': 'positive-int', 'mandatory': False},
+                                                {'name': 'Magnetization_linkage_ID', 'type': 'positive-int', 'mandatory': False},
+                                                {'name': 'Val', 'type': 'range-float', 'mandatory': False,
+                                                 'range': CS_RESTRAINT_RANGE},
+                                                {'name': 'Contribution_fractional_val', 'type': 'range-float', 'mandatory': False,
+                                                 'range': WEIGHT_RANGE},
+                                                {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
+                                                 'range': WEIGHT_RANGE},
+                                                {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': False},
+                                                {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'mandatory': False},
+                                                {'name': 'Entity_ID', 'type': 'positive-int'},
+                                                {'name': 'Comp_index_ID', 'type': 'int', 'mandatory': False},
+                                                {'name': 'Comp_ID', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                                {'name': 'Atom_ID', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
+                                                 'enum': ALLOWED_AMBIGUITY_CODES},
+                                                {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False},
+                                                {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                 'default': '1', 'default-from': 'parent'},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}]}}
+
+NMR_STAR_AUX_LP_CATEGORIES = {'dist_restraint': ['_Gen_dist_constraint_software_param'],
+                              'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer']
                               }
 
 NMR_STAR_AUX_LP_KEY_ITEMS = {'dist_restraint': {'_Gen_dist_constraint_software_param': [
@@ -2465,6 +2523,8 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                             return 'H' + atomId[2:] + '%'
                         if refCompId in monDict3:  # 2n9e
                             return 'H' + atomId[2:] + '%'
+                    elif atomId in ('QCD', 'QCE') and isLikePheOrTyr(refCompId, ccU):  # 2js7 - peak list
+                        return atomId[1:] + '%'
                     else:
                         if refAtomIdList is not None:
                             if 'H' + atomId[1:] + '2' in refAtomIdList:
@@ -7020,7 +7080,7 @@ def contentSubtypeOf(mrSubtype: str) -> str:
         return 'other_restraint'
 
     if mrSubtype.startswith('peak')\
-       or mrSubtype == 'spectral_peak':  # for getAuxLoops()
+       or mrSubtype == 'spectral_peak':  # for getAltLoops() and getAuxLoops()
         return 'spectral_peak'
 
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
@@ -7230,7 +7290,7 @@ def getSaveframe(mrSubtype: str, sf_framecode: str,
 
 
 def getLoop(mrSubtype: str, reduced: bool = True, hasInsCode: bool = False) -> Optional[pynmrstar.Loop]:
-    """ Return pynmrstart loop for a given internal restraint subtype (default)/content subtype (reduced=False)..
+    """ Return pynmrstar loop for a given internal restraint subtype (default)/content subtype (reduced=False)..
         @return: pynmrstar loop
     """
 
@@ -7261,9 +7321,67 @@ def getLoop(mrSubtype: str, reduced: bool = True, hasInsCode: bool = False) -> O
     return lp
 
 
-def getAuxLoops(mrSubtype: str) -> Optional[List[pynmrstar.Loop]]:
-    """ Return pynmrstart auxiliary loops for a given internal restraint subtype.
+def getPkLoop(pkSubtype: str) -> Optional[pynmrstar.Loop]:
+    """ Return pynmrstar peak_row_format loop for a given internal peak subtype
         @return: pynmrstar loop
+    """
+
+    contentSubtype = contentSubtypeOf(pkSubtype)
+
+    if contentSubtype is None:
+        return None
+
+    if contentSubtype not in NMR_STAR_LP_CATEGORIES:
+        return None
+
+    prefix = NMR_STAR_LP_CATEGORIES[contentSubtype] + '.'
+
+    lp = pynmrstar.Loop.from_scratch()
+
+    tags = [prefix + item['name'] for item in NMR_STAR_LP_KEY_ITEMS[contentSubtype]]
+    tags.extend([prefix + item['name'] for item in NMR_STAR_LP_DATA_ITEMS[pkSubtype]])
+
+    for tag in tags:
+        lp.add_tag(tag)
+
+    return lp
+
+
+def getAltLoops(mrSubtype: str) -> Optional[List[pynmrstar.Loop]]:
+    """ Return pynmrstar alternative loops for a given internal restraint subtype
+        @return: list of pynmrstar loops
+    """
+
+    contentSubtype = contentSubtypeOf(mrSubtype)
+
+    if contentSubtype is None:
+        return None
+
+    if contentSubtype not in NMR_STAR_ALT_LP_CATEGORIES:
+        return None
+
+    alt_lps = []
+
+    for catName in NMR_STAR_ALT_LP_CATEGORIES[contentSubtype]:
+
+        prefix = catName + '.'
+
+        alt_lp = pynmrstar.Loop.from_scratch()
+
+        tags = [prefix + item['name'] for item in NMR_STAR_ALT_LP_KEY_ITEMS[contentSubtype][catName]]
+        tags.extend([prefix + item['name'] for item in NMR_STAR_ALT_LP_DATA_ITEMS[contentSubtype][catName]])
+
+        for tag in tags:
+            alt_lp.add_tag(tag)
+
+        alt_lps.append(alt_lp)
+
+    return alt_lps
+
+
+def getAuxLoops(mrSubtype: str) -> Optional[List[pynmrstar.Loop]]:
+    """ Return pynmrstar auxiliary loops for a given internal restraint subtype.
+        @return: list of pynmrstar loops
     """
 
     contentSubtype = contentSubtypeOf(mrSubtype)
@@ -7291,32 +7409,6 @@ def getAuxLoops(mrSubtype: str) -> Optional[List[pynmrstar.Loop]]:
         aux_lps.append(aux_lp)
 
     return aux_lps
-
-
-def getPkLoop(pkSubtype: str) -> Optional[pynmrstar.Loop]:
-    """ Return pynmrstart peak_row_format loop for a given internal peak subtype
-        @return: pynmrstar loop
-    """
-
-    contentSubtype = contentSubtypeOf(pkSubtype)
-
-    if contentSubtype is None:
-        return None
-
-    if contentSubtype not in NMR_STAR_LP_CATEGORIES:
-        return None
-
-    prefix = NMR_STAR_LP_CATEGORIES[contentSubtype] + '.'
-
-    lp = pynmrstar.Loop.from_scratch()
-
-    tags = [prefix + item['name'] for item in NMR_STAR_LP_KEY_ITEMS[contentSubtype]]
-    tags.extend([prefix + item['name'] for item in NMR_STAR_LP_DATA_ITEMS[pkSubtype]])
-
-    for tag in tags:
-        lp.add_tag(tag)
-
-    return lp
 
 
 def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], offsetHolder: dict,
@@ -8139,6 +8231,135 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         row[-4] = dstFunc['height_uncertainty']
     if details is not None:
         row[-3] = details
+    row[-2] = listId
+    row[-1] = entryId
+
+    return row
+
+
+def getPkGenCharRow(pkSubtype: str, indexId: int, listId: int, entryId: str, dstFunc: dict) -> Optional[List[Any]]:
+    """ Return row data for a _Peak_general_char loop.
+        @return: data array
+    """
+
+    contentSubtype = contentSubtypeOf(pkSubtype)
+
+    if contentSubtype is None:
+        return None
+
+    catName = '_Peak_general_char'
+
+    key_size = len(NMR_STAR_ALT_LP_KEY_ITEMS[contentSubtype][catName])
+    data_size = len(NMR_STAR_ALT_LP_DATA_ITEMS[contentSubtype][catName])
+
+    row = [None] * (key_size + data_size)
+
+    row[0] = indexId
+
+    if hasKeyValue(dstFunc, 'volume'):
+        row[1] = dstFunc['volume']
+        if hasKeyValue(dstFunc, 'volume_uncertainty'):
+            row[2] = dstFunc['volume_uncertainty']
+        row[3] = 'volume'
+    elif hasKeyValue(dstFunc, 'height'):
+        row[1] = dstFunc['height']
+        if hasKeyValue(dstFunc, 'height_uncertainty'):
+            row[2] = dstFunc['height_uncertainty']
+        row[3] = 'height'
+
+    row[-2] = listId
+    row[-1] = entryId
+
+    return row
+
+
+def getPkCharRow(pkSubtype: str, indexId: int, listId: int, entryId: str, dstFunc: dict, dimId: int) -> Optional[List[Any]]:
+    """ Return row data for a _Peak_char loop.
+        @return: data array
+    """
+
+    contentSubtype = contentSubtypeOf(pkSubtype)
+
+    if contentSubtype is None:
+        return None
+
+    catName = '_Peak_char'
+
+    key_size = len(NMR_STAR_ALT_LP_KEY_ITEMS[contentSubtype][catName])
+    data_size = len(NMR_STAR_ALT_LP_DATA_ITEMS[contentSubtype][catName])
+
+    row = [None] * (key_size + data_size)
+
+    row[0] = indexId
+    row[1] = dimId
+
+    if hasKeyValue(dstFunc, f'position_{dimId}'):
+        row[2] = dstFunc[f'position_{dimId}']
+    if hasKeyValue(dstFunc, f'position_uncertainty_{dimId}'):
+        row[3] = dstFunc[f'position_uncertainty_{dimId}']
+    if hasKeyValue(dstFunc, f'line_width_{dimId}'):
+        row[4] = dstFunc[f'line_width_{dimId}']
+    # if hasKeyValue(dstFunc, f'line_width_uncertainty_{dimId}'):
+    #     row[5] = dstFunc[f'line_width_uncertainty_{dimId}']
+    # row[6]: Coupling_pattern
+
+    row[-2] = listId
+    row[-1] = entryId
+
+    return row
+
+
+def getPkChemShiftRow(pkSubtype: str, indexId: int, listId: int, entryId: str, dstFunc: dict, dimId: int,
+                      authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], offsetHolder: dict,
+                      atom: dict, asis: bool, ambig_code: Optional[int], details: Optional[str] = None) -> Optional[List[Any]]:
+    """ Return row data for a _Assigned_peak_chem_shift loop.
+        @return: data array
+    """
+
+    contentSubtype = contentSubtypeOf(pkSubtype)
+
+    if contentSubtype is None:
+        return None
+
+    catName = '_Assigned_peak_chem_shift'
+
+    key_size = len(NMR_STAR_ALT_LP_KEY_ITEMS[contentSubtype][catName])
+    data_size = len(NMR_STAR_ALT_LP_DATA_ITEMS[contentSubtype][catName])
+
+    row = [None] * (key_size + data_size)
+
+    row[0] = indexId
+    row[1] = dimId
+
+    # row[2]: Set_ID
+    # row[3]: Magnetization_linkage_ID
+
+    if hasKeyValue(dstFunc, f'position_{dimId}'):
+        row[4] = dstFunc[f'position_{dimId}']
+
+    # row[5]: Contribution_fractional_val
+    # row[6]: Figure_of_merit
+    # row[7]: Assigned_chem_shift_list_ID
+
+    star_atom = None
+
+    if atom is not None:
+        if 'asis' in atom:
+            asis = True
+        star_atom = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom, asis=asis)
+        if ambig_code is not None:
+            atom['atom_id'] = atom['auth_atom_id']
+
+        row[8], row[9], row[10], row[11], row[12] =\
+            star_atom['chain_id'], star_atom['entity_id'], star_atom['seq_id'], star_atom['comp_id'], star_atom['atom_id']
+        row[13] = ambig_code
+        # row[14]: Ambiguity_set_ID
+
+        row[15], row[16], row[17] =\
+            atom['seq_id'], atom['comp_id'], atom['atom_id']
+
+    row[18] = details
+
     row[-2] = listId
     row[-1] = entryId
 

@@ -32,6 +32,7 @@ try:
                                                        decListIdCounter,
                                                        getSaveframe,
                                                        getPkLoop,
+                                                       getAltLoops,
                                                        getAuxLoops,
                                                        getSpectralDimRow,
                                                        getSpectralDimTransferRow,
@@ -96,6 +97,7 @@ except ImportError:
                                            decListIdCounter,
                                            getSaveframe,
                                            getPkLoop,
+                                           getAltLoops,
                                            getAuxLoops,
                                            getSpectralDimRow,
                                            getSpectralDimTransferRow,
@@ -254,6 +256,7 @@ class BasePKParserListener():
     cur_subtype = ''
     cur_list_id = -1
     cur_spectral_dim = {}
+    use_peak_row_format = True
     null_value = None
     null_string = None
 
@@ -265,6 +268,10 @@ class BasePKParserListener():
 
     # whether to allow extended sequence temporary
     __allow_ext_seq = False
+
+    # collection of atom selection set for multiple assignments to a peak
+    atomSelectionSets = []
+    asIsSets = []
 
     # collection of atom selection
     atomSelectionSet = []
@@ -773,6 +780,7 @@ class BasePKParserListener():
             self.peaks3D = 0
         if self.num_of_dim == 4:
             self.peaks4D = 0
+        self.use_peak_row_format = True
 
     def fillAtomTypeInCase(self, _dim_id: int, atom_type: str) -> bool:
         cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
@@ -1341,6 +1349,12 @@ class BasePKParserListener():
 
                         sf = self.getSf()
 
+                        if sf['peak_row_format']:
+                            sf.add_loop(sf['loop'])
+                        else:
+                            for alt_loop in sf['alt_loops']:
+                                sf.add_loop(alt_loop)
+
                         list_id = sf['list_id']
                         sf['aux_loops'] = getAuxLoops('spectral_peak')
 
@@ -1704,7 +1718,7 @@ class BasePKParserListener():
 
         return dstFunc
 
-    def extractPeakAssignment(self, numOfDim: int, string: str, src_index: int) -> Optional[List[dict]]:
+    def extractPeakAssignment(self, numOfDim: int, string: str, src_index: int, hint: Optional[List[dict]] = None) -> Optional[List[dict]]:
         """ Extract peak assignment from a given string.
         """
 
@@ -2107,8 +2121,10 @@ class BasePKParserListener():
             if resIdLike[idx]:
                 resIdCount += 1
 
+        _resId = [h['seq_id'] for h in hint] if hint is not None else None
         if resIdCount == 0:
-            return None
+            if _resId is None:
+                return None
 
         resIdLater = resIdCount == numOfDim
         if resIdLater:
@@ -2151,7 +2167,9 @@ class BasePKParserListener():
                             segId = resName = None
                             break
                 if resId is None:
-                    return None
+                    if _resId is None or len(ret) >= len(_resId):
+                        return None
+                    resId = _resId[len(ret)]
                 atomName = term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]]
                 if self.__hasCoord:
                     if segId is None and resName is None:
@@ -2185,7 +2203,9 @@ class BasePKParserListener():
                             segId = resName = None
                             break
                 if resId is None:
-                    return None
+                    if _resId is None or len(ret) >= len(_resId):
+                        return None
+                    resId = _resId[len(ret)]
                 atomName = term[__atomNameSpan[idx][0]:__atomNameSpan[idx][1]]
                 if self.__hasCoord:
                     if segId is None and resName is None:
@@ -2219,7 +2239,9 @@ class BasePKParserListener():
                             segId = resName = None
                             break
                 if resId is None:
-                    return None
+                    if _resId is None or len(ret) >= len(_resId):
+                        return None
+                    resId = _resId[len(ret)]
                 atomName = term[_atomNameSpan[idx][0]:_atomNameSpan[idx][1]]
                 if self.__hasCoord:
                     if segId is None and resName is None:
@@ -2253,7 +2275,9 @@ class BasePKParserListener():
                             segId = resName = None
                             break
                 if resId is None:
-                    return None
+                    if _resId is None or len(ret) >= len(_resId):
+                        return None
+                    resId = _resId[len(ret)]
                 atomName = term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]
                 if self.__hasCoord:
                     if segId is None and resName is None:
@@ -2283,10 +2307,11 @@ class BasePKParserListener():
         multiple = len(ret) > numOfDim
 
         if multiple:
-            self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=src_index)}"
-                          "Multiple assignments to a spectral peak are ignored.")
+            if self.createSfDict__ and self.use_peak_row_format:
+                sf = self.getSf()
+                sf['peak_row_format'] = self.use_peak_row_format = False
 
-        return None if multiple else ret  # ignore multiple assignments for a peak
+        return ret if len(ret) > 0 else None
 
     def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str], isPolySeq=True) -> Tuple[str, int, Optional[str]]:
         if compId is not None:
@@ -4641,10 +4666,11 @@ class BasePKParserListener():
                           numOfDim=self.num_of_dim, spectrumName=spectrumName)
 
         lp = getPkLoop(self.cur_subtype)
-        sf.add_loop(lp)
 
-        item = {'file_type': self.file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                'id': 0, 'index_id': 0, 'num_of_dim': self.num_of_dim}
+        alt_loops = getAltLoops(content_subtype)
+
+        item = {'file_type': self.file_type, 'saveframe': sf, 'loop': lp, 'alt_loops': alt_loops, 'list_id': list_id,
+                'id': 0, 'index_id': 0, 'num_of_dim': self.num_of_dim, 'peak_row_format': True}
 
         self.sfDict[key].append(item)
 

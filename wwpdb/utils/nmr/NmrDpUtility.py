@@ -35146,6 +35146,14 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
 
+                    elif warn.startswith('[Unsupported data]'):
+                        self.report.warning.appendDescription('unsupported_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+
                     else:
                         self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ KeyError  - " + warn)
                         self.report.setError()

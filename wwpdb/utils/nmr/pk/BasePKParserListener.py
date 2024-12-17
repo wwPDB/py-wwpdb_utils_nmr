@@ -938,7 +938,8 @@ class BasePKParserListener():
                                                    and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                                         or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
                                             cases += 1
-                                            max_corr_eff = max(max_corr_eff, numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1])
+                                            max_corr_eff = max(max_corr_eff, numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
+                                                               if _dict1['freq_hint'].size > 1 else 0.0)
 
                             if cases == 1:
                                 for _dim_id2, _dict2 in cur_spectral_dim.items():
@@ -970,7 +971,7 @@ class BasePKParserListener():
                                                        if _transfer['type'] == 'onebond'
                                                        and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                                             or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
-                                                if numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1] < max_corr_eff:
+                                                if _dict1['freq_hint'].size > 1 and numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1] < max_corr_eff:
                                                     continue
                                                 transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
@@ -1383,14 +1384,14 @@ class BasePKParserListener():
             dstFunc['position_1'] = str(pos_1)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentRestraint(n=index)}"
                           f"The position_1='{pos_1}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if CS_ERROR_MIN < pos_2 < CS_ERROR_MAX:
             dstFunc['position_2'] = str(pos_2)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentRestraint(n=index)}"
                           f"The position_2='{pos_2}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if not validRange:
@@ -1399,13 +1400,13 @@ class BasePKParserListener():
         if CS_RANGE_MIN <= pos_1 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
                           f"The position_1='{pos_1}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if CS_RANGE_MIN <= pos_2 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
                           f"The position_2='{pos_2}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if height is not None and float(height) != 0.0:
@@ -1418,7 +1419,7 @@ class BasePKParserListener():
             dstFunc['volume_uncertainty'] = volume_uncertainty
 
         if 'height' not in dstFunc and 'volume' not in dstFunc:
-            self.f.append(f"[Missing data] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
                           "Neither height nor volume value is set.")
             return None
 
@@ -1468,21 +1469,21 @@ class BasePKParserListener():
             dstFunc['position_1'] = str(pos_1)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentRestraint(n=index)}"
                           f"The position_1='{pos_1}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if CS_ERROR_MIN < pos_2 < CS_ERROR_MAX:
             dstFunc['position_2'] = str(pos_2)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentRestraint(n=index)}"
                           f"The position_2='{pos_2}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if CS_ERROR_MIN < pos_3 < CS_ERROR_MAX:
             dstFunc['position_3'] = str(pos_3)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentRestraint(n=index)}"
                           f"The position_3='{pos_3}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if not validRange:
@@ -1491,19 +1492,19 @@ class BasePKParserListener():
         if CS_RANGE_MIN <= pos_1 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
                           f"The position_1='{pos_1}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if CS_RANGE_MIN <= pos_2 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
                           f"The position_2='{pos_2}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if CS_RANGE_MIN <= pos_3 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
                           f"The position_3='{pos_3}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if height is not None and float(height) != 0.0:
@@ -1516,7 +1517,7 @@ class BasePKParserListener():
             dstFunc['volume_uncertainty'] = volume_uncertainty
 
         if 'height' not in dstFunc and 'volume' not in dstFunc:
-            self.f.append(f"[Missing data] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
                           "Neither height nor volume value is set.")
             return None
 
@@ -1582,28 +1583,28 @@ class BasePKParserListener():
             dstFunc['position_1'] = str(pos_1)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentRestraint(n=index)}"
                           f"The position_1='{pos_1}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if CS_ERROR_MIN < pos_2 < CS_ERROR_MAX:
             dstFunc['position_2'] = str(pos_2)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentRestraint(n=index)}"
                           f"The position_2='{pos_2}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if CS_ERROR_MIN < pos_3 < CS_ERROR_MAX:
             dstFunc['position_3'] = str(pos_3)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentRestraint(n=index)}"
                           f"The position_3='{pos_3}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if CS_ERROR_MIN < pos_4 < CS_ERROR_MAX:
             dstFunc['position_4'] = str(pos_4)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentRestraint(n=index)}"
                           f"The position_4='{pos_4}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if not validRange:
@@ -1612,25 +1613,25 @@ class BasePKParserListener():
         if CS_RANGE_MIN <= pos_1 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
                           f"The position_1='{pos_1}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if CS_RANGE_MIN <= pos_2 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
                           f"The position_2='{pos_2}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if CS_RANGE_MIN <= pos_3 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
                           f"The position_3='{pos_3}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if CS_RANGE_MIN <= pos_4 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
                           f"The position_4='{pos_4}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if height is not None and float(height) != 0.0:
@@ -1643,7 +1644,7 @@ class BasePKParserListener():
             dstFunc['volume_uncertainty'] = volume_uncertainty
 
         if 'height' not in dstFunc and 'volume' not in dstFunc:
-            self.f.append(f"[Missing data] {self.__getCurrentRestraint(n=index)}"
+            self.f.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
                           "Neither height nor volume value is set.")
             return None
 
@@ -1799,7 +1800,7 @@ class BasePKParserListener():
                             index = _term.rindex(elem)
                             atomId = _term[index:len(_term)]
                             if resNameLike[idx]:
-                                compId = _term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                                compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                                 if len(compId) == 1 and aaOnly:
                                     compId = next(k for k, v in monDict3.items() if v == compId)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
@@ -1824,7 +1825,7 @@ class BasePKParserListener():
                             index = __term.rindex(elem)
                             atomId = __term[index:len(__term)]
                             if resNameLike[idx]:
-                                compId = __term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                                compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                                 if len(compId) == 1 and aaOnly:
                                     compId = next(k for k, v in monDict3.items() if v == compId)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
@@ -1849,7 +1850,7 @@ class BasePKParserListener():
                             index = ___term.rindex(elem)
                             atomId = ___term[index:len(___term)]
                             if resNameLike[idx]:
-                                compId = ___term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                                compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                                 if len(compId) == 1 and aaOnly:
                                     compId = next(k for k, v in monDict3.items() if v == compId)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
@@ -1866,9 +1867,141 @@ class BasePKParserListener():
                             if ___atomNameLike[idx]:
                                 break
 
+            if _atomNameLike[idx] and atomNameLike[idx]:
+                concat = False
+                if _atomNameSpan[idx][1] == atomNameSpan[idx][0]:
+                    atomId = term[_atomNameSpan[idx][0]:atomNameSpan[idx][1]]
+                    if resNameLike[idx]:
+                        compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                        if len(compId) == 1 and aaOnly:
+                            compId = next(k for k, v in monDict3.items() if v == compId)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                concat = True
+                    if not concat:
+                        for compId in self.compIdSet:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                break
+
+            if __atomNameLike[idx] and _atomNameLike[idx] and atomNameLike[idx]:
+                concat = False
+                if __atomNameSpan[idx][1] == _atomNameSpan[idx][0] and _atomNameSpan[idx][1] == atomNameSpan[idx][0]:
+                    atomId = term[__atomNameSpan[idx][0]:atomNameSpan[idx][1]]
+                    if resNameLike[idx]:
+                        compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                        if len(compId) == 1 and aaOnly:
+                            compId = next(k for k, v in monDict3.items() if v == compId)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                __atomNameLike[idx] = _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (__atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                concat = True
+                    if not concat:
+                        for compId in self.compIdSet:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                __atomNameLike[idx] = _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (__atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                break
+
+            if ___atomNameLike[idx] and __atomNameLike[idx] and _atomNameLike[idx] and atomNameLike[idx]:
+                concat = False
+                if ___atomNameSpan[idx][1] == __atomNameSpan[idx][0] and __atomNameSpan[idx][1] == _atomNameSpan[idx][0]\
+                   and _atomNameSpan[idx][1] == atomNameSpan[idx][0]:
+                    atomId = term[___atomNameSpan[idx][0]:atomNameSpan[idx][1]]
+                    if resNameLike[idx]:
+                        compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                        if len(compId) == 1 and aaOnly:
+                            compId = next(k for k, v in monDict3.items() if v == compId)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = __atomNameLike[idx] = _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (___atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                concat = True
+                    if not concat:
+                        for compId in self.compIdSet:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = __atomNameLike[idx] = _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (___atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                break
+
+            if __atomNameLike[idx] and _atomNameLike[idx]:
+                concat = False
+                if __atomNameSpan[idx][1] == _atomNameSpan[idx][0]:
+                    atomId = term[__atomNameSpan[idx][0]:_atomNameSpan[idx][1]]
+                    if resNameLike[idx]:
+                        compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                        if len(compId) == 1 and aaOnly:
+                            compId = next(k for k, v in monDict3.items() if v == compId)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                __atomNameLike[idx] = False
+                                _atomNameSpan[idx] = (__atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                concat = True
+                    if not concat:
+                        for compId in self.compIdSet:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                __atomNameLike[idx] = False
+                                _atomNameSpan[idx] = (__atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                break
+
+            if ___atomNameLike[idx] and __atomNameLike[idx] and _atomNameLike[idx]:
+                concat = False
+                if ___atomNameSpan[idx][1] == __atomNameSpan[idx][0] and __atomNameSpan[idx][1] == _atomNameSpan[idx][0]:
+                    atomId = term[___atomNameSpan[idx][0]:_atomNameSpan[idx][1]]
+                    if resNameLike[idx]:
+                        compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                        if len(compId) == 1 and aaOnly:
+                            compId = next(k for k, v in monDict3.items() if v == compId)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = __atomNameLike[idx] = False
+                                _atomNameSpan[idx] = (___atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                concat = True
+                    if not concat:
+                        for compId in self.compIdSet:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = __atomNameLike[idx] = False
+                                _atomNameSpan[idx] = (___atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                break
+
+            if ___atomNameLike[idx] and __atomNameLike[idx]:
+                concat = False
+                if ___atomNameSpan[idx][1] == __atomNameSpan[idx][0]:
+                    atomId = term[___atomNameSpan[idx][0]:__atomNameSpan[idx][1]]
+                    if resNameLike[idx]:
+                        compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                        if len(compId) == 1 and aaOnly:
+                            compId = next(k for k, v in monDict3.items() if v == compId)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = False
+                                __atomNameSpan[idx] = (___atomNameSpan[idx][0], __atomNameSpan[idx][1])
+                                concat = True
+                    if not concat:
+                        for compId in self.compIdSet:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = False
+                                __atomNameSpan[idx] = (___atomNameSpan[idx][0], __atomNameSpan[idx][1])
+                                break
+
             if self.ass_expr_debug:
-                print(f'{idx} {term!r} segid:{segIdLike[idx]}, resid:{resIdLike[idx]}, resname:{resNameLike[idx]}, '
-                      f'atomname:{atomNameLike[idx]}, _atomname:{_atomNameLike[idx]}, __atomname:{__atomNameLike[idx]}, ___atomname:{___atomNameLike[idx]}')
+                print(f'{idx} {term!r} segid:{segIdLike[idx]} {term[segIdSpan[idx][0]:segIdSpan[idx][1]] if segIdLike[idx] else ""}, '
+                      f'resid:{resIdLike[idx]} {term[resIdSpan[idx][0]:resIdSpan[idx][1]] if resIdLike[idx] else ""}, '
+                      f'resname:{resNameLike[idx]} {term[resNameSpan[idx][0]:resNameSpan[idx][1]] if resNameLike[idx] else ""}, '
+                      f'atomname:{atomNameLike[idx]} {term[atomNameSpan[idx][0]:atomNameSpan[idx][1]] if atomNameLike[idx] else ""}, '
+                      f'_atomname:{_atomNameLike[idx]} {term[_atomNameSpan[idx][0]:_atomNameSpan[idx][1]] if _atomNameLike[idx] else ""}, '
+                      f'__atomname:{__atomNameLike[idx]} {term[__atomNameSpan[idx][0]:__atomNameSpan[idx][1]] if __atomNameLike[idx] else ""}, '
+                      f'___atomname:{___atomNameLike[idx]} {term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]] if ___atomNameLike[idx] else ""}')
 
         atomNameCount = 0
         for idx in range(lenStr):
@@ -1902,10 +2035,13 @@ class BasePKParserListener():
                     if atomNameCount >= numOfDim:
                         ignoreBefore = True
 
+        hasResName = False
         for idx in range(lenStr):
             if ___atomNameLike[idx]:
                 if resNameLike[idx]:
-                    if resNameSpan[idx][1] > ___atomNameSpan[idx][0]:
+                    if not hasResName and resNameSpan[idx][0] < ___atomNameSpan[idx][0] and resNameSpan[idx][1] >= ___atomNameSpan[idx][1]:
+                        ___atomNameLike[idx] = False
+                    elif resNameSpan[idx][1] > ___atomNameSpan[idx][0]:
                         resNameLike[idx] = False
                 if resIdLike[idx]:
                     if resIdSpan[idx][1] > ___atomNameSpan[idx][0]:
@@ -1916,7 +2052,9 @@ class BasePKParserListener():
 
             elif __atomNameLike[idx]:
                 if resNameLike[idx]:
-                    if resNameSpan[idx][1] > __atomNameSpan[idx][0]:
+                    if not hasResName and resNameSpan[idx][0] < __atomNameSpan[idx][0] and resNameSpan[idx][1] >= __atomNameSpan[idx][1]:
+                        __atomNameLike[idx] = False
+                    elif resNameSpan[idx][1] > __atomNameSpan[idx][0]:
                         resNameLike[idx] = False
                 if resIdLike[idx]:
                     if resIdSpan[idx][1] > __atomNameSpan[idx][0]:
@@ -1927,7 +2065,9 @@ class BasePKParserListener():
 
             elif _atomNameLike[idx]:
                 if resNameLike[idx]:
-                    if resNameSpan[idx][1] > _atomNameSpan[idx][0]:
+                    if not hasResName and resNameSpan[idx][0] < _atomNameSpan[idx][0] and resNameSpan[idx][1] >= _atomNameSpan[idx][1]:
+                        _atomNameLike[idx] = False
+                    elif resNameSpan[idx][1] > _atomNameSpan[idx][0]:
                         resNameLike[idx] = False
                 if resIdLike[idx]:
                     if resIdSpan[idx][1] > _atomNameSpan[idx][0]:
@@ -1938,7 +2078,9 @@ class BasePKParserListener():
 
             elif atomNameLike[idx]:
                 if resNameLike[idx]:
-                    if resNameSpan[idx][1] > atomNameSpan[idx][0]:
+                    if not hasResName and resNameSpan[idx][0] < atomNameSpan[idx][0] and resNameSpan[idx][1] >= atomNameSpan[idx][1]:
+                        atomNameLike[idx] = False
+                    elif resNameSpan[idx][1] > atomNameSpan[idx][0]:
                         resNameLike[idx] = False
                 if resIdLike[idx]:
                     if resIdSpan[idx][1] > atomNameSpan[idx][0]:
@@ -1948,6 +2090,7 @@ class BasePKParserListener():
                         segIdLike[idx] = False
 
             if resNameLike[idx]:
+                hasResName = True
                 if segIdLike[idx]:
                     if segIdSpan[idx][1] > resNameSpan[idx][0]:
                         if numOfDim > 1 or not any(resNameLike[_idx] for _idx in range(idx + 1, lenStr)):
@@ -2137,7 +2280,13 @@ class BasePKParserListener():
                     ret.append(ass)
                 dimId += 1
 
-        return ret if len(ret) == numOfDim else None  # ignore multiple assignments for a peak
+        multiple = len(ret) > numOfDim
+
+        if multiple:
+            self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=src_index)}"
+                          "Multiple assignments to a spectral peak are ignored.")
+
+        return None if multiple else ret  # ignore multiple assignments for a peak
 
     def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str], isPolySeq=True) -> Tuple[str, int, Optional[str]]:
         if compId is not None:
@@ -2773,7 +2922,7 @@ class BasePKParserListener():
                    or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
                        and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
                             or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
-                    self.f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint(n=index)}"
+                    self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                   f"of chain {refChainId} of the coordinates. "
                                   "Please update the sequence in the Macromolecules page.")
@@ -2783,7 +2932,7 @@ class BasePKParserListener():
                     chainAssign.add((refChainId, _seqId, compId, True))
                     asis = True
                 elif compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
-                    self.f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint(n=index)}"
+                    self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                   f"of chain {refChainId} of the coordinates. "
                                   "Please update the sequence in the Macromolecules page.")
@@ -2791,7 +2940,7 @@ class BasePKParserListener():
                     if resKey not in self.extResKey:
                         self.extResKey.append(resKey)
                 else:
-                    self.f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index)}"
+                    self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
                                   f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                   f"The residue number '{_seqId}' is not present in polymer sequence "
                                   f"of chain {refChainId} of the coordinates. "
@@ -2821,7 +2970,7 @@ class BasePKParserListener():
                         ext_seq = False
                 if ext_seq:
                     refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
-                    self.f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint(n=index)}"
+                    self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                   f"of chain {refChainId} of the coordinates. "
                                   "Please update the sequence in the Macromolecules page.")
@@ -2835,7 +2984,7 @@ class BasePKParserListener():
                             chainAssign.add((_refChainId, _seqId, compId, True))
                     asis = True
                 else:
-                    self.f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index)}"
+                    self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
                                   f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                 updatePolySeqRst(self.polySeqRstFailed, self.polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, compId, _compId)
 
@@ -3431,7 +3580,7 @@ class BasePKParserListener():
                        or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
                            and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
                                 or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
-                        self.f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint(n=index)}"
+                        self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint(n=index)}"
                                       f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                       f"of chain {refChainId} of the coordinates. "
                                       "Please update the sequence in the Macromolecules page.")
@@ -3441,7 +3590,7 @@ class BasePKParserListener():
                         chainAssign.add((refChainId, _seqId, compId, True))
                         asis = True
                     elif compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
-                        self.f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint(n=index)}"
+                        self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint(n=index)}"
                                       f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                       f"of chain {refChainId} of the coordinates. "
                                       "Please update the sequence in the Macromolecules page.")
@@ -3449,7 +3598,7 @@ class BasePKParserListener():
                         if resKey not in self.extResKey:
                             self.extResKey.append(resKey)
                     else:
-                        self.f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index)}"
+                        self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
                                       f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                       f"The residue number '{_seqId}' is not present in polymer sequence "
                                       f"of chain {refChainId} of the coordinates. "
@@ -3479,7 +3628,7 @@ class BasePKParserListener():
                             ext_seq = False
                     if ext_seq:
                         refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
-                        self.f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint(n=index)}"
+                        self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint(n=index)}"
                                       f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                       f"of chain {refChainId} of the coordinates. "
                                       "Please update the sequence in the Macromolecules page.")
@@ -3493,7 +3642,7 @@ class BasePKParserListener():
                                 chainAssign.add((_refChainId, _seqId, compId, True))
                         asis = True
                     else:
-                        self.f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index)}"
+                        self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
                                       f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                     updatePolySeqRst(self.polySeqRstFailed, str(refChainId), _seqId, compId, _compId)
 
@@ -3690,18 +3839,18 @@ class BasePKParserListener():
                 if atomId is not None and atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1', index)
             if atomId is not None and (('-' in atomId and ':' in atomId) or '.' in atomId):
-                self.f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index)}"
+                self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
                               f"{_seqId}:?:{atomId} is not present in the coordinates.")
             elif atomId is not None:
                 if len(self.polySeq) == 1 and seqId < 1:
                     refChainId = self.polySeq[0]['auth_chain_id']
-                    self.f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index)}"
+                    self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
                                   f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                   f"The residue number '{_seqId}' is not present in polymer sequence "
                                   f"of chain {refChainId} of the coordinates. "
                                   "Please update the sequence in the Macromolecules page.")
                 else:
-                    self.f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index)}"
+                    self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
                                   f"{_seqId}:{atomId} is not present in the coordinates.")
                     compIds = guessCompIdFromAtomId([atomId], self.polySeq, self.nefT)
                     if compIds is not None:
@@ -3905,18 +4054,18 @@ class BasePKParserListener():
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequenceWithChainIdWithoutCompId(fixedChainId, seqId, 'H1', index)
             if (('-' in atomId and ':' in atomId) or '.' in atomId):
-                self.f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index)}"
+                self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
                               f"{fixedChainId}:{_seqId}:?:{atomId} is not present in the coordinates.")
             else:
                 if len(self.polySeq) == 1 and seqId < 1:
                     refChainId = self.polySeq[0]['auth_chain_id']
-                    self.f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index)}"
+                    self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
                                   f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                   f"The residue number '{_seqId}' is not present in polymer sequence "
                                   f"of chain {refChainId} of the coordinates. "
                                   "Please update the sequence in the Macromolecules page.")
                 else:
-                    self.f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index)}"
+                    self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
                                   f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates.")
                     compIds = guessCompIdFromAtomId([atomId], self.polySeq, self.nefT)
                     if compIds is not None:
@@ -4068,7 +4217,7 @@ class BasePKParserListener():
                                 self.__authSeqId = 'label_seq_id'
                                 self.__setLocalSeqScheme()
                                 continue
-                    self.f.append(f"[Sequence mismatch] {self.__getCurrentRestraint(n=index)}"
+                    self.f.append(f"[Sequence mismatch] {self.getCurrentRestraint(n=index)}"
                                   f"Residue name {__compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
                     continue
 
@@ -4085,11 +4234,11 @@ class BasePKParserListener():
                 if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
                     self.selectCoordAtoms(chainAssign, seqId, compId, atomId, index, allowAmbig, offset=1)
                     return
-                self.f.append(f"[Invalid atom nomenclature] {self.__getCurrentRestraint(n=index)}"
+                self.f.append(f"[Invalid atom nomenclature] {self.getCurrentRestraint(n=index)}"
                               f"{seqId}:{__compId}:{__atomId} is invalid atom nomenclature.")
                 continue
             if lenAtomId > 1 and not allowAmbig:
-                self.f.append(f"[Invalid atom selection] {self.__getCurrentRestraint(n=index)}"
+                self.f.append(f"[Invalid atom selection] {self.getCurrentRestraint(n=index)}"
                               f"Ambiguous atom selection '{seqId}:{__compId}:{__atomId}' is not allowed as a angle restraint.")
                 continue
 
@@ -4339,7 +4488,7 @@ class BasePKParserListener():
                                    or (self.csStat.peptideLike(compId)
                                        and cca[self.ccU.ccaNTerminalAtomFlag] == 'N'
                                        and cca[self.ccU.ccaCTerminalAtomFlag] == 'N'):
-                                    self.f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint(n=index)}"
+                                    self.f.append(f"[Hydrogen not instantiated] {self.getCurrentRestraint(n=index)}"
                                                   f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                   "Please re-upload the model file.")
                                     return atomId, asis
@@ -4349,7 +4498,7 @@ class BasePKParserListener():
                        or (chainId, seqId + 1) in self.__coordUnobsRes and self.csStat.peptideLike(compId):
                         if coordAtomSite is not None and atomId in carboxylCode\
                            and not isCyclicPolymer(self.cR, self.polySeq, chainId, self.representativeModelId, self.representativeAltId, self.modelNumName):
-                            self.f.append(f"[Coordinate issue] {self.__getCurrentRestraint(n=index)}"
+                            self.f.append(f"[Coordinate issue] {self.getCurrentRestraint(n=index)}"
                                           f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                           "Please re-upload the model file.")
                             return atomId, asis
@@ -4366,7 +4515,7 @@ class BasePKParserListener():
                         if ext_seq:
                             return atomId, asis
                         if self.__allow_ext_seq:
-                            self.f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint(n=index)}"
+                            self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint(n=index)}"
                                           f"The residue '{chainId}:{seqId}:{compId}' is not present in polymer sequence "
                                           f"of chain {chainId} of the coordinates. "
                                           "Please update the sequence in the Macromolecules page.")
@@ -4374,10 +4523,10 @@ class BasePKParserListener():
                         else:
                             if atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
                                and atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
-                                self.f.append(f"[Coordinate issue] {self.__getCurrentRestraint(n=index)}"
+                                self.f.append(f"[Coordinate issue] {self.getCurrentRestraint(n=index)}"
                                               f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                                 return atomId, asis
-                            self.f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index)}"
+                            self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
                                           f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                             updatePolySeqRst(self.polySeqRstFailed, chainId, seqId, compId)
         return atomId, asis
@@ -4416,7 +4565,7 @@ class BasePKParserListener():
                         return seqKey, self.__coordAtomSite[seqKey]
         return seqKey, None
 
-    def __getCurrentRestraint(self, n: int) -> str:
+    def getCurrentRestraint(self, n: int) -> str:
         if self.cur_subtype == 'peak2d':
             return f"[Check the {self.peaks2D}th row of 2D spectral peaks (list_id={self.cur_list_id}, index={n})] "
         if self.cur_subtype == 'peak3d':

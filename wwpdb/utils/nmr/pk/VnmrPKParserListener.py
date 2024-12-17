@@ -94,7 +94,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             index = int(str(ctx.Integer()))
 
             ass = None
-            if self.__has_assign:
+            if self.__has_assign and ctx.Assignment_2d_ex():
                 ass = str(ctx.Assignment_2d_ex())
                 if '?' in ass:
                     ass = None
@@ -224,7 +224,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             index = int(str(ctx.Integer()))
 
             ass = None
-            if self.__has_assign:
+            if self.__has_assign and ctx.Assignment_3d_ex():
                 ass = str(ctx.Assignment_3d_ex())
                 if '?' in ass:
                     ass = None
@@ -372,7 +372,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             index = int(str(ctx.Integer()))
 
             ass = None
-            if self.__has_assign:
+            if self.__has_assign and ctx.Assignment_4d_ex():
                 ass = str(ctx.Assignment_4d_ex())
                 if '?' in ass:
                     ass = None

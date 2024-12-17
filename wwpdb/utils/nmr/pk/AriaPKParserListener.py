@@ -197,26 +197,42 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
             if self.__proton1_active:
                 ppm[idx] = self.__proton1_ppm
                 ppm_error[idx] = self.__proton1_ppm_error
-                if self.__proton1_atoms is not None and len(self.__proton1_atoms) == 1:
-                    ass[idx] = self.__proton1_atoms
+                if self.__proton1_atoms is not None:
+                    if len(self.__proton1_atoms) == 1:
+                        ass[idx] = self.__proton1_atoms
+                    else:
+                        self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=index)}"
+                                      "Multiple assignments to a spectral peak are ignored.")
                 idx += 1
             if self.__proton2_active:
                 ppm[idx] = self.__proton2_ppm
                 ppm_error[idx] = self.__proton2_ppm_error
-                if self.__proton2_atoms is not None and len(self.__proton2_atoms) == 1:
-                    ass[idx] = self.__proton2_atoms
+                if self.__proton2_atoms is not None:
+                    if len(self.__proton2_atoms) == 1:
+                        ass[idx] = self.__proton2_atoms
+                    else:
+                        self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=index)}"
+                                      "Multiple assignments to a spectral peak are ignored.")
                 idx += 1
             if self.__hetero1_active:
                 ppm[idx] = self.__hetero1_ppm
                 ppm_error[idx] = self.__hetero1_ppm_error
-                if self.__hetero1_atoms is not None and len(self.__hetero1_atoms) == 1:
-                    ass[idx] = self.__hetero1_atoms
+                if self.__hetero1_atoms is not None:
+                    if len(self.__hetero1_atoms) == 1:
+                        ass[idx] = self.__hetero1_atoms
+                    else:
+                        self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=index)}"
+                                      "Multiple assignments to a spectral peak are ignored.")
                 idx += 1
             if self.__hetero2_active:
                 ppm[idx] = self.__hetero2_ppm
                 ppm_error[idx] = self.__hetero2_ppm_error
-                if self.__hetero2_atoms is not None and len(self.__hetero2_atoms) == 1:
-                    ass[idx] = self.__hetero2_atoms
+                if self.__hetero2_atoms is not None:
+                    if len(self.__hetero2_atoms) == 1:
+                        ass[idx] = self.__hetero2_atoms
+                    else:
+                        self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=index)}"
+                                      "Multiple assignments to a spectral peak are ignored.")
 
             if not all(a is not None and len(a) == 1 and 'seq_id' in a[0] and 'atom_id' in a[0] for a in ass):
                 ass = [None] * self.num_of_dim

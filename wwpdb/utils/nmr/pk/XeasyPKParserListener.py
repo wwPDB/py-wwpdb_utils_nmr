@@ -38,6 +38,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
     __labels = None
     __atomNumberDict = None
     __lastComment = None
+    __commentOffset = None
+    __g = None
 
     def __init__(self, verbose=True, log=sys.stdout,
                  representativeModelId=REPRESENTATIVE_MODEL_ID,
@@ -56,6 +58,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
     # Enter a parse tree produced by XeasyPKParser#xeasy_pk.
     def enterXeasy_pk(self, ctx: XeasyPKParser.Xeasy_pkContext):  # pylint: disable=unused-argument
         self.enter()
+        self.__g = []
 
     # Exit a parse tree produced by XeasyPKParser#xeasy_pk.
     def exitXeasy_pk(self, ctx: XeasyPKParser.Xeasy_pkContext):  # pylint: disable=unused-argument
@@ -159,7 +162,10 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.peaks2D += 1
 
         self.atomSelectionSet.clear()
+        self.__index = int(str(ctx.Integer(0)))
         self.__lastComment = None
+        self.__commentOffset = 0
+        self.__g.clear()
 
     # Exit a parse tree produced by XeasyPKParser#peak_2d.
     def exitPeak_2d(self, ctx: XeasyPKParser.Peak_2dContext):
@@ -170,7 +176,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            index = self.__index = int(str(ctx.Integer(0)))
+            index = int(str(ctx.Integer(0)))
             x_ppm = float(str(ctx.Float(0)))
             y_ppm = float(str(ctx.Float(1)))
             # color_code = int(str(ctx.Integer(1)))
@@ -185,6 +191,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):  # ignore multiple assignments for a peak
                 a1 = a2 = None
+                self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=index)}"
+                              "Multiple assignments to a spectral peak are ignored.")
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -280,6 +288,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                             ambig_code2 = None
                 else:
                     atom1 = atom2 = None
+                    if len(self.__g) > 0:
+                        self.f.extend(self.__g)
 
                 row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
                                sf['list_id'], self.entryId, dstFunc,
@@ -308,7 +318,10 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.peaks3D += 1
 
         self.atomSelectionSet.clear()
+        self.__index = int(str(ctx.Integer(0)))
         self.__lastComment = None
+        self.__commentOffset = 0
+        self.__g.clear()
 
     # Exit a parse tree produced by XeasyPKParser#peak_3d.
     def exitPeak_3d(self, ctx: XeasyPKParser.Peak_3dContext):
@@ -319,7 +332,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            index = self.__index = int(str(ctx.Integer(0)))
+            index = int(str(ctx.Integer(0)))
             x_ppm = float(str(ctx.Float(0)))
             y_ppm = float(str(ctx.Float(1)))
             z_ppm = float(str(ctx.Float(2)))
@@ -335,7 +348,11 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             a3 = self.assignmentSelection[2]
 
             if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):  # ignore multiple assignments for a peak
+                print(self.__lastComment)
                 a1 = a2 = a3 = None
+                self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=index)}"
+                              "Multiple assignments to a spectral peak are ignored.")
+                sys.exit()
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -447,6 +464,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                             ambig_code3 = None
                 else:
                     atom1 = atom2 = atom3 = None
+                    if len(self.__g) > 0:
+                        self.f.extend(self.__g)
 
                 row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
                                sf['list_id'], self.entryId, dstFunc,
@@ -476,7 +495,10 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.peaks4D += 1
 
         self.atomSelectionSet.clear()
+        self.__index = int(str(ctx.Integer(0)))
         self.__lastComment = None
+        self.__commentOffset = 0
+        self.__g.clear()
 
     # Exit a parse tree produced by XeasyPKParser#peak_4d.
     def exitPeak_4d(self, ctx: XeasyPKParser.Peak_4dContext):
@@ -487,7 +509,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            index = self.__index = int(str(ctx.Integer(0)))
+            index = int(str(ctx.Integer(0)))
             x_ppm = float(str(ctx.Float(0)))
             y_ppm = float(str(ctx.Float(1)))
             z_ppm = float(str(ctx.Float(2)))
@@ -506,6 +528,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
             if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):  # ignore multiple assignments for a peak
                 a1 = a2 = a3 = a4 = None
+                self.f.append(f"[Unsupported data] {self.getCurrentRestraint(n=index)}"
+                              "Multiple assignments to a spectral peak are ignored.")
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -632,6 +656,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                             ambig_code4 = None
                 else:
                     atom1 = atom2 = atom3 = atom4 = None
+                    if len(self.__g) > 0:
+                        self.f.extend(self.__g)
 
                 row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
                                sf['list_id'], self.entryId, dstFunc,
@@ -677,11 +703,11 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by XeasyPKParser#assign.
     def exitAssign(self, ctx: XeasyPKParser.AssignContext):
+        index = self.__index
         if ctx.Simple_name() and ctx.Integer():
             self.assignmentSelection.append(f'{str(ctx.Integer())} {str(ctx.Simple_name())}')
         elif ctx.Simple_name():
-            assignment = self.extractPeakAssignment(1, str(ctx.Simple_name()),
-                                                    self.__index - 1 if isinstance(self.__index, int) else 1)
+            assignment = self.extractPeakAssignment(1, str(ctx.Simple_name()), index)
             if assignment is None:
                 self.assignmentSelection.append(None)
             else:
@@ -691,6 +717,15 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             ai = int(str(ctx.Integer()))
             if ai == 0 or self.__atomNumberDict is None or ai not in self.__atomNumberDict:
                 self.assignmentSelection.append(None)
+                if ai == 0:
+                    pass
+                elif self.__atomNumberDict is None:
+                    self.__g.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
+                                    "Failed to recognize XEASY atom numbers in the spectral peak list file "
+                                    "because XEASY PROT file is not available.")
+                elif ai not in self.__atomNumberDict:
+                    self.__g.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
+                                    f"'{ai})' is not defined in the XEASY PROT file.")
             else:
                 _factor = copy.copy(self.__atomNumberDict[ai])
                 _factor['atom_id'] = _factor['auth_atom_id']
@@ -720,10 +755,14 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         if assignments is not None and self.__atomNumberDict is None:
             if self.ass_expr_debug:
                 print(f'{self.__lastComment!r} -> {assignments}')
-            self.assignmentSelection.clear()
-            for factor in assignments:
-                self.assignmentSelection.append(factor)
+            for idx, factor in enumerate(assignments, start=self.__commentOffset):
+                if idx >= len(self.assignmentSelection):
+                    self.assignmentSelection.append(factor)
+                elif self.assignmentSelection[idx] is None:
+                    self.assignmentSelection[idx] = factor
             self.__lastComment = None
+            self.__g.clear()
+        self.__commentOffset = len(self.assignmentSelection)
 
     def fillSpectralDimWithLabels(self):
         if self.__labels is None or len(self.__labels) == 0:

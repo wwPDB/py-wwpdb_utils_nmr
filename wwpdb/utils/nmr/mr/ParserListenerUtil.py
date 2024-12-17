@@ -10092,7 +10092,7 @@ def getPdbxNmrSoftwareName(name: str) -> str:
         return 'TopSpin'
     if name == 'XWINNMR':
         return 'XwinNMR'
-    return name  # 'ARIA', 'CHARMM', 'CNS', 'CYANA', 'DYNAMO', 'PALES', 'TALOS', 'GROMACS', 'SYBYL', 'XEASY'
+    return name  # 'ARIA', 'CHARMM', 'CNS', 'CYANA', 'DYNAMO', 'PALES', 'TALOS', 'GROMACS', 'SYBYL', 'VNMR', 'XEASY'
 
 
 def hasKeyValue(d: Optional[dict] = None, key: Any = None) -> bool:

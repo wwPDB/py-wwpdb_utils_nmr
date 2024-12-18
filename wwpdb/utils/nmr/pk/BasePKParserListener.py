@@ -265,6 +265,7 @@ class BasePKParserListener():
     acq_dim_id = 1
     spectral_dim = {}
     spectral_dim_transfer = {}
+    spectrum_name = None
 
     # whether to allow extended sequence temporary
     __allow_ext_seq = False
@@ -4571,7 +4572,7 @@ class BasePKParserListener():
         if key in self.reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.reasons['local_seq_scheme'][key]
 
-    def __addSf(self, spectrumName: Optional[str] = None):
+    def __addSf(self):
         content_subtype = contentSubtypeOf(self.cur_subtype)
 
         if content_subtype is None:
@@ -4595,7 +4596,7 @@ class BasePKParserListener():
         sf_framecode = f'{self.software_name}_' + restraint_name.replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.cur_subtype, sf_framecode, list_id, self.entryId, self.__originalFileName,
-                          numOfDim=self.num_of_dim, spectrumName=spectrumName)
+                          numOfDim=self.num_of_dim, spectrumName=self.spectrum_name)
 
         lp = getPkLoop(self.cur_subtype)
 
@@ -4606,11 +4607,11 @@ class BasePKParserListener():
 
         self.sfDict[key].append(item)
 
-    def getSf(self, spectrumName: Optional[str] = None) -> dict:
+    def getSf(self) -> dict:
         key = (self.cur_subtype, self.cur_list_id)
 
         if key not in self.sfDict:
-            self.__addSf(spectrumName)
+            self.__addSf()
 
         return self.sfDict[key][-1]
 

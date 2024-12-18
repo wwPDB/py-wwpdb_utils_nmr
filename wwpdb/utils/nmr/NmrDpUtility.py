@@ -1120,6 +1120,10 @@ def is_peak_list(line: str, has_header: bool = True) -> bool:
     if 'peak id.' in line and 'Dim 0 (ppm)' in line and 'Dim 1 (ppm)' in line:  # VNMR peak list
         return True
 
+    if '# Peak List from VNMR' in line\
+       or ('Peak_Number' in line and 'X(ppm)' in line and 'Y(ppm)' in line):  # VNMR ll2d output
+        return True
+
     if col is None:
         col = line.split()
 
@@ -1193,7 +1197,11 @@ def get_peak_list_format(line: str, has_header: bool = True, as_code: bool = Fal
     if '<PeakList>' in line:  # TopSpin peak list
         return 'nm-pea-top' if as_code else 'TopSpin'
 
-    if 'peak id.' in line and 'Dim 0 (ppm)' in line and 'Dim 1 (ppm)' in line:
+    if 'peak id.' in line and 'Dim 0 (ppm)' in line and 'Dim 1 (ppm)' in line:  # VNMR peak list
+        return 'nm-pea-vnm' if as_code else 'VNMR'
+
+    if '# Peak List from VNMR' in line\
+       or ('Peak_Number' in line and 'X(ppm)' in line and 'Y(ppm)' in line):  # VNMR ll2d output
         return 'nm-pea-vnm' if as_code else 'VNMR'
 
     if col is None:
@@ -1301,20 +1309,46 @@ def get_number_of_dimensions_of_peak_list(file_format: str, line: str) -> Option
             return 4
 
     if file_format == 'VNMR':
-        if 'Dim 3 (ppm)' in line:
+        if 'Dim 3 (ppm)' in line or 'A(ppm)' in line:
             return 4
-        if 'Dim 2 (ppm)' in line:
+        if 'Dim 2 (ppm)' in line or 'Z(ppm)' in line:
             return 3
-        if 'Dim 1 (ppm)' in line:
+        if 'Dim 1 (ppm)' in line or 'Y(ppm)' in line:
             return 2
 
         col = line.split()
         if len(col) > 6 and sparky_assignment_pattern.match(col[6]):
-            return col[6].count('-') + 1
+            val = col[6]
+            if 2 <= val.count('-') + 1 <= 4:
+                return val.count('-')
+            if 2 <= val.count(':') + 1 <= 4:
+                return val.count(':')
+            if 2 <= val.count(';') + 1 <= 4:
+                return val.count(';')
+            if 2 <= val.count(',') + 1 <= 4:
+                return val.count(',')
+
         if len(col) > 8 and sparky_assignment_pattern.match(col[8]):
-            return col[8].count('-') + 1
+            val = col[8]
+            if 2 <= val.count('-') + 1 <= 4:
+                return val.count('-')
+            if 2 <= val.count(':') + 1 <= 4:
+                return val.count(':')
+            if 2 <= val.count(';') + 1 <= 4:
+                return val.count(';')
+            if 2 <= val.count(',') + 1 <= 4:
+                return val.count(',')
+
         if len(col) > 10 and sparky_assignment_pattern.match(col[10]):
-            return col[10].count('-') + 1
+            val = col[10]
+            if 2 <= val.count('-') + 1 <= 4:
+                return val.count('-')
+            if 2 <= val.count(':') + 1 <= 4:
+                return val.count(':')
+            if 2 <= val.count(';') + 1 <= 4:
+                return val.count(';')
+            if 2 <= val.count(',') + 1 <= 4:
+                return val.count(',')
 
     return None
 

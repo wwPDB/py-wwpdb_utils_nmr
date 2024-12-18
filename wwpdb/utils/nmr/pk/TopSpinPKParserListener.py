@@ -28,6 +28,7 @@ except ImportError:
 # This class defines a complete listener for a parse tree produced by XMLParser.
 class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
 
+    __spectrum_names = None
     __cur_path = None
 
     __f1_ppm = None
@@ -52,13 +53,14 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by XMLParser#document.
     def enterDocument(self, ctx: XMLParser.DocumentContext):  # pylint: disable=unused-argument
+        self.__spectrum_names = {}
         self.__cur_path = ''
 
         self.enter()
 
     # Exit a parse tree produced by XMLParser#document.
     def exitDocument(self, ctx: XMLParser.DocumentContext):  # pylint: disable=unused-argument
-        self.exit()
+        self.exit(self.__spectrum_names if len(self.__spectrum_names) > 0 else None)
 
     # Enter a parse tree produced by XMLParser#prolog.
     def enterProlog(self, ctx: XMLParser.PrologContext):  # pylint: disable=unused-argument
@@ -84,13 +86,31 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
             self.num_of_dim = 2
             self.initSpectralDim()
 
+            if self.spectrum_name is not None:
+                if self.num_of_dim not in self.__spectrum_names:
+                    self.__spectrum_names[self.num_of_dim] = {}
+                if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
+                    self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
+
         elif self.__cur_path == '/PeakList/PeakList3D':
             self.num_of_dim = 3
             self.initSpectralDim()
 
+            if self.spectrum_name is not None:
+                if self.num_of_dim not in self.__spectrum_names:
+                    self.__spectrum_names[self.num_of_dim] = {}
+                if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
+                    self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
+
         elif self.__cur_path == '/PeakList/PeakList4D':
             self.num_of_dim = 4
             self.initSpectralDim()
+
+            if self.spectrum_name is not None:
+                if self.num_of_dim not in self.__spectrum_names:
+                    self.__spectrum_names[self.num_of_dim] = {}
+                if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
+                    self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
 
         elif self.__cur_path == '/PeakList/PeakList2D/Peak2D':
             self.peaks2D += 1
@@ -256,7 +276,22 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
             name = str(ctx.Name())
             string = str(ctx.STRING())[1:-1]
 
-            if self.__cur_path == '/PeakList/PeakList2D/Peak2D':
+            if self.__cur_path == '/PeakList/PeakList2D/PeakList2DHeader':
+
+                if name == 'name':
+                    self.spectrum_name = string
+
+            elif self.__cur_path == '/PeakList/PeakList3D/PeakList3DHeader':
+
+                if name == 'name':
+                    self.spectrum_name = string
+
+            elif self.__cur_path == '/PeakList/PeakList4D/PeakList4DHeader':
+
+                if name == 'name':
+                    self.spectrum_name = string
+
+            elif self.__cur_path == '/PeakList/PeakList2D/Peak2D':
 
                 if name == 'F1':
                     self.__f1_ppm = float(string)

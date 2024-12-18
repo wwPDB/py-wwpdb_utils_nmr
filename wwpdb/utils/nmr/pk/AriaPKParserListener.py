@@ -40,7 +40,6 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
     __cur_path = None
 
     __spectrum_names = None
-    __spectrum_name = None
 
     __index = None
     __proton1_ppm = None
@@ -114,7 +113,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if self.__cur_path == '/spectrum':
             self.num_of_dim = -1
-            self.__spectrum_name = None
+            self.spectrum_name = None
 
         elif self.__cur_path == '/spectrum/peak':
             self.__volume = None
@@ -193,7 +192,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                 if self.num_of_dim not in self.__spectrum_names:
                     self.__spectrum_names[self.num_of_dim] = {}
                 if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
-                    self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.__spectrum_name
+                    self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
 
             index = self.__index
 
@@ -740,7 +739,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
             if self.__cur_path == '/spectrum':
 
                 if name == 'name':
-                    self.__spectrum_name = string
+                    self.spectrum_name = string
 
             elif self.__cur_path == '/spectrum/peak':
 

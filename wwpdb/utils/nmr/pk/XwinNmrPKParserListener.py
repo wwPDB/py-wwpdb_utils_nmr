@@ -28,6 +28,8 @@ except ImportError:
 # This class defines a complete listener for a parse tree produced by XwinNmrPKParser.
 class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
+    __spectrum_names = None
+
     __f1_ppm_col = -1
     __f2_ppm_col = -1
     __f3_ppm_col = -1
@@ -49,11 +51,13 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by XwinNmrPKParser#xwinnmr_pk.
     def enterXwinnmr_pk(self, ctx: XwinNmrPKParser.Xwinnmr_pkContext):  # pylint: disable=unused-argument
+        self.__spectrum_names = {}
+
         self.enter()
 
     # Exit a parse tree produced by XwinNmrPKParser#xwinnmr_pk.
     def exitXwinnmr_pk(self, ctx: XwinNmrPKParser.Xwinnmr_pkContext):  # pylint: disable=unused-argument
-        self.exit()
+        self.exit(self.__spectrum_names if len(self.__spectrum_names) > 0 else None)
 
     # Enter a parse tree produced by XwinNmrPKParser#comment.
     def enterComment(self, ctx: XwinNmrPKParser.CommentContext):  # pylint: disable=unused-argument
@@ -65,6 +69,8 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
         for col in range(20):
             if ctx.Any_name(col):
                 text = str(ctx.Any_name(col))
+                if text.startswith('NAME='):
+                    self.spectrum_name = text[5:-1]
                 comment.append(text)
             else:
                 break
@@ -94,6 +100,12 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
         if ctx.Integer_ND():
             self.num_of_dim = int(str(ctx.Integer_ND()))
             self.initSpectralDim()
+
+            if self.spectrum_name is not None:
+                if self.num_of_dim not in self.__spectrum_names:
+                    self.__spectrum_names[self.num_of_dim] = {}
+                if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
+                    self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
 
     # Exit a parse tree produced by XwinNmrPKParser#dimension.
     def exitDimension(self, ctx: XwinNmrPKParser.DimensionContext):  # pylint: disable=unused-argument

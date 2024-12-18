@@ -21,6 +21,8 @@ options { tokenVocab=VnmrPKLexer; }
 vnmr_pk:
 	RETURN?
 	(
+	comment |
+	format |
 	data_label |
 	peak_2d+ |
 	peak_3d+ |
@@ -28,12 +30,30 @@ vnmr_pk:
 	)*
 	EOF;
 
-/* Vnmr: Peak list format
+/* VNMR: ll2d peak list format */
+
+comment:
+	COMMENT Any_name* (RETURN_CM | EOF);
+
+format:
+	Format Peak_number X_ppm Y_ppm Z_ppm? A_ppm? Intensity Volume? Linewidth_X? Linewidth_Y? Linewidth_Z? Linewidth_A? Comment? RETURN_FO
+	(peak_ll2d+ | peak_ll3d+ | peak_ll4d+);
+
+peak_ll2d:
+	Integer Float Float number number? number? number? Double_quote_string? RETURN;
+
+peak_ll3d:
+	Integer Float Float Float number number? number? number? number? Double_quote_string? RETURN;
+
+peak_ll4d:
+	Integer Float Float Float Float number number? number? number? number? number? Double_quote_string? RETURN;
+
+/* VNMR: Peak list format
  See also https://sites.google.com/site/ccpnwiki/home/documentation/contributed-software/bruce-d-ray-utility-programs/readme
 */
 
 data_label:
-	Peak_id Dim_0_ppm Dev_0 Dim_1_ppm Dev_1 (Dim_2_ppm Dev_2 (Dim_3_ppm Dev_3)?)? Amplitude Assignment? RETURN_LA;
+	Peak_id Dim_0_ppm Dev_0 Dim_1_ppm Dev_1 (Dim_2_ppm Dev_2 (Dim_3_ppm Dev_3)?)? (Amplitude | Intensity_LA) Volume_LA? Assignment? RETURN_LA;
 
 peak_2d:
 	Integer Float Float Float Float number Assignment_2d_ex? RETURN;

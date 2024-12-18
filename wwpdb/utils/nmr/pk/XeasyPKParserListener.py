@@ -44,8 +44,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
     __index = None
     __labels = None
     __atomNumberDict = None
-    __lastComment = None
-    __commentOffset = None
+    __last_comment = None
+    __comment_offset = None
     __g = None
 
     def __init__(self, verbose=True, log=sys.stdout,
@@ -172,8 +172,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.asIsSets.clear()
 
         self.__index = int(str(ctx.Integer(0)))
-        self.__lastComment = None
-        self.__commentOffset = 0
+        self.__last_comment = None
+        self.__comment_offset = 0
         self.__g.clear()
 
     # Exit a parse tree produced by XeasyPKParser#peak_2d.
@@ -373,8 +373,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.asIsSets.clear()
 
         self.__index = int(str(ctx.Integer(0)))
-        self.__lastComment = None
-        self.__commentOffset = 0
+        self.__last_comment = None
+        self.__comment_offset = 0
         self.__g.clear()
 
     # Exit a parse tree produced by XeasyPKParser#peak_3d.
@@ -590,8 +590,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.asIsSets.clear()
 
         self.__index = int(str(ctx.Integer(0)))
-        self.__lastComment = None
-        self.__commentOffset = 0
+        self.__last_comment = None
+        self.__comment_offset = 0
         self.__g.clear()
 
     # Exit a parse tree produced by XeasyPKParser#peak_4d.
@@ -882,20 +882,20 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 comment.append(str(ctx.Any_name(col)))
             else:
                 break
-        self.__lastComment = None if len(comment) == 0 else ' '.join(comment)
-        assignments = self.extractPeakAssignment(self.num_of_dim, self.__lastComment,
+        self.__last_comment = None if len(comment) == 0 else ' '.join(comment)
+        assignments = self.extractPeakAssignment(self.num_of_dim, self.__last_comment,
                                                  self.__index - 1 if isinstance(self.__index, int) else 1)
         if assignments is not None and self.__atomNumberDict is None:
             if self.ass_expr_debug:
-                print(f'{self.__lastComment!r} -> {assignments}')
-            for idx, factor in enumerate(assignments, start=self.__commentOffset):
+                print(f'{self.__last_comment!r} -> {assignments}')
+            for idx, factor in enumerate(assignments, start=self.__comment_offset):
                 if idx >= len(self.assignmentSelection):
                     self.assignmentSelection.append(factor)
                 elif self.assignmentSelection[idx] is None:
                     self.assignmentSelection[idx] = factor
-            self.__lastComment = None
+            self.__last_comment = None
             self.__g.clear()
-        self.__commentOffset = len(self.assignmentSelection)
+        self.__comment_offset = len(self.assignmentSelection)
 
     def fillSpectralDimWithLabels(self):
         if self.__labels is None or len(self.__labels) == 0:

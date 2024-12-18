@@ -214,5 +214,10 @@ class VnmrPKReader:
 if __name__ == "__main__":
     reader = VnmrPKReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-vnmr-peak-list/vnmr_ll2d.peaks',
+                 '../../tests-nmr/mock-data-remediation/2js7/2js7.cif')  # dummy
+
+    reader = VnmrPKReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-vnmr-peak-list/vnmr.pk',
                  '../../tests-nmr/mock-data-remediation/2js7/2js7.cif')  # dummy

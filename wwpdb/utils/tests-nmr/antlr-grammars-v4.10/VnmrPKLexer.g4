@@ -17,6 +17,7 @@ limitations under the License.
 lexer grammar VnmrPKLexer;
 
 Peak_id:		'peak id.' -> pushMode(LABEL_MODE);
+Format:			'# Format:' -> pushMode(FORMAT_MODE);
 
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
@@ -25,7 +26,9 @@ fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
-SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
+COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
+Double_quote_string:	'"' ~["\r\n]* '"';
+
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
@@ -51,10 +54,10 @@ SPACE:			[ \t]+ -> skip;
 RETURN:			[\r\n]+;
 
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
-LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
+SECTION_COMMENT:	(';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
+LINE_COMMENT:		(';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
 
-/* Vnmr: Peak list format
+/* VNMR: Peak list format
  See also https://sites.google.com/site/ccpnwiki/home/documentation/contributed-software/bruce-d-ray-utility-programs/readme
 */
 
@@ -69,8 +72,37 @@ Dev_1:			'Dev. 1';
 Dev_2:			'Dev. 2';
 Dev_3:			'Dev. 3';
 Amplitude:		'Amplitude';
+Intensity_LA:		'Intensity';
+Volume_LA:		'Volume';
 Assignment:		'Assignment';
 
 SPACE_LA:		[ \t]+ -> skip;
 RETURN_LA:		[\r\n]+ -> popMode;
+
+/* VNMR: ll2d peak list format */
+
+mode FORMAT_MODE;
+
+Peak_number:		'Peak_Number';
+X_ppm:			'X(ppm)';
+Y_ppm:			'Y(ppm)';
+Z_ppm:			'Z(ppm)';
+A_ppm:			'A(ppm)';
+Intensity:		'Intensity';
+Volume:			'Volume';
+Linewidth_X:		'Linewidth_X(Hz)';
+Linewidth_Y:		'Linewidth_Y(Hz)';
+Linewidth_Z:		'Linewidth_Z(Hz)';
+Linewidth_A:		'Linewidth_A(Hz)';
+Comment:		'Comment';
+
+SPACE_FO:		[ \t]+ -> skip;
+RETURN_FO:		[\r\n]+ -> popMode;
+
+mode COMMENT_MODE;
+
+Any_name:		~[ \t\r\n]+;
+
+SPACE_CM:		[ \t]+ -> skip;
+RETURN_CM:		[\r\n]+ -> mode(DEFAULT_MODE);
 

@@ -346,6 +346,9 @@ class gen_auth_view_onedep:
                 content_type = g[2]
                 version = int(g[3])
 
+                if mile_stone == 'release' and content_type == 'mr':
+                    continue
+
                 key = content_type + g[1]
 
                 file_path = os.path.join(self.__data_dir, file_name)
@@ -473,6 +476,9 @@ class gen_auth_view_onedep:
                         content_type = g[2]
                         version = int(g[3])
 
+                        if mile_stone == 'release' and content_type == 'mr':
+                            continue
+
                         key = content_type + g[1]
 
                         file_path = os.path.join(self.__data_dir, file_name)
@@ -542,6 +548,9 @@ class gen_auth_view_onedep:
                         content_type = g[2]
                         version = int(g[3])
 
+                        if mile_stone == 'release' and content_type == 'mr':
+                            continue
+
                         key = content_type + g[1]
 
                         file_path = os.path.join(self.__data_dir, file_name)
@@ -610,6 +619,9 @@ class gen_auth_view_onedep:
                         # part = int(g[1])
                         content_type = g[2]
                         version = int(g[3])
+
+                        if mile_stone == 'release' and content_type == 'mr':
+                            continue
 
                         key = content_type + g[1]
 

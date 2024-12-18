@@ -2037,7 +2037,7 @@ NMR_STAR_LP_DATA_ITEMS_INS_CODE['rdc_restraint'].extend([{'name': 'PDB_ins_code_
                                                          {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                          ])
 
-NMR_STAR_ALT_LP_CATEGORIES = {'spctral_peak': ['_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift']
+NMR_STAR_ALT_LP_CATEGORIES = {'spectral_peak': ['_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift']
                               }
 
 NMR_STAR_ALT_LP_KEY_ITEMS = {'spectral_peak': {'_Peak_general_char': [
@@ -2089,6 +2089,7 @@ NMR_STAR_ALT_LP_DATA_ITEMS = {'spectral_peak': {'_Peak_general_char': [
                                                 {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
                                                  'enum': ALLOWED_AMBIGUITY_CODES},
                                                 {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False},
+                                                {'name': 'Auth_entity_ID', 'type': 'str', 'mandatory': False},
                                                 {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
                                                 {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
                                                 {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
@@ -8125,7 +8126,7 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, atom2, asis=asis1)
         if star_atom1 is None:
             star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, asis=asis1)
-        if ambig_code1 is not None:
+        if isinstance(ambig_code1, int):
             atom1['atom_id'] = atom1['auth_atom_id']
 
     if atom2 is not None:
@@ -8134,7 +8135,7 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, atom1, asis=asis2)
         if star_atom2 is None:
             star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, asis=asis2)
-        if ambig_code2 is not None:
+        if isinstance(ambig_code2, int):
             atom2['atom_id'] = atom2['auth_atom_id']
 
     if atom3 is not None:
@@ -8143,7 +8144,7 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, atom1, asis=asis3)
         if star_atom3 is None:
             star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, asis=asis3)
-        if ambig_code3 is not None:
+        if isinstance(ambig_code3, int):
             atom3['atom_id'] = atom3['auth_atom_id']
 
     if atom4 is not None:
@@ -8152,7 +8153,7 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, atom1, asis=asis4)
         if star_atom4 is None:
             star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, asis=asis4)
-        if ambig_code4 is not None:
+        if isinstance(ambig_code4, int):
             atom4['atom_id'] = atom4['auth_atom_id']
 
     row[key_size] = indexId
@@ -8347,18 +8348,16 @@ def getPkChemShiftRow(pkSubtype: str, indexId: int, listId: int, entryId: str, d
         if 'asis' in atom:
             asis = True
         star_atom = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom, asis=asis)
-        if ambig_code is not None:
-            atom['atom_id'] = atom['auth_atom_id']
 
         row[8], row[9], row[10], row[11], row[12] =\
             star_atom['chain_id'], star_atom['entity_id'], star_atom['seq_id'], star_atom['comp_id'], star_atom['atom_id']
         row[13] = ambig_code
         # row[14]: Ambiguity_set_ID
 
-        row[15], row[16], row[17] =\
-            atom['seq_id'], atom['comp_id'], atom['atom_id']
+        row[15], row[16], row[17], row[18] =\
+            atom['chain_id'], atom['seq_id'], atom['comp_id'], atom['auth_atom_id']
 
-    row[18] = details
+    row[19] = details
 
     row[-2] = listId
     row[-1] = entryId

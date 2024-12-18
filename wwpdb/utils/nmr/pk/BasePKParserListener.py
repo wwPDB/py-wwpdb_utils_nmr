@@ -1350,10 +1350,10 @@ class BasePKParserListener():
                         sf = self.getSf()
 
                         if sf['peak_row_format']:
-                            sf.add_loop(sf['loop'])
+                            sf['saveframe'].add_loop(sf['loop'])
                         else:
                             for alt_loop in sf['alt_loops']:
-                                sf.add_loop(alt_loop)
+                                sf['saveframe'].add_loop(alt_loop)
 
                         list_id = sf['list_id']
                         sf['aux_loops'] = getAuxLoops('spectral_peak')
@@ -1386,7 +1386,7 @@ class BasePKParserListener():
     def validatePeak2D(self, index: int, pos_1: float, pos_2: float,
                        pos_unc_1: Optional[float], pos_unc_2: Optional[float],
                        lw_1: Optional[float], lw_2: Optional[float],
-                       pos_hz_1: Optional[float], pos_hz_2: Optional[float],
+                       pos_hz_1: Optional[float], pos_hz_2: Optional[float],  # pylint: disable=unused-argument
                        lw_hz_1: Optional[float], lw_hz_2: Optional[float],
                        height: Optional[str], height_uncertainty: Optional[str],
                        volume: Optional[str], volume_uncertainty: Optional[str]) -> Optional[dict]:
@@ -1442,36 +1442,21 @@ class BasePKParserListener():
         if pos_unc_2 is not None and pos_unc_2 != 0.0:
             dstFunc['position_uncertainty_2'] = str(pos_unc_2)
 
-        if lw_1 is not None and lw_1 != 0.0:
+        if lw_hz_1 is not None and lw_hz_1 != 0.0:
+            dstFunc['line_width_1'] = str(lw_hz_1)
+        elif lw_1 is not None and lw_1 != 0.0:
             dstFunc['line_width_1'] = str(lw_1)
-        if lw_2 is not None and lw_2 != 0.0:
+        if lw_hz_2 is not None and lw_hz_2 != 0.0:
+            dstFunc['line_width_2'] = str(lw_hz_2)
+        elif lw_2 is not None and lw_2 != 0.0:
             dstFunc['line_width_2'] = str(lw_2)
-
-        if (lw_1 is None and lw_hz_1 is not None) or (lw_2 is None and lw_hz_2 is not None):
-            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-        if lw_hz_1 is not None:
-            if cur_spectral_dim[1]['spectrometer_frequency'] is not None:
-                dstFunc['line_width_1'] = roundString(str(lw_hz_1 / cur_spectral_dim[1]['spectrometer_frequency']),
-                                                      getMaxEffDigits([str(lw_hz_1), str(cur_spectral_dim[1]['spectrometer_frequency'])]))
-            elif isinstance(cur_spectral_dim[1]['value_first_point'], float) and pos_hz_1 is not None:
-                dstFunc['line_width_1'] = roundString(str(lw_hz_1 / (pos_hz_1 / (cur_spectral_dim[1]['value_first_point'] - pos_1))),
-                                                      getMaxEffDigits([str(lw_hz_1), str(pos_1), str(cur_spectral_dim[1]['value_first_point'])]))
-
-        if lw_hz_2 is not None:
-            if cur_spectral_dim[2]['spectrometer_frequency'] is not None:
-                dstFunc['line_width_2'] = roundString(str(lw_hz_2 / cur_spectral_dim[2]['spectrometer_frequency']),
-                                                      getMaxEffDigits([str(lw_hz_2), str(cur_spectral_dim[2]['spectrometer_frequency'])]))
-            elif isinstance(cur_spectral_dim[2]['value_first_point'], float) and pos_hz_2 is not None:
-                dstFunc['line_width_2'] = roundString(str(lw_hz_2 / (pos_hz_2 / (cur_spectral_dim[2]['value_first_point'] - pos_2))),
-                                                      getMaxEffDigits([str(lw_hz_2), str(pos_2), str(cur_spectral_dim[2]['value_first_point'])]))
 
         return dstFunc
 
     def validatePeak3D(self, index: int, pos_1: float, pos_2: float, pos_3: float,
                        pos_unc_1: Optional[float], pos_unc_2: Optional[float], pos_unc_3: Optional[float],
                        lw_1: Optional[float], lw_2: Optional[float], lw_3: Optional[float],
-                       pos_hz_1: Optional[float], pos_hz_2: Optional[float], pos_hz_3: Optional[float],
+                       pos_hz_1: Optional[float], pos_hz_2: Optional[float], pos_hz_3: Optional[float],  # pylint: disable=unused-argument
                        lw_hz_1: Optional[float], lw_hz_2: Optional[float], lw_hz_3: Optional[float],
                        height: Optional[str], height_uncertainty: Optional[str],
                        volume: Optional[str], volume_uncertainty: Optional[str]) -> Optional[dict]:
@@ -1542,50 +1527,25 @@ class BasePKParserListener():
         if pos_unc_3 is not None and pos_unc_3 != 0.0:
             dstFunc['position_uncertainty_3'] = str(pos_unc_3)
 
-        if lw_1 is not None and lw_1 != 0.0:
+        if lw_hz_1 is not None and lw_hz_1 != 0.0:
+            dstFunc['line_width_1'] = str(lw_hz_1)
+        elif lw_1 is not None and lw_1 != 0.0:
             dstFunc['line_width_1'] = str(lw_1)
-        if lw_2 is not None and lw_2 != 0.0:
+        if lw_hz_2 is not None and lw_hz_2 != 0.0:
+            dstFunc['line_width_2'] = str(lw_hz_2)
+        elif lw_2 is not None and lw_2 != 0.0:
             dstFunc['line_width_2'] = str(lw_2)
-        if lw_3 is not None and lw_3 != 0.0:
+        if lw_hz_3 is not None and lw_hz_3 != 0.0:
+            dstFunc['line_width_3'] = str(lw_hz_3)
+        elif lw_3 is not None and lw_3 != 0.0:
             dstFunc['line_width_3'] = str(lw_3)
-
-        if (lw_1 is None and lw_hz_1 is not None) or (lw_2 is None and lw_hz_2 is not None)\
-           or (lw_3 is None and lw_hz_3 is not None):
-            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-        if lw_hz_1 is not None or lw_hz_2 is not None or lw_hz_3 is not None:
-            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-        if lw_hz_1 is not None:
-            if cur_spectral_dim[1]['spectrometer_frequency'] is not None:
-                dstFunc['line_width_1'] = roundString(str(lw_hz_1 / cur_spectral_dim[1]['spectrometer_frequency']),
-                                                      getMaxEffDigits([str(lw_hz_1), str(cur_spectral_dim[1]['spectrometer_frequency'])]))
-            elif isinstance(cur_spectral_dim[1]['value_first_point'], float) and pos_hz_1 is not None:
-                dstFunc['line_width_1'] = roundString(str(lw_hz_1 / (pos_hz_1 / (cur_spectral_dim[1]['value_first_point'] - pos_1))),
-                                                      getMaxEffDigits([str(lw_hz_1), str(pos_1), str(cur_spectral_dim[1]['value_first_point'])]))
-
-        if lw_hz_2 is not None:
-            if cur_spectral_dim[2]['spectrometer_frequency'] is not None:
-                dstFunc['line_width_2'] = roundString(str(lw_hz_2 / cur_spectral_dim[2]['spectrometer_frequency']),
-                                                      getMaxEffDigits([str(lw_hz_2), str(cur_spectral_dim[2]['spectrometer_frequency'])]))
-            elif isinstance(cur_spectral_dim[2]['value_first_point'], float) and pos_hz_2 is not None:
-                dstFunc['line_width_2'] = roundString(str(lw_hz_2 / (pos_hz_2 / (cur_spectral_dim[2]['value_first_point'] - pos_2))),
-                                                      getMaxEffDigits([str(lw_hz_2), str(pos_2), str(cur_spectral_dim[2]['value_first_point'])]))
-
-        if lw_hz_3 is not None:
-            if cur_spectral_dim[3]['spectrometer_frequency'] is not None:
-                dstFunc['line_width_3'] = roundString(str(lw_hz_3 / cur_spectral_dim[3]['spectrometer_frequency']),
-                                                      getMaxEffDigits([str(lw_hz_3), str(cur_spectral_dim[3]['spectrometer_frequency'])]))
-            elif isinstance(cur_spectral_dim[3]['value_first_point'], float) and pos_hz_3 is not None:
-                dstFunc['line_width_3'] = roundString(str(lw_hz_3 / (pos_hz_3 / (cur_spectral_dim[3]['value_first_point'] - pos_3))),
-                                                      getMaxEffDigits([str(lw_hz_3), str(pos_3), str(cur_spectral_dim[3]['value_first_point'])]))
 
         return dstFunc
 
     def validatePeak4D(self, index: int, pos_1: float, pos_2: float, pos_3: float, pos_4: float,
                        pos_unc_1: Optional[float], pos_unc_2: Optional[float], pos_unc_3: Optional[float], pos_unc_4: Optional[float],
                        lw_1: Optional[float], lw_2: Optional[float], lw_3: Optional[float], lw_4: Optional[float],
-                       pos_hz_1: Optional[float], pos_hz_2: Optional[float], pos_hz_3: Optional[float], pos_hz_4: Optional[float],
+                       pos_hz_1: Optional[float], pos_hz_2: Optional[float], pos_hz_3: Optional[float], pos_hz_4: Optional[float],  # pylint: disable=unused-argument
                        lw_hz_1: Optional[float], lw_hz_2: Optional[float], lw_hz_3: Optional[float], lw_hz_4: Optional[float],
                        height: Optional[str], height_uncertainty: Optional[str],
                        volume: Optional[str], volume_uncertainty: Optional[str]) -> Optional[dict]:
@@ -1671,50 +1631,22 @@ class BasePKParserListener():
         if pos_unc_4 is not None and pos_unc_4 != 0.0:
             dstFunc['position_uncertainty_4'] = str(pos_unc_4)
 
-        if lw_1 is not None and lw_1 != 0.0:
+        if lw_hz_1 is not None and lw_hz_1 != 0.0:
+            dstFunc['line_width_1'] = str(lw_hz_1)
+        elif lw_1 is not None and lw_1 != 0.0:
             dstFunc['line_width_1'] = str(lw_1)
-        if lw_2 is not None and lw_2 != 0.0:
+        if lw_hz_2 is not None and lw_hz_2 != 0.0:
+            dstFunc['line_width_2'] = str(lw_hz_2)
+        elif lw_2 is not None and lw_2 != 0.0:
             dstFunc['line_width_2'] = str(lw_2)
-        if lw_3 is not None and lw_3 != 0.0:
+        if lw_hz_3 is not None and lw_hz_3 != 0.0:
+            dstFunc['line_width_3'] = str(lw_hz_3)
+        elif lw_3 is not None and lw_3 != 0.0:
             dstFunc['line_width_3'] = str(lw_3)
-        if lw_4 is not None and lw_4 != 0.0:
+        if lw_hz_4 is not None and lw_hz_4 != 0.0:
+            dstFunc['line_width_4'] = str(lw_hz_4)
+        elif lw_4 is not None and lw_4 != 0.0:
             dstFunc['line_width_4'] = str(lw_4)
-
-        if (lw_1 is None and lw_hz_1 is not None) or (lw_2 is None and lw_hz_2 is not None)\
-           or (lw_3 is None and lw_hz_3 is not None) or (lw_4 is None and lw_hz_4 is not None):
-            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-        if lw_hz_1 is not None:
-            if cur_spectral_dim[1]['spectrometer_frequency'] is not None:
-                dstFunc['line_width_1'] = roundString(str(lw_hz_1 / cur_spectral_dim[1]['spectrometer_frequency']),
-                                                      getMaxEffDigits([str(lw_hz_1), str(cur_spectral_dim[1]['spectrometer_frequency'])]))
-            elif isinstance(cur_spectral_dim[1]['value_first_point'], float) and pos_hz_1 is not None:
-                dstFunc['line_width_1'] = roundString(str(lw_hz_1 / (pos_hz_1 / (cur_spectral_dim[1]['value_first_point'] - pos_1))),
-                                                      getMaxEffDigits([str(lw_hz_1), str(pos_1), str(cur_spectral_dim[1]['value_first_point'])]))
-
-        if lw_hz_2 is not None:
-            if cur_spectral_dim[2]['spectrometer_frequency'] is not None:
-                dstFunc['line_width_2'] = roundString(str(lw_hz_2 / cur_spectral_dim[2]['spectrometer_frequency']),
-                                                      getMaxEffDigits([str(lw_hz_2), str(cur_spectral_dim[2]['spectrometer_frequency'])]))
-            elif isinstance(cur_spectral_dim[2]['value_first_point'], float) and pos_hz_2 is not None:
-                dstFunc['line_width_2'] = roundString(str(lw_hz_2 / (pos_hz_2 / (cur_spectral_dim[2]['value_first_point'] - pos_2))),
-                                                      getMaxEffDigits([str(lw_hz_2), str(pos_2), str(cur_spectral_dim[2]['value_first_point'])]))
-
-        if lw_hz_3 is not None:
-            if cur_spectral_dim[3]['spectrometer_frequency'] is not None:
-                dstFunc['line_width_3'] = roundString(str(lw_hz_3 / cur_spectral_dim[3]['spectrometer_frequency']),
-                                                      getMaxEffDigits([str(lw_hz_3), str(cur_spectral_dim[3]['spectrometer_frequency'])]))
-            elif isinstance(cur_spectral_dim[3]['value_first_point'], float) and pos_hz_3 is not None:
-                dstFunc['line_width_3'] = roundString(str(lw_hz_3 / (pos_hz_3 / (cur_spectral_dim[3]['value_first_point'] - pos_3))),
-                                                      getMaxEffDigits([str(lw_hz_3), str(pos_3), str(cur_spectral_dim[3]['value_first_point'])]))
-
-        if lw_hz_4 is not None:
-            if cur_spectral_dim[4]['spectrometer_frequency'] is not None:
-                dstFunc['line_width_4'] = roundString(str(lw_hz_4 / cur_spectral_dim[4]['spectrometer_frequency']),
-                                                      getMaxEffDigits([str(lw_hz_4), str(cur_spectral_dim[4]['spectrometer_frequency'])]))
-            elif isinstance(cur_spectral_dim[4]['value_first_point'], float) and pos_hz_4 is not None:
-                dstFunc['line_width_4'] = roundString(str(lw_hz_4 / (pos_hz_4 / (cur_spectral_dim[4]['value_first_point'] - pos_4))),
-                                                      getMaxEffDigits([str(lw_hz_4), str(pos_4), str(cur_spectral_dim[4]['value_first_point'])]))
 
         return dstFunc
 

@@ -6330,7 +6330,7 @@ class NmrDpUtility:
                                                                                'range': WEIGHT_RANGE},
                                                                               {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': False},
                                                                               {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'mandatory': False},
-                                                                              {'name': 'Entity_ID', 'type': 'positive-int'},
+                                                                              {'name': 'Entity_ID', 'type': 'positive-int', 'mandatory': False},
                                                                               {'name': 'Comp_index_ID', 'type': 'int', 'mandatory': False},
                                                                               {'name': 'Comp_ID', 'type': 'str', 'mandatory': False, 'uppercase': True},
                                                                               {'name': 'Atom_ID', 'type': 'str', 'mandatory': False},

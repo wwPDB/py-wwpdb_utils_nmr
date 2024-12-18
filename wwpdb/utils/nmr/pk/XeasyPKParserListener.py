@@ -327,27 +327,28 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 sf['loop'].add_data(row)
 
                 row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc)
-                sf['alt_loop'][0].add_data(row)
+                sf['alt_loops'][0].add_data(row)
                 for idx in range(self.num_of_dim):
                     row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
-                    sf['alt_loop'][1].add_data(row)
+                    sf['alt_loops'][1].add_data(row)
                 if has_assignments:
                     for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
                         uniqAtoms = []
                         for idx in range(self.num_of_dim):
                             atom = atomSelectionSet[idx]
-                            if atom not in uniqAtoms:
+                            atom0 = atom[0]
+                            if atom0 not in uniqAtoms:
                                 asis = asIsSet[idx]
                                 ambig_code = None
-                                if len(atomSelectionSet) > 1:
-                                    ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom['comp_id'], atom['atom_id'])
+                                if len(atom) > 1:
+                                    ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
                                     if ambig_code == 0:
                                         ambig_code = None
                                 row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1,
                                                         self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                                                        atom, asis, ambig_code)
-                                sf['alt_loop'][2].add_data(row)
-                                uniqAtoms.append(atom)
+                                                        atom0, asis, ambig_code)
+                                sf['alt_loops'][2].add_data(row)
+                                uniqAtoms.append(atom0)
 
         finally:
             self.numberSelection.clear()
@@ -543,27 +544,28 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 sf['loop'].add_data(row)
 
                 row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc)
-                sf['alt_loop'][0].add_data(row)
+                sf['alt_loops'][0].add_data(row)
                 for idx in range(self.num_of_dim):
                     row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
-                    sf['alt_loop'][1].add_data(row)
+                    sf['alt_loops'][1].add_data(row)
                 if has_assignments:
                     for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
                         uniqAtoms = []
                         for idx in range(self.num_of_dim):
                             atom = atomSelectionSet[idx]
-                            if atom not in uniqAtoms:
+                            atom0 = atom[0]
+                            if atom0 not in uniqAtoms:
                                 asis = asIsSet[idx]
                                 ambig_code = None
-                                if len(atomSelectionSet) > 1:
-                                    ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom['comp_id'], atom['atom_id'])
+                                if len(atom) > 1:
+                                    ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
                                     if ambig_code == 0:
                                         ambig_code = None
                                 row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1,
                                                         self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                                                        atom, asis, ambig_code)
-                                sf['alt_loop'][2].add_data(row)
-                                uniqAtoms.append(atom)
+                                                        atom0, asis, ambig_code)
+                                sf['alt_loops'][2].add_data(row)
+                                uniqAtoms.append(atom0)
 
         finally:
             self.numberSelection.clear()
@@ -775,27 +777,28 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 sf['loop'].add_data(row)
 
                 row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc)
-                sf['alt_loop'][0].add_data(row)
+                sf['alt_loops'][0].add_data(row)
                 for idx in range(self.num_of_dim):
                     row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
-                    sf['alt_loop'][1].add_data(row)
+                    sf['alt_loops'][1].add_data(row)
                 if has_assignments:
                     for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
                         uniqAtoms = []
                         for idx in range(self.num_of_dim):
                             atom = atomSelectionSet[idx]
-                            if atom not in uniqAtoms:
+                            atom0 = atom[0]
+                            if atom0 not in uniqAtoms:
                                 asis = asIsSet[idx]
                                 ambig_code = None
-                                if len(atomSelectionSet) > 1:
-                                    ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom['comp_id'], atom['atom_id'])
+                                if len(atom) > 1:
+                                    ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
                                     if ambig_code == 0:
                                         ambig_code = None
                                 row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1,
                                                         self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                                                        atom, asis, ambig_code)
-                                sf['alt_loop'][2].add_data(row)
-                                uniqAtoms.append(atom)
+                                                        atom0, asis, ambig_code)
+                                sf['alt_loops'][2].add_data(row)
+                                uniqAtoms.append(atom0)
 
         finally:
             self.numberSelection.clear()

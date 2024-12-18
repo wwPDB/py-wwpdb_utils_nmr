@@ -60,8 +60,6 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by SparkyPKParser#data_label.
     def enterData_label(self, ctx: SparkyPKParser.Data_labelContext):
-        if ctx.W1_LA():
-            self.num_of_dim = max(self.num_of_dim, 1)
         if ctx.W2_LA():
             self.num_of_dim = max(self.num_of_dim, 2)
         if ctx.W3_LA():
@@ -82,8 +80,6 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by SparkyPKParser#data_label_wo_assign.
     def enterData_label_wo_assign(self, ctx: SparkyPKParser.Data_label_wo_assignContext):
-        if ctx.W1():
-            self.num_of_dim = max(self.num_of_dim, 1)
         if ctx.W2_LA():
             self.num_of_dim = max(self.num_of_dim, 2)
         if ctx.W3_LA():

@@ -144,10 +144,10 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             self.num_of_dim = 4
             self.initSpectralDim()
         elif ctx.Z_ppm():
-            self.num_of_dim = 4
+            self.num_of_dim = 3
             self.initSpectralDim()
         elif ctx.Y_ppm():
-            self.num_of_dim = 4
+            self.num_of_dim = 2
             self.initSpectralDim()
 
         if self.spectrum_name is not None:
@@ -841,8 +841,6 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by VnmrPKParser#data_label.
     def enterData_label(self, ctx: VnmrPKParser.Data_labelContext):
-        if ctx.Dim_0_ppm():
-            self.num_of_dim = max(self.num_of_dim, 1)
         if ctx.Dim_1_ppm():
             self.num_of_dim = max(self.num_of_dim, 2)
         if ctx.Dim_2_ppm():

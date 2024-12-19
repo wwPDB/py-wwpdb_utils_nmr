@@ -178,7 +178,7 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
             row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
                            sf['list_id'], self.entryId, dstFunc,
-                           self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                           None, None, None,
                            details=annotation)
             sf['loop'].add_data(row)
 
@@ -256,7 +256,7 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
             row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
                            sf['list_id'], self.entryId, dstFunc,
-                           self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                           None, None, None,
                            details=annotation)
             sf['loop'].add_data(row)
 
@@ -341,7 +341,7 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
             row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
                            sf['list_id'], self.entryId, dstFunc,
-                           self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                           None, None, None,
                            details=annotation)
             sf['loop'].add_data(row)
 

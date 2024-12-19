@@ -200,7 +200,8 @@
 # 22-Nov-2024  M. Yokochi - add support for CYANA NOA (NOE Assignment) file. file type: 'nm-res-noa'
 # 27-Nov-2024  M. Yokochi - implement atom name mapping history as requirement of standalone NMR data conversion service
 # 28-Nov-2024  M. Yokochi - drop support for old pynmrstar versions less than 3.2
-# 16-Dec-2024  M. Yokochi - combine spectral peak lists written in software native formats into single NMR-STAR file (DAOTHER-8905, NMR restraint remediation Phase 2)
+# 16-Dec-2024  M. Yokochi - combine spectral peak lists written in software native formats into single NMR-STAR file (DAOTHER-8905, NMR data remediation Phase 2)
+# 19-Dec-2024  M. Yokochi - add 'nmr-merge-nmrif-deposit' workflow operation (DAOTHER-8905, NMR data remediation Phase 2)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -347,6 +348,7 @@ try:
     from wwpdb.utils.nmr.pk.XeasyPKReader import XeasyPKReader
     from wwpdb.utils.nmr.pk.XeasyPROTReader import XeasyPROTReader
     from wwpdb.utils.nmr.pk.XwinNmrPKReader import XwinNmrPKReader
+    from wwpdb.utils.nmr.ann.OneDepAnnTasks import OneDepAnnTasks
 
 except ImportError:
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -466,6 +468,7 @@ except ImportError:
     from nmr.pk.XeasyPKReader import XeasyPKReader
     from nmr.pk.XeasyPROTReader import XeasyPROTReader
     from nmr.pk.XwinNmrPKReader import XwinNmrPKReader
+    from nmr.ann.OneDepAnnTasks import OneDepAnnTasks
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
@@ -1596,7 +1599,8 @@ class NmrDpUtility:
                               'nmr-cs-nef-consistency-check',
                               'nmr-cs-str-consistency-check',
                               'nmr-cs-mr-merge',
-                              'nmr-str2cif-annotate'
+                              'nmr-str2cif-annotate',
+                              'nmr-merge-nmrif-deposit'
                               )
 
         # validation tasks for NMR data only
@@ -1754,6 +1758,20 @@ class NmrDpUtility:
         __annotateTasks.extend(__depositTasks)
         __annotateTasks.append(self.__depositNmrData)
 
+        __mergeNmrIfTasks = [self.__initializeDpReport,
+                             self.__validateInputSource,
+                             self.__detectContentSubType,
+                             self.__extractPolymerSequence,
+                             self.__extractPolymerSequenceInLoop,
+                             self.__extractCommonPolymerSequence,
+                             self.__extractNonStandardResidue,
+                             self.__appendPolymerSequenceAlignment]
+        __mergeNmrIfTasks.extend(__cifCheckTasks)
+        __mergeNmrIfTasks.extend(__crossCheckTasks)
+        __mergeNmrIfTasks.append(self.__parseNmrIf)
+        __mergeNmrIfTasks.append(self.__mergeNmrIf)
+        __mergeNmrIfTasks.append(self.__depositNmrData)
+
         # dictionary of processing tasks of each workflow operation
         self.__procTasksDict = {'consistency-check': __checkTasks,
                                 'deposit': __depositTasks,
@@ -1763,7 +1781,8 @@ class NmrDpUtility:
                                 'nmr-cs-nef-consistency-check': [self.__depositLegacyNmrData],
                                 'nmr-cs-str-consistency-check': [self.__depositLegacyNmrData],
                                 'nmr-cs-mr-merge': __mergeCsAndMrTasks,
-                                'nmr-str2cif-annotate': __annotateTasks
+                                'nmr-str2cif-annotate': __annotateTasks,
+                                'nmr-merge-nmrof-deposit': __mergeNmrIfTasks
                                 }
 
         # data processing report
@@ -6877,6 +6896,9 @@ class NmrDpUtility:
 
         # RCI
         self.__rci = RCI(False, self.__lfh)
+
+        # NMRIF reader
+        self.__nmrIfR = None
 
     def setVerbose(self, verbose: bool):
         """ Set verbose mode.
@@ -59144,5 +59166,69 @@ class NmrDpUtility:
 
         except Exception:
             raise KeyError("+NmrDpUtility.__initReousrceForStr2Nef() ++ Error  - Could not find 'nef_file_path' or 'report_file_path' output parameter.")
+
+        return False
+
+    def __parseNmrIf(self) -> bool:
+        """ Parse NMRIF file.
+        """
+
+        if 'nmrif_file_path' in self.__inputParamDict:
+
+            err = f"No such {self.__inputParamDict['nmrif_file_path']!r} file."
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseNmrIf() ++ Error  - " + err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write(f"+NmrDpUtility.__parseNmrIf() ++ Error  - {err}\n")
+
+            return False
+
+        if self.__nmrIfR is not None:
+            return True
+
+        fPath = self.__inputParamDict['nmrif_file_path']
+
+        self.__nmrIfR = CifReader(self.__verbose, self.__lfh)
+
+        try:
+
+            if self.__nmrIfR.parse(fPath):
+                return True
+
+        except Exception:
+            pass
+
+        return False
+
+    def __mergeNmrIf(self) -> bool:
+        """ Merge NMRIF metadata.
+        """
+
+        if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
+            return False
+
+        if self.__nmrIfR is None:
+            return False
+
+        master_entry = self.__star_data[0]
+
+        entry = self.__nmrIfR.getDictList('entry')
+
+        if len(entry) > 0 and 'id' in entry[0]:
+            self.__entry_id = entry[0]['id'].strip().replace(' ', '_')
+
+        ann = OneDepAnnTasks(self.__verbose, self.__lfh,
+                             self.__inputParamDict, self.__outputParamDict,
+                             self.__sf_category_list, self.__entry_id,
+                             self.report,
+                             ccU=self.__ccU, csStat=self.__csStat)
+
+        if ann.perform(master_entry, self.__nmrIfR):
+            self.__c2S.set_entry_id(master_entry, self.__entry_id)
+            self.__c2S.normalize_str(master_entry)
+
+            return True
 
         return False

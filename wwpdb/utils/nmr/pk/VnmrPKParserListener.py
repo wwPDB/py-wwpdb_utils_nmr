@@ -148,7 +148,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
 
         self.__has_volume = bool(ctx.Volume())
-        self.__has_line_width = bool(ctx.Linewidth_X())
+        self.__has_line_width = bool(ctx.Linewidth_X()) or bool(ctx.FWHM_X())
         self.__has_assign = bool(ctx.Comment())
 
     # Exit a parse tree produced by VnmrPKParser#format.

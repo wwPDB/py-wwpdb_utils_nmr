@@ -201,7 +201,7 @@
 # 27-Nov-2024  M. Yokochi - implement atom name mapping history as requirement of standalone NMR data conversion service
 # 28-Nov-2024  M. Yokochi - drop support for old pynmrstar versions less than 3.2
 # 16-Dec-2024  M. Yokochi - combine spectral peak lists written in software native formats into single NMR-STAR file (DAOTHER-8905, NMR data remediation Phase 2)
-# 19-Dec-2024  M. Yokochi - add 'nmr-merge-nmrif-deposit' workflow operation (DAOTHER-8905, NMR data remediation Phase 2)
+# 19-Dec-2024  M. Yokochi - add 'nmr-if-merge-deposit' workflow operation (DAOTHER-8905, NMR data remediation Phase 2)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -1472,6 +1472,8 @@ class NmrDpUtility:
         self.__combined_mode = True
         # whether native NMR combined deposition
         self.__native_combined = False
+        # whether to merge NMR metadata on submission
+        self.__submission_mode = False
         # whether to allow sequence mismatch during annotation
         self.__annotation_mode = False
         # whether to use datablock name of public release
@@ -1600,7 +1602,7 @@ class NmrDpUtility:
                               'nmr-cs-str-consistency-check',
                               'nmr-cs-mr-merge',
                               'nmr-str2cif-annotate',
-                              'nmr-merge-nmrif-deposit'
+                              'nmr-if-merge-deposit'
                               )
 
         # validation tasks for NMR data only
@@ -1782,7 +1784,7 @@ class NmrDpUtility:
                                 'nmr-cs-str-consistency-check': [self.__depositLegacyNmrData],
                                 'nmr-cs-mr-merge': __mergeCsAndMrTasks,
                                 'nmr-str2cif-annotate': __annotateTasks,
-                                'nmr-merge-nmrof-deposit': __mergeNmrIfTasks
+                                'nmr-if-merge-deposit': __mergeNmrIfTasks
                                 }
 
         # data processing report
@@ -7110,6 +7112,7 @@ class NmrDpUtility:
             self.__nefT.allow_missing_dist_restraint(True)
             self.__allow_missing_dist_restraint = self.__allow_missing_legacy_dist_restraint = True
 
+        self.__submission_mode = 'merge-deposit' in op
         self.__annotation_mode = 'annotate' in op
         self.__release_mode = 'release' in op
 
@@ -7382,7 +7385,7 @@ class NmrDpUtility:
 
                     os.removedirs(pk_dir)
 
-            if (self.__annotation_mode or self.__release_mode) and self.__tmpPath is not None:
+            if (self.__submission_mode or self.__annotation_mode or self.__release_mode) and self.__tmpPath is not None:
                 os.remove(self.__tmpPath)
                 self.__tmpPath = None
 
@@ -7883,7 +7886,7 @@ class NmrDpUtility:
 
                 is_done = False
 
-            if _srcPath is not None and not self.__annotation_mode:
+            if _srcPath is not None and not self.__submission_mode and not self.__annotation_mode:
                 try:
                     os.remove(_srcPath)
                 except OSError:
@@ -10475,7 +10478,7 @@ class NmrDpUtility:
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
         if not self.__combined_mode and self.__remediation_mode\
-           and not self.__annotation_mode and not self.__release_mode\
+           and not self.__submission_mode and not self.__annotation_mode and not self.__release_mode\
            and file_list_id == 0 and file_type == 'nmr-star':
 
             content_subtype = 'chem_shift_ref'
@@ -21489,7 +21492,7 @@ class NmrDpUtility:
                         disallowed_tags.append(t)
 
                 if self.__bmrb_only:
-                    loop = sf.get_loop_by_category(lp_category)
+                    loop = sf.get_loop(lp_category)
                     disallowed_tags = list(set(loop.tags) & set(disallowed_tags))
                     loop.remove_tag(disallowed_tags)
 
@@ -21499,7 +21502,7 @@ class NmrDpUtility:
             data_items = self.data_items[file_type][content_subtype]
 
             if file_type == 'nmr-star' and content_subtype == 'ccr_dd_restraint':
-                loop = sf.get_loop_by_category(lp_category)
+                loop = sf.get_loop(lp_category)
                 if 'Dipole_2_chem_comp_index_ID_2' in loop.tags:
                     key_items = copy.copy(key_items)
                     key_item = next((key_item for key_item in key_items if key_item['name'] == 'Dipole_2_comp_index_ID_2'), None)
@@ -21738,7 +21741,7 @@ class NmrDpUtility:
         key_items = self.consist_key_items[file_type][content_subtype]
 
         if file_type == 'nmr-star' and content_subtype == 'ccr_dd_restraint':
-            loop = sf.get_loop_by_category(lp_category)
+            loop = sf.get_loop(lp_category)
             if 'Dipole_2_chem_comp_index_ID_2' in loop.tags:
                 key_items = copy.copy(key_items)
                 key_item = next((key_item for key_item in key_items if key_item['name'] == 'Dipole_2_comp_index_ID_2'), None)
@@ -47216,7 +47219,7 @@ class NmrDpUtility:
         """ Delete skipped saveframes.
         """
 
-        if not self.__combined_mode or self.__annotation_mode or self.__release_mode:
+        if not self.__combined_mode or self.__submission_mode or self.__annotation_mode or self.__release_mode:
             return True
 
         if len(self.__star_data) == 0:
@@ -47509,7 +47512,7 @@ class NmrDpUtility:
         if not has_poly_seq:
             return False
 
-        if not self.__release_mode and not self.__annotation_mode:
+        if not self.__submission_mode and not self.__annotation_mode and not self.__release_mode:
             self.__cleanUpSf()
 
         master_entry = self.__star_data[0]
@@ -55522,7 +55525,7 @@ class NmrDpUtility:
 
         master_entry = self.__c2S.normalize(master_entry)
 
-        if not self.__annotation_mode or self.__dstPath != self.__srcPath:
+        if not self.__submission_mode and not self.__annotation_mode or self.__dstPath != self.__srcPath:
 
             master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
@@ -55552,9 +55555,10 @@ class NmrDpUtility:
 
         if 'nef' not in self.__op and ('deposit' in self.__op or 'annotate' in self.__op) and 'nmr_cif_file_path' in self.__outputParamDict:
 
-            if self.__cifPath is None:
+            if self.__dstPath__ is None:
+                self.__dstPath__ = self.__outputParamDict['nmr_cif_file_path']
 
-                master_entry.write_to_file(self.__dstPath__, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
+            master_entry.write_to_file(self.__dstPath__, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
             try:
 
@@ -57443,7 +57447,7 @@ class NmrDpUtility:
                             self.__inputParamDict, self.__outputParamDict,
                             self.__sf_category_list, self.__entry_id, self.__bmrb_id,
                             self.__sail_flag, self.__recvd_nmr_data, self.report,
-                            ccU=self.__ccU, csStat=self.__csStat)
+                            ccU=self.__ccU, csStat=self.__csStat, c2S=self.__c2S)
 
         return ann.perform(self.__star_data[0])
 
@@ -59173,7 +59177,7 @@ class NmrDpUtility:
         """ Parse NMRIF file.
         """
 
-        if 'nmrif_file_path' in self.__inputParamDict:
+        if 'nmrif_file_path' not in self.__inputParamDict:
 
             err = f"No such {self.__inputParamDict['nmrif_file_path']!r} file."
 
@@ -59214,21 +59218,15 @@ class NmrDpUtility:
 
         master_entry = self.__star_data[0]
 
+        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
+
         entry = self.__nmrIfR.getDictList('entry')
 
         if len(entry) > 0 and 'id' in entry[0]:
             self.__entry_id = entry[0]['id'].strip().replace(' ', '_')
 
         ann = OneDepAnnTasks(self.__verbose, self.__lfh,
-                             self.__inputParamDict, self.__outputParamDict,
                              self.__sf_category_list, self.__entry_id,
-                             self.report,
-                             ccU=self.__ccU, csStat=self.__csStat)
+                             c2S=self.__c2S)
 
-        if ann.perform(master_entry, self.__nmrIfR):
-            self.__c2S.set_entry_id(master_entry, self.__entry_id)
-            self.__c2S.normalize_str(master_entry)
-
-            return True
-
-        return False
+        return ann.perform(master_entry, self.__nmrIfR)

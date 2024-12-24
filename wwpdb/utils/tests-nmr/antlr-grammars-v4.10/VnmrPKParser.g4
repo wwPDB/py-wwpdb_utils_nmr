@@ -36,7 +36,8 @@ comment:
 	COMMENT Any_name* (RETURN_CM | EOF);
 
 format:
-	Format Peak_number X_ppm Y_ppm Z_ppm? A_ppm? Intensity Volume? Linewidth_X? Linewidth_Y? Linewidth_Z? Linewidth_A? Comment? RETURN_FO
+	Format Peak_number X_ppm Y_ppm Z_ppm? A_ppm? Intensity Volume?
+	(Linewidth_X | FWHM_X)? (Linewidth_Y | FWHM_Y)? (Linewidth_Z | FWHM_Z)? (Linewidth_A | FWHM_A)? Comment? RETURN_FO
 	(peak_ll2d+ | peak_ll3d+ | peak_ll4d+);
 
 peak_ll2d:

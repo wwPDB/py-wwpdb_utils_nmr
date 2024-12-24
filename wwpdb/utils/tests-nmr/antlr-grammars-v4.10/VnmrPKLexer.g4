@@ -94,6 +94,11 @@ Linewidth_X:		'Linewidth_X(Hz)';
 Linewidth_Y:		'Linewidth_Y(Hz)';
 Linewidth_Z:		'Linewidth_Z(Hz)';
 Linewidth_A:		'Linewidth_A(Hz)';
+FWHM_X:			'FWHM_X(Hz)';
+FWHM_Y:			'FWHM_Y(Hz)';
+FWHM_Z:			'FWHM_Z(Hz)';
+FWHM_A:			'FWHM_A(Hz)';
+
 Comment:		'Comment';
 
 SPACE_FO:		[ \t]+ -> skip;

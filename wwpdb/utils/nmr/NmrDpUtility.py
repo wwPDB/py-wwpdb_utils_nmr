@@ -349,6 +349,7 @@ try:
     from wwpdb.utils.nmr.pk.XeasyPROTReader import XeasyPROTReader
     from wwpdb.utils.nmr.pk.XwinNmrPKReader import XwinNmrPKReader
     from wwpdb.utils.nmr.ann.OneDepAnnTasks import OneDepAnnTasks
+    from wwpdb.utils.nmr.ann.BMRBAnnTasks import BMRBAnnTasks
 
 except ImportError:
     from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
@@ -469,6 +470,7 @@ except ImportError:
     from nmr.pk.XeasyPROTReader import XeasyPROTReader
     from nmr.pk.XwinNmrPKReader import XwinNmrPKReader
     from nmr.ann.OneDepAnnTasks import OneDepAnnTasks
+    from nmr.ann.BMRBAnnTasks import BMRBAnnTasks
 
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
@@ -1772,6 +1774,7 @@ class NmrDpUtility:
         __mergeNmrIfTasks.extend(__crossCheckTasks)
         __mergeNmrIfTasks.append(self.__parseNmrIf)
         __mergeNmrIfTasks.append(self.__mergeNmrIf)
+        __mergeNmrIfTasks.append(self.__performBmrbAnnotation)
         __mergeNmrIfTasks.append(self.__depositNmrData)
 
         # dictionary of processing tasks of each workflow operation
@@ -59230,3 +59233,29 @@ class NmrDpUtility:
                              c2S=self.__c2S)
 
         return ann.perform(master_entry, self.__nmrIfR)
+
+    def __performBmrbAnnotation(self) -> bool:
+        """ Perform a series of BMRB annotation.
+        """
+
+        if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
+            return False
+
+        if self.__nmrIfR is None:
+            return False
+
+        master_entry = self.__star_data[0]
+
+        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
+
+        entry = self.__nmrIfR.getDictList('entry')
+
+        if len(entry) > 0 and 'id' in entry[0]:
+            self.__entry_id = entry[0]['id'].strip().replace(' ', '_')
+
+        ann = BMRBAnnTasks(self.__verbose, self.__lfh,
+                           self.__sf_category_list, self.__entry_id,
+                           self.__sail_flag, self.report,
+                           ccU=self.__ccU, csStat=self.__csStat, c2S=self.__c2S)
+
+        return ann.perform(self.__star_data[0])

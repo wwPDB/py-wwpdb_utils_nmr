@@ -132,8 +132,6 @@ class BMRBAnnTasks:
         if not isinstance(master_entry, pynmrstar.Entry):
             return False
 
-        self.__c2S.set_entry_id(master_entry, self.__entryId)
-
         def eff_digits(value: str):
             """ Return effective digits.
             """

@@ -1753,29 +1753,21 @@ class NmrDpUtility:
                            self.__extractPolymerSequenceInLoop,
                            self.__extractCommonPolymerSequence,
                            self.__extractNonStandardResidue,
-                           self.__appendPolymerSequenceAlignment]
+                           self.__appendPolymerSequenceAlignment
+                           ]
+
         __annotateTasks.extend(__cifCheckTasks)
         __annotateTasks.extend(__crossCheckTasks)
         __annotateTasks.append(self.__updatePolymerSequence)
         __annotateTasks.append(self.__remediateRawTextPk)
-        __annotateTasks.append(self.__depositNmrData)
         __annotateTasks.extend(__depositTasks)
         __annotateTasks.append(self.__depositNmrData)
 
-        __mergeNmrIfTasks = [self.__initializeDpReport,
-                             self.__validateInputSource,
-                             self.__detectContentSubType,
-                             self.__extractPolymerSequence,
-                             self.__extractPolymerSequenceInLoop,
-                             self.__extractCommonPolymerSequence,
-                             self.__extractNonStandardResidue,
-                             self.__appendPolymerSequenceAlignment]
-        __mergeNmrIfTasks.extend(__cifCheckTasks)
-        __mergeNmrIfTasks.extend(__crossCheckTasks)
-        __mergeNmrIfTasks.append(self.__parseNmrIf)
-        __mergeNmrIfTasks.append(self.__mergeNmrIf)
-        __mergeNmrIfTasks.append(self.__performBmrbAnnotation)
-        __mergeNmrIfTasks.append(self.__depositNmrData)
+        __mergeNmrIfTasks = [self.__parseNmrIf,
+                             self.__mergeNmrIf,
+                             self.__performBmrbAnnotation,
+                             self.__depositNmrData
+                             ]
 
         # dictionary of processing tasks of each workflow operation
         self.__procTasksDict = {'consistency-check': __checkTasks,
@@ -59233,8 +59225,7 @@ class NmrDpUtility:
             self.__entry_id = entry[0]['id'].strip().replace(' ', '_')
 
         ann = OneDepAnnTasks(self.__verbose, self.__lfh,
-                             self.__sf_category_list, self.__entry_id,
-                             c2S=self.__c2S)
+                             self.__sf_category_list, self.__entry_id)
 
         return ann.perform(master_entry, self.__nmrIfR)
 

@@ -16,10 +16,8 @@ from typing import List
 
 try:
     from wwpdb.utils.nmr.AlignUtil import emptyValue
-    from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
 except ImportError:
     from nmr.AlignUtil import emptyValue
-    from nmr.CifToNmrStar import CifToNmrStar
 
 
 range_value_pattern = re.compile(r'^(.+)\s*-\s*(.+)$')
@@ -62,8 +60,7 @@ class OneDepAnnTasks:
     """
 
     def __init__(self, verbose: bool, log,
-                 sfCategoryList: List[str], entryId: str,
-                 c2S=None):
+                 sfCategoryList: List[str], entryId: str):
         self.__verbose = verbose
         self.__lfh = log
 
@@ -71,7 +68,7 @@ class OneDepAnnTasks:
         self.__entryId = entryId
 
         # CifToNmrStar
-        self.__c2S = CifToNmrStar(verbose) if c2S is None else c2S
+        # self.__c2S = CifToNmrStar(verbose) if c2S is None else c2S
 
         # derived from wwpdb.apps.deposit.depui.constant.REQUIREMENTS
         self.__nmrRequirements = {'nmrsample': ["pdbx_nmr_sample_details",
@@ -1125,8 +1122,9 @@ class OneDepAnnTasks:
                             if reset and len(lp) > 0:
                                 sf.add_loop(lp)
 
-        self.__c2S.set_entry_id(master_entry, self.__entryId)
-        self.__c2S.normalize(master_entry)
+        # BMRBAnnTask class will normalize later
+        # self.__c2S.set_entry_id(master_entry, self.__entryId)
+        # self.__c2S.normalize(master_entry)
 
         return True
 

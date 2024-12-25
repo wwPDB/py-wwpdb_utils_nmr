@@ -1605,8 +1605,9 @@ class BMRBAnnTasks:
 
                     unsorted_sample_types = []
                     for idx, row in enumerate(data):
-                        if row[1] in emptyValue and '' not in unsorted_sample_types:
-                            unsorted_sample_types.append('')
+                        if row[1] in emptyValue:
+                            if '' not in unsorted_sample_types:
+                                unsorted_sample_types.append('')
                             continue
                         if row[1] in ('protein', 'peptide', 'DNA', 'RNA', 'DNA/RNA hybrid', 'carbohydrate', 'polysaccharide',
                                       'reducing agent', 'chelating agent', 'salt', 'buffer', 'internal reference', 'solvent'):

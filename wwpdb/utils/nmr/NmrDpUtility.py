@@ -43161,6 +43161,8 @@ class NmrDpUtility:
 
             self.__total_models = 0
             self.__eff_model_ids = []
+            self.__representative_model_id = REPRESENTATIVE_MODEL_ID
+            self.__representative_alt_id = REPRESENTATIVE_ALT_ID
 
             ensemble = self.__cR.getDictList('pdbx_nmr_ensemble')
 
@@ -55558,10 +55560,12 @@ class NmrDpUtility:
 
         if 'nef' not in self.__op and ('deposit' in self.__op or 'annotate' in self.__op) and 'nmr_cif_file_path' in self.__outputParamDict:
 
-            if self.__dstPath__ is None:
-                self.__dstPath__ = self.__outputParamDict['nmr_cif_file_path']
+            if self.__cifPath is None or self.__submission_mode:
 
-            master_entry.write_to_file(self.__dstPath__, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
+                if self.__dstPath__ is None:
+                    self.__dstPath__ = self.__outputParamDict['nmr_cif_file_path']
+
+                master_entry.write_to_file(self.__dstPath__, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
             try:
 

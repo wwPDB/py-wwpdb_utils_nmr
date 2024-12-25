@@ -830,29 +830,29 @@ class OneDepAnnTasks:
                         self.__lfh.write(f"+OneDepAnnTasks.perform() ++ Warning  - {sf_category!r} category does not exist in NMR data\n")
                     continue
 
-                tag_maps = [map for map in self.__sfTagMap if map[2] == sf_tag_prefix]
-                sf_framecode_map = next((map for map in tag_maps if map[3] == 'Sf_framecode'), None)
-                list_id_map = next((map for map in tag_maps if map[3] == 'ID'), None)
+                sf_tag_maps = [map for map in self.__sfTagMap if map[2] == sf_tag_prefix]
+                sf_framecode_map = next((map for map in sf_tag_maps if map[3] == 'Sf_framecode'), None)
+                sf_id_map = next((map for map in sf_tag_maps if map[3] == 'ID'), None)
                 def_sf_tags = [tag.split('.')[1] for tag in self.__defSfTag if tag.split('.')[0] == sf_tag_prefix]
 
-                cif_rows = {}
+                sf_rows = {}
                 for cif_category in cif_categories:
                     if nmrif.hasCategory(cif_category) and nmrif.getRowLength(cif_category) > 0:
-                        cif_rows[cif_category] = nmrif.getDictList(cif_category)
+                        sf_rows[cif_category] = nmrif.getDictList(cif_category)
 
                 list_ids = []
-                if list_id_map is not None and list_id_map[0] in cif_rows:
-                    for row in cif_rows[list_id_map[0]]:
-                        if list_id_map[1] in row and row[list_id_map[1]].isdigit():
-                            list_ids.append(int(row[list_id_map[1]]))
+                if sf_id_map is not None and sf_id_map[0] in sf_rows:
+                    for row in sf_rows[sf_id_map[0]]:
+                        if sf_id_map[1] in row and row[sf_id_map[1]].isdigit():
+                            list_ids.append(int(row[sf_id_map[1]]))
 
                 # map code: '50' @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L202
-                insert_one = list_id_map is None or list_id_map[4] == 50
+                insert_one = sf_id_map is None or sf_id_map[4] == 50
 
                 if len(list_ids) == 0:
                     if not insert_one:
                         if self.__verbose:
-                            self.__lfh.write(f"+OneDepAnnTasks.perform() ++ Warning  - {list_id_map[0]}.{list_id_map[1]} is not set in NMRIF\n")
+                            self.__lfh.write(f"+OneDepAnnTasks.perform() ++ Warning  - {sf_id_map[0]}.{sf_id_map[1]} is not set in NMRIF\n")
                         continue
                     list_ids.append(1)
 
@@ -865,10 +865,14 @@ class OneDepAnnTasks:
                     reset = new_flag
                     has_uniq_sf_tag = False
                     sf = None
-                    for cif_category, rows in cif_rows.items():
-                        if list_id_map is None or list_id_map[0] == cif_category:
+
+                    for cif_category, rows in sf_rows.items():
+
+                        if sf_id_map is None or sf_id_map[0] == cif_category:
+
                             for row in rows:
-                                if list_id_map is None or (list_id_map[1] in row and row[list_id_map[1]] == str(list_id)):
+
+                                if sf_id_map is None or (sf_id_map[1] in row and row[sf_id_map[1]] == str(list_id)):
                                     sf_framecode = None
                                     if sf_framecode_map is not None and sf_framecode_map[1] in row:
                                         sf_framecode = row[sf_framecode_map[1]]
@@ -903,7 +907,7 @@ class OneDepAnnTasks:
 
                                         set_sf_tag(sf, 'Entry_ID', self.__entryId)
 
-                                    for map in tag_maps:
+                                    for map in sf_tag_maps:
                                         if map[0] == cif_category and map[1] in row and map[3] not in ('Sf_framecode', 'Sf_category', 'ID', 'Entry_ID'):
                                             set_sf_tag(sf, map[3], row[map[1]])
                                             has_uniq_sf_tag = True
@@ -934,9 +938,10 @@ class OneDepAnnTasks:
                         lp = None
 
                         cif_categories = set(map[0] for map in self.__lpTagMap if map[2] == lp_category)
-                        tags = {map[3]: (map[1], map[4]) for map in self.__lpTagMap if map[2] == lp_category}
-                        if 'Entry_ID' not in tags.keys():
-                            tags['Entry_ID'] = (None, None)
+                        lp_tag_dict = {map[3]: (map[1], map[4]) for map in self.__lpTagMap if map[2] == lp_category}
+                        if 'Entry_ID' not in lp_tag_dict.keys():
+                            lp_tag_dict['Entry_ID'] = (None, None)
+                        lp_tags = list(lp_tag_dict.keys())
 
                         for cif_category in cif_categories:
                             if not nmrif.hasCategory(cif_category) or nmrif.getRowLength(cif_category) == 0:
@@ -944,24 +949,26 @@ class OneDepAnnTasks:
                                     self.__lfh.write(f"+OneDepAnnTasks.perform() ++ Warning  - {cif_category!r} loop category does not exist in NMRIF\n")
 
                         list_id_tag = f'{sf_tag_prefix[1:]}_ID'
-                        cif_list_id_tag = tags[list_id_tag][0] if list_id_tag in tags else None
-                        has_id_tag = 'ID' in tags
+                        lp_list_id_tag = lp_tag_dict[list_id_tag][0] if list_id_tag in lp_tag_dict else None
                         def_lp_tags = [tag.split('.')[1] for tag in self.__defLpTag if tag.split('.')[0] == lp_category]
+                        has_id_tag = 'ID' in lp_tag_dict
 
-                        cif_rows = {}
+                        lp_rows = {}
                         for cif_category in cif_categories:
                             if nmrif.hasCategory(cif_category) and nmrif.getRowLength(cif_category) > 0:
-                                cif_rows[cif_category] = nmrif.getDictList(cif_category)
+                                lp_rows[cif_category] = nmrif.getDictList(cif_category)
 
-                        for cif_category, rows in cif_rows.items():
+                        for cif_category, rows in lp_rows.items():
+
                             for row in rows:
-                                if cif_list_id_tag is None or (cif_list_id_tag in row and row[cif_list_id_tag] == str(list_id)):
+
+                                if lp_list_id_tag is None or (lp_list_id_tag in row and row[lp_list_id_tag] == str(list_id)):
 
                                     if lp is None:
 
                                         if new_flag:
                                             lp = pynmrstar.Loop.from_scratch(lp_category)
-                                            lp.add_tag(list(tags.keys()))
+                                            lp.add_tag(lp_tags)
 
                                             for def_lp_tag in def_lp_tags:
                                                 if def_lp_tag not in lp.tags:
@@ -971,7 +978,7 @@ class OneDepAnnTasks:
 
                                             try:
                                                 lp = sf.get_loop(lp_category)
-                                                for tag in tags.keys():
+                                                for tag in lp_tags:
                                                     if tag not in lp.tags:
                                                         lp.add_tag(tag)
                                                         for _row in lp.data:
@@ -985,7 +992,7 @@ class OneDepAnnTasks:
 
                                             except KeyError:
                                                 lp = pynmrstar.Loop.from_scratch(lp_category)
-                                                lp.add_tag(list(tags.keys()))
+                                                lp.add_tag(lp_tags)
 
                                                 for def_lp_tag in def_lp_tags:
                                                     if def_lp_tag not in lp.tags:
@@ -998,10 +1005,10 @@ class OneDepAnnTasks:
                                         _row = [None] * len(lp.tags)
 
                                     elif has_id_tag:
-                                        cif_id_tag = tags['ID'][0]
+                                        cif_id_tag = lp_tag_dict['ID'][0]
                                         id_col = lp.tags.index('ID')
 
-                                    for tag, (cif_tag, map_code) in tags.items():
+                                    for tag, (cif_tag, map_code) in lp_tag_dict.items():
 
                                         if reset:
                                             if tag == list_id_tag:

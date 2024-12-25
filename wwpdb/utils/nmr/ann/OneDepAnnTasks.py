@@ -25,6 +25,22 @@ except ImportError:
 range_value_pattern = re.compile(r'^(.+)\s*-\s*(.+)$')
 
 
+def get_first_sf_tag(sf=None, tag=None):
+    """ Return the first value of a given saveframe tag.
+        @return: The first tag value, empty string otherwise.
+    """
+
+    if sf is None or tag is None:
+        return ''
+
+    array = sf.get_tag(tag)
+
+    if len(array) == 0:
+        return ''
+
+    return array[0] if array[0] is not None else ''
+
+
 def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value):
     """ Set saveframe tag.
     """
@@ -909,6 +925,9 @@ class OneDepAnnTasks:
 
                                     for map in sf_tag_maps:
                                         if map[0] == cif_category and map[1] in row and map[3] not in ('Sf_framecode', 'Sf_category', 'ID', 'Entry_ID'):
+                                            if row[map[1]] in emptyValue:
+                                                if len(get_first_sf_tag(sf, map[3])) > 0:
+                                                    continue
                                             set_sf_tag(sf, map[3], row[map[1]])
                                             has_uniq_sf_tag = True
 

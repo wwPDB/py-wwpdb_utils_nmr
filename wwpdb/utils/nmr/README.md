@@ -105,7 +105,7 @@ nmr-cs-nef-consistency-check|**Deprecated.**
 nmr-cs-str-consistency-check|**Deprecated.**
 nmr-cs-mr-merge|Combine assigned chemical shifts and NMR restraints into an NMR unified data file.
 nmr-str2cif-annotate|OneDep system only, Update NMR-STAR file based on annotated model file.
-nmr-if-merge-deposit|Merge NMRIF metadata to NMR-STAR file.
+nmr-if-merge-deposit|Merge NMRIF metadata to NMR-STAR file on submission.
 
 ## Typical workflow operations
 

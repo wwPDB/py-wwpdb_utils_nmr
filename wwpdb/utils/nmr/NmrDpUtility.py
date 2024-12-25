@@ -1745,6 +1745,7 @@ class NmrDpUtility:
         __mergeCsAndMrTasks.append(self.__mergeLegacyCsAndMr)
         __mergeCsAndMrTasks.append(self.__detectSimpleDistanceRestraint)
         __mergeCsAndMrTasks.append(self.__calculateStatsOfExptlData)
+        __mergeCsAndMrTasks.append(self.__performBMRBAnnTasks)
 
         __annotateTasks = [self.__initializeDpReport,
                            self.__validateInputSource,
@@ -1765,8 +1766,7 @@ class NmrDpUtility:
 
         __mergeNmrIfTasks = [self.__parseNmrIf,
                              self.__mergeNmrIf,
-                             self.__performBmrbAnnotation,
-                             self.__depositNmrData
+                             self.__performBMRBAnnTasks
                              ]
 
         # dictionary of processing tasks of each workflow operation
@@ -57184,7 +57184,7 @@ class NmrDpUtility:
                 self.__lfh.write(f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {str(e)}\n")
 
         if self.__bmrb_only and self.__internal_mode:
-            self.__performBmrbOnlyAnnotation()
+            self.__performBMRBjAnnTasks()
 
         master_entry = self.__c2S.normalize_str(master_entry)
 
@@ -57424,8 +57424,9 @@ class NmrDpUtility:
 
         return {k: v for k, v in datum_counter.items() if v > 0}
 
-    def __performBmrbOnlyAnnotation(self) -> bool:
-        """ Perform a series of BMRB annotation.
+    def __performBMRBjAnnTasks(self) -> bool:
+        """ Perform a series of BMRBj specific annotation tasks.
+            @note: this method requires additional software packages, network access to PubMed, NCBI Taxonomy, BMRB-API, BMRB ETS, etc
         """
 
         if self.__combined_mode or not self.__remediation_mode or self.__dstPath is None:
@@ -59212,45 +59213,52 @@ class NmrDpUtility:
         if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
             return False
 
-        if self.__nmrIfR is None:
+        if self.__nmrIfR is None or not self.__submission_mode:
             return False
 
         master_entry = self.__star_data[0]
 
         self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
 
-        entry = self.__nmrIfR.getDictList('entry')
+        if self.__nmrIfR.hasCategory('entry'):
+            entry = self.__nmrIfR.getDictList('entry')
 
-        if len(entry) > 0 and 'id' in entry[0]:
-            self.__entry_id = entry[0]['id'].strip().replace(' ', '_')
+            if len(entry) > 0 and 'id' in entry[0]:
+                self.__entry_id = entry[0]['id'].strip().replace(' ', '_')
 
         ann = OneDepAnnTasks(self.__verbose, self.__lfh,
                              self.__sf_category_list, self.__entry_id)
 
         return ann.perform(master_entry, self.__nmrIfR)
 
-    def __performBmrbAnnotation(self) -> bool:
-        """ Perform a series of BMRB annotation.
+    def __performBMRBAnnTasks(self) -> bool:
+        """ Perform a series of standalone BMRB annotation tasks.
         """
 
         if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
             return False
 
-        if self.__nmrIfR is None:
+        if not self.__submission_mode and not self.__internal_mode:
             return False
 
         master_entry = self.__star_data[0]
 
         self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
 
-        entry = self.__nmrIfR.getDictList('entry')
+        if self.__nmrIfR is not None and self.__nmrIfR.hasCategory('entry'):
+            entry = self.__nmrIfR.getDictList('entry')
 
-        if len(entry) > 0 and 'id' in entry[0]:
-            self.__entry_id = entry[0]['id'].strip().replace(' ', '_')
+            if len(entry) > 0 and 'id' in entry[0]:
+                self.__entry_id = entry[0]['id'].strip().replace(' ', '_')
 
         ann = BMRBAnnTasks(self.__verbose, self.__lfh,
                            self.__sf_category_list, self.__entry_id,
                            self.__sail_flag, self.report,
                            ccU=self.__ccU, csStat=self.__csStat, c2S=self.__c2S)
 
-        return ann.perform(self.__star_data[0])
+        is_done = ann.perform(self.__star_data[0])
+
+        if is_done:
+            self.__depositNmrData()
+
+        return is_done

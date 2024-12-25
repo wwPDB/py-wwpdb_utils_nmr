@@ -2246,7 +2246,6 @@ class BMRBAnnTasks:
                 set_sf_tag(int_sf, 'Other_kind_of_data', 'yes')
 
         if has_non_polymer or has_nstd_monomer:
-            modified_ent_sf_framecodes = []
 
             if has_non_polymer:
 
@@ -2274,32 +2273,6 @@ class BMRBAnnTasks:
 
                 if int_sf is not None:
                     set_sf_tag(int_sf, 'Non_standard_residues', 'yes')
-
-            if len(nstd_monomers) > 0:
-
-                sf_category = 'chem_comp'
-                modified_cc_sf_framecodes = modified_ent_sf_framecodes
-                for comp_id in nstd_monomers:
-                    is_proc_site_bmrb = False
-
-                    modified_cc_sf_framecodes.append(f"save_{get_first_sf_tag(_sf, 'Sf_framecode')}")
-                    if sf_category in self.__sfCategoryList:
-                        sf = next((sf for sf in master_entry.get_saveframes_by_category(sf_category)
-                                   if comp_id in (get_first_sf_tag(sf, 'ID'), get_first_sf_tag(sf, 'Three_letter_code'))), None)
-                        if sf is not None:
-                            proc_site = get_first_sf_tag(sf, 'Processing_site')
-                            if proc_site.startswith('BMRB'):
-                                is_proc_site_bmrb = True
-                                set_sf_tag(sf, 'ID', comp_id)
-                                set_sf_tag(sf, 'Three_letter_code', comp_id)
-                            else:
-                                del master_entry[sf]
-
-                    if not is_proc_site_bmrb:
-                        try:
-                            master_entry.add_saveframe(_sf)
-                        except ValueError:
-                            pass
 
         # section 4: biological polymers and ligans
 

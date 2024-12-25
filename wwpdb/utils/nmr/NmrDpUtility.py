@@ -1761,6 +1761,7 @@ class NmrDpUtility:
         __annotateTasks.extend(__crossCheckTasks)
         __annotateTasks.append(self.__updatePolymerSequence)
         __annotateTasks.append(self.__remediateRawTextPk)
+        __annotateTasks.append(self.__depositNmrData)
         __annotateTasks.extend(__depositTasks)
         __annotateTasks.append(self.__depositNmrData)
 

@@ -1958,7 +1958,10 @@ class BMRBAnnTasks:
 
                             if len(del_row_idx) > 0:
                                 for idx in reversed(del_row_idx):
-                                    del lp.data[idx]
+                                    try:
+                                        del lp.data[idx]
+                                    except IndexError:
+                                        pass
 
                     except KeyError:
 

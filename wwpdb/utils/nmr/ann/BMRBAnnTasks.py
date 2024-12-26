@@ -11,7 +11,7 @@ import re
 import copy
 import pynmrstar
 
-from typing import List
+from typing import List, Any
 from packaging import version
 from operator import itemgetter
 
@@ -56,12 +56,12 @@ allowed_thiol_states = ('all disulfide bound', 'all other bound', 'all free', 'n
                         'free and disulfide bound', 'free and other bound', 'free disulfide and other bound', 'disulfide and other bound')
 
 
-def has_key_value(d=None, key=None):
+def has_key_value(d: dict, key: Any) -> bool:
     """ Return whether a given dictionary has effective value for a key.
         @return: True if d[key] has effective value, False otherwise
     """
 
-    if d is None or key is None:
+    if not isinstance(d, dict) or key is None:
         return False
 
     if key in d:
@@ -70,20 +70,20 @@ def has_key_value(d=None, key=None):
     return False
 
 
-def get_first_sf_tag(sf=None, tag=None):
+def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> str:
     """ Return the first value of a given saveframe tag.
         @return: The first tag value, empty string otherwise.
     """
 
-    if sf is None or tag is None:
-        return ''
+    if not isinstance(sf, pynmrstar.Saveframe) or tag is None:
+        return default
 
     array = sf.get_tag(tag)
 
     if len(array) == 0:
-        return ''
+        return default
 
-    return array[0] if array[0] is not None else ''
+    return array[0] if array[0] is not None else default
 
 
 def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value):

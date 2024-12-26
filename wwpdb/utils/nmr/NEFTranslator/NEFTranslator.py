@@ -476,20 +476,20 @@ altRdcConstraintType = {'nef': {'RDC': 'measured',
                         }
 
 
-def get_first_sf_tag(sf: Optional[pynmrstar.Saveframe] = None, tag: Optional[str] = None) -> str:
+def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> str:
     """ Return the first value of a given saveframe tag.
         @return: The first tag value, empty string otherwise.
     """
 
-    if sf is None or tag is None:
-        return ''
+    if not isinstance(sf, pynmrstar.Saveframe) or tag is None:
+        return default
 
     array = sf.get_tag(tag)
 
     if len(array) == 0:
-        return ''
+        return default
 
-    return array[0] if array[0] is not None else ''
+    return array[0] if array[0] is not None else default
 
 
 def get_idx_msg(idx_tag_ids: List[int], tags: List[str], row: dict) -> str:

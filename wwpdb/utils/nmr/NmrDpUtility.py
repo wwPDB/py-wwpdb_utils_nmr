@@ -733,12 +733,12 @@ def get_type_of_star_file(fPath: str) -> str:
                 pass
 
 
-def has_key_value(d: Optional[dict] = None, key: Any = None) -> bool:
+def has_key_value(d: dict, key: Any) -> bool:
     """ Return whether a given dictionary has effective value for a key.
         @return: True if d[key] has effective value, False otherwise
     """
 
-    if d is None or key is None:
+    if not isinstance(d, dict) or key is None:
         return False
 
     if key in d:
@@ -747,20 +747,20 @@ def has_key_value(d: Optional[dict] = None, key: Any = None) -> bool:
     return False
 
 
-def get_first_sf_tag(sf: Optional[pynmrstar.Saveframe] = None, tag: Optional[str] = None) -> str:
+def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> str:
     """ Return the first value of a given saveframe tag.
         @return: The first tag value, empty string otherwise.
     """
 
     if sf is None or tag is None:
-        return ''
+        return default
 
     array = sf.get_tag(tag)
 
     if len(array) == 0:
-        return ''
+        return default
 
-    return array[0] if array[0] is not None else ''
+    return array[0] if array[0] is not None else default
 
 
 def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value):
@@ -6898,6 +6898,9 @@ class NmrDpUtility:
         # NMRIF reader
         self.__nmrIfR = None
 
+        # whether to extract original NMR experimental metadata to NMRIF
+        self.__extract_to_nmrif = False
+
     def setVerbose(self, verbose: bool):
         """ Set verbose mode.
         """
@@ -7097,6 +7100,8 @@ class NmrDpUtility:
 
         elif self.__combined_mode and not self.__remediation_mode:
             self.__native_combined = True
+
+        self.__extract_to_nmrif = op == 'nmr-cs-mr-merge' or (self.__native_combined and self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit'))
 
         self.__remediation_loop_count = 0
 
@@ -10472,7 +10477,7 @@ class NmrDpUtility:
                         self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
-
+        """
         if not self.__combined_mode and self.__remediation_mode\
            and not self.__submission_mode and not self.__annotation_mode and not self.__release_mode\
            and file_list_id == 0 and file_type == 'nmr-star':
@@ -10487,7 +10492,7 @@ class NmrDpUtility:
                     csr_sf = self.__star_data[file_list_id].get_saveframes_by_category(sf_category)[-1]
                     del self.__star_data[file_list_id][csr_sf]
                     content_subtypes[content_subtype] -= 1
-
+        """
         input_source.setItemValue('content_subtype', content_subtypes)
 
     def __detectContentSubTypeOfLegacyMr(self) -> bool:
@@ -24981,6 +24986,45 @@ class NmrDpUtility:
                 self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Error  - {str(e)}\n")
 
         return modified
+
+    def __extractToNmrIf(self) -> bool:
+        """ Extract metadata of NMR-STAR to NMRIF file, if possible.
+        """
+
+        if len(self.__star_data) == 0 or not isinstance(self.__star_data[0], pynmrstar.Entry):
+            return False
+
+        if not self.__extract_to_nmrif:
+            return False
+
+        if 'nmrif_file_path' not in self.__outputParamDict:
+            return False
+
+        self.__extract_to_nmrif = False  # need to extract the initial metadata of NMR-STAR to NMRIF
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if file_type != 'nmr-star':
+            return False
+
+        master_entry = self.__star_data[0]
+
+        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
+
+        ann = BMRBAnnTasks(self.__verbose, self.__lfh,
+                           self.__sf_category_list, self.__entry_id,
+                           self.__sail_flag, self.report,
+                           ccU=self.__ccU, csStat=self.__csStat, c2S=self.__c2S)
+
+        ann.perform(master_entry)
+
+        ann = OneDepAnnTasks(self.__verbose, self.__lfh,
+                             self.__sf_category_list, self.__entry_id)
+
+        return ann.extract(master_entry, self.__outputParamDict['nmrif_file_path'])
 
     def __cleanUpSf(self) -> bool:
         """ Clean-up third-party saveframes.
@@ -47511,6 +47555,7 @@ class NmrDpUtility:
             return False
 
         if not self.__submission_mode and not self.__annotation_mode and not self.__release_mode:
+            self.__extractToNmrIf()
             self.__cleanUpSf()
 
         master_entry = self.__star_data[0]
@@ -55596,7 +55641,8 @@ class NmrDpUtility:
         master_entry.entry_id = f'cs_{self.__entry_id.lower()}'
 
         self.__c2S.set_entry_id(master_entry, self.__entry_id)
-        self.__c2S.normalize(master_entry)
+
+        self.__c2S.normalize_str(master_entry)
 
         try:
 
@@ -55665,7 +55711,8 @@ class NmrDpUtility:
         master_entry.entry_id = f'cs_{self.__entry_id.lower()}'
 
         self.__c2S.set_entry_id(master_entry, self.__entry_id)
-        self.__c2S.normalize(master_entry)
+
+        self.__c2S.normalize_str(master_entry)
 
         if self.__remediation_mode and self.__internal_mode:
 
@@ -56781,7 +56828,7 @@ class NmrDpUtility:
 
         if 'software' in self.__sf_category_list:
             for sf in master_entry.get_saveframes_by_category('software'):
-                _id = get_first_sf_tag('ID')
+                _id = get_first_sf_tag(sf, 'ID')
                 _name = get_first_sf_tag(sf, 'Name')
                 _code = get_first_sf_tag(sf, 'Sf_framecode')
                 defined_software.append(_name)
@@ -59257,7 +59304,7 @@ class NmrDpUtility:
                            self.__sail_flag, self.report,
                            ccU=self.__ccU, csStat=self.__csStat, c2S=self.__c2S)
 
-        is_done = ann.perform(self.__star_data[0])
+        is_done = ann.perform(master_entry)
 
         if is_done:
             self.__depositNmrData()

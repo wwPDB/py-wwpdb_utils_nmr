@@ -54,7 +54,7 @@ try:
                                                        CARTN_DATA_ITEMS)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (emptyValue,
                                            rdcBbPairCode,
                                            updatePolySeqRstFromAtomSelectionSet,
@@ -103,7 +103,7 @@ except ImportError:
                                            CARTN_DATA_ITEMS)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (emptyValue,
                                rdcBbPairCode,
                                updatePolySeqRstFromAtomSelectionSet,

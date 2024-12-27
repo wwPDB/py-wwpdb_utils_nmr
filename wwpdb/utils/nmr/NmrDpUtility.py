@@ -202,6 +202,7 @@
 # 28-Nov-2024  M. Yokochi - drop support for old pynmrstar versions less than 3.2
 # 16-Dec-2024  M. Yokochi - combine spectral peak lists written in software native formats into single NMR-STAR file (DAOTHER-8905, NMR data remediation Phase 2)
 # 19-Dec-2024  M. Yokochi - add 'nmr-if-merge-deposit' workflow operation (DAOTHER-8905, NMR data remediation Phase 2)
+# 27-Dec-2024  M. Yokochi - extract NMRIF metadata from NMR-STAR (DAOTHER-1728, 9846)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -231,16 +232,16 @@ from mmcif.io.IoAdapterPy import IoAdapterPy
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                             NEF_VERSION,
-                                                             altDistanceConstraintType,
-                                                             altDihedralAngleConstraintType,
-                                                             altRdcConstraintType,
-                                                             PARAMAGNETIC_ELEMENTS,
-                                                             FERROMAGNETIC_ELEMENTS,
-                                                             NON_METAL_ELEMENTS,
-                                                             MAX_DIM_NUM_OF_SPECTRA,
-                                                             MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK)
+    from wwpdb.utils.nmr.nef.NEFTranslator import (NEFTranslator,
+                                                   NEF_VERSION,
+                                                   altDistanceConstraintType,
+                                                   altDihedralAngleConstraintType,
+                                                   altRdcConstraintType,
+                                                   PARAMAGNETIC_ELEMENTS,
+                                                   FERROMAGNETIC_ELEMENTS,
+                                                   NON_METAL_ELEMENTS,
+                                                   MAX_DIM_NUM_OF_SPECTRA,
+                                                   MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK)
     from wwpdb.utils.nmr.NmrDpReport import (NmrDpReport, NmrDpReportInputSource)
     from wwpdb.utils.nmr.AlignUtil import (LOW_SEQ_COVERAGE,
                                            MIN_SEQ_COVERAGE_W_CONFLICT,
@@ -352,16 +353,16 @@ try:
     from wwpdb.utils.nmr.ann.BMRBAnnTasks import BMRBAnnTasks
 
 except ImportError:
-    from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                 NEF_VERSION,
-                                                 altDistanceConstraintType,
-                                                 altDihedralAngleConstraintType,
-                                                 altRdcConstraintType,
-                                                 PARAMAGNETIC_ELEMENTS,
-                                                 FERROMAGNETIC_ELEMENTS,
-                                                 NON_METAL_ELEMENTS,
-                                                 MAX_DIM_NUM_OF_SPECTRA,
-                                                 MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK)
+    from nmr.nef.NEFTranslator import (NEFTranslator,
+                                       NEF_VERSION,
+                                       altDistanceConstraintType,
+                                       altDihedralAngleConstraintType,
+                                       altRdcConstraintType,
+                                       PARAMAGNETIC_ELEMENTS,
+                                       FERROMAGNETIC_ELEMENTS,
+                                       NON_METAL_ELEMENTS,
+                                       MAX_DIM_NUM_OF_SPECTRA,
+                                       MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK)
     from nmr.NmrDpReport import (NmrDpReport, NmrDpReportInputSource)
     from nmr.AlignUtil import (LOW_SEQ_COVERAGE,
                                MIN_SEQ_COVERAGE_W_CONFLICT,
@@ -25227,7 +25228,8 @@ class NmrDpUtility:
                     for _row in _loop:
                         if _row[type_col] in emptyValue:
                             continue
-                        if _row[type_col] == 'SAIL isotope labeling':
+                        text = _row[type_col].lower()
+                        if 'sail' in text or 'stereo-array isotope labeling' in text:
                             self.__sail_flag = True
                             break
 
@@ -51026,7 +51028,14 @@ class NmrDpUtility:
 
             for inst in self.__cpC['tautomer_per_model']:
                 tautomer_per_model = inst['tautomer_per_model']
-                rep_tautomer = tautomer_per_model[self.__representative_model_id]
+
+                try:
+                    rep_tautomer = tautomer_per_model[self.__representative_model_id]
+                except KeyError:
+                    try:
+                        rep_tautomer = tautomer_per_model[self.__eff_model_ids[0]]
+                    except KeyError:
+                        continue
 
                 if any(tautomer != rep_tautomer for tautomer in tautomer_per_model.values()):
                     chain_id, auth_chain_id = inst['chain_id'], inst['auth_chain_id']
@@ -51134,7 +51143,13 @@ class NmrDpUtility:
                         else:
                             tautomer_per_model[model_id] = 'unknown'
 
-                    rep_tautomer = tautomer_per_model[self.__representative_model_id]
+                    try:
+                        rep_tautomer = tautomer_per_model[self.__representative_model_id]
+                    except KeyError:
+                        try:
+                            rep_tautomer = tautomer_per_model[self.__eff_model_ids[0]]
+                        except KeyError:
+                            continue
 
                     self.__cpC['tautomer_per_model'].append({'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id,
                                                              'auth_chain_id': auth_chain_id, 'auth_seq_id': auth_seq_id,

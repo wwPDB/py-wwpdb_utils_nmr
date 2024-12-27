@@ -67,7 +67,7 @@ try:
                                                        HEME_LIKE_RES_NAMES)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (LARGE_ASYM_ID,
                                            monDict3,
                                            emptyValue,
@@ -148,7 +148,7 @@ except ImportError:
                                            HEME_LIKE_RES_NAMES)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (LARGE_ASYM_ID,
                                monDict3,
                                emptyValue,

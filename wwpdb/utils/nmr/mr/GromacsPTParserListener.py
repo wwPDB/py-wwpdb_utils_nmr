@@ -26,7 +26,7 @@ try:
                                                        REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            protonBeginCode,
                                            aminoProtonCode,
@@ -50,7 +50,7 @@ except ImportError:
                                            REPRESENTATIVE_ALT_ID)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (monDict3,
                                protonBeginCode,
                                aminoProtonCode,

@@ -9,9 +9,9 @@
 import unittest
 
 try:
-    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
-    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from nmr.nef.NEFTranslator import NEFTranslator
 
 
 class ImportTests(unittest.TestCase):

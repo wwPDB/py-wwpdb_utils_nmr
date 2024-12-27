@@ -97,10 +97,10 @@ try:
                                                        PTNR2_AUTH_ATOM_DATA_ITEMS)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                             PARAMAGNETIC_ELEMENTS,
-                                                             FERROMAGNETIC_ELEMENTS,
-                                                             LANTHANOID_ELEMENTS)
+    from wwpdb.utils.nmr.nef.NEFTranslator import (NEFTranslator,
+                                                   PARAMAGNETIC_ELEMENTS,
+                                                   FERROMAGNETIC_ELEMENTS,
+                                                   LANTHANOID_ELEMENTS)
     from wwpdb.utils.nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
                                            LARGE_ASYM_ID,
                                            MAX_MAG_IDENT_ASYM_ID,
@@ -213,10 +213,10 @@ except ImportError:
                                            PTNR2_AUTH_ATOM_DATA_ITEMS)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.NEFTranslator.NEFTranslator import (NEFTranslator,
-                                                 PARAMAGNETIC_ELEMENTS,
-                                                 FERROMAGNETIC_ELEMENTS,
-                                                 LANTHANOID_ELEMENTS)
+    from nmr.nef.NEFTranslator import (NEFTranslator,
+                                       PARAMAGNETIC_ELEMENTS,
+                                       FERROMAGNETIC_ELEMENTS,
+                                       LANTHANOID_ELEMENTS)
     from nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
                                LARGE_ASYM_ID,
                                MAX_MAG_IDENT_ASYM_ID,

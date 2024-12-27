@@ -23,7 +23,7 @@ try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
@@ -37,7 +37,7 @@ except ImportError:
     from nmr.io.CifReader import CifReader
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.NEFTranslator.NEFTranslator import NEFTranslator
+    from nmr.nef.NEFTranslator import NEFTranslator
 
 
 class AriaMRReader:

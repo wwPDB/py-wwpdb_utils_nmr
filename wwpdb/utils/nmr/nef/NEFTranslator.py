@@ -101,7 +101,8 @@
 #                           remove dependency of CSV resource files (NEF_NMRSTAR_equivalence.csv, NEF_mandatory.csv, NMR-STAR_mandatory.csv) (v4.0.0)
 # 08-Aug-2024  M. Yokochi - conform to the NEF specification 3.3 (sf_framecode must start with sf_category) and
 #                           preserve the original NMR-STAR frame codes provided by author through bidirectional conversion (v4.0.0, DAOTHER-9623)
-# 28-Nov-2024  M. Yokochi - drop support for old pynmrstar versions less than 3.2
+# 28-Nov-2024  M. Yokochi - drop support for old pynmrstar versions less than 3.2 (v4.1.0)
+# 27-Dec-2024  M. Yokochi - change class path and visibility of class method (v4.1.1)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -161,7 +162,7 @@ except ImportError:
 
 
 __package_name__ = 'wwpdb.utils.nmr'
-__version__ = '4.1.0'
+__version__ = '4.1.1'
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
 
@@ -6376,119 +6377,6 @@ class NEFTranslator:
 
         return out_tag
 
-    def extend_star_loop_tags(self, star_loop_tags: List[str]) -> List[str]:
-        """ Return list of NMR-STAR loop tags in addition to given NMR-STAR loop tags.
-            @return: list of extended NMR-STAR loop tags
-        """
-
-        out_tag_w_ordinal = {}
-        out_tag = []
-
-        for data_tag in star_loop_tags:
-
-            auth_tag, ordinal = self.get_star_auth_tag(data_tag)
-
-            if auth_tag is None:
-                continue
-
-            out_tag_w_ordinal[data_tag] = ordinal
-
-            if auth_tag != data_tag:
-                out_tag_w_ordinal[auth_tag] = ordinal + 100
-
-        out_tag = [t[0] for t in sorted(out_tag_w_ordinal.items(), key=itemgetter(1))]
-
-        lp_category = star_loop_tags[0].split('.')[0]
-
-        if lp_category == '_Chem_comp_assembly':
-            if '_Chem_comp_assembly.Assembly_ID' not in out_tag:
-                out_tag.append('_Chem_comp_assembly.Assembly_ID')
-
-        elif lp_category == '_Bond':
-            if '_Bond.ID' not in out_tag:
-                out_tag.insert(0, '_Bond.ID')
-            if '_Bond.Type' not in out_tag:
-                out_tag.insert(1, '_Bond.Type')
-            if '_Bond.Value_order' not in out_tag:
-                out_tag.insert(2, '_Bond.Value_order')
-            if '_Bond.Assembly_ID' not in out_tag:
-                out_tag.append('_Bond.Assembly_ID')
-
-        elif lp_category == '_Atom_chem_shift':
-            if '_Atom_chem_shift.ID' not in out_tag:
-                out_tag.insert(0, '_Atom_chem_shift.ID')
-            if '_Atom_chem_shift.Ambiguity_code' not in out_tag:
-                out_tag.insert(9, '_Atom_chem_shift.Ambiguity_code')
-            if '_Atom_chem_shift.Ambiguity_set_ID' not in out_tag:
-                out_tag.insert(10, '_Atom_chem_shift.Ambiguity_set_ID')
-
-            if self.insert_original_pdb_cs_items:
-                if '_Atom_chem_shift.Original_PDB_strand_ID' not in out_tag:
-                    out_tag.append('_Atom_chem_shift.Original_PDB_strand_ID')
-                if '_Atom_chem_shift.Original_PDB_residue_no' not in out_tag:
-                    out_tag.append('_Atom_chem_shift.Original_PDB_residue_no')
-                if '_Atom_chem_shift.Original_PDB_residue_name' not in out_tag:
-                    out_tag.append('_Atom_chem_shift.Original_PDB_residue_name')
-                if '_Atom_chem_shift.Original_PDB_atom_name' not in out_tag:
-                    out_tag.append('_Atom_chem_shift.Original_PDB_atom_name')
-
-            if '_Atom_chem_shift.Details' not in out_tag:
-                out_tag.append('_Atom_chem_shift.Details')
-            if '_Atom_chem_shift.Assigned_chem_shift_list_ID' not in out_tag:
-                out_tag.append('_Atom_chem_shift.Assigned_chem_shift_list_ID')
-
-        elif lp_category == '_Gen_dist_constraint.Member':
-            if '_Gen_dist_constraint.Member_logic_code' not in out_tag:
-                out_tag.append('_Gen_dist_constraint.Member_logic_code')
-            if '_Gen_dist_constraint.Gen_dist_constraint_list_ID' not in out_tag:
-                out_tag.append('_Gen_dist_constraint.Gen_dist_constraint_list_ID')
-
-            if self.insert_original_atom_name_items:
-                if '_Gen_dist_constraint.Auth_atom_name_1' not in out_tag:
-                    out_tag.append('_Gen_dist_constraint.Auth_atom_name_1')
-                if '_Gen_dist_constraint.Auth_atom_name_2' not in out_tag:
-                    out_tag.append('_Gen_dist_constraint.Auth_atom_name_2')
-
-        elif lp_category == '_Torsion_angle_constraint':
-            if '_Torsion_angle_constraint.Torsion_angle_constraint_list_ID' not in out_tag:
-                out_tag.append('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')
-
-            if self.insert_original_atom_name_items:
-                if '_Torsion_angle_constraint.Auth_atom_name_1' not in out_tag:
-                    out_tag.append('_Torsion_angle_constraint.Auth_atom_name_1')
-                if '_Torsion_angle_constraint.Auth_atom_name_2' not in out_tag:
-                    out_tag.append('_Torsion_angle_constraint.Auth_atom_name_2')
-                if '_Torsion_angle_constraint.Auth_atom_name_3' not in out_tag:
-                    out_tag.append('_Torsion_angle_constraint.Auth_atom_name_3')
-                if '_Torsion_angle_constraint.Auth_atom_name_4' not in out_tag:
-                    out_tag.append('_Torsion_angle_constraint.Auth_atom_name_4')
-
-        elif lp_category == '_RDC_constraint':
-            if '_RDC_constraint.RDC_constraint_list_ID' not in out_tag:
-                out_tag.append('_RDC_constraint.RDC_constraint_list_ID')
-
-            if self.insert_original_atom_name_items:
-                if '_RDC_constraint.Auth_atom_name_1' not in out_tag:
-                    out_tag.append('_RDC_constraint.Auth_atom_name_1')
-                if '_RDC_constraint.Auth_atom_name_2' not in out_tag:
-                    out_tag.append('_RDC_constraint.Auth_atom_name_2')
-
-        elif lp_category == '_Peak_row_format':
-            if '_Peak_row_format.Details' not in out_tag:
-                out_tag.append('_Peak_row_format.Details')
-            if '_Peak_row_format.Spectral_peak_list_ID' not in out_tag:
-                out_tag.append('_Peak_row_format.Spectral_peak_list_ID')
-
-        elif lp_category == '_Spectral_dim':
-            if '_Spectral_dim.Spectral_peak_list_ID' not in out_tag:
-                out_tag.append('_Spectral_dim.Spectral_peak_list_ID')
-
-        elif lp_category == '_Spectral_dim_transfer':
-            if '_Spectral_dim_transfer.Spectral_peak_list_ID' not in out_tag:
-                out_tag.append('_Spectral_dim_transfer.Spectral_peak_list_ID')
-
-        return out_tag
-
     def get_nef_loop_tags(self, star_loop_tags: List[str]) -> List[str]:
         """ Return list of NEF loop tags corresponding to NMR-STAR loop tags.
             @author: Masashi Yokochi
@@ -8236,10 +8124,10 @@ class NEFTranslator:
         except StopIteration:
             return None, None
 
-    def nef2star_seq_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list],
-                         report=None) -> Tuple[List[list], List[list]]:
+    def __nef2star_seq_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list],
+                           report=None) -> Tuple[List[list], List[list]]:
         """ Translate rows in sequence loop from NEF into NMR-STAR.
-            @change: rename the original translate_seq_row() to nef2star_seq_row() by Masashi Yokochi
+            @change: rename the original translate_seq_row() to __nef2star_seq_row() by Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
             @param loop_data: loop data of NEF
@@ -8380,8 +8268,8 @@ class NEFTranslator:
 
         return out_row, aux_row
 
-    def star2nef_seq_row(self, star_tags: List[str], nef_tags: List[str], loop_data: List[list],
-                         report=None, entity_del_atom_loop: Optional[pynmrstar.Loop] = None) -> List[list]:
+    def __star2nef_seq_row(self, star_tags: List[str], nef_tags: List[str], loop_data: List[list],
+                           report=None, entity_del_atom_loop: Optional[pynmrstar.Loop] = None) -> List[list]:
         """ Translate rows in sequence loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
@@ -8566,7 +8454,7 @@ class NEFTranslator:
 
         return out_row
 
-    def nef2star_bond_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list]) -> List[list]:
+    def __nef2star_bond_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list]) -> List[list]:
         """ Translate rows in bond loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
@@ -8738,9 +8626,9 @@ class NEFTranslator:
 
             return out_row
 
-    def nef2star_cs_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list], leave_unmatched: bool = False) -> List[list]:
+    def __nef2star_cs_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list], leave_unmatched: bool = False) -> List[list]:
         """ Translate rows in chemical shift loop from NEF into NMR-STAR.
-            @change: rename from original translate_cs_row() to nef2star_cs_row() by Masashi Yokochi
+            @change: rename from original translate_cs_row() to __nef2star_cs_row() by Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
             @param loop_data: loop data of NEF
@@ -8861,7 +8749,7 @@ class NEFTranslator:
 
         return out_row
 
-    def star2nef_cs_row(self, star_tags: List[str], nef_tags: List[str], loop_data: List[list]) -> List[list]:
+    def __star2nef_cs_row(self, star_tags: List[str], nef_tags: List[str], loop_data: List[list]) -> List[list]:
         """ Translate rows in chemical shift loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
@@ -9042,9 +8930,9 @@ class NEFTranslator:
 
         return out_tags
 
-    def nef2star_dist_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list]) -> List[list]:
+    def __nef2star_dist_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list]) -> List[list]:
         """ Translate rows in distance restraint loop from NEF into NMR-STAR.
-            @change: rename the original translate_restraint_row() to nef2star_dist_row() by Masashi Yokochi
+            @change: rename the original translate_restraint_row() to __nef2star_dist_row() by Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
             @param loop_data: loop data of NEF
@@ -9219,7 +9107,7 @@ class NEFTranslator:
 
             return out_row
 
-    def star2nef_dist_row(self, star_tags: List[str], nef_tags: List[str], loop_data: List[list]) -> List[list]:
+    def __star2nef_dist_row(self, star_tags: List[str], nef_tags: List[str], loop_data: List[list]) -> List[list]:
         """ Translate rows in distance restraint loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
@@ -9390,7 +9278,7 @@ class NEFTranslator:
 
             return out_row
 
-    def nef2star_dihed_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list]) -> List[list]:
+    def __nef2star_dihed_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list]) -> List[list]:
         """ Translate rows in dihedral angle restraint loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
@@ -9605,7 +9493,7 @@ class NEFTranslator:
 
             return out_row
 
-    def nef2star_rdc_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list]) -> List[list]:
+    def __nef2star_rdc_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list]) -> List[list]:
         """ Translate rows in RDC restraint loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
@@ -9772,7 +9660,7 @@ class NEFTranslator:
 
             return out_row
 
-    def nef2star_peak_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list], leave_unmatched: bool = False) -> List[list]:
+    def __nef2star_peak_row(self, nef_tags: List[str], star_tags: List[str], loop_data: List[list], leave_unmatched: bool = False) -> List[list]:
         """ Translate rows in spectral peak loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
             @param nef_tags: list of NEF tags
@@ -9867,77 +9755,77 @@ class NEFTranslator:
                     if num_dim == 1:
 
                         for comb in itertools.product(a[0]):
-                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                            buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 2:
 
                         for comb in itertools.product(a[0], a[1]):
-                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                            buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 3:
 
                         for comb in itertools.product(a[0], a[1], a[2]):
-                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                            buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 4:
 
                         for comb in itertools.product(a[0], a[1], a[2], a[3]):
-                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                            buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 5:
 
                         for comb in itertools.product(a[0], a[1], a[2], a[3], a[4]):
-                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                            buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 6:
 
                         for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5]):
-                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                            buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 7:
 
                         for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6]):
-                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                            buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 8:
 
                         for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]):
-                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                            buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 9:
 
                         for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]):
-                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                            buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 10:
 
                         for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9]):
-                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                            buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 11:
 
                         for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10]):
-                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                            buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 12:
 
                         for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11]):
-                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                            buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 13:
 
                         for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12]):
-                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                            buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 14:
 
                         for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13]):
-                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                            buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                     elif num_dim == 15:
 
                         for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13], a[14]):
-                            buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
+                            buf_row.append(self.__nef2star_peak_row__(nef_tags, star_tags, tag_map, self_tag_map, row, details, comb))
 
                 keys = set()
 
@@ -9966,7 +9854,7 @@ class NEFTranslator:
 
             return out_row
 
-    def __nef2star_peak_row(self, nef_tags: List[str], star_tags: List[str], tag_map: dict, self_tag_map: dict, row: list, details, comb: List[str]) -> list:
+    def __nef2star_peak_row__(self, nef_tags: List[str], star_tags: List[str], tag_map: dict, self_tag_map: dict, row: list, details, comb: List[str]) -> list:
         """ Translate rows in spectral peak loop from NEF into NMR-STAR.
             @author: Masashi Yokochi
         """
@@ -10005,7 +9893,7 @@ class NEFTranslator:
 
         return buf
 
-    def star2nef_peak_row(self, star_tags: List[str], nef_tags: List[str], loop_data: List[list]) -> List[list]:
+    def __star2nef_peak_row(self, star_tags: List[str], nef_tags: List[str], loop_data: List[list]) -> List[list]:
         """ Translate rows in spectral peak loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
@@ -10145,9 +10033,9 @@ class NEFTranslator:
 
             return out_row
 
-    def nef2star_row(self, nef_tags: List[str], star_tags: List[str], in_row: List[list]) -> List[list]:
+    def __nef2star_row(self, nef_tags: List[str], star_tags: List[str], in_row: List[list]) -> List[list]:
         """ Translate rows in a loop from NEF into NMR-STAR.
-            @change: rename from original translate_row() to nef2star_row() by Masashi Yokochi
+            @change: rename from original translate_row() to __nef2star_row() by Masashi Yokochi
             @param nef_tags: list of NEF tags
             @param star_tags: list of NMR-STAR tags
             @param in_row: rows of NEF
@@ -10214,7 +10102,7 @@ class NEFTranslator:
 
         return out_row
 
-    def star2nef_row(self, star_tags: List[str], nef_tags: List[str], in_row: List[list]) -> List[list]:
+    def __star2nef_row(self, star_tags: List[str], nef_tags: List[str], in_row: List[list]) -> List[list]:
         """ Translate rows in a loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
@@ -10281,7 +10169,7 @@ class NEFTranslator:
 
         return out_row
 
-    def star2nef_peak_can(self, in_sf: pynmrstar.Saveframe, out_sf: pynmrstar.Saveframe) -> Optional[int]:
+    def __star2nef_peak_can(self, in_sf: pynmrstar.Saveframe, out_sf: pynmrstar.Saveframe) -> Optional[int]:
         """ Translate NMR-STAR canonical spectral peak loops (_Peak, _Peak_general_char, _Peak.char, _Assigned_peak_chem_shift) into NEF.
             @author: Masashi Yokochi
             @param in_sf: input saveframe
@@ -10604,43 +10492,43 @@ class NEFTranslator:
                         if self.authSeqMap is None:
                             self.authSeqMap = {}
                             self.selfSeqMap = {}
-                        rows, aux_rows = self.nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
+                        rows, aux_rows = self.__nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
                         for d in rows:
                             d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
                             lp.add_data(d)
 
                     elif loop.category == '_nef_covalent_links':
-                        rows = self.nef2star_bond_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                        rows = self.__nef2star_bond_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                         for d in rows:
                             d[lp.get_tag_names().index('_Bond.Assembly_ID')] = asm_id
                             lp.add_data(d)
 
                     elif loop.category == '_nef_chemical_shift':
-                        rows = self.nef2star_cs_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, leave_unmatched)
+                        rows = self.__nef2star_cs_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, leave_unmatched)
                         for d in rows:
                             d[lp.get_tag_names().index('_Atom_chem_shift.Assigned_chem_shift_list_ID')] = cs_list_id
                             lp.add_data(d)
 
                     elif loop.category == '_nef_distance_restraint':
-                        rows = self.nef2star_dist_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                        rows = self.__nef2star_dist_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                         for d in rows:
                             d[lp.get_tag_names().index('_Gen_dist_constraint.Gen_dist_constraint_list_ID')] = dist_list_id
                             lp.add_data(d)
 
                     elif loop.category == '_nef_dihedral_restraint':
-                        rows = self.nef2star_dihed_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                        rows = self.__nef2star_dihed_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                         for d in rows:
                             d[lp.get_tag_names().index('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = dihed_list_id
                             lp.add_data(d)
 
                     elif loop.category == '_nef_rdc_restraint':
-                        rows = self.nef2star_rdc_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                        rows = self.__nef2star_rdc_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                         for d in rows:
                             d[lp.get_tag_names().index('_RDC_constraint.RDC_constraint_list_ID')] = rdc_list_id
                             lp.add_data(d)
 
                     elif loop.category == '_nef_peak':
-                        rows = self.nef2star_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, leave_unmatched)
+                        rows = self.__nef2star_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, leave_unmatched)
                         for d in rows:
                             d[lp.get_tag_names().index('_Peak_row_format.Spectral_peak_list_ID')] = peak_list_id
                             lp.add_data(d)
@@ -10650,19 +10538,19 @@ class NEFTranslator:
                         for data in loop:
 
                             if loop.category == '_nef_spectrum_dimension':
-                                rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
+                                rows = self.__nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
                                 for d in rows:
                                     d[lp.get_tag_names().index('_Spectral_dim.Spectral_peak_list_ID')] = peak_list_id
                                     lp.add_data(d)
 
                             elif loop.category == '_nef_spectrum_dimension_transfer':
-                                rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
+                                rows = self.__nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
                                 for d in rows:
                                     d[lp.get_tag_names().index('_Spectral_dim_transfer.Spectral_peak_list_ID', )] = peak_list_id
                                     lp.add_data(d)
 
                             else:
-                                rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
+                                rows = self.__nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
                                 for d in rows:
                                     lp.add_data(d)
 
@@ -10856,43 +10744,43 @@ class NEFTranslator:
                     if self.authSeqMap is None:
                         self.authSeqMap = {}
                         self.selfSeqMap = {}
-                    rows, aux_rows = self.nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
+                    rows, aux_rows = self.__nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
                     for d in rows:
                         d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
                         lp.add_data(d)
 
                 elif loop.category == '_nef_covalent_links':
-                    rows = self.nef2star_bond_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                    rows = self.__nef2star_bond_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                     for d in rows:
                         d[lp.get_tag_names().index('_Bond.Assembly_ID')] = asm_id
                         lp.add_data(d)
 
                 elif loop.category == '_nef_chemical_shift':
-                    rows = self.nef2star_cs_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, leave_unmatched)
+                    rows = self.__nef2star_cs_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, leave_unmatched)
                     for d in rows:
                         d[lp.get_tag_names().index('_Atom_chem_shift.Assigned_chem_shift_list_ID')] = cs_list_id
                         lp.add_data(d)
 
                 elif loop.category == '_nef_distance_restraint':
-                    rows = self.nef2star_dist_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                    rows = self.__nef2star_dist_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                     for d in rows:
                         d[lp.get_tag_names().index('_Gen_dist_constraint.Gen_dist_constraint_list_ID')] = dist_list_id
                         lp.add_data(d)
 
                 elif loop.category == '_nef_dihedral_restraint':
-                    rows = self.nef2star_dihed_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                    rows = self.__nef2star_dihed_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                     for d in rows:
                         d[lp.get_tag_names().index('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = dihed_list_id
                         lp.add_data(d)
 
                 elif loop.category == '_nef_rdc_restraint':
-                    rows = self.nef2star_rdc_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                    rows = self.__nef2star_rdc_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                     for d in rows:
                         d[lp.get_tag_names().index('_RDC_constraint.RDC_constraint_list_ID')] = rdc_list_id
                         lp.add_data(d)
 
                 elif loop.category == '_nef_peak':
-                    rows = self.nef2star_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, leave_unmatched)
+                    rows = self.__nef2star_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, leave_unmatched)
                     for d in rows:
                         d[lp.get_tag_names().index('_Peak_row_format.Spectral_peak_list_ID')] = peak_list_id
                         lp.add_data(d)
@@ -10902,19 +10790,19 @@ class NEFTranslator:
                     for data in loop:
 
                         if loop.category == '_nef_spectrum_dimension':
-                            rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
+                            rows = self.__nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
                             for d in rows:
                                 d[lp.get_tag_names().index('_Spectral_dim.Spectral_peak_list_ID')] = peak_list_id
                                 lp.add_data(d)
 
                         elif loop.category == '_nef_spectrum_dimension_transfer':
-                            rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
+                            rows = self.__nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
                             for d in rows:
                                 d[lp.get_tag_names().index('_Spectral_dim_transfer.Spectral_peak_list_ID', )] = peak_list_id
                                 lp.add_data(d)
 
                         else:
-                            rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
+                            rows = self.__nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
                             for d in rows:
                                 lp.add_data(d)
 
@@ -11110,8 +10998,8 @@ class NEFTranslator:
                             if self.authSeqMap is None:
                                 self.authSeqMap = {}
                                 self.selfSeqMap = {}
-                            rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report,
-                                                         entity_del_atom_loop)
+                            rows = self.__star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report,
+                                                           entity_del_atom_loop)
                             for d in rows:
                                 lp.add_data(d)
 
@@ -11119,24 +11007,24 @@ class NEFTranslator:
                             if self.atomIdMap is None:
                                 self.atomIdMap = {}
 
-                            rows = self.star2nef_cs_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                            rows = self.__star2nef_cs_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                             for d in rows:
                                 lp.add_data(d)
 
                         elif loop.category == '_Gen_dist_constraint':
-                            rows = self.star2nef_dist_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                            rows = self.__star2nef_dist_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                             for d in rows:
                                 lp.add_data(d)
 
                         elif loop.category == '_Peak_row_format':
-                            rows = self.star2nef_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                            rows = self.__star2nef_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                             for d in rows:
                                 lp.add_data(d)
                             has_pk_row_format = True
 
                         elif len(tags) > 0:
                             for data in loop:
-                                rows = self.star2nef_row(loop.get_tag_names(), lp.get_tag_names(), data)
+                                rows = self.__star2nef_row(loop.get_tag_names(), lp.get_tag_names(), data)
                                 for d in rows:
                                     lp.add_data(d)
 
@@ -11176,7 +11064,7 @@ class NEFTranslator:
                         pass
 
                 if saveframe.category == 'spectral_peak_list' and has_pk_can_format and not has_pk_row_format:
-                    cs_list_id = self.star2nef_peak_can(saveframe, sf)
+                    cs_list_id = self.__star2nef_peak_can(saveframe, sf)
                     if cs_list_id is not None and (len(sf.get_tag('chemical_shift_list')) == 0 or sf.get_tag('chemical_shift_list') in emptyValue):
                         for cs_sf in star_data:
                             if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts' and cs_sf.get_tag('ID')[0] == cs_list_id and cs_sf.name not in emptyValue:
@@ -11311,8 +11199,8 @@ class NEFTranslator:
                         if self.authSeqMap is None:
                             self.authSeqMap = {}
                             self.selfSeqMap = {}
-                        rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report,
-                                                     entity_del_atom_loop)
+                        rows = self.__star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report,
+                                                       entity_del_atom_loop)
                         for d in rows:
                             lp.add_data(d)
 
@@ -11320,24 +11208,24 @@ class NEFTranslator:
                         if self.atomIdMap is None:
                             self.atomIdMap = {}
 
-                        rows = self.star2nef_cs_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                        rows = self.__star2nef_cs_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                         for d in rows:
                             lp.add_data(d)
 
                     elif loop.category == '_Gen_dist_constraint':
-                        rows = self.star2nef_dist_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                        rows = self.__star2nef_dist_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                         for d in rows:
                             lp.add_data(d)
 
                     elif loop.category == '_Peak_row_format':
-                        rows = self.star2nef_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                        rows = self.__star2nef_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                         for d in rows:
                             lp.add_data(d)
                         has_pk_row_format = True
 
                     elif len(tags) > 0:
                         for data in loop:
-                            rows = self.star2nef_row(loop.get_tag_names(), lp.get_tag_names(), data)
+                            rows = self.__star2nef_row(loop.get_tag_names(), lp.get_tag_names(), data)
                             for d in rows:
                                 lp.add_data(d)
 
@@ -11377,7 +11265,7 @@ class NEFTranslator:
                     pass
 
             if sf.category == 'spectral_peak_list' and has_pk_can_format and not has_pk_row_format:
-                cs_list_id = self.star2nef_peak_can(saveframe, sf)
+                cs_list_id = self.__star2nef_peak_can(saveframe, sf)
                 if cs_list_id is not None and (len(sf.get_tag('chemical_shift_list')) == 0
                                                or sf.get_tag('chemical_shift_list') in emptyValue):
                     for cs_sf in star_data:

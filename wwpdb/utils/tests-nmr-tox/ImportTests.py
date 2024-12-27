@@ -17,7 +17,7 @@ if __package__ is None or __package__ == "":
 else:
     from .commonsetup import TESTOUTPUT  # noqa: F401 pylint: disable=relative-beyond-top-level
 
-from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 # DAOTHER-9714: NmrStarToCif class has been deprecated

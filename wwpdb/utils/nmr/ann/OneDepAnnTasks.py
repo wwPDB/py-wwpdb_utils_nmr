@@ -76,8 +76,7 @@ class OneDepAnnTasks:
         # derived from wwpdb.apps.deposit.depui.constant.REQUIREMENTS
         self.__nmrRequirements = {'nmrsample': ["pdbx_nmr_sample_details",
                                                 "pdbx_nmr_exptl_sample",
-                                                "pdbx_nmr_exptl_sample_conditions",
-                                                "entity"],
+                                                "pdbx_nmr_exptl_sample_conditions"],
                                   'nmrdatacollection': ["pdbx_nmr_spectrometer",
                                                         "pdbx_nmr_exptl",
                                                         "pdbx_nmr_sample_details",

@@ -198,12 +198,12 @@ class OneDepAnnTasks:
         # self.tagMap = self.load_csv_data('./lib/tagmap.csv', transpose=False)
         #
         # self.__sfTagMap = []
-        # for map in self.tagMap:
-        #     if map[2] in sfCatList and map[0] in self.__nmrIfCategories:
-        #         if map not in self.__sfTagMap:
-        #             print(f'                           ({map[0]!r}, {map[1]!r}, {"_" + map[2]!r}, {map[3]!r}, '
-        #                   f'{int(map[4]) if len(map[4]) > 0 else None}, {int(map[5]) if len(map[5]) > 0 else None}),')
-        #             self.__sfTagMap.append(map)
+        # for tag_map in self.tagMap:
+        #     if tag_map[2] in sfCatList and tag_map[0] in self.__nmrIfCategories:
+        #         if tag_map not in self.__sfTagMap:
+        #             print(f'                           ({tag_map[0]!r}, {tag_map[1]!r}, {"_" + tag_map[2]!r}, {tag_map[3]!r}, '
+        #                   f'{int(tag_map[4]) if len(tag_map[4]) > 0 else None}, {int(tag_map[5]) if len(tag_map[5]) > 0 else None}),')
+        #             self.__sfTagMap.append(tag_map)
         # """
         self.__sfTagMap = [('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_13C_err', '_Assigned_chem_shift_list', 'Chem_shift_13C_err', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_15N_err', '_Assigned_chem_shift_list', 'Chem_shift_15N_err', 1, None),
@@ -277,29 +277,29 @@ class OneDepAnnTasks:
         self.__uniqSfTagMap = []
         sf_map = {}
         sf_cif_tags = []
-        for map in self.__sfTagMap:
-            cif_category, sf_tag_prefix = map[0], map[2]
+        for tag_map in self.__sfTagMap:
+            cif_category, sf_tag_prefix = tag_map[0], tag_map[2]
             if cif_category not in sf_map:
                 sf_map[cif_category] = []
             sf_map[cif_category].append(sf_tag_prefix)
         for cif_category, v in sf_map.items():
             sf_map[cif_category] = collections.Counter(v).most_common()
-            maps = [map for map in self.__sfTagMap if map[0] == cif_category]
-            for map in maps:
-                sf_cif_tag, sf_tag_prefix = map[1], map[2]
+            tag_maps = [tag_map for tag_map in self.__sfTagMap if tag_map[0] == cif_category]
+            for tag_map in tag_maps:
+                sf_cif_tag, sf_tag_prefix = tag_map[1], tag_map[2]
                 if sf_tag_prefix == sf_map[cif_category][0][0]:
                     sf_cif_tags.append(f'{cif_category}.{sf_cif_tag}')
-                    self.__uniqSfTagMap.append(map)
-            for map in maps:
-                sf_cif_tag, sf_tag_prefix = map[1], map[2]
+                    self.__uniqSfTagMap.append(tag_map)
+            for tag_map in tag_maps:
+                sf_cif_tag, sf_tag_prefix = tag_map[1], tag_map[2]
                 if sf_tag_prefix != sf_map[cif_category][0][0]:
                     if f'{cif_category}.{sf_cif_tag}' not in sf_cif_tags:
                         sf_cif_tags.append(f'{cif_category}.{sf_cif_tag}')
-                        self.__uniqSfTagMap.append(map)
+                        self.__uniqSfTagMap.append(tag_map)
 
         self.__uniqSfCatMap = {}
-        for map in self.__uniqSfTagMap:
-            cif_category, sf_tag_prefix = map[0], map[2]
+        for tag_map in self.__uniqSfTagMap:
+            cif_category, sf_tag_prefix = tag_map[0], tag_map[2]
             if cif_category not in self.__uniqSfCatMap:
                 sf_category = None
                 for page in self.__pages:
@@ -313,12 +313,12 @@ class OneDepAnnTasks:
 
         # """
         # self.__lpTagMap = []
-        # for map in self.tagMap:
-        #     if map[2] in lpCatList and map[0] in self.__nmrIfCategories:
-        #         if map not in self.__lpTagMap:
-        #             print(f'                           ({map[0]!r}, {map[1]!r}, {"_" + map[2]!r}, {map[3]!r}, '
-        #                   f'{int(map[4]) if len(map[4]) > 0 else None}, {int(map[5]) if len(map[5]) > 0 else None}),')
-        #             self.__lpTagMap.append(map)
+        # for tag_map in self.tagMap:
+        #     if tag_map[2] in lpCatList and tag_map[0] in self.__nmrIfCategories:
+        #         if tag_map not in self.__lpTagMap:
+        #             print(f'                           ({tag_map[0]!r}, {tag_map[1]!r}, {"_" + tag_map[2]!r}, {tag_map[3]!r}, '
+        #                   f'{int(tag_map[4]) if len(tag_map[4]) > 0 else None}, {int(tag_map[5]) if len(tag_map[5]) > 0 else None}),')
+        #             self.__lpTagMap.append(tag_map)
         # """
         self.__lpTagMap = [('pdbx_nmr_chem_shift_experiment', 'assigned_chem_shift_list_id', '_Chem_shift_experiment', 'Assigned_chem_shift_list_ID', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'entry_id', '_Chem_shift_experiment', 'Entry_ID', 1, None),
@@ -425,8 +425,8 @@ class OneDepAnnTasks:
                            ]
 
         self.__uniqLpCatMap = {}
-        for map in self.__lpTagMap:
-            cif_category, lp_category = map[0], map[2]
+        for tag_map in self.__lpTagMap:
+            cif_category, lp_category = tag_map[0], tag_map[2]
             if cif_category not in self.__uniqLpCatMap:
                 self.__uniqLpCatMap[cif_category] = []
             self.__uniqLpCatMap[cif_category].append(lp_category)
@@ -887,7 +887,7 @@ class OneDepAnnTasks:
 
             for sf_category, sf_tag_prefix, new_flag in zip(self.__sfCategory[page], self.__sfTagPrefix[page], self.__sfNewFlag[page]):
 
-                cif_categories = set(map[0] for map in self.__sfTagMap if map[2] == sf_tag_prefix)
+                cif_categories = set(tag_map[0] for tag_map in self.__sfTagMap if tag_map[2] == sf_tag_prefix)
 
                 has_cif_category = True
                 for cif_category in cif_categories:
@@ -908,9 +908,9 @@ class OneDepAnnTasks:
                         self.__lfh.write(f"+OneDepAnnTasks.perform() ++ Warning  - {sf_category!r} category does not exist in NMR data\n")
                     continue
 
-                sf_tag_maps = [map for map in self.__sfTagMap if map[2] == sf_tag_prefix]
-                sf_framecode_map = next((map for map in sf_tag_maps if map[3] == 'Sf_framecode'), None)
-                sf_id_map = next((map for map in sf_tag_maps if map[3] == 'ID'), None)
+                sf_tag_maps = [tag_map for tag_map in self.__sfTagMap if tag_map[2] == sf_tag_prefix]
+                sf_framecode_map = next((tag_map for tag_map in sf_tag_maps if tag_map[3] == 'Sf_framecode'), None)
+                sf_id_map = next((tag_map for tag_map in sf_tag_maps if tag_map[3] == 'ID'), None)
                 def_sf_tags = [tag.split('.')[1] for tag in self.__defSfTag if tag.split('.')[0] == sf_tag_prefix]
 
                 sf_rows = {}
@@ -985,12 +985,12 @@ class OneDepAnnTasks:
 
                                         set_sf_tag(sf, 'Entry_ID', self.__entryId)
 
-                                    for map in sf_tag_maps:
-                                        if map[0] == cif_category and map[1] in row and map[3] not in ('Sf_framecode', 'Sf_category', 'ID', 'Entry_ID'):
-                                            if row[map[1]] in emptyValue:
-                                                if len(get_first_sf_tag(sf, map[3])) > 0:
+                                    for tag_map in sf_tag_maps:
+                                        if tag_map[0] == cif_category and tag_map[1] in row and tag_map[3] not in ('Sf_framecode', 'Sf_category', 'ID', 'Entry_ID'):
+                                            if row[tag_map[1]] in emptyValue:
+                                                if len(get_first_sf_tag(sf, tag_map[3])) > 0:
                                                     continue
-                                            set_sf_tag(sf, map[3], row[map[1]])
+                                            set_sf_tag(sf, tag_map[3], row[tag_map[1]])
                                             has_uniq_sf_tag = True
 
                                     for def_sf_tag in def_sf_tags:
@@ -1018,8 +1018,8 @@ class OneDepAnnTasks:
                         reset = new_flag
                         lp = None
 
-                        cif_categories = set(map[0] for map in self.__lpTagMap if map[2] == lp_category)
-                        lp_tag_dict = {map[3]: (map[1], map[4]) for map in self.__lpTagMap if map[2] == lp_category}
+                        cif_categories = set(tag_map[0] for tag_map in self.__lpTagMap if tag_map[2] == lp_category)
+                        lp_tag_dict = {tag_map[3]: (tag_map[1], tag_map[4]) for tag_map in self.__lpTagMap if tag_map[2] == lp_category}
                         if 'Entry_ID' not in lp_tag_dict.keys():
                             lp_tag_dict['Entry_ID'] = (None, None)
                         lp_tags = list(lp_tag_dict.keys())
@@ -1081,8 +1081,9 @@ class OneDepAnnTasks:
 
                                                 reset = True
 
+                                    has_uniq_lp_row = False
+
                                     if reset:
-                                        has_uniq_lp_row = False
                                         _row = [None] * len(lp.tags)
 
                                     elif has_id_tag:
@@ -1216,9 +1217,9 @@ class OneDepAnnTasks:
 
             if sf_category in self.__sfCategoryList:
 
-                sf_tag_maps = [map for map in self.__uniqSfTagMap if map[0] == cif_category and map[2] == sf_tag_prefix]
-                sf_tags = [map[3] for map in sf_tag_maps]
-                sf_map_code = [map[4] for map in sf_tag_maps]
+                sf_tag_maps = [tag_map for tag_map in self.__uniqSfTagMap if tag_map[0] == cif_category and tag_map[2] == sf_tag_prefix]
+                sf_tags = [tag_map[3] for tag_map in sf_tag_maps]
+                sf_map_code = [tag_map[4] for tag_map in sf_tag_maps]
                 has_id_tag = 'ID' in sf_tags
                 has_uniq_sf_tags = not all(sf_tag in ('ID', 'Sf_framecode') for sf_tag in sf_tags)
 
@@ -1228,7 +1229,7 @@ class OneDepAnnTasks:
                         lp_categories.extend(_lp_categories)
                         lp_cat_map.append((_cif_category, _lp_categories))
 
-                sf_cif_tags = [map[1] for map in sf_tag_maps]
+                sf_cif_tags = [tag_map[1] for tag_map in sf_tag_maps]
 
                 sf_cif_category = cif_category
 
@@ -1259,10 +1260,10 @@ class OneDepAnnTasks:
                                     except KeyError:
                                         continue
 
-                                    lp_tag_maps = [map for map in self.__lpTagMap if map[0] == cif_category and map[2] == lp_category]
-                                    lp_cif_tags = [map[1] for map in lp_tag_maps]
-                                    lp_tags = [map[3] for map in lp_tag_maps]
-                                    lp_map_code = [map[4] for map in lp_tag_maps]
+                                    lp_tag_maps = [tag_map for tag_map in self.__lpTagMap if tag_map[0] == cif_category and tag_map[2] == lp_category]
+                                    lp_cif_tags = [tag_map[1] for tag_map in lp_tag_maps]
+                                    lp_tags = [tag_map[3] for tag_map in lp_tag_maps]
+                                    lp_map_code = [tag_map[4] for tag_map in lp_tag_maps]
                                     has_list_id_tag = list_id_tag in lp_tags
 
                                     if -11 in lp_map_code:
@@ -1321,10 +1322,10 @@ class OneDepAnnTasks:
                                             _row = ['.'] * len(lp_cif_tags)
 
                                             for idx, cif_item in enumerate(lp_cif_tags):
-                                                map = next(map for map in lp_tag_maps if map[1] == cif_item)
-                                                if map[4] != -22:
-                                                    if map[3] in _lp_tags:
-                                                        _row[idx] = row[_lp_tags.index(map[3])]
+                                                tag_map = next(tag_map for tag_map in lp_tag_maps if tag_map[1] == cif_item)
+                                                if tag_map[4] != -22:
+                                                    if tag_map[3] in _lp_tags:
+                                                        _row[idx] = row[_lp_tags.index(tag_map[3])]
                                                 elif cif_item.endswith('range'):
                                                     max_lp_item = next((lp_tag for lp_tag in _lp_tags if lp_tag.endswith('max')), None)
                                                     min_lp_item = next((lp_tag for lp_tag in _lp_tags if lp_tag.endswith('min')), None)
@@ -1363,8 +1364,8 @@ class OneDepAnnTasks:
                                                 elif lp_tag == 'Val_units':
                                                     _val_units = _row[_lp_tags.index('Val_units')]
                                                 else:
-                                                    map = next(map for map in lp_tag_maps if map[3] == lp_tag)
-                                                    row[lp_cif_tags.index(map[1])] = list_id if lp_tag == list_id_tag else _row[lp_tags.index(lp_tag)]
+                                                    tag_map = next(tag_map for tag_map in lp_tag_maps if tag_map[3] == lp_tag)
+                                                    row[lp_cif_tags.index(tag_map[1])] = list_id if lp_tag == list_id_tag else _row[lp_tags.index(lp_tag)]
 
                                             if _type in ('ionic_strength', 'pH', 'pressure', 'temperature'):
                                                 if _type in lp_cif_tags:
@@ -1389,13 +1390,13 @@ class OneDepAnnTasks:
                                         except KeyError:
                                             continue
 
-                                        lp_tag_maps[lp_idx] = [map for map in self.__lpTagMap if map[0] == cif_category and map[2] == lp_category]
-                                        lp_tags[lp_idx] = [map[3] for map in lp_tag_maps[lp_idx]]
+                                        lp_tag_maps[lp_idx] = [tag_map for tag_map in self.__lpTagMap if tag_map[0] == cif_category and tag_map[2] == lp_category]
+                                        lp_tags[lp_idx] = [tag_map[3] for tag_map in lp_tag_maps[lp_idx]]
                                         if list_id_tag not in lp_tags[lp_idx]:
                                             lps[lp_idx] = None
                                             continue
-                                        for map in lp_tag_maps[lp_idx]:
-                                            cif_item, lp_item, map_code = map[1], map[3], map[4]
+                                        for tag_map in lp_tag_maps[lp_idx]:
+                                            cif_item, lp_item, map_code = tag_map[1], tag_map[3], tag_map[4]
                                             if cif_item not in lp_cif_tags:
                                                 lp_cif_tags.append(cif_item)
                                                 lp_items.append(lp_item)
@@ -1446,7 +1447,7 @@ class OneDepAnnTasks:
 
                         if has_uniq_sf_tags:
 
-                            sf_cif_tags = [map[1] for map in sf_tag_maps]
+                            sf_cif_tags = [tag_map[1] for tag_map in sf_tag_maps]
                             cif_util.AddCategory(self.__entryId, cif_category, sf_cif_tags)
 
                             for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
@@ -1464,8 +1465,8 @@ class OneDepAnnTasks:
                     for cif_category, lp_categories in lp_cat_map:
 
                         for lp_category in lp_categories:
-                            lp_tag_maps = [map for map in self.__lpTagMap if map[0] == cif_category and map[2] == lp_category and map[4] == -11]
-                            lp_cif_tags = [map[1] for map in lp_tag_maps]
+                            lp_tag_maps = [tag_map for tag_map in self.__lpTagMap if tag_map[0] == cif_category and tag_map[2] == lp_category and tag_map[4] == -11]
+                            lp_cif_tags = [tag_map[1] for tag_map in lp_tag_maps]
                             sf_lp_cif_tags.extend(lp_cif_tags)
 
                     cif_util.AddCategory(self.__entryId, sf_cif_category, sf_lp_cif_tags)
@@ -1489,9 +1490,9 @@ class OneDepAnnTasks:
                                 except KeyError:
                                     continue
 
-                                lp_tag_maps = [map for map in self.__lpTagMap if map[0] == cif_category and map[2] == lp_category and map[4] == -11]
-                                lp_cif_tags = [map[1] for map in lp_tag_maps]
-                                lp_tags = [map[3] for map in lp_tag_maps]
+                                lp_tag_maps = [tag_map for tag_map in self.__lpTagMap if tag_map[0] == cif_category and tag_map[2] == lp_category and tag_map[4] == -11]
+                                lp_cif_tags = [tag_map[1] for tag_map in lp_tag_maps]
+                                lp_tags = [tag_map[3] for tag_map in lp_tag_maps]
 
                                 missing_lp_tags = set(lp_tags) - set(lp.tags)
 
@@ -1502,14 +1503,14 @@ class OneDepAnnTasks:
                                 for row in dat:
 
                                     if len(_lp_tags) == 1:
-                                        map = next(map for map in lp_tag_maps if map[3] == _lp_tags[0])
-                                        _row[sf_lp_cif_tags.index(map[1])] = row
+                                        tag_map = next(tag_map for tag_map in lp_tag_maps if tag_map[3] == _lp_tags[0])
+                                        _row[sf_lp_cif_tags.index(tag_map[1])] = row
 
                                     else:
 
                                         for idx, lp_item in enumerate(_lp_tags):
-                                            map = next(map for map in lp_tag_maps if map[3] == lp_item)
-                                            _row[sf_lp_cif_tags.index(map[1])] = row[idx]
+                                            tag_map = next(tag_map for tag_map in lp_tag_maps if tag_map[3] == lp_item)
+                                            _row[sf_lp_cif_tags.index(tag_map[1])] = row[idx]
 
                                     break
 

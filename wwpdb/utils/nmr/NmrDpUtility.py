@@ -10473,22 +10473,22 @@ class NmrDpUtility:
                         self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
-        """
-        if not self.__combined_mode and self.__remediation_mode\
-           and not self.__submission_mode and not self.__annotation_mode and not self.__release_mode\
-           and file_list_id == 0 and file_type == 'nmr-star':
-
-            content_subtype = 'chem_shift_ref'
-
-            # Delete extra saveframes for chemical shift reference
-
-            if content_subtype in content_subtypes.keys():
-                while content_subtypes[content_subtype] > content_subtypes['chem_shift']:
-                    sf_category = self.sf_categories[file_type][content_subtype]
-                    csr_sf = self.__star_data[file_list_id].get_saveframes_by_category(sf_category)[-1]
-                    del self.__star_data[file_list_id][csr_sf]
-                    content_subtypes[content_subtype] -= 1
-        """
+        # """ DAOTHER-1728, 9846: no need to wipe category for chemical shift reference
+        # if not self.__combined_mode and self.__remediation_mode\
+        #    and not self.__submission_mode and not self.__annotation_mode and not self.__release_mode\
+        #    and file_list_id == 0 and file_type == 'nmr-star':
+        #
+        #     content_subtype = 'chem_shift_ref'
+        #
+        #     # Delete extra saveframes for chemical shift reference
+        #
+        #     if content_subtype in content_subtypes.keys():
+        #         while content_subtypes[content_subtype] > content_subtypes['chem_shift']:
+        #             sf_category = self.sf_categories[file_type][content_subtype]
+        #             csr_sf = self.__star_data[file_list_id].get_saveframes_by_category(sf_category)[-1]
+        #             del self.__star_data[file_list_id][csr_sf]
+        #             content_subtypes[content_subtype] -= 1
+        # """
         input_source.setItemValue('content_subtype', content_subtypes)
 
     def __detectContentSubTypeOfLegacyMr(self) -> bool:

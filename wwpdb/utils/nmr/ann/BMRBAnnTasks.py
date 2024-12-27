@@ -602,12 +602,12 @@ class BMRBAnnTasks:
             for sf in master_entry.get_saveframes_by_category(sf_category):
                 try:
                     entity_id = int(get_first_sf_tag(sf, 'ID'))
-                    type = get_first_sf_tag(sf, 'Type')
+                    _type = get_first_sf_tag(sf, 'Type')
                     polymer_type = get_first_sf_tag(sf, 'Polymer_type')
                     polymer_common_type = get_first_sf_tag(sf, 'Polymer_common_type')
                     num_of_monomers = get_first_sf_tag(sf, 'Number_of_monomers')
 
-                    if len(type) == 0 or type in ('solvent', 'water') or len(polymer_type) == 0:
+                    if len(_type) == 0 or _type in ('solvent', 'water') or len(polymer_type) == 0:
 
                         lp_category = '_Entity_comp_index'
 
@@ -636,8 +636,8 @@ class BMRBAnnTasks:
                                         break
 
                             if protein or dna or rna:
-                                type = 'polymer'
-                                set_sf_tag(sf, 'Type', type)
+                                _type = 'polymer'
+                                set_sf_tag(sf, 'Type', _type)
 
                                 if protein:
                                     polymer_type = 'polypeptide(L)'
@@ -717,7 +717,7 @@ class BMRBAnnTasks:
                     except KeyError:
                         pass
 
-                    has_non_polymer = type == 'non-polymer'
+                    has_non_polymer = _type == 'non-polymer'
 
                     nstd_monomer = get_first_sf_tag(sf, 'Nstd_monomer')
                     has_nstd_monomer = nstd_monomer == 'yes'
@@ -737,7 +737,7 @@ class BMRBAnnTasks:
                                 if row not in monDict3:
                                     if row not in nstd_monomers:
                                         nstd_monomers.append(row)
-                                    if type != 'non-polymer':
+                                    if _type != 'non-polymer':
                                         has_nstd_monomer = True
                                 if row in ('CYS', 'DCY'):
                                     total_cys += 1
@@ -891,7 +891,7 @@ class BMRBAnnTasks:
                                                   'gene_mnemonic': gene_mnemonic
                                                   }
 
-                    if type == 'non-polymer':
+                    if _type == 'non-polymer':
                         entity_dict[entity_id] = {'name': get_first_sf_tag(sf, 'Name'),
                                                   'sf_framecode': get_first_sf_tag(sf, 'Sf_framecode'),
                                                   'sample_type': 'ligand' if 'ION' not in get_first_sf_tag(sf, 'Name') else 'metal ion',
@@ -2124,9 +2124,9 @@ class BMRBAnnTasks:
 
                 exp_id_mapping = {}
 
-                for ord, row in enumerate(dat, start=1):
-                    if row not in emptyValue and int(row) != ord:
-                        exp_id_mapping[int(row)] = ord
+                for idx, row in enumerate(dat, start=1):
+                    if row not in emptyValue and int(row) != idx:
+                        exp_id_mapping[int(row)] = idx
 
                 if len(exp_id_mapping) > 0:
                     id_col = lp.tags.index('ID')
@@ -2336,9 +2336,9 @@ class BMRBAnnTasks:
 
                     dat = lp.get_tag(['Comp_ID'])
 
-                    for ord, row in enumerate(dat, start=1):
+                    for idx, row in enumerate(dat, start=1):
                         one_letter_code += getOneLetterCodeCan(row)
-                        if ord % 20 == 0:
+                        if idx % 20 == 0:
                             one_letter_code += '\n'
                         if row not in emptyValue:
                             if row in ('CYS', 'DCY'):

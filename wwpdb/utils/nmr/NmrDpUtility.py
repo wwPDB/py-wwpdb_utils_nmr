@@ -6899,9 +6899,6 @@ class NmrDpUtility:
         # NMRIF reader
         self.__nmrIfR = None
 
-        # whether to extract original NMR experimental metadata to NMRIF
-        self.__extract_to_nmrif = False
-
     def setVerbose(self, verbose: bool):
         """ Set verbose mode.
         """
@@ -7101,8 +7098,6 @@ class NmrDpUtility:
 
         elif self.__combined_mode and not self.__remediation_mode:
             self.__native_combined = True
-
-        self.__extract_to_nmrif = op == 'nmr-cs-mr-merge' or (self.__native_combined and self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit'))
 
         self.__remediation_loop_count = 0
 
@@ -24995,13 +24990,11 @@ class NmrDpUtility:
         if len(self.__star_data) == 0 or not isinstance(self.__star_data[0], pynmrstar.Entry):
             return False
 
-        if not self.__extract_to_nmrif:
-            return False
-
         if 'nmrif_file_path' not in self.__outputParamDict:
             return False
 
-        self.__extract_to_nmrif = False  # need to extract the initial metadata of NMR-STAR to NMRIF
+        if os.path.exists(self.__outputParamDict['nmrif_file_path']):
+            return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()

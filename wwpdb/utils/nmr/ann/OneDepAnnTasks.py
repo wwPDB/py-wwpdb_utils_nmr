@@ -1517,8 +1517,8 @@ class OneDepAnnTasks:
                         _row = replace_none(_row, '?')
                         cif_util.InsertData(self.__entryId, sf_cif_category, [_row])
 
-        if len(cif_util.GetCategories()[self.__entryId]) == 0:
-            return False
+        # if len(cif_util.GetCategories()[self.__entryId]) == 0:
+        #     return False
 
         try:
             cif_util.WriteCif(file_path)

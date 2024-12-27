@@ -218,27 +218,29 @@ NmrDpUtility class can absorb differences between NMR-STAR file and CIF formatte
     util.addOutput(name='nmr_cif_file_path', value=path_to_pdbx_nmr_data_file, type='file')
 ```
 
-## Support for Stereo-Array Isotope Labeling (SAIL)
+### Support for Stereo-Array Isotope Labeling (SAIL)
 
-NmrDpUtility class can notice the Stereo Array Isotope Labeling (SAIL) method. This is a trigger that prevents to generate atom names in the same atom group from fanning out for a given atom name. To turn off fan-out mode, you must add one of the following metadata to your upload file. Here are four cases:
+NmrDpUtility class can notice the Stereo Array Isotope Labeling (SAIL) method. This is a trigger that prevents to generate atom names in the same atom group from fanning out for a given atom name. To turn off fan-out mode, you must add one of the following metadata to your upload file. Here are four cases (a, b, c, and d):
 
 - NMR-STAR
-	- 1. Create '_Systematic_chem_shift_offset' loop in '_Assiged_chem_shift_list' saveframe and set '_Systematic_chem_shift_offset.Type'
+	- 1. Create '_Systematic_chem_shift_offset' loop in '_Assiged_chem_shift_list' saveframe and set proper description in '_Systematic_chem_shift_offset.Type' data item
+	- 2. Create '_Sample_component' loop in '_Sample' saveframe and set proper description in '_Sample_component.Isotopic_labeling' data item for target entity
+For example,
 ```
-    _Systematic_chem_shift_offset.Type 'stereo-array isotope labeling' or 'sail'
-```
-	- 2. Create '_Sample_component' loop in '_Sample' saveframe and set '_Sample_component.Isotopic_labeling' value:
-```
-    _Sample_component.Isotopic_labeling 'stereo-array isotope labeling' or 'sail'
+    _Systematic_chem_shift_offset.Type 'stereo-array isotope labeling'
+    _Systematic_chem_shift_offset.Type SAIL
+    _Sample_component.Isotopic_labeling 'stereo-array isotope labeling'
+    _Sample_component.Isotopic_labeling SAIL
 ```
 - PDBx/mmCIF (coordinates)
-	- 3. Add proper description in '_struct_keywords.text' data item:
+	- 3. Add proper description in '_struct_keywords.text' data item
+	- 4. Set proper description in '_pdbx_nmr_exptl_sample.isotopic_labeling' data item for target entity
+For example,
 ```
-    _struct_keywords.text includes 'stereo-array isotope labeling' or 'sail'
-```
-	- 4. Add proper description in '_pdbx_nmr_exptl_sample.isotopic_labeling' data item:
-```
-    _pdbx_nmr_exptl_sample.isotopic_labeling 'stereo-array isotope labeling' or 'sail'
+    _struct_keywords.text 'stereo-array isotope labeling'
+    _struct_keywords.text SAIL
+    _pdbx_nmr_exptl_sample.isotopic_labeling 'stereo-array isotope labeling'
+    _pdbx_nmr_exptl_sample.isotopic_labeling SAIL
 ```
 
 ## Schema of NMR data processing report file

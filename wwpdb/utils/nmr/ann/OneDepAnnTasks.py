@@ -310,6 +310,8 @@ class OneDepAnnTasks:
                     if sf_category is not None:
                         break
                 self.__uniqSfCatMap[cif_category] = (sf_category, sf_tag_prefix)
+        # 'pdbx_nmr_exptl' category has no effective item to relate '_Experiment_list'
+        self.__uniqSfCatMap['pdbx_nmr_exptl'] = ('experiment_list', '_Experiment_list')
 
         # """
         # self.__lpTagMap = []
@@ -1131,7 +1133,7 @@ class OneDepAnnTasks:
                                                                 continue
                                                             has_uniq_lp_row = True
                                                     elif tag == 'Type':
-                                                        _row[col] = cif_tag
+                                                        _row[col] = cif_tag.replace('_', ' ')  # ionic_strength (NMRIF) -> ionic strength (NMR-STAR)
                                                     else:
                                                         _row[col] = row[cif_tag]
                                                         has_uniq_lp_row = True
@@ -1178,7 +1180,7 @@ class OneDepAnnTasks:
                                                             except AttributeError:
                                                                 continue
                                                     elif tag == 'Type':
-                                                        _row[col] = cif_tag
+                                                        _row[col] = cif_tag.replace('_', ' ')  # ionic_strength (NMRIF) -> ionic strength (NMR-STAR)
                                                     else:
                                                         _row[col] = row[cif_tag]
 
@@ -1216,7 +1218,6 @@ class OneDepAnnTasks:
         for cif_category, (sf_category, sf_tag_prefix) in self.__uniqSfCatMap.items():
 
             if sf_category in self.__sfCategoryList:
-
                 sf_tag_maps = [tag_map for tag_map in self.__uniqSfTagMap if tag_map[0] == cif_category and tag_map[2] == sf_tag_prefix]
                 sf_tags = [tag_map[3] for tag_map in sf_tag_maps]
                 sf_map_code = [tag_map[4] for tag_map in sf_tag_maps]
@@ -1367,7 +1368,9 @@ class OneDepAnnTasks:
                                                     tag_map = next(tag_map for tag_map in lp_tag_maps if tag_map[3] == lp_tag)
                                                     row[lp_cif_tags.index(tag_map[1])] = list_id if lp_tag == list_id_tag else _row[lp_tags.index(lp_tag)]
 
-                                            if _type in ('ionic_strength', 'pH', 'pressure', 'temperature'):
+                                            if _type in ('ionic strength', 'pH', 'pressure', 'temperature'):
+                                                if ' ' in _type:  # ionic strength (NMR-STAR) -> ionic_streandth (NMRIF)
+                                                    _type = _type.replace(' ', '_')
                                                 if _type in lp_cif_tags:
                                                     row[lp_cif_tags.index(_type)] = _val
                                                 if f'{_type}_err' in lp_cif_tags:

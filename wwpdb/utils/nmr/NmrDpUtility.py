@@ -524,6 +524,7 @@ category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
 tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
 sf_category_pattern = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
 sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
+label_symbol_pattern = re.compile(r'^\$[0-9A-Za-z_]+$')
 
 onedep_upload_file_pattern = re.compile(r'(.*)\-upload_(.*)\.V(.*)$')
 onedep_file_pattern = re.compile(r'(.*)\.V(.*)$')
@@ -30687,6 +30688,17 @@ class NmrDpUtility:
                                     for c in containerList:
                                         c.setType('data')
 
+                                        for cat in c.getObjNameList():
+                                            obj = c.getObj(cat)
+                                            attrs = obj.getAttributeList()
+                                            label_cols = [idx for idx, attr in enumerate(attrs) if attr.endswith('_label')]
+                                            if len(label_cols) == 0:
+                                                continue
+                                            for idx, row in enumerate(obj.getRowList()):
+                                                for col, val in enumerate(row):
+                                                    if col in label_cols and label_symbol_pattern.match(val):
+                                                        obj.setValue(val[1:], attrs[col], idx)
+
                                     myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                             except Exception as e:
@@ -36198,6 +36210,17 @@ class NmrDpUtility:
                                 eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
                                 for c in containerList:
                                     c.setType('data')
+
+                                    for cat in c.getObjNameList():
+                                        obj = c.getObj(cat)
+                                        attrs = obj.getAttributeList()
+                                        label_cols = [idx for idx, attr in enumerate(attrs) if attr.endswith('_label')]
+                                        if len(label_cols) == 0:
+                                            continue
+                                        for idx, row in enumerate(obj.getRowList()):
+                                            for col, val in enumerate(row):
+                                                if col in label_cols and label_symbol_pattern.match(val):
+                                                    obj.setValue(val[1:], attrs[col], idx)
 
                                 myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
@@ -55633,6 +55656,17 @@ class NmrDpUtility:
                     for c in containerList:
                         c.setType('data')
 
+                        for cat in c.getObjNameList():
+                            obj = c.getObj(cat)
+                            attrs = obj.getAttributeList()
+                            label_cols = [idx for idx, attr in enumerate(attrs) if attr.endswith('_label')]
+                            if len(label_cols) == 0:
+                                continue
+                            for idx, row in enumerate(obj.getRowList()):
+                                for col, val in enumerate(row):
+                                    if col in label_cols and label_symbol_pattern.match(val):
+                                        obj.setValue(val[1:], attrs[col], idx)
+
                     myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
             except Exception as e:
@@ -55680,6 +55714,17 @@ class NmrDpUtility:
                     eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
                     for c in containerList:
                         c.setType('data')
+
+                        for cat in c.getObjNameList():
+                            obj = c.getObj(cat)
+                            attrs = obj.getAttributeList()
+                            label_cols = [idx for idx, attr in enumerate(attrs) if attr.endswith('_label')]
+                            if len(label_cols) == 0:
+                                continue
+                            for idx, row in enumerate(obj.getRowList()):
+                                for col, val in enumerate(row):
+                                    if col in label_cols and label_symbol_pattern.match(val):
+                                        obj.setValue(val[1:], attrs[col], idx)
 
                     myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
@@ -59064,6 +59109,17 @@ class NmrDpUtility:
                         eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
                         for c in containerList:
                             c.setType('data')
+
+                            for cat in c.getObjNameList():
+                                obj = c.getObj(cat)
+                                attrs = obj.getAttributeList()
+                                label_cols = [idx for idx, attr in enumerate(attrs) if attr.endswith('_label')]
+                                if len(label_cols) == 0:
+                                    continue
+                                for idx, row in enumerate(obj.getRowList()):
+                                    for col, val in enumerate(row):
+                                        if col in label_cols and label_symbol_pattern.match(val):
+                                            obj.setValue(val[1:], attrs[col], idx)
 
                         myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 

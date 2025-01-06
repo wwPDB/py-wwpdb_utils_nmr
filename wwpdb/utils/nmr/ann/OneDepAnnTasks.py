@@ -314,14 +314,12 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_1H_err', '_Assigned_chem_shift_list', 'Chem_shift_1H_err', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_2H_err', '_Assigned_chem_shift_list', 'Chem_shift_2H_err', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_31P_err', '_Assigned_chem_shift_list', 'Chem_shift_31P_err', 1, None),
-                           # ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_reference_id', '_Assigned_chem_shift_list', 'Chem_shift_reference_ID', 1, None),
-                           # replaced by
-                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_reference_id', '_Assigned_chem_shift_list', 'Chem_shift_reference_label', 1, None),
-                           # ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id', '_Assigned_chem_shift_list', 'Sample_condition_list_ID', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_reference_id', '_Assigned_chem_shift_list', 'Chem_shift_reference_ID', 1, None),
+                           # add pdbx_nmr_assigned_chem_shift_list.chem_shift_reference_label
+                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_reference_label', '_Assigned_chem_shift_list', 'Chem_shift_reference_label', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id', '_Assigned_chem_shift_list', 'Sample_condition_list_ID', 1, None),
                            # ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id', '_Sample_condition_list', 'ID', 1, None),
-                           # ('pdbx_nmr_assigned_chem_shift_list', 'conditions_label', '_Assigned_chem_shift_list', 'Sample_condition_list_label', 1, None),
-                           # replaced by
-                           ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id', '_Assigned_chem_shift_list', 'Sample_condition_list_label', 1, None),
+                           ('pdbx_nmr_assigned_chem_shift_list', 'conditions_label', '_Assigned_chem_shift_list', 'Sample_condition_list_label', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'data_file_name', '_Assigned_chem_shift_list', 'Data_file_name', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'details', '_Assigned_chem_shift_list', 'Details', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'entry_id', '_Assigned_chem_shift_list', 'Entry_ID', 1, None),
@@ -370,6 +368,8 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_software', 'ordinal', '_Software', 'ID', 1, None),
                            ('pdbx_nmr_software', 'version', '_Software', 'Version', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'conditions_id', '_Spectral_peak_list', 'Sample_condition_list_ID', 1, None),
+                           # add pdbx_nmr_spectral_peak_list.conditions_label
+                           ('pdbx_nmr_spectral_peak_list', 'conditions_label', '_Spectral_peak_list', 'Sample_condition_list_label', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'data_file_name', '_Spectral_peak_list', 'Data_file_name', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'details', '_Spectral_peak_list', 'Details', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'entry_id', '_Spectral_peak_list', 'Entry_ID', 1, None),
@@ -377,6 +377,12 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_spectral_peak_list', 'id', '_Spectral_peak_list', 'ID', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'number_of_spectral_dimensions', '_Spectral_peak_list', 'Number_of_spectral_dimensions', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'solution_id', '_Spectral_peak_list', 'Sample_ID', 1, None),
+                           # add pdbx_nmr_spectral_peak_list.solution_label
+                           ('pdbx_nmr_spectral_peak_list', 'solution_label', '_Spectral_peak_list', 'Sample_label', 1, None),
+                           # add pdbx_nmr_spectral_peak_list.assigned_chem_shift_list_id
+                           ('pdbx_nmr_spectral_peak_list', 'assigned_chem_shift_list_id', '_Spectral_peak_list', 'Assigned_chem_shift_list_ID', 1, None),
+                           # add pdbx_nmr_spectral_peak_list.assigned_chem_shift_list_label
+                           ('pdbx_nmr_spectral_peak_list', 'assigned_chem_shift_list_label', '_Spectral_peak_list', 'Assigned_chem_shift_list_label', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'text_data_format', '_Software', 'Details', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'text_data_format', '_Spectral_peak_list', 'Text_data_format', 1, None),
                            # add pdbx_nmr_spectral_peak_list.label

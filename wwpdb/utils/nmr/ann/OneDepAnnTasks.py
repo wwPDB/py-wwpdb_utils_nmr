@@ -14,21 +14,75 @@ import re
 import collections
 
 from typing import List
+from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import emptyValue
+    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
+                                           getScoreOfSeqAlign)
     from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
 except ImportError:
-    from nmr.AlignUtil import emptyValue
+    from nmr.AlignUtil import (emptyValue,
+                               getScoreOfSeqAlign)
     from io.mmCIFUtil import mmCIFUtil
+
+
+NMR_SOFTWERE_LIST = ('3D-DART', '3DNA', '4D-CHAINS', '4DSPOT', 'ABACUS', 'ACME', 'ADAPT-NMR', 'AGNuS', 'ALMOST',
+                     'Amber', 'AmberTools', 'AMIX', 'AnalysisAssign', 'ANATOLIA', 'Anglesearch', 'ANSIG',
+                     'APES', 'AQUA', 'ARIA', 'ARIA2alpha', 'ARMOR', 'ArShift', 'ARTINA', 'ASCAN', 'ASDP',
+                     'ATNOS', 'ATSAS', 'AUDANA', 'AURELIA', 'AUREMOL', 'AutoAssign', 'AutoDock', 'AutoProc',
+                     'AutoStructure', 'AVS', 'Azara', 'BACKTOR', 'BACUS', 'BATCH', 'BATMAN', 'BIOGRAF', 'BIRDER',
+                     'Burrow-owl', 'CALIBA', 'calRW', 'calRW+', 'CambridgeCS', 'CAMERA', 'CamShift',
+                     'CamShift-MD', 'CANDID', 'CAPP', 'CARA', 'CATCH23', 'CATIA', 'CCNMR', 'CcpNmr Analysis',
+                     'CcpNmr Analysis Assign', 'CcpNmr ChemBuild', 'CcpNmr Analysis Metabolomics',
+                     'CcpNmr Analysis Screen', 'CHA3Shift', 'CHARMM', 'CHARMM-GUI', 'CHEMEX', 'CHESHIRE',
+                     'CHIFIT', 'Chimera', 'CINDY', 'CING', 'Circos', 'cleaner3D', 'CLUSTAL W/X', 'Cluster 3.0',
+                     'CMXW', 'CNS', 'CNSSOLVE', 'CNX', 'COMPASS', 'CoMAND', 'Complete SCS search', 'CONCOORD',
+                     'CONGEN', 'CORMA', 'CPMD', 'CSCDP', 'CS-RDC-NOE Rosetta', 'CS-ROSETTA', 'CS23D', 'CSI',
+                     'curvefit', 'Curves', 'Curves+', 'CYANA', 'CYRANGE', 'DADAS', 'DANGLE', 'Delta', 'DGEOM',
+                     'DIAMOD', 'DIANA', 'DINOSAUR', 'DipoCoup', 'Discover', 'Discovery Studio', 'DISGEO',
+                     'DISMAN', 'DISNMR', 'DNAminiCarlo', 'Dreamwalker', 'DSPACE', 'DSSP', 'DUPLEX', 'DYANA',
+                     'DYNAMO', 'Dynamic Meccano', 'EC-NMR', 'ELM', 'EMBOSS', 'ENSEMBLE', 'EREF', 'EZ-ASSIGN',
+                     'FANMEM', 'FANTOM', 'FAWN', 'Felix', 'FindCore', 'FINDFAM', 'FIRM', 'FISI',
+                     'Flexible-meccano', 'FMCGUI', 'Foldit', 'FuDA', 'G2G', 'GAPRO', 'GARANT', 'GASyCS',
+                     'Gaussian', 'GeNMR', 'GENXPK', 'Gifa', 'GLOMSA', 'GLXCC', 'GRAMM-X', 'GROMACS', 'GROMOS',
+                     'GUARDD', 'HABAS', 'HADDOCK', 'HBPLUS', 'hmsIST', 'HOLE', 'HYPER', 'HyperChem', 'ICMD',
+                     'In-house / custom', 'INCA', 'INDYANA', 'Inferential Structure Determination (ISD)',
+                     'INFIT', 'Insight', 'Insight II', 'interhlx', 'I-PINE', 'IRMA', 'JUMNA', 'KUJIRA',
+                     'MacroModel', 'MAGRO', 'MagRO-NMRView', 'MAPPER', 'MARBLE', 'MARDIGRAS', 'MARS', 'MATCH',
+                     'Mathematica', 'Matlab', 'MC-Sym', 'MCASSIGN', 'MCCL', 'MDDGUI', 'MddNMR', 'MEDUSA',
+                     'MestreLab (Mnova / MestReNova / MestReC)', 'MFT', 'MIDGE', 'miniCarlo', 'Minuit',
+                     'MNMR', 'ModelFree', 'MODELLER', 'Module', 'Module 2', 'MOE', 'MOLMOL', 'MolProbity',
+                     'MolSkop', 'Monte', 'MORASS', 'MORCAD', 'MULDER', 'MUNIN', 'NAB', 'NAMD', 'NAMFIS', 'NDEE',
+                     'NESSY', 'NHFIT', 'NMR Structure Tools', 'NMR-SPIRIT', 'nmr2st', 'NMRCLUST', 'NMRDraw',
+                     'NMRCompass', 'NMRe', 'NMRest', 'NMRFAM-SPARKY', 'NMRFx', 'nmrglue', 'NMRLAB', 'NMRPipe',
+                     'NMRtist', 'NMRspy', 'NMRSwarm', 'NMRView', 'NMRViewJ', 'NOAH', 'NOEID', 'NOEMOL', 'NOTE',
+                     'NUCFIT', 'NUCHEMICS', 'NUCLSQ', 'Numbat', 'O', 'Olivia', 'Omega', 'OPAL', 'OPALp',
+                     'Orderten_SVD', 'OTOKO', 'PACES', 'PALES', 'PANAV', 'PARADYANA', 'PASA', 'PASTA',
+                     'PASTE/PAPST', 'PdbStat', 'PECAN', 'PELE web server', 'PEPFLEX-II', 'pfit', 'PINE',
+                     'PINE Server', 'PINE-SPARKY', 'PINT', 'PIPATH', 'PIPP', 'PISTACHIO', 'PLATON', 'PLUMED',
+                     'PLUMED2', 'Poky', 'PONDEROSA', 'PONDEROSA-C/S', 'POSE', 'PREDITOR', 'PRESTO', 'Prime',
+                     'PROCHECK / PROCHECK-NMR', 'PRODRG', 'ProFit', 'PROMOTIF', 'Pronto', 'Pronto3D', 'PROSA',
+                     'Protein Constructor', 'PSEUDODYANA', 'PSEUDOREM', 'PSVS', 'PyMOL', 'PyRPF', 'QM/MM',
+                     'qMDD', 'QUANTA', 'QUEEN', 'RADAR', 'RANDMARDI', 'RasMol', 'RASP', 'RDC-PANDA', 'rDOCK',
+                     'RECOORD', 'REDCAT', 'REDcRAFT', 'REGINE', 'relax', 'RelaxFit', 'RELAZ', 'REPENT',
+                     'RESTRICT', 'Rosetta', 'Rowland NMR Toolkit (RNMRTK)', 'RUNMR', 'S3EPY', 'SANE', 'SCRUB',
+                     'SCULPTOR', 'SCWRL', 'SHIFTCALC', 'SHIFTX', 'Shine', 'SideR',
+                     'Signal Separation Algorithm (SSA)', 'SIMPSON', 'smartnotebook', 'Smol', 'SNARF', 'SOLARIA',
+                     'SOPHIE', 'Sparky', 'SPARTA', 'SPARTA+', 'SPEDREF', 'SPHINX/LINSHA', 'SpinEvolution',
+                     'SPINS', 'SpinSight', 'SpinWorks', 'SPIRIT', 'SPSCAN', 'STAPP', 'Structural Fitting',
+                     'SUPPOSE', 'Swiss-PdbViewer', 'SYBYL', 'SYBYL-X', 'TALOS', 'TALOS-N', 'TALOS+', 'tecmag',
+                     'TENSOR', 'TENSOR2', 'Tinker', 'TopSpin', 'TRIPOS', 'TORC', 'Turbo-Frodo', 'UBNMR',
+                     'UCSF Chimera', 'UCSF MidasPlus', 'UNIO', 'UXNMR', 'VADAR', 'VEMBED', 'VERIFY3D', 'VMD',
+                     'VNMR', 'VnmrJ', 'WHAT IF', 'xcrvfit', 'XEASY', 'Xipp', 'Xndee', 'X-PLOR', 'X-PLOR NIH',
+                     'XVNMR', 'XwinNMR', 'XSSP', 'xyza2pipe', 'YARIA', 'YARM', 'YASAP', 'YASARA')
 
 
 range_value_pattern = re.compile(r'^(.+)\s*-\s*(.+)$')
 
 
 def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> str:
-    """ Return the first value of a given saveframe tag.
-        @return: The first tag value, empty string otherwise.
+    """ Return the first value of a given saveframe tag with decoding symbol notation.
+        @return: The first tag value, default string otherwise.
     """
 
     if not isinstance(sf, pynmrstar.Saveframe) or tag is None:
@@ -36,10 +90,16 @@ def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> st
 
     array = sf.get_tag(tag)
 
-    if len(array) == 0:
+    if len(array) == 0 or array[0] is None:
         return default
 
-    return array[0] if array[0] is not None else default
+    if not isinstance(array[0], str):
+        return array[0]
+
+    if array[0] == '$':
+        return default
+
+    return array[0] if len(array[0]) < 2 or array[0][0] != '$' else array[0][1:]
 
 
 def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value):
@@ -56,6 +116,49 @@ def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value):
         return
 
     sf.tags[tagNames.index(tag)][1] = value
+
+
+def get_nmr_software(name: str) -> str:
+    """ Return enumeration value for NMR software.
+    """
+
+    if name in emptyValue or name in NMR_SOFTWERE_LIST:
+        return name
+
+    _name = name.lower()
+
+    for software in NMR_SOFTWERE_LIST:
+        if software.lower() == _name:
+            return software
+
+    pA = PairwiseAlign()
+
+    score = -100
+    candidate = name
+
+    for software in NMR_SOFTWERE_LIST:
+        _software = software.lower()
+
+        pA.setReferenceSequence(_software, 'REFNAME')
+        pA.addTestSequence(_name, 'NAME')
+        pA.doAlign()
+
+        myAlign = pA.getAlignment('NAME')
+
+        length = len(myAlign)
+
+        if length == 0:
+            continue
+
+        _matched, unmapped, conflict, _, _ = getScoreOfSeqAlign(myAlign)
+
+        _score = _matched - unmapped - conflict
+
+        if _score > score:
+            candidate = software
+            score = _score
+
+    return name if score < 0 else candidate
 
 
 class OneDepAnnTasks:
@@ -211,10 +314,14 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_1H_err', '_Assigned_chem_shift_list', 'Chem_shift_1H_err', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_2H_err', '_Assigned_chem_shift_list', 'Chem_shift_2H_err', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_31P_err', '_Assigned_chem_shift_list', 'Chem_shift_31P_err', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_reference_id', '_Assigned_chem_shift_list', 'Chem_shift_reference_ID', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id', '_Assigned_chem_shift_list', 'Sample_condition_list_ID', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id', '_Sample_condition_list', 'ID', 1, None),
-                           ('pdbx_nmr_assigned_chem_shift_list', 'conditions_label', '_Assigned_chem_shift_list', 'Sample_condition_list_label', 1, None),
+                           # ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_reference_id', '_Assigned_chem_shift_list', 'Chem_shift_reference_ID', 1, None),
+                           # replaced by
+                           ('pdbx_nmr_assigned_chem_shift_list', 'chem_shift_reference_id', '_Assigned_chem_shift_list', 'Chem_shift_reference_label', 1, None),
+                           # ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id', '_Assigned_chem_shift_list', 'Sample_condition_list_ID', 1, None),
+                           # ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id', '_Sample_condition_list', 'ID', 1, None),
+                           # ('pdbx_nmr_assigned_chem_shift_list', 'conditions_label', '_Assigned_chem_shift_list', 'Sample_condition_list_label', 1, None),
+                           # replaced by
+                           ('pdbx_nmr_assigned_chem_shift_list', 'conditions_id', '_Assigned_chem_shift_list', 'Sample_condition_list_label', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'data_file_name', '_Assigned_chem_shift_list', 'Data_file_name', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'details', '_Assigned_chem_shift_list', 'Details', 1, None),
                            ('pdbx_nmr_assigned_chem_shift_list', 'entry_id', '_Assigned_chem_shift_list', 'Entry_ID', 1, None),
@@ -239,8 +346,10 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_ensemble', 'distance_constraint_violation_method', '_Constraint_stat_list', 'Dist_constr_violat_stat_calc_method', 1, None),
                            ('pdbx_nmr_ensemble', 'entry_id', '_Conformer_stat_list', 'Entry_ID', 1, None),
                            ('pdbx_nmr_ensemble', 'representative_conformer', '_Conformer_stat_list', 'Representative_conformer', 1, None),
-                           ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_list', 'ID', 1, None),
-                           ('pdbx_nmr_exptl_sample_conditions', 'label', '_Sample_condition_list', 'Sf_framecode', 1, None),
+                           # ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_list', 'ID', 1, None),
+                           # replaced by
+                           ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_list', 'Sf_framecode', 1, None),
+                           # ('pdbx_nmr_exptl_sample_conditions', 'label', '_Sample_condition_list', 'Sf_framecode', 1, None),
                            ('pdbx_nmr_representative', 'conformer_id', '_Conformer_stat_list', 'Representative_conformer', 1, None),
                            ('pdbx_nmr_representative', 'entry_id', '_Conformer_stat_list', 'Entry_ID', 1, None),
                            ('pdbx_nmr_representative', 'selection_criteria', '_Conformer_stat_list', 'Rep_conformer_selection_criteria', 1, None),
@@ -248,6 +357,10 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_sample_details', 'solution_id', '_Sample', 'ID', 1, None),
                            ('pdbx_nmr_sample_details', 'solvent_system', '_Sample', 'Solvent_system', 1, None),
                            ('pdbx_nmr_sample_details', 'type', '_Sample', 'Type', 1, None),
+                           # add pdbx_nmr_sample_details.label
+                           ('pdbx_nmr_sample_details', 'label', '_Sample', 'Sf_framecode', 1, None),
+                           # add pdbx_nmr_sample_condisions.label
+                           # ('pdbx_nmr_exptl_sample_conditions', 'label', '_Sample_condition_list', 'Sf_framecode', 1, None),
                            # ('pdbx_nmr_software', 'authors', '_Software', 'ID', 5, None),
                            ('pdbx_nmr_software', 'details', '_Software', 'Details', 1, None),
                            ('pdbx_nmr_software', 'details', '_Spectral_peak_list', 'Text_data_format', 1, None),
@@ -266,6 +379,8 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_spectral_peak_list', 'solution_id', '_Spectral_peak_list', 'Sample_ID', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'text_data_format', '_Software', 'Details', 1, None),
                            ('pdbx_nmr_spectral_peak_list', 'text_data_format', '_Spectral_peak_list', 'Text_data_format', 1, None),
+                           # add pdbx_nmr_spectral_peak_list.label
+                           ('pdbx_nmr_spectral_peak_list', 'label', '_Spectral_peak_list', 'Sf_framecode', 1, None),
                            ('pdbx_nmr_spectrometer', 'details', '_NMR_spectrometer', 'Details', 1, None),
                            ('pdbx_nmr_spectrometer', 'field_strength', '_NMR_spectrometer', 'Field_strength', 1, None),
                            ('pdbx_nmr_spectrometer', 'manufacturer', '_NMR_spectrometer', 'Manufacturer', 1, None),
@@ -324,8 +439,10 @@ class OneDepAnnTasks:
         # """
         self.__lpTagMap = [('pdbx_nmr_chem_shift_experiment', 'assigned_chem_shift_list_id', '_Chem_shift_experiment', 'Assigned_chem_shift_list_ID', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'entry_id', '_Chem_shift_experiment', 'Entry_ID', 1, None),
-                           ('pdbx_nmr_chem_shift_experiment', 'experiment_id', '_Chem_shift_experiment', 'Experiment_ID', 1, None),
-                           ('pdbx_nmr_chem_shift_experiment', 'experiment_name', '_Chem_shift_experiment', 'Experiment_name', 1, None),
+                           # ('pdbx_nmr_chem_shift_experiment', 'experiment_id', '_Chem_shift_experiment', 'Experiment_ID', 1, None),
+                           # ('pdbx_nmr_chem_shift_experiment', 'experiment_name', '_Chem_shift_experiment', 'Experiment_name', 1, None),
+                           # replaced by
+                           ('pdbx_nmr_chem_shift_experiment', 'experiment_id', '_Chem_shift_experiment', 'Experiment_name', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'sample_state', '_Chem_shift_experiment', 'Sample_state', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'solution_id', '_Chem_shift_experiment', 'Sample_ID', 1, None),
                            ('pdbx_nmr_chem_shift_ref', 'atom_group', '_Chem_shift_ref', 'Atom_group', 1, None),
@@ -348,7 +465,8 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_chem_shift_ref', 'solvent', '_Chem_shift_ref', 'Solvent', 1, None),
                            ('pdbx_nmr_chem_shift_software', 'assigned_chem_shift_list_id', '_Chem_shift_software', 'Assigned_chem_shift_list_ID', 1, None),
                            ('pdbx_nmr_chem_shift_software', 'entry_id', '_Chem_shift_software', 'Entry_ID', 1, None),
-                           ('pdbx_nmr_chem_shift_software', 'software_id', '_Chem_shift_software', 'Software_ID', 1, None),
+                           # map_code '-33' indicates redirection to parent saveframe tag: '_Software.Name'
+                           ('pdbx_nmr_chem_shift_software', 'software_id', '_Chem_shift_software', 'Software_ID', -33, '_Software.Name'),
                            ('pdbx_nmr_constraint_file', 'constraint_filename', '_Constraint_file', 'Constraint_filename', 1, None),
                            ('pdbx_nmr_constraint_file', 'constraint_number', '_Constraint_file', 'Constraint_number', 1, None),
                            ('pdbx_nmr_constraint_file', 'constraint_subtype', '_Constraint_file', 'Constraint_subtype', 1, None),
@@ -371,7 +489,13 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_exptl_sample', 'concentration_units', '_Sample_component', 'Concentration_val_units', 1, None),
                            ('pdbx_nmr_exptl_sample', 'isotopic_labeling', '_Sample_component', 'Isotopic_labeling', 1, None),
                            ('pdbx_nmr_exptl_sample', 'solution_id', '_Sample_component', 'Sample_ID', 1, None),
-                           ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_variable', 'Sample_condition_list_ID', 1, None),
+                           # ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_variable', 'Sample_condition_list_ID', 1, None),
+                           # replaced by
+                           ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_variable', 'Sample_condition_list_ID',
+                            33, '_Sample_condition_list.Sf_framecode'),
+                           # add pdbx_nmr_exptl_sample_conditions.label
+                           ('pdbx_nmr_exptl_sample_conditions', 'label', '_Sample_condition_variable', 'Sample_condition_list_ID',
+                            -33, '_Sample_condition_list.Sf_framecode'),
                            ('pdbx_nmr_exptl_sample_conditions', 'ionic_strength', '_Sample_condition_variable', 'Type', -22, 0),
                            ('pdbx_nmr_exptl_sample_conditions', 'ionic_strength', '_Sample_condition_variable', 'Val', -22, 0),
                            ('pdbx_nmr_exptl_sample_conditions', 'ionic_strength_err', '_Sample_condition_variable', 'Val_err', -22, None),
@@ -1264,13 +1388,14 @@ class OneDepAnnTasks:
                                     lp_tag_maps = [tag_map for tag_map in self.__lpTagMap if tag_map[0] == cif_category and tag_map[2] == lp_category]
                                     lp_cif_tags = [tag_map[1] for tag_map in lp_tag_maps]
                                     lp_tags = [tag_map[3] for tag_map in lp_tag_maps]
-                                    lp_map_code = [tag_map[4] for tag_map in lp_tag_maps]
+                                    lp_map_codes = [tag_map[4] for tag_map in lp_tag_maps]
+                                    lp_aux_tags = [tag_map[5] for tag_map in lp_tag_maps]
                                     has_list_id_tag = list_id_tag in lp_tags
 
-                                    if -11 in lp_map_code:
+                                    if -11 in lp_map_codes:
                                         continue
 
-                                    if -22 not in lp_map_code:
+                                    if -22 not in lp_map_codes:
 
                                         if cif_category not in cif_util.GetCategories()[self.__entryId]:
                                             cif_util.AddCategory(self.__entryId, cif_category, lp_cif_tags)
@@ -1281,23 +1406,75 @@ class OneDepAnnTasks:
                                             dat = lp.get_tag(lp_tags)
 
                                             for row in dat:
-                                                if has_list_id_tag:
-                                                    row[lp_tags.index(list_id_tag)] = list_id
-                                                row = replace_none(row)
-                                                cif_util.InsertData(self.__entryId, cif_category, [row])
+                                                for col, dst_val in enumerate(row):
+                                                    if abs(lp_map_codes[col]) != 33:
+                                                        continue
+                                                    dst_tag = lp_tags[col].replace('_ID', '.ID', 1)  # Software_ID -> Software.ID
+                                                    found = False
+                                                    for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, dst_val):
+                                                        row[col] = _sf.get_tag(lp_aux_tags[col])[0]
+                                                        found = True
+                                                        break
+                                                    if not found and isinstance(dst_val, int):
+                                                        for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, str(dst_val)):
+                                                            row[col] = _sf.get_tag(lp_aux_tags[col])[0]
+                                                            found = True
+                                                    if found:
+                                                        if lp_aux_tags[col] == '_Software.Name':
+                                                            row[col] = get_nmr_software(row[col])
+                                                    else:
+                                                        row[col] = '?'
+                                                _row = ['.'] * len(lp_cif_tags)
+                                                for cif_item in lp_cif_tags:
+                                                    tag_map = next(tag_map for tag_map in lp_tag_maps if tag_map[1] == cif_item)
+                                                    if tag_map[3] not in lp_tags:
+                                                        continue
+                                                    _row[lp_cif_tags.index(tag_map[1])] = list_id if has_list_id_tag and tag_map[3] == list_id_tag\
+                                                        else row[lp_tags.index(tag_map[3])]
+                                                    if tag_map[4] == 33:
+                                                        _tag_map = next((tag_map for tag_map in lp_tag_maps if tag_map[1] == cif_item and tag_map[4] == -33), None)
+                                                        if _tag_map is not None:
+                                                            _row[lp_cif_tags.index(tag_map[1])] = row[lp_tags.index(tag_map[3])]
+                                                _row = replace_none(_row)
+                                                cif_util.InsertData(self.__entryId, cif_category, [_row])
 
                                         else:
                                             _lp_tags = [tag for tag in lp_tags if tag not in missing_lp_tags]
-                                            _col_map = {idx: _lp_tags.index(tag) for idx, tag in enumerate(lp_tags) if tag not in missing_lp_tags}
+                                            _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
+                                            _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
 
                                             dat = lp.get_tag(_lp_tags)
 
                                             for row in dat:
-                                                if has_list_id_tag:
-                                                    row[_lp_tags.index(list_id_tag)] = list_id
+                                                for col, dst_val in enumerate(row):
+                                                    if abs(_lp_map_codes[col]) != 33:
+                                                        continue
+                                                    dst_tag = _lp_tags[col].replace('_ID', '.ID', 1)  # Software_ID -> Software.ID
+                                                    found = False
+                                                    for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, dst_val):
+                                                        row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
+                                                        found = True
+                                                        break
+                                                    if not found and isinstance(dst_val, int):
+                                                        for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, str(dst_val)):
+                                                            row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
+                                                            found = True
+                                                    if found:
+                                                        if _lp_aux_tags[col] == '_Software.Name':
+                                                            row[col] = get_nmr_software(row[col])
+                                                    else:
+                                                        row[col] = '?'
                                                 _row = ['.'] * len(lp_cif_tags)
-                                                for k, v in _col_map.items():
-                                                    _row[k] = row[v]
+                                                for idx, cif_item in enumerate(lp_cif_tags):
+                                                    tag_map = next(tag_map for tag_map in lp_tag_maps if tag_map[1] == cif_item)
+                                                    if tag_map[3] not in _lp_tags:
+                                                        continue
+                                                    _row[lp_cif_tags.index(tag_map[1])] = list_id if has_list_id_tag and tag_map[3] == list_id_tag\
+                                                        else row[_lp_tags.index(tag_map[3])]
+                                                    if tag_map[4] == 33:
+                                                        _tag_map = next((tag_map for tag_map in lp_tag_maps if tag_map[1] == cif_item and tag_map[4] == -33), None)
+                                                        if _tag_map is not None:
+                                                            _row[lp_cif_tags.index(tag_map[1])] = row[_lp_tags.index(tag_map[3])]
                                                 _row = replace_none(_row)
                                                 cif_util.InsertData(self.__entryId, cif_category, [_row])
 
@@ -1305,7 +1482,7 @@ class OneDepAnnTasks:
                                             and any(lp_item.endswith('max') for lp_item in lp_tags)\
                                             and any(lp_item.endswith('min') for lp_item in lp_tags):
 
-                                        lp_cif_tags = list(set(lp_cif_tags))
+                                        lp_cif_tags = sorted(list(set(lp_cif_tags)))
                                         lp_tags = list(set(lp_tags))
 
                                         if cif_category not in cif_util.GetCategories()[self.__entryId]:
@@ -1314,17 +1491,42 @@ class OneDepAnnTasks:
                                         missing_lp_tags = set(lp_tags) - set(lp.tags)
 
                                         _lp_tags = [tag for tag in lp_tags if tag not in missing_lp_tags]
+                                        _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
+                                        _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
 
                                         dat = lp.get_tag(_lp_tags)
 
                                         for row in dat:
-                                            if has_list_id_tag:
-                                                row[_lp_tags.index(list_id_tag)] = list_id
+                                            for col, dst_val in enumerate(row):
+                                                if abs(_lp_map_codes[col]) != 33:
+                                                    continue
+                                                dst_tag = _lp_tags[col].replace('_ID', '.ID', 1)  # Software_ID -> Software.ID
+                                                found = False
+                                                for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, dst_val):
+                                                    row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
+                                                    found = True
+                                                    break
+                                                if not found and isinstance(dst_val, int):
+                                                    for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, str(dst_val)):
+                                                        row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
+                                                        found = True
+                                                if found:
+                                                    if _lp_aux_tags[col] == '_Software.Name':
+                                                        row[col] = get_nmr_software(row[col])
+                                                else:
+                                                    row[col] = '?'
                                             _row = ['.'] * len(lp_cif_tags)
-
                                             for idx, cif_item in enumerate(lp_cif_tags):
                                                 tag_map = next(tag_map for tag_map in lp_tag_maps if tag_map[1] == cif_item)
-                                                if tag_map[4] != -22:
+                                                if tag_map[3] not in _lp_tags:
+                                                    continue
+                                                if has_list_id_tag and tag_map[3] == list_id_tag:
+                                                    _row[lp_cif_tags.index(tag_map[1])] = list_id
+                                                if tag_map[4] == 33:
+                                                    _tag_map = next((tag_map for tag_map in lp_tag_maps if tag_map[1] == cif_item and tag_map[4] == -33), None)
+                                                    if _tag_map is not None:
+                                                        _row[lp_cif_tags.index(_tag_map[1])] = row[_lp_tags.index(tag_map[3])]
+                                                elif tag_map[4] != -22:
                                                     if tag_map[3] in _lp_tags:
                                                         _row[idx] = row[_lp_tags.index(tag_map[3])]
                                                 elif cif_item.endswith('range'):
@@ -1339,7 +1541,7 @@ class OneDepAnnTasks:
 
                                     elif any(lp_item == 'Type' for lp_item in lp_tags) and any(lp_item == 'Val' for lp_item in lp_tags):
 
-                                        lp_cif_tags = list(set(lp_cif_tags))
+                                        lp_cif_tags = sorted(list(set(lp_cif_tags)))
                                         lp_tags = list(set(lp_tags))
 
                                         if cif_category not in cif_util.GetCategories()[self.__entryId]:
@@ -1348,12 +1550,32 @@ class OneDepAnnTasks:
                                         missing_lp_tags = set(lp_tags) - set(lp.tags)
 
                                         _lp_tags = [tag for tag in lp_tags if tag not in missing_lp_tags]
+                                        _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
+                                        _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps if tag_map[3] == tag) for tag in _lp_tags]
 
                                         dat = lp.get_tag(_lp_tags)
 
                                         row = ['.'] * len(lp_cif_tags)
 
                                         for _row in dat:
+                                            for col, dst_val in enumerate(_row):
+                                                if abs(_lp_map_codes[col]) != 33:
+                                                    continue
+                                                dst_tag = _lp_tags[col].replace('_ID', '.ID', 1)  # Software_ID -> Software.ID
+                                                found = False
+                                                for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, dst_val):
+                                                    _row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
+                                                    found = True
+                                                    break
+                                                if not found and isinstance(dst_val, int):
+                                                    for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, str(dst_val)):
+                                                        _row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
+                                                        found = True
+                                                if found:
+                                                    if _lp_aux_tags[col] == '_Software.Name':
+                                                        _row[col] = get_nmr_software(_row[col])
+                                                else:
+                                                    _row[col] = '?'
                                             _type = _row[_lp_tags.index('Type')]
                                             _val = _row[_lp_tags.index('Val')]
                                             _val_err = _val_units = '?'
@@ -1367,6 +1589,10 @@ class OneDepAnnTasks:
                                                 else:
                                                     tag_map = next(tag_map for tag_map in lp_tag_maps if tag_map[3] == lp_tag)
                                                     row[lp_cif_tags.index(tag_map[1])] = list_id if lp_tag == list_id_tag else _row[lp_tags.index(lp_tag)]
+                                                    if tag_map[4] == 33:
+                                                        _tag_map = next((tag_map for tag_map in lp_tag_maps if tag_map[3] == lp_tag and tag_map[4] == -33), None)
+                                                        if _tag_map is not None:
+                                                            row[lp_cif_tags.index(_tag_map[1])] = _row[lp_tags.index(lp_tag)]
 
                                             if _type in ('ionic strength', 'pH', 'pressure', 'temperature'):
                                                 if ' ' in _type:  # ionic strength (NMR-STAR) -> ionic_streandth (NMRIF)
@@ -1384,7 +1610,7 @@ class OneDepAnnTasks:
 
                                     lps = [None] * len(lp_categories)
                                     lp_tag_maps = [None] * len(lp_categories)
-                                    lp_cif_tags, lp_items, lp_map_code = [], [], []
+                                    lp_cif_tags, lp_items, lp_map_codes = [], [], []
 
                                     for lp_idx, lp_category in enumerate(lp_categories):
 
@@ -1403,9 +1629,9 @@ class OneDepAnnTasks:
                                             if cif_item not in lp_cif_tags:
                                                 lp_cif_tags.append(cif_item)
                                                 lp_items.append(lp_item)
-                                                lp_map_code.append(map_code)
+                                                lp_map_codes.append(map_code)
 
-                                    if -11 in lp_map_code:
+                                    if -11 in lp_map_codes:
                                         continue
 
                                     if len(lp_cif_tags) > 0:
@@ -1422,25 +1648,74 @@ class OneDepAnnTasks:
 
                                             if len(missing_lp_tags) == 0:
                                                 _lp_tags = lp_tags[lp_idx]
+                                                _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == tag) for tag in _lp_tags]
+                                                _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == tag) for tag in _lp_tags]
 
                                                 dat = lp.get_tag(_lp_tags)
 
                                                 for _row in dat:
-                                                    _row[_lp_tags.index(list_id_tag)] = list_id
+                                                    for col, dst_val in enumerate(_row):
+                                                        if abs(_lp_map_codes[col]) != 33:
+                                                            continue
+                                                        dst_tag = _lp_tags[col].replace('_ID', '.ID', 1)  # Software_ID -> Software.ID
+                                                        found = False
+                                                        for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, dst_val):
+                                                            _row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
+                                                            found = True
+                                                            break
+                                                        if not found and isinstance(dst_val, int):
+                                                            for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, str(dst_val)):
+                                                                _row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
+                                                                found = True
+                                                        if found:
+                                                            if _lp_aux_tags[col] == '_Software.Name':
+                                                                _row[col] = get_nmr_software(_row[col])
+                                                        else:
+                                                            _row[col] = '?'
                                                     for idx, lp_item in enumerate(_lp_tags):
-                                                        row[lp_items.index(lp_item)] = _row[idx]
-                                                        break
+                                                        tag_map = next(tag_map for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == lp_item)
+                                                        row[lp_items.index(lp_item)] = list_id if lp_item == list_id_tag else _row[idx]
+                                                        if tag_map[4] == 33:
+                                                            _tag_map = next((tag_map for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == lp_item and tag_map[4] == -33), None)
+                                                            if _tag_map is not None:
+                                                                row[lp_cif_tags.index(_tag_map[1])] = _row[idx]
+                                                    break
 
                                             else:
                                                 _lp_tags = [tag for tag in lp_tags[lp_idx] if tag not in missing_lp_tags]
+                                                _lp_map_codes = [next(tag_map[4] for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == tag) for tag in _lp_tags]
+                                                _lp_aux_tags = [next(tag_map[5] for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == tag) for tag in _lp_tags]
 
                                                 dat = lp.get_tag(_lp_tags)
 
                                                 for _row in dat:
-                                                    _row[_lp_tags.index(list_id_tag)] = list_id
+                                                    for col, dst_val in enumerate(_row):
+                                                        if abs(_lp_map_codes[col]) != 33:
+                                                            continue
+                                                        dst_tag = _lp_tags[col].replace('_ID', '.ID', 1)  # Software_ID -> Software.ID
+                                                        found = False
+                                                        for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, dst_val):
+                                                            _row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
+                                                            found = True
+                                                            break
+                                                        if not found and isinstance(dst_val, int):
+                                                            for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, str(dst_val)):
+                                                                _row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
+                                                                found = True
+                                                        if found:
+                                                            if _lp_aux_tags[col] == '_Software.Name':
+                                                                _row[col] = get_nmr_software(_row[col])
+                                                        else:
+                                                            _row[col] = '?'
                                                     for idx, lp_item in enumerate(_lp_tags):
-                                                        row[lp_items.index(lp_item)] = _row[idx]
+                                                        tag_map = next(tag_map for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == lp_item)
+                                                        row[lp_items.index(lp_item)] = list_id if lp_item == list_id_tag else _row[idx]
+                                                        if tag_map[4] == 33:
+                                                            _tag_map = next((tag_map for tag_map in lp_tag_maps[lp_idx] if tag_map[3] == lp_item and tag_map[4] == -33), None)
+                                                            if _tag_map is not None:
+                                                                row[lp_cif_tags.index(_tag_map[1])] = _row[idx]
                                                     break
+
                                         row = replace_none(row)
                                         cif_util.InsertData(self.__entryId, cif_category, [row])
 
@@ -1458,6 +1733,8 @@ class OneDepAnnTasks:
                                 list_id = idx
                                 if has_id_tag:
                                     tag_values[sf_tags.index('ID')] = list_id
+                                if sf_tag_prefix == '_Software' and 'Name' in sf_tags:
+                                    tag_values[sf_tags.index('Name')] = get_nmr_software(tag_values[sf_tags.index('Name')])
                                 tag_values = replace_none(tag_values, '?')
                                 cif_util.InsertData(self.__entryId, sf_cif_category, [tag_values])
 
@@ -1479,6 +1756,8 @@ class OneDepAnnTasks:
                         list_id = idx
                         if has_id_tag:
                             tag_values[sf_tags.index('ID')] = list_id
+                        if sf_tag_prefix == '_Software' and 'Name' in sf_tags:
+                            tag_values[sf_tags.index('Name')] = get_nmr_software(tag_values[sf_tags.index('Name')])
 
                         _row = ['?'] * len(sf_lp_cif_tags)
                         for idx, tag_value in enumerate(tag_values):

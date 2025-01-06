@@ -749,19 +749,25 @@ def has_key_value(d: dict, key: Any) -> bool:
 
 
 def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> str:
-    """ Return the first value of a given saveframe tag.
-        @return: The first tag value, empty string otherwise.
+    """ Return the first value of a given saveframe tag with decoding symbol notation.
+        @return: The first tag value, default string otherwise.
     """
 
-    if sf is None or tag is None:
+    if not isinstance(sf, pynmrstar.Saveframe) or tag is None:
         return default
 
     array = sf.get_tag(tag)
 
-    if len(array) == 0:
+    if len(array) == 0 or array[0] is None:
         return default
 
-    return array[0] if array[0] is not None else default
+    if not isinstance(array[0], str):
+        return array[0]
+
+    if array[0] == '$':
+        return default
+
+    return array[0] if len(array[0]) < 2 or array[0][0] != '$' else array[0][1:]
 
 
 def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value):
@@ -9687,7 +9693,7 @@ class NmrDpUtility:
                     continue
 
                 for sf in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
-                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                     if self.__getSaveframeByName(file_list_id, sf_framecode) is None:
 
@@ -9764,14 +9770,14 @@ class NmrDpUtility:
                     continue
 
                 sf = self.__star_data[file_list_id]
-                sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                 self.__rescueImmatureStr__(file_name, file_type, content_subtype, sf, sf_framecode, lp_category)
 
             else:
 
                 for sf in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
-                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                     if not any(loop for loop in sf.loops if loop.category == lp_category):
                         continue
@@ -20959,14 +20965,14 @@ class NmrDpUtility:
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
                 sf = self.__star_data[fileListId]
-                sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                 modified |= self.__validateAmbigCodeOfCsLoop__(file_name, sf, sf_framecode, lp_category)
 
             else:
 
                 for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                     if not any(loop for loop in sf.loops if loop.category == lp_category):
                         continue
@@ -28357,7 +28363,7 @@ class NmrDpUtility:
                     lp_category = self.lp_categories[file_type][content_subtype]
 
                     for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                         try:
                             cs_data, cs_list = next((lp['data'], lp['sf_framecode']) for lp in self.__lp_data['chem_shift']
@@ -28542,7 +28548,7 @@ class NmrDpUtility:
                 star_data = copy.copy(self.__star_data[fileListId])
 
                 for sf in star_data.get_saveframes_by_category(sf_category):
-                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                     loop = sf.get_loop(lp_category)
 
@@ -29144,7 +29150,7 @@ class NmrDpUtility:
             cs_iso_number = cs_item_names['isotope_number']
 
             for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-                sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                 cs_data = None
 
@@ -30641,7 +30647,7 @@ class NmrDpUtility:
                 lp_category = self.lp_categories[file_type][content_subtype]
 
                 for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                     original_file_name = get_first_sf_tag(sf, 'Data_file_name')
                     if len(original_file_name) == 0:
                         original_file_name = file_name.replace('-corrected', '')
@@ -30733,14 +30739,14 @@ class NmrDpUtility:
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
                     sf = self.__star_data[fileListId]
-                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                     self.__validateStrMr__(fileListId, file_type, original_file_name, content_subtype, sf, sf_framecode, lp_category)
 
                 else:
 
                     for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                         self.__validateStrMr__(fileListId, file_type, original_file_name, content_subtype, sf, sf_framecode, lp_category)
 
@@ -32902,7 +32908,7 @@ class NmrDpUtility:
                 if len(master_entry.get_saveframes_by_category(_sf_category)) == 1:
                     _sf = master_entry.get_saveframes_by_category(_sf_category)[0]
                     _sf_id = get_first_sf_tag(_sf, 'ID')
-                    _sf_framecode = f"${get_first_sf_tag(_sf, 'sf_framecode')}"
+                    _sf_framecode = f"${get_first_sf_tag(_sf, 'Sf_framecode')}"
 
                 set_sf_tag(sf, 'Assigned_chem_shift_list_ID', _sf_id)
                 set_sf_tag(sf, 'Assigned_chem_shift_list_label', _sf_framecode)
@@ -32928,7 +32934,7 @@ class NmrDpUtility:
                 if len(master_entry.get_saveframes_by_category(_sf_category)) == 1:
                     _sf = master_entry.get_saveframes_by_category(_sf_category)[0]
                     _sf_id = get_first_sf_tag(_sf, 'ID')
-                    _sf_framecode = f"${get_first_sf_tag(_sf, 'sf_framecode')}"
+                    _sf_framecode = f"${get_first_sf_tag(_sf, 'Sf_framecode')}"
 
                 sf.add_tag('Sample_ID', _sf_id)
                 sf.add_tag('Sample_label', _sf_framecode)
@@ -32938,7 +32944,7 @@ class NmrDpUtility:
                 if len(master_entry.get_saveframes_by_category(_sf_category)) == 1:
                     _sf = master_entry.get_saveframes_by_category(_sf_category)[0]
                     _sf_id = get_first_sf_tag(_sf, 'ID')
-                    _sf_framecode = f"${get_first_sf_tag(_sf, 'sf_framecode')}"
+                    _sf_framecode = f"${get_first_sf_tag(_sf, 'Sf_framecode')}"
 
                 sf.add_tag('Sample_condition_list_ID', _sf_id)
                 sf.add_tag('Sample_condition_list_label', _sf_framecode)
@@ -32994,7 +33000,7 @@ class NmrDpUtility:
                 if len(master_entry.get_saveframes_by_category(_sf_category)) == 1:
                     _sf = master_entry.get_saveframes_by_category(_sf_category)[0]
                     _sf_id = get_first_sf_tag(_sf, 'ID')
-                    _sf_framecode = f"${get_first_sf_tag(_sf, 'sf_framecode')}"
+                    _sf_framecode = f"${get_first_sf_tag(_sf, 'Sf_framecode')}"
 
                 sf.add_tag('Assigned_chem_shift_list_ID', _sf_id)
                 sf.add_tag('Assigned_chem_shift_list_label', _sf_framecode)
@@ -36165,7 +36171,7 @@ class NmrDpUtility:
                 lp_category = self.lp_categories[file_type][content_subtype]
 
                 for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                     self.__validateStrPk__(fileListId, file_type, content_subtype, list_id, sf, sf_framecode, lp_category)
 
@@ -36244,7 +36250,7 @@ class NmrDpUtility:
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
                     sf = self.__star_data[fileListId]
-                    sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                    sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                     self.__validateStrPk__(fileListId, file_type, content_subtype, list_id, sf, sf_framecode, lp_category)
 
@@ -36253,7 +36259,7 @@ class NmrDpUtility:
                 else:
 
                     for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                         self.__validateStrPk__(fileListId, file_type, content_subtype, list_id, sf, sf_framecode, lp_category)
 
@@ -47601,7 +47607,7 @@ class NmrDpUtility:
         sf_framecode = 'assembly'
 
         for sf in master_entry.get_saveframes_by_category(sf_category):
-            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+            sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
             try:
 
@@ -48982,7 +48988,7 @@ class NmrDpUtility:
         ent_sfs = master_entry.get_saveframes_by_category(self.sf_categories[file_type][content_subtype])
 
         for sf in reversed(ent_sfs):
-            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+            sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
             master_entry.remove_saveframe(sf_framecode)
         # """
         # sf_key_items = [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
@@ -49744,7 +49750,7 @@ class NmrDpUtility:
 
         content_subtype = 'spectral_peak'
 
-        sf_framecode = get_first_sf_tag(src_sf, 'sf_framecode')
+        sf_framecode = get_first_sf_tag(src_sf, 'Sf_framecode')
 
         poly_seq_set = []
 
@@ -55309,7 +55315,7 @@ class NmrDpUtility:
                 if list_id_tag_in_lp is not None:
 
                     for sf in self.__star_data[0].get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                         if not any(loop for loop in sf.loops if loop.category == lp_category):
                             continue
@@ -57631,7 +57637,7 @@ class NmrDpUtility:
                             break
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                         if sf_framecode not in sf_item:
                             sf_item[sf_framecode] = {'constraint_type': 'distance', 'constraint_subsubtype': 'simple'}
                             constraint_type = get_first_sf_tag(sf, 'Constraint_type')
@@ -57840,7 +57846,7 @@ class NmrDpUtility:
                         NOE_other_tot_num = 0
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                         potential_type = get_first_sf_tag(sf, 'Potential_type')
                         if 'lower' in potential_type:
                             continue
@@ -57935,7 +57941,7 @@ class NmrDpUtility:
                                         NOE_ambig_intermol_tot_num += 1
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                         potential_type = get_first_sf_tag(sf, 'Potential_type')
                         if 'lower' in potential_type:
                             continue
@@ -57983,7 +57989,7 @@ class NmrDpUtility:
                         ROE_other_tot_num = 0
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                         potential_type = get_first_sf_tag(sf, 'Potential_type')
                         if 'lower' in potential_type:
                             continue
@@ -58087,7 +58093,7 @@ class NmrDpUtility:
 
                     Dihedral_angle_tot_num = 0
                     for sf in master_entry.get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                         if sf_framecode not in sf_item:
                             sf_item[sf_framecode] = {'constraint_type': 'dihedral angle'}
 
@@ -58163,7 +58169,7 @@ class NmrDpUtility:
                         Protein_other_angle_tot_num = 0
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                         lp = sf.get_loop(lp_category)
 
@@ -58242,7 +58248,7 @@ class NmrDpUtility:
                         NA_amb_dihedral_angle_tot_num = 0
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                         lp = sf.get_loop(lp_category)
 
@@ -58318,7 +58324,7 @@ class NmrDpUtility:
                         cst_sf.add_tag('NA_amb_dihedral_angle_tot_num', NA_amb_dihedral_angle_tot_num)
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                         lp = sf.get_loop(lp_category)
 
@@ -58371,7 +58377,7 @@ class NmrDpUtility:
                     lp_category = self.lp_categories[file_type][content_subtype]
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                         if sf_framecode not in sf_item:
                             sf_item[sf_framecode] = {'constraint_type': 'dipolar coupling', 'constraint_subtype': 'RDC'}  # DAOTHER-9471
 
@@ -58459,7 +58465,7 @@ class NmrDpUtility:
                         RDC_intermol_tot_num = 0
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                         lp = sf.get_loop(lp_category)
 
@@ -58590,7 +58596,7 @@ class NmrDpUtility:
                     _restraint_name = restraint_name.split()
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                         if sf_framecode not in sf_item:
                             sf_item[sf_framecode] = {'constraint_type': ' '.join(_restraint_name[:-1])}
                             id_col = lp.tags.index('ID')
@@ -58613,7 +58619,7 @@ class NmrDpUtility:
 
         H_bonds_constrained_tot_num = 0
         for sf in master_entry.get_saveframes_by_category(sf_category):
-            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+            sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
             if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'hydrogen bond':
                 H_bonds_constrained_tot_num += sf_item[sf_framecode]['id']
 
@@ -58622,7 +58628,7 @@ class NmrDpUtility:
 
         SS_bonds_constrained_tot_num = 0
         for sf in master_entry.get_saveframes_by_category(sf_category):
-            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+            sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
             if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'disulfide bond':
                 SS_bonds_constrained_tot_num += sf_item[sf_framecode]['id']
 
@@ -58631,7 +58637,7 @@ class NmrDpUtility:
 
         Derived_photo_cidnps_tot_num = 0
         for sf in master_entry.get_saveframes_by_category(sf_category):
-            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+            sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
             if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'photo cidnp':
                 Derived_photo_cidnps_tot_num += sf_item[sf_framecode]['id']
 
@@ -58640,7 +58646,7 @@ class NmrDpUtility:
 
         Derived_paramag_relax_tot_num = 0
         for sf in master_entry.get_saveframes_by_category(sf_category):
-            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+            sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
             if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'paramagnetic relaxation':
                 Derived_paramag_relax_tot_num += sf_item[sf_framecode]['id']
 
@@ -58690,7 +58696,7 @@ class NmrDpUtility:
                     sf_category = self.sf_categories[file_type][content_subtype]
 
                     for sf in master_entry.get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                         row = [None] * len(tags)
 
@@ -58956,7 +58962,7 @@ class NmrDpUtility:
             for block_id, file_name in block_ids.items():
                 for sf in master_entry.get_saveframes_by_category(sf_category):
                     if block_id == get_first_sf_tag(sf, 'Block_ID'):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                         warn = "There is no unique distance restraints derived from NOE/ROE experiment in the set of uploaded restraint file(s). "\
                                "The wwPDB NMR Validation Task Force highly recommends the submission of unambiguous distance restraints "\

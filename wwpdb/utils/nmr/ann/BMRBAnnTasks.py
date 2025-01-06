@@ -71,8 +71,8 @@ def has_key_value(d: dict, key: Any) -> bool:
 
 
 def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> str:
-    """ Return the first value of a given saveframe tag.
-        @return: The first tag value, empty string otherwise.
+    """ Return the first value of a given saveframe tag with decoding symbol notation.
+        @return: The first tag value, default string otherwise.
     """
 
     if not isinstance(sf, pynmrstar.Saveframe) or tag is None:
@@ -80,10 +80,16 @@ def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> st
 
     array = sf.get_tag(tag)
 
-    if len(array) == 0:
+    if len(array) == 0 or array[0] is None:
         return default
 
-    return array[0] if array[0] is not None else default
+    if not isinstance(array[0], str):
+        return array[0]
+
+    if array[0] == '$':
+        return default
+
+    return array[0] if len(array[0]) < 2 or array[0][0] != '$' else array[0][1:]
 
 
 def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value):
@@ -1279,7 +1285,7 @@ class BMRBAnnTasks:
                                 entity = entity_dict[entity_id]
                                 lp.data[idx][assembly_id_col] = entity['assembly_id']
                                 lp.data[idx][assembly_label_col] = entity['assembly_label']
-                                lp.data[idx][entity_label_col] = f"${entity['sf_framecode']}"
+                                lp.data[idx][entity_label_col] = f"${entity['Sf_framecode']}"
                                 lp.data[idx][type_col] = entity['sample_type']
                                 if row[8] in emptyValue and (row[9] in emptyValue or row[10] in emptyValue):
                                     has_mand_concentration_val = False
@@ -1365,7 +1371,7 @@ class BMRBAnnTasks:
                                 lp.data[idx][assembly_id_col] = entity['assembly_id']
                                 lp.data[idx][assembly_label_col] = entity['assembly_label']
                                 lp.data[idx][entity_id_col] = entity_id
-                                lp.data[idx][entity_label_col] = f"${entity['sf_framecode']}"
+                                lp.data[idx][entity_label_col] = f"${entity['Sf_framecode']}"
                                 lp.data[idx][type_col] = entity['sample_type']
                                 if row[8] in emptyValue and (row[9] in emptyValue or row[10] in emptyValue):
                                     has_mand_concentration_val = False
@@ -1473,7 +1479,7 @@ class BMRBAnnTasks:
                                 row[assembly_id_col] = entity['assembly_id']
                                 row[assembly_label_col] = entity['assembly_label']
                                 row[entity_id_col] = entity_id
-                                row[entity_label_col] = f"${entity['sf_framecode']}"
+                                row[entity_label_col] = f"${entity['Sf_framecode']}"
                                 row[type_col] = entity['sample_type']
                                 row[concentration_val_col] = '?'
                                 row[concentration_val_units_col] = 'mM'
@@ -1499,7 +1505,7 @@ class BMRBAnnTasks:
                                     row[id_col] = cur_id
                                     row[mol_common_name_col] = entity['name']
                                     row[entity_id_col] = entity_id
-                                    row[entity_label_col] = f"${entity['sf_framecode']}"
+                                    row[entity_label_col] = f"${entity['Sf_framecode']}"
                                     if has_mand_concentration_val:
                                         lp.add_data(row)
                                     cur_id += 1

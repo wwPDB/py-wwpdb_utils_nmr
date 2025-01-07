@@ -22,6 +22,7 @@ try:
                                            monDict3,
                                            getOneLetterCodeCan)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                                       ISOTOPE_NAMES_OF_NMR_OBS_NUCS,
                                                        ALLOWED_AMBIGUITY_CODES,
                                                        ALLOWED_ISOTOPE_NUMBERS,
                                                        WELL_KNOWN_ISOTOPE_NUMBERS,
@@ -35,6 +36,7 @@ except ImportError:
                                monDict3,
                                getOneLetterCodeCan)
     from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                           ISOTOPE_NAMES_OF_NMR_OBS_NUCS,
                                            ALLOWED_AMBIGUITY_CODES,
                                            ALLOWED_ISOTOPE_NUMBERS,
                                            WELL_KNOWN_ISOTOPE_NUMBERS,
@@ -1152,6 +1154,7 @@ class BMRBAnnTasks:
         solvent_with_percent_pat = re.compile(r'(\d+)%\s*([\S ]+)')
         deuterated_pat = re.compile(r'(?:[Dd]2[Oo]|\S+(\s\S+)?-[Dd]\d+|.*deuterate.*)')
         perdeuterated_pat = re.compile(r'.*perdeuterate.*')
+        percent_value_pattern = re.compile(r'(\d+|\d+\.\d+)\s*%')
         and_pat = r'\s[Aa][Nn][Dd]\s'
         has_salt = has_buffer = has_reducing_agent = has_chelating_agent = False
         default_internal_reference = 'DSS'
@@ -1286,7 +1289,7 @@ class BMRBAnnTasks:
                                 entity = entity_dict[entity_id]
                                 lp.data[idx][assembly_id_col] = entity['assembly_id']
                                 lp.data[idx][assembly_label_col] = entity['assembly_label']
-                                lp.data[idx][entity_label_col] = f"${entity['Sf_framecode']}"
+                                lp.data[idx][entity_label_col] = f"${entity['sf_framecode']}"
                                 lp.data[idx][type_col] = entity['sample_type']
                                 if row[8] in emptyValue and (row[9] in emptyValue or row[10] in emptyValue):
                                     has_mand_concentration_val = False
@@ -1372,7 +1375,7 @@ class BMRBAnnTasks:
                                 lp.data[idx][assembly_id_col] = entity['assembly_id']
                                 lp.data[idx][assembly_label_col] = entity['assembly_label']
                                 lp.data[idx][entity_id_col] = entity_id
-                                lp.data[idx][entity_label_col] = f"${entity['Sf_framecode']}"
+                                lp.data[idx][entity_label_col] = f"${entity['sf_framecode']}"
                                 lp.data[idx][type_col] = entity['sample_type']
                                 if row[8] in emptyValue and (row[9] in emptyValue or row[10] in emptyValue):
                                     has_mand_concentration_val = False
@@ -1441,6 +1444,57 @@ class BMRBAnnTasks:
                         if row[2] not in emptyValue:
                             if is_natural_abundance(row[2]):
                                 lp.data[idx][isotopic_labeling_col] = 'natural abundance'
+                            if ',' in row[2] and ']-' not in row[2]:
+                                isotopic_labelings = []
+                                effective_labeling = True
+                                for txt in row[2].split(','):
+                                    txt = txt.strip().lstrip('[').rstrip(']')
+                                    if ';' in txt:
+                                        for _txt in txt.split(';'):
+                                            _txt = _txt.strip()
+                                            iso_name = next((name for name in ISOTOPE_NAMES_OF_NMR_OBS_NUCS if name in _txt), None)
+                                            if iso_name is None:
+                                                print('pas1')
+                                                effective_labeling = False
+                                                break
+                                            if '%' in _txt:
+                                                try:
+                                                    g = percent_value_pattern.search(_txt).groups()
+                                                    p = float(g[0]) if '.' in g[0] else int(g[0])
+                                                    if 0 < p <= 100:
+                                                        isotopic_labelings.append(f'U-{p}% {iso_name}')
+                                                    else:
+                                                        effective_labeling = False
+                                                        break
+                                                except AttributeError:
+                                                    effective_labeling = False
+                                                    break
+                                            else:
+                                                isotopic_labelings.append(f'U-{iso_name}')
+                                        if not effective_labeling:
+                                            break
+                                    else:
+                                        iso_name = next((name for name in ISOTOPE_NAMES_OF_NMR_OBS_NUCS if name in txt), None)
+                                        if iso_name is None:
+                                            effective_labeling = False
+                                            break
+                                        if '%' in txt:
+                                            try:
+                                                g = percent_value_pattern.search(txt).groups()
+                                                p = float(g[0]) if '.' in g[0] else int(g[0])
+                                                if 0 < p <= 100:
+                                                    isotopic_labelings.append(f'U-{p}% {iso_name}')
+                                                else:
+                                                    effective_labeling = False
+                                                    break
+                                            except AttributeError:
+                                                effective_labeling = False
+                                                break
+                                        else:
+                                            isotopic_labelings.append(f'U-{iso_name}')
+                                if effective_labeling:
+                                    lp.data[idx][isotopic_labeling_col] = f'[{"; ".join(isotopic_labelings)}]'
+
                         if row[8] not in emptyValue:
                             for delimiter in ('-', '/', ':', ',', '~'):
                                 if delimiter not in row[8]:
@@ -1482,7 +1536,7 @@ class BMRBAnnTasks:
                                 row[assembly_id_col] = entity['assembly_id']
                                 row[assembly_label_col] = entity['assembly_label']
                                 row[entity_id_col] = entity_id
-                                row[entity_label_col] = f"${entity['Sf_framecode']}"
+                                row[entity_label_col] = f"${entity['sf_framecode']}"
                                 row[type_col] = entity['sample_type']
                                 row[concentration_val_col] = '?'
                                 row[concentration_val_units_col] = 'mM'
@@ -1508,7 +1562,7 @@ class BMRBAnnTasks:
                                     row[id_col] = cur_id
                                     row[mol_common_name_col] = entity['name']
                                     row[entity_id_col] = entity_id
-                                    row[entity_label_col] = f"${entity['Sf_framecode']}"
+                                    row[entity_label_col] = f"${entity['sf_framecode']}"
                                     if has_mand_concentration_val:
                                         lp.add_data(row)
                                     cur_id += 1

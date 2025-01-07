@@ -70,6 +70,11 @@ ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS = {'H': [1, 2, 3],
                                    'CA': [43]
                                    }
 
+# isotope names of NMR observable nucleus
+ISOTOPE_NAMES_OF_NMR_OBS_NUCS = []
+for nuc_name, iso_nums in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items():
+    for iso_num in iso_nums:
+        ISOTOPE_NAMES_OF_NMR_OBS_NUCS.append(f'{iso_num}{nuc_name}')
 
 # nucleus with half spin
 HALF_SPIN_NUCLEUS = ('H', 'C', 'N', 'P', 'F', 'CD')

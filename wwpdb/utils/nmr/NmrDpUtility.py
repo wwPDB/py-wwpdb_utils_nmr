@@ -59356,8 +59356,8 @@ class NmrDpUtility:
         if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
             return False
 
-        if not self.__submission_mode and not self.__internal_mode:
-            return False
+        # if not self.__submission_mode and not self.__internal_mode:
+        #     return False
 
         master_entry = self.__star_data[0]
 

@@ -982,6 +982,270 @@ class OneDepAnnTasks:
                            '_Constraint_file.Constraint_stat_list_ID'
                            ]
 
+        self.__allowedSfTags = ['_Sample.Sf_category',
+                                '_Sample.Sf_framecode',
+                                '_Sample.Entry_ID',
+                                '_Sample.Sf_ID',
+                                '_Sample.ID',
+                                '_Sample.Name',
+                                '_Sample.Type',
+                                '_Sample.Sub_type',
+                                '_Sample.Details',
+                                '_Sample.Aggregate_sample_number',
+                                '_Sample.Solvent_system',
+                                '_Sample.Preparation_date',
+                                '_Sample.Preparation_expiration_date',
+                                '_Sample.Polycrystallization_protocol',
+                                '_Sample.Single_crystal_protocol',
+                                '_Sample.Crystal_grow_apparatus',
+                                '_Sample.Crystal_grow_atmosphere',
+                                '_Sample.Crystal_grow_details',
+                                '_Sample.Crystal_grow_method',
+                                '_Sample.Crystal_grow_method_cit_ID',
+                                '_Sample.Crystal_grow_pH',
+                                '_Sample.Crystal_grow_pH_range',
+                                '_Sample.Crystal_grow_pressure',
+                                '_Sample.Crystal_grow_pressure_esd',
+                                '_Sample.Crystal_grow_seeding',
+                                '_Sample.Crystal_grow_seeding_cit_ID',
+                                '_Sample.Crystal_grow_temp',
+                                '_Sample.Crystal_grow_temp_details',
+                                '_Sample.Crystal_grow_temp_esd',
+                                '_Sample.Crystal_grow_time',
+                                '_Sample.Oriented_sample_prep_protocol',
+                                '_Sample.Lyophilization_cryo_protectant',
+                                '_Sample.Storage_protocol',
+                                '_Sample_condition_list.Sf_category',
+                                '_Sample_condition_list.Sf_framecode',
+                                '_Sample_condition_list.Entry_ID',
+                                '_Sample_condition_list.Sf_ID',
+                                '_Sample_condition_list.ID',
+                                '_Sample_condition_list.Name',
+                                '_Sample_condition_list.Details',
+                                '_NMR_spectrometer_list.Sf_category',
+                                '_NMR_spectrometer_list.Sf_framecode',
+                                '_NMR_spectrometer_list.Entry_ID',
+                                '_NMR_spectrometer_list.Sf_ID',
+                                '_NMR_spectrometer_list.ID',
+                                '_NMR_spectrometer_list.Name',
+                                '_NMR_spectrometer.Sf_category',
+                                '_NMR_spectrometer.Sf_framecode',
+                                '_NMR_spectrometer.Entry_ID',
+                                '_NMR_spectrometer.Sf_ID',
+                                '_NMR_spectrometer.ID',
+                                '_NMR_spectrometer.Name',
+                                '_NMR_spectrometer.Details',
+                                '_NMR_spectrometer.Manufacturer',
+                                '_NMR_spectrometer.Model',
+                                '_NMR_spectrometer.Serial_number',
+                                '_NMR_spectrometer.Field_strength',
+                                '_Experiment_list.Sf_category',
+                                '_Experiment_list.Sf_framecode',
+                                '_Experiment_list.Entry_ID',
+                                '_Experiment_list.Sf_ID',
+                                '_Experiment_list.ID',
+                                '_Experiment_list.Details',
+                                '_Software.Sf_category',
+                                '_Software.Sf_framecode',
+                                '_Software.Entry_ID',
+                                '_Software.Sf_ID',
+                                '_Software.ID',
+                                '_Software.Type',
+                                '_Software.Name',
+                                '_Software.Version',
+                                '_Software.DOI',
+                                '_Software.Details',
+                                '_Chem_shift_reference.Sf_category',
+                                '_Chem_shift_reference.Sf_framecode',
+                                '_Chem_shift_reference.Entry_ID',
+                                '_Chem_shift_reference.Sf_ID',
+                                '_Chem_shift_reference.ID',
+                                '_Chem_shift_reference.Name',
+                                '_Chem_shift_reference.Proton_shifts_flag',
+                                '_Chem_shift_reference.Carbon_shifts_flag',
+                                '_Chem_shift_reference.Nitrogen_shifts_flag',
+                                '_Chem_shift_reference.Phosphorus_shifts_flag',
+                                '_Chem_shift_reference.Other_shifts_flag',
+                                '_Chem_shift_reference.Details',
+                                '_Assigned_chem_shift_list.Sf_category',
+                                '_Assigned_chem_shift_list.Sf_framecode',
+                                '_Assigned_chem_shift_list.Entry_ID',
+                                '_Assigned_chem_shift_list.Sf_ID',
+                                '_Assigned_chem_shift_list.ID',
+                                '_Assigned_chem_shift_list.Name',
+                                '_Assigned_chem_shift_list.Data_file_name',
+                                '_Assigned_chem_shift_list.Sample_condition_list_ID',
+                                '_Assigned_chem_shift_list.Sample_condition_list_label',
+                                '_Assigned_chem_shift_list.Chem_shift_reference_ID',
+                                '_Assigned_chem_shift_list.Chem_shift_reference_label',
+                                '_Assigned_chem_shift_list.Chem_shift_1H_err',
+                                '_Assigned_chem_shift_list.Chem_shift_13C_err',
+                                '_Assigned_chem_shift_list.Chem_shift_15N_err',
+                                '_Assigned_chem_shift_list.Chem_shift_31P_err',
+                                '_Assigned_chem_shift_list.Chem_shift_2H_err',
+                                '_Assigned_chem_shift_list.Chem_shift_19F_err',
+                                '_Assigned_chem_shift_list.Error_derivation_method',
+                                '_Assigned_chem_shift_list.Details',
+                                '_Assigned_chem_shift_list.Text_data_format',
+                                '_Assigned_chem_shift_list.Text_data',
+                                '_Constraint_stat_list.Sf_category',
+                                '_Constraint_stat_list.Sf_framecode',
+                                '_Constraint_stat_list.Entry_ID',
+                                '_Constraint_stat_list.Sf_ID',
+                                '_Constraint_stat_list.ID',
+                                '_Constraint_stat_list.Name',
+                                '_Constraint_stat_list.Data_file_name',
+                                '_Constraint_stat_list.Details',
+                                '_Constraint_stat_list.Text_data_format',
+                                '_Constraint_stat_list.Text_data',
+                                '_Constraint_stat_list.Stats_not_available',
+                                '_Constraint_stat_list.NOE_interproton_dist_evaluation',
+                                '_Constraint_stat_list.NOE_pseudoatom_corrections',
+                                '_Constraint_stat_list.NOE_dist_averaging_method',
+                                '_Constraint_stat_list.ROE_interproton_dist_evaluation',
+                                '_Constraint_stat_list.ROE_pseudoatom_corrections',
+                                '_Constraint_stat_list.ROE_dist_averaging_method',
+                                '_Constraint_stat_list.NOE_tot_num',
+                                '_Constraint_stat_list.RDC_tot_num',
+                                '_Constraint_stat_list.Dihedral_angle_tot_num',
+                                '_Constraint_stat_list.Protein_dihedral_angle_tot_num',
+                                '_Constraint_stat_list.NA_dihedral_angle_tot_num',
+                                '_Constraint_stat_list.NOE_intraresidue_tot_num',
+                                '_Constraint_stat_list.NOE_sequential_tot_num',
+                                '_Constraint_stat_list.NOE_medium_range_tot_num',
+                                '_Constraint_stat_list.NOE_long_range_tot_num',
+                                '_Constraint_stat_list.NOE_unique_tot_num',
+                                '_Constraint_stat_list.NOE_intraresidue_unique_tot_num',
+                                '_Constraint_stat_list.NOE_sequential_unique_tot_num',
+                                '_Constraint_stat_list.NOE_medium_range_unique_tot_num',
+                                '_Constraint_stat_list.NOE_long_range_unique_tot_num',
+                                '_Constraint_stat_list.NOE_unamb_intramol_tot_num',
+                                '_Constraint_stat_list.NOE_unamb_intermol_tot_num',
+                                '_Constraint_stat_list.NOE_ambig_intramol_tot_num',
+                                '_Constraint_stat_list.NOE_ambig_intermol_tot_num',
+                                '_Constraint_stat_list.NOE_interentity_tot_num',
+                                '_Constraint_stat_list.NOE_other_tot_num',
+                                '_Constraint_stat_list.ROE_tot_num',
+                                '_Constraint_stat_list.ROE_intraresidue_tot_num',
+                                '_Constraint_stat_list.ROE_sequential_tot_num',
+                                '_Constraint_stat_list.ROE_medium_range_tot_num',
+                                '_Constraint_stat_list.ROE_long_range_tot_num',
+                                '_Constraint_stat_list.ROE_unambig_intramol_tot_num',
+                                '_Constraint_stat_list.ROE_unambig_intermol_tot_num',
+                                '_Constraint_stat_list.ROE_ambig_intramol_tot_num',
+                                '_Constraint_stat_list.ROE_ambig_intermol_tot_num',
+                                '_Constraint_stat_list.ROE_other_tot_num',
+                                '_Constraint_stat_list.RDC_HH_tot_num',
+                                '_Constraint_stat_list.RDC_HNC_tot_num',
+                                '_Constraint_stat_list.RDC_NH_tot_num',
+                                '_Constraint_stat_list.RDC_CC_tot_num',
+                                '_Constraint_stat_list.RDC_CN_i_1_tot_num',
+                                '_Constraint_stat_list.RDC_CAHA_tot_num',
+                                '_Constraint_stat_list.RDC_HNHA_tot_num',
+                                '_Constraint_stat_list.RDC_HNHA_i_1_tot_num',
+                                '_Constraint_stat_list.RDC_CAC_tot_num',
+                                '_Constraint_stat_list.RDC_CAN_tot_num',
+                                '_Constraint_stat_list.RDC_intraresidue_tot_num',
+                                '_Constraint_stat_list.RDC_sequential_tot_num',
+                                '_Constraint_stat_list.RDC_medium_range_tot_num',
+                                '_Constraint_stat_list.RDC_long_range_tot_num',
+                                '_Constraint_stat_list.RDC_other_tot_num',
+                                '_Constraint_stat_list.RDC_unambig_intramol_tot_num',
+                                '_Constraint_stat_list.RDC_unambig_intermol_tot_num',
+                                '_Constraint_stat_list.RDC_ambig_intramol_tot_num',
+                                '_Constraint_stat_list.RDC_ambig_intermol_tot_num',
+                                '_Constraint_stat_list.RDC_intermol_tot_num',
+                                '_Constraint_stat_list.Protein_phi_angle_tot_num',
+                                '_Constraint_stat_list.Protein_psi_angle_tot_num',
+                                '_Constraint_stat_list.Protein_chi_one_angle_tot_num',
+                                '_Constraint_stat_list.Protein_other_angle_tot_num',
+                                '_Constraint_stat_list.Protein_ambig_dihedral_tot_num',
+                                '_Constraint_stat_list.Protein_other_tot_num',
+                                '_Constraint_stat_list.NA_alpha_angle_tot_num',
+                                '_Constraint_stat_list.NA_beta_angle_tot_num',
+                                '_Constraint_stat_list.NA_gamma_angle_tot_num',
+                                '_Constraint_stat_list.NA_delta_angle_tot_num',
+                                '_Constraint_stat_list.NA_epsilon_angle_tot_num',
+                                '_Constraint_stat_list.NA_chi_angle_tot_num',
+                                '_Constraint_stat_list.NA_sugar_pucker_tot_num',
+                                '_Constraint_stat_list.NA_other_angle_tot_num',
+                                '_Constraint_stat_list.NA_amb_dihedral_angle_tot_num',
+                                '_Constraint_stat_list.NA_other_tot_num',
+                                '_Constraint_stat_list.H_bonds_constrained_tot_num',
+                                '_Constraint_stat_list.Constr_def_H_bonds_tot_num',
+                                '_Constraint_stat_list.SS_bonds_constrained_tot_num',
+                                '_Constraint_stat_list.Constr_def_SS_bonds_tot_num',
+                                '_Constraint_stat_list.Derived_coupling_const_tot_num',
+                                '_Constraint_stat_list.Derived_CACB_chem_shift_tot_num',
+                                '_Constraint_stat_list.Derived_1H_chem_shifts_tot_num',
+                                '_Constraint_stat_list.Derived_photo_cidnps_tot_num',
+                                '_Constraint_stat_list.Derived_paramag_relax_tot_num',
+                                '_Constraint_stat_list.Assumed_distances_tot_num',
+                                '_Constraint_stat_list.Assumed_angles_tot_num',
+                                '_Constraint_stat_list.Constraints_per_residue_avg',
+                                '_Constraint_stat_list.Constr_violations_per_residue_avg',
+                                '_Constraint_stat_list.Dist_constr_violat_stat_calc_method',
+                                '_Spectral_peak_list.Sf_category',
+                                '_Spectral_peak_list.Sf_framecode',
+                                '_Spectral_peak_list.Entry_ID',
+                                '_Spectral_peak_list.Sf_ID',
+                                '_Spectral_peak_list.ID',
+                                '_Spectral_peak_list.Name',
+                                '_Spectral_peak_list.Data_file_name',
+                                '_Spectral_peak_list.Sample_ID',
+                                '_Spectral_peak_list.Sample_label',
+                                '_Spectral_peak_list.Sample_condition_list_ID',
+                                '_Spectral_peak_list.Sample_condition_list_label',
+                                '_Spectral_peak_list.Experiment_ID',
+                                '_Spectral_peak_list.Experiment_name',
+                                '_Spectral_peak_list.Experiment_class',
+                                '_Spectral_peak_list.Experiment_type',
+                                '_Spectral_peak_list.Number_of_spectral_dimensions',
+                                '_Spectral_peak_list.Chemical_shift_list',
+                                '_Spectral_peak_list.Assigned_chem_shift_list_ID',
+                                '_Spectral_peak_list.Assigned_chem_shift_list_label',
+                                '_Spectral_peak_list.Details',
+                                '_Spectral_peak_list.Text_data_format',
+                                '_Spectral_peak_list.Text_data',
+                                '_Conformer_stat_list.Sf_category',
+                                '_Conformer_stat_list.Sf_framecode',
+                                '_Conformer_stat_list.Entry_ID',
+                                '_Conformer_stat_list.Sf_ID',
+                                '_Conformer_stat_list.ID',
+                                '_Conformer_stat_list.Name',
+                                '_Conformer_stat_list.Conformer_ensemble_only',
+                                '_Conformer_stat_list.Both_ensemble_and_rep_conformer',
+                                '_Conformer_stat_list.Representative_conformer_only',
+                                '_Conformer_stat_list.Data_file_name',
+                                '_Conformer_stat_list.Text_data_format',
+                                '_Conformer_stat_list.Text_data',
+                                '_Conformer_stat_list.Original_conformer_stats_file_ID',
+                                '_Conformer_stat_list.Conf_family_coord_set_ID',
+                                '_Conformer_stat_list.Conf_family_coord_set_label',
+                                '_Conformer_stat_list.Representative_conformer_ID',
+                                '_Conformer_stat_list.Representative_conformer_label',
+                                '_Conformer_stat_list.Conformer_calculated_total_num',
+                                '_Conformer_stat_list.Conformer_submitted_total_num',
+                                '_Conformer_stat_list.Conformer_selection_criteria',
+                                '_Conformer_stat_list.Representative_conformer',
+                                '_Conformer_stat_list.Rep_conformer_selection_criteria',
+                                '_Conformer_stat_list.Statistical_struct_param_details',
+                                '_Conformer_stat_list.Details',
+                                '_Conformer_family_coord_set.Sf_category',
+                                '_Conformer_family_coord_set.Sf_framecode',
+                                '_Conformer_family_coord_set.Entry_ID',
+                                '_Conformer_family_coord_set.Sf_ID',
+                                '_Conformer_family_coord_set.ID',
+                                '_Conformer_family_coord_set.Name',
+                                '_Conformer_family_coord_set.File_name',
+                                '_Conformer_family_coord_set.Constraints_PDB_file_ID',
+                                '_Conformer_family_coord_set.PDB_accession_code',
+                                '_Conformer_family_coord_set.Sample_condition_list_ID',
+                                '_Conformer_family_coord_set.Sample_condition_list_label',
+                                '_Conformer_family_coord_set.Atom_site_uncertainty_desc',
+                                '_Conformer_family_coord_set.Atom_site_ordered_flag_desc',
+                                '_Conformer_family_coord_set.Details']
+
     # """
     # def load_csv_data(self, csv_file, transpose=False):
     #     """ Load CSV data to list.
@@ -1097,13 +1361,24 @@ class OneDepAnnTasks:
                                             sf = pynmrstar.Saveframe.from_scratch(sf_framecode, sf_tag_prefix)
                                             sf.add_tag('Sf_framecode', sf_framecode)
                                             sf.add_tag('Sf_category', sf_category)
-                                            sf.add_tag('ID', list_id_dict[list_id])
+                                            sf.add_tag('ID', str(list_id))
 
                                         else:
 
                                             try:
                                                 sf = master_entry.get_saveframe_by_name(sf_framecode)
-                                                set_sf_tag(sf, 'ID', list_id_dict[list_id])
+                                                if sf.tag_prefix == sf_tag_prefix:
+                                                    set_sf_tag(sf, 'ID', list_id_dict[list_id])
+                                                else:
+                                                    try:
+                                                        sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID', str(list_id))[0]
+                                                        set_sf_tag(sf, 'ID', str(list_id))
+                                                    except IndexError:
+                                                        try:
+                                                            sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID', list_id)[0]
+                                                            set_sf_tag(sf, 'ID', str(list_id))
+                                                        except IndexError:
+                                                            sf = None
                                             except KeyError:
                                                 try:
                                                     sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID', str(list_id_dict[list_id]))[0]
@@ -1115,7 +1390,7 @@ class OneDepAnnTasks:
                                                         sf = pynmrstar.Saveframe.from_scratch(sf_framecode, sf_tag_prefix)
                                                         sf.add_tag('Sf_framecode', sf_framecode)
                                                         sf.add_tag('Sf_category', sf_category)
-                                                        sf.add_tag('ID', list_id_dict[list_id])
+                                                        sf.add_tag('ID', str(list_id))
                                                         reset = True
 
                                         set_sf_tag(sf, 'Entry_ID', self.__entryId)
@@ -1370,6 +1645,20 @@ class OneDepAnnTasks:
 
                             if reset and len(lp) > 0:
                                 sf.add_loop(lp)
+
+        allowed_sf_tags = set(self.__allowedSfTags)
+
+        for page in self.__pages:
+
+            for sf_category, sf_tag_prefix in zip(self.__sfCategory[page], self.__sfTagPrefix[page]):
+
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    sf_tags = set(f'{sf_tag_prefix}.{tag[0]}' for tag in sf.tags)
+
+                    extra_sf_tags = list(set(sf_tags) - set(allowed_sf_tags))
+
+                    if len(extra_sf_tags) > 0:
+                        sf.remove_tag(extra_sf_tags)
 
         # BMRBAnnTask class will normalize later
         # self.__c2S.set_entry_id(master_entry, self.__entryId)

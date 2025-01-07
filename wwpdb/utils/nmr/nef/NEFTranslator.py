@@ -568,7 +568,7 @@ def get_sf_tag_values_with_empty_loop(star_data: Union[pynmrstar.Entry, pynmrsta
 
         loop = sf.get_loop(lp_category)
 
-        if len(loop.data) == 0:
+        if len(loop) == 0:
             sf_framecodes.append(get_first_sf_tag(sf, 'sf_framecode'))
 
     return sf_framecodes
@@ -2158,7 +2158,7 @@ class NEFTranslator:
 
             seq_data = []
 
-            len_loop_data = len(loop.data)
+            len_data = len(loop)
 
             if set(tags) & set(loop.tags) == set(tags):
                 seq_data = loop.get_tag(tags)
@@ -2182,7 +2182,7 @@ class NEFTranslator:
                 seq_data = list(filter(is_good_data, seq_data))  # DAOTHER-7389, issue #3
             else:
                 for idx, row in enumerate(seq_data):
-                    if is_empty(row) and idx < len_loop_data:
+                    if is_empty(row) and idx < len_data:
                         if skip_empty_value_error(loop, idx):
                             continue
                         r = {}
@@ -2198,7 +2198,7 @@ class NEFTranslator:
                 try:
                     int(row[0])
                 except (ValueError, TypeError):
-                    if idx < len_loop_data:
+                    if idx < len_data:
                         if skip_empty_value_error(loop, idx):
                             continue
                         r = {}
@@ -2344,7 +2344,7 @@ class NEFTranslator:
 
             seq_data = []
 
-            len_loop_data = len(loop.data)
+            len_data = len(loop)
 
             has_auth_asym_id = False
             if lp_category == '_Atom_chem_shift' and self.__remediation_mode:
@@ -3208,7 +3208,7 @@ class NEFTranslator:
                 seq_data = list(filter(is_good_data, seq_data))  # DAOTHER-7389, issue #3
             else:
                 for idx, row in enumerate(seq_data):
-                    if is_empty(row) and idx < len_loop_data:
+                    if is_empty(row) and idx < len_data:
                         if skip_empty_value_error(loop, idx):
                             continue
                         r = {}
@@ -3224,7 +3224,7 @@ class NEFTranslator:
                 try:
                     int(row[0])
                 except (ValueError, TypeError):
-                    if idx < len_loop_data:
+                    if idx < len_data:
                         if skip_empty_value_error(loop, idx):
                             continue
                         r = {}
@@ -3510,7 +3510,7 @@ class NEFTranslator:
 
             seq_data = []
 
-            len_loop_data = len(loop.data)
+            len_data = len(loop)
 
             if set(tags) & set(loop.tags) == set(tags):
                 seq_data = loop.get_tag(tags)
@@ -3547,7 +3547,7 @@ class NEFTranslator:
                 seq_data = list(filter(is_good_data, seq_data))  # DAOTHER-7389, issue #3
             else:
                 for idx, row in enumerate(seq_data):
-                    if is_empty(row) and idx < len_loop_data:
+                    if is_empty(row) and idx < len_data:
                         if skip_empty_value_error(loop, idx):
                             continue
                         r = {}
@@ -3563,7 +3563,7 @@ class NEFTranslator:
                 try:
                     int(row[seq_id_col])
                 except (ValueError, TypeError):
-                    if idx < len_loop_data:
+                    if idx < len_data:
                         if skip_empty_value_error(loop, idx):
                             continue
                         r = {}
@@ -3699,7 +3699,7 @@ class NEFTranslator:
 
             pair_data = []
 
-            len_loop_data = len(loop.data)
+            len_data = len(loop)
 
             if set(tags) & set(loop.tags) == set(tags):
                 pair_data = loop.get_tag(tags)
@@ -3722,7 +3722,7 @@ class NEFTranslator:
                     continue
             else:
                 for idx, row in enumerate(pair_data):
-                    if is_empty(row) and idx < len_loop_data and not skip_empty_value_error(loop, idx):
+                    if is_empty(row) and idx < len_data and not skip_empty_value_error(loop, idx):
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
@@ -3802,7 +3802,7 @@ class NEFTranslator:
 
             a_type_data = []
 
-            len_loop_data = len(loop.data)
+            len_data = len(loop)
 
             if set(tags) & set(loop.tags) != set(tags):
                 missing_tags = list(set(tags) - set(loop.tags))
@@ -3817,7 +3817,7 @@ class NEFTranslator:
                     continue
             else:
                 for idx, row in enumerate(a_type_data):
-                    if is_empty(row) and idx < len_loop_data:
+                    if is_empty(row) and idx < len_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
@@ -3828,7 +3828,7 @@ class NEFTranslator:
                 try:
                     int(row[1])
                 except (ValueError, TypeError):
-                    if idx < len_loop_data:
+                    if idx < len_data:
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[idx][j]
@@ -3898,7 +3898,7 @@ class NEFTranslator:
 
             ambig_data = []
 
-            len_loop_data = len(loop.data)
+            len_data = len(loop)
 
             if set(tags) & set(loop.tags) != set(tags):
                 missing_tags = list(set(tags) - set(loop.tags))
@@ -3921,7 +3921,7 @@ class NEFTranslator:
                     try:
                         code = int(row[2])
                     except ValueError:
-                        if idx < len_loop_data:
+                        if idx < len_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[idx][j]
@@ -3929,7 +3929,7 @@ class NEFTranslator:
                                      f"#_of_row {idx + 1}, data_of_row {r}.")
 
                     if code not in ALLOWED_AMBIGUITY_CODES:
-                        if idx < len_loop_data:
+                        if idx < len_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[idx][j]
@@ -3937,7 +3937,7 @@ class NEFTranslator:
                                      f"#_of_row {idx + 1}, data_of_row {r}.")
 
                     if code >= 4:
-                        if row[3] in emptyValue and idx < len_loop_data:
+                        if row[3] in emptyValue and idx < len_data:
                             if code in (4, 5):
                                 r = {}
                                 for j, t in enumerate(loop.tags):
@@ -3948,7 +3948,7 @@ class NEFTranslator:
                             try:
                                 int(row[3])
                             except (ValueError, TypeError):
-                                if idx < len_loop_data:
+                                if idx < len_data:
                                     r = {}
                                     for j, t in enumerate(loop.tags):
                                         r[t] = loop.data[idx][j]
@@ -3958,7 +3958,7 @@ class NEFTranslator:
                 if row[3] not in emptyValue:
 
                     if row[2] in emptyValue or row[2] not in ('4', '5', '6', '9'):
-                        if idx < len_loop_data:
+                        if idx < len_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[idx][j]
@@ -4024,10 +4024,10 @@ class NEFTranslator:
         for loop in loops:
             index_data = []
 
-            len_loop_data = len(loop.data)
+            len_data = len(loop)
 
-            if len_loop_data > row_limit:
-                raise UserWarning(f'[Too big loop] The total number of rows in a loop, {len_loop_data}, exceeds the limit {row_limit}.')
+            if len_data > row_limit:
+                raise UserWarning(f'[Too big loop] The total number of rows in a loop, {len_data}, exceeds the limit {row_limit}.')
 
             if set(tags) & set(loop.tags) == set(tags):
                 index_data = loop.get_tag(tags)
@@ -4035,7 +4035,7 @@ class NEFTranslator:
                 raise LookupError(f"Missing mandatory {index_id} loop tag.")
 
             for idx, i in enumerate(index_data):
-                if i in emptyValue and idx < len_loop_data:
+                if i in emptyValue and idx < len_data:
                     r = {}
                     for j, t in enumerate(loop.tags):
                         r[t] = loop.data[idx][j]
@@ -4045,7 +4045,7 @@ class NEFTranslator:
                     try:
                         int(i)
                     except (ValueError, TypeError):
-                        if idx < len_loop_data:
+                        if idx < len_data:
                             r = {}
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[idx][j]
@@ -4161,7 +4161,7 @@ class NEFTranslator:
             for loop in loops:
 
                 _test_on_index = test_on_index
-                if self.__remediation_mode and len(loop.data) > MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
+                if self.__remediation_mode and len(loop) > MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
                     _test_on_index = False
 
                 if allowed_tags is not None:

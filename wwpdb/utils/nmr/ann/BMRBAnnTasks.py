@@ -757,7 +757,7 @@ class BMRBAnnTasks:
 
                             offset = None
                             reserved_auth_seq_ids, conflict_auth_seq_ids = [], []
-                            for row in reversed(lp.data):
+                            for row in reversed(lp):
                                 seq_key = (entity_id, int(row[id_col]))
                                 if seq_key in label_to_auth_seq:
                                     row[auth_seq_id_col] = label_to_auth_seq[seq_key]
@@ -782,10 +782,10 @@ class BMRBAnnTasks:
                                     except ValueError:
                                         row[auth_seq_id_col] = None
 
-                            if len(conflict_auth_seq_ids) == 0 and (all(row[auth_seq_id_col] not in emptyValue for row in lp.data) or len(lp.data) == 1):
+                            if len(conflict_auth_seq_ids) == 0 and (all(row[auth_seq_id_col] not in emptyValue for row in lp) or len(lp) == 1):
                                 break
 
-                            for row in reversed(lp.data):
+                            for row in reversed(lp):
                                 if row[auth_seq_id_col] in emptyValue:
                                     pass
                                 elif isinstance(row[auth_seq_id_col], int):
@@ -852,7 +852,7 @@ class BMRBAnnTasks:
                                 pass
 
                     if 'peptide' in polymer_type:
-                        sample_type = 'protein' if len(lp.data) >= 24 else 'peptide'
+                        sample_type = 'protein' if len(lp) >= 24 else 'peptide'
                         entity_dict[entity_id] = {'name': get_first_sf_tag(sf, 'Name'),
                                                   'sf_framecode': get_first_sf_tag(sf, 'Sf_framecode'),
                                                   'sample_type': sample_type,
@@ -1179,6 +1179,7 @@ class BMRBAnnTasks:
 
                     if '/' in _solvent_system:
                         for _solvent in _solvent_system.split('/'):
+                            _solvent = _solvent.strip()
                             if solvent_with_percent_pat.match(_solvent):
                                 g = solvent_with_percent_pat.search(_solvent).groups()
                                 solvent_name = g[1].strip()
@@ -1401,14 +1402,16 @@ class BMRBAnnTasks:
                                         or 'pbs' in mol_common_name\
                                         or 'tris' in mol_common_name\
                                         or 'phosphate' in mol_common_name\
-                                        or 'po4' in mol_common_name:
+                                        or 'po4' in mol_common_name\
+                                        or 'kphos' in mol_common_name\
+                                        or 'naphos' in mol_common_name:
                                     lp.data[idx][type_col] = 'buffer'
                                     lp.data[idx][isotopic_labeling_col] = '[U-2H]'\
                                         if mol_common_name.startswith('d-')\
                                         or 'deuterate' in mol_common_name\
                                         or re.match(r'd\d+-.*', mol_common_name) else 'natural abundance'
                                     has_buffer = True
-                                elif mol_common_name in ('nacl', 'kcl',
+                                elif mol_common_name in ('nacl', 'kcl', 'na2so4',
                                                          'cacl2', 'zncl2', 'mgcl2',
                                                          'ca+2', 'zn+2', 'mg+2',
                                                          'ca2+', 'zn2+', 'mg2+')\
@@ -1456,7 +1459,7 @@ class BMRBAnnTasks:
                                     except ValueError:
                                         pass
 
-                    cur_id = len(lp.data) + 1
+                    cur_id = len(lp) + 1
 
                     if not has_poly_entity:
                         for entity_id, entity in entity_dict.items():

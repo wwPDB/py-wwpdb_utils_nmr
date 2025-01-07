@@ -10,6 +10,7 @@
 # 13-Jun-2023  M. Yokochi - sort loops in a saveframe based on schema
 # 30-May-2024  M. Yokochi - resolve duplication of data block/saveframe name (DAOTHER-9437)
 # 25-Jun-2024  M. Yokochi - strip white spaces in a datablock name derived from the model file (DAOTHER-9511)
+# 07-Jan-2025  M. Yokochi - retrieve symbolic label representations (DAOTHER-1728, 9846)
 ##
 """ Wrapper class for CIF to NMR-STAR converter.
     @author: Masashi Yokochi
@@ -37,11 +38,30 @@ except ImportError:
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
 
+
 if __pynmrstar_v3_3_1__:
     logger = logging.getLogger('pynmrstar')
     logger.setLevel(logging.ERROR)
 else:
     logging.getLogger().setLevel(logging.ERROR)  # set level for pynmrstar
+
+
+def retrieve_symbolic_labels(strData: pynmrstar.Entry):
+    """ Retrieve symbolic label representations that serve as saveframe pointers in NMR-STAR.
+    """
+
+    for sf in strData.frame_list:
+        for idx, tag in enumerate(sf.tags):
+            if tag[0].endswith('_label') and tag[1] not in emptyValue and not tag[1].startswith('$'):
+                sf.tags[idx][1] = '$' + tag[1]
+        for lp in sf.loops:
+            label_cols = [idx for idx, tag in enumerate(lp.tags) if tag.endswith('_label')]
+            if len(label_cols) == 0:
+                continue
+            for idx, row in enumerate(lp.data):
+                for col, val in enumerate(row):
+                    if col in label_cols and val not in emptyValue and not val.startswith('$'):
+                        lp.data[idx][col] = '$' + val
 
 
 class CifToNmrStar:
@@ -234,7 +254,7 @@ class CifToNmrStar:
             _entry_id = entry_id.upper()
 
             if datablockName is None:
-                strData.entry_id = f'cs_{entry_id.lower()}'
+                strData.entry_id = f'nmr_data_{entry_id.lower()}'
 
             # reorder
             category_order.sort(key=itemgetter('category_order'))
@@ -421,6 +441,8 @@ class CifToNmrStar:
 
             if sf is not None:
                 strData.add_saveframe(sf)
+
+            retrieve_symbolic_labels(strData)
 
             self.normalize(strData)
 

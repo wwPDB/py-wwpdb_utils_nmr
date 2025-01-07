@@ -1317,7 +1317,7 @@ class OneDepAnnTasks:
                                     if reset and has_uniq_lp_row:
                                         lp.add_data(_row)
 
-                            if reset and len(lp) > 0:
+                            if reset and lp is not None and len(lp) > 0:
                                 sf.add_loop(lp)
 
         # BMRBAnnTask class will normalize later
@@ -1455,7 +1455,7 @@ class OneDepAnnTasks:
                                                 for col, dst_val in enumerate(row):
                                                     if abs(_lp_map_codes[col]) != 33:
                                                         continue
-                                                    dst_tag = _lp_tags[col].replace('_ID', '.ID', 1)  # Software_ID -> Software.ID
+                                                    dst_tag = _lp_tags[col].replace('_ID', '.ID', 1)
                                                     found = False
                                                     for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, dst_val):
                                                         row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
@@ -1506,7 +1506,7 @@ class OneDepAnnTasks:
                                             for col, dst_val in enumerate(row):
                                                 if abs(_lp_map_codes[col]) != 33:
                                                     continue
-                                                dst_tag = _lp_tags[col].replace('_ID', '.ID', 1)  # Software_ID -> Software.ID
+                                                dst_tag = _lp_tags[col].replace('_ID', '.ID', 1)
                                                 found = False
                                                 for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, dst_val):
                                                     row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
@@ -1567,7 +1567,7 @@ class OneDepAnnTasks:
                                             for col, dst_val in enumerate(_row):
                                                 if abs(_lp_map_codes[col]) != 33:
                                                     continue
-                                                dst_tag = _lp_tags[col].replace('_ID', '.ID', 1)  # Software_ID -> Software.ID
+                                                dst_tag = _lp_tags[col].replace('_ID', '.ID', 1)
                                                 found = False
                                                 for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, dst_val):
                                                     _row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
@@ -1663,7 +1663,7 @@ class OneDepAnnTasks:
                                                     for col, dst_val in enumerate(_row):
                                                         if abs(_lp_map_codes[col]) != 33:
                                                             continue
-                                                        dst_tag = _lp_tags[col].replace('_ID', '.ID', 1)  # Software_ID -> Software.ID
+                                                        dst_tag = _lp_tags[col].replace('_ID', '.ID', 1)
                                                         found = False
                                                         for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, dst_val):
                                                             _row[col] = _sf.get_tag(_lp_aux_tags[col])[0]
@@ -1698,7 +1698,7 @@ class OneDepAnnTasks:
                                                     for col, dst_val in enumerate(_row):
                                                         if abs(_lp_map_codes[col]) != 33:
                                                             continue
-                                                        dst_tag = _lp_tags[col].replace('_ID', '.ID', 1)  # Software_ID -> Software.ID
+                                                        dst_tag = _lp_tags[col].replace('_ID', '.ID', 1)
                                                         found = False
                                                         for _sf in master_entry.get_saveframes_by_tag_and_value(dst_tag, dst_val):
                                                             _row[col] = _sf.get_tag(_lp_aux_tags[col])[0]

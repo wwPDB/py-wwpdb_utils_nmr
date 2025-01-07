@@ -524,7 +524,7 @@ category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
 tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
 sf_category_pattern = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
 sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
-label_symbol_pattern = re.compile(r'^\$[0-9A-Za-z_]+$')
+label_symbol_pattern = re.compile(r'^\$[^\s\$\?\\\'\"\`;]+$')
 
 onedep_upload_file_pattern = re.compile(r'(.*)\-upload_(.*)\.V(.*)$')
 onedep_file_pattern = re.compile(r'(.*)\.V(.*)$')
@@ -25771,7 +25771,7 @@ class NmrDpUtility:
                         valid = self.__sail_flag
                         row_src = src_lp.data[src_idx]
                         for offset in range(1, 10):
-                            if src_idx + offset < len(src_lp.data):
+                            if src_idx + offset < len(src_lp):
                                 row = src_lp.data[src_idx + offset]
                                 if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
                                    and row[comp_id_col].upper() == comp_id\
@@ -25912,7 +25912,7 @@ class NmrDpUtility:
                                 if not self.__annotation_mode and _row[24] != 'UNMAPPED':
                                     row_src = src_lp.data[_src_idx]
                                     for offset in range(1, 10):
-                                        if src_idx + offset < len(src_lp.data):
+                                        if src_idx + offset < len(src_lp):
                                             row = src_lp.data[src_idx + offset]
                                             if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
                                                and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
@@ -25937,7 +25937,7 @@ class NmrDpUtility:
                                 if not self.__annotation_mode and _row[24] != 'UNMAPPED':
                                     row_src = src_lp.data[_src_idx]
                                     for offset in range(1, 10):
-                                        if src_idx + offset < len(src_lp.data):
+                                        if src_idx + offset < len(src_lp):
                                             row = src_lp.data[src_idx + offset]
                                             if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
                                                and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
@@ -26017,7 +26017,7 @@ class NmrDpUtility:
                         valid = self.__sail_flag
                         for offset in range(1, 10):
                             row_src = src_lp.data[src_idx]
-                            if src_idx + offset < len(src_lp.data):
+                            if src_idx + offset < len(src_lp):
                                 row = src_lp.data[src_idx + offset]
                                 if (row[seq_id_col] == str(_row[3]) or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
                                     or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
@@ -26107,7 +26107,7 @@ class NmrDpUtility:
                             if not self.__annotation_mode and _row[24] != 'UNMAPPED':
                                 row_src = src_lp.data[_src_idx]
                                 for offset in range(1, 10):
-                                    if src_idx + offset < len(src_lp.data):
+                                    if src_idx + offset < len(src_lp):
                                         row = src_lp.data[src_idx + offset]
                                         if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
                                            and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
@@ -26132,7 +26132,7 @@ class NmrDpUtility:
                             if not self.__annotation_mode and _row[24] != 'UNMAPPED':
                                 row_src = src_lp.data[_src_idx]
                                 for offset in range(1, 10):
-                                    if src_idx + offset < len(src_lp.data):
+                                    if src_idx + offset < len(src_lp):
                                         row = src_lp.data[src_idx + offset]
                                         if row[comp_id_col] == row_src[comp_id_col] and row[atom_id_col] == row_src[atom_id_col]\
                                            and row[ambig_code_col] == str(_row[12]) or (_row[12] != row_src[12] and row[ambig_code_col] == row_src[ambig_code_col]):
@@ -27697,7 +27697,7 @@ class NmrDpUtility:
                             if not self.__annotation_mode and _row[24] != 'UNMAPPED':
                                 _idx = idx
                                 for offset in range(1, 10):
-                                    if _idx + offset < len(loop.data):
+                                    if _idx + offset < len(loop):
                                         row_ = loop.data[_idx + offset]
                                         if row_[comp_id_col] == row[comp_id_col] and row_[atom_id_col] == row[atom_id_col]\
                                            and row_[ambig_code_col] == str(ambig_code):
@@ -27720,7 +27720,7 @@ class NmrDpUtility:
                             if not self.__annotation_mode and _row[24] != 'UNMAPPED':
                                 _idx = idx
                                 for offset in range(1, 10):
-                                    if _idx + offset < len(loop.data):
+                                    if _idx + offset < len(loop):
                                         row_ = loop.data[_idx + offset]
                                         if row_[comp_id_col] == row[comp_id_col] and row_[atom_id_col] == row[atom_id_col]\
                                            and row_[ambig_code_col] == str(ambig_code):
@@ -27839,7 +27839,7 @@ class NmrDpUtility:
 
                                         del_row_idx = []
 
-                                        for idx, __row in enumerate(aux_loop.data):
+                                        for idx, __row in enumerate(aux_loop):
                                             if __row[ambig_set_id_col] == ambig_set_id:
                                                 del_row_idx.append(idx)
 
@@ -27847,7 +27847,7 @@ class NmrDpUtility:
                                             for idx in reversed(del_row_idx):
                                                 del aux_loop.data[idx]
 
-                                            if len(aux_loop.data) == 0:
+                                            if len(aux_loop) == 0:
                                                 delete_aux_loop()
 
                 has_genuine_ambig_code = False
@@ -32542,7 +32542,7 @@ class NmrDpUtility:
                 + str(row[chain_id_2_col]) + str(row[seq_id_2_col]) + str(row[comp_id_2_col]) + str(row[atom_id_2_col])\
                 + concat_target_val(row)
 
-        len_data = len(lp.data)
+        len_data = len(lp)
 
         for idx, row in enumerate(lp, start=1):
             if row[member_logic_code_col] != 'OR':
@@ -48261,7 +48261,7 @@ class NmrDpUtility:
                     if row[0] is not None and row[4] is not None:
                         b_loop.add_data(row)
 
-                if len(b_loop.data) > 0:
+                if len(b_loop) > 0:
                     asm_sf.add_loop(b_loop)
 
         else:

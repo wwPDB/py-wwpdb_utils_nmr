@@ -358,7 +358,9 @@ class OneDepAnnTasks:
                            # add pdbx_nmr_sample_details.label
                            ('pdbx_nmr_sample_details', 'label', '_Sample', 'Sf_framecode', 1, None),
                            # add pdbx_nmr_sample_condisions.label
-                           # ('pdbx_nmr_exptl_sample_conditions', 'label', '_Sample_condition_list', 'Sf_framecode', 1, None),
+                           ('pdbx_nmr_exptl_sample_conditions', 'label', '_Sample_condition_list', 'Details', 1, None),
+                           # add pdbx_nmr_sample_condisions.conditions_id
+                           ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_list', 'ID', 1, None),
                            # ('pdbx_nmr_software', 'authors', '_Software', 'ID', 5, None),
                            ('pdbx_nmr_software', 'details', '_Software', 'Details', 1, None),
                            ('pdbx_nmr_software', 'details', '_Spectral_peak_list', 'Text_data_format', 1, None),
@@ -1085,15 +1087,15 @@ class OneDepAnnTasks:
                                 if sf_id_map is None or (sf_id_map[1] in row and row[sf_id_map[1]] == str(list_id)):
                                     sf_framecode = None
                                     if sf_framecode_map is not None and sf_framecode_map[1] in row:
-                                        sf_framecode = row[sf_framecode_map[1]]
-                                    if sf_framecode in emptyValue or sf_framecode in sf_framecodes:
+                                        sf_framecode = row[sf_framecode_map[1]].replace(' ', '_')
+                                    if sf_framecode in emptyValue or sf_framecode.isdigit() or sf_framecode in sf_framecodes:
                                         sf_framecode = f'{sf_category}_{list_id_dict[list_id]}'
                                     sf_framecodes.append(sf_framecode)
-
                                     if sf is None:
 
                                         if new_flag:
                                             sf = pynmrstar.Saveframe.from_scratch(sf_framecode, sf_tag_prefix)
+                                            sf.add_tag('Sf_framecode', sf_framecode)
                                             sf.add_tag('Sf_category', sf_category)
                                             sf.add_tag('ID', list_id_dict[list_id])
 
@@ -1111,6 +1113,7 @@ class OneDepAnnTasks:
                                                         sf = master_entry.get_saveframes_by_tag_and_value(f'{sf_tag_prefix}.ID', list_id_dict[list_id])[0]
                                                     except IndexError:
                                                         sf = pynmrstar.Saveframe.from_scratch(sf_framecode, sf_tag_prefix)
+                                                        sf.add_tag('Sf_framecode', sf_framecode)
                                                         sf.add_tag('Sf_category', sf_category)
                                                         sf.add_tag('ID', list_id_dict[list_id])
                                                         reset = True
@@ -1125,12 +1128,36 @@ class OneDepAnnTasks:
                                             set_sf_tag(sf, tag_map[3], row[tag_map[1]])
                                             has_uniq_sf_tag = True
 
+                                    if not has_uniq_sf_tag and reset:
+                                        has_uniq_sf_tag = True
+
                                     for def_sf_tag in def_sf_tags:
-                                        if def_sf_tag == 'Sf_framecode':  # pynmrstar set automatically
+                                        if def_sf_tag == 'Sf_framecode':
                                             continue
                                         if any(tag for tag in sf.tags if tag[0] == def_sf_tag):
                                             continue
-                                        sf.add_tag(def_sf_tag, '.')
+                                        if not def_sf_tag.endswith('_label'):
+                                            sf.add_tag(def_sf_tag, '.')
+                                            continue
+                                        parent_sf_tag_prefix = f'_{def_sf_tag[:-6]}'
+                                        parent_list_id = get_first_sf_tag(sf, f'{parent_sf_tag_prefix[1:]}_ID')
+                                        if parent_list_id in emptyValue:
+                                            sf.add_tag(def_sf_tag, '.')
+                                            continue
+                                        try:
+                                            parent_sf = master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', parent_list_id)[0]
+                                            parent_sf_framecode = get_first_sf_tag(parent_sf, 'Sf_framecode')
+                                            if len(parent_sf_framecode) > 0:
+                                                sf.add_tag(def_sf_tag, f'${parent_sf_framecode}')
+                                        except IndexError:
+                                            try:
+                                                parent_sf = master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', int(parent_list_id)
+                                                                                                         if isinstance(parent_list_id, str) else str(parent_list_id))[0]
+                                                parent_sf_framecode = get_first_sf_tag(parent_sf, 'Sf_framecode')
+                                                if len(parent_sf_framecode) > 0:
+                                                    sf.add_tag(def_sf_tag, f'${parent_sf_framecode}')
+                                            except IndexError:
+                                                sf.add_tag(def_sf_tag, '?')
 
                     if sf is None:
                         continue
@@ -1151,7 +1178,7 @@ class OneDepAnnTasks:
                         lp = None
 
                         cif_categories = set(tag_map[0] for tag_map in self.__lpTagMap if tag_map[2] == lp_category)
-                        lp_tag_dict = {tag_map[3]: (tag_map[1], tag_map[4]) for tag_map in self.__lpTagMap if tag_map[2] == lp_category}
+                        lp_tag_dict = {tag_map[3]: (tag_map[1], tag_map[4]) for tag_map in self.__lpTagMap if tag_map[2] == lp_category and tag_map[4] != -33}
                         if 'Entry_ID' not in lp_tag_dict.keys():
                             lp_tag_dict['Entry_ID'] = (None, None)
                         lp_tags = list(lp_tag_dict.keys())
@@ -1165,6 +1192,8 @@ class OneDepAnnTasks:
                         lp_list_id_tag = lp_tag_dict[list_id_tag][0] if list_id_tag in lp_tag_dict else None
                         def_lp_tags = [tag.split('.')[1] for tag in self.__defLpTag if tag.split('.')[0] == lp_category]
                         has_id_tag = 'ID' in lp_tag_dict
+                        need_processing = any(map_code == -22 for cif_tag, map_code in lp_tag_dict.values()
+                                              if cif_tag is not None and not cif_tag.endswith('range'))
 
                         lp_rows = {}
                         for cif_category in cif_categories:
@@ -1215,109 +1244,131 @@ class OneDepAnnTasks:
 
                                     has_uniq_lp_row = False
 
-                                    if reset:
-                                        _row = [None] * len(lp.tags)
+                                    if need_processing:
+                                        lp_list_id_col = -1 if lp_list_id_tag is None or list_id_tag not in lp.tags else lp.tags.index(list_id_tag)
+                                        entry_id_col = -1 if 'Entry_ID' not in lp.tags else lp.tags.index('Entry_ID')
+                                        type_col = -1 if 'Type' not in lp.tags else lp.tags.index('Type')
+                                        val_col = -1 if 'Val' not in lp.tags else lp.tags.index('Val')
+                                        val_err_col = -1 if 'Val_err' not in lp.tags else lp.tags.index('Val_err')
+                                        val_units_col = -1 if 'Val_units' not in lp.tags else lp.tags.index('Val_units')
 
-                                    elif has_id_tag:
-                                        cif_id_tag = lp_tag_dict['ID'][0]
-                                        id_col = lp.tags.index('ID')
+                                        for _type in ['ionic_strength', 'pH', 'pressure', 'temperature']:
+                                            if _type in row:
+                                                _val = row[_type]
+                                                if _val in emptyValue:
+                                                    continue
+                                                _row = [None] * len(lp.tags)
+                                                if lp_list_id_col != -1:
+                                                    _row[lp_list_id_col] = str(list_id)
+                                                if entry_id_col != -1:
+                                                    _row[entry_id_col] = self.__entryId
+                                                if type_col != -1:
+                                                    _row[type_col] = _type.replace('_', ' ')  # ionic_strength (NMRIF) -> ionic strength (NMR-STAR)
+                                                if val_col != -1:
+                                                    _row[val_col] = _val
+                                                if val_err_col != -1 and f'{_type}_err' in row:
+                                                    _row[val_err_col] = row[f'{_type}_err']
+                                                if val_units_col != -1 and f'{_type}_units' in row:
+                                                    _row[val_units_col] = row[f'{_type}_units']
+                                                has_uniq_lp_row = True
+                                                lp.add_data(_row)
 
-                                    for tag, (cif_tag, map_code) in lp_tag_dict.items():
+                                    else:
 
                                         if reset:
-                                            if tag == list_id_tag:
-                                                col = lp.tags.index(list_id_tag)
-                                                _row[col] = str(list_id_dict[list_id])
-                                            elif tag == 'Enry_ID':
-                                                col = lp.tags.index('Entry_ID')
-                                                _row[col] = self.__entryId
-                                            elif cif_tag in row:
-                                                col = lp.tags.index(tag)
-                                                if map_code != -22:
-                                                    _row[col] = row[cif_tag]
-                                                    has_uniq_lp_row = True
-                                                else:  # map_code: '-22' @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
-                                                    if cif_tag.endswith('range'):
-                                                        if row[cif_tag] not in emptyValue:
-                                                            try:
-                                                                g = range_value_pattern.search(row[cif_tag]).groups()
-                                                                if tag.endswith('max'):
-                                                                    _max = g[1]
-                                                                    try:
-                                                                        __max = max(float(g[0]), float(g[1]))
-                                                                        if float(_max) < __max:
-                                                                            _max = g[0]
-                                                                    except ValueError:
-                                                                        pass
-                                                                    _row[col] = _max
-                                                                elif tag.endswith('min'):
-                                                                    _min = g[0]
-                                                                    try:
-                                                                        __min = min(float(g[0]), float(g[1]))
-                                                                        if float(_min) > __min:
-                                                                            _min = g[1]
-                                                                    except ValueError:
-                                                                        pass
-                                                                    _row[col] = _min
-                                                            except AttributeError:
-                                                                continue
-                                                            has_uniq_lp_row = True
-                                                    elif tag == 'Type':
-                                                        _row[col] = cif_tag.replace('_', ' ')  # ionic_strength (NMRIF) -> ionic strength (NMR-STAR)
-                                                    else:
-                                                        _row[col] = row[cif_tag]
-                                                        has_uniq_lp_row = True
+                                            _row = [None] * len(lp.tags)
 
                                         elif has_id_tag:
-                                            _row = next((_row for _row in lp.data if _row[id_col] == row[cif_id_tag]), None)
+                                            cif_id_tag = lp_tag_dict['ID'][0]
+                                            id_col = lp.tags.index('ID')
 
-                                            if _row is None or tag == 'ID':
-                                                continue
+                                        for tag, (cif_tag, map_code) in lp_tag_dict.items():
 
-                                            if tag == list_id_tag:
-                                                col = lp.tags.index(list_id_tag)
-                                                _row[col] = str(list_id_dict[list_id])
-                                            elif tag == 'Enry_ID':
-                                                col = lp.tags.index('Entry_ID')
-                                                _row[col] = self.__entryId
-                                            elif cif_tag in row:
-                                                col = lp.tags.index(tag)
-                                                if map_code != -22:
-                                                    _row[col] = row[cif_tag]
-                                                else:  # map_code: '-22' @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
-                                                    if cif_tag.endswith('range'):
-                                                        if row[cif_tag] not in emptyValue:
-                                                            try:
-                                                                g = range_value_pattern.search(row[cif_tag]).groups()
-                                                                if tag.endswith('max'):
-                                                                    _max = g[1]
-                                                                    try:
-                                                                        __max = max(float(g[0]), float(g[1]))
-                                                                        if float(_max) < __max:
-                                                                            _max = g[0]
-                                                                    except ValueError:
-                                                                        pass
-                                                                    _row[col] = _max
-                                                                elif tag.endswith('min'):
-                                                                    _min = g[0]
-                                                                    try:
-                                                                        __min = min(float(g[0]), float(g[1]))
-                                                                        if float(_min) > __min:
-                                                                            _min = g[1]
-                                                                    except ValueError:
-                                                                        pass
-                                                                    _row[col] = _min
-                                                            except AttributeError:
-                                                                continue
-                                                    elif tag == 'Type':
-                                                        _row[col] = cif_tag.replace('_', ' ')  # ionic_strength (NMRIF) -> ionic strength (NMR-STAR)
-                                                    else:
+                                            if reset:
+                                                if tag == list_id_tag:
+                                                    col = lp.tags.index(list_id_tag)
+                                                    _row[col] = str(list_id_dict[list_id])
+                                                elif tag == 'Enry_ID':
+                                                    col = lp.tags.index('Entry_ID')
+                                                    _row[col] = self.__entryId
+                                                elif cif_tag in row:
+                                                    col = lp.tags.index(tag)
+                                                    if map_code != -22:
                                                         _row[col] = row[cif_tag]
+                                                        has_uniq_lp_row = True
+                                                    else:  # map_code: '-22' @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
+                                                        if cif_tag.endswith('range'):
+                                                            if row[cif_tag] not in emptyValue:
+                                                                try:
+                                                                    g = range_value_pattern.search(row[cif_tag]).groups()
+                                                                    if tag.endswith('max'):
+                                                                        _max = g[1]
+                                                                        try:
+                                                                            __max = max(float(g[0]), float(g[1]))
+                                                                            if float(_max) < __max:
+                                                                                _max = g[0]
+                                                                        except ValueError:
+                                                                            pass
+                                                                        _row[col] = _max
+                                                                    elif tag.endswith('min'):
+                                                                        _min = g[0]
+                                                                        try:
+                                                                            __min = min(float(g[0]), float(g[1]))
+                                                                            if float(_min) > __min:
+                                                                                _min = g[1]
+                                                                        except ValueError:
+                                                                            pass
+                                                                        _row[col] = _min
+                                                                except AttributeError:
+                                                                    continue
+                                                                has_uniq_lp_row = True
 
-                                    if reset and has_uniq_lp_row:
+                                            elif has_id_tag:
+                                                _row = next((_row for _row in lp.data if _row[id_col] == row[cif_id_tag]), None)
+
+                                                if _row is None or tag == 'ID':
+                                                    continue
+
+                                                if tag == list_id_tag:
+                                                    col = lp.tags.index(list_id_tag)
+                                                    _row[col] = str(list_id_dict[list_id])
+                                                elif tag == 'Enry_ID':
+                                                    col = lp.tags.index('Entry_ID')
+                                                    _row[col] = self.__entryId
+                                                elif cif_tag in row:
+                                                    col = lp.tags.index(tag)
+                                                    if map_code != -22:
+                                                        _row[col] = row[cif_tag]
+                                                    else:  # map_code: '-22' @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L239
+                                                        if cif_tag.endswith('range'):
+                                                            if row[cif_tag] not in emptyValue:
+                                                                try:
+                                                                    g = range_value_pattern.search(row[cif_tag]).groups()
+                                                                    if tag.endswith('max'):
+                                                                        _max = g[1]
+                                                                        try:
+                                                                            __max = max(float(g[0]), float(g[1]))
+                                                                            if float(_max) < __max:
+                                                                                _max = g[0]
+                                                                        except ValueError:
+                                                                            pass
+                                                                        _row[col] = _max
+                                                                    elif tag.endswith('min'):
+                                                                        _min = g[0]
+                                                                        try:
+                                                                            __min = min(float(g[0]), float(g[1]))
+                                                                            if float(_min) > __min:
+                                                                                _min = g[1]
+                                                                        except ValueError:
+                                                                            pass
+                                                                        _row[col] = _min
+                                                                except AttributeError:
+                                                                    continue
+
+                                    if reset and has_uniq_lp_row and not need_processing:
                                         lp.add_data(_row)
 
-                            if reset and lp is not None and len(lp) > 0:
+                            if reset and len(lp) > 0:
                                 sf.add_loop(lp)
 
         # BMRBAnnTask class will normalize later

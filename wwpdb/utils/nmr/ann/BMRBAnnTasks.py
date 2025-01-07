@@ -133,6 +133,15 @@ class BMRBAnnTasks:
         # CifToNmrStar
         self.__c2S = CifToNmrStar(verbose) if c2S is None else c2S
 
+        self.__defSfLabelTag = ['_Assigned_chem_shift_list.Sample_condition_list_label',
+                                '_Assigned_chem_shift_list.Chem_shift_reference_label',
+                                '_Spectral_peak_list.Sample_label',
+                                '_Spectral_peak_list.Sample_condition_list_label',
+                                '_Conformer_stat_list.Conf_family_coord_set_label',
+                                '_Conformer_stat_list.Representative_conformer_label',
+                                '_Conformer_family_coord_set.Sample_condition_list_label'
+                                ]
+
     def perform(self, master_entry: pynmrstar.Entry):
         """ Perform a series of BMRB annotation tasks.
         """
@@ -1454,7 +1463,6 @@ class BMRBAnnTasks:
                                             _txt = _txt.strip()
                                             iso_name = next((name for name in ISOTOPE_NAMES_OF_NMR_OBS_NUCS if name in _txt), None)
                                             if iso_name is None:
-                                                print('pas1')
                                                 effective_labeling = False
                                                 break
                                             if '%' in _txt:
@@ -2490,6 +2498,33 @@ class BMRBAnnTasks:
                         _lp.add_tag(lp_category + '.' + tag)
 
                     _lp.add_data(['?'] * len(tags))
+
+        for sf in master_entry.frame_list:
+            sf_tag_prefix = sf.tag_prefix
+            label_tags = [sf_tag.split('.')[1] for sf_tag in self.__defSfLabelTag if sf_tag.startswith(f'{sf_tag_prefix}.') and sf_tag.endswith('_label')]
+            if len(label_tags) == 0:
+                continue
+            for label_tag in label_tags:
+                label = get_first_sf_tag(sf, label_tag)
+                if label in emptyValue:
+                    parent_sf_tag_prefix = f'_{label_tag[:-6]}'
+                    parent_list_id = get_first_sf_tag(sf, f'{parent_sf_tag_prefix[1:]}_ID')
+                    if parent_list_id in emptyValue:
+                        continue
+                    try:
+                        parent_sf = master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', parent_list_id)[0]
+                        parent_sf_framecode = get_first_sf_tag(parent_sf, 'Sf_framecode')
+                        if len(parent_sf_framecode) > 0:
+                            set_sf_tag(sf, label_tag, f'${parent_sf_framecode}')
+                    except IndexError:
+                        try:
+                            parent_sf = master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', int(parent_list_id)
+                                                                                     if isinstance(parent_list_id, str) else str(parent_list_id))[0]
+                            parent_sf_framecode = get_first_sf_tag(parent_sf, 'Sf_framecode')
+                            if len(parent_sf_framecode) > 0:
+                                set_sf_tag(sf, label_tag, f'${parent_sf_framecode}')
+                        except IndexError:
+                            set_sf_tag(sf, label_tag, '?')
 
         self.__c2S.set_entry_id(master_entry, self.__entryId)
         self.__c2S.normalize(master_entry)

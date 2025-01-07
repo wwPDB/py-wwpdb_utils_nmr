@@ -357,10 +357,6 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_sample_details', 'type', '_Sample', 'Type', 1, None),
                            # add pdbx_nmr_sample_details.label
                            ('pdbx_nmr_sample_details', 'label', '_Sample', 'Sf_framecode', 1, None),
-                           # add pdbx_nmr_sample_condisions.label
-                           ('pdbx_nmr_exptl_sample_conditions', 'label', '_Sample_condition_list', 'Details', 1, None),
-                           # add pdbx_nmr_sample_condisions.conditions_id
-                           ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_list', 'ID', 1, None),
                            # ('pdbx_nmr_software', 'authors', '_Software', 'ID', 5, None),
                            ('pdbx_nmr_software', 'details', '_Software', 'Details', 1, None),
                            ('pdbx_nmr_software', 'details', '_Spectral_peak_list', 'Text_data_format', 1, None),
@@ -435,6 +431,10 @@ class OneDepAnnTasks:
                 self.__uniqSfCatMap[cif_category] = (sf_category, sf_tag_prefix)
         # 'pdbx_nmr_exptl' category has no effective item to relate '_Experiment_list'
         self.__uniqSfCatMap['pdbx_nmr_exptl'] = ('experiment_list', '_Experiment_list')
+
+        # add pdbx_nmr_sample_condisions.label, pdbx_nmr_sample_condisions.conditions_id
+        self.__sfTagMap.extend([('pdbx_nmr_exptl_sample_conditions', 'label', '_Sample_condition_list', 'Details', 1, None),
+                                ('pdbx_nmr_exptl_sample_conditions', 'conditions_id', '_Sample_condition_list', 'ID', 1, None)])
 
         # """
         # self.__lpTagMap = []

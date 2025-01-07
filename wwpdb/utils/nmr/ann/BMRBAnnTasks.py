@@ -366,8 +366,8 @@ class BMRBAnnTasks:
                                         cs_exp_list = lp.get_tag(tags)
 
                                         for idx, cs_exp in enumerate(cs_exp_list):
-                                            exp = next(exp for exp in exp_list if exp[0] == cs_exp[0] and exp[1] == cs_exp[1])
-                                            if cs_exp[2:5] != exp[2:5]:
+                                            exp = next((exp for exp in exp_list if exp[0] == cs_exp[0] and exp[1] == cs_exp[1]), None)
+                                            if exp is not None and cs_exp[2:5] != exp[2:5]:
                                                 lp.data[idx][sample_id_col] = exp[2]
                                                 lp.data[idx][sample_label_col] = exp[3]
                                                 lp.data[idx][sample_state_col] = exp[4]

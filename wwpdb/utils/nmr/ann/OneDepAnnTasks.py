@@ -447,10 +447,8 @@ class OneDepAnnTasks:
         # """
         self.__lpTagMap = [('pdbx_nmr_chem_shift_experiment', 'assigned_chem_shift_list_id', '_Chem_shift_experiment', 'Assigned_chem_shift_list_ID', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'entry_id', '_Chem_shift_experiment', 'Entry_ID', 1, None),
-                           # ('pdbx_nmr_chem_shift_experiment', 'experiment_id', '_Chem_shift_experiment', 'Experiment_ID', 1, None),
-                           # ('pdbx_nmr_chem_shift_experiment', 'experiment_name', '_Chem_shift_experiment', 'Experiment_name', 1, None),
-                           # replaced by
-                           ('pdbx_nmr_chem_shift_experiment', 'experiment_id', '_Chem_shift_experiment', 'Experiment_name', 1, None),
+                           ('pdbx_nmr_chem_shift_experiment', 'experiment_id', '_Chem_shift_experiment', 'Experiment_ID', 1, None),
+                           ('pdbx_nmr_chem_shift_experiment', 'experiment_name', '_Chem_shift_experiment', 'Experiment_name', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'sample_state', '_Chem_shift_experiment', 'Sample_state', 1, None),
                            ('pdbx_nmr_chem_shift_experiment', 'solution_id', '_Chem_shift_experiment', 'Sample_ID', 1, None),
                            ('pdbx_nmr_chem_shift_ref', 'atom_group', '_Chem_shift_ref', 'Atom_group', 1, None),

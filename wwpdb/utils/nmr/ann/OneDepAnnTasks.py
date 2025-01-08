@@ -267,7 +267,7 @@ class OneDepAnnTasks:
                              'chem_shift_ref': {'_Chem_shift_reference': ['_Chem_shift_ref']},
                              'chem_shift': {'_Assigned_chem_shift_list': ['_Chem_shift_experiment', '_Systematic_chem_shift_offset', '_Chem_shift_software']},
                              'constraint': {'_Constraint_stat_list': ['_Constraint_file']},
-                             'spectral_peak': {'_Spectral_peak_list': ['_Spectral_dim']},
+                             'spectral_peak': {'_Spectral_peak_list': ['_Spectral_dim', '_Spectral_peak_software']},
                              'refinement': {'_Conformer_family_coord_set': ['_Conformer_family_refinement', '_Conformer_family_software']}
                              }
 
@@ -545,6 +545,10 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_spectral_dim', 'sweep_width', '_Spectral_dim', 'Sweep_width', 1, None),
                            ('pdbx_nmr_spectral_dim', 'sweep_width_units', '_Spectral_dim', 'Sweep_width_units', 1, None),
                            ('pdbx_nmr_spectral_dim', 'under_sampling_type', '_Spectral_dim', 'Under_sampling_type', 1, None),
+                           # add pdbx_nmr_spectral_peak_software.spectral_peak_list_id
+                           ('pdbx_nmr_spectral_peak_software', 'spectral_peak_list_id', '_Spectral_peak_software', 'Spectral_peak_list_ID', 1, None),
+                           # add pdbx_nmr_spectral_peak_software.software_id
+                           ('pdbx_nmr_spectral_peak_software', 'spectral_peak_list_id', '_Spectral_peak_software', 'Software_ID', 1, None),
                            ('pdbx_nmr_spectrometer', 'field_strength', '_NMR_spectrometer_view', 'Field_strength', 1, None),
                            ('pdbx_nmr_spectrometer', 'manufacturer', '_NMR_spectrometer_view', 'Manufacturer', 1, None),
                            ('pdbx_nmr_spectrometer', 'model', '_NMR_spectrometer_view', 'Model', 1, None),

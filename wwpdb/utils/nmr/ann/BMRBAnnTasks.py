@@ -617,7 +617,7 @@ class BMRBAnnTasks:
 
         has_non_polymer = has_nstd_monomer = False
         entity_dict = {}
-        nstd_monomers = []
+        polymer_common_types, non_polymer_types, nstd_monomers = [], [], []
 
         if sf_category in self.__sfCategoryList:
             for sf in master_entry.get_saveframes_by_category(sf_category):
@@ -677,6 +677,21 @@ class BMRBAnnTasks:
 
                         except KeyError:
                             pass
+
+                    if polymer_type not in emptyValue:
+                        if polymer_type == 'polypeptide(L)':
+                            polymer_common_type = 'protein'
+                        elif polymer_type == 'polydeoxyribonucleotide':
+                            polymer_common_type = 'DNA'
+                        elif polymer_type == 'polyribonucleotide':
+                            polymer_common_type = 'RNA'
+                        elif polymer_type == 'polydeoxyribonucleotide/polyribonucleotide hybrid':
+                            polymer_common_type = 'DNA/RNA hybrid'
+                        if len(polymer_common_type) > 0:
+                            set_sf_tag(sf, 'Polymer_common_type', polymer_common_type)
+
+                    if polymer_common_type not in emptyValue:
+                        polymer_common_types.append({polymer_common_type: entity_id})
 
                     try:
 
@@ -913,9 +928,11 @@ class BMRBAnnTasks:
                                                   }
 
                     if _type == 'non-polymer':
+                        non_polymer_type = 'ligand' if 'ION' not in get_first_sf_tag(sf, 'Name') else 'metal ion'
+                        non_polymer_types.append({non_polymer_type: entity_id})
                         entity_dict[entity_id] = {'name': get_first_sf_tag(sf, 'Name'),
                                                   'sf_framecode': get_first_sf_tag(sf, 'Sf_framecode'),
-                                                  'sample_type': 'ligand' if 'ION' not in get_first_sf_tag(sf, 'Name') else 'metal ion',
+                                                  'sample_type': non_polymer_type,
                                                   'assembly_id': assembly_id,
                                                   'assembly_label': assembly_label,
                                                   'fragment': get_first_sf_tag(sf, 'Fragment'),
@@ -1171,6 +1188,9 @@ class BMRBAnnTasks:
         and_pat = r'\s[Aa][Nn][Dd]\s'
         has_salt = has_buffer = has_reducing_agent = has_chelating_agent = False
         default_internal_reference = 'DSS'
+        is_single_protein_ligand_complex =\
+            len(polymer_common_types) == 1 and 'protein' in polymer_common_types[0]\
+            and len(non_polymer_types) == 1 and 'ligand' in non_polymer_types[0]
 
         def is_natural_abundance(isotopic_labeling: str):
             isotopic_labeling = isotopic_labeling.lower()
@@ -1596,6 +1616,45 @@ class BMRBAnnTasks:
                             _isotope_nums = isotope_nums_per_entity[entity_id]
                             if 13 in _isotope_nums or 15 in _isotope_nums:
                                 has_hvy_shifts_with_natural_abundance = True
+
+                    if is_single_protein_ligand_complex and has_mand_concentration_val:
+                        ref_concentration_val = ref_common_name = None
+                        for row in lp:
+                            if (isinstance(row[entity_id_col], int) and row[entity_id_col] == polymer_common_types[0]['protein'])\
+                               or (isinstance(row[entity_id_col], str) and row[entity_id_col].isdigit()
+                                   and int(row[entity_id_col]) == polymer_common_types[0]['protein']):
+                                if ref_common_name is not None:
+                                    ref_concentration_val = ref_common_name = None
+                                    break
+                                ref_concentration_val = f'{row[concentration_val_col]} '\
+                                    f'{row[concentration_val_min_col]} '\
+                                    f'{row[concentration_val_max_col]} '\
+                                    f'{row[concentration_val_units_col]}'
+                                ref_common_name = row[mol_common_name_col]
+
+                        if ref_concentration_val is not None:
+                            can_ligand_idx = None
+                            for idx, row in enumerate(lp):
+                                if row[entity_id_col] in emptyValue:
+                                    test_concentration_val = f'{row[concentration_val_col]} '\
+                                        f'{row[concentration_val_min_col]} '\
+                                        f'{row[concentration_val_max_col]} '\
+                                        f'{row[concentration_val_units_col]}'
+                                    if test_concentration_val == ref_concentration_val\
+                                       and not any(word in row[mol_common_name_col] for word in protein_related_words)\
+                                       and not row[mol_common_name_col].startswith(ref_common_name):
+                                        if isinstance(can_ligand_idx, int):
+                                            can_ligand_idx = None
+                                            break
+                                        can_ligand_idx = idx
+                            if can_ligand_idx is not None:
+                                entity = next(entity for entity_id, entity in entity_dict.items() if entity_id == non_polymer_types[0]['ligand'])
+                                row = lp.data[can_ligand_idx]
+                                row[assembly_id_col] = entity['assembly_id']
+                                row[assembly_label_col] = entity['assembly_label']
+                                row[entity_id_col] = non_polymer_types[0]['ligand']
+                                row[entity_label_col] = f"${entity['sf_framecode']}"
+                                row[type_col] = 'ligand'
 
                     for solvent in solvent_system:
                         if solvent in solvent_in_sample_loop:

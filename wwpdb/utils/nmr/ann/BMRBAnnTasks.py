@@ -142,7 +142,7 @@ class BMRBAnnTasks:
                                 '_Conformer_family_coord_set.Sample_condition_list_label'
                                 ]
 
-    def perform(self, master_entry: pynmrstar.Entry):
+    def perform(self, master_entry: pynmrstar.Entry) -> bool:
         """ Perform a series of BMRB annotation tasks.
         """
 

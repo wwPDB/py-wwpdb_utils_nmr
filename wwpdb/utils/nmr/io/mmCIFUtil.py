@@ -345,6 +345,19 @@ class mmCIFUtil:
         #
         return catObj.getAttributeList()
 
+    def GetRowList(self, blockName: str, catName: str, ext: int = 1) -> List[List[str]]:
+        """ Get a list of list of a geven Data Block and Category
+        """
+        if blockName not in self.__dataMap:
+            return []
+
+        catObj = self.__dataList[self.__dataMap[get_ext_block_name(blockName, ext)]].getObj(catName)
+
+        if not catObj:
+            return []
+        #
+        return catObj.getRowList()
+
     def GetDictList(self, blockName: str, catName: str, ext: int = 1) -> dict:
         """ Get a list of dictionaries of a given Data Block and Category
         """

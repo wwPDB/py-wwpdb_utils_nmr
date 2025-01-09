@@ -203,6 +203,7 @@
 # 16-Dec-2024  M. Yokochi - combine spectral peak lists written in software native formats into single NMR-STAR file (DAOTHER-8905, NMR data remediation Phase 2)
 # 19-Dec-2024  M. Yokochi - add 'nmr-if-merge-deposit' workflow operation (DAOTHER-8905, NMR data remediation Phase 2)
 # 27-Dec-2024  M. Yokochi - extract NMRIF metadata from NMR-STAR (DAOTHER-1728, 9846)
+# 09-Jan-2025  M. Yokochi - Extract NMRIF metadata from NMR-STAR (as primary source) and model (as secondary source) (DAOTHER-1728, 9846)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -24991,11 +24992,8 @@ class NmrDpUtility:
         return modified
 
     def __extractToNmrIf(self) -> bool:
-        """ Extract metadata of NMR-STAR to NMRIF file, if possible.
+        """ Extract NMR metadata of NMR-STAR file (as primary source) and model file (as secondary source) to NMRIF file, if possible.
         """
-
-        if len(self.__star_data) == 0 or not isinstance(self.__star_data[0], pynmrstar.Entry):
-            return False
 
         if 'nmrif_file_path' not in self.__outputParamDict:
             return False
@@ -25003,13 +25001,16 @@ class NmrDpUtility:
         if os.path.exists(self.__outputParamDict['nmrif_file_path']):
             return False
 
+        if len(self.__star_data) == 0 or not isinstance(self.__star_data[0], pynmrstar.Entry):
+            return self.__extractToNmrIfFromModel()
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
 
         if file_type != 'nmr-star':
-            return False
+            return self.__extractToNmrIfFromModel()
 
         master_entry = self.__star_data[0]
 
@@ -25025,7 +25026,27 @@ class NmrDpUtility:
         ann = OneDepAnnTasks(self.__verbose, self.__lfh,
                              self.__sf_category_list, self.__entry_id)
 
-        return ann.extract(master_entry, self.__outputParamDict['nmrif_file_path'])
+        return ann.extract(master_entry, self.__cR, self.__outputParamDict['nmrif_file_path'])
+
+    def __extractToNmrIfFromModel(self) -> bool:
+        """ Extract NMR metadata of the model file to NMRIF file, if possible.
+        """
+
+        if 'nmrif_file_path' not in self.__outputParamDict:
+            return False
+
+        if os.path.exists(self.__outputParamDict['nmrif_file_path']):
+            return False
+
+        src_id = self.report.getInputSourceIdOfCoord()
+
+        if src_id < 0:
+            return False
+
+        ann = OneDepAnnTasks(self.__verbose, self.__lfh,
+                             self.__sf_category_list, self.__entry_id)
+
+        return ann.extract(None, self.__cR, self.__outputParamDict['nmrif_file_path'])
 
     def __cleanUpSf(self) -> bool:
         """ Clean-up third-party saveframes.

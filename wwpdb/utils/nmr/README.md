@@ -83,7 +83,7 @@ name|effective type|description
 ----|--------------|-----------
 nmr_cif_file_path|file|Set CIF formatted NMR-STAR unified data file. Effective in 'nmr-nef2cif-deposit', 'nmr-str2cif-deposit', and 'nmr-str2cif-annotate' workflow operations.
 nmr-star_file_path|file|Set NMR-STAR unified data file. Effective in 'nmr-nef2str-deposit', and 'nmr-nef2cif-deposit' workflow operations.
-nmrif_file_path|file|Set CIF formatted NMRIF/NMR-STAR metadata file path. NOTE: used only for OneDep workflows ('nmr-cs-mr-merge', 'nmr-str2str-deposit', and 'nmr-str2cif-deposit')
+nmrif_file_path|file|Set CIF formatted NMRIF/NMR-STAR metadata file path. NOTE: used only for OneDep workflows ('nmr-cs-mr-merge', 'nmr-str2str-deposit', and 'nmr-str2cif-deposit', 'nmr-nef2str-deposit', 'nmr-nef2cif-deposit')
 report_file_path|file|Set auxiliary report file path when setLog() is occupied for the previous main task.
 entry_id|param|Set entry ID. (default value is extracted from coordinate file if available, otherwise, 'UNNAMED')
 retain_original|param|Boolean value. True by default. Whether to retain original content if possible.

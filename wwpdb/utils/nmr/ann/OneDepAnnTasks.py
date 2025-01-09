@@ -177,7 +177,16 @@ class OneDepAnnTasks:
         # self.__c2S = CifToNmrStar(verbose) if c2S is None else c2S
 
         # derived from wwpdb.apps.deposit.depui.constant.REQUIREMENTS
-        self.__nmrRequirements = {'nmrsample': ["pdbx_nmr_sample_details",
+        self.__cifPages = ['nmrsample',
+                           'nmrdatacollection',
+                           'nmrsoftware',
+                           'nmrchemshiftreference',
+                           'nmrchemshiftconnection',
+                           'nmrconstraints',
+                           'nmrsoectralpeaklist',
+                           'nmrrefinement']
+
+        self.__cifRequirements = {'nmrsample': ["pdbx_nmr_sample_details",
                                                 "pdbx_nmr_exptl_sample",
                                                 "pdbx_nmr_exptl_sample_conditions"],
                                   'nmrdatacollection': ["pdbx_nmr_spectrometer",
@@ -212,7 +221,7 @@ class OneDepAnnTasks:
                                   }
 
         self.__nmrIfCategories = set()
-        for catList in self.__nmrRequirements.values():
+        for catList in self.__cifRequirements.values():
             for cat in catList:
                 self.__nmrIfCategories.add(cat)
 
@@ -1276,7 +1285,7 @@ class OneDepAnnTasks:
     #     return data_map
     # """
 
-    def perform(self, master_entry: pynmrstar.Entry, nmrif):
+    def perform(self, master_entry: pynmrstar.Entry, nmrif) -> bool:
         """ Perform a series of OneDep annotation tasks.
         """
 
@@ -1668,8 +1677,8 @@ class OneDepAnnTasks:
 
         return True
 
-    def extract(self, master_entry: pynmrstar.Entry, file_path: str):
-        """ Extract NMRIF metadata from NMR-STAR.
+    def extract(self, master_entry: pynmrstar.Entry, cR, file_path: str) -> bool:
+        """ Extract NMRIF metadata from NMR-STAR (as primary source) and model (as secondary source).
         """
 
         def replace_none(array, default: str = '.'):
@@ -1680,12 +1689,29 @@ class OneDepAnnTasks:
                     array[idx] = str(val)
             return array
 
-        if not isinstance(master_entry, pynmrstar.Entry):
-            return False
-
         cif_util = mmCIFUtil(self.__verbose, self.__lfh)
 
         cif_util.AddBlock(self.__entryId)
+
+        if not isinstance(master_entry, pynmrstar.Entry):
+
+            if cR is None:
+                return False
+
+            for cif_category in self.__nmrIfCategories:
+
+                if cR.hasCategory(cif_category):
+                    row_list = cR.getRowList(cif_category)
+                    if len(row_list) > 0:
+                        cif_util.AddCategory(self.__entryId, cif_category, cR.getItemTags(cif_category))
+                        cif_util.InsertData(self.__entryId, cif_category, row_list)
+
+            try:
+                cif_util.WriteCif(file_path)
+            except Exception:
+                return False
+
+            return True
 
         for cif_category, (sf_category, sf_tag_prefix) in self.__uniqSfCatMap.items():
 
@@ -2146,6 +2172,27 @@ class OneDepAnnTasks:
 
                         _row = replace_none(_row, '?')
                         cif_util.InsertData(self.__entryId, sf_cif_category, [_row])
+
+        # merge categories of model file as secondary source of NMRIF
+        if cR is not None:
+            existing_categories, target_categories = [], []
+
+            for categories in cif_util.GetCategories():
+                existing_categories.extend(categories)
+
+            for cif_page in self.__cifPages:
+                if not any(cif_category in existing_categories for cif_category in self.__cifRequirements[cif_page]):
+                    for cif_category in self.__cifRequirements[cif_page]:
+                        if cif_category not in target_categories:
+                            target_categories.append(cif_category)
+
+            if len(target_categories) > 0:
+                for cif_category in target_categories:
+                    if cR.hasCategory(cif_category):
+                        row_list = cR.getRowList(cif_category)
+                        if len(row_list) > 0:
+                            cif_util.AddCategory(self.__entryId, cif_category, cR.getItemTags(cif_category))
+                            cif_util.InsertData(self.__entryId, cif_category, row_list)
 
         # if len(cif_util.GetCategories()[self.__entryId]) == 0:
         #     return False

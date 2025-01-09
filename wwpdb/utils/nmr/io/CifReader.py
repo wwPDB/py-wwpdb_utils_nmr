@@ -488,6 +488,24 @@ class CifReader:
 
         return 0
 
+    def getRowList(self, catName: str, blockId: Optional[str] = None) -> List[list]:
+        """ Return length of rows of a given category.
+        """
+
+        if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
+            self.__setDataBlock(self.getDataBlock(blockId))
+
+        if self.__dBlock is None:
+            return []
+
+        # get category object
+        catObj = self.__dBlock.getObj(catName)
+
+        if catObj is not None:
+            return catObj.getRowList()
+
+        return []
+
     def getDictList(self, catName: str, blockId: Optional[str] = None) -> List[dict]:
         """ Return a list of dictionaries of a given category.
         """

@@ -345,7 +345,7 @@ class mmCIFUtil:
         #
         return catObj.getAttributeList()
 
-    def GetRowList(self, blockName: str, catName: str, ext: int = 1) -> List[List[str]]:
+    def GetRowList(self, blockName: str, catName: str, ext: int = 1) -> List[list]:
         """ Get a list of list of a geven Data Block and Category
         """
         if blockName not in self.__dataMap:

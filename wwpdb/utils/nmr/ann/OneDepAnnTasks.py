@@ -183,7 +183,7 @@ class OneDepAnnTasks:
                            'nmrchemshiftreference',
                            'nmrchemshiftconnection',
                            'nmrconstraints',
-                           'nmrsoectralpeaklist',
+                           'nmrspectralpeaklist',
                            'nmrrefinement']
 
         self.__cifRequirements = {'nmrsample': ["pdbx_nmr_sample_details",

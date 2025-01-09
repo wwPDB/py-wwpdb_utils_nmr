@@ -121,7 +121,7 @@ import collections
 
 from packaging import version
 from operator import itemgetter
-from typing import List, IO, Tuple, Union, Optional
+from typing import IO, List, Tuple, Union, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 

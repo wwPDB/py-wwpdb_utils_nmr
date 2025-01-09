@@ -11,7 +11,7 @@ import re
 import copy
 import pynmrstar
 
-from typing import List, Any
+from typing import Any, IO, List
 from packaging import version
 from operator import itemgetter
 
@@ -114,7 +114,7 @@ class BMRBAnnTasks:
     """ Wrapper class for BMRB annotation tasks.
     """
 
-    def __init__(self, verbose: bool, log,
+    def __init__(self, verbose: bool, log: IO,
                  sfCategoryList: List[str], entryId: str,
                  sailFlag: bool, report: NmrDpReport,
                  ccU=None, csStat=None, c2S=None):

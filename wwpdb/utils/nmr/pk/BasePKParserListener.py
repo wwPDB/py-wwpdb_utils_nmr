@@ -13,7 +13,7 @@ import collections
 import numpy
 
 from itertools import zip_longest
-from typing import List, IO, Tuple, Optional
+from typing import IO, List, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 

@@ -100,7 +100,7 @@ import copy
 import re
 
 from operator import itemgetter
-from typing import Any, List, IO, Tuple, Optional
+from typing import Any, IO, List, Tuple, Optional
 
 try:
     from wwpdb.utils.nmr.AlignUtil import emptyValue, monDict3, unknownResidue, getPrettyJson

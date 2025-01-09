@@ -52,7 +52,7 @@ import pickle
 
 import numpy as np
 from operator import itemgetter
-from typing import List, IO, Tuple, Optional
+from typing import IO, List, Tuple, Optional
 
 from mmcif.io.PdbxReader import PdbxReader
 

@@ -18,7 +18,7 @@ import sys
 import pickle
 
 from rmsd.calculate_rmsd import NAMES_ELEMENT, ELEMENT_WEIGHTS  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
-from typing import List, IO, Tuple, Optional
+from typing import IO, List, Tuple, Optional
 
 
 try:

@@ -13,7 +13,7 @@ import pynmrstar
 import re
 import collections
 
-from typing import List
+from typing import IO, List
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
@@ -165,7 +165,7 @@ class OneDepAnnTasks:
     """ Wrapper class for OneDep annotation tasks.
     """
 
-    def __init__(self, verbose: bool, log,
+    def __init__(self, verbose: bool, log: IO,
                  sfCategoryList: List[str], entryId: str):
         self.__verbose = verbose
         self.__lfh = log

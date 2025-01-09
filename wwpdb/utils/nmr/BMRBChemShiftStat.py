@@ -31,7 +31,7 @@ import collections
 import shutil
 
 from operator import itemgetter
-from typing import List, IO, Set, Optional
+from typing import IO, List, Set, Optional
 
 try:
     from wwpdb.utils.nmr.AlignUtil import (emptyValue,

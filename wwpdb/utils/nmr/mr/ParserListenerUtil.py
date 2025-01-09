@@ -22,7 +22,7 @@ import numpy
 import pynmrstar
 
 from operator import itemgetter
-from typing import Any, List, IO, Tuple, Optional
+from typing import Any, IO, List, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 

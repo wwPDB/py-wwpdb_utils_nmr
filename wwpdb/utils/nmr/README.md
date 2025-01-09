@@ -333,3 +333,4 @@ nm-aux-xea|**not applicable**|nmr-peaks/any|Assignment file in XEASY format
 nm-pea-xea|**not applicable**|nmr-peaks/any|Spectral peak list file in XEASY format
 nm-pea-xwi|**not applicable**|nmr-peaks/any|Spectral peak list file in XWINNMR format
 nm-pea-any|nm-pea-any|nmr-peaks/any|Any spectral peak list file
+nmrif|**not applicable**|(nmrif|model)/pdbx|NMR metadata file in PDBx/mmCIF format

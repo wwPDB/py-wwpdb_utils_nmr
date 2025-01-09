@@ -24,7 +24,7 @@ import os
 import traceback
 
 from mmcif.io.PdbxReader import PdbxReader
-from typing import List, IO, Optional
+from typing import IO, List, Optional
 
 
 class ChemCompReader:

@@ -16,7 +16,7 @@ __version__ = "V0.001"
 import sys
 import copy
 
-from typing import Any, List, IO, Tuple, Optional
+from typing import Any, IO, List, Tuple, Optional
 
 from mmcif.api.DataCategory import DataCategory
 from mmcif.api.PdbxContainers import DataContainer

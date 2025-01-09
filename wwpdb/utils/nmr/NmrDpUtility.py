@@ -227,7 +227,7 @@ from packaging import version
 from munkres import Munkres
 from operator import itemgetter
 from striprtf.striprtf import rtf_to_text
-from typing import Any, List, IO, Set, Tuple, Union, Optional
+from typing import Any, IO, List, Set, Tuple, Union, Optional
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module

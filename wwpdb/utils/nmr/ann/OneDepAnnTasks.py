@@ -23,7 +23,7 @@ try:
 except ImportError:
     from nmr.AlignUtil import (emptyValue,
                                getScoreOfSeqAlign)
-    from io.mmCIFUtil import mmCIFUtil
+    from nmr.io.mmCIFUtil import mmCIFUtil
 
 
 NMR_SOFTWERE_LIST = ('3D-DART', '3DNA', '4D-CHAINS', '4DSPOT', 'ABACUS', 'ACME', 'ADAPT-NMR', 'AGNuS', 'ALMOST',

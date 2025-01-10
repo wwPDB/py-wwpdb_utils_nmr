@@ -186,38 +186,38 @@ class OneDepAnnTasks:
                            'nmrspectralpeaklist',
                            'nmrrefinement']
 
-        self.__cifRequirements = {'nmrsample': ["pdbx_nmr_sample_details",
-                                                "pdbx_nmr_exptl_sample",
-                                                "pdbx_nmr_exptl_sample_conditions"],
-                                  'nmrdatacollection': ["pdbx_nmr_spectrometer",
-                                                        "pdbx_nmr_exptl",
-                                                        "pdbx_nmr_sample_details",
-                                                        "pdbx_nmr_exptl_sample_conditions"],
-                                  'nmrsoftware': ["pdbx_nmr_software",
-                                                  "pdbx_nmr_software_task"],
-                                  'nmrchemshiftreference': ["pdbx_nmr_chem_shift_reference",
-                                                            "pdbx_nmr_chem_shift_ref"],
-                                  'nmrchemshiftconnection': ["pdbx_nmr_assigned_chem_shift_list",
-                                                             "pdbx_nmr_chem_shift_experiment",
-                                                             "pdbx_nmr_chem_shift_reference",
-                                                             "pdbx_nmr_systematic_chem_shift_offset",
-                                                             "pdbx_nmr_chem_shift_software",
-                                                             "pdbx_nmr_software",
-                                                             "pdbx_nmr_exptl",
-                                                             "pdbx_nmr_sample_details",
-                                                             "pdbx_nmr_exptl_sample_conditions"],
-                                  'nmrconstraints': ["pdbx_nmr_constraint_file"],
-                                  'nmrspectralpeaklist': ["pdbx_nmr_spectral_peak_list",
-                                                          "pdbx_nmr_spectral_dim",
-                                                          "pdbx_nmr_spectral_peak_software",
-                                                          "pdbx_nmr_exptl",
-                                                          "pdbx_nmr_sample_details",
-                                                          "pdbx_nmr_software"],
-                                  'nmrrefinement': ["pdbx_nmr_ensemble",
-                                                    "pdbx_nmr_representative",
-                                                    "pdbx_nmr_refine",
-                                                    "pdbx_nmr_software",
-                                                    "pdbx_initial_refinement_model"]
+        self.__cifRequirements = {'nmrsample': ['pdbx_nmr_sample_details',
+                                                'pdbx_nmr_exptl_sample',
+                                                'pdbx_nmr_exptl_sample_conditions'],
+                                  'nmrdatacollection': ['pdbx_nmr_spectrometer',
+                                                        'pdbx_nmr_exptl',
+                                                        'pdbx_nmr_sample_details',
+                                                        'pdbx_nmr_exptl_sample_conditions'],
+                                  'nmrsoftware': ['pdbx_nmr_software',
+                                                  'pdbx_nmr_software_task'],
+                                  'nmrchemshiftreference': ['pdbx_nmr_chem_shift_reference',
+                                                            'pdbx_nmr_chem_shift_ref'],
+                                  'nmrchemshiftconnection': ['pdbx_nmr_assigned_chem_shift_list',
+                                                             'pdbx_nmr_chem_shift_experiment',
+                                                             'pdbx_nmr_chem_shift_reference',
+                                                             'pdbx_nmr_systematic_chem_shift_offset',
+                                                             'pdbx_nmr_chem_shift_software',
+                                                             'pdbx_nmr_software',
+                                                             'pdbx_nmr_exptl',
+                                                             'pdbx_nmr_sample_details',
+                                                             'pdbx_nmr_exptl_sample_conditions'],
+                                  'nmrconstraints': ['pdbx_nmr_constraint_file'],
+                                  'nmrspectralpeaklist': ['pdbx_nmr_spectral_peak_list',
+                                                          'pdbx_nmr_spectral_dim',
+                                                          'pdbx_nmr_spectral_peak_software',
+                                                          'pdbx_nmr_exptl',
+                                                          'pdbx_nmr_sample_details',
+                                                          'pdbx_nmr_software'],
+                                  'nmrrefinement': ['pdbx_nmr_ensemble',
+                                                    'pdbx_nmr_representative',
+                                                    'pdbx_nmr_refine',
+                                                    'pdbx_nmr_software',
+                                                    'pdbx_initial_refinement_model']
                                   }
 
         self.__nmrIfCategories = set()
@@ -1703,8 +1703,12 @@ class OneDepAnnTasks:
                 if cR.hasCategory(cif_category):
                     row_list = cR.getRowList(cif_category)
                     if len(row_list) > 0:
-                        cif_util.AddCategory(self.__entryId, cif_category, cR.getItemTags(cif_category))
+                        item_tags = cR.getItemTags(cif_category)
+                        cif_util.AddCategory(self.__entryId, cif_category, item_tags)
                         cif_util.InsertData(self.__entryId, cif_category, row_list)
+
+            # DAOTHER-3018, 3848: force to reset 'pdbx_nmr_representative.conformer_id'
+            cif_util.UpdateMultipleRowsValue(self.__entryId, 'pdbx_nmr_representative', 'conformer_id', '?')
 
             try:
                 cif_util.WriteCif(file_path)
@@ -2196,6 +2200,9 @@ class OneDepAnnTasks:
 
         # if len(cif_util.GetCategories()[self.__entryId]) == 0:
         #     return False
+
+        # DAOTHER-3018, 3848: force to reset 'pdbx_nmr_representative.conformer_id'
+        cif_util.UpdateMultipleRowsValue(self.__entryId, 'pdbx_nmr_representative', 'conformer_id', '?')
 
         try:
             cif_util.WriteCif(file_path)

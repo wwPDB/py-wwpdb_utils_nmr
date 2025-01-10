@@ -345,6 +345,19 @@ class mmCIFUtil:
         #
         return catObj.getAttributeList()
 
+    def GetRowLength(self, blockName: str, catName: str, ext: int = 1) -> int:
+        """ Return length of rows of a given category.
+        """
+        if blockName not in self.__dataMap:
+            return 0
+
+        catObj = self.__dataList[self.__dataMap[get_ext_block_name(blockName, ext)]].getObj(catName)
+
+        if not catObj:
+            return 0
+        #
+        return len(catObj.getRowList())
+
     def GetRowList(self, blockName: str, catName: str, ext: int = 1) -> List[list]:
         """ Get a list of list of a geven Data Block and Category
         """

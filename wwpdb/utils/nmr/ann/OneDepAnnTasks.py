@@ -1655,6 +1655,16 @@ class OneDepAnnTasks:
                                         lp.add_data(_row)
 
                             if reset and len(lp) > 0:
+
+                                try:
+
+                                    loop = sf.get_loop(lp_category)
+
+                                    del sf[loop]
+
+                                except KeyError:
+                                    pass
+
                                 sf.add_loop(lp)
 
         allowed_sf_tags = set(self.__allowedSfTags)

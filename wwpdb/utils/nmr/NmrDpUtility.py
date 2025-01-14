@@ -36524,10 +36524,12 @@ class NmrDpUtility:
 
                         else:
 
-                            chain_id = seq_id = comp_id = atom_id = None
+                            chain_id = seq_id = comp_id = atom_id = auth_asym_id = auth_seq_id = None
 
                             for col, assign_item_temp in enumerate(assign_item_temps):
                                 assign_item = assign_item_temp % dim
+                                if assign_item not in loop.tags:
+                                    continue
                                 if col == 0:
                                     chain_id = row[loop.tags.index(assign_item)]
                                 elif col == 1:
@@ -36550,7 +36552,8 @@ class NmrDpUtility:
                                 else:
                                     atom_id = row[loop.tags.index(assign_item)]
 
-                            auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
+                            if chain_id is not None and seq_id is not None:
+                                auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
 
                             if auth_asym_id is not None and auth_seq_id is not None:
                                 seq_key = (auth_asym_id, auth_seq_id, comp_id)
@@ -36603,9 +36606,11 @@ class NmrDpUtility:
 
                     else:
 
-                        chain_id = seq_id = comp_id = atom_id = None
+                        chain_id = seq_id = comp_id = atom_id = auth_asym_id = auth_seq_id = None
 
                         for col, assign_item in enumerate(assign_items):
+                            if assign_item not in loop.tags:
+                                continue
                             if col == 0:
                                 chain_id = row[loop.tags.index(assign_item)]
                             elif col == 1:
@@ -36622,7 +36627,8 @@ class NmrDpUtility:
                             else:
                                 atom_id = row[loop.tags.index(assign_item)]
 
-                        auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
+                        if chain_id is not None and seq_id is not None:
+                            auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
 
                         if auth_asym_id is not None and auth_seq_id is not None:
                             seq_key = (auth_asym_id, auth_seq_id, comp_id)
@@ -36681,10 +36687,12 @@ class NmrDpUtility:
 
                             else:
 
-                                chain_id = seq_id = comp_id = atom_id = None
+                                chain_id = seq_id = comp_id = atom_id = auth_asym_id = auth_seq_id = None
 
                                 for col, assign_item_temp in enumerate(assign_item_temps):
                                     assign_item = assign_item_temp % dim
+                                    if assign_item not in loop.tags:
+                                        continue
                                     if col == 0:
                                         chain_id = row[loop.tags.index(assign_item)]
                                     elif col == 1:
@@ -36707,7 +36715,8 @@ class NmrDpUtility:
                                     else:
                                         atom_id = row[loop.tags.index(assign_item)]
 
-                                auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
+                                if chain_id is not None and seq_id is not None:
+                                    auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
 
                                 if auth_asym_id is not None and auth_seq_id is not None:
                                     seq_key = (auth_asym_id, auth_seq_id, comp_id)
@@ -36759,9 +36768,11 @@ class NmrDpUtility:
 
                         else:
 
-                            chain_id = seq_id = comp_id = atom_id = None
+                            chain_id = seq_id = comp_id = atom_id = auth_asym_id = auth_seq_id = None
 
                             for col, assign_item in enumerate(assign_items):
+                                if assign_item not in loop.tags:
+                                    continue
                                 if col == 0:
                                     chain_id = row[loop.tags.index(assign_item)]
                                 elif col == 1:
@@ -36778,7 +36789,8 @@ class NmrDpUtility:
                                 else:
                                     atom_id = row[loop.tags.index(assign_item)]
 
-                            auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
+                            if chain_id is not None and seq_id is not None:
+                                auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
 
                             if auth_asym_id is not None and auth_seq_id is not None:
                                 seq_key = (auth_asym_id, auth_seq_id, comp_id)
@@ -36932,10 +36944,12 @@ class NmrDpUtility:
 
                     else:
 
-                        chain_id = seq_id = comp_id = atom_id = None
+                        chain_id = seq_id = comp_id = atom_id = auth_asym_id = auth_seq_id = None
 
                         for col, assign_item_temp in enumerate(assign_item_temps):
                             assign_item = assign_item_temp % dim
+                            if assign_item not in loop.tags:
+                                continue
                             if col == 0:
                                 chain_id = row[loop.tags.index(assign_item)]
                             elif col == 1:
@@ -36958,7 +36972,8 @@ class NmrDpUtility:
                             else:
                                 atom_id = row[loop.tags.index(assign_item)]
 
-                        auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
+                        if chain_id is not None and seq_id is not None:
+                            auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
 
                         if auth_asym_id is not None and auth_seq_id is not None:
                             seq_key = (auth_asym_id, auth_seq_id, comp_id)
@@ -37172,9 +37187,11 @@ class NmrDpUtility:
 
                 else:
 
-                    chain_id = seq_id = comp_id = atom_id = None
+                    chain_id = seq_id = comp_id = atom_id = auth_asym_id = auth_seq_id = None
 
                     for col, assign_item in enumerate(assign_items):
+                        if assign_item not in loop.tags:
+                            continue
                         if col == 0:
                             chain_id = row[loop.tags.index(assign_item)]
                         elif col == 1:
@@ -37191,7 +37208,8 @@ class NmrDpUtility:
                         else:
                             atom_id = row[loop.tags.index(assign_item)]
 
-                    auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
+                    if chain_id is not None and seq_id is not None:
+                        auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
 
                     if auth_asym_id is not None and auth_seq_id is not None:
                         seq_key = (auth_asym_id, auth_seq_id, comp_id)

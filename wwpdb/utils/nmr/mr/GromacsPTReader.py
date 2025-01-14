@@ -49,8 +49,11 @@ class GromacsPTReader:
                  representativeAltId=REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
+        self.__debug = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
         self.__maxParserErrorReport = MAX_ERROR_REPORT
@@ -77,6 +80,9 @@ class GromacsPTReader:
         if nefT is None:
             self.__nefT.set_remediation_mode(True)
 
+    def setDebugMode(self, debug):
+        self.__debug = debug
+
     def setLexerMaxErrorReport(self, maxErrReport):
         self.__maxLexerErrorReport = maxErrReport
 
@@ -97,7 +103,7 @@ class GromacsPTReader:
 
                 if not os.access(ptFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"GromacsPTReader.parse() {ptFilePath} is not accessible.\n")
+                        self.__lfh.write(f"+{self.__class_name__}.parse() {ptFilePath} is not accessible.\n")
                     return None, None, None
 
                 ifh = open(ptFilePath, 'r')  # pylint: disable=consider-using-with
@@ -108,7 +114,7 @@ class GromacsPTReader:
 
                 if ptString is None or len(ptString) == 0:
                     if self.__verbose:
-                        self.__lfh.write("GromacsPTReader.parse() Empty string.\n")
+                        self.__lfh.write(f"+{self.__class_name__}.parse() Empty string.\n")
                     return None, None, None
 
                 input = InputStream(ptString)
@@ -116,7 +122,7 @@ class GromacsPTReader:
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"GromacsPTReader.parse() {cifFilePath} is not accessible.\n")
+                        self.__lfh.write(f"+{self.__class_name__}.parse() {cifFilePath} is not accessible.\n")
                     return None, None, None
 
                 if self.__cR is None:
@@ -166,25 +172,18 @@ class GromacsPTReader:
                         self.__lfh.write(f"{description['input']}\n")
                         self.__lfh.write(f"{description['marker']}\n")
 
-            if self.__verbose:
+            if self.__verbose and self.__debug:
                 if listener.warningMessage is not None and len(listener.warningMessage) > 0:
-                    print('\n'.join(listener.warningMessage))
+                    self.__lfh.write(f"+{self.__class_name__}.parse() ++ Info  -\n" + '\n'.join(listener.warningMessage) + '\n')
                 if isFilePath:
-                    print(listener.getContentSubtype())
+                    self.__lfh.write(f"+{self.__class_name__}.parse() ++ Info  - {listener.getContentSubtype()}\n")
 
             return listener, parser_error_listener, lexer_error_listener
 
         except IOError as e:
             if self.__verbose:
-                self.__lfh.write(f"+GromacsPTReader.parse() ++ Error - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.parse() ++ Error  - {str(e)}\n")
             return None, None, None
-            # pylint: disable=unreachable
-            """ debug code
-        except Exception as e:
-            if self.__verbose and isFilePath:
-                self.__lfh.write(f"+GromacsPTReader.parse() ++ Error - {ptFilePath!r} - {str(e)}\n")
-            return None, None, None
-            """
         finally:
             if isFilePath and ifh is not None:
                 ifh.close()
@@ -192,9 +191,11 @@ class GromacsPTReader:
 
 if __name__ == "__main__":
     reader = GromacsPTReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mzi/2mzi-trimmed-div_dst.mr',
                  '../../tests-nmr/mock-data-remediation/2mzi/2mzi.cif')
 
     reader = GromacsPTReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mzh/2mzh.top',
                  '../../tests-nmr/mock-data-remediation/2mzh/2mzh.cif')

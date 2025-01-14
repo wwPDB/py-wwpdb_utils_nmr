@@ -50,6 +50,8 @@ class RosettaMRReader:
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
@@ -110,7 +112,7 @@ class RosettaMRReader:
 
                 if not os.access(mrFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"RosettaMRReader.parse() {mrFilePath} is not accessible.\n")
+                        self.__lfh.write(f"+{self.__class_name__}.parse() {mrFilePath} is not accessible.\n")
                     return None, None, None
 
                 ifh = open(mrFilePath, 'r')  # pylint: disable=consider-using-with
@@ -121,7 +123,7 @@ class RosettaMRReader:
 
                 if mrString is None or len(mrString) == 0:
                     if self.__verbose:
-                        self.__lfh.write("RosettaMRReader.parse() Empty string.\n")
+                        self.__lfh.write(f"+{self.__class_name__}.parse() Empty string.\n")
                     return None, None, None
 
                 input = InputStream(mrString)
@@ -129,7 +131,7 @@ class RosettaMRReader:
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
                     if self.__verbose:
-                        self.__lfh.write(f"RosettaMRReader.parse() {cifFilePath} is not accessible.\n")
+                        self.__lfh.write(f"+{self.__class_name__}.parse() {cifFilePath} is not accessible.\n")
                     return None, None, None
 
                 if self.__cR is None:
@@ -190,25 +192,18 @@ class RosettaMRReader:
                         self.__lfh.write(f"{description['input']}\n")
                         self.__lfh.write(f"{description['marker']}\n")
 
-            if self.__verbose:
+            if self.__verbose and self.__debug:
                 if listener.warningMessage is not None and len(listener.warningMessage) > 0:
-                    print('\n'.join(listener.warningMessage))
+                    self.__lfh.write(f"+{self.__class_name__}.parse() ++ Info  -\n" + '\n'.join(listener.warningMessage) + '\n')
                 if isFilePath:
-                    print(listener.getContentSubtype())
+                    self.__lfh.write(f"+{self.__class_name__}.parse() ++ Info  - {listener.getContentSubtype()}\n")
 
             return listener, parser_error_listener, lexer_error_listener
 
         except IOError as e:
             if self.__verbose:
-                self.__lfh.write(f"+RosettaMRReader.parse() ++ Error - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.parse() ++ Error  - {str(e)}\n")
             return None, None, None
-            # pylint: disable=unreachable
-            """ debug code
-        except Exception as e:
-            if self.__verbose and isFilePath:
-                self.__lfh.write(f"+RosettaMRReader.parse() ++ Error - {mrFilePath!r} - {str(e)}\n")
-            return None, None, None
-            """
         finally:
             if isFilePath and ifh is not None:
                 ifh.close()

@@ -6134,7 +6134,7 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
     chainIds = [a['chain_id'] for a in atoms]
     atomIds = [a['atom_id'] for a in atoms]
 
-    # DAOTHER-9063: Permit dihedral angle restraint across entities due to ligand split
+    # DAOTHER-9063: permit dihedral angle restraint across entities due to ligand split
     def is_connected():
         if cR is None or ccU is None:
             return False

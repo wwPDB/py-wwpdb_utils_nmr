@@ -69,6 +69,8 @@ class CifToNmrStar:
     """
 
     def __init__(self, log: IO = sys.stderr):
+        self.__class_name__ = self.__class__.__name__
+
         self.__lfh = log
 
         # directory
@@ -477,12 +479,12 @@ class CifToNmrStar:
             except OSError:
                 pass
 
-            self.__lfh.write(f"+ERROR- CifToNmrStar.convert() {str(e)}\n")
+            self.__lfh.write(f"+{self.__class_name__}.convert() ++ Error  - {str(e)}\n")
 
             return False
 
         except Exception as e:
-            self.__lfh.write(f"+ERROR- CifToNmrStar.convert() {str(e)}\n")
+            self.__lfh.write(f"+{self.__class_name__}.convert() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -744,7 +746,7 @@ class CifToNmrStar:
                     lp.sort_tags()
 
         except Exception as e:
-            self.__lfh.write(f"+ERROR- CifToNmrStar.normalize() {str(e)}\n")
+            self.__lfh.write(f"+{self.__class_name__}.normalize() ++ Error  - {str(e)}\n")
 
         return strData
 
@@ -769,6 +771,6 @@ class CifToNmrStar:
         try:
             strData.frame_list.sort(key=sf_key)
         except Exception as e:
-            self.__lfh.write(f"+ERROR- CifToNmrStar.normalize_nef() {str(e)}\n")
+            self.__lfh.write(f"+{self.__class_name__}.normalize_nef() ++ Error  - {str(e)}\n")
 
         return strData

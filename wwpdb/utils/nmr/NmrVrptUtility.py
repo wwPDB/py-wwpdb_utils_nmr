@@ -521,6 +521,8 @@ class NmrVrptUtility:
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr,
                  cR=None, caC=None, ccU=None, csStat=None):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
 
@@ -701,10 +703,10 @@ class NmrVrptUtility:
             elif type == 'file':
                 self.__inputParamDict[name] = os.path.abspath(value)
             else:
-                raise ValueError(f"+NmrVrptUtility.addInput() ++ Error  - Unknown input type {type}.")
+                raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - Unknown input type {type}.")
 
         except Exception as e:
-            raise ValueError("+NmrVrptUtility.addInput() ++ Error  - " + str(e))
+            raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - " + str(e))
 
     def addOutput(self, name: Optional[str] = None, value: Any = None, type: str = 'file'):  # pylint: disable=redefined-builtin
         """ Add a named input and value to the dictionary of output parameters.
@@ -719,27 +721,27 @@ class NmrVrptUtility:
                 if name == 'result_pickle_file_path':
                     self.__use_cache = True
             else:
-                raise ValueError(f"+NmrVrptUtility.addOutput() ++ Error  - Unknown output type {type}.")
+                raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - Unknown output type {type}.")
 
         except Exception as e:
-            raise ValueError("+NmrVrptUtility.addOutput() ++ Error  - " + str(e))
+            raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - " + str(e))
 
     def op(self, op: str) -> Optional[dict]:
         """ Perform a series of tasks for a given workflow operation.
         """
 
         if self.__verbose:
-            self.__lfh.write(f"+NmrVrptUtility.op() starting op {op}, use_cache {self.__use_cache}\n")
+            self.__lfh.write(f"+{self.__class_name__}.op() starting op {op}, use_cache {self.__use_cache}\n")
 
         if op not in self.__workFlowOps:
-            raise KeyError(f"+NmrVrptUtility.op() ++ Error  - Unknown workflow operation {op}.")
+            raise KeyError(f"+{self.__class_name__}.op() ++ Error  - Unknown workflow operation {op}.")
 
         if op in self.__procTasksDict:
 
             for task in self.__procTasksDict[op]:
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrVrptUtility.op() starting op {op} - task {task.__name__}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.op() starting op {op} - task {task.__name__}\n")
 
                 start_time = time.time()
 
@@ -784,7 +786,7 @@ class NmrVrptUtility:
                 err = f"No such {self.__inputParamDict['coordinate_file_path']!r} file."
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrVrptUtility.__parseCoordinate() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {err}\n")
 
             return False
 
@@ -797,7 +799,7 @@ class NmrVrptUtility:
                 err = f"{file_name!r} is invalid PDBx/mmCIF file."
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrVrptUtility.__parseCoordinate() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {err}\n")
 
                 return False
 
@@ -844,7 +846,7 @@ class NmrVrptUtility:
                     except Exception as e:
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrVrptUtility.__parseCoordinate() ++ Error  - {str(e)}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {str(e)}\n")
 
             if len(ensemble) > 0 and 'representative_conformer' in ensemble[0]:
 
@@ -877,7 +879,7 @@ class NmrVrptUtility:
                 except Exception as e:
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrVrptUtility.__parseCoordinate() ++ Error  - {str(e)}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {str(e)}\n")
 
             if self.__cR.hasItem('atom_site', 'label_alt_id'):
                 alt_ids = self.__cR.getDictListWithFilter('atom_site',
@@ -919,7 +921,7 @@ class NmrVrptUtility:
                     except Exception as e:
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrVrptUtility.__checkCoordInputSource() ++ Error  - {str(e)}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__checkCoordInputSource() ++ Error  - {str(e)}\n")
 
                         return False
 
@@ -985,7 +987,7 @@ class NmrVrptUtility:
                 err = f"No such {self.__inputParamDict['nmr_cif_file_path']!r} file."
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrVrptUtility.__parseNmrData() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__parseNmrData() ++ Error  - {err}\n")
 
             return False
 
@@ -1015,7 +1017,7 @@ class NmrVrptUtility:
                     except Exception as e:
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrVrptUtility.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
 
                         return False
 
@@ -1080,7 +1082,7 @@ class NmrVrptUtility:
                         return True
 
             except Exception as e:
-                self.__lfh.write(f"+NmrVrptUtility.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
             finally:
                 try:
                     if os.path.exists(_fPath):
@@ -1122,7 +1124,7 @@ class NmrVrptUtility:
                         return True
 
             except Exception as e:
-                self.__lfh.write(f"+NmrVrptUtility.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
             finally:
                 try:
                     if os.path.exists(_fPath):
@@ -1315,7 +1317,7 @@ class NmrVrptUtility:
 
         except Exception as e:
             self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+NmrVrptUtility.__extractCoordAtomSite() ++ Error  - {str(e)}\n")
+            self.__lfh.write(f"+{self.__class_name__}.__extractCoordAtomSite() ++ Error  - {str(e)}\n")
 
             self.__atomIdList = self.__coordinates = None
 
@@ -1435,7 +1437,7 @@ class NmrVrptUtility:
                     if atom_id_1 is None or atom_id_2 is None\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
                         if 'HOH' not in (comp_id_1, comp_id_2):
-                            self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
+                            self.__lfh.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
                                              f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1468,7 +1470,7 @@ class NmrVrptUtility:
                                            lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
-                        self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
+                        self.__lfh.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1540,7 +1542,7 @@ class NmrVrptUtility:
 
         except Exception as e:
             self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+NmrVrptUtility.__extractGenDistConstraint() ++ Error  - {str(e)}\n")
+            self.__lfh.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - {str(e)}\n")
 
             self.__distRestDict = self.__distRestSeqDict = None
 
@@ -1677,7 +1679,7 @@ class NmrVrptUtility:
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int)\
                        or not isinstance(auth_seq_id_3, int) or not isinstance(auth_seq_id_4, int):
                         if angle_type not in ('PPA', 'UNNAMED'):
-                            self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                            self.__lfh.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
                                              f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1694,7 +1696,7 @@ class NmrVrptUtility:
                                             lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
-                        self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
+                        self.__lfh.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - dihedral angle restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1741,7 +1743,7 @@ class NmrVrptUtility:
 
         except Exception as e:
             self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+NmrVrptUtility.__extractTorsionAngleConstraint() ++ Error  - {str(e)}\n")
+            self.__lfh.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - {str(e)}\n")
 
             self.__dihedRestDict = self.__dihedRestSeqDict = None
 
@@ -1854,7 +1856,7 @@ class NmrVrptUtility:
 
                     if atom_id_1 is None or atom_id_2 is None\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
-                        self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
+                        self.__lfh.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1873,7 +1875,7 @@ class NmrVrptUtility:
                                           lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
-                        self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
+                        self.__lfh.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
                         continue
@@ -1914,7 +1916,7 @@ class NmrVrptUtility:
 
         except Exception as e:
             self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+NmrVrptUtility.__extractRdcConstraint() ++ Error  - {str(e)}\n")
+            self.__lfh.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - {str(e)}\n")
 
             self.__rdcRestDict = self.__rdcRestSeqDict = None
 
@@ -2080,7 +2082,8 @@ class NmrVrptUtility:
 
                             d = distance(pos_1, pos_2)
                             if d == 0.0:
-                                self.__lfh.write(f"+NmrVrptUtility.__calculateDistanceRestraintViolations() ++ Error  - distance restraint {rest_key} {r} does not make sense, "
+                                self.__lfh.write(f"+{self.__class_name__}.__calculateDistanceRestraintViolations() ++ Error  - "
+                                                 "distance restraint {rest_key} {r} does not make sense, "
                                                  f"{os.path.basename(self.__nmrDataPath)}.\n")
                             dist_list_set[bound_key].append(d)
                         else:
@@ -2206,7 +2209,7 @@ class NmrVrptUtility:
 
         except Exception as e:
             self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+NmrVrptUtility.__calculateDistanceRestraintViolations() ++ Error  - {str(e)}\n")
+            self.__lfh.write(f"+{self.__class_name__}.__calculateDistanceRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__distRestViolDict = self.__distRestUnmapped = None
 
@@ -2387,7 +2390,7 @@ class NmrVrptUtility:
 
         except Exception as e:
             self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+NmrVrptUtility.__calculateDihedralAngleRestraintViolations() ++ Error  - {str(e)}\n")
+            self.__lfh.write(f"+{self.__class_name__}.__calculateDihedralAngleRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__dihedRestViolDict = self.__dihedRestUnmapped = None
 
@@ -2548,7 +2551,7 @@ class NmrVrptUtility:
 
         except Exception as e:
             self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+NmrVrptUtility.__calculateRdcRestraintViolations() ++ Error  - {str(e)}\n")
+            self.__lfh.write(f"+{self.__class_name__}.__calculateRdcRestraintViolations() ++ Error  - {str(e)}\n")
 
             self.__rdcRestViolDict = self.__rdcRestUnmapped = None
 
@@ -2826,7 +2829,7 @@ class NmrVrptUtility:
 
         except Exception as e:
             self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+NmrVrptUtility.__summarizeDistanceRestraintAnalysis() ++ Error  - {str(e)}\n")
+            self.__lfh.write(f"+{self.__class_name__}.__summarizeDistanceRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False
 
@@ -3069,7 +3072,7 @@ class NmrVrptUtility:
 
         except Exception as e:
             self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+NmrVrptUtility.__summarizeDihedralAngleRestraintAnalysis() ++ Error  - {str(e)}\n")
+            self.__lfh.write(f"+{self.__class_name__}.__summarizeDihedralAngleRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False
 
@@ -3297,7 +3300,7 @@ class NmrVrptUtility:
 
         except Exception as e:
             self.__lfh.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__lfh.write(f"+NmrVrptUtility.__summarizeRdcRestraintAnalysis() ++ Error  - {str(e)}\n")
+            self.__lfh.write(f"+{self.__class_name__}.__summarizeRdcRestraintAnalysis() ++ Error  - {str(e)}\n")
 
         return False
 

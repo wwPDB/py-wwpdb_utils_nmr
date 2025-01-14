@@ -1574,7 +1574,7 @@ class BMRBAnnTasks:
                                 row[concentration_val_units_col] = 'mM'
                                 row[sample_id_col] = sample_id
                                 row[entry_id_col] = self.__entryId
-                                # lp.add_data(row)
+
                                 has_mand_concentration_val = False
                                 cur_id += 1
 

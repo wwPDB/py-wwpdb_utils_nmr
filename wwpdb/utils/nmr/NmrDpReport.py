@@ -127,6 +127,8 @@ class NmrDpReport:
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
 
@@ -1381,8 +1383,8 @@ class NmrDpReport:
             self.__report['information']['status'] = status
         else:
             if self.__verbose:
-                self.__lfh.write(f'+NmrDpReport.__setStatus() ++ Error  - Unknown status {status}\n')
-            raise KeyError(f"+NmrDpReport.__setStatus() ++ Error  - Unknown status {status}")
+                self.__lfh.write(f'+{self.__class_name__}.__setStatus() ++ Error  - Unknown status {status}\n')
+            raise KeyError(f"+{self.__class_name__}.__setStatus() ++ Error  - Unknown status {status}")
 
     def setError(self):
         """ Set processing status Error.
@@ -1395,8 +1397,8 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__lfh.write('+NmrDpReport.setError() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning('+NmrDpReport.setError() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+                self.__lfh.write(f'+{self.__class_name__}.setError() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
+            raise UserWarning(f'+{self.__class_name__}.setError() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
     def setWarning(self):
         """ Set processing status Warning.
@@ -1410,8 +1412,8 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__lfh.write('+NmrDpReport.setWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning('+NmrDpReport.setWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+                self.__lfh.write(f'+{self.__class_name__}.setWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
+            raise UserWarning(f'+{self.__class_name__}.setWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
     def clean(self):
         """ Clear errors and warnings.
@@ -1427,8 +1429,8 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__lfh.write('+NmrDpReport.clean() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning('+NmrDpReport.clean() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+                self.__lfh.write(f'+{self.__class_name__}.clean() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
+            raise UserWarning(f'+{self.__class_name__}.clean() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
     def setDiamagnetic(self, diamagnetic: bool):
         """ Set diamagetism of molecular assembly.
@@ -1439,8 +1441,8 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__lfh.write('+NmrDpReport.setDiamagnetic() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
-            raise UserWarning('+NmrDpReport.setDiamagnetic() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+                self.__lfh.write(f'+{self.__class_name__}.setDiamagnetic() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
+            raise UserWarning(f'+{self.__class_name__}.setDiamagnetic() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
 
     def setDisulfideBond(self, disulfide_bond: bool):
         """ Set whether molecular assembly has a disulfide bond at least or not.
@@ -1451,8 +1453,8 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__lfh.write('+NmrDpReport.setDisulfideBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
-            raise UserWarning('+NmrDpReport.setDisulfideBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+                self.__lfh.write(f'+{self.__class_name__}.setDisulfideBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
+            raise UserWarning(f'+{self.__class_name__}.setDisulfideBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
 
     def setOtherBond(self, other_bond: bool):
         """ Set whether molecular assemble has an other bond at least or not.
@@ -1463,8 +1465,8 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__lfh.write('+NmrDpReport.setOtherBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
-            raise UserWarning('+NmrDpReport.setOtherBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+                self.__lfh.write(f'+{self.__class_name__}.setOtherBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
+            raise UserWarning(f'+{self.__class_name__}.setOtherBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
 
     def setCyclicPolymer(self, cyclic_polymer: bool):
         """ Set whether molecular assemble contains a cyclic polymer or not.
@@ -1475,8 +1477,8 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__lfh.write('+NmrDpReport.setCyclicPolymer() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
-            raise UserWarning('+NmrDpReport.setCyclicPolymer() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+                self.__lfh.write(f'+{self.__class_name__}.setCyclicPolymer() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
+            raise UserWarning(f'+{self.__class_name__}.setCyclicPolymer() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
 
     def setMutable(self):
         """ Enable to mute the report.
@@ -1587,8 +1589,8 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__lfh.write('+NmrDpReport.inheritFormatIssueErrors() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning('+NmrDpReport.inheritFormatIssueErrors() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+                self.__lfh.write(f'+{self.__class_name__}.inheritFormatIssueErrors() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
+            raise UserWarning(f'+{self.__class_name__}.inheritFormatIssueErrors() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
     def inheritCorrectedFormatIssueWarnings(self, prev_report):
         """ Inherit corrected format issue warnings from the previous report (e.g. nmr-*-consistency-check workflow operation).
@@ -1615,8 +1617,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__lfh.write('+NmrDpReport.inheritCorrectedFormatIssueWarnings() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning('+NmrDpReport.inheritCorrectedFormatIssueWarnings() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+                self.__lfh.write(f'+{self.__class_name__}.inheritCorrectedFormatIssueWarnings() ++ Warning  - '
+                                 f'No effects on NMR data processing report because the report is immutable\n')
+            raise UserWarning(f'+{self.__class_name__}.inheritCorrectedFormatIssueWarnings() ++ Warning  - '
+                              'No effects on NMR data processing report because the report is immutable')
 
     def inheritCorrectedSaveframeNameWarnings(self, prev_report):
         """ Inherit corrected saveframe name warnings from the previous report (e.g. nmr-*-consistency-check workflow operation).
@@ -1643,8 +1647,10 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__lfh.write('+NmrDpReport.inheritCorrectedSaveframeNameWarnings() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning('+NmrDpReport.inheritCorrectedSaveframeNameWarnings() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+                self.__lfh.write(f'+{self.__class_name__}.inheritCorrectedSaveframeNameWarnings() ++ Warning  - '
+                                 'No effects on NMR data processing report because the report is immutable\n')
+            raise UserWarning(f'+{self.__class_name__}.inheritCorrectedSaveframeNameWarnings() ++ Warning  - '
+                              'No effects on NMR data processing report because the report is immutable')
 
     def setCorrectedError(self, prev_report):
         """ Initialize history of corrected errors in the previous report.
@@ -1683,8 +1689,8 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__lfh.write('+NmrDpReport.setCorrectedError() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning('+NmrDpReport.setCorrectedError() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+                self.__lfh.write(f'+{self.__class_name__}.setCorrectedError() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
+            raise UserWarning(f'+{self.__class_name__}.setCorrectedError() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
     def setCorrectedWarning(self, prev_report):
         """ Initialize history of corrected warnings in the previous report.
@@ -1736,8 +1742,8 @@ class NmrDpReport:
 
         else:
             if self.__verbose:
-                self.__lfh.write('+NmrDpReport.setCorrectedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
-            raise UserWarning('+NmrDpReport.setCorrectedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+                self.__lfh.write(f'+{self.__class_name__}.setCorrectedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
+            raise UserWarning(f'+{self.__class_name__}.setCorrectedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
 
 class NmrDpReportInputSource:
@@ -1745,6 +1751,8 @@ class NmrDpReportInputSource:
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
 
@@ -1790,13 +1798,13 @@ class NmrDpReportInputSource:
 
             if item == 'file_type' and value not in self.file_types:
                 if self.__verbose:
-                    self.__lfh.write(f'+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file type {value}\n')
-                raise ValueError(f"+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file type {value}")
+                    self.__lfh.write(f'+{self.__class_name__}.setItemValue() ++ Error  - Unknown file type {value}\n')
+                raise ValueError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown file type {value}")
 
             if item == 'content_type' and value not in self.content_types:
                 if self.__verbose:
-                    self.__lfh.write(f'+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content type {value}\n')
-                raise ValueError(f"+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content type {value}")
+                    self.__lfh.write(f'+{self.__class_name__}.setItemValue() ++ Error  - Unknown content type {value}\n')
+                raise ValueError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown content type {value}")
 
             if item == 'content_subtype':
 
@@ -1804,8 +1812,8 @@ class NmrDpReportInputSource:
 
                     if key not in self.content_subtypes:
                         if self.__verbose:
-                            self.__lfh.write(f'+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content subtype in {value.keys()}\n')
-                        raise ValueError(f"+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content subtype in {value.keys()}")
+                            self.__lfh.write(f'+{self.__class_name__}.setItemValue() ++ Error  - Unknown content subtype in {value.keys()}\n')
+                        raise ValueError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown content subtype in {value.keys()}")
 
                 non_positive_keys = [key for key in value if int(value[key]) <= 0]
 
@@ -1820,8 +1828,8 @@ class NmrDpReportInputSource:
 
         else:
             if self.__verbose:
-                self.__lfh.write(f'+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown item type {item}\n')
-            raise KeyError(f"+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown item type {item}")
+                self.__lfh.write(f'+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}\n')
+            raise KeyError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}")
 
     def get(self) -> dict:
         """ Retrieve contents.
@@ -1851,13 +1859,13 @@ class NmrDpReportInputSource:
             # # should pass because reallocation of chain_id may happen
             # else:
             #     if self.__verbose:
-            #         self.__lfh.write(f'+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id {seq_id}\n')
-            #     raise KeyError(f"+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id {seq_id}")
+            #         self.__lfh.write(f'+{self.__class_name__}.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id {seq_id}\n')
+            #     raise KeyError(f"+{self.__class_name__}.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id {seq_id}")
             #
         except StopIteration:
             if self.__verbose:
-                self.__lfh.write(f'+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id {chain_id}')
-            raise KeyError(f"+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id {chain_id}")  # pylint: disable=raise-missing-from
+                self.__lfh.write(f'+{self.__class_name__}.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id {chain_id}')
+            raise KeyError(f"+{self.__class_name__}.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id {chain_id}")  # pylint: disable=raise-missing-from
 
 
 class NmrDpReportSequenceAlignment:
@@ -1865,6 +1873,8 @@ class NmrDpReportSequenceAlignment:
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
 
@@ -1894,8 +1904,8 @@ class NmrDpReportSequenceAlignment:
 
         else:
             if self.__verbose:
-                self.__lfh.write(f'+NmrDpReportSequenceAlignment.setItemValue() ++ Error  - Unknown item type {item}\n')
-            raise KeyError(f"+NmrDpReportSequenceAlignment.setItemValue() ++ Error  - Unknown item type {item}")
+                self.__lfh.write(f'+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}\n')
+            raise KeyError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}")
 
     def get(self) -> dict:
         """ Retrieve contents.
@@ -1915,6 +1925,8 @@ class NmrDpReportChainAssignment:
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
 
@@ -1931,8 +1943,8 @@ class NmrDpReportChainAssignment:
 
         else:
             if self.__verbose:
-                self.__lfh.write(f'+NmrDpReportChainAssignment.setItemValue() ++ Error  - Unknown item type {item}\n')
-            raise KeyError(f"+NmrDpReportChainAssignment.setItemValue() ++ Error  - Unknown item type {item}")
+                self.__lfh.write(f'+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}\n')
+            raise KeyError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}")
 
     def get(self) -> dict:
         """ Retrieve contents.
@@ -1952,6 +1964,8 @@ class NmrDpReportError:
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
 
@@ -2044,8 +2058,8 @@ class NmrDpReportError:
 
         else:
             if self.__verbose:
-                self.__lfh.write(f'+NmrDpReportError.appendDescription() ++ Error  - Unknown item type {item}\n')
-            raise KeyError(f"+NmrDpReportError.appendDescription() ++ Error  - Unknown item type {item}")
+                self.__lfh.write(f'+{self.__class_name__}.appendDescription() ++ Error  - Unknown item type {item}\n')
+            raise KeyError(f"+{self.__class_name__}.appendDescription() ++ Error  - Unknown item type {item}")
 
     def get(self) -> dict:
         """ Retrieve errors.
@@ -2228,6 +2242,8 @@ class NmrDpReportWarning:
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
 
@@ -2333,8 +2349,8 @@ class NmrDpReportWarning:
 
         else:
             if self.__verbose:
-                self.__lfh.write(f'+NmrDpReportWarning.appendDescription() ++ Error  - Unknown item type {item}\n')
-            raise KeyError(f"+NmrDpReportWarning.appendDescription() ++ Error  - Unknown item type {item}")
+                self.__lfh.write(f'+{self.__class_name__}.appendDescription() ++ Error  - Unknown item type {item}\n')
+            raise KeyError(f"+{self.__class_name__}.appendDescription() ++ Error  - Unknown item type {item}")
 
     def get(self) -> dict:
         """ Retrieve warnings.

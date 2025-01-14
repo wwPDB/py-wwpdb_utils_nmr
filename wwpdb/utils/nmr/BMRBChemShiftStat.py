@@ -52,6 +52,8 @@ class BMRBChemShiftStat:
     """
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr, ccU=None):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
 
@@ -1648,7 +1650,7 @@ class BMRBChemShiftStat:
             replaced_by = self.__ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
             if replaced_by not in emptyValue and self.__ccU.updateChemCompDict(replaced_by):
                 if verbose:
-                    self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id} is replaced by {replaced_by}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.checkAtomNomenclature() ++ Warning  - {comp_id} is replaced by {replaced_by}\n")
 
                 comp_id = replaced_by
                 ref_atom_ids = [a[self.__ccU.ccaAtomId] for a in self.__ccU.lastAtomList]
@@ -1668,7 +1670,7 @@ class BMRBChemShiftStat:
 
         if len(ref_atom_ids) == 0 or cc_rel_status != 'REL':
             if verbose:
-                self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id} is not valid CCD ID, status code: {cc_rel_status}\n")
+                self.__lfh.write(f"+{self.__class_name__}.checkAtomNomenclature() ++ Warning  - {comp_id} is not valid CCD ID, status code: {cc_rel_status}\n")
             return False, None, None
 
         ref_alt_atom_ids = [a[self.__ccU.ccaAltAtomId] for a in self.__ccU.lastAtomList]
@@ -1681,7 +1683,7 @@ class BMRBChemShiftStat:
                 return True, comp_id, atom_id
 
             if verbose:
-                self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} is valid, "
+                self.__lfh.write(f"+{self.__class_name__}.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} is valid, "
                                  f"but _chem_comp.alt_atom_id matched with different atom_id {_ref_atom_id}\n")
 
             return True, comp_id, atom_id
@@ -1694,7 +1696,7 @@ class BMRBChemShiftStat:
                                 if a[self.__ccU.ccaAltAtomId] == atom_id)
 
             if verbose:
-                self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} matched with _chem_comp.alt_atom_id only. "
+                self.__lfh.write(f"+{self.__class_name__}.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} matched with _chem_comp.alt_atom_id only. "
                                  f"It should be {_ref_atom_id}\n")
 
             # print(f'case 1. {_comp_id}:{atom_id} -> {comp_id}:{_ref_atom_id}')
@@ -1704,7 +1706,7 @@ class BMRBChemShiftStat:
 
         if len(_ref_atom_ids) == 0:
             if verbose:
-                self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} did not match with any atom in CCD. No candidates found\n")
+                self.__lfh.write(f"+{self.__class_name__}.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} did not match with any atom in CCD. No candidates found\n")
 
             return False, None, None
 
@@ -1729,7 +1731,7 @@ class BMRBChemShiftStat:
             return True, 'CH', 'HN3'
 
         if verbose:
-            self.__lfh.write(f"+BMRBChemShiftStat.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} did not match with any atom in CCD, {_ref_atom_ids}\n")
+            self.__lfh.write(f"+{self.__class_name__}.checkAtomNomenclature() ++ Warning  - {comp_id}:{atom_id} did not match with any atom in CCD, {_ref_atom_ids}\n")
 
         return False, None, None
 
@@ -2339,18 +2341,18 @@ class BMRBChemShiftStat:
                     os.remove(dst_csv_file)
 
             except Exception as e:
-                self.__lfh.write(f"+BMRBChemShiftStat.updateStatCsvFiles() ++ Error  - {e}\n")
+                self.__lfh.write(f"+{self.__class_name__}.updateStatCsvFiles() ++ Error  - {e}\n")
 
         for csv_file in self.csv_files:
 
             try:
                 r = requests.head(self.url_for_bmrb_cs_stat_dir + csv_file, timeout=5.0)
             except Exception as e:
-                self.__lfh.write(f"+BMRBChemShiftStat.updateStatCsvFiles() ++ Error  - {e}\n")
+                self.__lfh.write(f"+{self.__class_name__}.updateStatCsvFiles() ++ Error  - {e}\n")
                 return False
 
             if r.status_code != 200:
-                self.__lfh.write(f"+BMRBChemShiftStat.updateStatCsvFiles() ++ Warning  - {r}\n")
+                self.__lfh.write(f"+{self.__class_name__}.updateStatCsvFiles() ++ Warning  - {r}\n")
                 return False
 
             url_last_modified = parsedate(r.headers['Last-Modified']).astimezone()

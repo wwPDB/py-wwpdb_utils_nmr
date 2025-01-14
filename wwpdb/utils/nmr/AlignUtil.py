@@ -1964,20 +1964,7 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
                 if mr_comp_id == '.' and cif_comp_id != '.':
 
                     unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
-                    # """ unmapped residue is not error """
-                    # if not aligned[i]:
 
-                    #     if not ccU.updateChemCompDict(cif_comp_id):
-                    #         continue
-
-                    #     if ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] != 'REL':
-                    #         continue
-
-                    #     cif_seq_code = f"{chain_id}:{seq_id1[i]}:{cif_comp_id}"
-
-                    #     warnings.append(f"[Sequence mismatch] {cif_seq_code} is not present "
-                    #                     f"in {_a_mr_format_name} data (chain_id {chain_id2}).")
-                    #
                 elif mr_comp_id != cif_comp_id and aligned[i]:
 
                     comp_ids = [comp_id for seq_id, comp_id in zip(s1[_seq_id_name], s1['comp_id']) if seq_id == seq_id1[i]]
@@ -2825,11 +2812,6 @@ def splitPolySeqRstForMultimers(pA, polySeqModel: List[dict], polySeqRst: List[d
 
                 if length == 0:
                     return None, None
-
-                # _, _, conflict, _, _ = getScoreOfSeqAlign(myAlign)
-
-                # if conflict > 0:
-                #     return None, None
 
                 _polySeqRst.append(_test_ps_)
 

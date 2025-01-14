@@ -215,6 +215,7 @@ class CifReader:
                  sub_dir_name_for_cache: str = '.'):
         self.__verbose = verbose
         self.__lfh = log
+        self.__debug = False
 
         # whether to use cache file
         self.__use_cache = use_cache
@@ -255,8 +256,8 @@ class CifReader:
         self.__single_model_rotation_test = True
 
         if self.__random_rotaion_test:
-            self.__lfh.write("+WARNING- CifReader.__init__() Enabled random rotation test\n")
-            self.__lfh.write(f"+WARNING- CifReader.__init__() Single model rotation test: {self.__single_model_rotation_test}\n")
+            self.__lfh.write(f"+WARNING- {self.__class__.__name__}.__init__() Enabled random rotation test\n")
+            self.__lfh.write(f"+WARNING- {self.__class__.__name__}.__init__() Single model rotation test: {self.__single_model_rotation_test}\n")
 
         # clustering parameters for recognition of well-defined regions
         self.__min_features_for_clustering = 4
@@ -296,7 +297,7 @@ class CifReader:
 
             if not os.access(self.__filePath, os.R_OK):
                 if self.__verbose:
-                    self.__lfh.write(f"+ERROR- CifReader.parse() Missing file {self.__filePath}\n")
+                    self.__lfh.write(f"+ERROR- {self.__class__.__name__}.parse() Missing file {self.__filePath}\n")
                 return False
 
             if self.__use_cache:
@@ -307,7 +308,7 @@ class CifReader:
 
         except Exception:
             if self.__verbose:
-                self.__lfh.write(f"+ERROR- CifReader.parse() Missing file {self.__filePath}\n")
+                self.__lfh.write(f"+ERROR- {self.__class__.__name__}.parse() Missing file {self.__filePath}\n")
             return False
 
     def __getDataBlockFromFile(self, blockId: Optional[str] = None):
@@ -1596,7 +1597,7 @@ class CifReader:
                     if n_clusters > 0 and stop_min_samples == -1:
                         stop_min_samples = min_samples - 2
 
-                    if self.__verbose:
+                    if self.__verbose and self.__debug:
                         self.__lfh.write(f'{result}\n')
 
                     if score < min_score or (n_noise == 0 and min_score < self.__rmsd_overlaid_exactly):
@@ -1628,7 +1629,7 @@ class CifReader:
         eff_domain_id = {}
 
         n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
-        if self.__verbose:
+        if self.__verbose and self.__debug:
             self.__lfh.write(f"feature: {min_result['features']}, "
                              f"min_sample: {min_result['min_samples']}, epsilon: {min_result['epsilon']}, "
                              f"clusters: {n_clusters} (effective domains: {len(eff_labels)}), score: {min_score}\n")
@@ -1639,14 +1640,14 @@ class CifReader:
         domain_id = 1
         for label, chain_id, seq_id in zip(labels, _chain_ids, _seq_ids):
             if label not in eff_labels:
-                if self.__verbose:
+                if self.__verbose and self.__debug:
                     self.__lfh.write(f"chain_id: {chain_id}, seq_id: {seq_id}, domain_id: -1\n")
             else:
                 _label = int(label)
                 if _label not in eff_domain_id:
                     eff_domain_id[_label] = domain_id
                     domain_id += 1
-                if self.__verbose:
+                if self.__verbose and self.__debug:
                     self.__lfh.write(f"chain_id: {chain_id}, seq_id: {seq_id}, domain_id: {eff_domain_id[_label]} label: {_label}\n")
 
         rlist = []
@@ -1850,7 +1851,7 @@ class CifReader:
 
                 dlist[chain_ids.index(chain_id)].append(_item)
 
-        if self.__verbose:
+        if self.__verbose and self.__debug:
             self.__lfh.write(f"{dlist}\n")
 
         return rlist, dlist

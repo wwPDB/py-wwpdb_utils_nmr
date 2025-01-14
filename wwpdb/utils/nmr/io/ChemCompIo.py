@@ -32,8 +32,8 @@ class ChemCompReader:
     """
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
         self.__verbose = verbose
-        self.__debug = False
         self.__lfh = log
+        self.__debug = False
         self.__dBlock = None
         self.__topCachePath = None
         self.__ccU = None
@@ -127,7 +127,7 @@ class ChemCompReader:
         self.__filePath = os.path.join(self.__topCachePath, hashd, self.__ccU, self.__ccU + '.cif')
         if not os.access(self.__filePath, os.R_OK):
             if self.__verbose:
-                self.__lfh.write(f"+ERROR- PdbxChemCompReader.getCompId() Missing file {self.__filePath}\n")
+                self.__lfh.write(f"+ERROR- {self.__class__.__name__}.getCompId() Missing file {self.__filePath}\n")
             return False
         return True
 
@@ -140,12 +140,12 @@ class ChemCompReader:
             self.__filePath = filePath
             if not os.access(self.__filePath, os.R_OK):
                 if self.__verbose:
-                    self.__lfh.write(f"+ERROR- PdbxChemCompReader.setFilePath() Missing file {self.__filePath}\n")
+                    self.__lfh.write(f"+ERROR- {self.__class__.__name__}.setFilePath() Missing file {self.__filePath}\n")
                 return False
             return True
         except Exception:
             if self.__verbose:
-                self.__lfh.write(f"+ERROR- PdbxChemCompReader.setFilePath() Missing file {self.__filePath}\n")
+                self.__lfh.write(f"+ERROR- {self.__class__.__name__}.setFilePath() Missing file {self.__filePath}\n")
             return False
 
     def getAtomList(self) -> List[list]:
@@ -199,13 +199,13 @@ class ChemCompReader:
             if blockId is not None:
                 for block in myBlockList:
                     if (block.getType() == 'data' and block.getName() == blockId):
-                        if self.__debug:
+                        if self.__verbose and self.__debug:
                             block.printIt(self.__lfh)
                         return block
             else:
                 for block in myBlockList:
                     if block.getType() == 'data':
-                        if self.__debug:
+                        if self.__verbose and self.__debug:
                             block.printIt(self.__lfh)
                         return block
 

@@ -1466,6 +1466,8 @@ class NmrDpUtility:
     """
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
 
@@ -4790,7 +4792,7 @@ class NmrDpUtility:
                                                              'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2',
                                                              'Auth_atom_ID_2', 'Auth_alt_ID_2', 'Auth_atom_name_2',
                                                              'Sf_ID', 'Entry_ID', 'Gen_dist_constraint_list_ID',
-                                                             # The following Original_PDB_* data items are not legitimate, but keep them for backward compatibility
+                                                             # the following Original_PDB_* data items are not legitimate, but keep them for backward compatibility
                                                              'Original_PDB_strand_ID_1', 'Original_PDB_residue_no_1', 'Original_PDB_residue_name_1',
                                                              'Original_PDB_strand_ID_2', 'Original_PDB_residue_no_2', 'Original_PDB_residue_name_2'],
                                           'dihed_restraint': ['Index_ID', 'ID', 'Combination_ID', 'Set_ID', 'Torsion_angle_name',
@@ -6932,7 +6934,7 @@ class NmrDpUtility:
                 self.__srcName = os.path.basename(self.__srcPath)
 
         else:
-            raise IOError(f"+NmrDpUtility.setSource() ++ Error  - Could not access to file path {fPath}.")
+            raise IOError(f"+{self.__class_name__}.setSource() ++ Error  - Could not access to file path {fPath}.")
 
     def setDestination(self, fPath: str):
         """ Set primary destination file path.
@@ -6973,10 +6975,10 @@ class NmrDpUtility:
                 else:
                     self.__inputParamDict[name] = [{'file_name': os.path.abspath(f['file_name']), 'file_type': f['file_type']} for f in value]
             else:
-                raise ValueError(f"+NmrDpUtility.addInput() ++ Error  - Unknown input type {type}.")
+                raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - Unknown input type {type}.")
 
         except Exception as e:
-            raise ValueError("+NmrDpUtility.addInput() ++ Error  - " + str(e))
+            raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - " + str(e))
 
     def addOutput(self, name: Optional[str] = None, value: Any = None, type: str = 'file'):  # pylint: disable=redefined-builtin
         """ Add a named input and value to the dictionary of output parameters.
@@ -6991,10 +6993,10 @@ class NmrDpUtility:
             elif type == 'file_list':
                 self.__outputParamDict[name] = [os.path.abspath(f) for f in value]
             else:
-                raise ValueError(f"+NmrDpUtility.addOutput() ++ Error  - Unknown output type {type}.")
+                raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - Unknown output type {type}.")
 
         except Exception as e:
-            raise ValueError("+NmrDpUtility.addOutput() ++ Error  - " + str(e))
+            raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - " + str(e))
 
     def op(self, op: str) -> bool:
         """ Perform a series of tasks for a given workflow operation.
@@ -7006,7 +7008,7 @@ class NmrDpUtility:
 
         if self.__combined_mode:
             if self.__srcPath is None:
-                raise ValueError(f"+NmrDpUtility.op() ++ Error  - No input provided for workflow operation {op}.")
+                raise ValueError(f"+{self.__class_name__}.op() ++ Error  - No input provided for workflow operation {op}.")
 
             self.__cs_file_path_list_len = 0
             self.__file_path_list_len = 1
@@ -7015,7 +7017,7 @@ class NmrDpUtility:
             cs_file_path_list = 'chem_shift_file_path_list'
 
             if cs_file_path_list not in self.__inputParamDict:
-                raise ValueError(f"+NmrDpUtility.op() ++ Error  - No input provided for workflow operation {op}.")
+                raise ValueError(f"+{self.__class_name__}.op() ++ Error  - No input provided for workflow operation {op}.")
 
             self.__cs_file_path_list_len = len(self.__inputParamDict[cs_file_path_list])
             self.__file_path_list_len = self.__cs_file_path_list_len
@@ -7122,14 +7124,14 @@ class NmrDpUtility:
         self.__release_mode = 'release' in op
 
         if self.__verbose:
-            self.__lfh.write(f"+NmrDpUtility.op() starting op {op}\n")
+            self.__lfh.write(f"+{self.__class_name__}.op() starting op {op}\n")
 
         if op not in self.__workFlowOps:
-            raise KeyError(f"+NmrDpUtility.op() ++ Error  - Unknown workflow operation {op}.")
+            raise KeyError(f"+{self.__class_name__}.op() ++ Error  - Unknown workflow operation {op}.")
 
         if 'cif' in op:
             if 'nmr_cif_file_path' not in self.__outputParamDict:
-                raise KeyError("+NmrDpUtility.op() ++ Error  - Could not find 'nmr_cif_file_path' output parameter.")
+                raise KeyError(f"+{self.__class_name__}.op() ++ Error  - Could not find 'nmr_cif_file_path' output parameter.")
             if self.__dstPath is None:
                 self.__dstPath = self.__outputParamDict['nmr_cif_file_path'] + '.tmp'
                 self.__dstPath__ = copy.copy(self.__dstPath)
@@ -7300,7 +7302,7 @@ class NmrDpUtility:
             for task in self.__procTasksDict['consistency-check']:
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.op() starting op {op} - task {task.__name__}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.op() starting op {op} - task {task.__name__}\n")
 
                 start_time = time.time()
 
@@ -7317,7 +7319,7 @@ class NmrDpUtility:
             for task in self.__procTasksDict['deposit']:
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.op() starting op {op} - task {task.__name__}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.op() starting op {op} - task {task.__name__}\n")
 
                 start_time = time.time()
 
@@ -7335,7 +7337,7 @@ class NmrDpUtility:
             for task in self.__procTasksDict[op]:
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.op() starting op {op} - task {task.__name__}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.op() starting op {op} - task {task.__name__}\n")
 
                 start_time = time.time()
 
@@ -7481,11 +7483,11 @@ class NmrDpUtility:
 
                             except Exception as e:
 
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__initializeDpReport() ++ Error  - " + str(e))
+                                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__initializeDpReport() ++ Error  - " + str(e))
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__initializeDpReport() ++ Error  - {str(e)}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__initializeDpReport() ++ Error  - {str(e)}\n")
 
                                 return False
 
@@ -7523,11 +7525,11 @@ class NmrDpUtility:
 
                             except Exception as e:
 
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__initializeDpReport() ++ Error  - " + str(e))
+                                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__initializeDpReport() ++ Error  - " + str(e))
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__initializeDpReport() ++ Error  - {str(e)}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__initializeDpReport() ++ Error  - {str(e)}\n")
 
                                 return False
 
@@ -7629,11 +7631,11 @@ class NmrDpUtility:
 
                             except Exception as e:
 
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__initializeDpReport() ++ Error  - " + str(e))
+                                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__initializeDpReport() ++ Error  - " + str(e))
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__initializeDpReport() ++ Error  - {str(e)}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__initializeDpReport() ++ Error  - {str(e)}\n")
 
                                 return False
 
@@ -7853,7 +7855,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Error  - {err}\n")
 
                     is_done = False
 
@@ -7923,11 +7925,11 @@ class NmrDpUtility:
 
                         except Exception as e:
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateInputSource() ++ Error  - " + str(e))
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateInputSource() ++ Error  - " + str(e))
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Error  - {str(e)}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Error  - {str(e)}\n")
 
                             return False
 
@@ -8028,7 +8030,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Error  - {err}\n")
 
                         is_done = False
 
@@ -8187,7 +8189,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Error  - {err}\n")
 
                             is_done = False
 
@@ -8246,11 +8248,11 @@ class NmrDpUtility:
 
                             except Exception as e:
 
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateInputSource() ++ Error  - " + str(e))
+                                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateInputSource() ++ Error  - " + str(e))
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Error  - {str(e)}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Error  - {str(e)}\n")
 
                                 return False
 
@@ -8366,7 +8368,7 @@ class NmrDpUtility:
                                                         {'file_name': file_name, 'description': err})
                     self.report.setError()
 
-                    self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - "
+                    self.__lfh.write(f"+{self.__class_name__}.__fixFormatIssueOfInputSource() ++ Error  - "
                                      f"{file_name} {err}\n")
 
                 else:
@@ -8377,7 +8379,7 @@ class NmrDpUtility:
                                                                   {'file_name': file_name, 'description': err}})
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__fixFormatIssueOfInputSource() ++ Error  - {err}\n")
 
             if not self.__has_legacy_sf_issue and fileSubType in ('S', 'R', 'O'):
                 return False
@@ -8400,7 +8402,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                     open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
@@ -8422,7 +8424,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                     open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
@@ -8444,7 +8446,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__fixFormatIssueOfInputSource() ++ Warning  - {warn}\n")
 
             with open(_srcPath, 'r', encoding='utf-8') as ifh:
                 lines = ifh.read().splitlines()
@@ -8481,7 +8483,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__fixFormatIssueOfInputSource() ++ Warning  - {warn}\n")
 
             pass_datablock = False
 
@@ -8511,7 +8513,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             _msg_template = r"Cannot use keywords as data values unless quoted or semi-colon delineated. "\
                 r"Perhaps this is a loop that wasn't properly terminated\? Illegal value:"
@@ -8556,7 +8558,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             msg_pattern = re.compile(r'^.*' + msg_template + r".*on line (\d+).*$")
 
@@ -8666,7 +8668,7 @@ class NmrDpUtility:
                 self.report.setWarning()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
                 msg_pattern = re.compile(r'^.*' + msg_template + r" '(.*)'.*$")
 
@@ -8707,7 +8709,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             msg_pattern = re.compile(r'^.*' + msg_template + r".*on line (\d+).*$")
 
@@ -8752,7 +8754,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             msg_pattern = re.compile(r'^' + msg_template + r" '(.*)'$")
 
@@ -8844,7 +8846,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             msg_pattern = re.compile(r'^' + msg_template + r" \[(.*)\]$")
 
@@ -9038,7 +9040,7 @@ class NmrDpUtility:
                 self.report.setWarning()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
                 target_category_begins = [target['category_2_begin'] for target in targets]
                 target_category_ends = [target['category_2_end'] for target in targets]
@@ -9114,7 +9116,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__validateInputSource() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             if __pynmrstar_v3_3__:
                 msg_pattern = re.compile(r'^.*' + msg_template + r" Error occurred in tag _\S+ with value (\S+) which conflicts with the saveframe name (\S+)\. "
@@ -9215,7 +9217,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__fixFormatIssueOfInputSource() ++ Error  - {err}\n")
 
             else:
 
@@ -9274,7 +9276,7 @@ class NmrDpUtility:
                                                     {'file_name': file_name, 'description': err})
                 self.report.setError()
 
-                self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - "
+                self.__lfh.write(f"+{self.__class_name__}.__fixFormatIssueOfInputSource() ++ Error  - "
                                  f"{file_name} {err}\n")
 
                 is_done = False
@@ -9287,7 +9289,7 @@ class NmrDpUtility:
                                                               {'file_name': file_name, 'description': err}})
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__fixFormatIssueOfInputSource() ++ Error  - {err}\n")
 
         try:
 
@@ -9345,7 +9347,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__rescueFormerNef() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__rescueFormerNef() ++ Warning  - {warn}\n")
 
                             set_sf_tag(sf, 'sf_framecode', sf.name)
 
@@ -9357,7 +9359,7 @@ class NmrDpUtility:
                                                                  'description': err})
                             self.report.setError()
 
-                            self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ Error  - "
+                            self.__lfh.write(f"+{self.__class_name__}.__rescueFormerNef() ++ Error  - "
                                              f"{file_name} {sf.name} {err}\n")
 
         if not self.__rescue_mode:
@@ -9484,7 +9486,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - "
+                            self.__lfh.write(f"+{self.__class_name__}.__rescueFormerNef() ++ LookupError  - "
                                              f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
@@ -9520,7 +9522,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - "
+                            self.__lfh.write(f"+{self.__class_name__}.__rescueFormerNef() ++ LookupError  - "
                                              f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
@@ -9562,7 +9564,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - "
+                            self.__lfh.write(f"+{self.__class_name__}.__rescueFormerNef() ++ LookupError  - "
                                              f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
@@ -9606,7 +9608,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - "
+                            self.__lfh.write(f"+{self.__class_name__}.__rescueFormerNef() ++ LookupError  - "
                                              f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
@@ -9710,7 +9712,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__rescueImmatureStr() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__rescueImmatureStr() ++ Warning  - {warn}\n")
 
                             tagNames = [t[0] for t in sf.tags]
 
@@ -9727,7 +9729,7 @@ class NmrDpUtility:
                                                                  'description': err})
                             self.report.setError()
 
-                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ Error  - "
+                            self.__lfh.write(f"+{self.__class_name__}.__rescueImmatureStr() ++ Error  - "
                                              f"{file_name} {sf.name} {err}\n")
 
         if not self.__rescue_mode:
@@ -9815,7 +9817,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - "
+                            self.__lfh.write(f"+{self.__class_name__}.__rescueImmatureStr() ++ LookupError  - "
                                              f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
@@ -9857,7 +9859,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - "
+                            self.__lfh.write(f"+{self.__class_name__}.__rescueImmatureStr() ++ LookupError  - "
                                              f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
@@ -9925,7 +9927,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - "
+                            self.__lfh.write(f"+{self.__class_name__}.__rescueImmatureStr() ++ LookupError  - "
                                              f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
@@ -9952,7 +9954,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - "
+                            self.__lfh.write(f"+{self.__class_name__}.__rescueImmatureStr() ++ LookupError  - "
                                              f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
@@ -9980,7 +9982,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - "
+                            self.__lfh.write(f"+{self.__class_name__}.__rescueImmatureStr() ++ LookupError  - "
                                              f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
@@ -10008,7 +10010,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - "
+                            self.__lfh.write(f"+{self.__class_name__}.__rescueImmatureStr() ++ LookupError  - "
                                              f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     try:
@@ -10081,7 +10083,7 @@ class NmrDpUtility:
                 self.report.setWarning()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Warning  - {warn}\n")
 
         tags_with_null_str = []
 
@@ -10103,7 +10105,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Warning  - {warn}\n")
 
         for sf_category in self.__sf_category_list:
 
@@ -10129,7 +10131,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Warning  - {warn}\n")
 
         # initialize loop counter
         lp_counts = {t: 0 for t in self.nmr_content_subtypes}
@@ -10155,7 +10157,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Warning  - {warn}\n")
 
                 elif not self.__remediation_mode:
                     err = f"A saveframe with a category {lp_category!r} is missing. Please re-upload the {file_type.upper()} file."
@@ -10165,7 +10167,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Error  - {err}\n")
 
             elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint'] > 0 and content_type != 'nmr-restraints':
                 err = f"A saveframe with a category {lp_category!r} is missing. Please re-upload the {file_type.upper()} file."
@@ -10175,7 +10177,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Error  - {err}\n")
 
         elif lp_counts[content_subtype] > 1:
 
@@ -10315,7 +10317,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Error  - {err}\n")
 
             if self.__remediation_mode:
                 dir_path = os.path.dirname(self.__dstPath)
@@ -10337,7 +10339,7 @@ class NmrDpUtility:
                 self.report.setWarning()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Warning  - {warn}\n")
 
             else:
 
@@ -10349,7 +10351,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Error  - {err}\n")
 
         content_subtype = 'dist_restraint'
 
@@ -10392,7 +10394,7 @@ class NmrDpUtility:
                 self.report.setWarning()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Warning  - {warn}\n")
 
             elif not self.__validation_server:
 
@@ -10404,7 +10406,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Error  - {err}\n")
 
         if (lp_counts['dist_restraint'] > 0 or lp_counts['dihed_restraint'] or lp_counts['rdc_restraint'])\
            and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
@@ -10417,7 +10419,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Error  - {err}\n")
 
         has_spectral_peak = lp_counts['spectral_peak'] + lp_counts['spectral_peak_alt'] > 0
 
@@ -10438,7 +10440,7 @@ class NmrDpUtility:
             self.report.setWarning()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Warning  - {warn}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Warning  - {warn}\n")
 
         if has_spectral_peak and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
 
@@ -10450,7 +10452,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Error  - {err}\n")
 
             if self.__remediation_mode and dir_path is not None:
                 touch_file = os.path.join(dir_path, '.entry_with_pk')
@@ -10478,7 +10480,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubType() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Error  - {err}\n")
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
         # """ DAOTHER-1728, 9846: no need to wipe category for chemical shift reference
@@ -10488,7 +10490,7 @@ class NmrDpUtility:
         #
         #     content_subtype = 'chem_shift_ref'
         #
-        #     # Delete extra saveframes for chemical shift reference
+        #     # delete extra saveframes for chemical shift reference
         #
         #     if content_subtype in content_subtypes.keys():
         #         while content_subtypes[content_subtype] > content_subtypes['chem_shift']:
@@ -11450,7 +11452,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
                 valid = False
 
@@ -11465,7 +11467,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
                 valid = False
 
@@ -11649,7 +11651,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {str(e)}\n")
 
             if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
                     and not has_plane_restraint and not has_hbond_restraint and not has_ssbond_restraint:
@@ -11666,7 +11668,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
                 has_chem_shift = False
 
@@ -11687,7 +11689,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
                     has_chem_shift = False
 
@@ -11705,7 +11707,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
             elif has_chem_shift:
                 has_chem_shift = False
@@ -11720,7 +11722,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
             if content_subtype is None:
                 content_subtype = {'chem_shift': 1 if has_chem_shift else 0,
@@ -11767,7 +11769,7 @@ class NmrDpUtility:
                 self.report.setWarning()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Warning  - {warn}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Warning  - {warn}\n")
 
             elif is_aux_amb and not has_amb_coord and not has_topology:
 
@@ -11807,7 +11809,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
             elif is_aux_gro and not has_topology:
 
@@ -11841,7 +11843,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
             elif is_aux_cha and not has_topology:
 
@@ -11876,7 +11878,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
             self.__legacy_dist_restraint_uploaded |= has_dist_restraint
 
@@ -11915,7 +11917,7 @@ class NmrDpUtility:
                                                                       {'file_name': file_name, 'description': err}})
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
                     else:
 
@@ -11927,7 +11929,7 @@ class NmrDpUtility:
                                                                       {'file_name': file_name, 'description': err}})
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
                 elif 'chem_shift' not in content_subtype:
 
@@ -11944,7 +11946,7 @@ class NmrDpUtility:
                                                                             {'file_name': file_name, 'description': warn}})
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Warning  - {warn}\n")
 
                         else:
 
@@ -11956,7 +11958,7 @@ class NmrDpUtility:
                                                                           {'file_name': file_name, 'description': err}})
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
         md5_set = set(md5_list)
 
@@ -11994,13 +11996,13 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
                     if self.__remediation_mode:
                         file_path_2 = self.__inputParamDict[ar_file_path_list][j]['file_name']
                         shutil.copyfile(file_path_2, file_path_2 + '-ignored')
 
-        # Restart using format issue resolved input files
+        # restart using format issue resolved input files
 
         if self.__remediation_mode and corrected:
 
@@ -12090,7 +12092,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
 
                 continue
 
@@ -12206,7 +12208,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
 
                     continue
 
@@ -12219,7 +12221,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
 
                     continue
 
@@ -12267,7 +12269,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
 
                     continue
 
@@ -12281,7 +12283,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
 
                     continue
 
@@ -12291,7 +12293,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {str(e)}\n")
 
                 return False
 
@@ -12313,7 +12315,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
 
             elif len_valid_types == 0:
 
@@ -12325,7 +12327,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
 
             else:
 
@@ -12338,7 +12340,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
 
         return not self.report.isError()
 
@@ -14498,7 +14500,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testFormatValidityOfLegacyMr() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testFormatValidityOfLegacyMr() ++ Error  - {str(e)}\n")
 
     def __detectOtherPossibleFormatAsErrorOfLegacyMr(self, file_path: str, file_name: str, file_type: str,
                                                      dismiss_err_lines: List[int], multiple_check: bool = False
@@ -14954,7 +14956,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectOtherPossibleFormatAsErrorOfLegacyMr() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__detectOtherPossibleFormatAsErrorOfLegacyMr() ++ Error  - {err}\n")
 
         except ValueError:
             pass
@@ -15032,7 +15034,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                     return False
 
@@ -15050,7 +15052,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {str(e)}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {str(e)}\n")
 
                         return False
 
@@ -15440,7 +15442,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             else:
 
@@ -15622,7 +15624,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             else:
 
@@ -15672,7 +15674,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {str(e)}\n")
 
                 return False
 
@@ -15770,7 +15772,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                     else:
 
@@ -15979,7 +15981,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                         aborted = True
 
@@ -16039,7 +16041,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             aborted = True
 
@@ -16058,7 +16060,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                         aborted = True
 
@@ -16075,7 +16077,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                         aborted = True
 
@@ -16420,7 +16422,7 @@ class NmrDpUtility:
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                                 else:
 
@@ -16554,7 +16556,7 @@ class NmrDpUtility:
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                                 else:
 
@@ -16706,7 +16708,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             aborted = True
 
@@ -16782,7 +16784,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                                 aborted = True
 
@@ -16800,7 +16802,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             aborted = True
 
@@ -16818,7 +16820,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
                             aborted = True
 
@@ -16903,7 +16905,7 @@ class NmrDpUtility:
                                                                  {'file_name': mr_file_name, 'description': err}})
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
         if has_spectral_peak:
 
@@ -17179,7 +17181,7 @@ class NmrDpUtility:
                                                 self.report.setWarning()
 
                                                 if self.__verbose:
-                                                    self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequence() ++ Warning  - {warn}\n")
+                                                    self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequence() ++ Warning  - {warn}\n")
 
                                     if total > 1:
 
@@ -17209,7 +17211,7 @@ class NmrDpUtility:
                                                     self.report.setWarning()
 
                                                     if self.__verbose:
-                                                        self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequence() ++ Warning  - {warn}\n")
+                                                        self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequence() ++ Warning  - {warn}\n")
 
                                 for seq_id, comp_id in zip(seq_ids, comp_ids):
 
@@ -17231,7 +17233,7 @@ class NmrDpUtility:
                                             self.report.setWarning()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequence() ++ Warning  - {warn}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequence() ++ Warning  - {warn}\n")
 
                                         break
 
@@ -17245,7 +17247,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequence() ++ KeyError  - {str(e)}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequence() ++ KeyError  - {str(e)}\n")
 
                 except LookupError:
                     # """
@@ -17266,7 +17268,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequence() ++ ValueError  - {str(e)}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequence() ++ ValueError  - {str(e)}\n")
 
                 except UserWarning as e:
 
@@ -17288,7 +17290,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequence() ++ ValueError  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequence() ++ ValueError  - {err}\n")
 
                         else:
 
@@ -17296,7 +17298,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequence() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequence() ++ Error  - {err}\n")
 
                 except Exception as e:
 
@@ -17304,7 +17306,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequence() ++ Error  - {str(e)}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequence() ++ Error  - {str(e)}\n")
 
                 is_done = False
 
@@ -17446,7 +17448,7 @@ class NmrDpUtility:
                                             self.report.setWarning()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - {warn}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ Warning  - {warn}\n")
 
                                 if total > 1:
 
@@ -17476,7 +17478,7 @@ class NmrDpUtility:
                                                 self.report.setWarning()
 
                                                 if self.__verbose:
-                                                    self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - {warn}\n")
+                                                    self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ Warning  - {warn}\n")
 
                             for seq_id, comp_id in zip(seq_ids, comp_ids):
 
@@ -17498,7 +17500,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ Warning  - {warn}\n")
 
                                     break
 
@@ -17511,7 +17513,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequenceInLoop() ++ KeyError  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ KeyError  - {str(e)}\n")
 
         except LookupError:
             # """
@@ -17533,7 +17535,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequenceInLoop() ++ ValueError  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ ValueError  - {str(e)}\n")
 
         except UserWarning as e:
 
@@ -17559,7 +17561,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequenceInLoop() ++ ValueError  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ ValueError  - {err}\n")
 
                 else:
 
@@ -17567,7 +17569,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ Error  - {err}\n")
 
         except Exception as e:
 
@@ -17575,7 +17577,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ Error  - {str(e)}\n")
 
         return has_poly_seq
 
@@ -17804,7 +17806,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Warning  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Warning  - {err}\n")
 
                                 else:
 
@@ -17814,7 +17816,7 @@ class NmrDpUtility:
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Error  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Error  - {err}\n")
 
                             else:
 
@@ -17848,7 +17850,7 @@ class NmrDpUtility:
                                                     self.report.setError()
 
                                                     if self.__verbose:
-                                                        self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Error  - {err}\n")
+                                                        self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Error  - {err}\n")
 
                                                 else:
 
@@ -17861,7 +17863,7 @@ class NmrDpUtility:
                                                     self.report.setWarning()
 
                                                     if self.__verbose:
-                                                        self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Warning  - {warn}\n")
+                                                        self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Warning  - {warn}\n")
 
                                         else:
                                             i = s1['seq_id'].index(seq_id)
@@ -17878,7 +17880,7 @@ class NmrDpUtility:
                                                     self.report.setWarning()
 
                                                     if self.__verbose:
-                                                        self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Warning  - {err}\n")
+                                                        self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Warning  - {err}\n")
 
                                                 elif self.__tolerant_seq_align and getOneLetterCodeCan(comp_id) == getOneLetterCodeCan(_comp_id):
                                                     self.report.warning.appendDescription('sequence_mismatch',
@@ -17887,7 +17889,7 @@ class NmrDpUtility:
                                                     self.report.setWarning()
 
                                                     if self.__verbose:
-                                                        self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Warning  - {err}\n")
+                                                        self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Warning  - {err}\n")
 
                                                     comp_id_conv_dict = {comp_id: _comp_id}
 
@@ -17902,7 +17904,7 @@ class NmrDpUtility:
                                                     self.report.setError()
 
                                                     if self.__verbose:
-                                                        self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Error  - {err}\n")
+                                                        self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Error  - {err}\n")
 
                 # brute force check
                 else:
@@ -17945,7 +17947,7 @@ class NmrDpUtility:
                                                     self.report.setWarning()
 
                                                     if self.__verbose:
-                                                        self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Warning  - {err}\n")
+                                                        self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Warning  - {err}\n")
 
                                                 else:
                                                     self.report.error.appendDescription('sequence_mismatch',
@@ -17954,7 +17956,7 @@ class NmrDpUtility:
                                                     self.report.setError()
 
                                                     if self.__verbose:
-                                                        self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Error  - {err}\n")
+                                                        self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Error  - {err}\n")
 
                             # inverse check required for unverified sequences
                             for s1 in ps1:
@@ -17983,7 +17985,7 @@ class NmrDpUtility:
                                                     self.report.setWarning()
 
                                                     if self.__verbose:
-                                                        self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Warning  - {err}\n")
+                                                        self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Warning  - {err}\n")
 
                                                 else:
                                                     self.report.error.appendDescription('sequence_mismatch',
@@ -17992,7 +17994,7 @@ class NmrDpUtility:
                                                     self.report.setError()
 
                                                     if self.__verbose:
-                                                        self.__lfh.write(f"+NmrDpUtility.__testSequenceConsistency() ++ Error  - {err}\n")
+                                                        self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Error  - {err}\n")
 
         if update_poly_seq:
             self.__extractPolymerSequenceInLoop()
@@ -18401,7 +18403,7 @@ class NmrDpUtility:
 
         file_type = input_source_dic['file_type']
 
-        if file_type != 'nmr-star' or (not self.__has_star_entity):
+        if file_type != 'nmr-star' or not self.__has_star_entity:
             return False
 
         if not self.__combined_mode:
@@ -18520,7 +18522,7 @@ class NmrDpUtility:
 
         file_type = input_source_dic['file_type']
 
-        if file_type != 'nmr-star' or (not self.__has_star_entity):
+        if file_type != 'nmr-star' or not self.__has_star_entity:
             return False
 
         if self.__combined_mode:
@@ -18568,7 +18570,7 @@ class NmrDpUtility:
                 if row not in emptyValue:
                     entity_id_set.add(row)
 
-            if len(loops) != len(entity_id_set):  # DAOTHER-8800: Make sure all _Entity saveframes have an _Entity Comp Index loop before relying on these loops
+            if len(loops) != len(entity_id_set):  # DAOTHER-8800: make sure all _Entity saveframes have an _Entity Comp Index loop before relying on these loops
                 return False
 
         asm = []  # molecular assembly of a loop
@@ -18634,7 +18636,7 @@ class NmrDpUtility:
 
         file_type = input_source_dic['file_type']
 
-        if file_type != 'nmr-star' or (not self.__has_star_entity):
+        if file_type != 'nmr-star' or not self.__has_star_entity:
             return None
 
         star_data = self.__star_data[file_list_id]
@@ -18789,7 +18791,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__extractNonStandardResidue() ++ Warning  - {warn}\n")
 
                         # DAOTHER-9065
                         else:
@@ -18802,7 +18804,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__extractNonStandardResidue() ++ Warning  - {warn}\n")
 
                     ent['exptl_data'].append({'chem_shift': False, 'dist_restraint': False, 'dihed_restraint': False,
                                               'rdc_restraint': False, 'spectral_peak': False, 'coordinate': False})
@@ -20145,7 +20147,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Error  - {err}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - {err}\n")
 
                             else:
                                 _atom_ids.extend(_atom_id)
@@ -20193,7 +20195,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - {warn}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Warning  - {warn}\n")
 
                                 self.__fixAtomNomenclature(comp_id, {atom_id: atom_id_})
 
@@ -20216,7 +20218,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - {warn}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Warning  - {warn}\n")
 
                                 # @see: https://bmrb.io/ref_info/atom_nom.tbl
                                 self.__fixAtomNomenclature(comp_id, {_atom_id_1: _atom_id_3})
@@ -20248,7 +20250,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Error  - {err}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - {err}\n")
 
                 # non-standard residue
                 else:
@@ -20291,7 +20293,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Warning  - {warn}\n")
 
                         ref_elems = set(a[self.__ccU.ccaTypeSymbol] for a in self.__ccU.lastAtomList if a[self.__ccU.ccaLeavingAtomFlag] != 'Y')
 
@@ -20336,7 +20338,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Warning  - {warn}\n")
 
                                     self.__fixAtomNomenclature(comp_id, {atom_id: atom_id_})
 
@@ -20407,7 +20409,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Warning  - {warn}\n")
 
                             auth_atom_ids = sorted(set(_auth_atom_ids))
 
@@ -20438,7 +20440,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Warning  - {warn}\n")
 
                         # non-standard residue
                         else:
@@ -20479,7 +20481,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Warning  - {warn}\n")
 
                                 break
 
@@ -20509,7 +20511,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Warning  - {warn}\n")
 
                 except LookupError:
                     # """
@@ -20531,7 +20533,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - {str(e)}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ ValueError  - {str(e)}\n")
 
                 except UserWarning as e:
 
@@ -20553,7 +20555,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ ValueError  - {err}\n")
 
                         else:
 
@@ -20561,7 +20563,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - {err}\n")
 
                 except Exception as e:
 
@@ -20569,7 +20571,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Error  - {str(e)}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - {str(e)}\n")
 
         except LookupError as e:
 
@@ -20589,7 +20591,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ ValueError  - {str(e)}\n")
 
         except UserWarning as e:
 
@@ -20611,7 +20613,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ ValueError  - {err}\n")
 
                 else:
 
@@ -20619,7 +20621,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - {err}\n")
 
         except Exception as e:
 
@@ -20627,7 +20629,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__validateAtomNomenclature() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - {str(e)}\n")
 
     def __fixAtomNomenclature(self, comp_id: str, atom_id_conv_dict: dict):
         """ Fix atom nomenclature.
@@ -20834,7 +20836,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__validateAtomTypeOfCsLoop() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__validateAtomTypeOfCsLoop() ++ Error  - {err}\n")
 
                 else:
 
@@ -20850,7 +20852,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateAtomTypeOfCsLoop() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateAtomTypeOfCsLoop() ++ Error  - {err}\n")
 
                     for atom_id in atom_ids:
                         if not atom_id.startswith(atom_type):
@@ -20866,7 +20868,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateAtomTypeOfCsLoop() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateAtomTypeOfCsLoop() ++ Error  - {err}\n")
 
         except LookupError as e:
 
@@ -20887,7 +20889,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__validateAtomTypeOfCsLoop() ++ ValueError  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__validateAtomTypeOfCsLoop() ++ ValueError  - {str(e)}\n")
 
         except UserWarning as e:
 
@@ -20909,7 +20911,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__validateAtomTypeOfCsLoop() ++ ValueError  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__validateAtomTypeOfCsLoop() ++ ValueError  - {err}\n")
 
                 else:
 
@@ -20917,7 +20919,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__validateAtomTypeOfCsLoop() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__validateAtomTypeOfCsLoop() ++ Error  - {err}\n")
 
         except Exception as e:
 
@@ -20925,7 +20927,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__validateAtomTypeOfCsLoop() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__validateAtomTypeOfCsLoop() ++ Error  - {str(e)}\n")
 
     def __validateAmbigCodeOfCsLoop(self) -> bool:
         """ Validate ambiguity code on assigned chemical shifts.
@@ -21042,7 +21044,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__testAmbigCodeOfCsLoop() ++ Warning  - {warn}\n")
 
                                     valid = False
 
@@ -21062,7 +21064,7 @@ class NmrDpUtility:
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ Error  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__testAmbigCodeOfCsLoop() ++ Error  - {err}\n")
 
                                     valid = False
 
@@ -21076,7 +21078,7 @@ class NmrDpUtility:
                 self.report.setWarning()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ Warning  - {warn}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__testAmbigCodeOfCsLoop() ++ Warning  - {warn}\n")
 
                 valid = False
 
@@ -21199,7 +21201,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ ValueError  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testAmbigCodeOfCsLoop() ++ ValueError  - {str(e)}\n")
 
         except UserWarning as e:
 
@@ -21221,7 +21223,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ ValueError  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__testAmbigCodeOfCsLoop() ++ ValueError  - {err}\n")
 
                 else:
 
@@ -21229,7 +21231,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__testAmbigCodeOfCsLoop() ++ Error  - {err}\n")
 
         except Exception as e:
 
@@ -21237,7 +21239,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testAmbigCodeOfCsLoop() ++ Error  - {str(e)}\n")
 
         return False
 
@@ -21313,7 +21315,7 @@ class NmrDpUtility:
                 self.report.setWarning()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__testIndexConsistency() ++ Warning  - {warn}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__testIndexConsistency() ++ Warning  - {warn}\n")
 
         except KeyError as e:
 
@@ -21323,7 +21325,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testIndexConsistency() ++ KeyError  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testIndexConsistency() ++ KeyError  - {str(e)}\n")
 
         except LookupError:
             # """
@@ -21345,7 +21347,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testIndexConsistency() ++ ValueError  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testIndexConsistency() ++ ValueError  - {str(e)}\n")
 
         except UserWarning as e:
 
@@ -21367,7 +21369,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__testIndexConsistency() ++ ValueError  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__testIndexConsistency() ++ ValueError  - {err}\n")
 
                 elif err.startswith('[Too big loop]'):
                     continue
@@ -21378,7 +21380,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__testIndexConsistency() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__testIndexConsistency() ++ Error  - {err}\n")
 
         except Exception as e:
 
@@ -21386,7 +21388,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testIndexConsistency() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testIndexConsistency() ++ Error  - {str(e)}\n")
 
     def __testDataConsistencyInLoop(self) -> bool:
         """ Perform consistency test on data of interesting loops.
@@ -21534,7 +21536,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInLoop() ++ KeyError  - {str(e)}\n")
 
         except LookupError as e:
 
@@ -21556,7 +21558,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInLoop() ++ ValueError  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInLoop() ++ ValueError  - {str(e)}\n")
 
         except UserWarning as e:
 
@@ -21616,7 +21618,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInLoop() ++ Warning  - {warn}\n")
 
                     else:
 
@@ -21626,7 +21628,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInLoop() ++ KeyError  - {warn}\n")
 
                 else:
 
@@ -21634,7 +21636,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInLoop() ++ Error  - {warn}\n")
 
             # try to parse data without constraints
             if has_multiple_data:
@@ -21681,7 +21683,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInLoop() ++ Error  - {str(e)}\n")
 
     def __detectConflictDataInLoop(self) -> bool:
         """ Detect redundant/inconsistent data of interesting loops.
@@ -21921,7 +21923,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__detetConflictDataInLoop() ++ Warning  - {warn}\n")
 
                     elif inconsist:
 
@@ -21941,7 +21943,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__detetConflictDataInLoop() ++ Warning  - {warn}\n")
 
             if redundant:
 
@@ -21974,7 +21976,7 @@ class NmrDpUtility:
                 self.report.setWarning()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - {warn}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detetConflictDataInLoop() ++ Warning  - {warn}\n")
 
     def __testNmrCovalentBond(self) -> bool:
         """ Perform consistency test on data of auxiliary loops.
@@ -22417,7 +22419,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testNmrCovalentBond() ++ KeyError  - {str(e)}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__testNmrCovalentBond() ++ KeyError  - {str(e)}\n")
 
                         except LookupError as e:
 
@@ -22439,7 +22441,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testNmrCovalentBond() ++ ValueError  - {str(e)}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__testNmrCovalentBond() ++ ValueError  - {str(e)}\n")
 
                         except UserWarning:
                             pass
@@ -22450,7 +22452,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testNmrCovalentBond() ++ Error  - {str(e)}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__testNmrCovalentBond() ++ Error  - {str(e)}\n")
 
         return self.report.getTotalErrors() == __errors
 
@@ -22508,7 +22510,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ ValueError  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() ++ ValueError  - {err}\n")
 
                             continue
 
@@ -22556,7 +22558,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ KeyError  - {str(e)}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() ++ KeyError  - {str(e)}\n")
 
                             except LookupError as e:
 
@@ -22578,7 +22580,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ ValueError  - {str(e)}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() ++ ValueError  - {str(e)}\n")
 
                             except UserWarning as e:
 
@@ -22635,7 +22637,7 @@ class NmrDpUtility:
                                             self.report.setWarning()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - {warn}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() ++ Warning  - {warn}\n")
 
                                         else:
 
@@ -22645,7 +22647,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ KeyError  - {warn}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() ++ KeyError  - {warn}\n")
 
                                     else:
 
@@ -22653,7 +22655,7 @@ class NmrDpUtility:
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() ++ Error  - {warn}\n")
 
                                 # try to parse data without constraints
                                 if has_multiple_data:
@@ -22707,7 +22709,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - {str(e)}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() ++ Error  - {str(e)}\n")
 
                         elif lp_category in self.linked_lp_categories[file_type][content_subtype]:
 
@@ -22721,7 +22723,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - {warn}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() ++ Warning  - {warn}\n")
 
                         else:
 
@@ -22738,7 +22740,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - {warn}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() ++ Warning  - {warn}\n")
 
         return self.report.getTotalErrors() == __errors
 
@@ -22762,7 +22764,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - {err}\n")
 
             try:
 
@@ -22873,7 +22875,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Warning  - {err}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Warning  - {err}\n")
 
                             if min_limits[j] is None or max_limits[j] is None:
                                 continue
@@ -22891,7 +22893,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - {err}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - {err}\n")
 
             except Exception as e:
 
@@ -22899,7 +22901,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - {str(e)}\n")
 
         if (file_type == 'nef' and lp_category == '_nef_spectrum_dimension_transfer') or (file_type == 'nmr-star' and lp_category == '_Spectral_dim_transfer'):
 
@@ -22915,7 +22917,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - {err}\n")
 
     def __testDataConsistencyInAuxLoopOfSpectralPeakAlt(self, file_name: str, file_type: str, sf_framecode: str,
                                                         num_dim: int, lp_category: str, aux_data: List[List[dict]],
@@ -22939,7 +22941,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - {err}\n")
 
             try:
 
@@ -23039,7 +23041,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Warning  - {warn}\n")
 
                         if min_limits[j] is None or max_limits[j] is None:
                             continue
@@ -23057,7 +23059,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - {err}\n")
 
             except LookupError as e:
 
@@ -23079,7 +23081,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - {str(e)}\n")
 
             except Exception as e:
 
@@ -23087,7 +23089,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - {str(e)}\n")
 
         if lp_category == '_Spectral_dim_transfer':
 
@@ -23103,7 +23105,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - {err}\n")
 
     def __testSfTagConsistency(self) -> bool:
         """ Perform consistency test on saveframe tags.
@@ -23149,7 +23151,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testSfTagConsistency() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__testSfTagConsistency() ++ Error  - {err}\n")
 
                     try:
 
@@ -23185,7 +23187,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testSfTagConsistency() ++ ValueError  - {str(e)}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__testSfTagConsistency() ++ ValueError  - {str(e)}\n")
 
                     except UserWarning as e:
 
@@ -23237,7 +23239,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testSfTagConsistency() ++ Warning  - {warn}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__testSfTagConsistency() ++ Warning  - {warn}\n")
 
                             else:
 
@@ -23245,7 +23247,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testSfTagConsistency() ++ Error  - {warn}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__testSfTagConsistency() ++ Error  - {warn}\n")
 
                         # try to parse data without constraints
                         try:
@@ -23266,7 +23268,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testSfTagConsistency() ++ Error  - {str(e)}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__testSfTagConsistency() ++ Error  - {str(e)}\n")
 
                     parent_keys.add(list_id)
                     if str(list_id) not in sf_framecode_dict:
@@ -23309,7 +23311,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__testParentChildRelation() ++ KeyError  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__testParentChildRelation() ++ KeyError  - {err}\n")
 
             index_tag = self.index_tags[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
@@ -23337,7 +23339,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testParentChildRelation() ++ ValueError  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__testParentChildRelation() ++ ValueError  - {err}\n")
 
                         break
 
@@ -23369,7 +23371,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testParentChildRelation() ++ ValueError  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__testParentChildRelation() ++ ValueError  - {err}\n")
 
                             break
 
@@ -23379,7 +23381,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testParentChildRelation() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testParentChildRelation() ++ Error  - {str(e)}\n")
 
         return self.report.getTotalErrors() == __errors
 
@@ -23522,7 +23524,7 @@ class NmrDpUtility:
                                     if allowed_ambig_code in (0, 1):
                                         row[ambig_code_col] = '1'
 
-            if file_type == 'nef' or (not self.__nonblk_anomalous_cs):
+            if file_type == 'nef' or not self.__nonblk_anomalous_cs:
                 lp_data = next(lp['data'] for lp in self.__lp_data[content_subtype]
                                if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode)
 
@@ -23546,7 +23548,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Error  - {err}\n")
 
                     return False
 
@@ -23672,7 +23674,7 @@ class NmrDpUtility:
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ ValueError  - {err}\n")
 
                                 else:
 
@@ -23683,7 +23685,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {err}\n")
 
                         if std_value is None or std_value <= 0.0:
 
@@ -23697,7 +23699,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                             continue
 
@@ -23712,7 +23714,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                             continue
 
@@ -23755,7 +23757,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {err}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {err}\n")
 
                                         if self.__bmrb_only and self.__leave_intl_note and file_type == 'nmr-star' and details_col != -1:
                                             _details = loop.data[idx][details_col]
@@ -23779,7 +23781,7 @@ class NmrDpUtility:
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ ValueError  - {err}\n")
 
                                 elif pa is None:
 
@@ -23809,7 +23811,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                                         if self.__bmrb_only and self.__leave_intl_note and file_type == 'nmr-star' and details_col != -1\
                                            and ((na['ring_angle'] - self.magic_angle) * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
@@ -23835,7 +23837,7 @@ class NmrDpUtility:
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ ValueError  - {warn}\n")
 
                                 else:
 
@@ -23858,7 +23860,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                                     if self.__bmrb_only and self.__leave_intl_note and file_type == 'nmr-star' and details_col != -1\
                                        and pa['distance'] > self.vicinity_paramagnetic:
@@ -23900,7 +23902,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                                 elif pa is None:
 
@@ -23927,7 +23929,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                                 else:
 
@@ -23952,7 +23954,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                             elif sigma > self.cs_unusual_error_scaled_by_sigma and std_value > max_inclusive:
 
@@ -24001,7 +24003,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                             elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
@@ -24015,7 +24017,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                         else:
 
@@ -24054,7 +24056,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {err}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {err}\n")
 
                                         if self.__bmrb_only and self.__leave_intl_note and file_type == 'nmr-star' and details_col != -1:
                                             _details = loop.data[idx][details_col]
@@ -24078,7 +24080,7 @@ class NmrDpUtility:
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ ValueError  - {err}\n")
 
                                 elif pa is None:
 
@@ -24107,7 +24109,7 @@ class NmrDpUtility:
                                             self.report.setWarning()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                                             if self.__bmrb_only and self.__leave_intl_note and file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[idx][details_col]
@@ -24132,7 +24134,7 @@ class NmrDpUtility:
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ ValueError  - {warn}\n")
 
                                 else:
 
@@ -24157,7 +24159,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                                         if self.__bmrb_only and self.__leave_intl_note and file_type == 'nmr-star' and details_col != -1:
                                             _details = loop.data[idx][details_col]
@@ -24198,7 +24200,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                                 elif pa is None:
 
@@ -24225,7 +24227,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                                 else:
 
@@ -24250,7 +24252,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                 # standard residue
                 else:
@@ -24287,7 +24289,7 @@ class NmrDpUtility:
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ ValueError  - {err}\n")
 
                                 else:
 
@@ -24298,7 +24300,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {err}\n")
 
                         if std_value is None or std_value <= 0.0:
 
@@ -24312,7 +24314,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                             continue
 
@@ -24327,7 +24329,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                             continue
 
@@ -24368,7 +24370,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {err}\n")
 
                                     if self.__bmrb_only and self.__leave_intl_note and file_type == 'nmr-star' and details_col != -1:
                                         _details = loop.data[idx][details_col]
@@ -24392,7 +24394,7 @@ class NmrDpUtility:
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ ValueError  - {err}\n")
 
                             elif pa is None:
 
@@ -24422,7 +24424,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                                     if self.__bmrb_only and self.__leave_intl_note and file_type == 'nmr-star' and details_col != -1\
                                        and ((na['ring_angle'] - self.magic_angle) * z_score > 0.0 or self.__nonblk_anomalous_cs):
@@ -24448,7 +24450,7 @@ class NmrDpUtility:
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ ValueError  - {warn}\n")
 
                             else:
 
@@ -24471,7 +24473,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                                 if self.__bmrb_only and self.__leave_intl_note and file_type == 'nmr-star' and details_col != -1\
                                    and pa['distance'] > self.vicinity_paramagnetic:
@@ -24513,7 +24515,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                             elif pa is None:
 
@@ -24540,7 +24542,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                             else:
 
@@ -24565,7 +24567,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                         elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
@@ -24579,7 +24581,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                 if not has_cs_stat:
 
@@ -24592,7 +24594,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                 # check ambiguity code
                 if file_type == 'nmr-star' and ambig_code_name in row:
@@ -24637,7 +24639,7 @@ class NmrDpUtility:
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ ValueError  - {err}\n")
 
                         try:
 
@@ -24669,7 +24671,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                         except StopIteration:
                             pass
@@ -24691,7 +24693,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {err}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {err}\n")
 
                             else:
 
@@ -24721,7 +24723,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
                             else:
 
@@ -24745,9 +24747,9 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
-                                # Intra-residue ambiguities
+                                # intra-residue ambiguities
                                 elif ambig_code == 4:
 
                                     for _row in ambig_set:
@@ -24774,9 +24776,9 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ ValueError  - {err}\n")
 
-                                # Inter-residue ambiguities
+                                # inter-residue ambiguities
                                 elif ambig_code == 5:
 
                                     inter_residue_seq_id = False
@@ -24822,9 +24824,9 @@ class NmrDpUtility:
                                                 self.report.setError()
 
                                                 if self.__verbose:
-                                                    self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                                    self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ ValueError  - {err}\n")
 
-                                # Inter-molecular ambiguities
+                                # inter-molecular ambiguities
                                 elif ambig_code == 6:
 
                                     for _row in ambig_set:
@@ -24859,7 +24861,7 @@ class NmrDpUtility:
                                                 self.report.setError()
 
                                                 if self.__verbose:
-                                                    self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                                    self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ ValueError  - {err}\n")
 
                                 for _row in ambig_set:
                                     chain_id2 = _row[chain_id_name]
@@ -24914,7 +24916,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ ValueError  - {err}\n")
 
                                     elif abs(value2 - value) > CS_UNCERT_MAX and value < value2 and ambig_code <= 4:
 
@@ -24955,7 +24957,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ ValueError  - {err}\n")
 
                     else:
 
@@ -24968,7 +24970,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ ValueError  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ ValueError  - {err}\n")
 
         except StopIteration:
 
@@ -24979,7 +24981,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Error  - {err}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Error  - {err}\n")
 
         except Exception as e:
 
@@ -24987,7 +24989,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__validateCsValue() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Error  - {str(e)}\n")
 
         return modified
 
@@ -25450,7 +25452,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__remediateCsLoop() ++ Error  - {err}\n")
 
                 return False
 
@@ -25548,7 +25550,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__remediateCsLoop() ++ Warning  - {warn}\n")
 
                 for _id in conflict_id:
                     del lp.data[_id]
@@ -25581,7 +25583,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__remediateCsLoop() ++ Error  - {err}\n")
 
                 return False
 
@@ -27796,7 +27798,7 @@ class NmrDpUtility:
                     if len(set(str(lp.data[_id_]) for _id_ in _id_set)) == 1:
                         continue
 
-                    # DAOTHER-9520: Suppress known warnings
+                    # DAOTHER-9520: suppress known warnings
                     if orig_atom_id_col != -1\
                        and any(lp.data[_id1_][orig_atom_id_col] != lp.data[_id2_][orig_atom_id_col]
                                for (_id1_, _id2_) in itertools.combinations(_id_set, 2)):
@@ -27811,7 +27813,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__remediateCsLoop() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateCsLoop() ++ Warning  - {warn}\n")
 
                 for _id in conflict_id:
                     del lp.data[_id]
@@ -28119,7 +28121,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__removeUnusedPdbInsCode() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__removeUnusedPdbInsCode() ++ Error  - {str(e)}\n")
 
         return False
 
@@ -28532,7 +28534,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__testCsPseudoAtomNameConsistencyInMrLoop() ++ ValueError  - {err}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__testCsPseudoAtomNameConsistencyInMrLoop() ++ ValueError  - {err}\n")
 
                                         else:
 
@@ -28550,7 +28552,7 @@ class NmrDpUtility:
                                             self.report.setWarning()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__testCsPseudoAtomNameConsistencyInMrLoop() ++ Warning  - {warn}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__testCsPseudoAtomNameConsistencyInMrLoop() ++ Warning  - {warn}\n")
 
                         except Exception as e:
 
@@ -28558,7 +28560,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testCsPseudoAtomNameConsistencyInMrLoop() ++ Error  - {str(e)}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__testCsPseudoAtomNameConsistencyInMrLoop() ++ Error  - {str(e)}\n")
 
             if rescue_mode and len(missing_cs_atoms) > 0:
 
@@ -28628,7 +28630,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testCsPseudoAtomNameConsistencyInMrLoop() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__testCsPseudoAtomNameConsistencyInMrLoop() ++ Warning  - {warn}\n")
 
                     del sf[loop]
 
@@ -28662,7 +28664,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testCsPseudoAtomNameConsistencyInMrLoop() ++ Error  - {str(e)}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__testCsPseudoAtomNameConsistencyInMrLoop() ++ Error  - {str(e)}\n")
 
                 self.__depositNmrData()
 
@@ -28736,7 +28738,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkLoop() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() ++ Error  - {err}\n")
 
                             continue
 
@@ -28944,7 +28946,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkLoop() ++ Warning  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() ++ Warning  - {err}\n")
 
                                 else:
 
@@ -28995,7 +28997,7 @@ class NmrDpUtility:
                                                     self.report.setError()
 
                                                     if self.__verbose:
-                                                        self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkLoop() ++ ValueError  - {err}\n")
+                                                        self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() ++ ValueError  - {err}\n")
 
                                                 else:
 
@@ -29005,7 +29007,7 @@ class NmrDpUtility:
                                                     self.report.setWarning()
 
                                                     if self.__verbose:
-                                                        self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkLoop() ++ Warning  - {err}\n")
+                                                        self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() ++ Warning  - {err}\n")
 
                                     axis_code = str(cs[cs_iso_number]) + cs[cs_atom_type]
 
@@ -29022,7 +29024,7 @@ class NmrDpUtility:
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkLoop() ++ ValueError  - {err}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() ++ ValueError  - {err}\n")
 
                                 if True in onebond[d]:
                                     for d2 in range(num_dim):
@@ -29065,7 +29067,7 @@ class NmrDpUtility:
                                                 self.report.setError()
 
                                                 if self.__verbose:
-                                                    self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkLoop() ++ ValueError  - {err}\n")
+                                                    self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() ++ ValueError  - {err}\n")
 
                                 if True in jcoupling[d]:
                                     for d2 in range(num_dim):
@@ -29093,7 +29095,7 @@ class NmrDpUtility:
                                                 self.report.setError()
 
                                                 if self.__verbose:
-                                                    self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkLoop() ++ ValueError  - {err}\n")
+                                                    self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() ++ ValueError  - {err}\n")
 
                                 if True in relayed[d]:
                                     for d2 in range(num_dim):
@@ -29121,7 +29123,7 @@ class NmrDpUtility:
                                                 self.report.setError()
 
                                                 if self.__verbose:
-                                                    self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkLoop() ++ ValueError  - {err}\n")
+                                                    self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() ++ ValueError  - {err}\n")
 
                 except Exception as e:
 
@@ -29129,7 +29131,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkLoop() ++ Error  - {str(e)}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() ++ Error  - {str(e)}\n")
 
         return self.report.getTotalErrors() == __errors
 
@@ -29204,7 +29206,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkAltLoop() ++ Error  - {err}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() ++ Error  - {err}\n")
 
                                 continue
 
@@ -29430,7 +29432,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkAltLoop() ++ Warning  - {err}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() ++ Warning  - {err}\n")
 
                             else:
 
@@ -29480,7 +29482,7 @@ class NmrDpUtility:
                                                 self.report.setError()
 
                                                 if self.__verbose:
-                                                    self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkAltLoop() ++ ValueError  - {err}\n")
+                                                    self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() ++ ValueError  - {err}\n")
 
                                             else:
 
@@ -29490,7 +29492,7 @@ class NmrDpUtility:
                                                 self.report.setWarning()
 
                                                 if self.__verbose:
-                                                    self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkAltLoop() ++ Warning  - {err}\n")
+                                                    self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() ++ Warning  - {err}\n")
 
                                 axis_code = str(cs[cs_iso_number]) + cs[cs_atom_type]
 
@@ -29507,7 +29509,7 @@ class NmrDpUtility:
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkAltLoop() ++ ValueError  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() ++ ValueError  - {err}\n")
 
                             if d < num_dim and True in onebond[d]:
                                 for d2 in range(num_dim):
@@ -29559,7 +29561,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkAltLoop() ++ ValueError  - {err}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() ++ ValueError  - {err}\n")
 
                             if d < num_dim and True in jcoupling[d]:
                                 for d2 in range(num_dim):
@@ -29596,7 +29598,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkAltLoop() ++ ValueError  - {err}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() ++ ValueError  - {err}\n")
 
                             if d < num_dim and True in relayed[d]:
                                 for d2 in range(num_dim):
@@ -29633,7 +29635,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkAltLoop() ++ ValueError  - {err}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() ++ ValueError  - {err}\n")
 
                 except Exception as e:
 
@@ -29641,7 +29643,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__testCsValueConsistencyInPkAltLoop() ++ Error  - {str(e)}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() ++ Error  - {str(e)}\n")
 
         return self.report.getTotalErrors() == __errors
 
@@ -29743,7 +29745,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__testRdcVector() ++ Error  - {err}\n")
 
                     if chain_id_1 != chain_id_2:
 
@@ -29784,7 +29786,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__testRdcVector() ++ Error  - {err}\n")
 
                         else:
 
@@ -29798,7 +29800,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Warning  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__testRdcVector() ++ Warning  - {err}\n")
 
                     elif abs(seq_id_1 - seq_id_2) > 1:
 
@@ -29813,7 +29815,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__testRdcVector() ++ Error  - {err}\n")
 
                     elif abs(seq_id_1 - seq_id_2) == 1:
 
@@ -29837,7 +29839,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__testRdcVector() ++ Error  - {err}\n")
 
                     elif atom_id_1 == atom_id_2:
 
@@ -29852,7 +29854,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__testRdcVector() ++ Error  - {err}\n")
 
                     else:
 
@@ -29873,7 +29875,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__testRdcVector() ++ Warning  - {warn}\n")
 
                                 else:  # raised error already somewhere because of invalid atom nomenclature
                                     pass
@@ -29887,7 +29889,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testRdcVector() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testRdcVector() ++ Error  - {str(e)}\n")
 
     def __testCoordCovalentBond(self) -> bool:
         """ Perform consistency test on covalent bonds.
@@ -29996,7 +29998,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__testCoordCovalentBond() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__testCoordCovalentBond() ++ Warning  - {warn}\n")
 
         except Exception as e:
 
@@ -30004,7 +30006,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testCoordCovalentBond() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testCoordCovalentBond() ++ Error  - {str(e)}\n")
 
     def __getNmrBondLength(self, nmr_chain_id_1: str, nmr_seq_id_1: int, nmr_atom_id_1: str,
                            nmr_chain_id_2: str, nmr_seq_id_2: int, nmr_atom_id_2: str) -> Optional[List[dict]]:
@@ -30108,7 +30110,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__getCoordBondLength() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__getCoordBondLength() ++ Error  - {str(e)}\n")
 
             return None
 
@@ -30184,7 +30186,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__testCoordResidueVariant() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__testCoordResidueVariant() ++ Error  - {err}\n")
 
                 continue
 
@@ -30321,7 +30323,7 @@ class NmrDpUtility:
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__textResidueVariant() ++ Warning  - {warn}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__textResidueVariant() ++ Warning  - {warn}\n")
 
                                 continue
 
@@ -30373,7 +30375,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__textResidueVariant() ++ Warning  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__textResidueVariant() ++ Warning  - {warn}\n")
 
                                 if coord_atom_site_ is not None and coord_atom_site_['comp_id'] == cif_comp_id\
                                    and (atom_id_ in coord_atom_site_['atom_id']
@@ -30389,7 +30391,7 @@ class NmrDpUtility:
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__testResidueVariant() ++ Error  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__testResidueVariant() ++ Error  - {err}\n")
 
                             else:
 
@@ -30427,7 +30429,7 @@ class NmrDpUtility:
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__testResidueVariant() ++ Error  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__testResidueVariant() ++ Error  - {err}\n")
 
                     else:
 
@@ -30477,7 +30479,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__textResidueVariant() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__textResidueVariant() ++ Warning  - {warn}\n")
 
                             if coord_atom_site_ is not None and coord_atom_site_['comp_id'] == cif_comp_id\
                                and (atom_id_ in coord_atom_site_['atom_id']
@@ -30494,7 +30496,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write(f"+NmrDpUtility.__testResidueVariant() ++ Error  - {err}\n")
+                                    self.__lfh.write(f"+{self.__class_name__}.__testResidueVariant() ++ Error  - {err}\n")
 
         except LookupError as e:
 
@@ -30516,7 +30518,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testResidueVariant() ++ ValueError  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testResidueVariant() ++ ValueError  - {str(e)}\n")
 
         except Exception as e:
 
@@ -30524,7 +30526,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testResidueVariant() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testResidueVariant() ++ Error  - {str(e)}\n")
 
     def __getReducedAtomNotation(self, chain_id_name: str, chain_id: str, seq_id_name: str, seq_id: int,
                                  comp_id_name: str, comp_id: str, atom_id_name: str, atom_id: str) -> str:
@@ -30723,7 +30725,7 @@ class NmrDpUtility:
                                     myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                             except Exception as e:
-                                self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Error  - {str(e)}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {str(e)}\n")
 
             return True
 
@@ -30977,7 +30979,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ KeyError  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ KeyError  - {err}\n")
 
                     return False
 
@@ -31186,7 +31188,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
 
                                     if content_subtype != 'dihed_restraint' or not self.__remediation_mode:
                                         continue
@@ -31268,7 +31270,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Hydrogen not instantiated]'):
                                         if self.__remediation_mode:
@@ -31280,7 +31282,7 @@ class NmrDpUtility:
                                             self.report.setWarning()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Warning  - {idx_msg + warn}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Warning  - {idx_msg + warn}\n")
                                         else:
                                             self.report.error.appendDescription('hydrogen_not_instantiated',
                                                                                 {'file_name': original_file_name,
@@ -31290,7 +31292,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Invalid atom nomenclature]'):
                                         self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -31301,7 +31303,7 @@ class NmrDpUtility:
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                                         self.report.error.appendDescription('invalid_data',
@@ -31312,7 +31314,7 @@ class NmrDpUtility:
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ ValueError  - {idx_msg + warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ ValueError  - {idx_msg + warn}\n")
 
                                     continue
 
@@ -31621,7 +31623,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
 
                                     continue
 
@@ -31666,7 +31668,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Hydrogen not instantiated]'):
                                         if self.__remediation_mode:
@@ -31678,7 +31680,7 @@ class NmrDpUtility:
                                             self.report.setWarning()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Warning  - {idx_msg + warn}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Warning  - {idx_msg + warn}\n")
                                         else:
                                             self.report.error.appendDescription('hydrogen_not_instantiated',
                                                                                 {'file_name': original_file_name,
@@ -31688,7 +31690,7 @@ class NmrDpUtility:
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Invalid atom nomenclature]'):
                                         self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -31699,7 +31701,7 @@ class NmrDpUtility:
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                                         self.report.error.appendDescription('invalid_data',
@@ -31710,7 +31712,7 @@ class NmrDpUtility:
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__validateStrMr() ++ ValueError  - {idx_msg + warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ ValueError  - {idx_msg + warn}\n")
 
                                     continue
 
@@ -33098,7 +33100,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
                         self.report.error.appendDescription('sequence_mismatch',
@@ -33106,7 +33108,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Unknown atom name]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',
@@ -33114,7 +33116,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Unknown residue name]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',
@@ -33122,14 +33124,14 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     else:
                         self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ KeyError  - {warn}\n")
 
         for ar in self.__inputParamDict[ar_file_path_list]:
 
@@ -33452,7 +33454,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
                         # consume_suspended_message()
@@ -33462,7 +33464,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Atom not found]'):
                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
@@ -33473,14 +33475,14 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {warn}\n")
                         else:
                             self.report.warning.appendDescription('sequence_mismatch',
                                                                   {'file_name': file_name, 'description': warn})
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
                         if self.__remediation_mode:
@@ -33489,7 +33491,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
                         else:
                             consume_suspended_message()
 
@@ -33498,7 +33500,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Coordinate issue]'):
                         # consume_suspended_message()
@@ -33508,7 +33510,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         consume_suspended_message()
@@ -33518,7 +33520,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         consume_suspended_message()
@@ -33528,7 +33530,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch warning]'):
                         self.report.warning.appendDescription('sequence_mismatch',
@@ -33536,7 +33538,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                         if seq_mismatch_warning_pattern.match(warn):
                             g = seq_mismatch_warning_pattern.search(warn).groups()
@@ -33554,7 +33556,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Enum mismatch]'):
                         self.report.warning.appendDescription('enum_mismatch',
@@ -33562,7 +33564,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Enum mismatch ignorable]'):
                         self.report.warning.appendDescription('enum_mismatch_ignorable',
@@ -33570,7 +33572,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Unmatched atom type]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',
@@ -33578,7 +33580,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Inconsistent dihedral angle atoms]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',
@@ -33586,7 +33588,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                         # consume_suspended_message()
@@ -33596,7 +33598,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ ValueError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                         self.report.warning.appendDescription('inconsistent_mr_data',
@@ -33604,7 +33606,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Insufficient atom selection]') or warn.startswith('[Insufficient angle selection]'):
                         self.report.warning.appendDescription('insufficient_mr_data',
@@ -33612,7 +33614,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Redundant data]'):
                         self.report.warning.appendDescription('redundant_mr_data',
@@ -33620,7 +33622,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Ambiguous dihedral angle]'):
                         self.report.warning.appendDescription('ambiguous_dihedral_angle',
@@ -33628,7 +33630,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Anomalous RDC vector]'):
                         self.report.warning.appendDescription('anomalous_rdc_vector',
@@ -33636,7 +33638,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Anomalous data]'):
                         self.report.warning.appendDescription('anomalous_data',
@@ -33644,7 +33646,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Unsupported data]'):
                         self.report.warning.appendDescription('unsupported_mr_data',
@@ -33652,14 +33654,14 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     else:
                         self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ KeyError  - {warn}\n")
 
         def deal_res_warn_message_for_lazy_eval(listener):
 
@@ -33737,7 +33739,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                 continue
 
@@ -33750,7 +33752,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                 continue
 
@@ -33853,7 +33855,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -33921,7 +33923,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -33989,7 +33991,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -34082,7 +34084,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -34172,7 +34174,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -34286,7 +34288,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -34354,7 +34356,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -34422,7 +34424,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -34467,7 +34469,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -34560,7 +34562,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -34653,7 +34655,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -34721,7 +34723,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -34817,7 +34819,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyMr() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -34969,7 +34971,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
                         self.report.error.appendDescription('sequence_mismatch',
@@ -34977,7 +34979,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Unknown atom name]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',
@@ -34985,7 +34987,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Unknown residue name]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',
@@ -34993,14 +34995,14 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     else:
                         self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ KeyError  - " + warn)
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ KeyError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ KeyError  - {warn}\n")
 
         for ar in self.__inputParamDict[ar_file_path_list]:
 
@@ -35160,7 +35162,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
                         # consume_suspended_message()
@@ -35170,7 +35172,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Atom not found]'):
                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
@@ -35181,14 +35183,14 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
                         else:
                             self.report.warning.appendDescription('sequence_mismatch',
                                                                   {'file_name': file_name, 'description': warn})
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
                         if self.__remediation_mode:
@@ -35197,7 +35199,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
                         else:
                             consume_suspended_message()
 
@@ -35206,7 +35208,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Coordinate issue]'):
                         # consume_suspended_message()
@@ -35216,7 +35218,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         consume_suspended_message()
@@ -35226,7 +35228,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         consume_suspended_message()
@@ -35236,7 +35238,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ ValueError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch warning]'):
                         self.report.warning.appendDescription('sequence_mismatch',
@@ -35244,7 +35246,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                         if seq_mismatch_warning_pattern.match(warn):
                             g = seq_mismatch_warning_pattern.search(warn).groups()
@@ -35260,7 +35262,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                         # consume_suspended_message()
@@ -35270,7 +35272,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ ValueError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                         self.report.warning.appendDescription('inconsistent_mr_data',
@@ -35278,14 +35280,14 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     else:
                         self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ KeyError  - " + warn)
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ KeyError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ KeyError  - {warn}\n")
 
         def deal_pea_warn_message_for_lazy_eval(listener):
 
@@ -35418,7 +35420,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -35481,7 +35483,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -35544,7 +35546,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -35607,7 +35609,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -35670,7 +35672,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -35733,7 +35735,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -35798,7 +35800,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -35861,7 +35863,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__validateLegacyPk() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {err}\n")
 
                         self.__list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
@@ -36246,7 +36248,7 @@ class NmrDpUtility:
                                 myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                         except Exception as e:
-                            self.__lfh.write(f"+NmrDpUtility.__validateStrPk() ++ Error  - {str(e)}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateStrPk() ++ Error  - {str(e)}\n")
 
             return True
 
@@ -36290,7 +36292,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__validateStrPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__validateStrPk() ++ Error  - {err}\n")
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
                     sf = self.__star_data[fileListId]
@@ -37524,7 +37526,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfExptlData() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfExptlData() ++ Warning  - {warn}\n")
 
                 if content_subtype == 'chem_shift':
 
@@ -37619,7 +37621,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - {str(e)}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfExptlData() ++ Error  - {str(e)}\n")
 
                     self.__calculateStatsOfAssignedChemShift(file_list_id, sf_framecode, lp_data, cs_ann, ent)
 
@@ -38690,7 +38692,7 @@ class NmrDpUtility:
                                             self.report.setWarning()
 
                                             if self.__verbose:
-                                                self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
+                                                self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
 
                             pro_cis_trans.append(pro)
 
@@ -38795,7 +38797,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
 
                             his_tautomeric_state.append(his)
 
@@ -38916,7 +38918,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
 
                             elif comp_id == 'LEU':
 
@@ -39009,7 +39011,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
 
                             else:
 
@@ -39090,7 +39092,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() ++ Warning  - {warn}\n")
 
                             ilv_rotameric_state.append(ilv)
 
@@ -39263,7 +39265,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() ++ Error  - {str(e)}\n")
 
     def __calculateStatsOfDistanceRestraint(self, file_list_id: int, sf_framecode: str, lp_data: List[dict],
                                             conflict_id_set: Optional[List[int]], inconsistent: Set[int], redundant: Set[int], ent: dict):
@@ -39477,7 +39479,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfDistanceRestraint() ++ Warning  - {warn}\n")
 
                 elif 'disulfide_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
@@ -39503,7 +39505,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfDistanceRestraint() ++ Warning  - {warn}\n")
 
                 elif 'diselenide_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
@@ -39529,7 +39531,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfDistanceRestraint() ++ Warning  - {warn}\n")
 
                 elif 'other_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
@@ -39555,7 +39557,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfDistanceRestraint() ++ Warning  - {warn}\n")
 
                 if data_type in count:
                     count[data_type] += 1
@@ -39956,7 +39958,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfDistanceRestraint() ++ Error  - {str(e)}\n")
 
     def __calculateStatsOfCovalentBond(self, file_list_id: int, sf_framecode: str, lp_category: str, lp_data: List[dict], ent: dict):
         """ Calculate statistics of covalent bonds.
@@ -40038,7 +40040,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfCovalentBond() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfCovalentBond() ++ Warning  - {warn}\n")
 
                 elif 'disulfide_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
@@ -40052,7 +40054,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfCovalentBond() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfCovalentBond() ++ Warning  - {warn}\n")
 
                 elif 'diselenide_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
@@ -40066,7 +40068,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfCovalentBond() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfCovalentBond() ++ Warning  - {warn}\n")
 
                 elif 'other_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
@@ -40080,7 +40082,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfCovalentBond() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfCovalentBond() ++ Warning  - {warn}\n")
 
                 if data_type in count:
                     count[data_type] += 1
@@ -40141,7 +40143,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfCovalentBond() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfCovalentBond() ++ Error  - {str(e)}\n")
 
     def __getTypeOfDistanceRestraint(self, file_type: str, lp_data: List[dict], row_id: int,
                                      target_value: float, upper_limit: float, lower_limit: float, member_id: Optional[int],
@@ -41463,7 +41465,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfDihedralRestraint() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfDihedralRestraint() ++ Error  - {str(e)}\n")
 
     def __getTypeOfDihedralRestraint(self, data_type: str, peptide: bool, nucleotide: bool, carbohydrate: bool,  # pylint: disable=no-self-use
                                      atoms: List[dict], plane_like: bool) -> str:
@@ -41925,7 +41927,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfRdcRestraint() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfRdcRestraint() ++ Error  - {str(e)}\n")
 
     def __getTypeOfRdcRestraint(self, atom_id_1: str, atom_id_2: str) -> str:  # pylint: disable=no-self-use
         """ Return type of RDC restraint.
@@ -42226,7 +42228,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfSpectralPeak() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfSpectralPeak() ++ Error  - {str(e)}\n")
 
     def __calculateStatsOfSpectralPeakAlt(self, file_list_id: int, sf_framecode: str, num_dim: int, lp_data: List[dict], ent: dict):
         """ Calculate statistics of spectral peaks.
@@ -42488,7 +42490,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__calculateStatsOfSpectralPeakAlt() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__calculateStatsOfSpectralPeakAlt() ++ Error  - {str(e)}\n")
 
     def __detectDimTransferTypeViaThroughSpace(self) -> bool:
         """ Detect spectral peak transfer type via through-space.
@@ -42644,7 +42646,7 @@ class NmrDpUtility:
         self.report.setWarning()
 
         if self.__verbose:
-            self.__lfh.write(f"+NmrDpUtility.__detectDimTransferTypeViaThroughSpace() ++ Warning  - {warn}\n")
+            self.__lfh.write(f"+{self.__class_name__}.__detectDimTransferTypeViaThroughSpace() ++ Warning  - {warn}\n")
 
         return False
 
@@ -43216,7 +43218,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__parseCoordinate() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {err}\n")
 
             elif not self.__bmrb_only:
 
@@ -43226,7 +43228,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__parseCoordinate() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {err}\n")
 
             return False
 
@@ -43242,7 +43244,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__parseCoordinate() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {err}\n")
 
                 return False
 
@@ -43351,7 +43353,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__parseCoordinate() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {err}\n")
 
             elif self.__total_models < 5:
 
@@ -43364,7 +43366,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__parseCoordinate() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__parseCoordinate() ++ Warning  - {warn}\n")
 
             if self.__cR.hasItem('atom_site', 'label_alt_id'):
                 alt_ids = self.__cR.getDictListWithFilter('atom_site',
@@ -43479,7 +43481,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__parseCoordFilePath() ++ Error  - {str(e)}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__parseCoordFilePath() ++ Error  - {str(e)}\n")
 
                         return False
 
@@ -43854,7 +43856,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequence() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__extractCoordPolymerSequence() ++ Warning  - {warn}\n")
 
             elif len(exactly_overlaid_ensemble) > 0:
 
@@ -43871,7 +43873,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequence() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__extractCoordPolymerSequence() ++ Warning  - {warn}\n")
 
             elif len(exactly_overlaid_models) > 0:
 
@@ -43891,7 +43893,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequence() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__extractCoordPolymerSequence() ++ Warning  - {warn}\n")
 
             return True
 
@@ -43903,7 +43905,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequence() ++ KeyError  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__extractCoordPolymerSequence() ++ KeyError  - {str(e)}\n")
 
         except LookupError as e:
 
@@ -43923,7 +43925,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequence() ++ ValueError  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__extractCoordPolymerSequence() ++ ValueError  - {str(e)}\n")
 
         except Exception as e:
 
@@ -43931,7 +43933,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__extractCoordPolymerSequence() ++ Error  - {str(e)}\n")
 
         return False
 
@@ -44013,7 +44015,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ KeyError  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__extractCoordPolymerSequenceInLoop() ++ KeyError  - {str(e)}\n")
 
             except LookupError as e:
 
@@ -44034,7 +44036,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ ValueError  - {str(e)}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__extractCoordPolymerSequenceInLoop() ++ ValueError  - {str(e)}\n")
 
             except Exception as e:
 
@@ -44042,7 +44044,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__extractCoordPolymerSequenceInLoop() ++ Error  - {str(e)}\n")
 
             list_id += 1
 
@@ -44693,7 +44695,7 @@ class NmrDpUtility:
                 cif_chains = len(cif_polymer_sequence)
                 nmr_chains = len(nmr_polymer_sequence)
 
-                # Map polymer sequences between coordinate and NMR data using Hungarian algorithm
+                # map polymer sequences between coordinate and NMR data using Hungarian algorithm
 
                 m = Munkres()
 
@@ -45250,7 +45252,7 @@ class NmrDpUtility:
                                                                                         {'ca_idx': ca_idx, 'file_name': nmr_file_name, 'description': warn}})
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__assignCoordPolymerSequence() ++ Warning  - {warn}\n")
 
                             elif cif_comp_id != nmr_comp_id and aligned[i]:
 
@@ -45301,14 +45303,14 @@ class NmrDpUtility:
                                                                                     {'ca_idx': ca_idx, 'file_name': nmr_file_name, 'description': err}})
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__assignCoordPolymerSequence() ++ Warning  - {err}\n")
 
                                 elif not self.__annotation_mode:
                                     self.__suspended_errors_for_lazy_eval.append({'sequence_mismatch':
                                                                                   {'ca_idx': ca_idx, 'file_name': nmr_file_name, 'description': err}})
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__assignCoordPolymerSequence() ++ Error  - {err}\n")
 
                         if len(unmapped) > 0:
                             ca['unmapped_sequence'] = unmapped
@@ -45539,7 +45541,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__assignCoordPolymerSequence() ++ Warning  - {warn}\n")
 
                     chain_id = cif_polymer_sequence[row]['chain_id']
                     chain_id2 = nmr_polymer_sequence[col]['chain_id']
@@ -45777,7 +45779,7 @@ class NmrDpUtility:
                                                                                     {'ca_idx': ca_idx, 'file_name': cif_file_name, 'description': warn}})
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__assignCoordPolymerSequence() ++ Warning  - {warn}\n")
 
                             elif nmr_comp_id != cif_comp_id and aligned[i]:
 
@@ -45828,14 +45830,14 @@ class NmrDpUtility:
                                                                                     {'ca_idx': ca_idx, 'file_name': cif_file_name, 'description': err}})
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__assignCoordPolymerSequence() ++ Warning  - {err}\n")
 
                                 elif not self.__annotation_mode:
                                     self.__suspended_errors_for_lazy_eval.append({'sequence_mismatch':
                                                                                   {'ca_idx': ca_idx, 'file_name': cif_file_name, 'description': err}})
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - {err}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__assignCoordPolymerSequence() ++ Error  - {err}\n")
 
                         if len(unmapped) > 0:
                             ca['unmapped_sequence'] = unmapped
@@ -46020,7 +46022,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__assignCoordPolymerSequence() ++ Error  - {err}\n")
 
                 return False
 
@@ -46368,7 +46370,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__testCoordAtomIdConsistency() ++ Error  - {err}\n")
 
                 continue
 
@@ -46467,7 +46469,7 @@ class NmrDpUtility:
 
         index_tag = self.index_tags[file_type][content_subtype] if content_subtype != 'poly_seq' else None
 
-        if file_type == 'nef' or (not self.__nonblk_bad_nterm):
+        if file_type == 'nef' or not self.__nonblk_bad_nterm:
 
             if content_subtype != 'poly_seq':
                 lp_data = next((lp['data'] for lp in self.__lp_data[content_subtype]
@@ -46891,7 +46893,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testCoordAtomIdConsistency() ++ Warning  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__testCoordAtomIdConsistency() ++ Warning  - {err}\n")
 
                         if cyclic and self.__bmrb_only and self.__leave_intl_note and file_type == 'nmr-star' and seq_id == 1 and details_col != -1:
                             _details = loop.data[idx][details_col]
@@ -46956,7 +46958,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__testCoordAtomIdConsistency() ++ Error  - {err}\n")
 
                         else:
 
@@ -46981,7 +46983,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__testCoordAtomIdConsistency() ++ Warning  - {err}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__testCoordAtomIdConsistency() ++ Warning  - {err}\n")
 
                                         continue
 
@@ -46991,7 +46993,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__testCoordAtomIdConsistency() ++ Warning  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__testCoordAtomIdConsistency() ++ Warning  - {err}\n")
 
         return modified
 
@@ -47035,10 +47037,10 @@ class NmrDpUtility:
         fPath = self.__inputParamDict['report_file_path']
 
         if not os.access(fPath, os.F_OK):
-            raise IOError(f"+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not access to file path {fPath}.")
+            raise IOError(f"+{self.__class_name__}.__retrieveDpReport() ++ Error  - Could not access to file path {fPath}.")
 
         if os.path.getsize(fPath) == 0:
-            raise IOError(f"+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find any content in file path {fPath}.")
+            raise IOError(f"+{self.__class_name__}.__retrieveDpReport() ++ Error  - Could not find any content in file path {fPath}.")
 
         self.report = NmrDpReport(self.__verbose, self.__lfh)
         self.report.loadFile(fPath)
@@ -47355,7 +47357,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__deleteSkippedSf() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__deleteSkippedSf() ++ Error  - {err}\n")
 
                 else:
 
@@ -47369,7 +47371,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__deleteSkippedSf() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__deleteSkippedSf() ++ Error  - {err}\n")
 
                     else:
 
@@ -47384,7 +47386,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__deleteSkippedSf() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__deleteSkippedSf() ++ Error  - {err}\n")
 
         return True
 
@@ -47423,7 +47425,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__deleteSkippedLoop() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__deleteSkippedLoop() ++ Error  - {err}\n")
 
                 else:
 
@@ -47437,7 +47439,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__deleteSkippedLoop() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__deleteSkippedLoop() ++ Error  - {err}\n")
 
                         continue
 
@@ -47449,7 +47451,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__deleteSkippedLoop() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__deleteSkippedLoop() ++ Error  - {err}\n")
 
                     else:
 
@@ -47463,7 +47465,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__deleteSkippedLoop() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__deleteSkippedLoop() ++ Error  - {err}\n")
 
         return True
 
@@ -47517,7 +47519,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__deleteUnparsedEntryLoop() ++ Error  - {err}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__deleteUnparsedEntryLoop() ++ Error  - {err}\n")
 
         return True
 
@@ -47891,7 +47893,7 @@ class NmrDpUtility:
 
         if file_type == 'nmr-star':
 
-            # Refresh _Entity_assembly loop
+            # refresh _Entity_assembly loop
 
             lp_category = '_Entity_assembly'
 
@@ -48008,7 +48010,7 @@ class NmrDpUtility:
 
             asm_sf.add_loop(ea_loop)
 
-        # Refresh _nef_sequence or _Chem_comp_assembly loop
+        # refresh _nef_sequence or _Chem_comp_assembly loop
 
         lp_category = self.lp_categories[file_type][content_subtype]
 
@@ -48222,7 +48224,7 @@ class NmrDpUtility:
                     if 'touch' in d:
                         del d['touch']
 
-            # Refresh _nef_covalent_links loop
+            # refresh _nef_covalent_links loop
 
             if self.__cR.hasCategory('struct_conn'):
 
@@ -48512,7 +48514,7 @@ class NmrDpUtility:
 
             self.__cca_dat = loop.get_tag(['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Auth_asym_ID', 'Auth_seq_ID'])
 
-            # Refresh _Bond loop
+            # refresh _Bond loop
 
             if self.__cR.hasCategory('struct_conn'):
 
@@ -49043,7 +49045,7 @@ class NmrDpUtility:
         if file_type == 'nef':
             return True
 
-        # Refresh _Entity saveframe
+        # refresh _Entity saveframe
 
         content_subtype = 'entity'
 
@@ -49322,7 +49324,7 @@ class NmrDpUtility:
             ent_sf.add_tag('DB_query_date', None)
             ent_sf.add_tag('DB_query_revised_last_date', None)
 
-            # Refresh _Entity_common_name loop
+            # refresh _Entity_common_name loop
 
             if self.__cR.hasCategory('entity_name_com'):
                 lp_category = '_Entity_common_name'
@@ -49355,7 +49357,7 @@ class NmrDpUtility:
                 if not ecn_loop.empty:
                     ent_sf.add_loop(ecn_loop)
 
-            # Refresh _Entity_systematic_name loop
+            # refresh _Entity_systematic_name loop
 
             if self.__cR.hasCategory('entity_name_sys'):
                 lp_category = '_Entity_systematic_name'
@@ -49389,7 +49391,7 @@ class NmrDpUtility:
                 if not esn_loop.empty:
                     ent_sf.add_loop(esn_loop)
 
-            # Refresh _Entity_keyword loop
+            # refresh _Entity_keyword loop
 
             if self.__cR.hasCategory('entity_keywords'):
                 lp_category = '_Entity_keyword'
@@ -49420,7 +49422,7 @@ class NmrDpUtility:
                 if not ek_loop.empty:
                     ent_sf.add_loop(ek_loop)
 
-            # Refresh _Entity_comp_index loop
+            # refresh _Entity_comp_index loop
 
             lp_category = '_Entity_comp_index'
             eci_loop = pynmrstar.Loop.from_scratch(lp_category)
@@ -49531,7 +49533,7 @@ class NmrDpUtility:
 
             ent_sf.add_loop(eci_loop)
 
-            # Refresh _Entity_poly_seq loop
+            # refresh _Entity_poly_seq loop
 
             if entity_type not in ('non-polymer', 'water'):
                 lp_category = '_Entity_poly_seq'
@@ -49933,7 +49935,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
                         # consume_suspended_message()
@@ -49944,7 +49946,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Error  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Atom not found]'):
                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
@@ -49956,7 +49958,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Error  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {warn}\n")
                         else:
                             self.report.warning.appendDescription('sequence_mismatch',
                                                                   {'file_name': data_file_name, 'sf_framecode': sf_framecode,
@@ -49964,7 +49966,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
                         if self.__remediation_mode:
@@ -49974,7 +49976,7 @@ class NmrDpUtility:
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Warning  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
                         else:
                             consume_suspended_message()
 
@@ -49984,7 +49986,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Error  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Coordinate issue]'):
                         # consume_suspended_message()
@@ -49995,7 +49997,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Error  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         consume_suspended_message()
@@ -50006,7 +50008,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Error  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         consume_suspended_message()
@@ -50017,7 +50019,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ ValueError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch warning]'):
                         self.report.warning.appendDescription('sequence_mismatch',
@@ -50026,7 +50028,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                         if seq_mismatch_warning_pattern.match(warn):
                             g = seq_mismatch_warning_pattern.search(warn).groups()
@@ -50043,7 +50045,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                         # consume_suspended_message()
@@ -50054,7 +50056,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ ValueError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                         self.report.warning.appendDescription('inconsistent_mr_data',
@@ -50063,14 +50065,14 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     else:
                         self.report.error.appendDescription('internal_error', "+NmrDpUtility.__remediateRawTextPk() ++ KeyError  - " + warn)
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ KeyError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ KeyError  - {warn}\n")
 
         def deal_pea_warn_message_for_lazy_eval(listener):
 
@@ -50167,7 +50169,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {err}\n")
 
                 self.__list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
@@ -50229,7 +50231,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {err}\n")
 
                 self.__list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
@@ -50291,7 +50293,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {err}\n")
 
                 self.__list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
@@ -50353,7 +50355,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {err}\n")
 
                 self.__list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
@@ -50415,7 +50417,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {err}\n")
 
                 self.__list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
@@ -50477,7 +50479,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {err}\n")
 
                 self.__list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
@@ -50541,7 +50543,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {err}\n")
 
                 self.__list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
@@ -50603,7 +50605,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__remediateRawTextPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {err}\n")
 
                 self.__list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
@@ -50944,7 +50946,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__isCyclicPolymer__() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__isCyclicPolymer__() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -50981,7 +50983,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__isCyclicPolymer__() ++ Error  - {str(e)}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__isCyclicPolymer__() ++ Error  - {str(e)}\n")
 
                     return False
 
@@ -51057,7 +51059,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__isProtCis() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__isProtCis() ++ Error  - {str(e)}\n")
 
                 return False
 
@@ -51115,7 +51117,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__testTautomerOfHistidinePerModel() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__testTautomerOfHistidinePerModel() ++ Error  - {err}\n")
 
             return True
 
@@ -51172,7 +51174,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__testTautomerOfHistidinePerModel() ++ Error  - {str(e)}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__testTautomerOfHistidinePerModel() ++ Error  - {str(e)}\n")
 
                     return False
 
@@ -51230,7 +51232,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__testTautomerOfHistidinePerModel() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__testTautomerOfHistidinePerModel() ++ Error  - {err}\n")
 
         if self.__coordPropCachePath is not None:
             hash_value = hash(str(self.__cpC))
@@ -51296,7 +51298,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__getTautomerOfHistidine() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__getTautomerOfHistidine() ++ Error  - {str(e)}\n")
 
                 return 'unknown'
 
@@ -51385,7 +51387,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__getRotamerOfValine() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__getRotamerOfValine() ++ Error  - {str(e)}\n")
 
                 return none
 
@@ -51494,7 +51496,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__getRotamerOfLeucine() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__getRotamerOfLeucine() ++ Error  - {str(e)}\n")
 
                 return none
 
@@ -51624,7 +51626,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__getRotamerOfIsoleucine() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__getRotamerOfIsoleucine() ++ Error  - {str(e)}\n")
 
                 return none
 
@@ -51715,7 +51717,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__extractCoordDisulfideBond() ++ Error  - {err}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__extractCoordDisulfideBond() ++ Error  - {err}\n")
 
             return False
 
@@ -51747,7 +51749,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__extractCoordDisulfideBond() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__extractCoordDisulfideBond() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -51992,7 +51994,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__mapCoordDisulfideBond2Nmr() ++ Warning  - {warn}\n")
 
                     disulf['warning_description_1'] = item + ': ' + warn
 
@@ -52011,7 +52013,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__mapCoordDisulfideBond2Nmr() ++ Warning  - {warn}\n")
 
                     disulf['warning_description_2'] = item + ': ' + warn
 
@@ -52110,7 +52112,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__extractCoordOtherBond() ++ Error  - {err}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__extractCoordOtherBond() ++ Error  - {err}\n")
 
             return False
 
@@ -52142,7 +52144,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__extractCoordOtherBond() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__extractCoordOtherBond() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -52388,7 +52390,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__mapCoordOtherBond2Nmr() ++ Warning  - {warn}\n")
 
                     other['warning_description_1'] = item + ': ' + warn
 
@@ -52407,7 +52409,7 @@ class NmrDpUtility:
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Warning  - {warn}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__mapCoordOtherBond2Nmr() ++ Warning  - {warn}\n")
 
                     other['warning_description_2'] = item + ': ' + warn
 
@@ -52542,7 +52544,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__getNearestAromaticRing() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__getNearestAromaticRing() ++ Error  - {str(e)}\n")
 
                 return None
 
@@ -52580,7 +52582,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__getNearestAromaticRing() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__getNearestAromaticRing() ++ Error  - {str(e)}\n")
 
                 return None
 
@@ -52762,7 +52764,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__getNearestAromaticRing() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__getNearestAromaticRing() ++ Error  - {str(e)}\n")
 
                 return None
 
@@ -52885,7 +52887,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__getNearestParaFerroMagneticAtom() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__getNearestParaFerroMagneticAtom() ++ Error  - {str(e)}\n")
 
                 return None
 
@@ -52923,7 +52925,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__getNearestParaFerroMagneticAtom() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__getNearestParaFerroMagneticAtom() ++ Error  - {str(e)}\n")
 
                 return None
 
@@ -52972,7 +52974,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__getNearestParaFerroMagneticAtom() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__getNearestParaFerroMagneticAtom() ++ Error  - {str(e)}\n")
 
                 return None
 
@@ -53119,7 +53121,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__appendElemAndIsoNumOfNefCsLoop() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__appendElemAndIsoNumOfNefCsLoop() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -53198,7 +53200,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__appendWeightInLoop() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__appendWeightInLoop() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -53251,7 +53253,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__appendDihedAngleType() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__appendDihedAngleType() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -53326,7 +53328,7 @@ class NmrDpUtility:
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write(f"+NmrDpUtility.__appendSfTagItem() ++ Warning  - {warn}\n")
+                                        self.__lfh.write(f"+{self.__class_name__}.__appendSfTagItem() ++ Warning  - {warn}\n")
 
                             sf.add_tag(tag_item, '.')
 
@@ -53338,7 +53340,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__appendSfTagItem() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__appendSfTagItem() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -53458,7 +53460,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__updateDihedralAngleType() ++ Error  - {str(e)}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__updateDihedralAngleType() ++ Error  - {str(e)}\n")
 
                         continue
 
@@ -53515,7 +53517,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__fixDisorderedIndex() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__fixDisorderedIndex() ++ Error  - {err}\n")
 
                 else:
 
@@ -53529,7 +53531,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__fixDisorderedIndex() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__fixDisorderedIndex() ++ Error  - {err}\n")
 
                         continue
 
@@ -53541,7 +53543,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__fixDisorderedIndex() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__fixDisorderedIndex() ++ Error  - {err}\n")
 
                     else:
 
@@ -53564,7 +53566,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__fixDisorderedIndex() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__fixDisorderedIndex() ++ Error  - {err}\n")
 
             else:
 
@@ -53574,7 +53576,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__fixDisorderedIndex() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__fixDisorderedIndex() ++ Error  - {err}\n")
 
         return True
 
@@ -53613,7 +53615,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__removeNonSenseZeroValue() ++ Error  - {err}\n")
 
                 else:
 
@@ -53627,7 +53629,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__removeNonSenseZeroValue() ++ Error  - {err}\n")
 
                         continue
 
@@ -53639,7 +53641,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__removeNonSenseZeroValue() ++ Error  - {err}\n")
 
                     else:
 
@@ -53655,7 +53657,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__removeNonSenseZeroValue() ++ Error  - {err}\n")
 
                         else:
 
@@ -53682,7 +53684,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__removeNonSenseZeroValue() ++ Error  - {err}\n")
 
         return True
 
@@ -53721,7 +53723,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__fixNonSenseNegativeValue() ++ Error  - {err}\n")
 
                 else:
 
@@ -53735,7 +53737,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__fixNonSenseNegativeValue() ++ Error  - {err}\n")
 
                         continue
 
@@ -53747,7 +53749,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__fixNonSenseNegativeValue() ++ Error  - {err}\n")
 
                     else:
 
@@ -53763,7 +53765,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__fixNonSenseNegativeValue() ++ Error  - {err}\n")
 
                         else:
 
@@ -53790,7 +53792,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__fixNonSenseNegativeValue() ++ Error  - {err}\n")
 
         return True
 
@@ -53883,7 +53885,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__fixEnumerationFailure() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__fixEnumerationFailure() ++ Error  - {err}\n")
 
                 else:
 
@@ -53897,7 +53899,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__fixEnumerationFailure() ++ Error  - {err}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__fixEnumerationFailure() ++ Error  - {err}\n")
 
                         continue
 
@@ -53913,7 +53915,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__fixEnumerationFailure() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__fixEnumerationFailure() ++ Error  - {err}\n")
 
                         else:
 
@@ -54067,7 +54069,7 @@ class NmrDpUtility:
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__fixEnumerationFailure() ++ Error  - {err}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__fixEnumerationFailure() ++ Error  - {err}\n")
 
                     else:
 
@@ -54081,7 +54083,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+NmrDpUtility.__fixEnumerationFailure() ++ Error  - {err}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__fixEnumerationFailure() ++ Error  - {err}\n")
 
                         else:
 
@@ -54131,7 +54133,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__fixEnumerationFailure() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__fixEnumerationFailure() ++ Error  - {err}\n")
 
         return True
 
@@ -54270,7 +54272,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testDistRestraintAsHydrogenBond() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testDistRestraintAsHydrogenBond() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -54380,7 +54382,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testDistRestraintAsDisulfideBond() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testDistRestraintAsDisulfideBond() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -54454,7 +54456,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testDistRestraintAsSymmetry() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testDistRestraintAsSymmetry() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -54618,7 +54620,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testDihedRestraintAsBackBoneChemShifts() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testDihedRestraintAsBackBoneChemShifts() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -54662,7 +54664,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testRestraintPotentialSWP() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testRestraintPotentialSWP() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -54706,7 +54708,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testRestraintPotentialSWPL() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testRestraintPotentialSWPL() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -54750,7 +54752,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testRestraintPotentialUBP() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testRestraintPotentialUBP() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -54794,7 +54796,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testRestraintPotentialLBP() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testRestraintPotentialLBP() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -54838,7 +54840,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testRestraintPotentialUBPL() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testRestraintPotentialUBPL() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -54882,7 +54884,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testRestraintPotentialLBPL() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testRestraintPotentialLBPL() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -54930,7 +54932,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__testRestraintPotentialLHorP() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__testRestraintPotentialLHorP() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -55430,7 +55432,7 @@ class NmrDpUtility:
                                         self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write(f"+NmrDpUtility.__appendParentSfTag() ++ Warning  - {warn}\n")
+                                            self.__lfh.write(f"+{self.__class_name__}.__appendParentSfTag() ++ Warning  - {warn}\n")
 
                                 sf.add_tag('ID', list_id)
 
@@ -55442,7 +55444,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__appendParentSfTag() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__appendParentSfTag() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -55630,7 +55632,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__depositNmrData() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__depositNmrData() ++ Error  - {err}\n")
 
             return False
 
@@ -55709,7 +55711,7 @@ class NmrDpUtility:
                     myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
             except Exception as e:
-                self.__lfh.write(f"+NmrDpUtility.__depositNmrData() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__depositNmrData() ++ Error  - {str(e)}\n")
 
         return not self.report.isError()
 
@@ -55770,7 +55772,7 @@ class NmrDpUtility:
                     return True
 
             except Exception as e:
-                self.__lfh.write(f"+NmrDpUtility.__depositLegacyNmrData() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__depositLegacyNmrData() ++ Error  - {str(e)}\n")
 
         return False
 
@@ -55853,7 +55855,7 @@ class NmrDpUtility:
         except IndexError:
             pass
 
-        # Refresh _Constraint_stat_list saveframe
+        # refresh _Constraint_stat_list saveframe
 
         sf_framecode = 'constraint_statistics'
 
@@ -57157,11 +57159,11 @@ class NmrDpUtility:
                     err = f"Uninterpreted NMR restraints are stored in {sf_framecode} saveframe as raw text format. "\
                         "@todo: It needs to be reviewed."
 
-                    self.report.error.appendDescription('internal_error', f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {err}")
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - {err}")
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - {err}\n")
 
         cst_sf.add_loop(cf_loop)
 
@@ -57254,7 +57256,7 @@ class NmrDpUtility:
 
             content_subtype = 'entry_info'
 
-            # Update _Data_set/Datum loop
+            # update _Data_set/Datum loop
 
             sf_category = self.sf_categories[file_type][content_subtype]
 
@@ -57264,7 +57266,7 @@ class NmrDpUtility:
 
                 sf = master_entry.get_saveframes_by_category(sf_category)[0]
 
-                # Update _Data_set loop
+                # update _Data_set loop
 
                 lp_category = '_Data_set'
 
@@ -57298,7 +57300,7 @@ class NmrDpUtility:
 
                 sf.add_loop(lp)
 
-                # Update _Datum loopa
+                # update _Datum loopa
 
                 lp_category = '_Datum'
 
@@ -57327,7 +57329,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - {str(e)}\n")
 
         if self.__bmrb_only and self.__internal_mode:
             self.__performBMRBjAnnTasks()
@@ -57408,7 +57410,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - {err}\n")
 
         return True
 
@@ -57633,7 +57635,7 @@ class NmrDpUtility:
 
         self.__c2S.set_entry_id(master_entry, self.__entry_id)
 
-        # Refresh _Constraint_stat_list saveframe
+        # refresh _Constraint_stat_list saveframe
 
         sf_framecode = 'constraint_statistics'
 
@@ -58814,7 +58816,7 @@ class NmrDpUtility:
             if len(cf_loop) > 0:
                 master_entry.add_saveframe(cst_sf)
 
-        # Update _Data_set/Datum loop
+        # update _Data_set/Datum loop
 
         try:
 
@@ -58824,7 +58826,7 @@ class NmrDpUtility:
 
             sf = master_entry.get_saveframes_by_category(sf_category)[0]
 
-            # Update _Data_set loop
+            # update _Data_set loop
 
             lp_category = '_Data_set'
 
@@ -58859,7 +58861,7 @@ class NmrDpUtility:
 
             sf.add_loop(lp)
 
-            # Update _Datum loopa
+            # update _Datum loopa
 
             lp_category = '_Datum'
 
@@ -58983,7 +58985,7 @@ class NmrDpUtility:
                 self.report.setWarning()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+NmrDpUtility.__detectSimpleDistanceRestraint() ++ Warning  - {warn}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectSimpleDistanceRestraint() ++ Warning  - {warn}\n")
 
                 return False
 
@@ -59059,7 +59061,7 @@ class NmrDpUtility:
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+NmrDpUtility.__detectSimpleDistanceRestraint() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__detectSimpleDistanceRestraint() ++ Warning  - {warn}\n")
 
             return False
 
@@ -59163,7 +59165,7 @@ class NmrDpUtility:
                         myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                 except Exception as e:
-                    self.__lfh.write(f"+NmrDpUtility.__translateNef2Str() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__translateNef2Str() ++ Error  - {str(e)}\n")
 
             return True
 
@@ -59342,7 +59344,7 @@ class NmrDpUtility:
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write(f"+NmrDpUtility.__parseNmrIf() ++ Error  - {err}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__parseNmrIf() ++ Error  - {err}\n")
 
             return False
 

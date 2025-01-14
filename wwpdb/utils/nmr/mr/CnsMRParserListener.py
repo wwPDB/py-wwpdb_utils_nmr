@@ -506,6 +506,8 @@ class CnsMRParserListener(ParseTreeListener):
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
 
@@ -2913,7 +2915,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                         except Exception as e:
                             if self.__verbose:
-                                self.__lfh.write(f"+CnsMRParserListener.exitSani_assign() ++ Error  - {str(e)}")
+                                self.__lfh.write(f"+{self.__class_name__}.exitSani_assign() ++ Error  - {str(e)}")
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -7205,7 +7207,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                 except Exception as e:
                     if self.__verbose:
-                        self.__lfh.write(f"+CnsMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                        self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
             elif ctx.Around() or ctx.Saround():
                 clauseName = 'around' if ctx.Around() else 'saround'
@@ -7274,7 +7276,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                         except Exception as e:
                             if self.__verbose:
-                                self.__lfh.write(f"+CnsMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                                self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
                     if ctx.Saround():
                         identity = numpy.identity(3, dtype=float)
@@ -7345,7 +7347,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                                     except Exception as e:
                                         if self.__verbose:
-                                            self.__lfh.write(f"+CnsMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                                            self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
                     if len(self.factor['atom_selection']) > 0:
                         self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
@@ -8222,7 +8224,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                 except Exception as e:
                     if self.__verbose:
-                        self.__lfh.write(f"+CnsMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                        self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
                 if ctx.Sfbox():
                     identity = numpy.identity(3, dtype=float)
@@ -8264,7 +8266,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                             except Exception as e:
                                 if self.__verbose:
-                                    self.__lfh.write(f"+CnsMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                                    self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
                 self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
                                                                       for atom in _atomSelection
@@ -8402,7 +8404,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                         except Exception as e:
                             if self.__verbose:
-                                self.__lfh.write(f"+CnsMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                                self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
                         self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
 
@@ -8431,7 +8433,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                     except Exception as e:
                         if self.__verbose:
-                            self.__lfh.write(f"+CnsMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                            self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
                     _refAtomSelection = [atom for atom in self.factor['atom_selection'] if atom in _atomSelection]
                     self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
@@ -8490,7 +8492,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                         except Exception as e:
                             if self.__verbose:
-                                self.__lfh.write(f"+CnsMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                                self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
                     self.inVector3D_tail = self.inVector3D_head = None
                     if len(self.numberFSelection) == 0 or None in self.numberFSelection:
@@ -8542,7 +8544,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                     except Exception as e:
                         if self.__verbose:
-                            self.__lfh.write(f"+CnsMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                            self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
                     self.factor['atom_selection'] = atomSelection
 
@@ -8596,7 +8598,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                 except Exception as e:
                     if self.__verbose:
-                        self.__lfh.write(f"+CnsMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                        self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
                 self.intersectionFactor_expressions(atomSelection)
 
@@ -8906,7 +8908,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                 except Exception as e:
                     if self.__verbose:
-                        self.__lfh.write(f"+CnsMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                        self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
                 self.intersectionFactor_expressions(atomSelection)
 
@@ -9028,7 +9030,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+CnsMRParserListener.selectRealisticBondConstraint() ++ Error  - {str(e)}")
+                self.__lfh.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
 
         return atom1, atom2
 
@@ -9196,7 +9198,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+CnsMRParserListener.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
+                self.__lfh.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
 
         return dst_func
 
@@ -9256,7 +9258,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+CnsMRParserListener.isRealisticDistanceRestraint() ++ Error  - {str(e)}")
+                self.__lfh.write(f"+{self.__class_name__}.isRealisticDistanceRestraint() ++ Error  - {str(e)}")
 
         return True
 

@@ -10187,7 +10187,7 @@ class NmrDpUtility:
                                                 {'file_name': file_name, 'description': err})
             self.report.setError()
 
-            self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - "
+            self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Error  - "
                              f"{file_name} {err}\n")
 
         if self.__remediation_mode and not self.__bmrb_only:
@@ -11589,7 +11589,7 @@ class NmrDpUtility:
                         self.report.setError()
 
                         if not self.__remediation_mode or self.__remediation_loop_count > 0:
-                            self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - "
+                            self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - "
                                              f"{file_type} {file_name} {err}\n")
 
                         has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
@@ -11619,7 +11619,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if not self.__remediation_mode or self.__remediation_loop_count > 0:
-                                    self.__lfh.write("+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - "
+                                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - "
                                                      f"{file_type} {file_name} {err}\n")
 
                         if valid:
@@ -11647,7 +11647,7 @@ class NmrDpUtility:
 
             except ValueError as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__detectContentSubTypeOfLegacyMr() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -12289,7 +12289,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMrFileIntoLegacyPk() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -14496,7 +14496,7 @@ class NmrDpUtility:
 
         except ValueError as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testFormatValidityOfLegacyMr() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testFormatValidityOfLegacyMr() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -15030,7 +15030,7 @@ class NmrDpUtility:
 
                     err = f"The NMR restraint file {src_file!r} (MR format) is neither ASCII file nor gzip compressed file."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -15048,7 +15048,7 @@ class NmrDpUtility:
 
                     except Exception as e:
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + str(e))
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + str(e))
                         self.report.setError()
 
                         if self.__verbose:
@@ -15670,7 +15670,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -16037,7 +16037,7 @@ class NmrDpUtility:
                             err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
                                 "@todo: It needs to be split properly."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -16056,7 +16056,7 @@ class NmrDpUtility:
                         err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\
                             "@todo: It needs to be reviewed."
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
                         self.report.setError()
 
                         if self.__verbose:
@@ -16073,7 +16073,7 @@ class NmrDpUtility:
                         err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
                             "@todo: It needs to be reviewed."
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
                         self.report.setError()
 
                         if self.__verbose:
@@ -16780,7 +16780,7 @@ class NmrDpUtility:
                                 err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
                                     "@todo: It needs to be split properly."
 
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
                                 self.report.setError()
 
                                 if self.__verbose:
@@ -16798,7 +16798,7 @@ class NmrDpUtility:
                             err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\
                                 "@todo: It needs to be reviewed."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -16816,7 +16816,7 @@ class NmrDpUtility:
                             err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
                                 "@todo: It needs to be reviewed."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -17256,7 +17256,7 @@ class NmrDpUtility:
                     #                                      'description': str(e).strip("'")})
                     # self.report.setError()
 
-                    # self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ LookupError  - "
+                    # self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequence() ++ LookupError  - "
                     #                  f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
                     # """
                     pass
@@ -17294,7 +17294,7 @@ class NmrDpUtility:
 
                         else:
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequence() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPolymerSequence() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -17302,7 +17302,7 @@ class NmrDpUtility:
 
                 except Exception as e:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequence() ++ Error  - " + str(e))
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPolymerSequence() ++ Error  - " + str(e))
                     self.report.setError()
 
                     if self.__verbose:
@@ -17522,7 +17522,7 @@ class NmrDpUtility:
             #                                      'description': str(e).strip("'")})
             # self.report.setError()
 
-            # self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ LookupError  - "
+            # self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ LookupError  - "
             #                  f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
             # """
             pass
@@ -17565,7 +17565,7 @@ class NmrDpUtility:
 
                 else:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -17573,7 +17573,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -20520,7 +20520,7 @@ class NmrDpUtility:
                     #                                      'description': str(e).strip("'")})
                     # self.report.setError()
 
-                    # self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ LookupError  - "
+                    # self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ LookupError  - "
                     #                  f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
                     # """
                     pass
@@ -20559,7 +20559,7 @@ class NmrDpUtility:
 
                         else:
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomNomenclature() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -20567,7 +20567,7 @@ class NmrDpUtility:
 
                 except Exception as e:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomNomenclature() ++ Error  - " + str(e))
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - " + str(e))
                     self.report.setError()
 
                     if self.__verbose:
@@ -20580,7 +20580,7 @@ class NmrDpUtility:
                                                  'description': str(e).strip("'")})
             self.report.setError()
 
-            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ LookupError  - "
+            self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ LookupError  - "
                              f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
@@ -20617,7 +20617,7 @@ class NmrDpUtility:
 
                 else:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomNomenclature() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -20625,7 +20625,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomNomenclature() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -20878,7 +20878,7 @@ class NmrDpUtility:
                                                      'description': str(e).strip("'")})
                 self.report.setError()
 
-                self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCsLoop() ++ LookupError  - "
+                self.__lfh.write(f"+{self.__class_name__}.__validateAtomTypeOfCsLoop() ++ LookupError  - "
                                  f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
@@ -20915,7 +20915,7 @@ class NmrDpUtility:
 
                 else:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCsLoop() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateAtomTypeOfCsLoop() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -20923,7 +20923,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCsLoop() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateAtomTypeOfCsLoop() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -21190,7 +21190,7 @@ class NmrDpUtility:
                                                      'description': str(e).strip("'")})
                 self.report.setError()
 
-                self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ LookupError  - "
+                self.__lfh.write(f"+{self.__class_name__}.__testAmbigCodeOfCsLoop() ++ LookupError  - "
                                  f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
@@ -21227,7 +21227,7 @@ class NmrDpUtility:
 
                 else:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testAmbigCodeOfCsLoop() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -21235,7 +21235,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testAmbigCodeOfCsLoop() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testAmbigCodeOfCsLoop() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -21334,7 +21334,7 @@ class NmrDpUtility:
             #                                      'description': str(e).strip("'")})
             # self.report.setError()
 
-            # self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ LookupError  - "
+            # self.__lfh.write(f"+{self.__class_name__}.__testIndexConsistency() ++ LookupError  - "
             #                  f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
             # """
             pass
@@ -21376,7 +21376,7 @@ class NmrDpUtility:
 
                 else:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testIndexConsistency() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testIndexConsistency() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -21384,7 +21384,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testIndexConsistency() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testIndexConsistency() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -21547,7 +21547,7 @@ class NmrDpUtility:
                                                  'description': str(e).strip("'")})
             self.report.setError()
 
-            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ LookupError  - "
+            self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInLoop() ++ LookupError  - "
                              f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
@@ -21632,7 +21632,7 @@ class NmrDpUtility:
 
                 else:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - " + warn)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testDataConsistencyInLoop() ++ Error  - " + warn)
                     self.report.setError()
 
                     if self.__verbose:
@@ -21679,7 +21679,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testDataConsistencyInLoop() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -22430,7 +22430,7 @@ class NmrDpUtility:
                                                                  'description': str(e).strip("'")})
                             self.report.setError()
 
-                            self.__lfh.write("+NmrDpUtility.__testNmrCovalentBond() ++ LookupError  - "
+                            self.__lfh.write(f"+{self.__class_name__}.__testNmrCovalentBond() ++ LookupError  - "
                                              f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
                         except ValueError as e:
@@ -22448,7 +22448,7 @@ class NmrDpUtility:
 
                         except Exception as e:
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testNmrCovalentBond() ++ Error  - " + str(e))
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testNmrCovalentBond() ++ Error  - " + str(e))
                             self.report.setError()
 
                             if self.__verbose:
@@ -22569,7 +22569,7 @@ class NmrDpUtility:
                                                                      'description': str(e).strip("'")})
                                 self.report.setError()
 
-                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ LookupError  - "
+                                self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() ++ LookupError  - "
                                                  f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
                             except ValueError as e:
@@ -22651,7 +22651,7 @@ class NmrDpUtility:
 
                                     else:
 
-                                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - " + warn)
+                                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() ++ Error  - " + warn)
                                         self.report.setError()
 
                                         if self.__verbose:
@@ -22705,7 +22705,7 @@ class NmrDpUtility:
 
                             except Exception as e:
 
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - " + str(e))
+                                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() ++ Error  - " + str(e))
                                 self.report.setError()
 
                                 if self.__verbose:
@@ -22897,7 +22897,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -23070,7 +23070,7 @@ class NmrDpUtility:
                                                      'description': str(e).strip("'")})
                 self.report.setError()
 
-                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ LookupError  - "
+                self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ LookupError  - "
                                  f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
             except ValueError as e:
@@ -23085,7 +23085,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -23147,7 +23147,7 @@ class NmrDpUtility:
                         err = f"Saveframe tag prefix {sf.tag_prefix!r} did not match with "\
                             f"{self.sf_tag_prefixes[file_type][content_subtype]!r} in {sf_framecode!r} saveframe."
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - " + err)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testSfTagConsistency() ++ Error  - " + err)
                         self.report.setError()
 
                         if self.__verbose:
@@ -23176,7 +23176,7 @@ class NmrDpUtility:
                                                              'description': str(e).strip("'")})
                         self.report.setError()
 
-                        self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ LookupError  - "
+                        self.__lfh.write(f"+{self.__class_name__}.__testSfTagConsistency() ++ LookupError  - "
                                          f"{file_name} {sf_framecode} {str(e)}\n")
 
                     except ValueError as e:
@@ -23243,7 +23243,7 @@ class NmrDpUtility:
 
                             else:
 
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - " + warn)
+                                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testSfTagConsistency() ++ Error  - " + warn)
                                 self.report.setError()
 
                                 if self.__verbose:
@@ -23264,7 +23264,7 @@ class NmrDpUtility:
 
                     except Exception as e:
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - " + str(e))
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testSfTagConsistency() ++ Error  - " + str(e))
                         self.report.setError()
 
                         if self.__verbose:
@@ -23377,7 +23377,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testParentChildRelation() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testParentChildRelation() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -24703,7 +24703,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateCsValue() ++ LookupError  - "
+                                    self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ LookupError  - "
                                                      f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                         else:
@@ -24985,7 +24985,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateCsValue() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateCsValue() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -28117,7 +28117,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__removeUnusedPdbInsCode() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__removeUnusedPdbInsCode() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -28556,7 +28556,7 @@ class NmrDpUtility:
 
                         except Exception as e:
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCsPseudoAtomNameConsistencyInMrLoop() ++ Error  - " + str(e))
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testCsPseudoAtomNameConsistencyInMrLoop() ++ Error  - " + str(e))
                             self.report.setError()
 
                             if self.__verbose:
@@ -28660,7 +28660,7 @@ class NmrDpUtility:
 
                     except Exception as e:
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCsPseudoAtomNameConsistencyInMrLoop() ++ Error  - " + str(e))
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testCsPseudoAtomNameConsistencyInMrLoop() ++ Error  - " + str(e))
                         self.report.setError()
 
                         if self.__verbose:
@@ -29127,7 +29127,7 @@ class NmrDpUtility:
 
                 except Exception as e:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCsValueConsistencyInPkLoop() ++ Error  - " + str(e))
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testCsValueConsistencyInPkLoop() ++ Error  - " + str(e))
                     self.report.setError()
 
                     if self.__verbose:
@@ -29639,7 +29639,7 @@ class NmrDpUtility:
 
                 except Exception as e:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCsValueConsistencyInPkAltLoop() ++ Error  - " + str(e))
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testCsValueConsistencyInPkAltLoop() ++ Error  - " + str(e))
                     self.report.setError()
 
                     if self.__verbose:
@@ -29885,7 +29885,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRdcVector() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testRdcVector() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -30002,7 +30002,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordCovalentBond() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testCoordCovalentBond() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -30106,7 +30106,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getCoordBondLength() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__getCoordBondLength() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -30182,7 +30182,7 @@ class NmrDpUtility:
 
                 err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordResidueVariant() ++ Error  - " + err)
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testCoordResidueVariant() ++ Error  - " + err)
                 self.report.setError()
 
                 if self.__verbose:
@@ -30507,7 +30507,7 @@ class NmrDpUtility:
                                                  'description': str(e).strip("'")})
             self.report.setError()
 
-            self.__lfh.write("+NmrDpUtility.__testResidueVariant() ++ LookupError  - "
+            self.__lfh.write(f"+{self.__class_name__}.__testResidueVariant() ++ LookupError  - "
                              f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
@@ -30522,7 +30522,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testResidueVariant() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testResidueVariant() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -30975,7 +30975,7 @@ class NmrDpUtility:
                 if atom_dim_num == 0:
                     err = f"Unexpected key items {key_items} set for processing {lp_category} loop in {sf_framecode} saveframe of {original_file_name} file."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ KeyError  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -33127,7 +33127,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     else:
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ KeyError  - " + warn)
                         self.report.setError()
 
                         if self.__verbose:
@@ -33657,7 +33657,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     else:
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ KeyError  - " + warn)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ KeyError  - " + warn)
                         self.report.setError()
 
                         if self.__verbose:
@@ -33851,7 +33851,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (AMBER) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -33919,7 +33919,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (ARIA) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -33987,7 +33987,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (BIOSYM) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -34080,7 +34080,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (CHARMM) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -34170,7 +34170,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (CNS) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -34284,7 +34284,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (CYANA) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -34352,7 +34352,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (DYNAMO/PALES/TALOS) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -34420,7 +34420,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (ISD) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -34465,7 +34465,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (GROMACS) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -34558,7 +34558,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (CYANA NOA) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -34651,7 +34651,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (ROSETTA) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -34719,7 +34719,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (SYBYL) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -34815,7 +34815,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR restraint file (XPLOR-NIH) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -34998,7 +34998,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     else:
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ KeyError  - " + warn)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ KeyError  - " + warn)
                         self.report.setError()
 
                         if self.__verbose:
@@ -35283,7 +35283,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     else:
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ KeyError  - " + warn)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ KeyError  - " + warn)
                         self.report.setError()
 
                         if self.__verbose:
@@ -35416,7 +35416,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR spectral peak list file (ARIA) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -35479,7 +35479,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR spectral peak list file (NMRPIPE) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -35542,7 +35542,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR spectral peak list file (SPARKY) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -35605,7 +35605,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR spectral peak list file (TOPSPIN) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -35668,7 +35668,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR spectral peak list file (NMRVIEW) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -35731,7 +35731,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR spectral peak list file (VNMR) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -35796,7 +35796,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR spectral peak list file (XEASY) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -35859,7 +35859,7 @@ class NmrDpUtility:
                         if len(listener.getContentSubtype()) == 0:
                             err = f"Failed to validate NMR spectral peak list file (XWINNMR) {file_name!r}."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -37617,7 +37617,7 @@ class NmrDpUtility:
 
                     except Exception as e:
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - " + str(e))
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__calculateStatsOfExptlData() ++ Error  - " + str(e))
                         self.report.setError()
 
                         if self.__verbose:
@@ -39261,7 +39261,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -39954,7 +39954,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__calculateStatsOfDistanceRestraint() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -40139,7 +40139,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfCovalentBond() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__calculateStatsOfCovalentBond() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -41461,7 +41461,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfDihedralRestraint() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__calculateStatsOfDihedralRestraint() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -41923,7 +41923,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfRdcRestraint() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__calculateStatsOfRdcRestraint() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -42224,7 +42224,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfSpectralPeak() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__calculateStatsOfSpectralPeak() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -42486,7 +42486,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfSpectralPeakAlt() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__calculateStatsOfSpectralPeakAlt() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -43214,7 +43214,7 @@ class NmrDpUtility:
 
                 err = f"No such {self.__inputParamDict['coordinate_file_path']!r} file."
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - " + err)
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__parseCoordinate() ++ Error  - " + err)
                 self.report.setError()
 
                 if self.__verbose:
@@ -43224,7 +43224,7 @@ class NmrDpUtility:
 
                 err = f"{self.readable_file_type[file_type]} formatted coordinate file is mandatory."
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - " + err)
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__parseCoordinate() ++ Error  - " + err)
                 self.report.setError()
 
                 if self.__verbose:
@@ -43240,7 +43240,7 @@ class NmrDpUtility:
 
                 err = f"{file_name!r} is invalid {self.readable_file_type[file_type]} file."
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - " + err)
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__parseCoordinate() ++ Error  - " + err)
                 self.report.setError()
 
                 if self.__verbose:
@@ -43305,7 +43305,7 @@ class NmrDpUtility:
 
                     except Exception as e:
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - " + str(e))
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__parseCoordinate() ++ Error  - " + str(e))
                         self.report.setError()
 
             if self.__trust_pdbx_nmr_ens and len(ensemble) > 0 and 'representative_conformer' in ensemble[0]:
@@ -43338,7 +43338,7 @@ class NmrDpUtility:
 
                 except Exception as e:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - " + str(e))
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__parseCoordinate() ++ Error  - " + str(e))
                     self.report.setError()
 
             if self.__total_models < 2:
@@ -43433,7 +43433,7 @@ class NmrDpUtility:
 
                 except Exception as e:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - " + str(e))
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__parseCoordinate() ++ Error  - " + str(e))
                     self.report.setError()
 
                     return False
@@ -43447,7 +43447,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__parseCoordinate() ++ Error  - " + str(e))
             self.report.setError()
 
             return False
@@ -43477,7 +43477,7 @@ class NmrDpUtility:
 
                     except Exception as e:
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordFilePath() ++ Error  - " + str(e))
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__parseCoordFilePath() ++ Error  - " + str(e))
                         self.report.setError()
 
                         if self.__verbose:
@@ -43914,7 +43914,7 @@ class NmrDpUtility:
                                                  'description': str(e).strip("'")})
             self.report.setError()
 
-            self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ LookupError  - "
+            self.__lfh.write(f"+{self.__class_name__}.__extractCoordPolymerSequence() ++ LookupError  - "
                              f"{file_name} {lp_category} {str(e)}\n")
 
         except ValueError as e:
@@ -43929,7 +43929,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractCoordPolymerSequence() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -44024,7 +44024,7 @@ class NmrDpUtility:
                                                      'description': str(e).strip("'")})
                 self.report.setError()
 
-                self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ LookupError  - "
+                self.__lfh.write(f"+{self.__class_name__}.__extractCoordPolymerSequenceInLoop() ++ LookupError  - "
                                  f"{file_name} {lp_category} {str(e)}\n")
 
             except ValueError as e:
@@ -44040,7 +44040,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractCoordPolymerSequenceInLoop() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -46366,7 +46366,7 @@ class NmrDpUtility:
 
                 err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - " + err)
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testCoordAtomIdConsistency() ++ Error  - " + err)
                 self.report.setError()
 
                 if self.__verbose:
@@ -47303,7 +47303,7 @@ class NmrDpUtility:
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__appendIndexTag() ++ LookupError  - "
+                                self.__lfh.write(f"+{self.__class_name__}.__appendIndexTag() ++ LookupError  - "
                                                  f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                     lp = pynmrstar.Loop.from_scratch(lp_category)
@@ -47353,7 +47353,7 @@ class NmrDpUtility:
 
                     err = "Could not specify 'sf_category' in NMR data processing report."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__deleteSkippedSf() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__deleteSkippedSf() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -47367,7 +47367,7 @@ class NmrDpUtility:
 
                         err = f"Could not specify sf_category {w['sf_category']} unexpectedly."
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__deleteSkippedSf() ++ Error  - " + err)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__deleteSkippedSf() ++ Error  - " + err)
                         self.report.setError()
 
                         if self.__verbose:
@@ -47382,7 +47382,7 @@ class NmrDpUtility:
 
                 err = f"Unexpected PyNMRSTAR object type {self.__star_data_type[0]} found about {file_name!r} file."
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__deleteSkippedSf() ++ Error  - " + err)
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__deleteSkippedSf() ++ Error  - " + err)
                 self.report.setError()
 
                 if self.__verbose:
@@ -47421,7 +47421,7 @@ class NmrDpUtility:
 
                     err = "Could not specify 'sf_framecode' in NMR data processing report."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__deleteSkippedLoop() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__deleteSkippedLoop() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -47435,7 +47435,7 @@ class NmrDpUtility:
 
                         err = f"Could not specify {w['sf_framecode']!r} saveframe unexpectedly in {file_name!r} file."
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__deleteSkippedLoop() ++ Error  - " + err)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__deleteSkippedLoop() ++ Error  - " + err)
                         self.report.setError()
 
                         if self.__verbose:
@@ -47447,7 +47447,7 @@ class NmrDpUtility:
 
                         err = "Could not specify 'category' in NMR data processing report."
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__deleteSkippedLoop() ++ Error  - " + err)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__deleteSkippedLoop() ++ Error  - " + err)
                         self.report.setError()
 
                         if self.__verbose:
@@ -47461,7 +47461,7 @@ class NmrDpUtility:
 
                 err = f"Unexpected PyNMRSTAR object type {self.__star_data_type[0]} found about {file_name!r} file."
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__deleteSkippedLoop() ++ Error  - " + err)
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__deleteSkippedLoop() ++ Error  - " + err)
                 self.report.setError()
 
                 if self.__verbose:
@@ -47515,7 +47515,7 @@ class NmrDpUtility:
 
             err = f"Unexpected PyNMRSTAR object type {self.__star_data_type[0]} found about {file_name!r} file."
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__deleteUnparsedEntryLoop() ++ Error  - " + err)
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__deleteUnparsedEntryLoop() ++ Error  - " + err)
             self.report.setError()
 
             if self.__verbose:
@@ -50068,7 +50068,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     else:
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__remediateRawTextPk() ++ KeyError  - " + warn)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ KeyError  - " + warn)
                         self.report.setError()
 
                         if self.__verbose:
@@ -50165,7 +50165,7 @@ class NmrDpUtility:
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate NMR spectral peak list file (ARIA) {data_file_name!r}."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__remediateRawTextPk() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -50227,7 +50227,7 @@ class NmrDpUtility:
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate NMR spectral peak list file (NMRPIPE) {data_file_name!r}."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__remediateRawTextPk() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -50289,7 +50289,7 @@ class NmrDpUtility:
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate NMR spectral peak list file (SPARKY) {data_file_name!r}."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__remediateRawTextPk() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -50351,7 +50351,7 @@ class NmrDpUtility:
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate NMR spectral peak list file (TOPSPIN) {data_file_name!r}."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__remediateRawTextPk() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -50413,7 +50413,7 @@ class NmrDpUtility:
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate NMR spectral peak list file (NMRVIEW) {data_file_name!r}."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__remediateRawTextPk() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -50475,7 +50475,7 @@ class NmrDpUtility:
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate NMR spectral peak list file (VNMR) {data_file_name!r}."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__remediateRawTextPk() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -50539,7 +50539,7 @@ class NmrDpUtility:
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate NMR spectral peak list file (XEASY) {data_file_name!r}."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__remediateRawTextPk() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -50601,7 +50601,7 @@ class NmrDpUtility:
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate NMR spectral peak list file (XWINNMR) {data_file_name!r}."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__remediateRawTextPk() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -50942,7 +50942,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isCyclicPolymer__() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__isCyclicPolymer__() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -50979,7 +50979,7 @@ class NmrDpUtility:
 
                 except Exception as e:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isCyclicPolymer__() ++ Error  - " + str(e))
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__isCyclicPolymer__() ++ Error  - " + str(e))
                     self.report.setError()
 
                     if self.__verbose:
@@ -51055,7 +51055,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isProtCis() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__isProtCis() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -51170,7 +51170,7 @@ class NmrDpUtility:
 
                 except Exception as e:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testTautomerOfHistidinePerModel() ++ Error  - " + str(e))
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testTautomerOfHistidinePerModel() ++ Error  - " + str(e))
                     self.report.setError()
 
                     if self.__verbose:
@@ -51294,7 +51294,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getTautomerOfHistidine() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__getTautomerOfHistidine() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -51383,7 +51383,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getRotamerOfValine() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__getRotamerOfValine() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -51492,7 +51492,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getRotamerOfLeucine() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__getRotamerOfLeucine() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -51622,7 +51622,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getRotamerOfIsoleucine() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__getRotamerOfIsoleucine() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -51713,7 +51713,7 @@ class NmrDpUtility:
 
             err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordDisulfideBond() ++ Error  - " + err)
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractCoordDisulfideBond() ++ Error  - " + err)
             self.report.setError()
 
             if self.__verbose:
@@ -51745,7 +51745,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordDisulfideBond() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractCoordDisulfideBond() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -52108,7 +52108,7 @@ class NmrDpUtility:
 
             err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordOtherBond() ++ Error  - " + err)
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractCoordOtherBond() ++ Error  - " + err)
             self.report.setError()
 
             if self.__verbose:
@@ -52140,7 +52140,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordOtherBond() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractCoordOtherBond() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -52540,7 +52540,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticRing() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__getNearestAromaticRing() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -52578,7 +52578,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticRing() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__getNearestAromaticRing() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -52760,7 +52760,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticRing() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__getNearestAromaticRing() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -52883,7 +52883,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParaFerroMagneticAtom() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__getNearestParaFerroMagneticAtom() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -52921,7 +52921,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParaFerroMagneticAtom() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__getNearestParaFerroMagneticAtom() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -52970,7 +52970,7 @@ class NmrDpUtility:
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParaFerroMagneticAtom() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__getNearestParaFerroMagneticAtom() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -53117,7 +53117,7 @@ class NmrDpUtility:
 
         except ValueError as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendElemAndIsoNumOfNefCsLoop() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__appendElemAndIsoNumOfNefCsLoop() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -53184,7 +53184,7 @@ class NmrDpUtility:
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__appendWeightInLoop() ++ LookupError  - "
+                                    self.__lfh.write(f"+{self.__class_name__}.__appendWeightInLoop() ++ LookupError  - "
                                                      f"{file_name} {sf_framecode} {lp_category} {err}\n")
 
                         for row in loop:
@@ -53196,7 +53196,7 @@ class NmrDpUtility:
 
         except ValueError as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendWeightInLoop() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__appendWeightInLoop() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -53249,7 +53249,7 @@ class NmrDpUtility:
 
         except ValueError as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendDihedAngleType() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__appendDihedAngleType() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -53336,7 +53336,7 @@ class NmrDpUtility:
 
         except ValueError as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendSfTagItem() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__appendSfTagItem() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -53456,7 +53456,7 @@ class NmrDpUtility:
 
                     except Exception as e:
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updateDihedralAngleType() ++ Error  - " + str(e))
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__updateDihedralAngleType() ++ Error  - " + str(e))
                         self.report.setError()
 
                         if self.__verbose:
@@ -53513,7 +53513,7 @@ class NmrDpUtility:
 
                     err = "Could not specify 'sf_framecode' in NMR data processing report."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixDisorderedIndex() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixDisorderedIndex() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -53527,7 +53527,7 @@ class NmrDpUtility:
 
                         err = f"Could not specify {w['sf_framecode']!r} saveframe unexpectedly in {file_name!r} file."
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixDisorderedIndex() ++ Error  - " + err)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixDisorderedIndex() ++ Error  - " + err)
                         self.report.setError()
 
                         if self.__verbose:
@@ -53539,7 +53539,7 @@ class NmrDpUtility:
 
                         err = "Could not specify 'category' in NMR data processing report."
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixDisorderedIndex() ++ Error  - " + err)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixDisorderedIndex() ++ Error  - " + err)
                         self.report.setError()
 
                         if self.__verbose:
@@ -53562,7 +53562,7 @@ class NmrDpUtility:
 
                             err = "Could not specify content_subtype in NMR data processing report."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixDisorderedIndex() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixDisorderedIndex() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -53572,7 +53572,7 @@ class NmrDpUtility:
 
                 err = f"Unexpected PyNMRSTAR object type {self.__star_data_type[0]} found about {file_name!r} file."
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixDisorderedIndex() ++ Error  - " + err)
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixDisorderedIndex() ++ Error  - " + err)
                 self.report.setError()
 
                 if self.__verbose:
@@ -53611,7 +53611,7 @@ class NmrDpUtility:
 
                     err = "Could not specify 'sf_framecode' in NMR data processing report."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__removeNonSenseZeroValue() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -53625,7 +53625,7 @@ class NmrDpUtility:
 
                         err = f"Could not specify {w['sf_framecode']!r} saveframe unexpectedly in {file_name!r} file."
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - " + err)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__removeNonSenseZeroValue() ++ Error  - " + err)
                         self.report.setError()
 
                         if self.__verbose:
@@ -53637,7 +53637,7 @@ class NmrDpUtility:
 
                         err = "Could not specify 'category' in NMR data processing report."
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - " + err)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__removeNonSenseZeroValue() ++ Error  - " + err)
                         self.report.setError()
 
                         if self.__verbose:
@@ -53653,7 +53653,7 @@ class NmrDpUtility:
 
                             err = f"Could not find loop tag {itName} in {w['category']} category, {w['sf_framecode']!r} saveframe, {file_name!r} file."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__removeNonSenseZeroValue() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -53680,7 +53680,7 @@ class NmrDpUtility:
 
                 err = f"Unexpected PyNMRSTAR object type {self.__star_data_type[0]} found about {file_name!r} file."
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - " + err)
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__removeNonSenseZeroValue() ++ Error  - " + err)
                 self.report.setError()
 
                 if self.__verbose:
@@ -53719,7 +53719,7 @@ class NmrDpUtility:
 
                     err = "Could not specify 'sf_framecode' in NMR data processing report."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixNonSenseNegativeValue() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -53733,7 +53733,7 @@ class NmrDpUtility:
 
                         err = f"Could not specify {w['sf_framecode']!r} saveframe unexpectedly in {file_name!r} file."
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - " + err)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixNonSenseNegativeValue() ++ Error  - " + err)
                         self.report.setError()
 
                         if self.__verbose:
@@ -53745,7 +53745,7 @@ class NmrDpUtility:
 
                         err = "Could not specify 'category' in NMR data processing report."
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - " + err)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixNonSenseNegativeValue() ++ Error  - " + err)
                         self.report.setError()
 
                         if self.__verbose:
@@ -53761,7 +53761,7 @@ class NmrDpUtility:
 
                             err = f"Could not find loop tag {itName} in {w['category']} category, {w['sf_framecode']!r} saveframe, {file_name!r} file."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixNonSenseNegativeValue() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -53788,7 +53788,7 @@ class NmrDpUtility:
 
                 err = f"Unexpected PyNMRSTAR object type {self.__star_data_type[0]} found about {file_name!r} file."
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - " + err)
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixNonSenseNegativeValue() ++ Error  - " + err)
                 self.report.setError()
 
                 if self.__verbose:
@@ -53881,7 +53881,7 @@ class NmrDpUtility:
 
                     err = "Could not specify 'sf_framecode' in NMR data processing report."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationFailure() ++ Error  - " + err)
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixEnumerationFailure() ++ Error  - " + err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -53895,7 +53895,7 @@ class NmrDpUtility:
 
                         err = f"Could not specify {w['sf_framecode']!r} saveframe unexpectedly in {file_name!r} file."
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationFailure() ++ Error  - " + err)
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixEnumerationFailure() ++ Error  - " + err)
                         self.report.setError()
 
                         if self.__verbose:
@@ -53911,7 +53911,7 @@ class NmrDpUtility:
 
                             err = f"Could not find saveframe tag {itName} in {w['sf_framecode']!r} saveframe, {file_name!r} file."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationFailure() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixEnumerationFailure() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -54065,7 +54065,7 @@ class NmrDpUtility:
 
                                         err = "Could not specify content_subtype in NMR data processing report."
 
-                                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationFailure() ++ Error  - " + err)
+                                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixEnumerationFailure() ++ Error  - " + err)
                                         self.report.setError()
 
                                         if self.__verbose:
@@ -54079,7 +54079,7 @@ class NmrDpUtility:
 
                             err = f"Could not find loop tag {itName} in {w['category']} category, {w['sf_framecode']!r} saveframe, {file_name!r} file."
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationFailure() ++ Error  - " + err)
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixEnumerationFailure() ++ Error  - " + err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -54129,7 +54129,7 @@ class NmrDpUtility:
 
                 err = f"Unexpected PyNMRSTAR object type {self.__star_data_type[0]} found about {file_name!r} file."
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationFailure() ++ Error  - " + err)
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__fixEnumerationFailure() ++ Error  - " + err)
                 self.report.setError()
 
                 if self.__verbose:
@@ -54268,7 +54268,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDistRestraintAsHydrogenBond() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testDistRestraintAsHydrogenBond() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -54378,7 +54378,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDistRestraintAsDisulfideBond() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testDistRestraintAsDisulfideBond() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -54452,7 +54452,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDistRestraintAsSymmetry() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testDistRestraintAsSymmetry() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -54616,7 +54616,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDihedRestraintAsBackBoneChemShifts() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testDihedRestraintAsBackBoneChemShifts() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -54660,7 +54660,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRestraintPotentialSWP() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testRestraintPotentialSWP() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -54704,7 +54704,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRestraintPotentialSWPL() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testRestraintPotentialSWPL() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -54748,7 +54748,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRestraintPotentialUBP() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testRestraintPotentialUBP() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -54792,7 +54792,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRestraintPotentialLBP() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testRestraintPotentialLBP() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -54836,7 +54836,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRestraintPotentialUBPL() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testRestraintPotentialUBPL() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -54880,7 +54880,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRestraintPotentialLBPL() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testRestraintPotentialLBPL() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -54928,7 +54928,7 @@ class NmrDpUtility:
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRestraintPotentialLHorP() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testRestraintPotentialLHorP() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -55440,7 +55440,7 @@ class NmrDpUtility:
 
         except ValueError as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendParentSfTag() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__appendParentSfTag() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -55628,7 +55628,7 @@ class NmrDpUtility:
 
                 err = "Not found destination file path."
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__depositNmrData() ++ Error  - " + err)
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__depositNmrData() ++ Error  - " + err)
                 self.report.setError()
 
                 if self.__verbose:
@@ -57193,7 +57193,7 @@ class NmrDpUtility:
                                                                     {'file_name': file_name, 'description': err})
                                 self.report.setError()
 
-                                self.__lfh.write("+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - "
+                                self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - "
                                                  f"{file_name} {err}\n")
                                 continue
 
@@ -57238,7 +57238,7 @@ class NmrDpUtility:
                                                                     {'file_name': file_name, 'description': err})
                                 self.report.setError()
 
-                                self.__lfh.write("+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - "
+                                self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - "
                                                  f"{file_name} {err}\n")
                                 continue
 
@@ -57325,7 +57325,7 @@ class NmrDpUtility:
                 sf.add_loop(lp)
 
         except IndexError as e:
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mergeLegacyCsAndMr() ++ Error  - " + str(e))
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - " + str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -59091,13 +59091,13 @@ class NmrDpUtility:
         input_source_dic = input_source.get()
 
         if self.__dstPath is None:
-            raise KeyError("+NmrDpUtility.__translateNef2Str() ++ Error  - Could not find destination path as input NEF file for NEFTranslator.")
+            raise KeyError(f"+{self.__class_name__}.__translateNef2Str() ++ Error  - Could not find destination path as input NEF file for NEFTranslator.")
 
         file_name = os.path.basename(self.__dstPath)
         file_type = input_source_dic['file_type']
 
         if 'nmr-star_file_path' not in self.__outputParamDict:
-            raise KeyError("+NmrDpUtility.__translateNef2Str() ++ Error  - Could not find 'nmr-star_file_path' output parameter.")
+            raise KeyError(f"+{self.__class_name__}.__translateNef2Str() ++ Error  - Could not find 'nmr-star_file_path' output parameter.")
 
         fPath = self.__outputParamDict['nmr-star_file_path']
 
@@ -59123,7 +59123,7 @@ class NmrDpUtility:
                                                     {'file_name': file_name, 'description': err})
                 self.report.setError()
 
-            self.__lfh.write("+NmrDpUtility.__translateNef2Str() ++ Error  - "
+            self.__lfh.write(f"+{self.__class_name__}.__translateNef2Str() ++ Error  - "
                              f"{file_name} {err}\n")
 
             if os.path.exists(fPath):
@@ -59181,7 +59181,7 @@ class NmrDpUtility:
                                                 {'file_name': file_name, 'description': err})
             self.report.setError()
 
-        self.__lfh.write("+NmrDpUtility.__translateNef2Str() ++ Error  - "
+        self.__lfh.write(f"+{self.__class_name__}.__translateNef2Str() ++ Error  - "
                          f"{file_name} {err}\n")
 
         if os.path.exists(fPath):
@@ -59220,7 +59220,7 @@ class NmrDpUtility:
             return True
 
         except Exception:
-            raise KeyError("+NmrDpUtility.__initReousrceForNef2Str() ++ Error  - Could not find 'nmr-star_file_path' or 'report_file_path' output parameter.")
+            raise KeyError(f"+{self.__class_name__}.__initReousrceForNef2Str() ++ Error  - Could not find 'nmr-star_file_path' or 'report_file_path' output parameter.")
 
         return False
 
@@ -59235,13 +59235,13 @@ class NmrDpUtility:
         input_source_dic = input_source.get()
 
         if self.__dstPath is None:
-            raise KeyError("+NmrDpUtility.__translateStr2Nef() ++ Error  - Could not find destination path as input NMR-STAR file for NEFTranslator.")
+            raise KeyError(f"+{self.__class_name__}.__translateStr2Nef() ++ Error  - Could not find destination path as input NMR-STAR file for NEFTranslator.")
 
         file_name = os.path.basename(self.__dstPath)
         file_type = input_source_dic['file_type']
 
         if 'nef_file_path' not in self.__outputParamDict:
-            raise KeyError("+NmrDpUtility.__translateStr2Nef() ++ Error  - Could not find 'nef_file_path' output parameter.")
+            raise KeyError(f"+{self.__class_name__}.__translateStr2Nef() ++ Error  - Could not find 'nef_file_path' output parameter.")
 
         fPath = self.__outputParamDict['nef_file_path']
 
@@ -59266,7 +59266,7 @@ class NmrDpUtility:
                                                     {'file_name': file_name, 'description': err})
                 self.report.setError()
 
-            self.__lfh.write("+NmrDpUtility.__translateStr2Nef() ++ Error  - "
+            self.__lfh.write(f"+{self.__class_name__}.__translateStr2Nef() ++ Error  - "
                              f"{file_name} {err}\n")
 
             if os.path.exists(fPath):
@@ -59289,7 +59289,7 @@ class NmrDpUtility:
                                                 {'file_name': file_name, 'description': err})
             self.report.setError()
 
-        self.__lfh.write("+NmrDpUtility.__translateStr2Nef() ++ Error  - "
+        self.__lfh.write(f"+{self.__class_name__}.__translateStr2Nef() ++ Error  - "
                          f"{file_name} {err}\n")
 
         if os.path.exists(fPath):
@@ -59328,7 +59328,7 @@ class NmrDpUtility:
             return True
 
         except Exception:
-            raise KeyError("+NmrDpUtility.__initReousrceForStr2Nef() ++ Error  - Could not find 'nef_file_path' or 'report_file_path' output parameter.")
+            raise KeyError(f"+{self.__class_name__}.__initReousrceForStr2Nef() ++ Error  - Could not find 'nef_file_path' or 'report_file_path' output parameter.")
 
         return False
 
@@ -59340,7 +59340,7 @@ class NmrDpUtility:
 
             err = f"No such {self.__inputParamDict['nmrif_file_path']!r} file."
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseNmrIf() ++ Error  - " + err)
+            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__parseNmrIf() ++ Error  - " + err)
             self.report.setError()
 
             if self.__verbose:

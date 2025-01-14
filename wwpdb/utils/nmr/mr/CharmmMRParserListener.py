@@ -399,6 +399,8 @@ class CharmmMRParserListener(ParseTreeListener):
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  atomNumberDict=None, reasons=None):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
 
@@ -4904,7 +4906,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
                 except Exception as e:
                     if self.__verbose:
-                        self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                        self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
             elif ctx.Around():
                 clauseName = 'around'
@@ -4973,7 +4975,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
                         except Exception as e:
                             if self.__verbose:
-                                self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                                self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
                     if len(self.factor['atom_selection']) > 0:
                         self.factor['atom_selection'] = [dict(s) for s in set(frozenset(atom.items())
@@ -5794,7 +5796,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
                         except Exception as e:
                             if self.__verbose:
-                                self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                                self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
                         self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
 
@@ -5823,7 +5825,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
                     except Exception as e:
                         if self.__verbose:
-                            self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                            self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
                     _refAtomSelection = [atom for atom in self.factor['atom_selection'] if atom in _atomSelection]
                     self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
@@ -5874,7 +5876,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
                 except Exception as e:
                     if self.__verbose:
-                        self.__lfh.write(f"+CharmmMRParserListener.exitFactor() ++ Error  - {str(e)}")
+                        self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
                 self.factor['atom_selection'] = atomSelection
 
@@ -6339,7 +6341,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+CharmmMRParserListener.selectRealisticBondConstraint() ++ Error  - {str(e)}")
+                self.__lfh.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
 
         return atom1, atom2
 
@@ -6507,7 +6509,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+CharmmMRParserListener.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
+                self.__lfh.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
 
         return dst_func
 

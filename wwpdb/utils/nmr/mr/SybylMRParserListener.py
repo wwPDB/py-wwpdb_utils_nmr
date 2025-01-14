@@ -286,6 +286,8 @@ class SybylMRParserListener(ParseTreeListener):
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
 
@@ -2176,7 +2178,7 @@ class SybylMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+SybylMRParserListener.selectRealisticBondConstraint() ++ Error  - {str(e)}")
+                self.__lfh.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
 
         return atom1, atom2
 

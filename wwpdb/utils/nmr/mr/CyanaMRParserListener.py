@@ -417,6 +417,8 @@ class CyanaMRParserListener(ParseTreeListener):
                  mrAtomNameMapping=None,
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  reasons=None, upl_or_lol=None, file_ext=None):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
 
@@ -501,15 +503,15 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if upl_or_lol not in (None, 'upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl'):
             msg = f"The argument 'upl_or_lol' must be one of {(None, 'upl_only', 'upl_w_lol', 'lol_only', 'lol_w_upl')}"
-            log.write(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}")
-            raise ValueError(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}")
+            log.write(f"'+{self.__class_name__}.__init__() ++ ValueError  -  {msg}")
+            raise ValueError(f"'+{self.__class_name__}.__init__() ++ ValueError  -  {msg}")
 
         self.__file_ext = file_ext
 
         if file_ext not in CYANA_MR_FILE_EXTS:
             msg = f"The argument 'file_ext' must be one of {CYANA_MR_FILE_EXTS}"
-            log.write(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}")
-            raise ValueError(f"'+CyanaMRParserListener.__init__() ++ ValueError  -  {msg}")
+            log.write(f"'+{self.__class_name__}.__init__() ++ ValueError  -  {msg}")
+            raise ValueError(f"'+{self.__class_name__}.__init__() ++ ValueError  -  {msg}")
 
         if upl_or_lol is None and file_ext is not None:
 
@@ -4830,7 +4832,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+CyanaMRParserListener.selectRealisticBondConstraint() ++ Error  - {str(e)}")
+                self.__lfh.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
 
         return atom1, atom2
 
@@ -4998,7 +5000,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+CyanaMRParserListener.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
+                self.__lfh.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
 
         return dst_func
 
@@ -9680,7 +9682,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             except Exception as e:
                 if self.__verbose:
-                    self.__lfh.write(f"+CyanaMRParserListener.exitSsbond_macro() ++ Error  - {str(e)}")
+                    self.__lfh.write(f"+{self.__class_name__}.exitSsbond_macro() ++ Error  - {str(e)}")
 
             if self.__createSfDict:
                 sf = self.__getSf()
@@ -9791,7 +9793,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             except Exception as e:
                 if self.__verbose:
-                    self.__lfh.write(f"+CyanaMRParserListener.exitHbond_macro() ++ Error  - {str(e)}")
+                    self.__lfh.write(f"+{self.__class_name__}.exitHbond_macro() ++ Error  - {str(e)}")
 
             if self.__createSfDict:
                 sf = self.__getSf()
@@ -9958,7 +9960,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             except Exception as e:
                 if self.__verbose:
-                    self.__lfh.write(f"+CyanaMRParserListener.exitLink_statement() ++ Error  - {str(e)}")
+                    self.__lfh.write(f"+{self.__class_name__}.exitLink_statement() ++ Error  - {str(e)}")
 
             if self.__createSfDict:
                 sf = self.__getSf('covalent bond linkage')

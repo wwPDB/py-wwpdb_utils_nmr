@@ -31,9 +31,12 @@ class ChemCompReader:
     """ Accessor methods chemical component definition data files.
     """
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
+
         self.__dBlock = None
         self.__topCachePath = None
         self.__ccU = None
@@ -127,7 +130,7 @@ class ChemCompReader:
         self.__filePath = os.path.join(self.__topCachePath, hashd, self.__ccU, self.__ccU + '.cif')
         if not os.access(self.__filePath, os.R_OK):
             if self.__verbose:
-                self.__lfh.write(f"+ERROR- {self.__class__.__name__}.getCompId() Missing file {self.__filePath}\n")
+                self.__lfh.write(f"+{self.__class_name__}.getCompId() ++ Error  - Missing file {self.__filePath}\n")
             return False
         return True
 
@@ -140,12 +143,12 @@ class ChemCompReader:
             self.__filePath = filePath
             if not os.access(self.__filePath, os.R_OK):
                 if self.__verbose:
-                    self.__lfh.write(f"+ERROR- {self.__class__.__name__}.setFilePath() Missing file {self.__filePath}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.setFilePath() ++ Error  - Missing file {self.__filePath}\n")
                 return False
             return True
         except Exception:
             if self.__verbose:
-                self.__lfh.write(f"+ERROR- {self.__class__.__name__}.setFilePath() Missing file {self.__filePath}\n")
+                self.__lfh.write(f"+{self.__class_name__}.setFilePath() ++ Error  - Missing file {self.__filePath}\n")
             return False
 
     def getAtomList(self) -> List[list]:

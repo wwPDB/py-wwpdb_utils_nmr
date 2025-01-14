@@ -35,8 +35,11 @@ class mmCIFUtil:
     """
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr, filePath: Optional[str] = None):  # pylint: disable=unused-argument
+        self.__class_name__ = self.__class__.__name__
+
         # self.__verbose = verbose
         self.__lfh = log
+
         self.__filePath = filePath
         self.__dataList = []
         self.__dataMap = {}
@@ -74,7 +77,7 @@ class mmCIFUtil:
                 #
             #
         except Exception as e:
-            self.__lfh.write(f"ERROR- {self.__class__.__name__} Read {self.__filePath} failed {str(e)}.\n")
+            self.__lfh.write(f"+{self.__class_name__} ++ Error  - Read {self.__filePath} failed {str(e)}.\n")
 
     def GetBlockIDList(self) -> List[str]:
         """ Return list of block ID

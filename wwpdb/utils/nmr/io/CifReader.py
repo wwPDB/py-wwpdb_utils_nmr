@@ -213,6 +213,8 @@ class CifReader:
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  use_cache: bool = True,
                  sub_dir_name_for_cache: str = '.'):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
@@ -256,8 +258,8 @@ class CifReader:
         self.__single_model_rotation_test = True
 
         if self.__random_rotaion_test:
-            self.__lfh.write(f"+WARNING- {self.__class__.__name__}.__init__() Enabled random rotation test\n")
-            self.__lfh.write(f"+WARNING- {self.__class__.__name__}.__init__() Single model rotation test: {self.__single_model_rotation_test}\n")
+            self.__lfh.write(f"+{self.__class_name__}.__init__() ++ Warning  - Enabled random rotation test\n")
+            self.__lfh.write(f"+{self.__class_name__}.__init__() ++ Warning  - Single model rotation test: {self.__single_model_rotation_test}\n")
 
         # clustering parameters for recognition of well-defined regions
         self.__min_features_for_clustering = 4
@@ -297,7 +299,7 @@ class CifReader:
 
             if not os.access(self.__filePath, os.R_OK):
                 if self.__verbose:
-                    self.__lfh.write(f"+ERROR- {self.__class__.__name__}.parse() Missing file {self.__filePath}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.parse() ++ Error  - Missing file {self.__filePath}\n")
                 return False
 
             if self.__use_cache:
@@ -308,7 +310,7 @@ class CifReader:
 
         except Exception:
             if self.__verbose:
-                self.__lfh.write(f"+ERROR- {self.__class__.__name__}.parse() Missing file {self.__filePath}\n")
+                self.__lfh.write(f"+{self.__class_name__}.parse() ++ Error  - Missing file {self.__filePath}\n")
             return False
 
     def __getDataBlockFromFile(self, blockId: Optional[str] = None):

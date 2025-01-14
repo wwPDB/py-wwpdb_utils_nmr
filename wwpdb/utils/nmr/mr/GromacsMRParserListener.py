@@ -238,6 +238,8 @@ class GromacsMRParserListener(ParseTreeListener):
                  mrAtomNameMapping=None,   # pylint: disable=unused-argument
                  cR=None, caC=None, ccU=None, csStat=None, nefT=None,
                  atomNumberDict=None):
+        self.__class_name__ = self.__class__.__name__
+
         self.__verbose = verbose
         self.__lfh = log
 
@@ -719,7 +721,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+GromacsMRParserListener.selectRealisticBondConstraint() ++ Error  - {str(e)}")
+                self.__lfh.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
 
         return atom1, atom2
 
@@ -887,7 +889,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+GromacsMRParserListener.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
+                self.__lfh.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
 
         return dst_func
 

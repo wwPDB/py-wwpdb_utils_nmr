@@ -991,7 +991,7 @@ class BMRBAnnTasks:
                     sf.add_tag('Details', spectrometer['details'] if 'details' in spectrometer else '.')
                     sf.add_tag('Manufacturer', spectrometer['manufacturer'])
                     sf.add_tag('Model', spectrometer['model'])
-                    sf.add_tag('Sperial_number', spectrometer['serial_number'] if 'serial_nubmer' in spectrometer else '.')
+                    sf.add_tag('Serial_number', spectrometer['serial_number'] if 'serial_nubmer' in spectrometer else '.')
                     sf.add_tag('Fiedl_strength', spectrometer['field_strength'])
 
                     master_entry.add_saveframe(sf)

@@ -20,12 +20,16 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (emptyValue,
                                            getScoreOfSeqAlign)
     from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
-    from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag, set_sf_tag, retrieve_symbolic_labels)
+    from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
+                                              set_sf_tag,
+                                              retrieve_symbolic_labels)
 except ImportError:
     from nmr.AlignUtil import (emptyValue,
                                getScoreOfSeqAlign)
     from nmr.io.mmCIFUtil import mmCIFUtil
-    from nmr.CifToNmrStar import (get_first_sf_tag, set_sf_tag, retrieve_symbolic_labels)
+    from nmr.CifToNmrStar import (get_first_sf_tag,
+                                  set_sf_tag,
+                                  retrieve_symbolic_labels)
 
 
 NMR_SOFTWERE_LIST = ('3D-DART', '3DNA', '4D-CHAINS', '4DSPOT', 'ABACUS', 'ACME', 'ADAPT-NMR', 'AGNuS', 'ALMOST',

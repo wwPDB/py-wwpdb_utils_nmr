@@ -92,8 +92,12 @@ try:
                                            trimSequenceAlignment,
                                            retrieveAtomIdentFromMRMap,
                                            retrieveRemappedSeqId)
-    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
-                                                angle_target_values, dihedral_angle, angle_error)
+    from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
+                                                distance,
+                                                dist_error,
+                                                angle_target_values,
+                                                dihedral_angle,
+                                                angle_error)
 except ImportError:
     from nmr.io.CifReader import CifReader
     from nmr.mr.AmberMRParser import AmberMRParser
@@ -167,8 +171,12 @@ except ImportError:
                                trimSequenceAlignment,
                                retrieveAtomIdentFromMRMap,
                                retrieveRemappedSeqId)
-    from nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
-                                    angle_target_values, dihedral_angle, angle_error)
+    from nmr.NmrVrptUtility import (to_np_array,
+                                    distance,
+                                    dist_error,
+                                    angle_target_values,
+                                    dihedral_angle,
+                                    angle_error)
 
 
 DIST_RANGE_MIN = DIST_RESTRAINT_RANGE['min_inclusive']

@@ -30,10 +30,12 @@ from typing import Any, IO, Union, Optional
 
 try:
     from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue, trueValue)
+    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
+                                           trueValue)
 except ImportError:
     from nmr.io.mmCIFUtil import mmCIFUtil
-    from nmr.AlignUtil import (emptyValue, trueValue)
+    from nmr.AlignUtil import (emptyValue,
+                               trueValue)
 
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
@@ -79,7 +81,11 @@ def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> st
     if array[0] == '$':
         return default
 
-    return array[0] if len(array[0]) < 2 or array[0][0] != '$' else array[0][1:]
+    value = array[0].strip('"').strip("'")
+    while value.startswith('$$'):
+        value = value[1:]
+
+    return value if len(value) < 2 or value[0] != '$' else value[1:]
 
 
 def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
@@ -88,8 +94,13 @@ def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
 
     tagNames = [t[0] for t in sf.tags]
 
-    if isinstance(value, str) and len(value) == 0:
-        value = None
+    if isinstance(value, str):
+        if len(value) == 0:
+            value = None
+        else:
+            value = value.strip('"').strip("'")
+            while value.startswith('$$'):
+                value = value[1:]
 
     if tag not in tagNames:
         sf.add_tag(tag, value)
@@ -120,7 +131,7 @@ def retrieve_symbolic_labels(strData: pynmrstar.Entry):
         for idx, tag in enumerate(sf.tags):
             if tag[0].endswith('_label'):
                 if tag[1] not in emptyValue:
-                    if tag[1].startswith('$'):
+                    if not tag[1].startswith('$'):
                         sf.tags[idx][1] = '$' + tag[1]
                 else:
                     id_tag = tag[0][:-6] + '_ID'
@@ -128,7 +139,7 @@ def retrieve_symbolic_labels(strData: pynmrstar.Entry):
                     if id_val not in emptyValue:
                         parent_sf_framecode = get_parent_sf_framecode(f'_{tag[0][:-6]}', id_val)
                         if len(parent_sf_framecode) > 0 and id_tag in sf.tags:
-                            sf.tags[sf.tags.index(id_tag)][1] = f'${parent_sf_framecode}'
+                            set_sf_tag(sf, id_tag, f'${parent_sf_framecode}')
 
         for lp in sf.loops:
             label_cols = [idx for idx, tag in enumerate(lp.tags) if tag.endswith('_label')]

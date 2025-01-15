@@ -103,9 +103,15 @@ from operator import itemgetter
 from typing import Any, IO, List, Tuple, Optional
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import emptyValue, monDict3, unknownResidue, getPrettyJson
+    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
+                                           monDict3,
+                                           unknownResidue,
+                                           getPrettyJson)
 except ImportError:
-    from nmr.AlignUtil import emptyValue, monDict3, unknownResidue, getPrettyJson
+    from nmr.AlignUtil import (emptyValue,
+                               monDict3,
+                               unknownResidue,
+                               getPrettyJson)
 
 
 def get_value_safe(d: Optional[dict] = None, key: Any = None) -> Any:

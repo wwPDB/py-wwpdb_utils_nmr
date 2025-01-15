@@ -126,11 +126,18 @@ from typing import IO, List, Tuple, Union, Optional
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import (LEN_LARGE_ASYM_ID, LOW_SEQ_COVERAGE,
-                                           emptyValue, trueValue, monDict3,
-                                           protonBeginCode, pseProBeginCode, aminoProtonCode,
-                                           dnrParentCode, chParentCode,
-                                           letterToDigit, indexToLetter,
+    from wwpdb.utils.nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
+                                           LOW_SEQ_COVERAGE,
+                                           emptyValue,
+                                           trueValue,
+                                           monDict3,
+                                           protonBeginCode,
+                                           pseProBeginCode,
+                                           aminoProtonCode,
+                                           dnrParentCode,
+                                           chParentCode,
+                                           letterToDigit,
+                                           indexToLetter,
                                            alignPolymerSequence,
                                            alignPolymerSequenceWithConflicts,
                                            assignPolymerSequence)
@@ -144,11 +151,18 @@ try:
                                                        translateToStdAtomName,
                                                        isLikePheOrTyr)
 except ImportError:
-    from nmr.AlignUtil import (LEN_LARGE_ASYM_ID, LOW_SEQ_COVERAGE,
-                               emptyValue, trueValue, monDict3,
-                               protonBeginCode, pseProBeginCode, aminoProtonCode,
-                               dnrParentCode, chParentCode,
-                               letterToDigit, indexToLetter,
+    from nmr.AlignUtil import (LEN_LARGE_ASYM_ID,
+                               LOW_SEQ_COVERAGE,
+                               emptyValue,
+                               trueValue,
+                               monDict3,
+                               protonBeginCode,
+                               pseProBeginCode,
+                               aminoProtonCode,
+                               dnrParentCode,
+                               chParentCode,
+                               letterToDigit,
+                               indexToLetter,
                                alignPolymerSequence,
                                alignPolymerSequenceWithConflicts,
                                assignPolymerSequence)

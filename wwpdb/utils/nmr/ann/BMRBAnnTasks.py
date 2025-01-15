@@ -27,7 +27,9 @@ try:
                                                        ALLOWED_ISOTOPE_NUMBERS,
                                                        WELL_KNOWN_ISOTOPE_NUMBERS,
                                                        CS_UNCERTAINTY_RANGE)
-    from wwpdb.utils.nmr.CifToNmrStar import (CifToNmrStar, get_first_sf_tag, set_sf_tag)
+    from wwpdb.utils.nmr.CifToNmrStar import (CifToNmrStar,
+                                              get_first_sf_tag,
+                                              set_sf_tag)
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
@@ -41,7 +43,9 @@ except ImportError:
                                            ALLOWED_ISOTOPE_NUMBERS,
                                            WELL_KNOWN_ISOTOPE_NUMBERS,
                                            CS_UNCERTAINTY_RANGE)
-    from nmr.CifToNmrStar import (CifToNmrStar, get_first_sf_tag, set_sf_tag)
+    from nmr.CifToNmrStar import (CifToNmrStar,
+                                  get_first_sf_tag,
+                                  set_sf_tag)
     from nmr.NmrDpReport import NmrDpReport
 
 

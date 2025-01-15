@@ -81,9 +81,7 @@ def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> st
     if array[0] == '$':
         return default
 
-    value = array[0].strip('"').strip("'")
-    while value.startswith('$$'):
-        value = value[1:]
+    value = array[0]
 
     return value if len(value) < 2 or value[0] != '$' else value[1:]
 
@@ -97,10 +95,6 @@ def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
     if isinstance(value, str):
         if len(value) == 0:
             value = None
-        else:
-            value = value.strip('"').strip("'")
-            while value.startswith('$$'):
-                value = value[1:]
 
     if tag not in tagNames:
         sf.add_tag(tag, value)

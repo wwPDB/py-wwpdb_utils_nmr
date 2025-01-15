@@ -9,6 +9,7 @@ import sys
 import os
 
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMode
+from typing import IO, List, Tuple, Optional
 
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
@@ -42,11 +43,12 @@ class CharmmCRDReader:
     """ Accessor methods for parsing CHARMM CRD files.
     """
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 representativeAltId=REPRESENTATIVE_ALT_ID,
-                 mrAtomNameMapping=None,
-                 cR=None, caC=None, ccU=None, csStat=None):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 mrAtomNameMapping: Optional[List[dict]] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None):
         self.__class_name__ = self.__class__.__name__
 
         self.__verbose = verbose
@@ -73,16 +75,17 @@ class CharmmCRDReader:
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
 
-    def setDebugMode(self, debug):
+    def setDebugMode(self, debug: bool):
         self.__debug = debug
 
-    def setLexerMaxErrorReport(self, maxErrReport):
+    def setLexerMaxErrorReport(self, maxErrReport: int):
         self.__maxLexerErrorReport = maxErrReport
 
-    def setParserMaxErrorReport(self, maxErrReport):
+    def setParserMaxErrorReport(self, maxErrReport: int):
         self.__maxParserErrorReport = maxErrReport
 
-    def parse(self, crdFilePath, cifFilePath=None, isFilePath=True):
+    def parse(self, crdFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True
+              ) -> Tuple[Optional[CharmmCRDParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
         """ Parse CHARMM CRD file.
             @return: CharmmCRDParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """

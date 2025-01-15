@@ -9,20 +9,28 @@
 import sys
 
 from antlr4 import ParseTreeListener
+from typing import IO, List, Optional
 
 try:
+    from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.XMLParser import XMLParser
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        getPkRow)
-
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
+    from nmr.io.CifReader import CifReader
     from nmr.pk.XMLParser import XMLParser
     from nmr.pk.BasePKParserListener import BasePKParserListener
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            getPkRow)
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.nef.NEFTranslator import NEFTranslator
 
 
 # This class defines a complete listener for a parse tree produced by XMLParser.
@@ -39,12 +47,13 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
     __volume = None
     __annotation = None
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 representativeAltId=REPRESENTATIVE_ALT_ID,
-                 mrAtomNameMapping=None,
-                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 reasons=None):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 mrAtomNameMapping: Optional[List[dict]] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 reasons: Optional[dict] = None):
         super().__init__(verbose, log, representativeModelId, representativeAltId,
                          mrAtomNameMapping, cR, caC, ccU, csStat, nefT, reasons)
 

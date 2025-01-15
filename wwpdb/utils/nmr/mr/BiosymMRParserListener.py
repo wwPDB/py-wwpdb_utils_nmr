@@ -14,11 +14,12 @@ import copy
 import collections
 
 from antlr4 import ParseTreeListener
+from typing import IO, List, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
+    from wwpdb.utils.nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
     from wwpdb.utils.nmr.mr.BiosymMRParser import BiosymMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -99,7 +100,7 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
-    from nmr.io.CifReader import SYMBOLS_ELEMENT
+    from nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
     from nmr.mr.BiosymMRParser import BiosymMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
@@ -310,12 +311,13 @@ class BiosymMRParserListener(ParseTreeListener):
 
     __cachedDictForStarAtom = {}
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 representativeAltId=REPRESENTATIVE_ALT_ID,
-                 mrAtomNameMapping=None,
-                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 reasons=None):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 mrAtomNameMapping: Optional[List[dict]] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
 
         self.__verbose = verbose
@@ -402,19 +404,19 @@ class BiosymMRParserListener(ParseTreeListener):
 
         self.__cachedDictForStarAtom = {}
 
-    def setDebugMode(self, debug):
+    def setDebugMode(self, debug: bool):
         self.__debug = debug
 
-    def createSfDict(self, createSfDict):
+    def createSfDict(self, createSfDict: bool):
         self.__createSfDict = createSfDict
 
-    def setOriginaFileName(self, originalFileName):
+    def setOriginaFileName(self, originalFileName: str):
         self.__originalFileName = originalFileName
 
-    def setListIdCounter(self, listIdCounter):
+    def setListIdCounter(self, listIdCounter: dict):
         self.__listIdCounter = listIdCounter
 
-    def setEntryId(self, entryId):
+    def setEntryId(self, entryId: str):
         self.__entryId = entryId
 
     # Enter a parse tree produced by BiosymMRParser#biosym_mr.
@@ -1000,7 +1002,7 @@ class BiosymMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def splitAtomSelectionExpr(self, atomSelection):  # pylint: disable=no-self-use
+    def splitAtomSelectionExpr(self, atomSelection: str) -> Tuple[str, int, str, str]:  # pylint: disable=no-self-use
         """ Split BIOSYM atom selection expression.
         """
 
@@ -1025,7 +1027,9 @@ class BiosymMRParserListener(ParseTreeListener):
         except ValueError:
             return None, None, None, None
 
-    def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier):
+    def validateDistanceRange(self, weight: float, target_value: Optional[float],
+                              lower_limit: Optional[float], upper_limit: Optional[float],
+                              omit_dist_limit_outlier: bool) -> Optional[dict]:
         """ Validate distance value range.
         """
 
@@ -1130,7 +1134,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def translateToStdResNameWrapper(self, seqId, compId, preferNonPoly=False):
+    def translateToStdResNameWrapper(self, seqId: int, compId: str, preferNonPoly: bool = False) -> str:
         _compId = compId
         refCompId = None
         for ps in self.__polySeq:
@@ -1150,7 +1154,7 @@ class BiosymMRParserListener(ParseTreeListener):
             compId = translateToStdResName(_compId, ccU=self.__ccU)
         return compId
 
-    def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
+    def getRealChainSeqId(self, ps: dict, seqId: int, compId: str, isPolySeq: bool = True) -> Tuple[str, int, Optional[str]]:
         compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
         if len(_compId) == 2 and _compId.startswith('D'):
             _compId = compId[1]
@@ -1181,7 +1185,8 @@ class BiosymMRParserListener(ParseTreeListener):
                     return ps['auth_chain_id'], _ps['comp_id'][_ps['seq_id'].index(seqId)]
         return ps['auth_chain_id'], seqId, None
 
-    def assignCoordPolymerSequence(self, refChainId, seqId, compId, atomId):
+    def assignCoordPolymerSequence(self, refChainId: str, seqId: int, compId: str, atomId: str
+                                   ) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -1819,7 +1824,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
         return list(chainAssign), asis
 
-    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, offset=0):
+    def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
+                         allowAmbig: bool = True, offset: int = 0):
         """ Select atoms of the coordinates.
         """
 
@@ -2059,7 +2065,8 @@ class BiosymMRParserListener(ParseTreeListener):
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
 
-    def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite):
+    def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
+                                   seqKey: Tuple[str, int], coordAtomSite: Optional[dict]) -> Tuple[str, bool]:
         asis = False
         if not self.__hasCoord:
             return atomId, asis
@@ -2312,7 +2319,8 @@ class BiosymMRParserListener(ParseTreeListener):
                             updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
         return atomId, asis
 
-    def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
+    def selectRealisticBondConstraint(self, atom1: str, atom2: str, alt_atom_id1: str, alt_atom_id2: str, dst_func: dict
+                                      ) -> Tuple[str, str]:
         """ Return realistic bond constraint taking into account the current coordinates.
         """
         if not self.__hasCoord:
@@ -2421,7 +2429,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
         return atom1, atom2
 
-    def selectRealisticChi2AngleConstraint(self, atom1, atom2, atom3, atom4, dst_func):
+    def selectRealisticChi2AngleConstraint(self, atom1: str, atom2: str, atom3: str, atom4: str, dst_func: dict
+                                           ) -> dict:
         """ Return realistic chi2 angle constraint taking into account the current coordinates.
         """
         if not self.__hasCoord:
@@ -2589,7 +2598,8 @@ class BiosymMRParserListener(ParseTreeListener):
 
         return dst_func
 
-    def getCoordAtomSiteOf(self, chainId, seqId, compId=None, cifCheck=True, asis=True):
+    def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
+                           ) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
         if cifCheck:
             preferAuthSeq = self.__preferAuthSeq if asis else not self.__preferAuthSeq
@@ -3010,7 +3020,8 @@ class BiosymMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateAngleRange(self, weight, target_value, lower_limit, upper_limit):
+    def validateAngleRange(self, weight: float, target_value: Optional[float],
+                           lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
         """ Validate angle value range.
         """
 
@@ -3231,7 +3242,7 @@ class BiosymMRParserListener(ParseTreeListener):
                                            atom5['chain_id'], atom5['seq_id'], atom5['comp_id'], atom5['atom_id'],
                                            sf['list_id']])
 
-    def areUniqueCoordAtoms(self, subtype_name, allow_ambig=False, allow_ambig_warn_title=''):
+    def areUniqueCoordAtoms(self, subtype_name: str, allow_ambig: bool = False, allow_ambig_warn_title: str = '') -> bool:
         """ Check whether atom selection sets are uniquely assigned.
         """
 
@@ -3287,7 +3298,7 @@ class BiosymMRParserListener(ParseTreeListener):
         else:
             self.numberSelection.append(None)
 
-    def __getCurrentRestraint(self):
+    def __getCurrentRestraint(self) -> str:
         if self.__cur_subtype == 'dist':
             return f"[Check the {self.distRestraints}th row of distance restraints] "
         if self.__cur_subtype == 'dihed':
@@ -3336,7 +3347,7 @@ class BiosymMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self, constraintType=None, potentialType=None):
+    def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None):
         content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
@@ -3383,7 +3394,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None, potentialType=None):
+    def __getSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None) -> dict:
         key = (self.__cur_subtype, constraintType, potentialType, None, None)
 
         if key not in self.sfDict:
@@ -3406,7 +3417,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
         return self.sfDict[key][-1]
 
-    def getContentSubtype(self):
+    def getContentSubtype(self) -> dict:
         """ Return content subtype of BIOSYM MR file.
         """
 
@@ -3417,27 +3428,27 @@ class BiosymMRParserListener(ParseTreeListener):
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
-    def getPolymerSequence(self):
+    def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of BIOSYM MR file.
         """
         return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
-    def getSequenceAlignment(self):
+    def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and BIOSYM MR.
         """
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
-    def getChainAssignment(self):
+    def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and BIOSYM MR.
         """
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
-    def getReasonsForReparsing(self):
+    def getReasonsForReparsing(self) -> Optional[dict]:
         """ Return reasons for re-parsing BIOSYM MR file.
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
-    def getSfDict(self):
+    def getSfDict(self) -> Tuple[dict, Optional[dict]]:
         """ Return a dictionary of pynmrstar saveframes.
         """
         if len(self.sfDict) == 0:

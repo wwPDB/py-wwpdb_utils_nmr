@@ -3716,8 +3716,9 @@ def translateToLigandName(compId: str, refCompId: str, ccU) -> str:
 def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                          representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                          representativeAltId: str = REPRESENTATIVE_ALT_ID,
-                         cR=None, ccU=None, prevResult: Optional[dict] = None,
-                         nmrPolySeq: Optional[list] = None, fullCheck: bool = True) -> dict:
+                         cR=None, ccU=None,
+                         prevResult: Optional[dict] = None,
+                         nmrPolySeq: Optional[List[dict]] = None, fullCheck: bool = True) -> dict:
     """ Check assembly of the coordinates for MR/PT parser listener.
     """
 
@@ -8682,7 +8683,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
     row[-2] = listId
     row[-1] = entryId
 
-    def getRowValue(tag):
+    def get_row_value(tag):
         if tag not in originalTagNames:
             return None
 
@@ -8694,41 +8695,41 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
         return val
 
     if contentSubtype == 'dist_restraint':
-        val = getRowValue('Combination_ID')
+        val = get_row_value('Combination_ID')
         if val is not None:
             row[key_size + 1] = val
 
         row[key_size + 2] = memberId
         row[key_size + 3] = code
 
-        val = getRowValue('Target_val')
+        val = get_row_value('Target_val')
         if val is not None:
             row[key_size + 4] = val
             float_row_idx.append(key_size + 4)
-        val = getRowValue('Target_val_uncertainty')
+        val = get_row_value('Target_val_uncertainty')
         if val is not None:
             row[key_size + 5] = str(abs(float(val)))
             float_row_idx.append(key_size + 5)
-        val = getRowValue('Lower_linear_limit')
+        val = get_row_value('Lower_linear_limit')
         if val is not None:
             row[key_size + 6] = val
             float_row_idx.append(key_size + 6)
-        val = getRowValue('Distance_lower_bound_val')
+        val = get_row_value('Distance_lower_bound_val')
         if val is not None:
             row[key_size + 7] = val
             float_row_idx.append(key_size + 7)
-        val = getRowValue('Distance_upper_bound_val')
+        val = get_row_value('Distance_upper_bound_val')
         if val is not None:
             row[key_size + 8] = val
             float_row_idx.append(key_size + 8)
-        val = getRowValue('Upper_linear_limit')
+        val = get_row_value('Upper_linear_limit')
         if val is not None:
             row[key_size + 9] = str(abs(float(val)))
             float_row_idx.append(key_size + 9)
-        val = getRowValue('Weight')
+        val = get_row_value('Weight')
         if val is not None:
             row[key_size + 10] = val
-        val = getRowValue('Distance_val')
+        val = get_row_value('Distance_val')
         if val is not None:
             row[key_size + 11] = val
 
@@ -8736,7 +8737,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         if annotationMode:
-            val = getRowValue('Auth_atom_name_1')
+            val = get_row_value('Auth_atom_name_1')
             if val is not None:
                 row[key_size + 16] = val
         elif hasKeyValue(atom1, 'auth_atom_id'):
@@ -8745,7 +8746,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[key_size + 17], row[key_size + 18], row[key_size + 19], row[key_size + 20] =\
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
         if annotationMode:
-            val = getRowValue('Auth_atom_name_2')
+            val = get_row_value('Auth_atom_name_2')
             if val is not None:
                 row[key_size + 21] = val
         elif hasKeyValue(atom2, 'auth_atom_id'):
@@ -8763,37 +8764,37 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[16], row[17], row[18], row[19], row[20] =\
                 star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
 
-        val = getRowValue('Combination_ID')
+        val = get_row_value('Combination_ID')
         if val is not None:
             row[key_size + 1] = val
-        val = getRowValue('Torsion_angle_name')
+        val = get_row_value('Torsion_angle_name')
         if val is not None:
             row[key_size + 2] = val
-        val = getRowValue('Angle_target_val')
+        val = get_row_value('Angle_target_val')
         if val is not None:
             row[key_size + 3] = val
             float_row_idx.append(key_size + 3)
-        val = getRowValue('Angle_target_val_err')
+        val = get_row_value('Angle_target_val_err')
         if val is not None:
             row[key_size + 4] = str(abs(float(val)))
             float_row_idx.append(key_size + 4)
-        val = getRowValue('Angle_lower_linear_limit')
+        val = get_row_value('Angle_lower_linear_limit')
         if val is not None:
             row[key_size + 5] = val
             float_row_idx.append(key_size + 5)
-        val = getRowValue('Angle_lower_bound_val')
+        val = get_row_value('Angle_lower_bound_val')
         if val is not None:
             row[key_size + 6] = val
             float_row_idx.append(key_size + 6)
-        val = getRowValue('Angle_upper_bound_val')
+        val = get_row_value('Angle_upper_bound_val')
         if val is not None:
             row[key_size + 7] = val
             float_row_idx.append(key_size + 7)
-        val = getRowValue('Angle_upper_linear_limit')
+        val = get_row_value('Angle_upper_linear_limit')
         if val is not None:
             row[key_size + 8] = val
             float_row_idx.append(key_size + 8)
-        val = getRowValue('Weight')
+        val = get_row_value('Weight')
         if val is not None:
             row[key_size + 9] = str(abs(float(val)))
 
@@ -8801,7 +8802,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[key_size + 10], row[key_size + 11], row[key_size + 12], row[key_size + 13] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         if annotationMode:
-            val = getRowValue('Auth_atom_name_1')
+            val = get_row_value('Auth_atom_name_1')
             if val is not None:
                 row[key_size + 14] = val
         elif hasKeyValue(atom1, 'auth_atom_id'):
@@ -8810,7 +8811,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
         if annotationMode:
-            val = getRowValue('Auth_atom_name_2')
+            val = get_row_value('Auth_atom_name_2')
             if val is not None:
                 row[key_size + 19] = val
         elif hasKeyValue(atom2, 'auth_atom_id'):
@@ -8819,7 +8820,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
                 atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
         if annotationMode:
-            val = getRowValue('Auth_atom_name_3')
+            val = get_row_value('Auth_atom_name_3')
             if val is not None:
                 row[key_size + 24] = val
         elif hasKeyValue(atom3, 'auth_atom_id'):
@@ -8828,7 +8829,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[key_size + 25], row[key_size + 26], row[key_size + 27], row[key_size + 28] =\
                 atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
         if annotationMode:
-            val = getRowValue('Auth_atom_name_4')
+            val = get_row_value('Auth_atom_name_4')
             if val is not None:
                 row[key_size + 29] = val
         elif hasKeyValue(atom4, 'auth_atom_id'):
@@ -8841,48 +8842,48 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[key_size + 33] = ins_code4
 
     elif contentSubtype == 'rdc_restraint':
-        val = getRowValue('Combination_ID')
+        val = get_row_value('Combination_ID')
         if val is not None:
             row[key_size + 1] = val
-        val = getRowValue('Target_value')
+        val = get_row_value('Target_value')
         if val is not None:
             row[key_size + 2] = str(abs(float(val)))
             float_row_idx.append(key_size + 2)
-        val = getRowValue('Target_value_uncertainty')
+        val = get_row_value('Target_value_uncertainty')
         if val is not None:
             row[key_size + 3] = val
             float_row_idx.append(key_size + 3)
-        val = getRowValue('RDC_lower_linear_limit')
+        val = get_row_value('RDC_lower_linear_limit')
         if val is not None:
             row[key_size + 4] = val
             float_row_idx.append(key_size + 4)
-        val = getRowValue('RDC_lower_bound')
+        val = get_row_value('RDC_lower_bound')
         if val is not None:
             row[key_size + 5] = val
             float_row_idx.append(key_size + 5)
-        val = getRowValue('RDC_upper_bound')
+        val = get_row_value('RDC_upper_bound')
         if val is not None:
             row[key_size + 6] = val
             float_row_idx.append(key_size + 6)
-        val = getRowValue('RDC_upper_linear_limit')
+        val = get_row_value('RDC_upper_linear_limit')
         if val is not None:
             row[key_size + 7] = val
             float_row_idx.append(key_size + 7)
-        val = getRowValue('Weight')
+        val = get_row_value('Weight')
         if val is not None:
             row[key_size + 8] = str(abs(float(val)))
-        val = getRowValue('RDC_val')
+        val = get_row_value('RDC_val')
         if val is not None:
             row[key_size + 9] = val
             float_row_idx.append(key_size + 9)
-        val = getRowValue('RDC_val_err')
+        val = get_row_value('RDC_val_err')
         if val is not None:
             row[key_size + 10] = str(abs(float(val)))
             float_row_idx.append(key_size + 10)
-        val = getRowValue('RDC_val_scale_factor')
+        val = get_row_value('RDC_val_scale_factor')
         if val is not None:
             row[key_size + 11] = str(abs(float(val)))
-        val = getRowValue('RDC_distance_dependent')
+        val = get_row_value('RDC_distance_dependent')
         if val is not None:
             row[key_size + 12] = val
 
@@ -8890,7 +8891,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[key_size + 13], row[key_size + 14], row[key_size + 15], row[key_size + 16] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         if annotationMode:
-            val = getRowValue('Auth_atom_name_1')
+            val = get_row_value('Auth_atom_name_1')
             if val is not None:
                 row[key_size + 17] = val
         elif hasKeyValue(atom1, 'auth_atom_id'):
@@ -8899,7 +8900,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
         if annotationMode:
-            val = getRowValue('Auth_atom_name_2')
+            val = get_row_value('Auth_atom_name_2')
             if val is not None:
                 row[key_size + 22] = val
         elif hasKeyValue(atom2, 'auth_atom_id'):
@@ -8910,19 +8911,19 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[key_size + 24] = ins_code2
 
     elif contentSubtype == 'noepk_restraint':
-        val = getRowValue('Val')
+        val = get_row_value('Val')
         if val is not None:
             row[key_size] = val
             float_row_idx.append(key_size)
-        val = getRowValue('Val_err')
+        val = get_row_value('Val_err')
         if val is not None:
             row[key_size + 1] = str(abs(float(val)))
             float_row_idx.append(key_size + 1)
-        val = getRowValue('Val_min')
+        val = get_row_value('Val_min')
         if val is not None:
             row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
-        val = getRowValue('Val_max')
+        val = get_row_value('Val_max')
         if val is not None:
             row[key_size + 3] = val
             float_row_idx.append(key_size + 3)
@@ -8942,19 +8943,19 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[16], row[17], row[18], row[19], row[20] =\
                 star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
 
-        val = getRowValue('Coupling_constant_val')
+        val = get_row_value('Coupling_constant_val')
         if val is not None:
             row[key_size] = val
             float_row_idx.append(key_size)
-        val = getRowValue('Coupling_constant_err')
+        val = get_row_value('Coupling_constant_err')
         if val is not None:
             row[key_size + 1] = str(abs(float(val)))
             float_row_idx.append(key_size + 1)
-        val = getRowValue('Coupling_constant_lower_bound')
+        val = get_row_value('Coupling_constant_lower_bound')
         if val is not None:
             row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
-        val = getRowValue('Coupling_constant_upper_bound')
+        val = get_row_value('Coupling_constant_upper_bound')
         if val is not None:
             row[key_size + 3] = val
             float_row_idx.append(key_size + 3)
@@ -8977,31 +8978,31 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
         if atom1 is not None:
             row[key_size + 1] = atomType = atom1['atom_id'][0]
             row[key_size + 2] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('Ambiguity_code_1')
+        val = get_row_value('Ambiguity_code_1')
         if val is not None and val in ('1', '2', '3'):
             row[key_size + 3] = val
         if atom2 is not None:
             row[key_size + 4] = atomType = atom2['atom_id'][0]
             row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('Ambiguity_code_2')
+        val = get_row_value('Ambiguity_code_2')
         if val is not None and val in ('1', '2', '3'):
             row[key_size + 6] = val
-            val = getRowValue('Val')
+            val = get_row_value('Val')
         if val is not None:
             row[key_size + 7] = val
             float_row_idx.append(key_size + 7)
-        val = getRowValue('Val_err')
+        val = get_row_value('Val_err')
         if val is not None:
             row[key_size + 8] = str(abs(float(val)))
             float_row_idx.append(key_size + 8)
-        val = getRowValue('Val_min')
+        val = get_row_value('Val_min')
         if val is not None:
             row[key_size + 9] = val
             float_row_idx.append(key_size + 9)
-        val = getRowValue('Val_max')
+        val = get_row_value('Val_max')
         if val is not None:
             row[key_size + 10] = val
-        val = getRowValue('Val_bond_length')
+        val = get_row_value('Val_bond_length')
         if val is not None:
             row[key_size + 11] = val
 
@@ -9015,33 +9016,33 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
     elif contentSubtype == 'csa_restraint':
         row[key_size] = atomType = atom1['atom_id'][0]
         row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('Val')
+        val = get_row_value('Val')
         if val is not None:
             row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
-        val = getRowValue('Val_err')
+        val = get_row_value('Val_err')
         if val is not None:
             row[key_size + 3] = str(abs(float(val)))
             float_row_idx.append(key_size + 3)
-        val = getRowValue('Principal_value_sigma_11_val')
+        val = get_row_value('Principal_value_sigma_11_val')
         if val is not None:
             row[key_size + 4] = val
-        val = getRowValue('Principal_value_sigma_22_val')
+        val = get_row_value('Principal_value_sigma_22_val')
         if val is not None:
             row[key_size + 5] = val
-        val = getRowValue('Principal_value_sigma_33_val')
+        val = get_row_value('Principal_value_sigma_33_val')
         if val is not None:
             row[key_size + 6] = val
-        val = getRowValue('Principal_Euler_angle_alpha_val')
+        val = get_row_value('Principal_Euler_angle_alpha_val')
         if val is not None:
             row[key_size + 7] = val
-        val = getRowValue('Principal_Euler_angle_beta_val')
+        val = get_row_value('Principal_Euler_angle_beta_val')
         if val is not None:
             row[key_size + 8] = val
-        val = getRowValue('Principal_Euler_angle_gamma_val')
+        val = get_row_value('Principal_Euler_angle_gamma_val')
         if val is not None:
             row[key_size + 9] = val
-        val = getRowValue('Bond_length')
+        val = get_row_value('Bond_length')
         if val is not None:
             row[key_size + 10] = val
 
@@ -9050,44 +9051,44 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
 
     elif contentSubtype == 'ddc_restraint':
-        val = getRowValue('Dipolar_coupling_code')
+        val = get_row_value('Dipolar_coupling_code')
         if val is not None:
             row[key_size] = val
         if atom1 is not None:
             row[key_size + 1] = atomType = atom1['atom_id'][0]
             row[key_size + 2] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('Ambiguity_code_1')
+        val = get_row_value('Ambiguity_code_1')
         if val is not None and val in ('1', '2', '3'):
             row[key_size + 3] = val
         if atom2 is not None:
             row[key_size + 4] = atomType = atom2['atom_id'][0]
             row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('Ambiguity_code_2')
+        val = get_row_value('Ambiguity_code_2')
         if val is not None and val in ('1', '2', '3'):
             row[key_size + 6] = val
-        val = getRowValue('Val')
+        val = get_row_value('Val')
         if val is not None:
             row[key_size + 7] = str(abs(float(val)))
             float_row_idx.append(key_size + 7)
-        val = getRowValue('Val_err')
+        val = get_row_value('Val_err')
         if val is not None:
             row[key_size + 8] = val
             float_row_idx.append(key_size + 8)
-        val = getRowValue('Val_min')
+        val = get_row_value('Val_min')
         if val is not None:
             row[key_size + 9] = val
             float_row_idx.append(key_size + 9)
-        val = getRowValue('Val_max')
+        val = get_row_value('Val_max')
         if val is not None:
             row[key_size + 10] = val
             float_row_idx.append(key_size + 10)
-        val = getRowValue('Principal_Euler_angle_alpha_val')
+        val = get_row_value('Principal_Euler_angle_alpha_val')
         if val is not None:
             row[key_size + 11] = val
-        val = getRowValue('Principal_Euler_angle_beta_val')
+        val = get_row_value('Principal_Euler_angle_beta_val')
         if val is not None:
             row[key_size + 12] = val
-        val = getRowValue('Principal_Euler_angle_gamma_val')
+        val = get_row_value('Principal_Euler_angle_gamma_val')
         if val is not None:
             row[key_size + 13] = val
 
@@ -9102,19 +9103,19 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             row[21], row[22], row[23], row[24], row[25] =\
                 star_atom5['chain_id'], star_atom5['entity_id'], star_atom5['seq_id'], star_atom5['comp_id'], star_atom5['atom_id']
 
-        val = getRowValue('CA_chem_shift_val')
+        val = get_row_value('CA_chem_shift_val')
         if val is not None:
             row[key_size] = val
             float_row_idx.append(key_size)
-        val = getRowValue('CA_chem_shift_val_err')
+        val = get_row_value('CA_chem_shift_val_err')
         if val is not None:
             row[key_size + 1] = str(abs(float(val)))
             float_row_idx.append(key_size + 1)
-        val = getRowValue('CB_chem_shift_val')
+        val = get_row_value('CB_chem_shift_val')
         if val is not None:
             row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
-        val = getRowValue('CB_chem_shift_val_err')
+        val = get_row_value('CB_chem_shift_val_err')
         if val is not None:
             row[key_size + 3] = str(abs(float(val)))
             float_row_idx.append(key_size + 3)
@@ -9139,11 +9140,11 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
         if atom1 is not None:
             row[key_size] = atomType = atom1['atom_id'][0]
             row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('Chem_shift_val')
+        val = get_row_value('Chem_shift_val')
         if val is not None:
             row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
-        val = getRowValue('Chem_shift_val_err')
+        val = get_row_value('Chem_shift_val_err')
         if val is not None:
             row[key_size + 3] = str(abs(float(val)))
             float_row_idx.append(key_size + 3)
@@ -9156,19 +9157,19 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
         if atom1 is not None:
             row[key_size] = atomType = atom1['atom_id'][0]
             row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('Chem_shift_val')
+        val = get_row_value('Chem_shift_val')
         if val is not None:
             row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
-        val = getRowValue('Chem_shift_val_err')
+        val = get_row_value('Chem_shift_val_err')
         if val is not None:
             row[key_size + 3] = str(abs(float(val)))
             float_row_idx.append(key_size + 3)
-        val = getRowValue('Difference_chem_shift_val')
+        val = get_row_value('Difference_chem_shift_val')
         if val is not None:
             row[key_size + 4] = val
             float_row_idx.append(key_size + 4)
-        val = getRowValue('Difference_chem_shift_val_err')
+        val = get_row_value('Difference_chem_shift_val_err')
         if val is not None:
             row[key_size + 5] = str(abs(float(val)))
             float_row_idx.append(key_size + 5)
@@ -9181,19 +9182,19 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
         if atom1 is not None:
             row[key_size] = atomType = atom1['atom_id'][0]
             row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('Auto_relaxation_val')
+        val = get_row_value('Auto_relaxation_val')
         if val is not None:
             row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
-        val = getRowValue('Auto_relaxation_val_err')
+        val = get_row_value('Auto_relaxation_val_err')
         if val is not None:
             row[key_size + 3] = str(abs(float(val)))
             float_row_idx.append(key_size + 3)
-        val = getRowValue('Rex_val')
+        val = get_row_value('Rex_val')
         if val is not None:
             row[key_size + 4] = val
             float_row_idx.append(key_size + 4)
-        val = getRowValue('Rex_val_err')
+        val = get_row_value('Rex_val_err')
         if val is not None:
             row[key_size + 5] = str(abs(float(val)))
             float_row_idx.append(key_size + 5)
@@ -9209,11 +9210,11 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
         if atom2 is not None:
             row[key_size + 2] = atomType = atom2['atom_id'][0]
             row[key_size + 3] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('Val')
+        val = get_row_value('Val')
         if val is not None:
             row[key_size + 4] = val
             float_row_idx.append(key_size + 4)
-        val = getRowValue('Val_err')
+        val = get_row_value('Val_err')
         if val is not None:
             row[key_size + 5] = val
             float_row_idx.append(key_size + 5)
@@ -9229,11 +9230,11 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
         if atom1 is not None:
             row[key_size] = atomType = atom1['atom_id'][0]
             row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('Val')
+        val = get_row_value('Val')
         if val is not None:
             row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
-        val = getRowValue('Val_err')
+        val = get_row_value('Val_err')
         if val is not None:
             row[key_size + 3] = val
             float_row_idx.append(key_size + 3)
@@ -9246,19 +9247,19 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
         if atom1 is not None:
             row[key_size] = atomType = atom1['atom_id'][0]
             row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('T2_val')
+        val = get_row_value('T2_val')
         if val is not None:
             row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
-        val = getRowValue('T2_val_err')
+        val = get_row_value('T2_val_err')
         if val is not None:
             row[key_size + 3] = val
             float_row_idx.append(key_size + 3)
-        val = getRowValue('Rex_val')
+        val = get_row_value('Rex_val')
         if val is not None:
             row[key_size + 4] = val
             float_row_idx.append(key_size + 4)
-        val = getRowValue('Rex_err')
+        val = get_row_value('Rex_err')
         if val is not None:
             row[key_size + 5] = val
             float_row_idx.append(key_size + 5)
@@ -9271,19 +9272,19 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
         if atom1 is not None:
             row[key_size] = atomType = atom1['atom_id'][0]
             row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('T1rho_val')
+        val = get_row_value('T1rho_val')
         if val is not None:
             row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
-        val = getRowValue('T1rho_val_err')
+        val = get_row_value('T1rho_val_err')
         if val is not None:
             row[key_size + 3] = val
             float_row_idx.append(key_size + 3)
-        val = getRowValue('Rex_val')
+        val = get_row_value('Rex_val')
         if val is not None:
             row[key_size + 4] = val
             float_row_idx.append(key_size + 4)
-        val = getRowValue('Rex_val_err')
+        val = get_row_value('Rex_val_err')
         if val is not None:
             row[key_size + 5] = val
             float_row_idx.append(key_size + 5)
@@ -9296,82 +9297,82 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
         if atom1 is not None:
             row[key_size] = atomType = atom1['atom_id'][0]
             row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('Order_param_val')
+        val = get_row_value('Order_param_val')
         if val is not None:
             row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
-        val = getRowValue('Order_param_val_fit_err')
+        val = get_row_value('Order_param_val_fit_err')
         if val is not None:
             row[key_size + 3] = val
             float_row_idx.append(key_size + 3)
-        val = getRowValue('Tau_e_val')
+        val = get_row_value('Tau_e_val')
         if val is not None:
             row[key_size + 4] = val
             float_row_idx.append(key_size + 4)
-        val = getRowValue('Tau_e_val_fit_err')
+        val = get_row_value('Tau_e_val_fit_err')
         if val is not None:
             row[key_size + 5] = val
             float_row_idx.append(key_size + 5)
-        val = getRowValue('Tau_f_val')
+        val = get_row_value('Tau_f_val')
         if val is not None:
             row[key_size + 6] = val
             float_row_idx.append(key_size + 6)
-        val = getRowValue('Tau_f_val_fit_err')
+        val = get_row_value('Tau_f_val_fit_err')
         if val is not None:
             row[key_size + 7] = val
             float_row_idx.append(key_size + 7)
-        val = getRowValue('Tau_s_val')
+        val = get_row_value('Tau_s_val')
         if val is not None:
             row[key_size + 8] = val
             float_row_idx.append(key_size + 8)
-        val = getRowValue('Tau_s_val_fit_err')
+        val = get_row_value('Tau_s_val_fit_err')
         if val is not None:
             row[key_size + 9] = val
             float_row_idx.append(key_size + 9)
-        val = getRowValue('Rex_val')
+        val = get_row_value('Rex_val')
         if val is not None:
             row[key_size + 10] = val
             float_row_idx.append(key_size + 10)
-        val = getRowValue('Rex_val_fit_err')
+        val = get_row_value('Rex_val_fit_err')
         if val is not None:
             row[key_size + 11] = val
             float_row_idx.append(key_size + 11)
-        val = getRowValue('Model_free_sum_squared_errs')
+        val = get_row_value('Model_free_sum_squared_errs')
         if val is not None:
             row[key_size + 12] = val
             float_row_idx.append(key_size + 12)
-        val = getRowValue('Model_fit')
+        val = get_row_value('Model_fit')
         if val is not None:
             row[key_size + 13] = val
-        val = getRowValue('Sf2_val')
+        val = get_row_value('Sf2_val')
         if val is not None:
             row[key_size + 14] = val
             float_row_idx.append(key_size + 14)
-        val = getRowValue('Sf2_val_fit_err')
+        val = get_row_value('Sf2_val_fit_err')
         if val is not None:
             row[key_size + 15] = val
             float_row_idx.append(key_size + 15)
-        val = getRowValue('Ss2_val')
+        val = get_row_value('Ss2_val')
         if val is not None:
             row[key_size + 16] = val
             float_row_idx.append(key_size + 16)
-        val = getRowValue('Ss2_val_fit_err')
+        val = get_row_value('Ss2_val_fit_err')
         if val is not None:
             row[key_size + 17] = val
             float_row_idx.append(key_size + 17)
-        val = getRowValue('SH2_val')
+        val = get_row_value('SH2_val')
         if val is not None:
             row[key_size + 18] = val
             float_row_idx.append(key_size + 18)
-        val = getRowValue('SH2_val_fit_err')
+        val = get_row_value('SH2_val_fit_err')
         if val is not None:
             row[key_size + 19] = val
             float_row_idx.append(key_size + 19)
-        val = getRowValue('SN2_val')
+        val = get_row_value('SN2_val')
         if val is not None:
             row[key_size + 20] = val
             float_row_idx.append(key_size + 20)
-        val = getRowValue('SN2_val_fit_err')
+        val = get_row_value('SN2_val_fit_err')
         if val is not None:
             row[key_size + 21] = val
             float_row_idx.append(key_size + 21)
@@ -9387,43 +9388,43 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
         if atom2 is not None:
             row[key_size + 2] = atomType = atom2['atom_id'][0]
             row[key_size + 3] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('Hill_coeff_val')
+        val = get_row_value('Hill_coeff_val')
         if val is not None:
             row[key_size + 4] = val
             float_row_idx.append(key_size + 4)
-        val = getRowValue('Hill_coeff_val_fit_err')
+        val = get_row_value('Hill_coeff_val_fit_err')
         if val is not None:
             row[key_size + 5] = val
             float_row_idx.append(key_size + 5)
-        val = getRowValue('High_PH_param_val')
+        val = get_row_value('High_PH_param_val')
         if val is not None:
             row[key_size + 6] = val
             float_row_idx.append(key_size + 6)
-        val = getRowValue('High_PH_param_val_fit_err')
+        val = get_row_value('High_PH_param_val_fit_err')
         if val is not None:
             row[key_size + 7] = val
             float_row_idx.append(key_size + 7)
-        val = getRowValue('Low_PH_param_val')
+        val = get_row_value('Low_PH_param_val')
         if val is not None:
             row[key_size + 8] = val
             float_row_idx.append(key_size + 8)
-        val = getRowValue('Low_PH_param_val_fit_err')
+        val = get_row_value('Low_PH_param_val_fit_err')
         if val is not None:
             row[key_size + 9] = val
             float_row_idx.append(key_size + 9)
-        val = getRowValue('PKa_val')
+        val = get_row_value('PKa_val')
         if val is not None:
             row[key_size + 10] = val
             float_row_idx.append(key_size + 10)
-        val = getRowValue('PKa_val_fit_err')
+        val = get_row_value('PKa_val_fit_err')
         if val is not None:
             row[key_size + 11] = val
             float_row_idx.append(key_size + 11)
-        val = getRowValue('PHmid_val')
+        val = get_row_value('PHmid_val')
         if val is not None:
             row[key_size + 12] = val
             float_row_idx.append(key_size + 12)
-        val = getRowValue('PHmid_val_fit_err')
+        val = get_row_value('PHmid_val_fit_err')
         if val is not None:
             row[key_size + 13] = val
             float_row_idx.append(key_size + 13)
@@ -9437,22 +9438,22 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
     elif contentSubtype == 'ph_param_data':
-        val = getRowValue('PH_titr_result_ID')
+        val = get_row_value('PH_titr_result_ID')
         if val is not None:
             row[key_size] = val
-        val = getRowValue('PH_val')
+        val = get_row_value('PH_val')
         if val is not None:
             row[key_size + 1] = val
             float_row_idx.append(key_size + 1)
-        val = getRowValue('PH_val_err')
+        val = get_row_value('PH_val_err')
         if val is not None:
             row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
-        val = getRowValue('Observed_NMR_param_val')
+        val = get_row_value('Observed_NMR_param_val')
         if val is not None:
             row[key_size + 3] = val
             float_row_idx.append(key_size + 3)
-        val = getRowValue('Observed_NMR_param_val_err')
+        val = get_row_value('Observed_NMR_param_val_err')
         if val is not None:
             row[key_size + 4] = val
             float_row_idx.append(key_size + 4)
@@ -9477,11 +9478,11 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
         if atom4 is not None:
             row[key_size + 6] = atomType = atom4['atom_id'][0]
             row[key_size + 7] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('Val')
+        val = get_row_value('Val')
         if val is not None:
             row[key_size + 8] = val
             float_row_idx.append(key_size + 8)
-        val = getRowValue('Val_err')
+        val = get_row_value('Val_err')
         if val is not None:
             row[key_size + 9] = str(abs(float(val)))
             float_row_idx.append(key_size + 9)
@@ -9500,7 +9501,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
                 atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
 
     elif contentSubtype == 'fchiral_restraint':
-        val = getRowValue('Stereospecific_assignment_code')
+        val = get_row_value('Stereospecific_assignment_code')
         if val is not None:
             row[key_size] = val
         if atom1 is not None:
@@ -9512,13 +9513,13 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
 
     elif contentSubtype == 'saxs_restraint':
         row[1] = code
-        val = getRowValue('Intensity_val')
+        val = get_row_value('Intensity_val')
         if val is not None:
             row[key_size] = val
-        val = getRowValue('Intensity_err_val')
+        val = get_row_value('Intensity_err_val')
         if val is not None:
             row[key_size + 1] = val
-        val = getRowValue('Weight_val')
+        val = get_row_value('Weight_val')
         if val is not None:
             row[key_size + 2] = str(abs(float(val)))
 
@@ -9526,11 +9527,11 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
         if atom1 is not None:
             row[key_size] = atomType = atom1['atom_id'][0]
             row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        val = getRowValue('Val')
+        val = get_row_value('Val')
         if val is not None:
             row[key_size + 2] = val
             float_row_idx.append(key_size + 2)
-        val = getRowValue('Val_err')
+        val = get_row_value('Val_err')
         if val is not None:
             row[key_size + 3] = str(abs(float(val)))
             float_row_idx.append(key_size + 3)

@@ -217,7 +217,7 @@ class ChemCompReader:
             traceback.print_exc(file=self.__lfh)
             return None
 
-    def __setDataBlock(self, dataBlock=None) -> bool:
+    def __setDataBlock(self, dataBlock) -> bool:
         """ Assigns the input data block as the active internal data block containing the
             target chemical component definition.
         """

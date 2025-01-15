@@ -14,11 +14,12 @@ import copy
 import collections
 
 from antlr4 import ParseTreeListener
+from typing import IO, List, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
+    from wwpdb.utils.nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
     from wwpdb.utils.nmr.mr.CyanaMRParser import CyanaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -119,7 +120,7 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
-    from nmr.io.CifReader import SYMBOLS_ELEMENT
+    from nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
     from nmr.mr.CyanaMRParser import CyanaMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
@@ -411,12 +412,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
     __cachedDictForStarAtom = {}
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 representativeAltId=REPRESENTATIVE_ALT_ID,
-                 mrAtomNameMapping=None,
-                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 reasons=None, upl_or_lol=None, file_ext=None):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 mrAtomNameMapping: Optional[List[dict]] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 reasons: Optional[dict] = None, upl_or_lol: Optional[str] = None, file_ext: Optional[str] = None):
         self.__class_name__ = self.__class__.__name__
 
         self.__verbose = verbose
@@ -543,22 +545,22 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.__cachedDictForStarAtom = {}
 
-    def setDebugMode(self, debug):
+    def setDebugMode(self, debug: bool):
         self.__debug = debug
 
-    def setRemediateMode(self, remediate):
+    def setRemediateMode(self, remediate: bool):
         self.__remediate = remediate
 
-    def createSfDict(self, createSfDict):
+    def createSfDict(self, createSfDict: bool):
         self.__createSfDict = createSfDict
 
-    def setOriginaFileName(self, originalFileName):
+    def setOriginaFileName(self, originalFileName: str):
         self.__originalFileName = originalFileName
 
-    def setListIdCounter(self, listIdCounter):
+    def setListIdCounter(self, listIdCounter: dict):
         self.__listIdCounter = listIdCounter
 
-    def setEntryId(self, entryId):
+    def setEntryId(self, entryId: str):
         self.__entryId = entryId
 
     # Enter a parse tree produced by CyanaMRParser#cyana_mr.
@@ -1644,7 +1646,8 @@ class CyanaMRParserListener(ParseTreeListener):
             self.genAtomNameSelection.clear()
 
     # Exit a parse tree produced by CyanaMRParser#distance_restraint.
-    def exitDistance_wo_comp_restraint(self, chainId1, seqId1, atomId1, chainId2, seqId2, atomId2):
+    def exitDistance_wo_comp_restraint(self, chainId1: str, seqId1: int, atomId1: str,
+                                       chainId2: str, seqId2: int, atomId2: str):
 
         try:
 
@@ -2240,7 +2243,9 @@ class CyanaMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit, target_value_uncertainty, omit_dist_limit_outlier):
+    def validateDistanceRange(self, weight: float, target_value: Optional[float],
+                              lower_limit: Optional[float], upper_limit: Optional[float],
+                              target_value_uncertainty: Optional[float], omit_dist_limit_outlier: bool) -> Optional[dict]:
         """ Validate distance value range.
         """
 
@@ -2357,7 +2362,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def validatePeakVolumeRange(self, weight, target_value, lower_limit, upper_limit):
+    def validatePeakVolumeRange(self, weight: float, target_value: Optional[float],
+                                lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
         """ Validate NOESY peak volume value range.
         """
 
@@ -2395,7 +2401,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def translateToStdResNameWrapper(self, seqId, compId, preferNonPoly=False):
+    def translateToStdResNameWrapper(self, seqId: int, compId: str, preferNonPoly: bool = False) -> str:
         _compId = compId
         refCompId = None
         for ps in self.__polySeq:
@@ -2415,7 +2421,7 @@ class CyanaMRParserListener(ParseTreeListener):
             compId = translateToStdResName(_compId, ccU=self.__ccU)
         return compId
 
-    def getRealChainSeqId(self, ps, seqId, compId=None, isPolySeq=True):
+    def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str] = None, isPolySeq: bool = True) -> Tuple[str, int, Optional[str]]:
         if compId in ('MTS', 'ORI'):
             compId = _compId = None
         if compId is not None:
@@ -2451,7 +2457,8 @@ class CyanaMRParserListener(ParseTreeListener):
                     return ps['auth_chain_id'], _ps['comp_id'][_ps['seq_id'].index(seqId)]
         return ps['auth_chain_id'], seqId, None
 
-    def assignCoordPolymerSequence(self, seqId, compId, atomId, enableWarning=True):
+    def assignCoordPolymerSequence(self, seqId: int, compId: str, atomId: str, enableWarning: bool = True
+                                   ) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -3068,7 +3075,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return list(chainAssign), asis
 
-    def assignCoordPolymerSequenceWithChainId(self, refChainId, seqId, compId, atomId, enableWarning=True):
+    def assignCoordPolymerSequenceWithChainId(self, refChainId: str, seqId: int, compId: str, atomId: str, enableWarning: bool = True
+                                              ) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -3752,7 +3760,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return list(chainAssign), asis
 
-    def assignCoordPolymerSequenceWithoutCompId(self, seqId, atomId=None):
+    def assignCoordPolymerSequenceWithoutCompId(self, seqId: int, atomId: Optional[str] = None) -> List[Tuple[str, int, str, bool]]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -3965,7 +3973,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return list(chainAssign)
 
-    def assignCoordPolymerSequenceWithChainIdWithoutCompId(self, fixedChainId, seqId, atomId):
+    def assignCoordPolymerSequenceWithChainIdWithoutCompId(self, fixedChainId: str, seqId: int, atomId: str) -> List[Tuple[str, int, str, bool]]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -4178,7 +4186,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return list(chainAssign)
 
-    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, enableWarning=True, offset=0):
+    def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
+                         allowAmbig: bool = True, enableWarning: bool = True, offset: int = 0):
         """ Select atoms of the coordinates.
         """
 
@@ -4474,7 +4483,8 @@ class CyanaMRParserListener(ParseTreeListener):
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
 
-    def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite, enableWarning=True):
+    def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
+                                   seqKey: Tuple[str, int], coordAtomSite: Optional[dict], enableWarning: bool = True) -> Tuple[str, bool]:
         asis = False
         if not self.__hasCoord:
             return atomId, asis
@@ -4727,7 +4737,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                 updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
         return atomId, asis
 
-    def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
+    def selectRealisticBondConstraint(self, atom1: str, atom2: str, alt_atom_id1: str, alt_atom_id2: str, dst_func: dict
+                                      ) -> Tuple[str, str]:
         """ Return realistic bond constraint taking into account the current coordinates.
         """
         if not self.__hasCoord:
@@ -4836,7 +4847,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return atom1, atom2
 
-    def selectRealisticChi2AngleConstraint(self, atom1, atom2, atom3, atom4, dst_func):
+    def selectRealisticChi2AngleConstraint(self, atom1: str, atom2: str, atom3: str, atom4: str, dst_func: dict
+                                           ) -> dict:
         """ Return realistic chi2 angle constraint taking into account the current coordinates.
         """
         if not self.__hasCoord:
@@ -5004,7 +5016,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return dst_func
 
-    def getCoordAtomSiteOf(self, chainId, seqId, compId=None, cifCheck=True, asis=True):
+    def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
+                           ) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
         if cifCheck:
             preferAuthSeq = self.__preferAuthSeq if asis else not self.__preferAuthSeq
@@ -5603,7 +5616,8 @@ class CyanaMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateAngleRange(self, weight, target_value, lower_limit, upper_limit):
+    def validateAngleRange(self, weight: float, target_value: Optional[float],
+                           lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
         """ Validate angle value range.
         """
 
@@ -5917,7 +5931,8 @@ class CyanaMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateRdcRange(self, weight, orientation, target_value, lower_limit, upper_limit):
+    def validateRdcRange(self, weight: float, orientation: int, target_value: Optional[float],
+                         lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
         """ Validate RDC value range.
         """
 
@@ -5994,7 +6009,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def areUniqueCoordAtoms(self, subtype_name, allow_ambig=False, allow_ambig_warn_title=''):
+    def areUniqueCoordAtoms(self, subtype_name: str, allow_ambig: bool = False, allow_ambig_warn_title: str = '') -> bool:
         """ Check whether atom selection sets are uniquely assigned.
         """
 
@@ -6155,7 +6170,8 @@ class CyanaMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validatePcsRange(self, weight, orientation, target_value, lower_limit, upper_limit):
+    def validatePcsRange(self, weight: float, orientation: int, target_value: Optional[float],
+                         lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
         """ Validate PCS value range.
         """
 
@@ -10389,7 +10405,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     ambig['atom_id_list'] = [dict(s) for s in set(frozenset(atom.items()) for atom in ambig['atom_id_list'])]
 
-    def atomIdListToChainAssign(self, atomIdList):  # pylint: disable=no-self-use
+    def atomIdListToChainAssign(self, atomIdList: List[dict]) -> List[dict]:  # pylint: disable=no-self-use
         chainAssign = set()
         for item in atomIdList:
             if 'atom_id_list' in item:
@@ -10397,7 +10413,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainAssign.add((atom_id['chain_id'], atom_id['seq_id'], atom_id['comp_id']))
         return list(chainAssign)
 
-    def atomIdListToAtomSelection(self, atomIdList):  # pylint: disable=no-self-use
+    def atomIdListToAtomSelection(self, atomIdList: List[dict]) -> List[dict]:  # pylint: disable=no-self-use
         atomSelection = []
         for item in atomIdList:
             if 'atom_id_list' in item:
@@ -10439,7 +10455,7 @@ class CyanaMRParserListener(ParseTreeListener):
         else:
             self.genAtomNameSelection.append(None)
 
-    def __getCurrentRestraint(self):
+    def __getCurrentRestraint(self) -> str:
         if self.__cur_subtype == 'dist':
             return f"[Check the {self.distRestraints}th row of distance restraints] "
         if self.__cur_subtype == 'dihed':
@@ -10530,8 +10546,9 @@ class CyanaMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self, constraintType=None, potentialType=None, rdcCode=None,
-                orientationId=None, cyanaParameter=None):
+    def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
+                rdcCode: Optional[str] = None, orientationId: Optional[str] = None,
+                cyanaParameter: Optional[str] = None):
         content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
@@ -10585,8 +10602,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None, potentialType=None, rdcCode=None,
-                orientationId=None, cyanaParameter=None):
+    def __getSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
+                rdcCode: Optional[str] = None, orientationId: Optional[str] = None,
+                cyanaParameter: Optional[str] = None) -> dict:
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, orientationId)
 
         if key not in self.sfDict:
@@ -10630,7 +10648,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
                     return
 
-    def getContentSubtype(self):
+    def getContentSubtype(self) -> dict:
         """ Return content subtype of CYANA MR file.
         """
 
@@ -10648,7 +10666,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
-    def getEffectiveContentSubtype(self):
+    def getEffectiveContentSubtype(self) -> dict:
         """ Return effective content subtype of CYANA MR file (excluding .upv, lov, and .cco).
         """
 
@@ -10660,27 +10678,27 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
-    def getPolymerSequence(self):
+    def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of CYANA MR file.
         """
         return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
-    def getSequenceAlignment(self):
+    def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and CYANA MR.
         """
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
-    def getChainAssignment(self):
+    def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and CYANA MR.
         """
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
-    def getReasonsForReparsing(self):
+    def getReasonsForReparsing(self) -> Optional[dict]:
         """ Return reasons for re-parsing CYANA MR file.
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
-    def getTypeOfDistanceRestraints(self):
+    def getTypeOfDistanceRestraints(self) -> str:
         """ Return type of distance restraints of the CYANA MR file.
         """
         if self.__file_ext is not None:
@@ -10704,7 +10722,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
         return 'both'
 
-    def getSfDict(self):
+    def getSfDict(self) -> Tuple[dict, Optional[dict]]:
         """ Return a dictionary of pynmrstar saveframes.
         """
         if len(self.sfDict) == 0:

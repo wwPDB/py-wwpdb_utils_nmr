@@ -13,10 +13,12 @@ import copy
 
 from antlr4 import ParseTreeListener
 from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
+from typing import IO, List, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
+    from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.AmberPTParser import AmberPTParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        translateToStdAtomName,
@@ -41,6 +43,7 @@ try:
                                            getRestraintFormatName,
                                            getOneLetterCodeCanSequence)
 except ImportError:
+    from nmr.io.CifReader import CifReader
     from nmr.mr.AmberPTParser import AmberPTParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            translateToStdAtomName,
@@ -66,7 +69,7 @@ except ImportError:
                                getOneLetterCodeCanSequence)
 
 
-def chunk_string(line, length=4):
+def chunk_string(line: str, length: int = 4) -> List[str]:
     """ Split a string into fixed length chunks.
     """
     return [line[i:i + length] for i in range(0, len(line), length)]
@@ -150,11 +153,12 @@ class AmberPTParserListener(ParseTreeListener):
     __f = None
     warningMessage = None
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 representativeAltId=REPRESENTATIVE_ALT_ID,
-                 mrAtomNameMapping=None,
-                 cR=None, caC=None, ccU=None, csStat=None, nefT=None):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 mrAtomNameMapping: Optional[List[dict]] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None):
 
         self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
@@ -1115,7 +1119,7 @@ class AmberPTParserListener(ParseTreeListener):
                 atomNum['chain_id'] = nonPoly['auth_chain_id']
                 atomNum['seq_id'] = nonPoly['auth_seq_id'][0]
 
-    def assignNonPolymer(self, nonPolyIndices):
+    def assignNonPolymer(self, nonPolyIndices: List[int]):
         if not self.__hasNonPolyModel:
             return
 
@@ -1777,7 +1781,7 @@ class AmberPTParserListener(ParseTreeListener):
     def exitFormat_function(self, ctx: AmberPTParser.Format_functionContext):  # pylint: disable=unused-argument
         pass
 
-    def getContentSubtype(self):
+    def getContentSubtype(self) -> dict:
         """ Return content subtype of AMBER parameter/topology file.
         """
 
@@ -1833,38 +1837,38 @@ class AmberPTParserListener(ParseTreeListener):
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
-    def getVersionInfo(self):
+    def getVersionInfo(self) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         """ Return version information of AMBER parameter/topology file.
             @return: version, date, time
         """
         return self.__version, self.__date, self.__time
 
-    def getTitle(self):
+    def getTitle(self) -> Optional[str]:
         """ Return title of AMBER parameter/topology file.
         """
         return self.__title
 
-    def getRadiusSet(self):
+    def getRadiusSet(self) -> Optional[str]:
         """ Return radius set of AMBER parameter/topology file.
         """
         return self.__radiusSet
 
-    def getAtomNumberDict(self):
+    def getAtomNumberDict(self) -> dict:
         """ Return AMBER atomic number dictionary.
         """
         return self.__atomNumberDict
 
-    def getPolymerSequence(self):
+    def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of AMBER parameter/topology file.
         """
         return None if self.__polySeqPrmTop is None or len(self.__polySeqPrmTop) == 0 else self.__polySeqPrmTop
 
-    def getSequenceAlignment(self):
+    def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and AMBER parameter/topology.
         """
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
-    def getChainAssignment(self):
+    def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and AMBER parameter/topology.
         """
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign

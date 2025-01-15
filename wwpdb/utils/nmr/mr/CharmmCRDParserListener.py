@@ -12,10 +12,12 @@ import copy
 
 from antlr4 import ParseTreeListener
 from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module, import-error, unused-import
+from typing import IO, List, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
+    from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.CharmmCRDParser import CharmmCRDParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        translateToStdAtomName,
@@ -39,6 +41,7 @@ try:
                                            getRestraintFormatName,
                                            getOneLetterCodeCanSequence)
 except ImportError:
+    from nmr.io.CifReader import CifReader
     from nmr.mr.CharmmCRDParser import CharmmCRDParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            translateToStdAtomName,
@@ -107,11 +110,12 @@ class CharmmCRDParserListener(ParseTreeListener):
     __f = None
     warningMessage = None
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 representativeAltId=REPRESENTATIVE_ALT_ID,
-                 mrAtomNameMapping=None,
-                 cR=None, caC=None, ccU=None, csStat=None):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 mrAtomNameMapping: Optional[List[dict]] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None):
 
         self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
@@ -826,7 +830,7 @@ class CharmmCRDParserListener(ParseTreeListener):
                 atomNum['chain_id'] = nonPoly['auth_chain_id']
                 atomNum['seq_id'] = nonPoly['auth_seq_id'][0]
 
-    def assignNonPolymer(self, nonPolyIndices):
+    def assignNonPolymer(self, nonPolyIndices: List[int]):
         if not self.__hasNonPolyModel:
             return
 
@@ -978,7 +982,7 @@ class CharmmCRDParserListener(ParseTreeListener):
         except ValueError:
             pass
 
-    def getContentSubtype(self):
+    def getContentSubtype(self) -> dict:
         """ Return content subtype of CHARMM CRD file.
         """
 
@@ -986,22 +990,22 @@ class CharmmCRDParserListener(ParseTreeListener):
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
-    def getAtomNumberDict(self):
+    def getAtomNumberDict(self) -> Optional[dict]:
         """ Return CHARMM atomic number dictionary.
         """
         return self.__atomNumberDict
 
-    def getPolymerSequence(self):
+    def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of CHARMM CRD file.
         """
         return None if self.__polySeqPrmTop is None or len(self.__polySeqPrmTop) == 0 else self.__polySeqPrmTop
 
-    def getSequenceAlignment(self):
+    def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and CHARMM CRD.
         """
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
-    def getChainAssignment(self):
+    def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and CHARMM CRD.
         """
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign

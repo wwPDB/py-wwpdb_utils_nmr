@@ -14,10 +14,12 @@ import numpy
 import collections
 
 from antlr4 import ParseTreeListener
+from typing import IO, List, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
+    from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -102,6 +104,7 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
+    from nmr.io.CifReader import CifReader
     from nmr.mr.RosettaMRParser import RosettaMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
@@ -336,12 +339,13 @@ class RosettaMRParserListener(ParseTreeListener):
 
     __cachedDictForStarAtom = {}
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 representativeAltId=REPRESENTATIVE_ALT_ID,
-                 mrAtomNameMapping=None,
-                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 reasons=None):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 mrAtomNameMapping: Optional[List[dict]] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
 
         self.__verbose = verbose
@@ -439,22 +443,22 @@ class RosettaMRParserListener(ParseTreeListener):
 
         self.__cachedDictForStarAtom = {}
 
-    def setDebugMode(self, debug):
+    def setDebugMode(self, debug: bool):
         self.__debug = debug
 
-    def setRemediateMode(self, remediate):
+    def setRemediateMode(self, remediate: bool):
         self.__remediate = remediate
 
-    def createSfDict(self, createSfDict):
+    def createSfDict(self, createSfDict: bool):
         self.__createSfDict = createSfDict
 
-    def setOriginaFileName(self, originalFileName):
+    def setOriginaFileName(self, originalFileName: str):
         self.__originalFileName = originalFileName
 
-    def setListIdCounter(self, listIdCounter):
+    def setListIdCounter(self, listIdCounter: dict):
         self.__listIdCounter = listIdCounter
 
-    def setEntryId(self, entryId):
+    def setEntryId(self, entryId: str):
         self.__entryId = entryId
 
     # Enter a parse tree produced by RosettaMRParser#rosetta_mr.
@@ -1157,7 +1161,7 @@ class RosettaMRParserListener(ParseTreeListener):
         finally:
             self.atomSelectionInComment.clear()
 
-    def validateDistanceRange(self, weight):
+    def validateDistanceRange(self, weight: float) -> Optional[dict]:
         """ Validate distance value range.
         """
 
@@ -1396,7 +1400,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def getRealChainSeqId(self, ps, seqId, isPolySeq=True):
+    def getRealChainSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True) -> Tuple[str, int, Optional[str]]:
         offset = 0
         if not self.__preferAuthSeq:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
@@ -1444,7 +1448,8 @@ class RosettaMRParserListener(ParseTreeListener):
                     return ps['auth_chain_id'], seqId, _ps['comp_id'][_ps['seq_id'].index(seqId)]
         return ps['auth_chain_id'], seqId, None
 
-    def assignCoordPolymerSequence(self, seqId, atomId=None, fixedChainId=None):
+    def assignCoordPolymerSequence(self, seqId: int, atomId: Optional[str] = None, fixedChainId: Optional[str] = None
+                                   ) -> List[Tuple[str, int, str, bool]]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -1695,7 +1700,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return list(chainAssign)
 
-    def selectCoordAtoms(self, chainAssign, seqId, atomId, allowAmbig=True, subtype_name=None):
+    def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, atomId: str,
+                         allowAmbig: bool = True, subtype_name: Optional[str] = None):
         """ Select atoms of the coordinates.
         """
 
@@ -1856,7 +1862,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
 
-    def selectCoordResidues(self, chainAssign, seqId):
+    def selectCoordResidues(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int):
         """ Select residues of the coordinates.
         """
 
@@ -1869,7 +1875,8 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
 
-    def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite):
+    def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
+                                   seqKey: Tuple[str, int], coordAtomSite: Optional[dict]) -> Tuple[str, bool]:
         asis = False
         if not self.__hasCoord:
             return atomId, asis
@@ -2121,7 +2128,8 @@ class RosettaMRParserListener(ParseTreeListener):
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
         return atomId, asis
 
-    def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
+    def selectRealisticBondConstraint(self, atom1: str, atom2: str, alt_atom_id1: str, alt_atom_id2: str, dst_func: dict
+                                      ) -> Tuple[str, str]:
         """ Return realistic bond constraint taking into account the current coordinates.
         """
         if not self.__hasCoord:
@@ -2230,7 +2238,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return atom1, atom2
 
-    def selectRealisticChi2AngleConstraint(self, atom1, atom2, atom3, atom4, dst_func):
+    def selectRealisticChi2AngleConstraint(self, atom1: str, atom2: str, atom3: str, atom4: str, dst_func: dict
+                                           ) -> dict:
         """ Return realistic chi2 angle constraint taking into account the current coordinates.
         """
         if not self.__hasCoord:
@@ -2398,7 +2407,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return dst_func
 
-    def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
+    def getCoordAtomSiteOf(self, chainId: str, seqId: int, cifCheck: bool = True, asis: bool = True
+                           ) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
         coordAtomSite = None
         if cifCheck:
@@ -2504,7 +2514,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                            dstFunc.get('upper_linear_limit'),
                                            sf['list_id']])
 
-    def validateAngleRange(self, weight):
+    def validateAngleRange(self, weight: float) -> Optional[dict]:
         """ Validate angle value range.
         """
 
@@ -4716,7 +4726,7 @@ class RosettaMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def areUniqueCoordAtoms(self, subtype_name, allow_ambig=False, allow_ambig_warn_title=''):
+    def areUniqueCoordAtoms(self, subtype_name: str, allow_ambig: bool = False, allow_ambig_warn_title: str = '') -> bool:
         """ Check whether atom selection sets are uniquely assigned.
         """
 
@@ -5124,7 +5134,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return None
 
-    def __getCurrentRestraint(self):
+    def __getCurrentRestraint(self) -> str:
         if self.__cur_subtype == 'dist':
             return f"[Check the {self.distRestraints}th row of distance restraints] "
         if self.__cur_subtype == 'ang':
@@ -5191,7 +5201,8 @@ class RosettaMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self, constraintType=None, potentialType=None, rdcCode=None):
+    def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
+                rdcCode: Optional[str] = None):
         content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
@@ -5238,7 +5249,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None, potentialType=None, rdcCode=None):
+    def __getSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
+                rdcCode: Optional[str] = None) -> dict:
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
         if key not in self.sfDict:
@@ -5267,7 +5279,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return self.sfDict[key][-1]
 
-    def getContentSubtype(self):
+    def getContentSubtype(self) -> dict:
         """ Return content subtype of ROSETTA MR file.
         """
 
@@ -5281,7 +5293,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
-    def getEffectiveContentSubtype(self):
+    def getEffectiveContentSubtype(self) -> dict:
         """ Return effective content subtype of ROSETTA MR file (excluding CS-ROSETTA).
         """
 
@@ -5292,7 +5304,7 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
-    def hasAnyRestraints(self):
+    def hasAnyRestraints(self) -> bool:
         """ Return whether any restraint is parsed successfully.
         """
         if self.__createSfDict:
@@ -5305,27 +5317,27 @@ class RosettaMRParserListener(ParseTreeListener):
             return False
         return len(self.getContentSubtype()) > 0
 
-    def getPolymerSequence(self):
+    def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of ROSETTA MR file.
         """
         return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
-    def getSequenceAlignment(self):
+    def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and ROSETTA MR.
         """
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
-    def getChainAssignment(self):
+    def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and ROSETTA MR.
         """
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
-    def getReasonsForReparsing(self):
+    def getReasonsForReparsing(self) -> Optional[dict]:
         """ Return reasons for re-parsing ROSETTA MR file.
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
-    def getSfDict(self):
+    def getSfDict(self) -> Tuple[dict, Optional[dict]]:
         """ Return a dictionary of pynmrstar saveframes.
         """
         if len(self.sfDict) == 0:

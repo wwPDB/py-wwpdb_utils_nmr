@@ -31,7 +31,7 @@ import collections
 import shutil
 
 from operator import itemgetter
-from typing import IO, List, Set, Optional
+from typing import IO, List, Set, Tuple, Optional
 
 try:
     from wwpdb.utils.nmr.AlignUtil import (emptyValue,
@@ -51,7 +51,7 @@ class BMRBChemShiftStat:
     """ Wrapper class for retrieving BMRB chemical shift statistics.
     """
 
-    def __init__(self, verbose: bool = False, log: IO = sys.stderr, ccU=None):
+    def __init__(self, verbose: bool = False, log: IO = sys.stderr, ccU: Optional[ChemCompUtil] = None):
         self.__class_name__ = self.__class__.__name__
 
         self.__verbose = verbose
@@ -486,7 +486,7 @@ class BMRBChemShiftStat:
         except StopIteration:
             return None
 
-    def getAllAtoms(self, comp_id: str, excl_minor_atom: bool = False, primary: bool = False):
+    def getAllAtoms(self, comp_id: str, excl_minor_atom: bool = False, primary: bool = False) -> List[str]:
         """ Return all atoms of a given comp_id.
         """
 
@@ -1586,7 +1586,7 @@ class BMRBChemShiftStat:
 
         return atm_list
 
-    def __appendExtraFromCcd(self, comp_id):
+    def __appendExtraFromCcd(self, comp_id: Optional[str]):
         """ Append atom list as extra residue for a given comp_id.
         """
 
@@ -1633,7 +1633,8 @@ class BMRBChemShiftStat:
 
         self.extras.extend(atm_list)
 
-    def checkAtomNomenclature(self, atom_id: str, comp_id: Optional[str] = None, verbose: bool = False):
+    def checkAtomNomenclature(self, atom_id: str, comp_id: Optional[str] = None, verbose: bool = False
+                              ) -> Tuple[bool, Optional[str], Optional[str]]:
         """ Check atom nomenclature.
             @return: status (bool), mapped comp_id, mapped atom_id
         """
@@ -1735,7 +1736,7 @@ class BMRBChemShiftStat:
 
         return False, None, None
 
-    def __detectMethylProtonFromAtomNomenclature(self, comp_ids, atm_list):
+    def __detectMethylProtonFromAtomNomenclature(self, comp_ids: List[str], atm_list: List[dict]):
         """ Detect methyl proton from atom nomenclature.
         """
 
@@ -1775,7 +1776,7 @@ class BMRBChemShiftStat:
                         if atom_id in (h + '1', h + '2', h + '3'):
                             a['desc'] = 'methyl'
 
-    def __detectGeminalProtonFromAtomNomenclature(self, comp_ids, atm_list):
+    def __detectGeminalProtonFromAtomNomenclature(self, comp_ids: List[str], atm_list: List[dict]):
         """ Detect geminal proton from atom nomenclature.
         """
 
@@ -2068,7 +2069,7 @@ class BMRBChemShiftStat:
                             if atom_id in (h + '2', h + '3'):
                                 a['desc'] = 'aroma-opposite'
 
-    def __detectGeminalCarbon(self, comp_ids, atm_list):
+    def __detectGeminalCarbon(self, comp_ids: List[str], atm_list: List[dict]):
         """ Detect geminal carbon from atom nomenclature.
         """
 
@@ -2154,7 +2155,7 @@ class BMRBChemShiftStat:
                     if c['atom_id'] in aroma_opposite_list:
                         c['desc'] = 'aroma-opposite'
 
-    def __detectGeminalNitrogen(self, comp_ids, atm_list):
+    def __detectGeminalNitrogen(self, comp_ids: List[str], atm_list: List[dict]):
         """ Detect geminal nitrogen from atom nomenclature.
         """
 
@@ -2214,7 +2215,7 @@ class BMRBChemShiftStat:
                         if atom_id in (g + '1', g + '2'):
                             n['desc'] = 'geminal'
 
-    def __detectMajorResonance(self, comp_ids, atm_list, primary_th, secondary_th=None):
+    def __detectMajorResonance(self, comp_ids: List[str], atm_list: List[dict], primary_th: float, secondary_th: Optional[float] = None):
         """ Detect major resonance based on count of assignments.
         """
 

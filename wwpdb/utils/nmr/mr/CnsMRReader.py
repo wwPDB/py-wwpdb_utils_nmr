@@ -9,6 +9,7 @@ import sys
 import os
 
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMode
+from typing import IO, List, Tuple, Optional
 
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
@@ -44,12 +45,13 @@ class CnsMRReader:
     """ Accessor methods for parsing CNS MR files.
     """
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 representativeAltId=REPRESENTATIVE_ALT_ID,
-                 mrAtomNameMapping=None,
-                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 reasons=None):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 mrAtomNameMapping: Optional[List[dict]] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
 
         self.__verbose = verbose
@@ -85,20 +87,21 @@ class CnsMRReader:
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
 
-    def setDebugMode(self, debug):
+    def setDebugMode(self, debug: bool):
         self.__debug = debug
 
-    def setLexerMaxErrorReport(self, maxErrReport):
+    def setLexerMaxErrorReport(self, maxErrReport: int):
         self.__maxLexerErrorReport = maxErrReport
 
-    def setParserMaxErrorReport(self, maxErrReport):
+    def setParserMaxErrorReport(self, maxErrReport: int):
         self.__maxParserErrorReport = maxErrReport
 
-    def setSllPredMode(self, sll_pred):
+    def setSllPredMode(self, sll_pred: bool):
         self.__sll_pred = sll_pred
 
-    def parse(self, mrFilePath, cifFilePath=None, isFilePath=True,
-              createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
+    def parse(self, mrFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True,
+              createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None, entryId: Optional[str] = None
+              ) -> Tuple[Optional[CnsMRParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
         """ Parse CNS MR file.
             @return: CnsMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """

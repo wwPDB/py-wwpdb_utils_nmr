@@ -14,11 +14,12 @@ import copy
 import collections
 
 from antlr4 import ParseTreeListener
+from typing import IO, List, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
+    from wwpdb.utils.nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
     from wwpdb.utils.nmr.mr.DynamoMRParser import DynamoMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -108,7 +109,7 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
-    from nmr.io.CifReader import SYMBOLS_ELEMENT
+    from nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
     from nmr.mr.DynamoMRParser import DynamoMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
@@ -352,12 +353,13 @@ class DynamoMRParserListener(ParseTreeListener):
 
     __cachedDictForStarAtom = {}
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 representativeAltId=REPRESENTATIVE_ALT_ID,
-                 mrAtomNameMapping=None,
-                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 reasons=None):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 mrAtomNameMapping: Optional[List[dict]] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
 
         self.__verbose = verbose
@@ -448,19 +450,19 @@ class DynamoMRParserListener(ParseTreeListener):
 
         self.__cachedDictForStarAtom = {}
 
-    def setDebugMode(self, debug):
+    def setDebugMode(self, debug: bool):
         self.__debug = debug
 
-    def createSfDict(self, createSfDict):
+    def createSfDict(self, createSfDict: bool):
         self.__createSfDict = createSfDict
 
-    def setOriginaFileName(self, originalFileName):
+    def setOriginaFileName(self, originalFileName: str):
         self.__originalFileName = originalFileName
 
-    def setListIdCounter(self, listIdCounter):
+    def setListIdCounter(self, listIdCounter: dict):
         self.__listIdCounter = listIdCounter
 
-    def setEntryId(self, entryId):
+    def setEntryId(self, entryId: str):
         self.__entryId = entryId
 
     # Enter a parse tree produced by DynamoMRParser#dynamo_mr.
@@ -847,19 +849,19 @@ class DynamoMRParserListener(ParseTreeListener):
             scale = self.numberSelection[4]
 
             if weight < 0.0:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"The relative weight value of '{weight}' should be a positive value.")
 
             if scale < 0.0:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"The relative scale value of '{scale}' must not be a negative value.")
                 return
             if scale == 0.0:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"The relative scale value of '{scale}' should be a positive value.")
 
             if not self.__hasPolySeq and not self.__hasNonPolySeq:
@@ -1028,19 +1030,19 @@ class DynamoMRParserListener(ParseTreeListener):
             scale = self.numberSelection[4]
 
             if weight < 0.0:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"The relative weight value of '{weight}' should be a positive value.")
 
             if scale < 0.0:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"The relative scale value of '{scale}' must not be a negative value.")
                 return
             if scale == 0.0:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"The relative scale value of '{scale}' should be a positive value.")
 
             if not self.__hasPolySeq and not self.__hasNonPolySeq:
@@ -1202,19 +1204,19 @@ class DynamoMRParserListener(ParseTreeListener):
             scale = self.numberSelection[4]
 
             if weight < 0.0:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"The relative weight value of '{weight}' should be a positive value.")
 
             if scale < 0.0:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"The relative scale value of '{scale}' must not be a negative value.")
                 return
             if scale == 0.0:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"The relative scale value of '{scale}' should be a positive value.")
 
             if not self.__hasPolySeq and not self.__hasNonPolySeq:
@@ -1328,7 +1330,8 @@ class DynamoMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateDistanceRange(self, index, group, weight, scale, target_value, lower_limit, upper_limit, omit_dist_limit_outlier):
+    def validateDistanceRange(self, index: int, group: int, weight: float, scale: float, target_value: Optional[float],
+                              lower_limit: Optional[float], upper_limit: Optional[float], omit_dist_limit_outlier: bool) -> Optional[dict]:
         """ Validate distance value range.
         """
 
@@ -1348,12 +1351,12 @@ class DynamoMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value:.3f}" if target_value > 0.0 else "0.0"
             else:
                 if target_value <= DIST_ERROR_MIN and omit_dist_limit_outlier:
-                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index, g=group)}"
                                     f"The target value='{target_value:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     target_value = None
                 else:
                     validRange = False
-                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index, g=group)}"
                                     f"The target value='{target_value:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
@@ -1361,12 +1364,12 @@ class DynamoMRParserListener(ParseTreeListener):
                 dstFunc['lower_limit'] = f"{lower_limit:.3f}" if lower_limit > 0.0 else "0.0"
             else:
                 if lower_limit <= DIST_ERROR_MIN and omit_dist_limit_outlier:
-                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index, g=group)}"
                                     f"The lower limit value='{lower_limit:.3f}' is omitted because it is not within range {DIST_RESTRAINT_ERROR}.")
                     lower_limit = None
                 else:
                     validRange = False
-                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index, g=group)}"
                                     f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
@@ -1379,7 +1382,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     upper_limit = None
                 else:
                     validRange = False
-                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index, g=group)}"
                                     f"The upper limit value='{upper_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
 
         if target_value is not None:
@@ -1387,13 +1390,13 @@ class DynamoMRParserListener(ParseTreeListener):
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index, g=group)}"
                                     f"The lower limit value='{lower_limit:.3f}' must be less than the target value '{target_value:.3f}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index, g=group)}"
                                     f"The upper limit value='{upper_limit:.3f}' must be greater than the target value '{target_value:.3f}'.")
 
         else:
@@ -1401,7 +1404,7 @@ class DynamoMRParserListener(ParseTreeListener):
             if lower_limit is not None and upper_limit is not None:
                 if lower_limit > upper_limit:
                     validRange = False
-                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index,g=group)}"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index, g=group)}"
                                     f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.")
 
         if not validRange:
@@ -1411,21 +1414,21 @@ class DynamoMRParserListener(ParseTreeListener):
             if DIST_RANGE_MIN <= target_value <= DIST_RANGE_MAX:
                 pass
             else:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"The target value='{target_value:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if DIST_RANGE_MIN <= lower_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"The lower limit value='{lower_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if DIST_RANGE_MIN <= upper_limit <= DIST_RANGE_MAX:
                 pass
             else:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"The upper limit value='{upper_limit:.3f}' should be within range {DIST_RESTRAINT_RANGE}.")
 
         if target_value is None and lower_limit is None and upper_limit is None:
@@ -1433,7 +1436,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
+    def getRealChainSeqId(self, ps: dict, seqId: int, compId: str, isPolySeq: bool = True) -> Tuple[str, int, Optional[str]]:
         compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
         if len(_compId) == 2 and _compId.startswith('D'):
             _compId = compId[1]
@@ -1464,7 +1467,7 @@ class DynamoMRParserListener(ParseTreeListener):
                     return ps['auth_chain_id'], _ps['comp_id'][_ps['seq_id'].index(seqId)]
         return ps['auth_chain_id'], seqId, None
 
-    def translateToStdResNameWrapper(self, seqId, compId, preferNonPoly=False):
+    def translateToStdResNameWrapper(self, seqId: int, compId: str, preferNonPoly: bool = False) -> str:
         _compId = compId
         refCompId = None
         for ps in self.__polySeq:
@@ -1484,7 +1487,8 @@ class DynamoMRParserListener(ParseTreeListener):
             compId = translateToStdResName(_compId, ccU=self.__ccU)
         return compId
 
-    def assignCoordPolymerSequence(self, refChainId, seqId, compId, atomId, index=None, group=None):
+    def assignCoordPolymerSequence(self, refChainId: str, seqId: int, compId: str, atomId: str,
+                                   index: Optional[int] = None, group: Optional[int] = None) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -2138,7 +2142,7 @@ class DynamoMRParserListener(ParseTreeListener):
                             chainAssign.add((_refChainId, _seqId, compId, True))
                     asis = True
                 else:
-                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index,g=group)}"
+                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index, g=group)}"
                                     f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                 updatePolySeqRst(self.__polySeqRstFailed, self.__polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, compId, _compId)
 
@@ -2150,7 +2154,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
         return list(chainAssign), asis
 
-    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, index=None, group=None, offset=0):
+    def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
+                         allowAmbig: bool = True, index: Optional[int] = None, group: Optional[int] = None, offset: int = 0):
         """ Select atoms of the coordinates.
         """
 
@@ -2336,11 +2341,11 @@ class DynamoMRParserListener(ParseTreeListener):
                 if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
                     self.selectCoordAtoms(chainAssign, seqId, compId, atomId, allowAmbig, index, group, offset=1)
                     return
-                self.__f.append(f"[Invalid atom nomenclature] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Invalid atom nomenclature] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"{seqId}:{__compId}:{__atomId} is invalid atom nomenclature.")
                 continue
             if lenAtomId > 1 and not allowAmbig:
-                self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"Ambiguous atom selection '{seqId}:{__compId}:{__atomId}' is not allowed as a angle restraint.")
                 continue
 
@@ -2380,7 +2385,8 @@ class DynamoMRParserListener(ParseTreeListener):
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
 
-    def selectAuxCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, index=None, group=None):
+    def selectAuxCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
+                            allowAmbig: bool = True, index: Optional[int] = None, group: Optional[int] = None):
         """ Select auxiliary atoms of the coordinates.
         """
 
@@ -2430,11 +2436,11 @@ class DynamoMRParserListener(ParseTreeListener):
 
             lenAtomId = len(_atomId)
             if lenAtomId == 0:
-                self.__f.append(f"[Invalid atom nomenclature] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Invalid atom nomenclature] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"{seqId}:{compId}:{atomId} is invalid atom nomenclature.")
                 continue
             if lenAtomId > 1 and not allowAmbig:
-                self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint(n=index,g=group)}"
+                self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint(n=index, g=group)}"
                                 f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.")
                 continue
 
@@ -2452,7 +2458,9 @@ class DynamoMRParserListener(ParseTreeListener):
         if len(atomSelection) > 0:
             self.auxAtomSelectionSet.append(atomSelection)
 
-    def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite, index=None, group=None):
+    def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
+                                   seqKey: Tuple[str, int], coordAtomSite: Optional[dict],
+                                   index: Optional[int] = None, group: Optional[int] = None) -> Tuple[str, bool]:
         asis = False
         if not self.__hasCoord:
             return atomId, asis
@@ -2662,7 +2670,7 @@ class DynamoMRParserListener(ParseTreeListener):
                                    or (self.__csStat.peptideLike(compId)
                                        and cca[self.__ccU.ccaNTerminalAtomFlag] == 'N'
                                        and cca[self.__ccU.ccaCTerminalAtomFlag] == 'N'):
-                                    self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint(n=index,g=group)}"
+                                    self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint(n=index, g=group)}"
                                                     f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                     "Please re-upload the model file.")
                                     return atomId, asis
@@ -2700,12 +2708,13 @@ class DynamoMRParserListener(ParseTreeListener):
                                 self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                 f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                                 return atomId, asis
-                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index,g=group)}"
+                            self.__f.append(f"[Atom not found] {self.__getCurrentRestraint(n=index, g=group)}"
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                             updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
         return atomId, asis
 
-    def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
+    def selectRealisticBondConstraint(self, atom1: str, atom2: str, alt_atom_id1: str, alt_atom_id2: str, dst_func: dict
+                                      ) -> Tuple[str, str]:
         """ Return realistic bond constraint taking into account the current coordinates.
         """
         if not self.__hasCoord:
@@ -2814,7 +2823,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
         return atom1, atom2
 
-    def selectRealisticChi2AngleConstraint(self, atom1, atom2, atom3, atom4, dst_func):
+    def selectRealisticChi2AngleConstraint(self, atom1: str, atom2: str, atom3: str, atom4: str, dst_func: dict
+                                           ) -> dict:
         """ Return realistic chi2 angle constraint taking into account the current coordinates.
         """
         if not self.__hasCoord:
@@ -2982,7 +2992,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
         return dst_func
 
-    def getCoordAtomSiteOf(self, chainId, seqId, compId=None, cifCheck=True, asis=True):
+    def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
+                           ) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
         if cifCheck:
             preferAuthSeq = self.__preferAuthSeq if asis else not self.__preferAuthSeq
@@ -3531,7 +3542,8 @@ class DynamoMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateAngleRange(self, index, weight, target_value, lower_limit, upper_limit):
+    def validateAngleRange(self, index: int, weight: float, target_value: Optional[float],
+                           lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
         """ Validate angle value range.
         """
 
@@ -4368,7 +4380,8 @@ class DynamoMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateRdcRange(self, weight, target_value, lower_limit, upper_limit):
+    def validateRdcRange(self, weight: float, target_value: Optional[float],
+                         lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
         """ Validate RDC value range.
         """
 
@@ -4442,7 +4455,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def areUniqueCoordAtoms(self, subtype_name, allow_ambig=False, allow_ambig_warn_title=''):
+    def areUniqueCoordAtoms(self, subtype_name: str, allow_ambig: bool = False, allow_ambig_warn_title: str = '') -> bool:
         """ Check whether atom selection sets are uniquely assigned.
         """
 
@@ -4948,7 +4961,8 @@ class DynamoMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateCoupRange(self, index, weight, target_value, lower_limit, upper_limit):
+    def validateCoupRange(self, index: int, weight: float, target_value: Optional[float],
+                          lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
         """ Validate scalar J-coupling value range.
         """
 
@@ -5552,7 +5566,7 @@ class DynamoMRParserListener(ParseTreeListener):
         else:
             self.numberSelection.append(None)
 
-    def __getCurrentRestraint(self, n=None, g=None):
+    def __getCurrentRestraint(self, n: Optional[int] = None, g: Optional[int] = None) -> str:
         if self.__cur_subtype == 'dist':
             if n is None or g is None:
                 return f"[Check the {self.distRestraints}th row of distance restraints] "
@@ -5613,8 +5627,8 @@ class DynamoMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self, constraintType=None, potentialType=None, rdcCode=None,
-                softwareName=None):
+    def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
+                rdcCode: Optional[str] = None, softwareName: Optional[str] = None):
         content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
@@ -5661,8 +5675,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None, potentialType=None, rdcCode=None,
-                softwareName=None):
+    def __getSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
+                rdcCode: Optional[str] = None, softwareName: Optional[str] = None) -> dict:
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
         if key not in self.sfDict:
@@ -5692,7 +5706,7 @@ class DynamoMRParserListener(ParseTreeListener):
 
         return self.sfDict[key][-1]
 
-    def getContentSubtype(self):
+    def getContentSubtype(self) -> dict:
         """ Return content subtype of DYNAMO/PALES/TALOS MR file.
         """
 
@@ -5704,27 +5718,27 @@ class DynamoMRParserListener(ParseTreeListener):
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
-    def getPolymerSequence(self):
+    def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of DYNAMO/PALES/TALOS MR file.
         """
         return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
-    def getSequenceAlignment(self):
+    def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and DYNAMO/PALES/TALOS MR.
         """
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
-    def getChainAssignment(self):
+    def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and DYNAMO/PALES/TALOS MR.
         """
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
-    def getReasonsForReparsing(self):
+    def getReasonsForReparsing(self) -> Optional[dict]:
         """ Return reasons for re-parsing DYNAMO/PALES/TALOS MR file.
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
-    def getSfDict(self):
+    def getSfDict(self) -> Tuple[dict, Optional[dict]]:
         """ Return a dictionary of pynmrstar saveframes.
         """
         if len(self.sfDict) == 0:

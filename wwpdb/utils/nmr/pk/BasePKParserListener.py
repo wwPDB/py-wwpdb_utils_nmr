@@ -1662,7 +1662,8 @@ class BasePKParserListener():
 
         return dstFunc
 
-    def checkAssignments2D(self, index: int, assignments: list) -> Tuple[bool, bool, Optional[bool], Optional[bool]]:
+    def checkAssignments2D(self, index: int, assignments: List[List[dict]]
+                           ) -> Tuple[bool, bool, Optional[bool], Optional[bool]]:
         has_assignments = has_multiple_assignments = False
         asis1 = asis2 = None
 
@@ -1715,7 +1716,8 @@ class BasePKParserListener():
 
         return has_assignments, has_multiple_assignments, asis1, asis2
 
-    def checkAssignments3D(self, index: int, assignments: list) -> Tuple[bool, bool, Optional[bool], Optional[bool], Optional[bool]]:
+    def checkAssignments3D(self, index: int, assignments: List[List[dict]]
+                           ) -> Tuple[bool, bool, Optional[bool], Optional[bool], Optional[bool]]:
         has_assignments = has_multiple_assignments = False
         asis1 = asis2 = asis3 = None
 
@@ -1774,7 +1776,8 @@ class BasePKParserListener():
 
         return has_assignments, has_multiple_assignments, asis1, asis2, asis3
 
-    def checkAssignments4D(self, index: int, assignments: list) -> Tuple[bool, bool, Optional[bool], Optional[bool], Optional[bool], Optional[bool]]:
+    def checkAssignments4D(self, index: int, assignments: List[List[dict]]
+                           ) -> Tuple[bool, bool, Optional[bool], Optional[bool], Optional[bool], Optional[bool]]:
         has_assignments = has_multiple_assignments = False
         asis1 = asis2 = asis3 = asis4 = None
 
@@ -1839,7 +1842,7 @@ class BasePKParserListener():
 
         return has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4
 
-    def addAssignedPkRow2D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments,
+    def addAssignedPkRow2D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
                            asis1: Optional[bool], asis2: Optional[bool],
                            debug_label: Optional[str], details: Optional[str]):
 
@@ -1910,7 +1913,7 @@ class BasePKParserListener():
                                 sf['alt_loops'][2].add_data(row)
                                 uniqAtoms.append(atom0)
 
-    def addAssignedPkRow3D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments,
+    def addAssignedPkRow3D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
                            asis1: Optional[bool], asis2: Optional[bool], asis3: Optional[bool],
                            debug_label: Optional[str], details: Optional[str]):
 
@@ -1989,7 +1992,7 @@ class BasePKParserListener():
                                 sf['alt_loops'][2].add_data(row)
                                 uniqAtoms.append(atom0)
 
-    def addAssignedPkRow4D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments,
+    def addAssignedPkRow4D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
                            asis1: Optional[bool], asis2: Optional[bool], asis3: Optional[bool], asis4: Optional[bool],
                            debug_label: Optional[str], details: Optional[str]):
 
@@ -2671,7 +2674,7 @@ class BasePKParserListener():
 
         return ret if len(ret) > 0 else None
 
-    def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str], isPolySeq=True) -> Tuple[str, int, Optional[str]]:
+    def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str], isPolySeq: bool = True) -> Tuple[str, int, Optional[str]]:
         if compId is not None:
             compId = _compId = translateToStdResName(compId, ccU=self.ccU)
             if len(_compId) == 2 and _compId.startswith('D'):
@@ -2705,7 +2708,7 @@ class BasePKParserListener():
                     return ps['auth_chain_id'], _ps['comp_id'][_ps['seq_id'].index(seqId)]
         return ps['auth_chain_id'], seqId, None
 
-    def translateToStdResNameWrapper(self, seqId: int, compId: str, preferNonPoly=False) -> str:
+    def translateToStdResNameWrapper(self, seqId: int, compId: str, preferNonPoly: bool = False) -> str:
         _compId = compId
         refCompId = None
         for ps in self.polySeq:
@@ -2725,7 +2728,8 @@ class BasePKParserListener():
             compId = translateToStdResName(_compId, ccU=self.ccU)
         return compId
 
-    def assignCoordPolymerSequence(self, refChainId: str, seqId: int, compId: str, atomId: str, index: int) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
+    def assignCoordPolymerSequence(self, refChainId: str, seqId: int, compId: str, atomId: str, index: int
+                                   ) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -3379,7 +3383,8 @@ class BasePKParserListener():
 
         return list(chainAssign), asis
 
-    def assignCoordPolymerSequenceWithChainId(self, refChainId: str, seqId: int, compId: str, atomId: str, index: int) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
+    def assignCoordPolymerSequenceWithChainId(self, refChainId: str, seqId: int, compId: str, atomId: str, index: int
+                                              ) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -4037,7 +4042,8 @@ class BasePKParserListener():
 
         return list(chainAssign), asis
 
-    def assignCoordPolymerSequenceWithoutCompId(self, seqId: int, atomId: str, index: int) -> List[Tuple[str, int, str, bool]]:
+    def assignCoordPolymerSequenceWithoutCompId(self, seqId: int, atomId: str, index: int
+                                                ) -> List[Tuple[str, int, str, bool]]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -4248,7 +4254,8 @@ class BasePKParserListener():
 
         return list(chainAssign)
 
-    def assignCoordPolymerSequenceWithChainIdWithoutCompId(self, fixedChainId: str, seqId: int, atomId: str, index: int) -> List[Tuple[str, int, str, bool]]:
+    def assignCoordPolymerSequenceWithChainIdWithoutCompId(self, fixedChainId: str, seqId: int, atomId: str, index: int
+                                                           ) -> List[Tuple[str, int, str, bool]]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -4459,7 +4466,8 @@ class BasePKParserListener():
 
         return list(chainAssign)
 
-    def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str, index: int, allowAmbig=True, offset=0):
+    def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
+                         index: int, allowAmbig: bool = True, offset: int = 0):
         """ Select atoms of the coordinates.
         """
 
@@ -4661,7 +4669,8 @@ class BasePKParserListener():
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
 
-    def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str, seqKey: Tuple[str, int], coordAtomSite: dict, index: int) -> Tuple[str, bool]:
+    def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
+                                   seqKey: Tuple[str, int], coordAtomSite: Optional[dict], index: int) -> Tuple[str, bool]:
         asis = False
         if not self.__hasCoord:
             return atomId, asis
@@ -4914,7 +4923,8 @@ class BasePKParserListener():
                             updatePolySeqRst(self.polySeqRstFailed, chainId, seqId, compId)
         return atomId, asis
 
-    def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId=None, cifCheck=True, asis=True) -> Tuple[Tuple[str, int], Optional[dict]]:
+    def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
+                           ) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
         if cifCheck:
             preferAuthSeq = self.__preferAuthSeq if asis else not self.__preferAuthSeq
@@ -5048,17 +5058,17 @@ class BasePKParserListener():
 
         return {'spectral_peak': n} if n > 0 else {}
 
-    def getPolymerSequence(self) -> Optional[list]:
+    def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of PK file.
         """
         return None if self.polySeqRst is None or len(self.polySeqRst) == 0 else self.polySeqRst
 
-    def getSequenceAlignment(self) -> Optional[list]:
+    def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and PK.
         """
         return None if self.seqAlign is None or len(self.seqAlign) == 0 else self.seqAlign
 
-    def getChainAssignment(self) -> Optional[list]:
+    def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and PK.
         """
         return None if self.chainAssign is None or len(self.chainAssign) == 0 else self.chainAssign

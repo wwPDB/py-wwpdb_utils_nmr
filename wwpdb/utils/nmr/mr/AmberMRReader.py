@@ -10,6 +10,7 @@ import os
 import copy
 
 from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker, PredictionMode
+from typing import IO, List, Tuple, Optional
 
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
@@ -47,13 +48,14 @@ class AmberMRReader:
     """ Accessor methods for parsing AMBER MR files.
     """
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 representativeAltId=REPRESENTATIVE_ALT_ID,
-                 mrAtomNameMapping=None,
-                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 atomNumberDict=None, auxAtomNumberDict=None,
-                 reasons=None):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 mrAtomNameMapping: Optional[List[dict]] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 atomNumberDict: Optional[dict] = None, auxAtomNumberDict: Optional[dict] = None,
+                 reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
 
         self.__verbose = verbose
@@ -92,20 +94,22 @@ class AmberMRReader:
         # reasons for re-parsing request from the previous trial
         self.__reasons = self.__reasons__ = reasons
 
-    def setDebugMode(self, debug):
+    def setDebugMode(self, debug: bool):
         self.__debug = debug
 
-    def setLexerMaxErrorReport(self, maxErrReport):
+    def setLexerMaxErrorReport(self, maxErrReport: int):
         self.__maxLexerErrorReport = maxErrReport
 
-    def setParserMaxErrorReport(self, maxErrReport):
+    def setParserMaxErrorReport(self, maxErrReport: int):
         self.__maxParserErrorReport = maxErrReport
 
-    def getReasons(self):
+    def getReasons(self) -> Optional[dict]:
         return self.__reasons
 
-    def parse(self, mrFilePath, cifFilePath=None, ptFilePath=None, isFilePath=True,
-              createSfDict=False, originalFileName=None, listIdCounter=None, entryId=None):
+    def parse(self, mrFilePath: str, cifFilePath: Optional[str] = None, ptFilePath: Optional[str] = None, isFilePath: bool = True,
+              createSfDict: bool = False, originalFileName: Optional[str] = None,
+              listIdCounter: Optional[dict] = None, entryId: Optional[str] = None
+              ) -> Tuple[Optional[AmberMRParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
         """ Parse AMBER MR file.
             @return: AmberMRParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """

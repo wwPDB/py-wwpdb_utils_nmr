@@ -13,11 +13,12 @@ import copy
 import collections
 
 from antlr4 import ParseTreeListener
+from typing import IO, List, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
+    from wwpdb.utils.nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
     from wwpdb.utils.nmr.mr.AriaMRParser import AriaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -89,7 +90,7 @@ try:
                                            retrieveOriginalSeqIdFromMRMap)
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error)
 except ImportError:
-    from nmr.io.CifReader import SYMBOLS_ELEMENT
+    from nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
     from nmr.mr.AriaMRParser import AriaMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
@@ -299,12 +300,13 @@ class AriaMRParserListener(ParseTreeListener):
 
     __cachedDictForStarAtom = {}
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 representativeAltId=REPRESENTATIVE_ALT_ID,
-                 mrAtomNameMapping=None,
-                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 reasons=None):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 mrAtomNameMapping: Optional[List[dict]] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
 
         self.__verbose = verbose
@@ -389,19 +391,19 @@ class AriaMRParserListener(ParseTreeListener):
 
         self.__cachedDictForStarAtom = {}
 
-    def setDebugMode(self, debug):
+    def setDebugMode(self, debug: bool):
         self.__debug = debug
 
-    def createSfDict(self, createSfDict):
+    def createSfDict(self, createSfDict: bool):
         self.__createSfDict = createSfDict
 
-    def setOriginaFileName(self, originalFileName):
+    def setOriginaFileName(self, originalFileName: str):
         self.__originalFileName = originalFileName
 
-    def setListIdCounter(self, listIdCounter):
+    def setListIdCounter(self, listIdCounter: dict):
         self.__listIdCounter = listIdCounter
 
-    def setEntryId(self, entryId):
+    def setEntryId(self, entryId: str):
         self.__entryId = entryId
 
     # Enter a parse tree produced by AriaMRParser#aria_mr.
@@ -888,7 +890,8 @@ class AriaMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateDistanceRange(self, weight, target_value, lower_limit, upper_limit, omit_dist_limit_outlier):
+    def validateDistanceRange(self, weight: float, target_value: Optional[float], lower_limit: Optional[float], upper_limit: Optional[float],
+                              omit_dist_limit_outlier: bool) -> Optional[dict]:
         """ Validate distance value range.
         """
 
@@ -993,7 +996,7 @@ class AriaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def translateToStdResNameWrapper(self, seqId, compId, preferNonPoly=False):
+    def translateToStdResNameWrapper(self, seqId: int, compId: str, preferNonPoly: bool = False) -> str:
         _compId = compId
         refCompId = None
         for ps in self.__polySeq:
@@ -1013,7 +1016,7 @@ class AriaMRParserListener(ParseTreeListener):
             compId = translateToStdResName(_compId, ccU=self.__ccU)
         return compId
 
-    def getRealChainSeqId(self, ps, seqId, compId, isPolySeq=True):
+    def getRealChainSeqId(self, ps: dict, seqId: int, compId: str, isPolySeq: bool = True) -> Tuple[str, int, Optional[str]]:
         compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
         if len(_compId) == 2 and _compId.startswith('D'):
             _compId = compId[1]
@@ -1044,7 +1047,8 @@ class AriaMRParserListener(ParseTreeListener):
                     return ps['auth_chain_id'], _ps['comp_id'][_ps['seq_id'].index(seqId)]
         return ps['auth_chain_id'], seqId, None
 
-    def assignCoordPolymerSequence(self, seqId, compId, atomId):
+    def assignCoordPolymerSequence(self, seqId: int, compId: str, atomId: str
+                                   ) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -1613,7 +1617,8 @@ class AriaMRParserListener(ParseTreeListener):
 
         return list(chainAssign), asis
 
-    def assignCoordPolymerSequenceWithChainId(self, refChainId, seqId, compId, atomId):
+    def assignCoordPolymerSequenceWithChainId(self, refChainId: str, seqId: int, compId: str, atomId: str
+                                              ) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -2248,7 +2253,8 @@ class AriaMRParserListener(ParseTreeListener):
 
         return list(chainAssign), asis
 
-    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, offset=0):
+    def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
+                         allowAmbig: bool = True, offset: int = 0):
         """ Select atoms of the coordinates.
         """
 
@@ -2488,7 +2494,8 @@ class AriaMRParserListener(ParseTreeListener):
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
 
-    def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite):
+    def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
+                                   seqKey: Tuple[str, int], coordAtomSite: Optional[dict]) -> Tuple[str, bool]:
         asis = False
         if not self.__hasCoord:
             return atomId, asis
@@ -2741,7 +2748,8 @@ class AriaMRParserListener(ParseTreeListener):
                             updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)
         return atomId, asis
 
-    def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
+    def selectRealisticBondConstraint(self, atom1: str, atom2: str, alt_atom_id1: str, alt_atom_id2: str, dst_func: dict
+                                      ) -> Tuple[str, str]:
         """ Return realistic bond constraint taking into account the current coordinates.
         """
         if not self.__hasCoord:
@@ -2850,7 +2858,8 @@ class AriaMRParserListener(ParseTreeListener):
 
         return atom1, atom2
 
-    def getCoordAtomSiteOf(self, chainId, seqId, compId=None, cifCheck=True, asis=True):
+    def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
+                           ) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
         if cifCheck:
             preferAuthSeq = self.__preferAuthSeq if asis else not self.__preferAuthSeq
@@ -2981,7 +2990,7 @@ class AriaMRParserListener(ParseTreeListener):
         else:
             self.numberCSelection.append(None)
 
-    def __getCurrentRestraint(self):
+    def __getCurrentRestraint(self) -> str:
         if self.__cur_subtype == 'dist':
             return f"[Check the {self.distRestraints}th row of distance restraints] "
         return ''
@@ -3018,7 +3027,7 @@ class AriaMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self, constraintType=None, potentialType=None):
+    def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None):
         content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
@@ -3065,7 +3074,7 @@ class AriaMRParserListener(ParseTreeListener):
 
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None, potentialType=None):
+    def __getSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None) -> dict:
         key = (self.__cur_subtype, constraintType, potentialType, None, None)
 
         if key not in self.sfDict:
@@ -3088,7 +3097,7 @@ class AriaMRParserListener(ParseTreeListener):
 
         return self.sfDict[key][-1]
 
-    def getContentSubtype(self):
+    def getContentSubtype(self) -> dict:
         """ Return content subtype of ARIA MR file.
         """
 
@@ -3097,27 +3106,27 @@ class AriaMRParserListener(ParseTreeListener):
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
-    def getPolymerSequence(self):
+    def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of ARIA MR file.
         """
         return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
-    def getSequenceAlignment(self):
+    def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and ARIA MR.
         """
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
-    def getChainAssignment(self):
+    def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and ARIA MR.
         """
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
-    def getReasonsForReparsing(self):
+    def getReasonsForReparsing(self) -> Optional[dict]:
         """ Return reasons for re-parsing ARIA MR file.
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
-    def getSfDict(self):
+    def getSfDict(self) -> Tuple[dict, Optional[dict]]:
         """ Return a dictionary of pynmrstar saveframes.
         """
         if len(self.sfDict) == 0:

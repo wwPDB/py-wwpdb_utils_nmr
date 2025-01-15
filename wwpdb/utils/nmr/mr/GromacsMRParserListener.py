@@ -12,10 +12,12 @@ import itertools
 import numpy
 
 from antlr4 import ParseTreeListener
+from typing import IO, List, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
+    from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.GromacsMRParser import GromacsMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        isIdenticalRestraint,
@@ -65,6 +67,7 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
+    from nmr.io.CifReader import CifReader
     from nmr.mr.GromacsMRParser import GromacsMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            isIdenticalRestraint,
@@ -232,12 +235,13 @@ class GromacsMRParserListener(ParseTreeListener):
     # dictionary of pynmrstar saveframes
     sfDict = {}
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 representativeAltId=REPRESENTATIVE_ALT_ID,
-                 mrAtomNameMapping=None,   # pylint: disable=unused-argument
-                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 atomNumberDict=None):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 mrAtomNameMapping: Optional[List[dict]] = None,  # pylint: disable=unused-argument
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 atomNumberDict: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
 
         self.__verbose = verbose
@@ -302,19 +306,19 @@ class GromacsMRParserListener(ParseTreeListener):
 
         self.sfDict = {}
 
-    def setDebugMode(self, debug):
+    def setDebugMode(self, debug: bool):
         self.__debug = debug
 
-    def createSfDict(self, createSfDict):
+    def createSfDict(self, createSfDict: bool):
         self.__createSfDict = createSfDict
 
-    def setOriginaFileName(self, originalFileName):
+    def setOriginaFileName(self, originalFileName: str):
         self.__originalFileName = originalFileName
 
-    def setListIdCounter(self, listIdCounter):
+    def setListIdCounter(self, listIdCounter: dict):
         self.__listIdCounter = listIdCounter
 
-    def setEntryId(self, entryId):
+    def setEntryId(self, entryId: str):
         self.__entryId = entryId
 
     # Enter a parse tree produced by GromacsMRParser#gromacs_mr.
@@ -535,7 +539,9 @@ class GromacsMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateDistanceRange(self, index, weight, lower_limit, upper_limit, upper_linear_limit, omit_dist_limit_outlier):
+    def validateDistanceRange(self, index: int, weight: float,
+                              lower_limit: Optional[float], upper_limit: Optional[float],
+                              upper_linear_limit: Optional[float], omit_dist_limit_outlier: bool) -> Optional[dict]:
         """ Validate distance value range.
         """
 
@@ -616,7 +622,8 @@ class GromacsMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
+    def selectRealisticBondConstraint(self, atom1: str, atom2: str, alt_atom_id1: str, alt_atom_id2: str, dst_func: dict
+                                      ) -> Tuple[str, str]:
         """ Return realistic bond constraint taking into account the current coordinates.
         """
         if not self.__hasCoord:
@@ -725,7 +732,8 @@ class GromacsMRParserListener(ParseTreeListener):
 
         return atom1, atom2
 
-    def selectRealisticChi2AngleConstraint(self, atom1, atom2, atom3, atom4, dst_func):
+    def selectRealisticChi2AngleConstraint(self, atom1: str, atom2: str, atom3: str, atom4: str, dst_func: dict
+                                           ) -> dict:
         """ Return realistic chi2 angle constraint taking into account the current coordinates.
         """
         if not self.__hasCoord:
@@ -1054,7 +1062,8 @@ class GromacsMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateAngleRange(self, weight, target_value, lower_limit, upper_limit):
+    def validateAngleRange(self, weight: float, target_value: Optional[float],
+                           lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
         """ Validate angle value range.
         """
 
@@ -1174,26 +1183,26 @@ class GromacsMRParserListener(ParseTreeListener):
             weight = self.numberSelection[3]
 
             if ai == aj:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 f"Found zero RDC vector; (ai={ai}, aj={aj}).")
                 return
 
             if funct != 1:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 f"Unknown function type '{funct}' is set.")
                 return
 
             if alpha != 3.0:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 f"The 'alpha={alpha}' must be 3.0 for RDC restraints.")
                 return
 
             if weight < 0.0:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 f"The relative weight value of '{weight}' should be a positive value.")
 
             dstFunc = self.validateRdcRange(weight, exp, index, target_value, None, None)
@@ -1205,7 +1214,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 return
 
             if self.__atomNumberDict is None:
-                self.__f.append(f"[Missing data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 "Failed to recognize GROMACS atom numbers in the restraint file "
                                 "because GROMACS parameter/topology file is not available.")
                 return
@@ -1216,7 +1225,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(copy.copy(self.__atomNumberDict[ai]))
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.__f.append(f"[Missing data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 f"'ai={ai}' is not defined in the GROMACS parameter/topology file.")
 
             atomSelection = []
@@ -1225,7 +1234,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atomSelection.append(copy.copy(self.__atomNumberDict[aj]))
                 self.atomSelectionSet.append(atomSelection)
             else:
-                self.__f.append(f"[Missing data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Missing data] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 f"'aj={aj}' is not defined in the GROMACS parameter/topology file.")
 
             if len(self.atomSelectionSet) < 2:
@@ -1246,7 +1255,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id'] = self.atomSelectionSet[1][0]['auth_atom_id']
 
             if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 "Non-magnetic susceptible spin appears in RDC vector; "
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                 f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
@@ -1256,7 +1265,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                 ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                 if ps1 is None and ps2 is None:
-                    self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                    self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                     "Found inter-chain RDC vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
@@ -1264,7 +1273,7 @@ class GromacsMRParserListener(ParseTreeListener):
             elif abs(seq_id_1 - seq_id_2) > 1:
                 ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                 if ps1 is None:
-                    self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                    self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                     "Found inter-residue RDC vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
@@ -1279,13 +1288,13 @@ class GromacsMRParserListener(ParseTreeListener):
                     pass
 
                 else:
-                    self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                    self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                     "Found inter-residue RDC vector; "
                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                     return
 
             elif atom_id_1 == atom_id_2:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 "Found zero RDC vector; "
                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                 return
@@ -1295,7 +1304,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                     if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                        self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                        self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                         "Found an RDC vector over multiple covalent bonds; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
 
@@ -1331,7 +1340,8 @@ class GromacsMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateRdcRange(self, exp, index, weight, target_value, lower_limit, upper_limit):
+    def validateRdcRange(self, exp: int, index: int, weight: float, target_value: Optional[float],
+                         lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
         """ Validate RDC value range.
         """
 
@@ -1343,7 +1353,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
-                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 f"The target value='{target_value}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if lower_limit is not None:
@@ -1351,7 +1361,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
-                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 f"The lower limit value='{lower_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if upper_limit is not None:
@@ -1359,7 +1369,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
-                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 f"The upper limit value='{upper_limit:.6f}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if target_value is not None:
@@ -1367,13 +1377,13 @@ class GromacsMRParserListener(ParseTreeListener):
             if lower_limit is not None:
                 if lower_limit > target_value:
                     validRange = False
-                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                     f"The lower limit value='{lower_limit:.6f}' must be less than the target value '{target_value}'.")
 
             if upper_limit is not None:
                 if upper_limit < target_value:
                     validRange = False
-                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                    self.__f.append(f"[Range value error] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                     f"The upper limit value='{upper_limit:.6f}' must be greater than the target value '{target_value}'.")
 
         if not validRange:
@@ -1383,21 +1393,21 @@ class GromacsMRParserListener(ParseTreeListener):
             if RDC_RANGE_MIN <= target_value <= RDC_RANGE_MAX:
                 pass
             else:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 f"The target value='{target_value}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if lower_limit is not None:
             if RDC_RANGE_MIN <= lower_limit <= RDC_RANGE_MAX:
                 pass
             else:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 f"The lower limit value='{lower_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if upper_limit is not None:
             if RDC_RANGE_MIN <= upper_limit <= RDC_RANGE_MAX:
                 pass
             else:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp,n=index)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(dataset=exp, n=index)}"
                                 f"The upper limit value='{upper_limit:.6f}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if target_value is None and lower_limit is None and upper_limit is None:
@@ -1844,7 +1854,7 @@ class GromacsMRParserListener(ParseTreeListener):
         else:
             self.numberSelection.append(None)
 
-    def __getCurrentRestraint(self, dataset=None, n=None):
+    def __getCurrentRestraint(self, dataset: Optional[int] = None, n: Optional[int] = None) -> str:
         if self.__cur_subtype == 'dist':
             if n is None:
                 return f"[Check the {self.distRestraints}th row of distance restraints)] "
@@ -1861,7 +1871,8 @@ class GromacsMRParserListener(ParseTreeListener):
             return f"[Check the {self.geoRestraints}th row of coordinate geometry restraints] "
         return ''
 
-    def __addSf(self, constraintType=None, potentialType=None, rdcCode=None):
+    def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
+                rdcCode: Optional[str] = None):
         content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
@@ -1908,7 +1919,8 @@ class GromacsMRParserListener(ParseTreeListener):
 
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None, potentialType=None, rdcCode=None):
+    def __getSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
+                rdcCode: Optional[str] = None) -> dict:
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
         if key not in self.sfDict:
@@ -1937,7 +1949,7 @@ class GromacsMRParserListener(ParseTreeListener):
 
         return self.sfDict[key][-1]
 
-    def getContentSubtype(self):
+    def getContentSubtype(self) -> dict:
         """ Return content subtype of GROMACS MR file.
         """
 
@@ -1950,22 +1962,22 @@ class GromacsMRParserListener(ParseTreeListener):
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
-    def getPolymerSequence(self):
+    def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of GROMACS MR file.
         """
         return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
-    def getSequenceAlignment(self):
+    def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and GROMACS MR.
         """
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
-    def getChainAssignment(self):
+    def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and GROMACS MR.
         """
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
-    def getSfDict(self):
+    def getSfDict(self) -> Tuple[dict, Optional[dict]]:
         """ Return a dictionary of pynmrstar saveframes.
         """
         if len(self.sfDict) == 0:

@@ -11,7 +11,7 @@ import re
 import copy
 import pynmrstar
 
-from typing import Any, IO, List
+from typing import Any, IO, List, Optional
 from packaging import version
 from operator import itemgetter
 
@@ -94,7 +94,7 @@ def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> st
     return array[0] if len(array[0]) < 2 or array[0][0] != '$' else array[0][1:]
 
 
-def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value):
+def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
     """ Set saveframe tag.
     """
 
@@ -117,7 +117,8 @@ class BMRBAnnTasks:
     def __init__(self, verbose: bool, log: IO,
                  sfCategoryList: List[str], entryId: str,
                  sailFlag: bool, report: NmrDpReport,
-                 ccU=None, csStat=None, c2S=None):
+                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
+                 c2S: Optional[CifToNmrStar] = None):
 
         self.__sfCategoryList = sfCategoryList
         self.__entryId = entryId

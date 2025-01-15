@@ -7,6 +7,7 @@
     @author: Masashi Yokochi
 """
 from antlr4.error.ErrorListener import ErrorListener
+from typing import List, Optional
 
 try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (MAX_ERROR_REPORT,
@@ -27,7 +28,7 @@ class LexerErrorListener(ErrorListener):
     __maxErrorReport = MAX_ERROR_REPORT
     __errLineNumOverflowed = False
 
-    def __init__(self, filePath, inputString=None, maxErrorReport=MAX_ERROR_REPORT):
+    def __init__(self, filePath: str, inputString: Optional[str] = None, maxErrorReport: int = MAX_ERROR_REPORT):
 
         self.__messageList = []
         self.__errorLineNumber = []
@@ -100,8 +101,8 @@ class LexerErrorListener(ErrorListener):
     def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex, prediction, configs):
         pass
 
-    def getMessageList(self):
+    def getMessageList(self) -> Optional[List[dict]]:
         return self.__messageList if len(self.__messageList) > 0 else None
 
-    def getErrorLineNumber(self):
+    def getErrorLineNumber(self) -> Optional[List[int]]:
         return self.__errorLineNumber if len(self.__errorLineNumber) > 0 else None

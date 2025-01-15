@@ -15,10 +15,12 @@ import numpy
 
 from antlr4 import ParseTreeListener
 from operator import itemgetter
+from typing import IO, List, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
+    from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.AmberMRParser import AmberMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (stripQuot,
                                                        coordAssemblyChecker,
@@ -93,6 +95,7 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
+    from nmr.io.CifReader import CifReader
     from nmr.mr.AmberMRParser import AmberMRParser
     from nmr.mr.ParserListenerUtil import (stripQuot,
                                            coordAssemblyChecker,
@@ -514,12 +517,13 @@ class AmberMRParserListener(ParseTreeListener):
     # last edited pynmrstar saveframe
     __lastSfDict = {}
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 representativeAltId=REPRESENTATIVE_ALT_ID,
-                 mrAtomNameMapping=None,
-                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 atomNumberDict=None, reasons=None):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 mrAtomNameMapping: Optional[List[dict]] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 atomNumberDict: Optional[dict] = None, reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
 
         self.__verbose = verbose
@@ -856,19 +860,19 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.sfDict = {}
 
-    def setDebugMode(self, debug):
+    def setDebugMode(self, debug: bool):
         self.__debug = debug
 
-    def createSfDict(self, createSfDict):
+    def createSfDict(self, createSfDict: bool):
         self.__createSfDict = createSfDict
 
-    def setOriginaFileName(self, originalFileName):
+    def setOriginaFileName(self, originalFileName: str):
         self.__originalFileName = originalFileName
 
-    def setListIdCounter(self, listIdCounter):
+    def setListIdCounter(self, listIdCounter: dict):
         self.__listIdCounter = listIdCounter
 
-    def setEntryId(self, entryId):
+    def setEntryId(self, entryId: str):
         self.__entryId = entryId
 
     # Enter a parse tree produced by AmberMRParser#amber_mr.
@@ -4782,7 +4786,7 @@ class AmberMRParserListener(ParseTreeListener):
                 self.prevComment = self.lastComment
                 self.lastComment = None
 
-    def validateDistanceRange(self, wt):
+    def validateDistanceRange(self, wt: float) -> Optional[dict]:
         """ Validate distance value range.
         """
 
@@ -4915,7 +4919,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def validateAngleRange(self, wt):
+    def validateAngleRange(self, wt: float) -> Optional[dict]:
         """ Validate angle value range.
         """
 
@@ -5032,7 +5036,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def validatePcsRange(self, n, wt, tolpro, mltpro):
+    def validatePcsRange(self, n: int, wt: float, tolpro: float, mltpro: int) -> Optional[dict]:
         """ Validate PCS value range.
         """
 
@@ -5046,7 +5050,7 @@ class AmberMRParserListener(ParseTreeListener):
                 dstFunc['target_value'] = f"{obs}"
             else:
                 validRange = False
-                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(self.nmpmc,n)}"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(self.nmpmc, n)}"
                                 f"The target value 'obs({n})={obs}' must be within range {PCS_RESTRAINT_ERROR}.")
 
         if not validRange:
@@ -5057,7 +5061,7 @@ class AmberMRParserListener(ParseTreeListener):
             if PCS_RANGE_MIN <= obs <= PCS_RANGE_MAX:
                 pass
             else:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.nmpmc,n)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.nmpmc, n)}"
                                 f"The target value 'obs({n})={obs}' should be within range {PCS_RESTRAINT_RANGE}.")
 
         if obs is None:
@@ -5066,7 +5070,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def validateRdcRange(self, n, wt):
+    def validateRdcRange(self, n: int, wt: float) -> Optional[dict]:
         """ Validate RDC value range.
         """
 
@@ -5084,7 +5088,7 @@ class AmberMRParserListener(ParseTreeListener):
                 dstFunc['lower_limit'] = f"{dobsl}"
             else:
                 validRange = False
-                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(self.dataset,n)}"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(self.dataset, n)}"
                                 f"The lower limit value 'dobsl({n})={dobsl}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if dobsu is not None:
@@ -5092,7 +5096,7 @@ class AmberMRParserListener(ParseTreeListener):
                 dstFunc['upper_limit'] = f"{dobsu}"
             else:
                 validRange = False
-                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(self.dataset,n)}"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(self.dataset, n)}"
                                 f"The upper limit value 'dobsu({n})={dobsu}' must be within range {RDC_RESTRAINT_ERROR}.")
 
         if not validRange:
@@ -5103,14 +5107,14 @@ class AmberMRParserListener(ParseTreeListener):
             if RDC_RANGE_MIN <= dobsl <= RDC_RANGE_MAX:
                 pass
             else:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.dataset,n)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.dataset, n)}"
                                 f"The lower limit value 'dobsl({n})={dobsl}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if dobsu is not None:
             if RDC_RANGE_MIN <= dobsu <= RDC_RANGE_MAX:
                 pass
             else:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.dataset,n)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.dataset, n)}"
                                 f"The upper limit value 'dobsu({n})={dobsu}' should be within range {RDC_RESTRAINT_RANGE}.")
 
         if dobsl is None and dobsu is None:
@@ -5119,7 +5123,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def validateCsaRange(self, n, wt):
+    def validateCsaRange(self, n: int, wt: float) -> Optional[dict]:
         """ Validate CSA value range.
         """
 
@@ -5137,7 +5141,7 @@ class AmberMRParserListener(ParseTreeListener):
                 dstFunc['lower_limit'] = f"{cobsl}"
             else:
                 validRange = False
-                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(self.datasetc,n)}"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(self.datasetc, n)}"
                                 f"The lower limit value 'cobsl({n})={cobsl}' must be within range {CSA_RESTRAINT_ERROR}.")
 
         if cobsu is not None:
@@ -5145,7 +5149,7 @@ class AmberMRParserListener(ParseTreeListener):
                 dstFunc['upper_limit'] = f"{cobsu}"
             else:
                 validRange = False
-                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(self.datasetc,n)}"
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint(self.datasetc, n)}"
                                 f"The upper limit value 'cobsu({n})={cobsu}' must be within range {CSA_RESTRAINT_ERROR}.")
 
         if not validRange:
@@ -5156,14 +5160,14 @@ class AmberMRParserListener(ParseTreeListener):
             if CSA_RANGE_MIN <= cobsl <= CSA_RANGE_MAX:
                 pass
             else:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.datasetc,n)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.datasetc, n)}"
                                 f"The lower limit value 'cobsl({n})={cobsl}' should be within range {CSA_RESTRAINT_RANGE}.")
 
         if cobsu is not None:
             if CSA_RANGE_MIN <= cobsu <= CSA_RANGE_MAX:
                 pass
             else:
-                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.datasetc,n)}"
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.datasetc, n)}"
                                 f"The upper limit value 'cobsu({n})={cobsu}' should be within range {CSA_RESTRAINT_RANGE}.")
 
         if cobsl is None and cobsu is None:
@@ -5172,7 +5176,9 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def getAtomNumberDictFromAmbmaskInfo(self, seqId, atomId, order=0, enableWarning=True, useDefault=True, authChainId=None):
+    def getAtomNumberDictFromAmbmaskInfo(self, seqId: int, atomId: str, order: int = 0,
+                                         enableWarning: bool = True, useDefault: bool = True,
+                                         authChainId: Optional[str] = None) -> Optional[dict]:
         """ Return atom number dictionary like component from Amber 10 ambmask information.
         """
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
@@ -5638,7 +5644,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         return self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, order, enableWarning, False, authChainId)
 
-    def reportSanderCommentIssue(self, subtype_name):
+    def reportSanderCommentIssue(self, subtype_name: str):
         """ Report Sander comment issue.
         """
         if self.lastComment is None:
@@ -5658,7 +5664,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 "Failed to recognize AMBER atom numbers in the restraint file "
                                 f"because Sander comment {lastComment!r} couldn't be interpreted as a {subtype_name}.")
 
-    def updateSanderAtomNumberDict(self, factor, cifCheck=True, useDefault=True, useAuthSeqScheme=False):
+    def updateSanderAtomNumberDict(self, factor: dict, cifCheck: bool = True, useDefault: bool = True, useAuthSeqScheme: bool = False) -> bool:
         """ Try to update Sander atom number dictionary.
         """
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
@@ -6480,7 +6486,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         return self.updateSanderAtomNumberDict(factor, cifCheck, False, useAuthSeqScheme)
 
-    def updateSanderAtomNumberDictWithAmbigCode(self, factor, cifCheck=True, useDefault=True, useAuthSeqScheme=False):
+    def updateSanderAtomNumberDictWithAmbigCode(self, factor: dict, cifCheck: bool = True, useDefault: bool = True, useAuthSeqScheme: bool = False) -> bool:
         """ Try to update Sander atom number dictionary.
         """
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
@@ -7217,7 +7223,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         return self.updateSanderAtomNumberDictWithAmbigCode(factor, cifCheck, False, useAuthSeqScheme)
 
-    def checkDistSequenceOffset(self, seqId1, compId1, seqId2, compId2):
+    def checkDistSequenceOffset(self, seqId1: int, compId1: str, seqId2: int, compId2: str) -> bool:
         """ Try to find sequence offset from Sander comments.
         """
         if not self.__hasPolySeq or self.__cur_subtype != 'dist':
@@ -7264,7 +7270,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         return True
 
-    def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
+    def selectRealisticBondConstraint(self, atom1: str, atom2: str, alt_atom_id1: str, alt_atom_id2: str, dst_func: dict
+                                      ) -> Tuple[str, str]:
         """ Return realistic bond constraint taking into account the current coordinates.
         """
         if not self.__hasCoord:
@@ -7377,7 +7384,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         return atom1, atom2
 
-    def selectRealisticChi2AngleConstraint(self, atom1, atom2, atom3, atom4, dst_func):
+    def selectRealisticChi2AngleConstraint(self, atom1: str, atom2: str, atom3: str, atom4: str, dst_func: dict
+                                           ) -> dict:
         """ Return realistic chi2 angle constraint taking into account the current coordinates.
         """
         if not self.__hasCoord:
@@ -7549,7 +7557,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dst_func
 
-    def getNeighborCandidateAtom(self, factor, src_atom, around):
+    def getNeighborCandidateAtom(self, factor: dict, src_atom: dict, around: float) -> Optional[dict]:
         """ Try to find neighbor atom from given conditions.
         """
         if not self.__hasCoord:
@@ -7629,7 +7637,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         return None
 
-    def guessChainIdFromCompId(self, seqId, compId):
+    def guessChainIdFromCompId(self, seqId: int, compId: str) -> List[str]:
         chainIds = [ps['auth_chain_id'] for ps in self.__polySeq if compId in ps['comp_id']]
         if len(chainIds) > 1:
             min_gap = MAX_OFFSET_ATTEMPT
@@ -7670,7 +7678,7 @@ class AmberMRParserListener(ParseTreeListener):
                     chainIds.append(np['auth_chain_id'])
         return chainIds
 
-    def getCoordAtomSiteOf(self, chainId, seqId, cifCheck=True, asis=True):
+    def getCoordAtomSiteOf(self, chainId: str, seqId: int, cifCheck: bool = True, asis: bool = True) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
         coordAtomSite = None
         if cifCheck:
@@ -8171,7 +8179,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.numGrnamCol[varNum] >= decimal:
                         self.numGrnamCol[varNum] = decimal - 1
 
-    def detectRestraintType(self, likeDist):
+    def detectRestraintType(self, likeDist: bool):
         self.likeDist = likeDist
 
         if len(self.__cur_subtype) > 0:
@@ -8382,7 +8390,7 @@ class AmberMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 self.__trimSfWoLp()
 
-    def validateNoexpRange(self, imix, ipeak, awt, arange):
+    def validateNoexpRange(self, imix: int, ipeak: int, awt: float, arange: float) -> Optional[dict]:
         """ Validate NOESY peak volume range.
         """
 
@@ -8767,7 +8775,7 @@ class AmberMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 self.__trimSfWoLp()
 
-    def validateShfRange(self, n, wt, shrang):
+    def validateShfRange(self, n: int, wt: float, shrang: float) -> Optional[dict]:
         """ Validate chemical shift value range.
         """
 
@@ -9117,19 +9125,19 @@ class AmberMRParserListener(ParseTreeListener):
         for n in range(1, self.nprot + 1):
 
             if n not in self.iprot:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, n)}"
                                 f"The atom number involved in the PCS nprot({n}) was not set.")
                 continue
 
             if n not in self.obs:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, n)}"
                                 f"The observed PCS value obs({n}) was not set.")
                 continue
 
             _iprot = self.iprot[n]
 
             if _iprot <= 0:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, n)}"
                                 f"The atom number involved in the PCS 'iprot({n})={_iprot}' should be a positive integer.")
                 continue
 
@@ -9161,7 +9169,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if _iprot in self.__atomNumberDict:
                     atomSelection.append(copy.copy(self.__atomNumberDict[_iprot]))
                 else:
-                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.nmpmc,n)}"
+                    self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.nmpmc, n)}"
                                     f"'iprot({n})={_iprot}' is not defined in the AMBER parameter/topology file.")
                     continue
 
@@ -9175,7 +9183,7 @@ class AmberMRParserListener(ParseTreeListener):
                 self.atomSelectionSet.append(atomSelection)
 
                 if atom_id[0] not in protonBeginCode:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,n)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, n)}"
                                     f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.")
                     continue
 
@@ -9224,7 +9232,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nprot > 0 and decimal > self.nprot:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "
                                     f"regulated by 'nprot={self.nprot}'.")
                     return
@@ -9236,7 +9244,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nprot > 0 and decimal > self.nprot:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "
                                     f"regulated by 'nprot={self.nprot}'.")
                     return
@@ -9248,18 +9256,18 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nprot > 0 and decimal > self.nprot:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "
                                     f"regulated by 'nprot={self.nprot}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
                 if val < 0.0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, decimal)}"
                                     f"The relative weight value '{varName}({decimal})={val}' must not be a negative value.")
                     return
                 if val == 0.0:
-                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.nmpmc, decimal)}"
                                     f"The relative weight value '{varName}({decimal})={val}' should be a positive value.")
                 self.wt[decimal] = val
 
@@ -9311,14 +9319,14 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nprot > 0 and decimal > self.nprot:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "
                                     f"regulated by 'nprot={self.nprot}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
                 if val <= 0.0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, decimal)}"
                                     f"The relative tolerance value '{varName}({decimal})={val}' must be a positive value.")
                     return
                 self.tolpro[decimal] = val
@@ -9364,13 +9372,13 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nprot > 0 and decimal > self.nprot:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nprot}, "
                                     f"regulated by 'nprot={self.nprot}'.")
                     return
                 val = int(str(ctx.Integer()))
                 if val <= 0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, decimal)}"
                                     f"The multiplicity of NMR signal of '{varName}({decimal})={val}' must be a positive integer.")
                     return
                 self.mltpro[decimal] = val
@@ -9388,7 +9396,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nme > 0 and decimal > self.nme:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "
                                     f"regulated by 'nme={self.nme}'.")
                     return
@@ -9400,7 +9408,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nme > 0 and decimal > self.nme:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "
                                     f"regulated by 'nme={self.nme}'.")
                     return
@@ -9412,7 +9420,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nme > 0 and decimal > self.nme:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "
                                     f"regulated by 'nme={self.nme}'.")
                     return
@@ -9424,7 +9432,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nme > 0 and decimal > self.nme:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "
                                     f"regulated by 'nme={self.nme}'.")
                     return
@@ -9436,7 +9444,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.nme > 0 and decimal > self.nme:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.nme}, "
                                     f"regulated by 'nme={self.nme}'.")
                     return
@@ -9494,22 +9502,22 @@ class AmberMRParserListener(ParseTreeListener):
             for n in range(1, self.ndip + 1):
 
                 if n not in self.id:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, n)}"
                                     f"The first atom number involved in the dipolar coupling id({n}) was not set.")
                     continue
 
                 if n not in self.jd:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, n)}"
                                     f"The second atom number involved in the dipolar coupling jd({n}) was not set.")
                     continue
 
                 if n not in self.dobsl:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, n)}"
                                     f"The lower limit value for the observed dipolar coupling dobsl({n}) was not set.")
                     continue
 
                 if n not in self.dobsu:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, n)}"
                                     f"The upper limit value for the observed dipolar coupling dobsu({n}) was not set.")
                     continue
 
@@ -9517,12 +9525,12 @@ class AmberMRParserListener(ParseTreeListener):
                 _jd = self.jd[n]
 
                 if _id <= 0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, n)}"
                                     f"The first atom number involved in the dipolar coupling 'id({n})={_id}' should be a positive integer.")
                     continue
 
                 if _jd <= 0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, n)}"
                                     f"The second atom number involved in the dipolar coupling 'jd({n})={_jd}' should be a positive integer.")
                     continue
 
@@ -9562,7 +9570,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     self.__atomNumberDict[_id] = atom_sel_i
                                     atomSelection.append(atom_sel_i)
                         if atom_id_i is None:
-                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"
+                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.dataset, n)}"
                                             f"'id({n})={_id}' is not defined in the AMBER parameter/topology file.")
                             continue
 
@@ -9600,7 +9608,7 @@ class AmberMRParserListener(ParseTreeListener):
                                     self.__atomNumberDict[_jd] = atom_sel_j
                                     atomSelection.append(atom_sel_j)
                         if atom_id_j is None:
-                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.dataset,n)}"
+                            self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.dataset, n)}"
                                             f"'jd({n})={_jd}' is not defined in the AMBER parameter/topology file.")
                             continue
 
@@ -9614,7 +9622,7 @@ class AmberMRParserListener(ParseTreeListener):
                     self.atomSelectionSet.append(atomSelection)
 
                     if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, n)}"
                                         "Non-magnetic susceptible spin appears in RDC vector; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                         f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
@@ -9624,7 +9632,7 @@ class AmberMRParserListener(ParseTreeListener):
                         ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
                         ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                         if ps1 is None and ps2 is None:
-                            self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(self.dataset,n)}"
+                            self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(self.dataset, n)}"
                                             "Found inter-chain RDC vector; "
                                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                             f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
@@ -9633,7 +9641,7 @@ class AmberMRParserListener(ParseTreeListener):
                     elif abs(seq_id_1 - seq_id_2) > 1:
                         ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
                         if ps1 is None:
-                            self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(self.dataset,n)}"
+                            self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(self.dataset, n)}"
                                             "Found inter-residue RDC vector; "
                                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                             f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
@@ -9649,14 +9657,14 @@ class AmberMRParserListener(ParseTreeListener):
                             pass
 
                         else:
-                            self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(self.dataset,n)}"
+                            self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(self.dataset, n)}"
                                             "Found inter-residue RDC vector; "
                                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                             f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
                             continue
 
                     elif atom_id_1 == atom_id_2:
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,n)}"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, n)}"
                                         "Found zero RDC vector; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                         f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
@@ -9667,7 +9675,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                             if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                                self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(self.dataset,n)}"
+                                self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint(self.dataset, n)}"
                                                 "Found an RDC vector over multiple covalent bonds; "
                                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                                 f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
@@ -9728,7 +9736,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
                                     f"regulated by 'ndip={self.ndip}'.")
                     return
@@ -9740,7 +9748,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
                                     f"regulated by 'ndip={self.ndip}'.")
                     return
@@ -9752,7 +9760,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
                                     f"regulated by 'ndip={self.ndip}'.")
                     return
@@ -9764,7 +9772,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
                                     f"regulated by 'ndip={self.ndip}'.")
                     return
@@ -9776,7 +9784,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
                                     f"regulated by 'ndip={self.ndip}'.")
                     return
@@ -9788,18 +9796,18 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
                                     f"regulated by 'ndip={self.ndip}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
                 if val < 0.0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, decimal)}"
                                     f"The relative weight value '{varName}({decimal})={val}' must not be a negative value.")
                     return
                 if val == 0.0:
-                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.dataset, decimal)}"
                                     f"The relative weight value '{varName}({decimal})={val}' should be a positive value.")
                 self.dwt[decimal] = val
 
@@ -9851,7 +9859,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
                                     f"regulated by 'ndip={self.ndip}'.")
                     return
@@ -9889,7 +9897,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
                                     f"regulated by 'ndip={self.ndip}'.")
                     return
@@ -9967,7 +9975,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
                                     f"regulated by 'ndip={self.ndip}'.")
                     return
@@ -9990,7 +9998,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
                                     f"regulated by 'ndip={self.ndip}'.")
                     return
@@ -10013,7 +10021,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
                                     f"regulated by 'ndip={self.ndip}'.")
                     return
@@ -10036,7 +10044,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
                                     f"regulated by 'ndip={self.ndip}'.")
                     return
@@ -10059,7 +10067,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ndip > 0 and decimal > self.ndip:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.dataset, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ndip}, "
                                     f"regulated by 'ndip={self.ndip}'.")
                     return
@@ -10108,27 +10116,27 @@ class AmberMRParserListener(ParseTreeListener):
             for n in range(1, self.ncsa + 1):
 
                 if n not in self.icsa:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                     f"The first atom number involved in the CSA icsa({n}) was not set.")
                     continue
 
                 if n not in self.jcsa:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                     f"The second atom number involved in the CSA jcsa({n}) was not set.")
                     continue
 
                 if n not in self.kcsa:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                     f"The second atom number involved in the CSA kcsa({n}) was not set.")
                     continue
 
                 if n not in self.cobsl:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                     f"The lower limit value for the observed CSA cobsl({n}) was not set.")
                     continue
 
                 if n not in self.cobsu:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                     f"The upper limit value for the observed CSA cobsu({n}) was not set.")
                     continue
 
@@ -10137,17 +10145,17 @@ class AmberMRParserListener(ParseTreeListener):
                 _kcsa = self.kcsa[n]
 
                 if _icsa <= 0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                     f"The first atom number involved in the CSA 'icsa({n})={_icsa}' should be a positive integer.")
                     continue
 
                 if _jcsa <= 0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                     f"The second atom number involved in the CSA 'jcsa({n})={_jcsa}' should be a positive integer.")
                     continue
 
                 if _kcsa <= 0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                     f"The second atom number involved in the CSA 'kcsa({n})={_kcsa}' should be a positive integer.")
                     continue
 
@@ -10167,7 +10175,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if _icsa in self.__atomNumberDict:
                         atomSelection.append(copy.copy(self.__atomNumberDict[_icsa]))
                     else:
-                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                         f"'icsa({n})={_icsa}' is not defined in the AMBER parameter/topology file.")
                         continue
 
@@ -10185,7 +10193,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if _jcsa in self.__atomNumberDict:
                         atomSelection.append(copy.copy(self.__atomNumberDict[_jcsa]))
                     else:
-                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                         f"'jcsa({n})={_jcsa}' is not defined in the AMBER parameter/topology file.")
                         continue
 
@@ -10203,7 +10211,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if _kcsa in self.__atomNumberDict:
                         atomSelection.append(copy.copy(self.__atomNumberDict[_kcsa]))
                     else:
-                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                        self.__f.append(f"[Missing data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                         f"'kcsa({n})={_kcsa}' is not defined in the AMBER parameter/topology file.")
                         continue
 
@@ -10218,7 +10226,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
                        or (atom_id_3[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                         "Non-magnetic susceptible spin appears in CSA vector; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                         f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
@@ -10230,7 +10238,7 @@ class AmberMRParserListener(ParseTreeListener):
                         ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
                         ps3 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_3 and 'identical_auth_chain_id' in ps), None)
                         if ps1 is None and ps2 is None and ps3 is None:
-                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                             "Found inter-chain CSA vector; "
                                             f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                             f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
@@ -10238,7 +10246,7 @@ class AmberMRParserListener(ParseTreeListener):
                             continue
 
                     elif abs(seq_id_1 - seq_id_2) > 1 or abs(seq_id_2 - seq_id_3) > 1 or abs(seq_id_3 - seq_id_1) > 1:
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                         "Found inter-residue CSA vector; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                         f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
@@ -10257,7 +10265,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 pass
 
                             else:
-                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                                 "Found inter-residue CSA vector; "
                                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                                 f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
@@ -10274,7 +10282,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 pass
 
                             else:
-                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                                 "Found inter-residue CSA vector; "
                                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                                 f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
@@ -10291,7 +10299,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 pass
 
                             else:
-                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                                 "Found inter-residue CSA vector; "
                                                 f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                                 f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
@@ -10299,7 +10307,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 continue
 
                     elif atom_id_1 == atom_id_2 or atom_id_2 == atom_id_3 or atom_id_3 == atom_id_1:
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                         "Found zero CSA vector; "
                                         f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                         f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
@@ -10313,7 +10321,7 @@ class AmberMRParserListener(ParseTreeListener):
                             if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
 
                                 if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                                     "Found an CSA vector over multiple covalent bonds; "
                                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                                     f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
@@ -10325,7 +10333,7 @@ class AmberMRParserListener(ParseTreeListener):
                             if not self.__ccU.hasBond(comp_id_1, atom_id_2, atom_id_3):
 
                                 if self.__nefT.validate_comp_atom(comp_id_3, atom_id_3) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-                                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,n)}"
+                                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, n)}"
                                                     "Found an CSA vector over multiple covalent bonds; "
                                                     f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                                     f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}, "
@@ -10385,7 +10393,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ncsa > 0 and decimal > self.ncsa:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "
                                     f"regulated by 'ncsa={self.ncsa}'.")
                     return
@@ -10397,7 +10405,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ncsa > 0 and decimal > self.ncsa:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "
                                     f"regulated by 'ncsa={self.ncsa}'.")
                     return
@@ -10409,7 +10417,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ncsa > 0 and decimal > self.ncsa:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "
                                     f"regulated by 'ncsa={self.ncsa}'.")
                     return
@@ -10421,7 +10429,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ncsa > 0 and decimal > self.ncsa:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "
                                     f"regulated by 'ncsa={self.ncsa}'.")
                     return
@@ -10433,7 +10441,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ncsa > 0 and decimal > self.ncsa:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "
                                     f"regulated by 'ncsa={self.ncsa}'.")
                     return
@@ -10445,7 +10453,7 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ncsa > 0 and decimal > self.ncsa:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "
                                     f"regulated by 'ncsa={self.ncsa}'.")
                     return
@@ -10457,18 +10465,18 @@ class AmberMRParserListener(ParseTreeListener):
             if ctx.Decimal():
                 decimal = int(str(ctx.Decimal()))
                 if self.ncsa > 0 and decimal > self.ncsa:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, decimal)}"
                                     f"The argument value of '{varName}({decimal})' must be in the range 1-{self.ncsa}, "
                                     f"regulated by 'ncsa={self.ncsa}'.")
                     return
                 rawRealArray = str(ctx.Reals()).split(',')
                 val = float(rawRealArray[0])
                 if val < 0.0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.datasetc, decimal)}"
                                     f"The relative weight value '{varName}({decimal})={val}' must not be a negative value.")
                     return
                 if val == 0.0:
-                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.datasetc,decimal)}"
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint(self.datasetc, decimal)}"
                                     f"The relative weight value '{varName}({decimal})={val}' should be a positive value.")
                 self.cwt[decimal] = val
 
@@ -10924,7 +10932,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     ambig['atom_id_list'] = [dict(s) for s in set(frozenset(atom.items()) for atom in ambig['atom_id_list'])]
 
-    def translateToStdResNameWrapper(self, seqId, compId):
+    def translateToStdResNameWrapper(self, seqId: int, compId: str) -> str:
         _compId = compId
         refCompId = None
         for ps in self.__polySeq:
@@ -10942,7 +10950,7 @@ class AmberMRParserListener(ParseTreeListener):
             compId = translateToStdResName(_compId, ccU=self.__ccU)
         return compId
 
-    def getRealChainSeqId(self, ps, seqId, compId=None):  # pylint: disable=no-self-use
+    def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str] = None) -> Tuple[str, int, Optional[str]]:  # pylint: disable=no-self-use
         if compId is not None:
             compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
             if len(_compId) == 2 and _compId.startswith('D'):
@@ -10965,7 +10973,7 @@ class AmberMRParserListener(ParseTreeListener):
                 return ps['auth_chain_id'], ps['auth_seq_id'][idx], ps['comp_id'][idx]
         return ps['auth_chain_id'], seqId, None
 
-    def assignCoordPolymerSequenceWithoutCompId(self, seqId, atomId=None):
+    def assignCoordPolymerSequenceWithoutCompId(self, seqId: int, atomId: Optional[str] = None) -> List[Tuple[str, int, str, bool]]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -11075,7 +11083,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         return list(chainAssign)
 
-    def selectCoordAtoms(self, chainAssign, seqId, compId, atomId, allowAmbig=True, enableWarning=True, offset=0):
+    def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
+                         allowAmbig: bool = True, enableWarning: bool = True, offset: int = 0):
         """ Select atoms of the coordinates.
         """
 
@@ -11147,7 +11156,8 @@ class AmberMRParserListener(ParseTreeListener):
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
 
-    def testCoordAtomIdConsistency(self, chainId, seqId, compId, atomId, seqKey, coordAtomSite, enableWarning=True):
+    def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
+                                   seqKey: Tuple[str, int], coordAtomSite: Optional[dict], enableWarning: bool = True):
         if not self.__hasCoord:
             return
 
@@ -11273,7 +11283,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 self.__f.append("[Atom not found] "
                                                 f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
 
-    def __getCurrentRestraint(self, dataset=None, n=None):
+    def __getCurrentRestraint(self, dataset: Optional[str] = None, n: Optional[int] = None) -> str:
         if self.__cur_subtype == 'dist':
             return f"[Check the {self.distRestraints}th row of distance restraints] "
         if self.__cur_subtype == 'ang':
@@ -11306,7 +11316,7 @@ class AmberMRParserListener(ParseTreeListener):
             return f"[Check the {self.geoRestraints}th row of generalized distance restraints] "
         return f"[Check the {self.nmrRestraints}th row of NMR restraints] "
 
-    def __addSf(self, constraintType=None, potentialType=None, rdcCode=None):
+    def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None, rdcCode: Optional[str] = None):
         content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
@@ -11355,7 +11365,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None, potentialType=None, rdcCode=None):
+    def __getSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None, rdcCode: Optional[str] = None) -> dict:
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
 
         if key not in self.sfDict:
@@ -11399,7 +11409,7 @@ class AmberMRParserListener(ParseTreeListener):
                     self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
                     return
 
-    def getContentSubtype(self):
+    def getContentSubtype(self) -> dict:
         """ Return content subtype of AMBER MR file.
         """
 
@@ -11417,42 +11427,42 @@ class AmberMRParserListener(ParseTreeListener):
 
         return {k: 1 for k, v in contentSubtype.items() if v > 0}
 
-    def getPolymerSequence(self):
+    def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of AMBER MR file.
         """
         return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
-    def getSequenceAlignment(self):
+    def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and AMBER MR.
         """
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
-    def getChainAssignment(self):
+    def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and AMBER MR.
         """
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
-    def getAtomNumberDict(self):
+    def getAtomNumberDict(self) -> dict:
         """ Return AMBER atomic number dictionary.
         """
         return self.__atomNumberDict
 
-    def getSanderAtomNumberDict(self):
+    def getSanderAtomNumberDict(self) -> dict:
         """ Return AMBER atomic number dictionary based on Sander comments.
         """
         return self.__sanderAtomNumberDict
 
-    def getReasonsForReparsing(self):
+    def getReasonsForReparsing(self) -> Optional[dict]:
         """ Return reasons for re-parsing AMBER MR file.
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
-    def hasComments(self):
+    def hasComments(self) -> bool:
         """ Return whether Sander comments are available.
         """
         return self.__hasComments
 
-    def getSfDict(self):
+    def getSfDict(self) -> Tuple[dict, Optional[dict]]:
         """ Return a dictionary of pynmrstar saveframes.
         """
         if len(self.sfDict) == 0:

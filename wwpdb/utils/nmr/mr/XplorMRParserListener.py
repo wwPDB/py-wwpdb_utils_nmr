@@ -16,11 +16,12 @@ import collections
 from antlr4 import ParseTreeListener
 from rmsd.calculate_rmsd import (int_atom, ELEMENT_WEIGHTS)  # noqa: F401 pylint: disable=no-name-in-module, import-error
 from operator import itemgetter
+from typing import IO, List, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
+    from wwpdb.utils.nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
     from wwpdb.utils.nmr.mr.XplorMRParser import XplorMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx, toNefEx,
                                                        coordAssemblyChecker,
@@ -136,7 +137,7 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
-    from nmr.io.CifReader import SYMBOLS_ELEMENT
+    from nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
     from nmr.mr.XplorMRParser import XplorMRParser
     from nmr.mr.ParserListenerUtil import (toRegEx, toNefEx,
                                            coordAssemblyChecker,
@@ -599,12 +600,13 @@ class XplorMRParserListener(ParseTreeListener):
     # last edited pynmrstar saveframe
     __lastSfDict = {}
 
-    def __init__(self, verbose=True, log=sys.stdout,
-                 representativeModelId=REPRESENTATIVE_MODEL_ID,
-                 representativeAltId=REPRESENTATIVE_ALT_ID,
-                 mrAtomNameMapping=None,
-                 cR=None, caC=None, ccU=None, csStat=None, nefT=None,
-                 reasons=None):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 representativeModelId: int = REPRESENTATIVE_MODEL_ID,
+                 representativeAltId: str = REPRESENTATIVE_ALT_ID,
+                 mrAtomNameMapping: Optional[List[dict]] = None,
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
+                 reasons: Optional[dict] = None):
         self.__class_name__ = self.__class__.__name__
 
         self.__verbose = verbose
@@ -755,22 +757,22 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.sfDict = {}
 
-    def setDebugMode(self, debug):
+    def setDebugMode(self, debug: bool):
         self.__debug = debug
 
-    def setRemediateMode(self, remediate):
+    def setRemediateMode(self, remediate: bool):
         self.__remediate = remediate
 
-    def createSfDict(self, createSfDict):
+    def createSfDict(self, createSfDict: bool):
         self.__createSfDict = createSfDict
 
-    def setOriginaFileName(self, originalFileName):
+    def setOriginaFileName(self, originalFileName: str):
         self.__originalFileName = originalFileName
 
-    def setListIdCounter(self, listIdCounter):
+    def setListIdCounter(self, listIdCounter: dict):
         self.__listIdCounter = listIdCounter
 
-    def setEntryId(self, entryId):
+    def setEntryId(self, entryId: str):
         self.__entryId = entryId
 
     # Enter a parse tree produced by XplorMRParser#xplor_nih_mr.
@@ -2562,9 +2564,9 @@ class XplorMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateDistanceRange(self, weight,
-                              target_value, lower_limit, upper_limit,
-                              lower_linear_limit, upper_linear_limit):
+    def validateDistanceRange(self, weight: float, target_value: Optional[float],
+                              lower_limit: Optional[float], upper_limit: Optional[float],
+                              lower_linear_limit: Optional[float], upper_linear_limit: Optional[float]) -> Optional[dict]:
         """ Validate distance value range.
         """
 
@@ -2955,9 +2957,9 @@ class XplorMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateAngleRange(self, weight, misc_dict,
-                           target_value, lower_limit, upper_limit,
-                           lower_linear_limit=None, upper_linear_limit=None):
+    def validateAngleRange(self, weight: float, misc_dict: dict, target_value: Optional[float],
+                           lower_limit: Optional[float], upper_limit: Optional[float],
+                           lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None) -> Optional[dict]:
         """ Validate angle value range.
         """
 
@@ -3093,7 +3095,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def areUniqueCoordAtoms(self, subtype_name, skip_col=None, allow_ambig=False, allow_ambig_warn_title=''):
+    def areUniqueCoordAtoms(self, subtype_name: str, skip_col: List[int] = None,
+                            allow_ambig: bool = False, allow_ambig_warn_title: str = '') -> bool:
         """ Check whether atom selection sets are uniquely assigned.
         """
 
@@ -3418,9 +3421,9 @@ class XplorMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateRdcRange(self, weight, misc_dict,
-                         target_value, lower_limit, upper_limit,
-                         lower_linear_limit=None, upper_linear_limit=None):
+    def validateRdcRange(self, weight: float, misc_dict: dict, target_value: Optional[float],
+                         lower_limit: Optional[float], upper_limit: Optional[float],
+                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None) -> Optional[dict]:
         """ Validate angle value range.
         """
 
@@ -3821,9 +3824,9 @@ class XplorMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateRdcRange2(self, weight, misc_dict,
-                          target_value_1, lower_limit_1, upper_limit_1,
-                          target_value_2, lower_limit_2, upper_limit_2):
+    def validateRdcRange2(self, weight: float, misc_dict: dict,
+                          target_value_1: Optional[float], lower_limit_1: Optional[float], upper_limit_1: Optional[float],
+                          target_value_2: Optional[float], lower_limit_2: Optional[float], upper_limit_2: Optional[float]) -> Optional[dict]:
         """ Validate two RDC value ranges.
         """
 
@@ -4113,9 +4116,9 @@ class XplorMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateAngleRange2(self, weight,
-                            target_value_1, lower_limit_1, upper_limit_1,
-                            target_value_2, lower_limit_2, upper_limit_2):
+    def validateAngleRange2(self, weight: float,
+                            target_value_1: Optional[float], lower_limit_1: Optional[float], upper_limit_1: Optional[float],
+                            target_value_2: Optional[float], lower_limit_2: Optional[float], upper_limit_2: Optional[float]) -> Optional[dict]:
         """ Validate two angle value ranges.
         """
 
@@ -6148,9 +6151,9 @@ class XplorMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateT1T2Range(self, weight,
-                          target_value, lower_limit, upper_limit,
-                          lower_linear_limit=None, upper_linear_limit=None):
+    def validateT1T2Range(self, weight: float, target_value: Optional[float],
+                          lower_limit: Optional[float], upper_limit: Optional[float],
+                          lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None) -> Optional[dict]:
         """ Validate T1/T2 value range.
         """
 
@@ -6789,9 +6792,9 @@ class XplorMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateCsaRange(self, weight,
-                         target_value, lower_limit, upper_limit,
-                         lower_linear_limit=None, upper_linear_limit=None):
+    def validateCsaRange(self, weight: float, target_value: Optional[float],
+                         lower_limit: Optional[float], upper_limit: Optional[float],
+                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None) -> Optional[dict]:
         """ Validate CSA value range.
         """
 
@@ -7168,9 +7171,9 @@ class XplorMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validatePreRange(self, weight,
-                         target_value, lower_limit, upper_limit,
-                         lower_linear_limit=None, upper_linear_limit=None):
+    def validatePreRange(self, weight: float, target_value: Optional[float],
+                         lower_limit: Optional[float], upper_limit: Optional[float],
+                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None) -> Optional[dict]:
         """ Validate PRE value range.
         """
 
@@ -7450,9 +7453,9 @@ class XplorMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validatePcsRange(self, weight,
-                         target_value, lower_limit, upper_limit,
-                         lower_linear_limit=None, upper_linear_limit=None):
+    def validatePcsRange(self, weight: float, target_value: Optional[float],
+                         lower_limit: Optional[float], upper_limit: Optional[float],
+                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None) -> Optional[dict]:
         """ Validate PCS value range.
         """
 
@@ -8084,9 +8087,9 @@ class XplorMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
-    def validateCcrRange(self, weight,
-                         target_value, lower_limit, upper_limit,
-                         lower_linear_limit=None, upper_linear_limit=None):
+    def validateCcrRange(self, weight: float, target_value: Optional[float],
+                         lower_limit: Optional[float], upper_limit: Optional[float],
+                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None) -> Optional[dict]:
         """ Validate CCR value range.
         """
 
@@ -9133,7 +9136,7 @@ class XplorMRParserListener(ParseTreeListener):
         if 'atom_selection' in self.factor and not isinstance(self.factor['atom_selection'], str):
             self.stackTerms.append(self.factor['atom_selection'])
 
-    def consumeFactor_expressions(self, clauseName='atom selection expression', cifCheck=True):
+    def consumeFactor_expressions(self, clauseName: str = 'atom selection expression', cifCheck: bool = True):
         """ Consume factor expressions as atom selection if possible.
         """
 
@@ -9142,7 +9145,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.factor = self.__consumeFactor_expressions(self.factor, clauseName, cifCheck)
 
-    def __consumeFactor_expressions(self, _factor, clauseName='atom selection expression', cifCheck=True):
+    def __consumeFactor_expressions(self, _factor: dict, clauseName: str = 'atom selection expression', cifCheck: bool = True) -> dict:
         """ Consume factor expressions as atom selection if possible.
         """
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
@@ -10003,9 +10006,9 @@ class XplorMRParserListener(ParseTreeListener):
 
         return _factor
 
-    def __consumeFactor_expressions__(self, _factor, cifCheck, _atomSelection,
-                                      isPolySeq=True, isChainSpecified=True,
-                                      altPolySeq=None, resolved=False):
+    def __consumeFactor_expressions__(self, _factor: dict, cifCheck: bool, _atomSelection: List[dict],
+                                      isPolySeq: bool = True, isChainSpecified: bool = True,
+                                      altPolySeq: Optional[List[dict]] = None, resolved: bool = False) -> bool:
         atomSpecified = True
         if 'atom_not_specified' in _factor:
             atomSpecified = not _factor['atom_not_specified']
@@ -10892,7 +10895,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         return foundCompId
 
-    def getRealCompId(self, compId):
+    def getRealCompId(self, compId: str) -> str:
         if self.__ccU.updateChemCompDict(compId) and not isReservedLigCode(compId):
             if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' and '_chem_comp.pdbx_replaced_by' in self.__ccU.lastChemCompDict:
                 replacedBy = self.__ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
@@ -10900,7 +10903,7 @@ class XplorMRParserListener(ParseTreeListener):
                     return replacedBy
         return compId
 
-    def getOrigSeqId(self, ps, seqId, isPolySeq=True):
+    def getOrigSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True) -> Optional[int]:
         offset = 0
         if not self.__preferAuthSeq:
             chainId = ps['chain_id']
@@ -10953,7 +10956,7 @@ class XplorMRParserListener(ParseTreeListener):
             return seqId + offset
         return seqId
 
-    def getRealSeqId(self, ps, seqId, isPolySeq=True):
+    def getRealSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True) -> Tuple[Optional[int], Optional[str], bool]:
         offset = 0
         preferLabelSeq = False
         if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and 'segment_id_match_stats' in self.__reasons:
@@ -11024,14 +11027,14 @@ class XplorMRParserListener(ParseTreeListener):
                     return seqId + offset, _ps['comp_id'][_ps['seq_id'].index(seqId + offset)], True
         return seqId, None, False
 
-    def getRealChainId(self, chainId):
+    def getRealChainId(self, chainId: str) -> str:
         if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and chainId in self.__reasons['segment_id_mismatch']:
             _chainId = self.__reasons['segment_id_mismatch'][chainId]
             if _chainId is not None:
                 chainId = _chainId
         return chainId
 
-    def updateSegmentIdDict(self, factor, chainId, valid):
+    def updateSegmentIdDict(self, factor: dict, chainId: str, valid: bool):
         if self.__reasons is not None or 'alt_chain_id' not in factor\
            or len(self.reasonsForReParsing) == 0 or 'segment_id_mismatch' not in self.reasonsForReParsing:
             return
@@ -11058,7 +11061,8 @@ class XplorMRParserListener(ParseTreeListener):
             if chainId in _stats:
                 _stats[chainId] -= 1
 
-    def getCoordAtomSiteOf(self, chainId, seqId, compId=None, cifCheck=True, asis=True):
+    def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
+                           ) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
         if asis:
             if cifCheck and compId is not None:
@@ -11086,7 +11090,7 @@ class XplorMRParserListener(ParseTreeListener):
             return seqKey, self.__coordAtomSite[seqKey] if cifCheck and seqKey in self.__coordAtomSite else None
         return seqKey, None
 
-    def getAtomIdList(self, factor, compId, atomId):
+    def getAtomIdList(self, factor: dict, compId: str, atomId: str) -> List[str]:
         key = (compId, atomId, 'alt_atom_id' in factor)
         if key in self.__cachedDictForAtomIdList:
             return copy.copy(self.__cachedDictForAtomIdList[key])
@@ -11105,7 +11109,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.__cachedDictForAtomIdList[key] = atomIds
         return atomIds
 
-    def getLabelSeqOffsetDueToUnobs(self, ps):
+    def getLabelSeqOffsetDueToUnobs(self, ps: dict) -> int:
         authChainId = ps['auth_chain_id']
         for labelSeqId, authSeqId in zip(ps['seq_id'], ps['auth_seq_id']):
             seqKey = (authChainId, authSeqId)
@@ -11113,7 +11117,7 @@ class XplorMRParserListener(ParseTreeListener):
                 return labelSeqId - 1
         return max(list(filter(None, ps['seq_id']))) - 1
 
-    def doesNonPolySeqIdMatchWithPolySeqUnobs(self, chainId, seqId):
+    def doesNonPolySeqIdMatchWithPolySeqUnobs(self, chainId: str, seqId: int) -> bool:
         _ps_ = next((_ps_ for _ps_ in self.__polySeq if _ps_['auth_chain_id'] == chainId), None)
         if _ps_ is not None:
             _chainId_ = _ps_['chain_id']
@@ -11150,7 +11154,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 return True
         return False
 
-    def checkDistSequenceOffset(self, chainId, seqId, compId, origAtomId):
+    def checkDistSequenceOffset(self, chainId: str, seqId: int, compId: str, origAtomId: str) -> bool:
         """ Try to find sequence offset.
         """
         if not self.__hasPolySeq or self.__cur_subtype != 'dist':
@@ -11195,12 +11199,12 @@ class XplorMRParserListener(ParseTreeListener):
 
         return True
 
-    def intersectionFactor_expressions(self, atomSelection=None):
+    def intersectionFactor_expressions(self, atomSelection: Optional[List[dict]] = None):
         self.consumeFactor_expressions(cifCheck=False)
 
         self.factor = self.__intersectionFactor_expressions(self.factor, atomSelection)
 
-    def __intersectionFactor_expressions(self, _factor, atomSelection=None):  # pylint: disable=no-self-use
+    def __intersectionFactor_expressions(self, _factor: dict, atomSelection: Optional[List[dict]] = None) -> dict:  # pylint: disable=no-self-use
         if 'atom_selection' not in _factor:
             _factor['atom_selection'] = atomSelection
             return _factor
@@ -11228,7 +11232,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         return _factor
 
-    def __intersectionAtom_selections(self, _selection1, _selection2):  # pylint: disable=no-self-use
+    def __intersectionAtom_selections(self, _selection1: List[dict], _selection2: List[dict]) -> List[dict]:  # pylint: disable=no-self-use
         if _selection1 is None or len(_selection1) == 0 or _selection2 is None or len(_selection2) == 0:
             return []
 
@@ -13041,7 +13045,8 @@ class XplorMRParserListener(ParseTreeListener):
         finally:
             self.numberFSelection.clear()
 
-    def selectRealisticBondConstraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func):
+    def selectRealisticBondConstraint(self, atom1: str, atom2: str, alt_atom_id1: str, alt_atom_id2: str, dst_func: dict
+                                      ) -> Tuple[str, str]:
         """ Return realistic bond constraint taking into account the current coordinates.
         """
         if not self.__hasCoord:
@@ -13150,7 +13155,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         return atom1, atom2
 
-    def selectRealisticChi2AngleConstraint(self, atom1, atom2, atom3, atom4, dst_func):
+    def selectRealisticChi2AngleConstraint(self, atom1: str, atom2: str, atom3: str, atom4: str, dst_func: dict
+                                           ) -> dict:
         """ Return realistic chi2 angle constraint taking into account the current coordinates.
         """
         if not self.__hasCoord:
@@ -13318,7 +13324,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         return dst_func
 
-    def isRealisticDistanceRestraint(self, atom1, atom2, dst_func):
+    def isRealisticDistanceRestraint(self, atom1: str, atom2: str, dst_func: dict) -> bool:
         """ Return whether a given distance restraint is realistic in the assembly.
         """
         if not self.__hasCoord:
@@ -14313,7 +14319,7 @@ class XplorMRParserListener(ParseTreeListener):
             if symbol_name in self.evaluateFor:
                 del self.evaluateFor[symbol_name]
 
-    def __getCurrentRestraint(self):
+    def __getCurrentRestraint(self) -> str:
         if self.__cur_subtype == 'dist':
             return f"[Check the {self.distRestraints}th row of distance restraints] "
         if self.__cur_subtype == 'dihed':
@@ -14482,8 +14488,8 @@ class XplorMRParserListener(ParseTreeListener):
         if key in self.__reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
-    def __addSf(self, constraintType=None, potentialType=None, rdcCode=None,
-                alignCenter=None):
+    def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
+                rdcCode: Optional[str] = None, alignCenter: Optional[str] = None):
         content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:
@@ -14542,8 +14548,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.sfDict[key].append(item)
 
-    def __getSf(self, constraintType=None, potentialType=None, rdcCode=None,
-                alignCenter=None):
+    def __getSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
+                rdcCode: Optional[str] = None, alignCenter: Optional[str] = None) -> dict:
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None if alignCenter is None else str(alignCenter))
 
         if key not in self.sfDict:
@@ -14592,7 +14598,7 @@ class XplorMRParserListener(ParseTreeListener):
                     self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
                     return
 
-    def getContentSubtype(self):
+    def getContentSubtype(self) -> dict:
         """ Return content subtype of XPLOR-NIH MR file.
         """
 
@@ -14684,7 +14690,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         return {k: v for k, v in contentSubtype.items() if v > 0}
 
-    def hasAnyRestraints(self):
+    def hasAnyRestraints(self) -> bool:
         """ Return whether any restraint is parsed successfully.
         """
         if self.__createSfDict:
@@ -14697,27 +14703,27 @@ class XplorMRParserListener(ParseTreeListener):
             return False
         return len(self.getContentSubtype()) > 0
 
-    def getPolymerSequence(self):
+    def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of XPLOR-NIH MR file.
         """
         return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
-    def getSequenceAlignment(self):
+    def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and XPLOR-NIH MR.
         """
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
-    def getChainAssignment(self):
+    def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and XPLOR-NIH MR.
         """
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
-    def getReasonsForReparsing(self):
+    def getReasonsForReparsing(self) -> Optional[dict]:
         """ Return reasons for re-parsing XPLOR-NIH MR file.
         """
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
-    def getSfDict(self):
+    def getSfDict(self) -> Tuple[dict, Optional[dict]]:
         """ Return a dictionary of pynmrstar saveframes.
         """
         if len(self.sfDict) == 0:

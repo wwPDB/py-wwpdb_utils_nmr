@@ -363,7 +363,7 @@ def angle_error(lower_bound: Optional[float], upper_bound: Optional[float], targ
         @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.angle_diff
     """
 
-    def check_angle_range_overlap(x, y, c, g, t=0.5):
+    def check_angle_range_overlap(x, y, c, g, t: float = 0.5):
         """ Return whether angular range formed by (x, c) and (c, y) matches to a given range (g) with tolerance (t).
             @author: Kumaran Baskaran
             @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.angle_diff.check_ac
@@ -520,7 +520,8 @@ class NmrVrptUtility:
     __version__ = "v1.2"
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr,
-                 cR=None, caC=None, ccU=None, csStat=None):
+                 cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
+                 csStat: Optional[BMRBChemShiftStat] = None):
         self.__class_name__ = self.__class__.__name__
 
         self.__verbose = verbose
@@ -1048,7 +1049,7 @@ class NmrVrptUtility:
 
             return True
 
-        def get_tempfile_name(suffix=''):
+        def get_tempfile_name(suffix: str = ''):
             return os.path.join(tempfile.gettempdir(), f"{next(tempfile._get_candidate_names())}{suffix}")  # pylint: disable=protected-access
 
         if 'nmr_str_file_path' in self.__inputParamDict:

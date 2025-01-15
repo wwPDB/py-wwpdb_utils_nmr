@@ -605,7 +605,9 @@ class NEFTranslator:
     """ Bi-directional translator between NEF and NMR-STAR
     """
 
-    def __init__(self, verbose: bool = False, log: IO = sys.stderr, ccU=None, csStat=None, c2S=None):
+    def __init__(self, verbose: bool = False, log: IO = sys.stderr,
+                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
+                 c2S: Optional[CifToNmrStar] = None):
         self.__class_name__ = self.__class__.__name__
 
         self.__verbose = verbose

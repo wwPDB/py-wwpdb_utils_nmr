@@ -13,7 +13,7 @@ import pynmrstar
 import re
 import collections
 
-from typing import IO, List
+from typing import Any, IO, List
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
@@ -102,7 +102,7 @@ def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> st
     return array[0] if len(array[0]) < 2 or array[0][0] != '$' else array[0][1:]
 
 
-def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value):
+def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
     """ Set saveframe tag.
     """
 

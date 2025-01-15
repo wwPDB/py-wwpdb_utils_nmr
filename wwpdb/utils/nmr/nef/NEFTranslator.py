@@ -136,7 +136,8 @@ try:
                                            assignPolymerSequence)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
+    from wwpdb.utils.nmr.CifToNmrStar import (CifToNmrStar,
+                                              get_first_sf_tag)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        ALLOWED_AMBIGUITY_CODES,
                                                        translateToStdResName,
@@ -153,7 +154,8 @@ except ImportError:
                                assignPolymerSequence)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.CifToNmrStar import CifToNmrStar
+    from nmr.CifToNmrStar import (CifToNmrStar,
+                                  get_first_sf_tag)
     from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            ALLOWED_AMBIGUITY_CODES,
                                            translateToStdResName,
@@ -475,28 +477,6 @@ altRdcConstraintType = {'nef': {'RDC': 'measured',
                                      'measured': 'RDC'
                                      }
                         }
-
-
-def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> str:
-    """ Return the first value of a given saveframe tag with decoding symbol notation.
-        @return: The first tag value, default string otherwise.
-    """
-
-    if not isinstance(sf, pynmrstar.Saveframe) or tag is None:
-        return default
-
-    array = sf.get_tag(tag)
-
-    if len(array) == 0 or array[0] is None:
-        return default
-
-    if not isinstance(array[0], str):
-        return array[0]
-
-    if array[0] == '$':
-        return default
-
-    return array[0] if len(array[0]) < 2 or array[0][0] != '$' else array[0][1:]
 
 
 def get_idx_msg(idx_tag_ids: List[int], tags: List[str], row: dict) -> str:

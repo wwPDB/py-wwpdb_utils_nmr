@@ -27,7 +27,8 @@ from typing import Any, IO, List, Tuple, Optional
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
+    from wwpdb.utils.nmr.io.CifReader import (SYMBOLS_ELEMENT,
+                                              to_np_array)
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            emptyValue,
                                            protonBeginCode,
@@ -40,8 +41,10 @@ try:
                                            alignPolymerSequence,
                                            assignPolymerSequence,
                                            getScoreOfSeqAlign)
+    from wwpdb.utils.nmr.CifToNmrStar import has_key_value
 except ImportError:
-    from nmr.io.CifReader import SYMBOLS_ELEMENT
+    from nmr.io.CifReader import (SYMBOLS_ELEMENT,
+                                  to_np_array)
     from nmr.AlignUtil import (monDict3,
                                emptyValue,
                                protonBeginCode,
@@ -54,6 +57,7 @@ except ImportError:
                                alignPolymerSequence,
                                assignPolymerSequence,
                                getScoreOfSeqAlign)
+    from nmr.CifToNmrStar import has_key_value
 
 MAX_ERROR_REPORT = 1
 MAX_ERR_LINENUM_REPORT = 20
@@ -3722,11 +3726,6 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
     """ Check assembly of the coordinates for MR/PT parser listener.
     """
 
-    def to_np_array(a):
-        """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
-        """
-        return numpy.asarray([a['x'], a['y'], a['z']], dtype=float)
-
     changed = has_nonpoly_only = gen_ent_asm_from_nonpoly = False
 
     polySeq = None if prevResult is None else prevResult.get('polymer_sequence')
@@ -6882,11 +6881,6 @@ def getCoordBondLength(cR, asymId1: str, seqId1: int, atomId1: str,
         @return: the bond length
     """
 
-    def to_np_array(a):
-        """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
-        """
-        return numpy.asarray([a['x'], a['y'], a['z']], dtype=float)
-
     try:
 
         dataItems = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
@@ -7723,35 +7717,35 @@ def getRow(mrSubtype: str, id: int, indexId: int,
         row[key_size + 1] = combinationId
         row[key_size + 2] = memberId
         row[key_size + 3] = code
-        if hasKeyValue(dstFunc, 'target_value'):
+        if has_key_value(dstFunc, 'target_value'):
             row[key_size + 4] = dstFunc['target_value']
             float_row_idx.append(key_size + 4)
-        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+        if has_key_value(dstFunc, 'target_value_uncertainty'):
             row[key_size + 5] = dstFunc['target_value_uncertainty']
             float_row_idx.append(key_size + 5)
-        if hasKeyValue(dstFunc, 'lower_linear_limit'):
+        if has_key_value(dstFunc, 'lower_linear_limit'):
             row[key_size + 6] = dstFunc['lower_linear_limit']
             float_row_idx.append(key_size + 6)
-        if hasKeyValue(dstFunc, 'lower_limit'):
+        if has_key_value(dstFunc, 'lower_limit'):
             row[key_size + 7] = dstFunc['lower_limit']
             float_row_idx.append(key_size + 7)
-        if hasKeyValue(dstFunc, 'upper_limit'):
+        if has_key_value(dstFunc, 'upper_limit'):
             row[key_size + 8] = dstFunc['upper_limit']
             float_row_idx.append(key_size + 8)
-        if hasKeyValue(dstFunc, 'upper_linear_limit'):
+        if has_key_value(dstFunc, 'upper_linear_limit'):
             row[key_size + 9] = dstFunc['upper_linear_limit']
             float_row_idx.append(key_size + 9)
-        if hasKeyValue(dstFunc, 'weight'):
+        if has_key_value(dstFunc, 'weight'):
             row[key_size + 10] = dstFunc['weight']
         # Distance_val
 
         row[key_size + 12], row[key_size + 13], row[key_size + 14], row[key_size + 15] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        if hasKeyValue(atom1, 'auth_atom_id'):
+        if has_key_value(atom1, 'auth_atom_id'):
             row[key_size + 16] = atom1['auth_atom_id']
         row[key_size + 17], row[key_size + 18], row[key_size + 19], row[key_size + 20] =\
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-        if hasKeyValue(atom2, 'auth_atom_id'):
+        if has_key_value(atom2, 'auth_atom_id'):
             row[key_size + 21] = atom2['auth_atom_id']
 
         if has_ins_code:
@@ -7774,31 +7768,31 @@ def getRow(mrSubtype: str, id: int, indexId: int,
 
         row[key_size + 1] = combinationId
         row[key_size + 2] = code
-        if hasKeyValue(dstFunc, 'target_value'):
+        if has_key_value(dstFunc, 'target_value'):
             row[key_size + 3] = dstFunc['target_value']
             float_row_idx.append(key_size + 3)
-        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+        if has_key_value(dstFunc, 'target_value_uncertainty'):
             row[key_size + 4] = dstFunc['target_value_uncertainty']
             float_row_idx.append(key_size + 4)
-        if hasKeyValue(dstFunc, 'lower_linear_limit'):
+        if has_key_value(dstFunc, 'lower_linear_limit'):
             row[key_size + 5] = dstFunc['lower_linear_limit']
             float_row_idx.append(key_size + 5)
-        if hasKeyValue(dstFunc, 'lower_limit'):
+        if has_key_value(dstFunc, 'lower_limit'):
             row[key_size + 6] = dstFunc['lower_limit']
             float_row_idx.append(key_size + 6)
-        if hasKeyValue(dstFunc, 'upper_limit'):
+        if has_key_value(dstFunc, 'upper_limit'):
             row[key_size + 7] = dstFunc['upper_limit']
             float_row_idx.append(key_size + 7)
-        if hasKeyValue(dstFunc, 'upper_linear_limit'):
+        if has_key_value(dstFunc, 'upper_linear_limit'):
             row[key_size + 8] = dstFunc['upper_linear_limit']
             float_row_idx.append(key_size + 8)
-        if hasKeyValue(dstFunc, 'weight'):
+        if has_key_value(dstFunc, 'weight'):
             row[key_size + 9] = dstFunc['weight']
 
         if atom1 is not None:
             row[key_size + 10], row[key_size + 11], row[key_size + 12], row[key_size + 13] =\
                 atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-            if hasKeyValue(atom1, 'auth_atom_id'):
+            if has_key_value(atom1, 'auth_atom_id'):
                 row[key_size + 14] = atom1['auth_atom_id']
         elif atom5 is not None:  # PPA, phase angle of pseudorotation
             row[key_size + 10], row[key_size + 11], row[key_size + 12] =\
@@ -7806,7 +7800,7 @@ def getRow(mrSubtype: str, id: int, indexId: int,
         if atom2 is not None:
             row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
                 atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-            if hasKeyValue(atom2, 'auth_atom_id'):
+            if has_key_value(atom2, 'auth_atom_id'):
                 row[key_size + 19] = atom2['auth_atom_id']
         elif atom5 is not None:  # PPA, phase angle of pseudorotation
             row[key_size + 15], row[key_size + 16], row[key_size + 17] =\
@@ -7814,7 +7808,7 @@ def getRow(mrSubtype: str, id: int, indexId: int,
         if atom3 is not None:
             row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
                 atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
-            if hasKeyValue(atom3, 'auth_atom_id'):
+            if has_key_value(atom3, 'auth_atom_id'):
                 row[key_size + 24] = atom3['auth_atom_id']
         elif atom5 is not None:  # PPA, phase angle of pseudorotation
             row[key_size + 20], row[key_size + 21], row[key_size + 22] =\
@@ -7822,12 +7816,12 @@ def getRow(mrSubtype: str, id: int, indexId: int,
         if atom4 is not None:
             row[key_size + 25], row[key_size + 26], row[key_size + 27], row[key_size + 28] =\
                 atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
-            if hasKeyValue(atom4, 'auth_atom_id'):
+            if has_key_value(atom4, 'auth_atom_id'):
                 row[key_size + 29] = atom4['auth_atom_id']
         elif atom5 is not None:  # PPA, phase angle of pseudorotation
             row[key_size + 25], row[key_size + 26], row[key_size + 27] =\
                 atom5['chain_id'], atom5['seq_id'], atom5['comp_id']
-            if hasKeyValue(atom5, 'auth_atom_id'):
+            if has_key_value(atom5, 'auth_atom_id'):
                 row[key_size + 29] = atom5['auth_atom_id']
 
         if has_ins_code:
@@ -7838,25 +7832,25 @@ def getRow(mrSubtype: str, id: int, indexId: int,
 
     elif mrSubtype == 'rdc':
         row[key_size + 1] = combinationId
-        if hasKeyValue(dstFunc, 'target_value'):
+        if has_key_value(dstFunc, 'target_value'):
             row[key_size + 2] = dstFunc['target_value']
             float_row_idx.append(key_size + 2)
-        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+        if has_key_value(dstFunc, 'target_value_uncertainty'):
             row[key_size + 3] = dstFunc['target_value_uncertainty']
             float_row_idx.append(key_size + 3)
-        if hasKeyValue(dstFunc, 'lower_linear_limit'):
+        if has_key_value(dstFunc, 'lower_linear_limit'):
             row[key_size + 4] = dstFunc['lower_linear_limit']
             float_row_idx.append(key_size + 4)
-        if hasKeyValue(dstFunc, 'lower_limit'):
+        if has_key_value(dstFunc, 'lower_limit'):
             row[key_size + 5] = dstFunc['lower_limit']
             float_row_idx.append(key_size + 5)
-        if hasKeyValue(dstFunc, 'upper_limit'):
+        if has_key_value(dstFunc, 'upper_limit'):
             row[key_size + 6] = dstFunc['upper_limit']
             float_row_idx.append(key_size + 6)
-        if hasKeyValue(dstFunc, 'upper_linear_limit'):
+        if has_key_value(dstFunc, 'upper_linear_limit'):
             row[key_size + 7] = dstFunc['upper_linear_limit']
             float_row_idx.append(key_size + 7)
-        if hasKeyValue(dstFunc, 'weight'):
+        if has_key_value(dstFunc, 'weight'):
             row[key_size + 8] = dstFunc['weight']
         # RDC_val
         # RDC_val_err
@@ -7865,11 +7859,11 @@ def getRow(mrSubtype: str, id: int, indexId: int,
 
         row[key_size + 13], row[key_size + 14], row[key_size + 15], row[key_size + 16] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
-        if hasKeyValue(atom1, 'auth_atom_id'):
+        if has_key_value(atom1, 'auth_atom_id'):
             row[key_size + 17] = atom1['auth_atom_id']
         row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
-        if hasKeyValue(atom2, 'auth_atom_id'):
+        if has_key_value(atom2, 'auth_atom_id'):
             row[key_size + 22] = atom2['auth_atom_id']
 
         if has_ins_code:
@@ -7877,16 +7871,16 @@ def getRow(mrSubtype: str, id: int, indexId: int,
             row[key_size + 23] = ins_code2
 
     elif mrSubtype == 'noepk':
-        if hasKeyValue(dstFunc, 'target_value'):
+        if has_key_value(dstFunc, 'target_value'):
             row[key_size] = dstFunc['target_value']
             float_row_idx.append(key_size)
-        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+        if has_key_value(dstFunc, 'target_value_uncertainty'):
             row[key_size + 1] = dstFunc['target_value_uncertainty']
             float_row_idx.append(key_size + 1)
-        if hasKeyValue(dstFunc, 'lower_limit'):
+        if has_key_value(dstFunc, 'lower_limit'):
             row[key_size + 2] = dstFunc['lower_limit']
             float_row_idx.append(key_size + 2)
-        if hasKeyValue(dstFunc, 'upper_limit'):
+        if has_key_value(dstFunc, 'upper_limit'):
             row[key_size + 3] = dstFunc['upper_limit']
             float_row_idx.append(key_size + 3)
 
@@ -7903,16 +7897,16 @@ def getRow(mrSubtype: str, id: int, indexId: int,
             row[16], row[17], row[18], row[19], row[20] =\
                 star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
 
-        if hasKeyValue(dstFunc, 'target_value'):
+        if has_key_value(dstFunc, 'target_value'):
             row[key_size] = dstFunc['target_value']
             float_row_idx.append(key_size)
-        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+        if has_key_value(dstFunc, 'target_value_uncertainty'):
             row[key_size + 1] = dstFunc['target_value_uncertainty']
             float_row_idx.append(key_size + 1)
-        if hasKeyValue(dstFunc, 'lower_limit'):
+        if has_key_value(dstFunc, 'lower_limit'):
             row[key_size + 2] = dstFunc['lower_limit']
             float_row_idx.append(key_size + 2)
-        if hasKeyValue(dstFunc, 'upper_limit'):
+        if has_key_value(dstFunc, 'upper_limit'):
             row[key_size + 3] = dstFunc['upper_limit']
             float_row_idx.append(key_size + 3)
 
@@ -7929,10 +7923,10 @@ def getRow(mrSubtype: str, id: int, indexId: int,
         if atom1 is not None:
             row[key_size] = atomType = atom1['atom_id'][0]
             row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        if hasKeyValue(dstFunc, 'target_value'):
+        if has_key_value(dstFunc, 'target_value'):
             row[key_size + 2] = dstFunc['target_value']
             float_row_idx.append(key_size + 2)
-        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+        if has_key_value(dstFunc, 'target_value_uncertainty'):
             row[key_size + 3] = dstFunc['target_value_uncertainty']
             float_row_idx.append(key_size + 3)
         # Principal_value_sigma_11_val
@@ -7959,7 +7953,7 @@ def getRow(mrSubtype: str, id: int, indexId: int,
 
         row[key_size] = dstFunc['ca_shift']
         # CA_chem_shift_val_err
-        if hasKeyValue(dstFunc, 'cb_shift'):
+        if has_key_value(dstFunc, 'cb_shift'):
             row[key_size + 2] = dstFunc['cb_shift']
         # CB_chem_shift_val_err
         row[key_size + 4], row[key_size + 5], row[key_size + 6], row[key_size + 7] =\
@@ -7996,10 +7990,10 @@ def getRow(mrSubtype: str, id: int, indexId: int,
             row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
         # Chem_shift_val
         # Chem_shift_val_err
-        if hasKeyValue(dstFunc, 'target_value'):
+        if has_key_value(dstFunc, 'target_value'):
             row[key_size + 4] = dstFunc['target_value']
             float_row_idx.append(key_size + 4)
-        if hasKeyValue(dstFunc, 'lower_value') and hasKeyValue(dstFunc, 'upper_value'):
+        if has_key_value(dstFunc, 'lower_value') and has_key_value(dstFunc, 'upper_value'):
             row[key_size + 5] = (dstFunc['upper_value'] - dstFunc['lower_value']) / 2.0
             float_row_idx.append(key_size + 5)
 
@@ -8010,10 +8004,10 @@ def getRow(mrSubtype: str, id: int, indexId: int,
         if atom1 is not None:
             row[key_size] = atomType = atom1['atom_id'][0]
             row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        if hasKeyValue(dstFunc, 'target_value'):
+        if has_key_value(dstFunc, 'target_value'):
             row[key_size + 2] = dstFunc['target_value']
             float_row_idx.append(key_size + 2)
-        if hasKeyValue(dstFunc, 'lower_value') and hasKeyValue(dstFunc, 'upper_value'):
+        if has_key_value(dstFunc, 'lower_value') and has_key_value(dstFunc, 'upper_value'):
             row[key_size + 3] = (dstFunc['upper_value'] - dstFunc['lower_value']) / 2.0
             float_row_idx.append(key_size + 3)
         # Rex_val
@@ -8040,10 +8034,10 @@ def getRow(mrSubtype: str, id: int, indexId: int,
         if atom4 is not None:
             row[key_size + 6] = atomType = atom4['atom_id'][0]
             row[key_size + 7] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
-        if hasKeyValue(dstFunc, 'target_value'):
+        if has_key_value(dstFunc, 'target_value'):
             row[key_size + 8] = dstFunc['target_value']
             float_row_idx.append(key_size + 8)
-        if hasKeyValue(dstFunc, 'lower_value') and hasKeyValue(dstFunc, 'upper_value'):
+        if has_key_value(dstFunc, 'lower_value') and has_key_value(dstFunc, 'upper_value'):
             row[key_size + 9] = (dstFunc['upper_value'] - dstFunc['lower_value']) / 2.0
             float_row_idx.append(key_size + 9)
 
@@ -8067,11 +8061,11 @@ def getRow(mrSubtype: str, id: int, indexId: int,
 
     elif mrSubtype == 'saxs':
         row[1] = code
-        if hasKeyValue(dstFunc, 'target_value'):
+        if has_key_value(dstFunc, 'target_value'):
             row[key_size] = dstFunc['target_value']
-        if hasKeyValue(dstFunc, 'target_value_uncertainty'):
+        if has_key_value(dstFunc, 'target_value_uncertainty'):
             row[key_size + 1] = dstFunc['target_value_uncertainty']
-        if hasKeyValue(dstFunc, 'weight'):
+        if has_key_value(dstFunc, 'weight'):
             row[key_size + 2] = dstFunc['weight']
 
     if len(float_row_idx) > 0:
@@ -8167,11 +8161,11 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
     _key_size = key_size
 
     row[_key_size + 1] = dstFunc['position_1']
-    if hasKeyValue(dstFunc, 'position_uncertainty_1'):
+    if has_key_value(dstFunc, 'position_uncertainty_1'):
         row[_key_size + 2] = dstFunc['position_uncertainty_1']
-    if hasKeyValue(dstFunc, 'line_width_1'):
+    if has_key_value(dstFunc, 'line_width_1'):
         row[_key_size + 3] = dstFunc['line_width_1']
-    if hasKeyValue(dstFunc, 'line_width_uncertainty_1'):
+    if has_key_value(dstFunc, 'line_width_uncertainty_1'):
         row[_key_size + 4] = dstFunc['line_width_uncertainty_1']
     if atom1 is not None:
         row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
@@ -8182,11 +8176,11 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
     _key_size += 9
 
     row[_key_size + 1] = dstFunc['position_2']
-    if hasKeyValue(dstFunc, 'position_uncertainty_2'):
+    if has_key_value(dstFunc, 'position_uncertainty_2'):
         row[_key_size + 2] = dstFunc['position_uncertainty_2']
-    if hasKeyValue(dstFunc, 'line_width_2'):
+    if has_key_value(dstFunc, 'line_width_2'):
         row[_key_size + 3] = dstFunc['line_width_2']
-    if hasKeyValue(dstFunc, 'line_width_uncertainty_2'):
+    if has_key_value(dstFunc, 'line_width_uncertainty_2'):
         row[_key_size + 4] = dstFunc['line_width_uncertainty_2']
     if atom2 is not None:
         row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
@@ -8199,11 +8193,11 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         _key_size += 9
 
         row[_key_size + 1] = dstFunc['position_3']
-        if hasKeyValue(dstFunc, 'position_uncertainty_3'):
+        if has_key_value(dstFunc, 'position_uncertainty_3'):
             row[_key_size + 2] = dstFunc['position_uncertainty_3']
-        if hasKeyValue(dstFunc, 'line_width_3'):
+        if has_key_value(dstFunc, 'line_width_3'):
             row[_key_size + 3] = dstFunc['line_width_3']
-        if hasKeyValue(dstFunc, 'line_width_uncertainty_3'):
+        if has_key_value(dstFunc, 'line_width_uncertainty_3'):
             row[_key_size + 4] = dstFunc['line_width_uncertainty_3']
         if atom3 is not None:
             row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
@@ -8216,11 +8210,11 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         _key_size += 9
 
         row[_key_size + 1] = dstFunc['position_4']
-        if hasKeyValue(dstFunc, 'position_uncertainty_4'):
+        if has_key_value(dstFunc, 'position_uncertainty_4'):
             row[_key_size + 2] = dstFunc['position_uncertainty_4']
-        if hasKeyValue(dstFunc, 'line_width_4'):
+        if has_key_value(dstFunc, 'line_width_4'):
             row[_key_size + 3] = dstFunc['line_width_4']
-        if hasKeyValue(dstFunc, 'line_width_uncertainty_4'):
+        if has_key_value(dstFunc, 'line_width_uncertainty_4'):
             row[_key_size + 4] = dstFunc['line_width_uncertainty_4']
         if atom4 is not None:
             row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
@@ -8228,13 +8222,13 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
             if ambig_code4 is not None:
                 row[_key_size + 9] = ambig_code4
 
-    if hasKeyValue(dstFunc, 'volume'):
+    if has_key_value(dstFunc, 'volume'):
         row[-7] = dstFunc['volume']
-    if hasKeyValue(dstFunc, 'volume_uncertainty'):
+    if has_key_value(dstFunc, 'volume_uncertainty'):
         row[-6] = dstFunc['volume_uncertainty']
-    if hasKeyValue(dstFunc, 'height'):
+    if has_key_value(dstFunc, 'height'):
         row[-5] = dstFunc['height']
-    if hasKeyValue(dstFunc, 'height_uncertainty'):
+    if has_key_value(dstFunc, 'height_uncertainty'):
         row[-4] = dstFunc['height_uncertainty']
     if details is not None:
         row[-3] = details
@@ -8263,14 +8257,14 @@ def getPkGenCharRow(pkSubtype: str, indexId: int, listId: int, entryId: str, dst
 
     row[0] = indexId
 
-    if hasKeyValue(dstFunc, 'volume'):
+    if has_key_value(dstFunc, 'volume'):
         row[1] = dstFunc['volume']
-        if hasKeyValue(dstFunc, 'volume_uncertainty'):
+        if has_key_value(dstFunc, 'volume_uncertainty'):
             row[2] = dstFunc['volume_uncertainty']
         row[3] = 'volume'
-    elif hasKeyValue(dstFunc, 'height'):
+    elif has_key_value(dstFunc, 'height'):
         row[1] = dstFunc['height']
-        if hasKeyValue(dstFunc, 'height_uncertainty'):
+        if has_key_value(dstFunc, 'height_uncertainty'):
             row[2] = dstFunc['height_uncertainty']
         row[3] = 'height'
 
@@ -8300,13 +8294,13 @@ def getPkCharRow(pkSubtype: str, indexId: int, listId: int, entryId: str, dstFun
     row[0] = indexId
     row[1] = dimId
 
-    if hasKeyValue(dstFunc, f'position_{dimId}'):
+    if has_key_value(dstFunc, f'position_{dimId}'):
         row[2] = dstFunc[f'position_{dimId}']
-    if hasKeyValue(dstFunc, f'position_uncertainty_{dimId}'):
+    if has_key_value(dstFunc, f'position_uncertainty_{dimId}'):
         row[3] = dstFunc[f'position_uncertainty_{dimId}']
-    if hasKeyValue(dstFunc, f'line_width_{dimId}'):
+    if has_key_value(dstFunc, f'line_width_{dimId}'):
         row[4] = dstFunc[f'line_width_{dimId}']
-    # if hasKeyValue(dstFunc, f'line_width_uncertainty_{dimId}'):
+    # if has_key_value(dstFunc, f'line_width_uncertainty_{dimId}'):
     #     row[5] = dstFunc[f'line_width_uncertainty_{dimId}']
     # row[6]: Coupling_pattern
 
@@ -8341,7 +8335,7 @@ def getPkChemShiftRow(pkSubtype: str, indexId: int, listId: int, entryId: str, d
     # row[2]: Set_ID
     # row[3]: Magnetization_linkage_ID
 
-    if hasKeyValue(dstFunc, f'position_{dimId}'):
+    if has_key_value(dstFunc, f'position_{dimId}'):
         row[4] = dstFunc[f'position_{dimId}']
 
     # row[5]: Contribution_fractional_val
@@ -8740,7 +8734,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             val = get_row_value('Auth_atom_name_1')
             if val is not None:
                 row[key_size + 16] = val
-        elif hasKeyValue(atom1, 'auth_atom_id'):
+        elif has_key_value(atom1, 'auth_atom_id'):
             row[key_size + 16] = atom1['auth_atom_id']
         if atom2 is not None:
             row[key_size + 17], row[key_size + 18], row[key_size + 19], row[key_size + 20] =\
@@ -8749,7 +8743,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             val = get_row_value('Auth_atom_name_2')
             if val is not None:
                 row[key_size + 21] = val
-        elif hasKeyValue(atom2, 'auth_atom_id'):
+        elif has_key_value(atom2, 'auth_atom_id'):
             row[key_size + 21] = atom2['auth_atom_id']
 
         if authToInsCode is not None:
@@ -8805,7 +8799,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             val = get_row_value('Auth_atom_name_1')
             if val is not None:
                 row[key_size + 14] = val
-        elif hasKeyValue(atom1, 'auth_atom_id'):
+        elif has_key_value(atom1, 'auth_atom_id'):
             row[key_size + 14] = atom1['auth_atom_id']
         if atom2 is not None:
             row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
@@ -8814,7 +8808,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             val = get_row_value('Auth_atom_name_2')
             if val is not None:
                 row[key_size + 19] = val
-        elif hasKeyValue(atom2, 'auth_atom_id'):
+        elif has_key_value(atom2, 'auth_atom_id'):
             row[key_size + 19] = atom2['auth_atom_id']
         if atom3 is not None:
             row[key_size + 20], row[key_size + 21], row[key_size + 22], row[key_size + 23] =\
@@ -8823,7 +8817,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             val = get_row_value('Auth_atom_name_3')
             if val is not None:
                 row[key_size + 24] = val
-        elif hasKeyValue(atom3, 'auth_atom_id'):
+        elif has_key_value(atom3, 'auth_atom_id'):
             row[key_size + 24] = atom3['auth_atom_id']
         if atom4 is not None:
             row[key_size + 25], row[key_size + 26], row[key_size + 27], row[key_size + 28] =\
@@ -8832,7 +8826,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             val = get_row_value('Auth_atom_name_4')
             if val is not None:
                 row[key_size + 29] = val
-        elif hasKeyValue(atom4, 'auth_atom_id'):
+        elif has_key_value(atom4, 'auth_atom_id'):
             row[key_size + 29] = atom4['auth_atom_id']
 
         if authToInsCode is not None:
@@ -8894,7 +8888,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             val = get_row_value('Auth_atom_name_1')
             if val is not None:
                 row[key_size + 17] = val
-        elif hasKeyValue(atom1, 'auth_atom_id'):
+        elif has_key_value(atom1, 'auth_atom_id'):
             row[key_size + 17] = atom1['auth_atom_id']
         if atom2 is not None:
             row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
@@ -8903,7 +8897,7 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
             val = get_row_value('Auth_atom_name_2')
             if val is not None:
                 row[key_size + 22] = val
-        elif hasKeyValue(atom2, 'auth_atom_id'):
+        elif has_key_value(atom2, 'auth_atom_id'):
             row[key_size + 22] = atom2['auth_atom_id']
 
         if authToInsCode is not None:
@@ -10319,17 +10313,3 @@ def getPdbxNmrSoftwareName(name: str) -> str:
     if name == 'XWINNMR':
         return 'XwinNMR'
     return name  # 'ARIA', 'CHARMM', 'CNS', 'CYANA', 'DYNAMO', 'PALES', 'TALOS', 'GROMACS', 'SYBYL', 'VNMR', 'XEASY'
-
-
-def hasKeyValue(d: Optional[dict] = None, key: Any = None) -> bool:
-    """ Return whether a given dictionary has effective value for a key.
-        @return: True if d[key] has effective value, False otherwise
-    """
-
-    if d is None or key is None:
-        return False
-
-    if key in d:
-        return d[key] is not None
-
-    return False

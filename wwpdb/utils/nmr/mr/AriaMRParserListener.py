@@ -18,7 +18,8 @@ from typing import IO, List, Tuple, Optional
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
+    from wwpdb.utils.nmr.io.CifReader import (CifReader,
+                                              SYMBOLS_ELEMENT)
     from wwpdb.utils.nmr.mr.AriaMRParser import AriaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -90,7 +91,8 @@ try:
                                            retrieveOriginalSeqIdFromMRMap)
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error)
 except ImportError:
-    from nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
+    from nmr.io.CifReader import (CifReader,
+                                  SYMBOLS_ELEMENT)
     from nmr.mr.AriaMRParser import AriaMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,

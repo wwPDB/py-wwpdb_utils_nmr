@@ -13,17 +13,19 @@ import pynmrstar
 import re
 import collections
 
-from typing import Any, IO, List
+from typing import IO, List
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
     from wwpdb.utils.nmr.AlignUtil import (emptyValue,
                                            getScoreOfSeqAlign)
     from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
+    from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag, set_sf_tag, retrieve_symbolic_labels)
 except ImportError:
     from nmr.AlignUtil import (emptyValue,
                                getScoreOfSeqAlign)
     from nmr.io.mmCIFUtil import mmCIFUtil
+    from nmr.CifToNmrStar import (get_first_sf_tag, set_sf_tag, retrieve_symbolic_labels)
 
 
 NMR_SOFTWERE_LIST = ('3D-DART', '3DNA', '4D-CHAINS', '4DSPOT', 'ABACUS', 'ACME', 'ADAPT-NMR', 'AGNuS', 'ALMOST',
@@ -78,44 +80,6 @@ NMR_SOFTWERE_LIST = ('3D-DART', '3DNA', '4D-CHAINS', '4DSPOT', 'ABACUS', 'ACME',
 
 
 range_value_pattern = re.compile(r'^(.+)\s*-\s*(.+)$')
-
-
-def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> str:
-    """ Return the first value of a given saveframe tag with decoding symbol notation.
-        @return: The first tag value, default string otherwise.
-    """
-
-    if not isinstance(sf, pynmrstar.Saveframe) or tag is None:
-        return default
-
-    array = sf.get_tag(tag)
-
-    if len(array) == 0 or array[0] is None:
-        return default
-
-    if not isinstance(array[0], str):
-        return array[0]
-
-    if array[0] == '$':
-        return default
-
-    return array[0] if len(array[0]) < 2 or array[0][0] != '$' else array[0][1:]
-
-
-def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
-    """ Set saveframe tag.
-    """
-
-    tagNames = [t[0] for t in sf.tags]
-
-    if isinstance(value, str) and len(value) == 0:
-        value = None
-
-    if tag not in tagNames:
-        sf.add_tag(tag, value)
-        return
-
-    sf.tags[tagNames.index(tag)][1] = value
 
 
 def get_nmr_software(name: str) -> str:
@@ -272,7 +236,7 @@ class OneDepAnnTasks:
 
         self.__lpCategory = {'sample': {'_Sample': ['_Sample_component'],
                                         '_Sample_condition_list': ['_Sample_condition_variable']},
-                             'spectrometer': {'_NMR_spectometer_list': ['_NMR_spectrometer_view']},
+                             'spectrometer': {'_NMR_spectrometer_list': ['_NMR_spectrometer_view']},
                              'experiment': {'_Experiment_list': ['_Experiment']},
                              'software': {'_Software': ['_Vendor', '_Task']},
                              'chem_shift_ref': {'_Chem_shift_reference': ['_Chem_shift_ref']},
@@ -284,7 +248,7 @@ class OneDepAnnTasks:
 
         self.__lpNewFlag = {'sample': {'_Sample': [True],
                                        '_Sample_condition_list': [True]},
-                            'spectrometer': {'_NMR_spectometer_list': [True]},
+                            'spectrometer': {'_NMR_spectrometer_list': [True]},
                             'experiment': {'_Experiment_list': [True]},
                             'software': {'_Software': [True, True]},
                             'chem_shift_ref': {'_Chem_shift_reference': [True]},
@@ -1299,6 +1263,11 @@ class OneDepAnnTasks:
             for sf_category, sf_tag_prefix, new_flag in zip(self.__sfCategory[page], self.__sfTagPrefix[page], self.__sfNewFlag[page]):
 
                 cif_categories = set(tag_map[0] for tag_map in self.__sfTagMap if tag_map[2] == sf_tag_prefix)
+                if len(cif_categories) == 0:
+                    if sf_category == 'NMR_spectrometer_list':
+                        cif_categories = {'pdbx_nmr_spectrometer'}
+                    elif sf_category == 'experiment_list':
+                        cif_categories = {'pdbx_nmr_exptl'}
 
                 has_cif_category = True
                 for cif_category in cif_categories:
@@ -1533,7 +1502,7 @@ class OneDepAnnTasks:
                                     has_uniq_lp_row = False
 
                                     if need_processing:
-                                        lp_list_id_col = -1 if lp_list_id_tag is None or list_id_tag not in lp.tags else lp.tags.index(list_id_tag)
+                                        lp_list_id_col = -1 if list_id_tag not in lp.tags else lp.tags.index(list_id_tag)
                                         entry_id_col = -1 if 'Entry_ID' not in lp.tags else lp.tags.index('Entry_ID')
                                         type_col = -1 if 'Type' not in lp.tags else lp.tags.index('Type')
                                         val_col = -1 if 'Val' not in lp.tags else lp.tags.index('Val')
@@ -1654,6 +1623,13 @@ class OneDepAnnTasks:
                                                                     continue
 
                                     if reset and has_uniq_lp_row and not need_processing:
+
+                                        # _NMR_spectrometer_view.NMR_spectrometer_list_ID, _Experiment.Experiment_list_ID
+                                        if list_id_tag in lp.tags:
+                                            lp_list_id_col = lp.tags.index(list_id_tag)
+                                            if _row[lp_list_id_col] in emptyValue:
+                                                _row[lp_list_id_col] = str(list_id_dict[list_id])
+
                                         lp.add_data(_row)
 
                             if reset and len(lp) > 0:
@@ -1682,6 +1658,8 @@ class OneDepAnnTasks:
 
                     if len(extra_sf_tags) > 0:
                         sf.remove_tag(extra_sf_tags)
+
+        retrieve_symbolic_labels(master_entry)
 
         # BMRBAnnTask class will normalize later
         # self.__c2S.set_entry_id(master_entry, self.__entryId)

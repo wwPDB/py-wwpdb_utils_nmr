@@ -32,7 +32,8 @@ from mmcif.io.IoAdapterPy import IoAdapterPy
 try:
     from wwpdb.utils.nmr.io.CifReader import (CifReader,
                                               LEN_MAJOR_ASYM_ID,
-                                              calculate_uninstanced_coord)
+                                              calculate_uninstanced_coord,
+                                              to_np_array)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        DIST_RESTRAINT_ERROR,
@@ -49,7 +50,8 @@ try:
 except ImportError:
     from nmr.io.CifReader import (CifReader,
                                   LEN_MAJOR_ASYM_ID,
-                                  calculate_uninstanced_coord)
+                                  calculate_uninstanced_coord,
+                                  to_np_array)
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            DIST_RESTRAINT_ERROR,
@@ -117,13 +119,6 @@ def write_as_pickle(obj: Any, file_name: str):
 
         with open(file_name, 'wb') as ofh:
             pickle.dump(obj, ofh)
-
-
-def to_np_array(a: dict) -> list:
-    """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
-    """
-
-    return np.asarray([a['x'], a['y'], a['z']], dtype=float)
 
 
 def distance(p0: list, p1: list) -> float:

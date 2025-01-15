@@ -19,7 +19,8 @@ from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-
 
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
+    from wwpdb.utils.nmr.io.CifReader import (CifReader,
+                                              SYMBOLS_ELEMENT)
     from wwpdb.utils.nmr.mr.CyanaNOAParser import CyanaNOAParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -93,7 +94,8 @@ try:
                                            retrieveOriginalSeqIdFromMRMap)
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error)
 except ImportError:
-    from nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
+    from nmr.io.CifReader import (CifReader,
+                                  SYMBOLS_ELEMENT)
     from nmr.mr.CyanaNOAParser import CyanaNOAParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,

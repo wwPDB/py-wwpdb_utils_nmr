@@ -18,7 +18,8 @@ from typing import IO, List, Tuple, Optional
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
+    from wwpdb.utils.nmr.io.CifReader import (CifReader,
+                                              SYMBOLS_ELEMENT)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        translateToStdResName,
                                                        translateToStdAtomName,
@@ -87,7 +88,8 @@ try:
                                            splitPolySeqRstForBranched,
                                            retrieveOriginalSeqIdFromMRMap)
 except ImportError:
-    from nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
+    from nmr.io.CifReader import (CifReader,
+                                  SYMBOLS_ELEMENT)
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            translateToStdResName,
                                            translateToStdAtomName,

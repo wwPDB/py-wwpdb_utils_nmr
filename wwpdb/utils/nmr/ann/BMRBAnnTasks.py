@@ -11,7 +11,7 @@ import re
 import copy
 import pynmrstar
 
-from typing import Any, IO, List, Optional
+from typing import IO, List, Optional
 from packaging import version
 from operator import itemgetter
 
@@ -27,7 +27,7 @@ try:
                                                        ALLOWED_ISOTOPE_NUMBERS,
                                                        WELL_KNOWN_ISOTOPE_NUMBERS,
                                                        CS_UNCERTAINTY_RANGE)
-    from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
+    from wwpdb.utils.nmr.CifToNmrStar import (CifToNmrStar, get_first_sf_tag, set_sf_tag)
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
@@ -41,7 +41,7 @@ except ImportError:
                                            ALLOWED_ISOTOPE_NUMBERS,
                                            WELL_KNOWN_ISOTOPE_NUMBERS,
                                            CS_UNCERTAINTY_RANGE)
-    from nmr.CifToNmrStar import CifToNmrStar
+    from nmr.CifToNmrStar import (CifToNmrStar, get_first_sf_tag, set_sf_tag)
     from nmr.NmrDpReport import NmrDpReport
 
 
@@ -56,58 +56,6 @@ rna_related_words = ['rna', 'ribonucleotide', 'nucleotide', "5'-", "3'-"]
 
 allowed_thiol_states = ('all disulfide bound', 'all other bound', 'all free', 'not present', 'not available', 'unknown', 'not reported',
                         'free and disulfide bound', 'free and other bound', 'free disulfide and other bound', 'disulfide and other bound')
-
-
-def has_key_value(d: dict, key: Any) -> bool:
-    """ Return whether a given dictionary has effective value for a key.
-        @return: True if d[key] has effective value, False otherwise
-    """
-
-    if not isinstance(d, dict) or key is None:
-        return False
-
-    if key in d:
-        return d[key] is not None
-
-    return False
-
-
-def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> str:
-    """ Return the first value of a given saveframe tag with decoding symbol notation.
-        @return: The first tag value, default string otherwise.
-    """
-
-    if not isinstance(sf, pynmrstar.Saveframe) or tag is None:
-        return default
-
-    array = sf.get_tag(tag)
-
-    if len(array) == 0 or array[0] is None:
-        return default
-
-    if not isinstance(array[0], str):
-        return array[0]
-
-    if array[0] == '$':
-        return default
-
-    return array[0] if len(array[0]) < 2 or array[0][0] != '$' else array[0][1:]
-
-
-def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
-    """ Set saveframe tag.
-    """
-
-    tagNames = [t[0] for t in sf.tags]
-
-    if isinstance(value, str) and len(value) == 0:
-        value = None
-
-    if tag not in tagNames:
-        sf.add_tag(tag, value)
-        return
-
-    sf.tags[tagNames.index(tag)][1] = value
 
 
 class BMRBAnnTasks:
@@ -360,6 +308,7 @@ class BMRBAnnTasks:
                                     tags = ['Experiment_ID', 'Experiment_name', 'Sample_ID', 'Sample_label', 'Sample_state']
 
                                     if set(tags) & set(lp.tags) == set(tags):
+                                        exp_name_col = lp.tags.index('Experiment_name')
                                         sample_id_col = lp.tags.index('Sample_ID')
                                         sample_label_col = lp.tags.index('Sample_label')
                                         sample_state_col = lp.tags.index('Sample_state')
@@ -367,8 +316,9 @@ class BMRBAnnTasks:
                                         cs_exp_list = lp.get_tag(tags)
 
                                         for idx, cs_exp in enumerate(cs_exp_list):
-                                            exp = next((exp for exp in exp_list if exp[0] == cs_exp[0] and exp[1] == cs_exp[1]), None)
+                                            exp = next((exp for exp in exp_list if exp[0] == cs_exp[0]), None)
                                             if exp is not None and cs_exp[2:5] != exp[2:5]:
+                                                lp.data[idx][exp_name_col] = exp[1]
                                                 lp.data[idx][sample_id_col] = exp[2]
                                                 lp.data[idx][sample_label_col] = exp[3]
                                                 lp.data[idx][sample_state_col] = exp[4]
@@ -2298,6 +2248,108 @@ class BMRBAnnTasks:
 
                             if exp_id not in emptyValue and int(exp_id) in exp_id_mapping:
                                 set_sf_tag(_sf, 'Experiment_ID', exp_id_mapping[int(exp_id)])
+
+                            exp_id = get_first_sf_tag(_sf, 'Experiment_ID')
+
+                exp_tags = ['ID', 'Name', 'NMR_spectrometer_ID']
+
+                if set(exp_tags) & set(lp.tags) == set(exp_tags):
+                    exp_list = lp.get_tag(exp_tags)
+
+                _sf_category = 'spectral_peak_list'
+
+                if _sf_category in self.__sfCategoryList:
+
+                    def get_field_strength(parent_sf_tag_prefix, parent_list_id):
+                        if isinstance(parent_list_id, int) or (isinstance(parent_list_id, str) and parent_list_id.isdigit()):
+                            try:
+                                parent_sf = master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', parent_list_id)[0]
+                                return get_first_sf_tag(parent_sf, 'Field_strength')
+                            except IndexError:
+                                try:
+                                    parent_sf = master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', int(parent_list_id)
+                                                                                             if isinstance(parent_list_id, str) else str(parent_list_id))[0]
+                                    return get_first_sf_tag(parent_sf, 'Field_strength')
+                                except IndexError:
+                                    pass
+                        return ''
+
+                    for _sf in master_entry.get_saveframes_by_category(_sf_category):
+                        exp_id = get_first_sf_tag(_sf, 'Experiment_ID')
+
+                        if exp_id not in emptyValue:
+
+                            if isinstance(exp_id, int):
+                                exp_id = str(int)
+
+                            exp_row = next((row for row in exp_list
+                                            if (row[0] == exp_id or (isinstance(row[0], int) and str(row[0]) == exp_id))), None)
+
+                            if exp_row is not None:
+                                set_sf_tag(_sf, 'Experiment_name', exp_row[1])
+
+                                spectrometer_id = exp_row[2]
+
+                                if spectrometer_id in emptyValue:
+                                    continue
+
+                                field_strength = get_field_strength('_NMR_spectrometer', spectrometer_id)
+
+                                if len(field_strength) == 0:
+                                    continue
+
+                                try:
+
+                                    if isinstance(field_strength, str):
+                                        field_strength = float(field_strength)
+
+                                except ValueError:
+                                    continue
+
+                                cs_ref_ratio_map = {}
+
+                                _lp_category = 'Chem_shift_ref'
+
+                                try:
+
+                                    for _lp in master_entry.get_loops_by_category(_lp_category):
+                                        isotope_num_col = _lp.tags.index('Atom_isotope_number')
+                                        ratio_col = _lp.tags.index('Indirect_shift_ratio')
+
+                                        for _row in _lp:
+                                            isotope_num = _row[isotope_num_col]
+                                            ratio = float(_row[ratio_col])
+
+                                            if isotope_num not in cs_ref_ratio_map:
+                                                cs_ref_ratio_map[isotope_num] = ratio
+
+                                except (KeyError, ValueError):
+                                    continue
+
+                                if len(cs_ref_ratio_map) == 0:
+                                    continue
+
+                                _lp_category = 'Spectral_dim'
+
+                                try:
+
+                                    _lp = _sf.get_loop(_lp_category)
+
+                                    isotope_num_col = _lp.tags.index('Atom_isotope_number')
+                                    spec_freq_col = _lp.tags.index('Spectrometer_frequency')
+
+                                    for idx, _row in enumerate(_lp):
+                                        isotope_num = _row[isotope_num_col]
+                                        spec_freq = _row[spec_freq_col]
+
+                                        if spec_freq in emptyValue and isotope_num in cs_ref_ratio_map:
+                                            if cs_ref_ratio_map[isotope_num] == 1.0:
+                                                _lp.data[idx][spec_freq_col] = field_strength
+                                            else:
+                                                _lp.data[idx][spec_freq_col] = f'{field_strength * cs_ref_ratio_map[isotope_num]:.2f}'
+
+                                except (KeyError, ValueError):
+                                    continue
 
             except KeyError:
                 pass

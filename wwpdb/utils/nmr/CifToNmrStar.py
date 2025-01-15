@@ -26,7 +26,7 @@ import collections
 
 from packaging import version
 from operator import itemgetter
-from typing import IO, Union, Optional
+from typing import Any, IO, Union, Optional
 
 try:
     from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
@@ -46,22 +46,112 @@ else:
     logging.getLogger().setLevel(logging.ERROR)  # set level for pynmrstar
 
 
+def has_key_value(d: dict, key: Any) -> bool:
+    """ Return whether a given dictionary has effective value for a key.
+        @return: True if d[key] has effective value, False otherwise
+    """
+
+    if not isinstance(d, dict) or key is None:
+        return False
+
+    if key in d:
+        return d[key] is not None
+
+    return False
+
+
+def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> str:
+    """ Return the first value of a given saveframe tag with decoding symbol notation.
+        @return: The first tag value, default string otherwise.
+    """
+
+    if not isinstance(sf, pynmrstar.Saveframe) or tag is None:
+        return default
+
+    array = sf.get_tag(tag)
+
+    if len(array) == 0 or array[0] is None:
+        return default
+
+    if not isinstance(array[0], str):
+        return array[0]
+
+    if array[0] == '$':
+        return default
+
+    return array[0] if len(array[0]) < 2 or array[0][0] != '$' else array[0][1:]
+
+
+def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
+    """ Set saveframe tag.
+    """
+
+    tagNames = [t[0] for t in sf.tags]
+
+    if isinstance(value, str) and len(value) == 0:
+        value = None
+
+    if tag not in tagNames:
+        sf.add_tag(tag, value)
+        return
+
+    sf.tags[tagNames.index(tag)][1] = value
+
+
 def retrieve_symbolic_labels(strData: pynmrstar.Entry):
     """ Retrieve symbolic label representations that serve as saveframe pointers in NMR-STAR.
     """
 
+    def get_parent_sf_framecode(parent_sf_tag_prefix, parent_list_id):
+        if isinstance(parent_list_id, int) or (isinstance(parent_list_id, str) and parent_list_id.isdigit()):
+            try:
+                parent_sf = strData.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', parent_list_id)[0]
+                return get_first_sf_tag(parent_sf, 'Sf_framecode')
+            except IndexError:
+                try:
+                    parent_sf = strData.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', int(parent_list_id)
+                                                                        if isinstance(parent_list_id, str) else str(parent_list_id))[0]
+                    return get_first_sf_tag(parent_sf, 'Sf_framecode')
+                except IndexError:
+                    pass
+        return ''
+
     for sf in strData.frame_list:
         for idx, tag in enumerate(sf.tags):
-            if tag[0].endswith('_label') and tag[1] not in emptyValue and not tag[1].startswith('$'):
-                sf.tags[idx][1] = '$' + tag[1]
+            if tag[0].endswith('_label'):
+                if tag[1] not in emptyValue:
+                    if tag[1].startswith('$'):
+                        sf.tags[idx][1] = '$' + tag[1]
+                else:
+                    id_tag = tag[0][:-6] + '_ID'
+                    id_val = get_first_sf_tag(sf, id_tag)
+                    if id_val not in emptyValue:
+                        parent_sf_framecode = get_parent_sf_framecode(f'_{tag[0][:-6]}', id_val)
+                        if len(parent_sf_framecode) > 0 and id_tag in sf.tags:
+                            sf.tags[sf.tags.index(id_tag)][1] = f'${parent_sf_framecode}'
+
         for lp in sf.loops:
             label_cols = [idx for idx, tag in enumerate(lp.tags) if tag.endswith('_label')]
             if len(label_cols) == 0:
                 continue
+            id_cols = [-1] * len(label_cols)
+            for idx, label_col in enumerate(label_cols):
+                id_tag = lp.tags[label_col][:-6] + '_ID'
+                if id_tag in lp.tags:
+                    id_cols[idx] = lp.tags.index(id_tag)
             for idx, row in enumerate(lp.data):
                 for col, val in enumerate(row):
-                    if col in label_cols and val not in emptyValue and not val.startswith('$'):
-                        lp.data[idx][col] = '$' + val
+                    if col in label_cols:
+                        if val not in emptyValue:
+                            if not val.startswith('$'):
+                                lp.data[idx][col] = '$' + val
+                        else:
+                            id_col = next((id_col for label_col, id_col in zip(label_cols, id_cols) if col == label_col), -1)
+                            if id_col == -1 or row[id_col] in emptyValue:
+                                continue
+                            parent_sf_framecode = get_parent_sf_framecode(f'_{lp.tags[col][:-6]}', row[id_col])
+                            if len(parent_sf_framecode) > 0:
+                                lp.data[idx][col] = f'${parent_sf_framecode}'
 
 
 class CifToNmrStar:

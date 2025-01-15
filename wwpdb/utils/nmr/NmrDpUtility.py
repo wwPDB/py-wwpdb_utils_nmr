@@ -267,9 +267,13 @@ try:
                                            getPrettyJson)
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.io.CifReader import CifReader, LEN_MAJOR_ASYM_ID
+    from wwpdb.utils.nmr.io.CifReader import (CifReader,
+                                              LEN_MAJOR_ASYM_ID)
     from wwpdb.utils.nmr.rci.RCI import RCI
-    from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
+    from wwpdb.utils.nmr.CifToNmrStar import (CifToNmrStar,
+                                              has_key_value,
+                                              get_first_sf_tag,
+                                              set_sf_tag)
     from wwpdb.utils.nmr.NmrVrptUtility import (uncompress_gzip_file, compress_as_gzip_file,
                                                 load_from_pickle, write_as_pickle,
                                                 to_np_array, distance,
@@ -388,9 +392,13 @@ except ImportError:
                                getPrettyJson)
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.io.CifReader import CifReader, LEN_MAJOR_ASYM_ID
+    from nmr.io.CifReader import (CifReader,
+                                  LEN_MAJOR_ASYM_ID)
     from nmr.rci.RCI import RCI
-    from nmr.CifToNmrStar import CifToNmrStar
+    from nmr.CifToNmrStar import (CifToNmrStar,
+                                  has_key_value,
+                                  get_first_sf_tag,
+                                  set_sf_tag)
     from nmr.NmrVrptUtility import (uncompress_gzip_file, compress_as_gzip_file,
                                     load_from_pickle, write_as_pickle,
                                     to_np_array, distance,
@@ -734,58 +742,6 @@ def get_type_of_star_file(fPath: str) -> str:
                 os.remove(__fPath)
             except OSError:
                 pass
-
-
-def has_key_value(d: dict, key: Any) -> bool:
-    """ Return whether a given dictionary has effective value for a key.
-        @return: True if d[key] has effective value, False otherwise
-    """
-
-    if not isinstance(d, dict) or key is None:
-        return False
-
-    if key in d:
-        return d[key] is not None
-
-    return False
-
-
-def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> str:
-    """ Return the first value of a given saveframe tag with decoding symbol notation.
-        @return: The first tag value, default string otherwise.
-    """
-
-    if not isinstance(sf, pynmrstar.Saveframe) or tag is None:
-        return default
-
-    array = sf.get_tag(tag)
-
-    if len(array) == 0 or array[0] is None:
-        return default
-
-    if not isinstance(array[0], str):
-        return array[0]
-
-    if array[0] == '$':
-        return default
-
-    return array[0] if len(array[0]) < 2 or array[0][0] != '$' else array[0][1:]
-
-
-def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
-    """ Set saveframe tag.
-    """
-
-    tagNames = [t[0] for t in sf.tags]
-
-    if isinstance(value, str) and len(value) == 0:
-        value = None
-
-    if tag not in tagNames:
-        sf.add_tag(tag, value)
-        return
-
-    sf.tags[tagNames.index(tag)][1] = value
 
 
 def is_non_metal_element(comp_id: str, atom_id: str) -> bool:
@@ -28782,7 +28738,8 @@ class NmrDpUtility:
                                 if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz'\
                                    and 'spectrometer_frequency' in sp_dim and sp_width is not None:
                                     sp_freq = sp_dim['spectrometer_frequency']
-                                    sp_width /= sp_freq
+                                    if sp_freq not in emptyValue:
+                                        sp_width /= sp_freq
                                 sp_widths.append(sp_width)
                             else:
                                 if sp_dim['ID'] != i:
@@ -28793,7 +28750,8 @@ class NmrDpUtility:
                                 if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
                                    and 'Spectrometer_frequency' in sp_dim and sp_width is not None:
                                     sp_freq = sp_dim['Spectrometer_frequency']
-                                    sp_width /= sp_freq
+                                    if sp_freq not in emptyValue:
+                                        sp_width /= sp_freq
                                 sp_widths.append(sp_width)
                             break
                 else:
@@ -29283,7 +29241,8 @@ class NmrDpUtility:
                             sp_width = None if 'Sweep_width_units' not in sp_dim else sp_dim.get('Sweep_width')
                             if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and sp_width is not None:
                                 sp_freq = sp_dim['Spectrometer_frequency']
-                                sp_width /= sp_freq
+                                if sp_freq not in emptyValue:
+                                    sp_width /= sp_freq
                             sp_widths.append(sp_width)
                             break
                 else:

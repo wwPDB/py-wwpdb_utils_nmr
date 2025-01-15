@@ -21,9 +21,11 @@ from typing import IO, List, Tuple, Optional
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:
-    from wwpdb.utils.nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
+    from wwpdb.utils.nmr.io.CifReader import (CifReader,
+                                              SYMBOLS_ELEMENT)
     from wwpdb.utils.nmr.mr.XplorMRParser import XplorMRParser
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx, toNefEx,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
+                                                       toNefEx,
                                                        coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
                                                        translateToStdResName,
@@ -137,9 +139,11 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array, distance, dist_error,
                                                 angle_target_values, dihedral_angle, angle_error)
 except ImportError:
-    from nmr.io.CifReader import (CifReader, SYMBOLS_ELEMENT)
+    from nmr.io.CifReader import (CifReader,
+                                  SYMBOLS_ELEMENT)
     from nmr.mr.XplorMRParser import XplorMRParser
-    from nmr.mr.ParserListenerUtil import (toRegEx, toNefEx,
+    from nmr.mr.ParserListenerUtil import (toRegEx,
+                                           toNefEx,
                                            coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
                                            translateToStdResName,

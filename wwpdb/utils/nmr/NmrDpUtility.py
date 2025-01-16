@@ -28779,7 +28779,10 @@ class NmrDpUtility:
                                 if sp_dim['ID'] != i:
                                     continue
                                 axis_codes.append(sp_dim['Axis_code'])
-                                alt_axis_codes.append(str(sp_dim['Atom_isotope_number']) + sp_dim['Atom_type'])
+                                if 'Atom_isotope_number' in sp_dim and 'Atom_type' in sp_dim:
+                                    alt_axis_codes.append(str(sp_dim['Atom_isotope_number']) + sp_dim['Atom_type'])
+                                else:
+                                    alt_axis_codes.append(sp_dim['Axis_code'])
                                 abs_pk_pos.append(False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions'])
                                 sp_width = None if 'Sweep_width_units' not in sp_dim else sp_dim.get('Sweep_width')
                                 if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
@@ -29274,7 +29277,10 @@ class NmrDpUtility:
                             if sp_dim['ID'] != i:
                                 continue
                             axis_codes.append(sp_dim['Axis_code'])
-                            alt_axis_codes.append(str(sp_dim['Atom_isotope_number']) + sp_dim['Atom_type'])
+                            if 'Atom_isotope_number' in sp_dim and 'Atom_type' in sp_dim:
+                                alt_axis_codes.append(str(sp_dim['Atom_isotope_number']) + sp_dim['Atom_type'])
+                            else:
+                                alt_axis_codes.append(sp_dim['Axis_code'])
                             abs_pk_pos.append(False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions'])
                             sp_width = None if 'Sweep_width_units' not in sp_dim else sp_dim.get('Sweep_width')
                             if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and sp_width is not None:

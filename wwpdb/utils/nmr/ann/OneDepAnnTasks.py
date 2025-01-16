@@ -14,6 +14,7 @@ import re
 import collections
 
 from typing import IO, List
+
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
 try:

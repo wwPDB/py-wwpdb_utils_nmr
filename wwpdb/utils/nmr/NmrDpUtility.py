@@ -10591,7 +10591,7 @@ class NmrDpUtility:
 
                         s = re.split('[ ()]', _line)
 
-                        _t_lower = ""
+                        _t_lower = ''
 
                         for t in s:
 
@@ -10678,7 +10678,7 @@ class NmrDpUtility:
 
                         s = re.split('[ ()=]', _line)
 
-                        _t_lower = ""
+                        _t_lower = ''
 
                         for t in s:
 
@@ -11740,7 +11740,7 @@ class NmrDpUtility:
             if not is_aux_amb and not is_aux_gro and not is_aux_cha and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
                and not has_plane_restraint and not has_hbond_restraint and not has_ssbond_restraint and not valid:
 
-                hint = ""
+                hint = ''
                 if len(concat_nmr_restraint_names(content_subtype)) == 0:
                     if file_type in ('nm-res-xpl', 'nm-res-cns') and not has_rdc_origins:
                         hint = 'assign ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.# #.#'
@@ -11762,7 +11762,7 @@ class NmrDpUtility:
 
             elif is_aux_amb and not has_amb_coord and not has_topology:
 
-                subtype_name = ""
+                subtype_name = ''
                 if has_chem_shift:
                     subtype_name += "Assigned chemical shifts, "
                 if has_dist_restraint:
@@ -11802,7 +11802,7 @@ class NmrDpUtility:
 
             elif is_aux_gro and not has_topology:
 
-                subtype_name = ""
+                subtype_name = ''
                 if has_chem_shift:
                     subtype_name += "Assigned chemical shifts, "
                 if has_dist_restraint:
@@ -11836,7 +11836,7 @@ class NmrDpUtility:
 
             elif is_aux_cha and not has_topology:
 
-                subtype_name = ""
+                subtype_name = ''
                 if has_chem_shift:
                     subtype_name += "Assigned chemical shifts, "
                 if has_dist_restraint:

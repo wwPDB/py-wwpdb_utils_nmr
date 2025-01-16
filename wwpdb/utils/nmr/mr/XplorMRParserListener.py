@@ -8439,7 +8439,7 @@ class XplorMRParserListener(ParseTreeListener):
                              self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                              atom1, atom3)
                 sf['loop'].add_data(row)
-                #
+
                 sf['index_id'] += 1
                 memberLogicCode = 'AND'
                 row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],

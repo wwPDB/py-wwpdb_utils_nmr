@@ -11,9 +11,9 @@ import re
 import copy
 import pynmrstar
 
-from typing import IO, List, Optional
 from packaging import version
 from operator import itemgetter
+from typing import IO, List, Optional
 
 try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil

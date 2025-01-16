@@ -35,7 +35,7 @@
 # 10-Sep-2024   my  - ignore identical polymer sequence extensions within polynucleotide multiplexes (DAOTHER-9674)
 # 18-Sep-2024   my  - add 'starts-with-alnum' item type (DAOTHER-9694)
 ##
-""" A collection of classes for parsing CIF files.
+""" A collection of classes for parsing CIF files
 """
 
 import sys
@@ -67,10 +67,10 @@ ROTATION_METHOD = quaternion_rmsd
 # must be one of reorder_hungarian, reorder_brute, reorder_distance, None
 REORDER_METHOD = reorder_hungarian
 # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes,
-# (e.g. X and Z coords exchanged -> Z, Y, X). This will affect stereo-chemistry.
+# (e.g. X and Z coords exchanged -> Z, Y, X). This will affect stereo-chemistry
 USE_REFLECTIONS = False
 # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes,
-# (e.g. X and Z coords exchanged -> Z, Y, X). Stereo-chemistry will be kept.
+# (e.g. X and Z coords exchanged -> Z, Y, X). Stereo-chemistry will be kept
 USE_REFLECTIONS_KEEP_STEREO = False
 REORDER = False
 
@@ -85,7 +85,7 @@ CARTN_DATA_ITEMS = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
 
 
 def M(axis: list, theta: float) -> list:
-    """ Return the rotation matrix associated with counterclockwise rotation about the given axis by theta radians.
+    """ Return the rotation matrix associated with counterclockwise rotation about the given axis by theta radians
     """
 
     axis = np.asarray(axis)
@@ -101,15 +101,15 @@ def M(axis: list, theta: float) -> list:
 
 
 def to_np_array(a: dict) -> list:
-    """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
+    """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format
     """
 
     return np.asarray([a['x'], a['y'], a['z']], dtype=float)
 
 
 def get_coordinates(p: list) -> [list, list]:
-    """ Convert list of atoms for RMSD calculation.
-        @return: a vector set of the coordinates.
+    """ Convert list of atoms for RMSD calculation
+        @return: a vector set of the coordinates
     """
 
     V = []
@@ -128,7 +128,7 @@ def get_coordinates(p: list) -> [list, list]:
 
 
 def calculate_rmsd(p: list, q: list) -> float:
-    """ Calculate RMSD of two coordinates.
+    """ Calculate RMSD of two coordinates
         @return: RMSD value
     """
 
@@ -207,7 +207,7 @@ def calculate_uninstanced_coord(p_coord: list, q_coord: list, s_coord: list) -> 
 
 
 class CifReader:
-    """ Accessor methods for parsing CIF files.
+    """ Accessor methods for parsing CIF files
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -231,10 +231,10 @@ class CifReader:
         # current working directory path
         self.__dirPath = None
 
-        # data block list
+        # datablock list
         self.__dBlockList = None
 
-        # the primary data block
+        # the primary datablock
         self.__dBlock = None
 
         # hash code of current cif file
@@ -281,8 +281,8 @@ class CifReader:
         self.__rmsd_overlaid_exactly = 0.01
 
     def parse(self, filePath: str, dirPath: Optional[str] = None) -> bool:
-        """ Parse CIF file, and set internal active data block if possible.
-            @return: True for success or False otherwise.
+        """ Parse CIF file, and set internal active datablock if possible
+            @return: True for success or False otherwise
         """
 
         if dirPath is not None:
@@ -299,7 +299,7 @@ class CifReader:
 
             if not os.access(self.__filePath, os.R_OK):
                 if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.parse() ++ Error  - Missing file {self.__filePath}\n")
+                    self.__lfh.write(f"+{self.__class_name__} ++ Error  - Missing file {self.__filePath}\n")
                 return False
 
             if self.__use_cache:
@@ -308,15 +308,15 @@ class CifReader:
 
             return self.__setDataBlock(self.__getDataBlockFromFile())
 
-        except Exception:
-            if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.parse() ++ Error  - Missing file {self.__filePath}\n")
+        except Exception as e:
+            if self.__verbose and 'loop_ declaration outside of data_ block or save_ frame' not in str(e):
+                self.__lfh.write(f"+{self.__class_name__} ++ Error  - Parse {self.__filePath} failed {str(e)}\n")
             return False
 
     def __getDataBlockFromFile(self, blockId: Optional[str] = None):
-        """ Worker method to read cif file and set the target datablock.
-            If no blockId is provided return the first data block.
-            @return: target data block
+        """ Worker method to read cif file and set the target datablock
+            If no blockId is provided return the first datablock
+            @return: target datablock
         """
 
         if self.__use_cache:
@@ -361,8 +361,8 @@ class CifReader:
         return None
 
     def __setDataBlock(self, dataBlock: Optional[str] = None) -> bool:
-        """ Assigns the input data block as the active internal data block.
-            @return: True for success or False otherwise.
+        """ Assigns the input datablock as the active internal datablock
+            @return: True for success or False otherwise
         """
 
         ok = False
@@ -384,13 +384,13 @@ class CifReader:
         return ok
 
     def getFilePath(self) -> str:
-        """ Return cif file path.
+        """ Return cif file path
         """
 
         return self.__filePath
 
     def getHashCode(self) -> str:
-        """ Return hash code of the cif file.
+        """ Return hash code of the cif file
         """
 
         if self.__hashCode is None:
@@ -400,15 +400,15 @@ class CifReader:
         return self.__hashCode
 
     def getDataBlockList(self) -> list:
-        """ Return whole list of datablock.
+        """ Return whole list of datablock
         """
 
         return self.__dBlockList
 
     def getDataBlock(self, blockId: Optional[str] = None):
-        """ Return target datablock.
-            Return None in case current blockId does not exist or no blockId does not match.
-            @return: target data block
+        """ Return target datablock
+            Return None in case current blockId does not exist or no blockId does not match
+            @return: target datablock
         """
 
         if self.__dBlock is None or self.__dBlock.getType() != 'data':
@@ -422,7 +422,7 @@ class CifReader:
         return dBlock if self.__setDataBlock(dBlock) else None
 
     def hasCategory(self, catName: str, blockId: Optional[str] = None) -> bool:
-        """ Return whether a given category exists.
+        """ Return whether a given category exists
         """
 
         if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
@@ -434,7 +434,7 @@ class CifReader:
         return catName in self.__dBlock.getObjNameList()
 
     def hasItem(self, catName: str, itName: str, blockId: Optional[str] = None) -> bool:
-        """ Return whether a given item exists in a category.
+        """ Return whether a given item exists in a category
         """
 
         if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
@@ -454,7 +454,7 @@ class CifReader:
         return itName in [name[len_catName:] for name in catObj.getItemNameList()]
 
     def getItemTags(self, catName: str, blockId: Optional[str] = None) -> List[str]:
-        """ Return item tag names of a given category.
+        """ Return item tag names of a given category
         """
 
         if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
@@ -474,7 +474,7 @@ class CifReader:
         return [name[len_catName:] for name in catObj.getItemNameList()]
 
     def getRowLength(self, catName: str, blockId: Optional[str] = None) -> int:
-        """ Return length of rows of a given category.
+        """ Return length of rows of a given category
         """
 
         if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
@@ -492,7 +492,7 @@ class CifReader:
         return 0
 
     def getRowList(self, catName: str, blockId: Optional[str] = None) -> List[list]:
-        """ Return length of rows of a given category.
+        """ Return length of rows of a given category
         """
 
         if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
@@ -510,7 +510,7 @@ class CifReader:
         return []
 
     def getDictList(self, catName: str, blockId: Optional[str] = None) -> List[dict]:
-        """ Return a list of dictionaries of a given category.
+        """ Return a list of dictionaries of a given category
         """
 
         dList = []
@@ -546,7 +546,7 @@ class CifReader:
 
     def getDictListWithFilter(self, catName: str, dataItems: List[dict], filterItems: Optional[List[dict]] = None,
                               blockId: Optional[str] = None) -> List[dict]:
-        """ Return a list of dictionaries of a given category with filter.
+        """ Return a list of dictionaries of a given category with filter
         """
 
         dataNames = [d['name'] for d in dataItems]
@@ -1354,7 +1354,7 @@ class CifReader:
         return asm
 
     def __extractStructConf(self, chain_id: str, seq_ids: List[int], label_scheme: bool = True) -> List[Optional[str]]:
-        """ Extract structure conformational annotations.
+        """ Extract structure conformational annotations
         """
 
         ret = [None] * len(seq_ids)
@@ -1396,7 +1396,7 @@ class CifReader:
     def __calculateRmsd(self, chain_ids: List[str], lengths: List[int], total_models: int = 1, eff_model_ids: Optional[List[str]] = None,
                         atom_sites: Optional[List[dict]] = None, bb_atom_sites: Optional[List[dict]] = None,
                         randomM: Optional[List[list]] = None) -> Tuple[Optional[List[dict]], Optional[List[dict]]]:
-        """ Calculate RMSD of alpha carbons/phosphates in the ensemble.
+        """ Calculate RMSD of alpha carbons/phosphates in the ensemble
         """
 
         if atom_sites is None or bb_atom_sites is None:

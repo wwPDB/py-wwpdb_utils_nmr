@@ -79,6 +79,7 @@ ISOTOPE_NAMES_OF_NMR_OBS_NUCS = []
 for nuc_name, iso_nums in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items():
     for iso_num in iso_nums:
         ISOTOPE_NAMES_OF_NMR_OBS_NUCS.append(f'{iso_num}{nuc_name}')
+ISOTOPE_NAMES_OF_NMR_OBS_NUCS = tuple(ISOTOPE_NAMES_OF_NMR_OBS_NUCS)
 
 # nucleus with half spin
 HALF_SPIN_NUCLEUS = ('H', 'C', 'N', 'P', 'F', 'CD')
@@ -91,11 +92,13 @@ ALLOWED_AMBIGUITY_CODES = (1, 2, 3, 4, 5, 6, 9)
 ALLOWED_ISOTOPE_NUMBERS = []
 for isotopeNums in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.values():
     ALLOWED_ISOTOPE_NUMBERS.extend(isotopeNums)
+ALLOWED_ISOTOPE_NUMBERS = tuple(ALLOWED_ISOTOPE_NUMBERS)
 
 WELL_KNOWN_ISOTOPE_NUMBERS = copy.copy(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['H'])
 WELL_KNOWN_ISOTOPE_NUMBERS.extend(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['C'])
 WELL_KNOWN_ISOTOPE_NUMBERS.extend(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['N'])
 WELL_KNOWN_ISOTOPE_NUMBERS.extend(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P'])
+WELL_KNOWN_ISOTOPE_NUMBERS = tuple(WELL_KNOWN_ISOTOPE_NUMBERS)
 
 
 REPRESENTATIVE_MODEL_ID = 1
@@ -273,7 +276,7 @@ KNOWN_ANGLE_CARBO_SEQ_OFFSET = {'PHI': [0, 0, 0, -1],  # i, i, i, i-n; for n > 0
 
 XPLOR_RDC_PRINCIPAL_AXIS_NAMES = ('OO', 'X', 'Y', 'Z')
 
-XPLOR_ORIGIN_AXIS_COLS = [0, 1, 2, 3]
+XPLOR_ORIGIN_AXIS_COLS = (0, 1, 2, 3)
 
 XPLOR_NITROXIDE_NAMES = ('NO', 'NX', 'NR', 'NAI', 'OS1', 'NS1')
 
@@ -281,7 +284,7 @@ NITROOXIDE_ANCHOR_RES_NAMES = ('CYS', 'SER', 'GLU', 'ASP', 'GLN', 'ASN', 'LYS', 
 
 HEME_LIKE_RES_NAMES = ('HEM', 'HEB', 'HEC', 'MH0')
 
-LEGACY_PDB_RECORDS = ['HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND', 'SOURCE', 'KEYWDS', 'EXPDTA',
+LEGACY_PDB_RECORDS = ('HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND', 'SOURCE', 'KEYWDS', 'EXPDTA',
                       'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL', 'REMARK',
                       'DBREF', 'DBREF1', 'DBREF2', 'SEQADV', 'SEQRES', 'MODRES',
                       'HET ', 'HETNAM', 'HETSYN', 'FORMUL',
@@ -292,8 +295,7 @@ LEGACY_PDB_RECORDS = ['HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND'
                       'MTRIX1', 'MTRIX2', 'MTRIX3',
                       'MODEL ', 'ATOM ', 'ANISOU', 'TER ', 'HETATM', 'ENDMDL',
                       'CONECT',
-                      'MASTER'
-                      ]
+                      'MASTER')
 
 CYANA_MR_FILE_EXTS = (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cco')
 

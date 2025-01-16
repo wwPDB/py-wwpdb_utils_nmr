@@ -233,8 +233,8 @@ MAX_ROWS_TO_PERFORM_INDEX_ORDER_CHECK = 10000
 
 
 # data items in _Entity_deleted_atom category of NMR-STAR
-ENTITY_DELETED_ATOM_ITEMS = ['ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID',
-                             'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID']
+ENTITY_DELETED_ATOM_ITEMS = ('ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID',
+                             'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID')
 
 
 # integer pattern

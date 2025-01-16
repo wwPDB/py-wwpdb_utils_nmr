@@ -9,12 +9,13 @@
     @author: Masashi Yokochi
 """
 import sys
-from math import pow, exp, log  # pylint: disable=redefined-builtin
-
 import numpy as np
 
+from math import pow, exp, log  # pylint: disable=redefined-builtin
+from typing import IO, List, Tuple
 
-def lmean(list):  # pylint: disable=redefined-builtin
+
+def lmean(list: list) -> float:  # pylint: disable=redefined-builtin
     """ Returns the average of the array elements.
     """
 
@@ -28,7 +29,7 @@ class RCI:
     """ Wrapper class for Random Coil Index calculation.
     """
 
-    def __init__(self, verbose=False, log=sys.stderr):  # pylint: disable=redefined-builtin,redefined-outer-name
+    def __init__(self, verbose: bool = False, log: IO = sys.stderr):  # pylint: disable=redefined-builtin,redefined-outer-name
         self.__verbose = verbose
         self.__lfh = log
 
@@ -117,10 +118,6 @@ class RCI:
 
         self.miss_ass = 1
         self.scale = 1
-
-        self.__setup__()
-
-    def __setup__(self):
 
         if self.function_flag == 1:
             self.floor_value = 0.6
@@ -6004,7 +6001,7 @@ class RCI:
 
         self.__coef_mean = self.__mean_coef()
 
-    def __mean_coef(self):
+    def __mean_coef(self) -> float:
         """ Function to calculate mean weighting coefficient.
         """
 
@@ -6015,7 +6012,7 @@ class RCI:
 
         return lmean(l_coef_list)
 
-    def __read_csi_pseudo(self):
+    def __read_csi_pseudo(self) -> List[list]:
         """ Create pseudo-CSI list to run the program without CSI/Dynamr.
         """
 
@@ -6029,7 +6026,7 @@ class RCI:
 
         return sec_str_list
 
-    def __write_atom_list(self):
+    def __write_atom_list(self) -> List[str]:
         """ Function to create an atom list.
         """
 
@@ -6049,7 +6046,7 @@ class RCI:
 
         return l_atom_list
 
-    def __gap_fill(self, L_list, l_atom):
+    def __gap_fill(self, L_list: list, l_atom: list) -> List[list]:
         """ Gap filling function when smooth=0, either  i+n or i-n
         """
 
@@ -6113,7 +6110,7 @@ class RCI:
 
         return L_all
 
-    def __gap_fill2(self, L_list, l_atom):
+    def __gap_fill2(self, L_list: list, l_atom: list) -> List[list]:
         """ Gap filling function when smooth=0, uses averaging of i+n and i-n
         """
 
@@ -6186,13 +6183,11 @@ class RCI:
 
         return L_all
 
-    def __smoothing(self, L_smooth, L_list, l_atom_type):
+    def __smoothing(self, L_smooth: list, L_list: list, l_atom_type: str) -> List[list]:
         """ Smoothing function.
         """
         # Building residue number list
-        first_residue = 0
-        last_residue = 0
-        first_residue_flag = 0
+        first_residue = last_residue = first_residue_flag = 0
         smooth_factor = L_smooth[2]
         central_residue = (smooth_factor // 2) + 1
         N_terminus_smooth_factor = central_residue
@@ -6301,8 +6296,7 @@ class RCI:
             while not done:
                 if L_end <= last_residue - offset:  # For Ubiquitin
                     L_smooth_list, missing_chemshift = [], []
-                    bigger_missing = smaller_missing = 0
-                    new_end = new_start = 0
+                    bigger_missing = smaller_missing = new_end = new_start = 0
 
                     L_residue_number = L_residue_name = L_bmrb_shift = L_simpred_shift = None
 
@@ -6538,7 +6532,10 @@ class RCI:
 
         return L_all
 
-    def __grid_search(self, l_all_atoms_smooth, smooth_type, lCOp_list, lCAp_list, lCBp_list, lHAp_list, lHp_list, lNp_list, s_final_smooth):
+    def __grid_search(self, l_all_atoms_smooth: list, smooth_type: str,
+                      lCOp_list: list, lCAp_list: list, lCBp_list: list, lHAp_list: list,
+                      lHp_list: list, lNp_list: list, s_final_smooth: int
+                      ) -> dict:
         """ Function to do a grid search
         """
 
@@ -6942,8 +6939,7 @@ class RCI:
                             comparison_paramter = entry[0]
                             comparison_method = entry[2]
                             parameter = entry[3]
-                            coefficients = ""
-                            coefficients_for_plot = ""
+                            coefficients = coefficients_for_plot = ''
                             coef_dictionary = entry[4]
                             md_plot_data = entry[5]
                             dynamr_plot_data = entry[6]
@@ -6997,7 +6993,7 @@ class RCI:
 
         return ret
 
-    def __end_effect(self, l_list):
+    def __end_effect(self, l_list: list) -> list:
         """ Function1 to correct sigma for end effects.
         """
 
@@ -7049,7 +7045,7 @@ class RCI:
 
         return result_list
 
-    def __end_effect2(self, l_list):
+    def __end_effect2(self, l_list: list) -> list:
         """ Function2 to correct sigma for end effects.
         """
 
@@ -7101,7 +7097,7 @@ class RCI:
 
         return result_list
 
-    def __end_effect3(self, l_list):
+    def __end_effect3(self, l_list: list) -> list:
         """ Function3 to correct sigma for end effects.
         """
 
@@ -7170,7 +7166,7 @@ class RCI:
 
         return result_list
 
-    def __end_effect4(self, l_list):
+    def __end_effect4(self, l_list: list) -> list:
         """ Function4 to correct sigma for end effects.
         """
 
@@ -7222,7 +7218,7 @@ class RCI:
 
         return result_list
 
-    def __end_effect5(self, l_list):
+    def __end_effect5(self, l_list: list) -> list:
         """ Function5 to correct sigma for end effects.
         """
 
@@ -7270,7 +7266,7 @@ class RCI:
 
         return result_list
 
-    def __final_smoothing(self, L_smooth, L_list):
+    def __final_smoothing(self, L_smooth: int, L_list: list) -> List[list]:
         """ Smoothing function for final result.
         """
         # Building residue number list
@@ -7379,8 +7375,7 @@ class RCI:
                 if L_end <= (last_residue - offset):  # For Ubiquitin
 
                     L_smooth_list, missing_chemshift = [], []
-                    bigger_missing = smaller_missing = 0
-                    new_end = new_start = 0
+                    bigger_missing = smaller_missing = new_end = new_start = 0
                     L_residue_number = L_residue_name = None
                     # chem_shift_diff_mean = None
                     chem_shift_diff_abs_mean = None
@@ -7625,7 +7620,8 @@ class RCI:
 
         return L_all
 
-    def __combo(self, l_all_residues, s_best_ten_coef_corr_true, m_coeff_list):
+    def __combo(self, l_all_residues: list, s_best_ten_coef_corr_true: list, m_coeff_list: list
+                ) -> Tuple[list, list, float, float]:
         s_md_result, s_list_of_files = self.__rci_list_build(l_all_residues)
         (
             s_best_ten_coef_corr_true,
@@ -7635,7 +7631,7 @@ class RCI:
         ) = self.__rci_only(s_list_of_files, s_md_result, s_best_ten_coef_corr_true, m_coeff_list)
         return (s_best_ten_coef_corr_true, s_list_of_files, s_Pearson_coeff, s_Spearman_coeff)
 
-    def __rci_list_build(self, l_all_residues):
+    def __rci_list_build(self, l_all_residues: list) -> Tuple[list, list]:
         """ Function to build a list with chemical shifts for a stand-alone version.
         """
 
@@ -7664,7 +7660,9 @@ class RCI:
 
         return (l_md_result, l_list_of_files)
 
-    def __rci_only(self, m_list_of_files, m_md_result, m_best_ten_coef_corr_true, l_coeff_list):
+    def __rci_only(self, m_list_of_files: list, m_md_result: list,
+                   m_best_ten_coef_corr_true: list, l_coeff_list: list
+                   ) -> Tuple[list, list, float, float]:
         """ Function to create a list of RCI values for further analysis.
         """
 
@@ -7690,7 +7688,7 @@ class RCI:
                             dynamr_data.append([residue_number, residue_name, dynamr_value])
 
             dynamr_to_md_ratio = entry_found_true_corr = counter = 0
-            corel_coef = l_Pearson_coeff = l_Spearman_coeff = 0
+            corel_coef = l_Pearson_coeff = l_Spearman_coeff = 0.0
             if len(correlation_true_Dynamr) > 0 and len(correlation_true_MD) > 0:
                 compare_list_corr_true = [abs(corel_coef), filename, "correlation", corel_coef, l_coeff_list, md_data, dynamr_data, dynamr_to_md_ratio]
 
@@ -7718,7 +7716,11 @@ class RCI:
 
         return (m_best_ten_coef_corr_true, m_list_of_files, l_Pearson_coeff, l_Spearman_coeff)
 
-    def calculate(self, bmrb_to_aa_list, assignment, B_Cys, noshift_res):  # pylint: disable=unused-argument,inconsistent-return-statements
+    def calculate(self,
+                  bmrb_to_aa_list: List[Tuple[str, int]],  # [comp_id, seq_id]
+                  assignment: List[Tuple[str, int, str, str, float]],  # [comp_id, seq_id, atom_id, atom_type, cs_value]
+                  B_Cys: List[int],  # [seq_id]
+                  noshift_res: List[int]) -> dict:  # pylint: disable=unused-argument,inconsistent-return-statements
         """ Calculate Random Coil Index of given assignments
         """
 
@@ -7970,20 +7972,12 @@ class RCI:
                     preceed_res_cor_NH = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
                     preceed_res_cor_HA = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
             else:
-                preceed_res_cor_N = 0.0
-                preceed_res_cor_CO = 0.0
-                preceed_res_cor_CA = 0.0
-                preceed_res_cor_CB = 0.0
-                preceed_res_cor_NH = 0.0
-                preceed_res_cor_HA = 0.0
+                preceed_res_cor_N = preceed_res_cor_CO = preceed_res_cor_CA =\
+                    preceed_res_cor_CB = preceed_res_cor_NH = preceed_res_cor_HA = 0.0
 
             if self.preceed_res_effect_flag != 1:
-                preceed_res_cor_N = 0.0
-                preceed_res_cor_CO = 0.0
-                preceed_res_cor_CA = 0.0
-                preceed_res_cor_CB = 0.0
-                preceed_res_cor_NH = 0.0
-                preceed_res_cor_HA = 0.0
+                preceed_res_cor_N = preceed_res_cor_CO = preceed_res_cor_CA =\
+                    preceed_res_cor_CB = preceed_res_cor_NH = preceed_res_cor_HA = 0.0
 
             if self.preceed_res_effect_flag == 1 and self.preceed_preceed_res_effect_flag == 1\
                and dyna_simp_res_num_i_minus_2 is not None and dyna_simp_res_name_i_minus_2 is not None:
@@ -8016,20 +8010,12 @@ class RCI:
                     preceed_preceed_res_cor_NH = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
                     preceed_preceed_res_cor_HA = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
             else:
-                preceed_preceed_res_cor_N = 0.0
-                preceed_preceed_res_cor_CO = 0.0
-                preceed_preceed_res_cor_CA = 0.0
-                preceed_preceed_res_cor_CB = 0.0
-                preceed_preceed_res_cor_NH = 0.0
-                preceed_preceed_res_cor_HA = 0.0
+                preceed_preceed_res_cor_N = preceed_preceed_res_cor_CO = preceed_preceed_res_cor_CA =\
+                    preceed_preceed_res_cor_CB = preceed_preceed_res_cor_NH = preceed_preceed_res_cor_HA = 0.0
 
             if self.preceed_preceed_res_effect_flag != 1:
-                preceed_preceed_res_cor_N = 0.0
-                preceed_preceed_res_cor_CO = 0.0
-                preceed_preceed_res_cor_CA = 0.0
-                preceed_preceed_res_cor_CB = 0.0
-                preceed_preceed_res_cor_NH = 0.0
-                preceed_preceed_res_cor_HA = 0.0
+                preceed_preceed_res_cor_N = preceed_preceed_res_cor_CO = preceed_preceed_res_cor_CA =\
+                    preceed_preceed_res_cor_CB = preceed_preceed_res_cor_NH = preceed_preceed_res_cor_HA = 0.0
 
             if self.next_res_effect_flag == 1 and dyna_simp_res_num_i_plus_1 is not None and dyna_simp_res_name_i_plus_1 is not None and NoNextProPro != 1:
                 if res_i_csi_sec_str == res_i_plus_1_csi_sec_str and res_num_i_plus_1_sec_str_found == 1 and res_num_i_sec_str_found == 1:
@@ -8061,20 +8047,12 @@ class RCI:
                     next_res_cor_NH = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
                     next_res_cor_HA = self.next_res_effect[dyna_simp_res_name_i_plus_1][self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
             else:
-                next_res_cor_N = 0.0
-                next_res_cor_CO = 0.0
-                next_res_cor_CA = 0.0
-                next_res_cor_CB = 0.0
-                next_res_cor_NH = 0.0
-                next_res_cor_HA = 0.0
+                next_res_cor_N = next_res_cor_CO = next_res_cor_CA =\
+                    next_res_cor_CB = next_res_cor_NH = next_res_cor_HA = 0.0
 
             if self.next_res_effect_flag != 1:
-                next_res_cor_N = 0.0
-                next_res_cor_CO = 0.0
-                next_res_cor_CA = 0.0
-                next_res_cor_CB = 0.0
-                next_res_cor_NH = 0.0
-                next_res_cor_HA = 0.0
+                next_res_cor_N = next_res_cor_CO = next_res_cor_CA =\
+                    next_res_cor_CB = next_res_cor_NH = next_res_cor_HA = 0.0
 
             if self.next_res_effect_flag == 1 and self.next_next_res_effect_flag == 1\
                and dyna_simp_res_num_i_plus_2 is not None and dyna_simp_res_name_i_plus_2 is not None and NoNextProPro != 1:
@@ -8107,20 +8085,12 @@ class RCI:
                     next_next_res_cor_NH = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__NH_place][self.__sec_str_place[res_i_csi_sec_str]]
                     next_next_res_cor_HA = self.next_next_res_effect[dyna_simp_res_name_i_plus_2][self.__HA_place][self.__sec_str_place[res_i_csi_sec_str]]
             else:
-                next_next_res_cor_N = 0.0
-                next_next_res_cor_CO = 0.0
-                next_next_res_cor_CA = 0.0
-                next_next_res_cor_CB = 0.0
-                next_next_res_cor_NH = 0.0
-                next_next_res_cor_HA = 0.0
+                next_next_res_cor_N = next_next_res_cor_CO = next_next_res_cor_CA =\
+                    next_next_res_cor_CB = next_next_res_cor_NH = next_next_res_cor_HA = 0.0
 
             if self.next_next_res_effect_flag != 1:
-                next_next_res_cor_N = 0.0
-                next_next_res_cor_CO = 0.0
-                next_next_res_cor_CA = 0.0
-                next_next_res_cor_CB = 0.0
-                next_next_res_cor_NH = 0.0
-                next_next_res_cor_HA = 0.0
+                next_next_res_cor_N = next_next_res_cor_CO = next_next_res_cor_CA =\
+                    next_next_res_cor_CB = next_next_res_cor_NH = next_next_res_cor_HA = 0.0
 
             if N_coil_value is not None:
                 final_N = N_coil_value + next_res_cor_N + preceed_res_cor_N + next_next_res_cor_N + preceed_preceed_res_cor_N
@@ -8261,3 +8231,5 @@ class RCI:
                                       self.CAp_list, self.CBp_list,
                                       self.HAp_list, self.Hp_list,
                                       self.Np_list, self.final_smooth)
+
+        return {}

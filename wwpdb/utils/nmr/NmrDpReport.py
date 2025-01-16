@@ -1855,7 +1855,7 @@ class NmrDpReportInputSource:
             #     if self.__verbose:
             #         self.__lfh.write(f'+{self.__class_name__}.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id {seq_id}\n')
             #     raise KeyError(f"+{self.__class_name__}.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id {seq_id}")
-            #
+
         except StopIteration:
             if self.__verbose:
                 self.__lfh.write(f'+{self.__class_name__}.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id {chain_id}')

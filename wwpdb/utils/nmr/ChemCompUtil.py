@@ -27,14 +27,16 @@ try:
     from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
     from wwpdb.utils.nmr.AlignUtil import (emptyValue,
                                            monDict3,
-                                           protonBeginCode)
+                                           protonBeginCode,
+                                           isReservedLigCode)
     cICc = ConfigInfoAppCc(getSiteId())
     CC_CVS_PATH = cICc.get_site_cc_cvs_path()
 except ImportError:
     from nmr.io.ChemCompIo import ChemCompReader
     from nmr.AlignUtil import (emptyValue,
                                monDict3,
-                               protonBeginCode)
+                               protonBeginCode,
+                               isReservedLigCode)
     CC_CVS_PATH = os.path.dirname(__file__) + '/ligand_dict'  # need to setup 'ligand_dict' CCD resource for NMR restraint processing
 
 
@@ -154,7 +156,7 @@ class ChemCompUtil:
             @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
         """
 
-        if compId in emptyValue:
+        if compId in emptyValue or isReservedLigCode(compId):
             return False
 
         compId = compId.upper()

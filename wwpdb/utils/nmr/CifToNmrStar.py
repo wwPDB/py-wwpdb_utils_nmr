@@ -4,11 +4,11 @@
 #
 # Updates:
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
-# 20-Apr-2022  M. Yokochi - enable to fix broken data block order of CIF formatted NMR-STAR using NMR-STAR schema (DAOTHER-7407, NMR restraint remediation)
+# 20-Apr-2022  M. Yokochi - enable to fix broken datablock order of CIF formatted NMR-STAR using NMR-STAR schema (DAOTHER-7407, NMR restraint remediation)
 # 28-Jul-2022  M. Yokochi - enable to fix format issue of CIF formatted NMR-STAR (You cannot have two loops with the same category in one saveframe. Category: '_Audit')
 # 27-Sep-2022  M. Yokochi - auto fill list ID and entry ID (NMR restraint remediation)
 # 13-Jun-2023  M. Yokochi - sort loops in a saveframe based on schema
-# 30-May-2024  M. Yokochi - resolve duplication of data block/saveframe name (DAOTHER-9437)
+# 30-May-2024  M. Yokochi - resolve duplication of datablock/saveframe name (DAOTHER-9437)
 # 25-Jun-2024  M. Yokochi - strip white spaces in a datablock name derived from the model file (DAOTHER-9511)
 # 07-Jan-2025  M. Yokochi - retrieve symbolic label representations (DAOTHER-1728, 9846)
 ##
@@ -62,23 +62,20 @@ def has_key_value(d: dict, key: Any) -> bool:
     return False
 
 
-def get_value_safe(d: Optional[dict] = None, key: Any = None) -> Any:
-    """ Return value of a given dictionary for a key.
-        @return: value for a key, None otherwise
+def get_value_safe(d: Optional[Union[dict, list, tuple]] = None, key: Optional = None, default: Optional = None) -> Any:
+    """ Return value of a given dictionary, list, or tuple for a key.
+        @return: value for a key, None (by default) otherwise
     """
 
     if d is None or key is None:
-        return None
+        return default
 
-    if key not in d:
-        return None
-
-    return d[key]
+    return d.get(key, default)
 
 
-def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> str:
+def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> Any:
     """ Return the first value of a given saveframe tag with decoding symbol notation.
-        @return: The first tag value, default string otherwise.
+        @return: The first tag value, '' (by default) otherwise.
     """
 
     if not isinstance(sf, pynmrstar.Saveframe) or tag is None:
@@ -92,10 +89,13 @@ def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> st
     if not isinstance(array[0], str):
         return array[0]
 
-    if array[0] == '$':
-        return default
-
     value = array[0]
+
+    while value.startswith('$$'):
+        value = value[1:]
+
+    if len(value) == 0 or value == '$':
+        return default
 
     return value if len(value) < 2 or value[0] != '$' else value[1:]
 
@@ -107,7 +107,14 @@ def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
     tagNames = [t[0] for t in sf.tags]
 
     if isinstance(value, str):
+
         if len(value) == 0:
+            value = None
+
+        while value.startswith('$$'):
+            value = value[1:]
+
+        if len(value) == 0 or value == '$':
             value = None
 
     if tag not in tagNames:

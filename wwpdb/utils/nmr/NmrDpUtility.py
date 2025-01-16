@@ -10419,7 +10419,7 @@ class NmrDpUtility:
         if not has_spectral_peak and self.__combined_mode:
 
             primary_spectra_for_structure_determination =\
-                'NOESY or ROESY' if self.__exptl_method != 'SOLID-STATE NMR' else 'REDOR or RFDR'
+                'NOESY or ROESY' if self.__exptl_method != 'SOLID-STATE NMR' else 'REDOR, DARR or RFDR'
 
             warn = "The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, "\
                 f"in particular those generated from the {primary_spectra_for_structure_determination} spectra."
@@ -42613,7 +42613,7 @@ class NmrDpUtility:
                     continue
 
         primary_spectra_for_structure_determination =\
-            'NOESY or ROESY' if self.__exptl_method != 'SOLID-STATE NMR' else 'REDOR or RFDR'
+            'NOESY or ROESY' if self.__exptl_method != 'SOLID-STATE NMR' else 'REDOR, DARR or RFDR'
 
         warn = f"You have uploaded spectral peak list(s) classified into {', '.join(exp_classes)}, respectively. "\
             f"However, none of spectral peak list(s) appears to be derived from expected spectra such as the {primary_spectra_for_structure_determination}. "\
@@ -42957,7 +42957,7 @@ class NmrDpUtility:
                             cur_spectral_dim_transfer.append(transfer)
 
         if self.__exptl_method == 'SOLID-STATE NMR' and d == 2:
-            if 'rfdr' in file_name:
+            if 'rfdr' in file_name or 'darr' in file_name:
                 for _dim_id1, _dict1 in cur_spectral_dim.items():
                     _iso_num1 = _dict1['atom_isotope_number']
                     if _iso_num1 in (1, 13):

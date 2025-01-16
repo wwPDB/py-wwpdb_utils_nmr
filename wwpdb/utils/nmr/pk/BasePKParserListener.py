@@ -1186,7 +1186,7 @@ class BasePKParserListener():
                                         cur_spectral_dim_transfer.append(transfer)
 
                     if self.exptlMethod == 'SOLID-STATE NMR':
-                        if 'rfdr' in file_name or 'rfdr' in alt_file_name:
+                        if 'rfdr' in file_name or 'rfdr' in alt_file_name or 'darr' in file_name or 'darr' in alt_file_name:
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _iso_num1 = _dict1['atom_isotope_number']
                                 if _iso_num1 in (1, 13):

@@ -6,6 +6,7 @@ Version: 001  Initial version
 # Update:
 # 07-Apr-2020  M. Yokochi - Re-write Zukang's version to being aware of multiple data blocks
 # 30-May-2024  M. Yokochi - Resolve duplication of data block/saveframe name (DAOTHER-9437)
+# 16-Jan-2025  M. Yokochi - Abandon symbolic label representations in mmCIF for mutual format conversion
 ##
 """
 
@@ -15,6 +16,7 @@ __version__ = "V0.001"
 
 import sys
 import copy
+import re
 
 from typing import Any, IO, List, Tuple, Optional
 
@@ -24,10 +26,32 @@ from mmcif.io.PdbxReader import PdbxReader
 from mmcif.io.PdbxWriter import PdbxWriter
 
 
+label_symbol_pattern = re.compile(r'^\$[^\s\$\?\\\'\"\`;]+$')
+
+
 def get_ext_block_name(name: str, ext: int = 1) -> str:
     """ Return unique block name avoiding duplication
     """
     return name if ext == 1 else f'{name}_{ext}'
+
+
+def abandon_symbolic_labels(containerList: list):
+    """ Abandon symbolic label representations that serve as saveframe pointers in NMR-STAR.
+    """
+
+    for container in containerList:
+        container.setType('data')
+
+        for category in container.getObjNameList():
+            obj = container.getObj(category)
+            attrs = obj.getAttributeList()
+            labelCols = [idx for idx, attr in enumerate(attrs) if attr.endswith('_label')]
+            if len(labelCols) == 0:
+                continue
+            for idx, row in enumerate(obj.getRowList()):
+                for col, val in enumerate(row):
+                    if col in labelCols and label_symbol_pattern.match(val):
+                        obj.setValue(val[1:], attrs[col], idx)
 
 
 class mmCIFUtil:

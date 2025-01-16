@@ -62,6 +62,20 @@ def has_key_value(d: dict, key: Any) -> bool:
     return False
 
 
+def get_value_safe(d: Optional[dict] = None, key: Any = None) -> Any:
+    """ Return value of a given dictionary for a key.
+        @return: value for a key, None otherwise
+    """
+
+    if d is None or key is None:
+        return None
+
+    if key not in d:
+        return None
+
+    return d[key]
+
+
 def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> str:
     """ Return the first value of a given saveframe tag with decoding symbol notation.
         @return: The first tag value, default string otherwise.

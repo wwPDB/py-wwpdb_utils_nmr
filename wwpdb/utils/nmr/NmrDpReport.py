@@ -107,25 +107,13 @@ try:
                                            monDict3,
                                            unknownResidue,
                                            getPrettyJson)
+    from wwpdb.utils.nmr.CifToNmrStar import get_value_safe
 except ImportError:
     from nmr.AlignUtil import (emptyValue,
                                monDict3,
                                unknownResidue,
                                getPrettyJson)
-
-
-def get_value_safe(d: Optional[dict] = None, key: Any = None) -> Any:
-    """ Return value of a given dictionary for a key.
-        @return: value for a key, None otherwise
-    """
-
-    if d is None or key is None:
-        return None
-
-    if key not in d:
-        return None
-
-    return d[key]
+    from nmr.CifToNmrStar import get_value_safe
 
 
 class NmrDpReport:

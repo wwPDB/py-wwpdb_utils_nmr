@@ -281,6 +281,7 @@ try:
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.io.CifReader import (CifReader,
                                               LEN_MAJOR_ASYM_ID)
+    from wwpdb.utils.nmr.io.mmCIFUtil import abandon_symbolic_labels
     from wwpdb.utils.nmr.rci.RCI import RCI
     from wwpdb.utils.nmr.CifToNmrStar import (CifToNmrStar,
                                               has_key_value,
@@ -422,6 +423,7 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.io.CifReader import (CifReader,
                                   LEN_MAJOR_ASYM_ID)
+    from nmr.io.mmCIFUtil import abandon_symbolic_labels
     from nmr.rci.RCI import RCI
     from nmr.CifToNmrStar import (CifToNmrStar,
                                   has_key_value,
@@ -565,7 +567,6 @@ category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
 tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
 sf_category_pattern = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
 sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
-label_symbol_pattern = re.compile(r'^\$[^\s\$\?\\\'\"\`;]+$')
 
 onedep_upload_file_pattern = re.compile(r'(.*)\-upload_(.*)\.V(.*)$')
 onedep_file_pattern = re.compile(r'(.*)\.V(.*)$')
@@ -28756,7 +28757,7 @@ class NmrDpUtility:
                                  if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode
                                  and lp['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
 
-                axis_codes, abs_pk_pos, sp_widths = [], [], []
+                axis_codes, alt_axis_codes, abs_pk_pos, sp_widths = [], [], [], []
 
                 if aux_data is not None and len(aux_data) > 0:
                     for i in range(1, max_dim):
@@ -28765,6 +28766,7 @@ class NmrDpUtility:
                                 if sp_dim['dimension_id'] != i:
                                     continue
                                 axis_codes.append(sp_dim['axis_code'])
+                                alt_axis_codes.append(sp_dim['axis_code'])
                                 abs_pk_pos.append(False if 'absolute_peak_poistions' not in sp_dim else sp_dim['absolute_peak_positions'])
                                 sp_width = None if 'axis_unit' not in sp_dim else sp_dim.get('spectral_width')
                                 if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz'\
@@ -28777,6 +28779,7 @@ class NmrDpUtility:
                                 if sp_dim['ID'] != i:
                                     continue
                                 axis_codes.append(sp_dim['Axis_code'])
+                                alt_axis_codes.append(str(sp_dim['Atom_isotope_number']) + sp_dim['Atom_type'])
                                 abs_pk_pos.append(False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions'])
                                 sp_width = None if 'Sweep_width_units' not in sp_dim else sp_dim.get('Sweep_width')
                                 if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
@@ -28789,6 +28792,7 @@ class NmrDpUtility:
                 else:
                     for i in range(num_dim):
                         axis_codes.append(None)
+                        alt_axis_codes.append(None)
                         abs_pk_pos.append(False)
                         sp_widths.append(None)
 
@@ -29001,7 +29005,8 @@ class NmrDpUtility:
 
                                     axis_code = str(cs[cs_iso_number]) + cs[cs_atom_type]
 
-                                    if axis_codes[d] is not None and axis_code != axis_codes[d]:
+                                    if axis_codes[d] is not None and d < num_dim\
+                                       and axis_code not in (axis_codes[d], alt_axis_codes[d]) and cs[cs_atom_type] != axis_codes[d]:
 
                                         err = f"[Check row of {index_tag} {row[index_tag]}] Assignment of spectral peak "\
                                             + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
@@ -29261,7 +29266,7 @@ class NmrDpUtility:
                                  if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode
                                  and lp['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
 
-                axis_codes, abs_pk_pos, sp_widths = [], [], []
+                axis_codes, alt_axis_codes, abs_pk_pos, sp_widths = [], [], [], []
 
                 if aux_data is not None and len(aux_data) > 0:
                     for i in range(1, max_dim):
@@ -29269,6 +29274,7 @@ class NmrDpUtility:
                             if sp_dim['ID'] != i:
                                 continue
                             axis_codes.append(sp_dim['Axis_code'])
+                            alt_axis_codes.append(str(sp_dim['Atom_isotope_number']) + sp_dim['Atom_type'])
                             abs_pk_pos.append(False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions'])
                             sp_width = None if 'Sweep_width_units' not in sp_dim else sp_dim.get('Sweep_width')
                             if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and sp_width is not None:
@@ -29280,6 +29286,7 @@ class NmrDpUtility:
                 else:
                     for i in range(num_dim):
                         axis_codes.append(None)
+                        alt_axis_codes.append(None)
                         abs_pk_pos.append(False)
                         sp_widths.append(None)
 
@@ -29487,7 +29494,8 @@ class NmrDpUtility:
 
                                 axis_code = str(cs[cs_iso_number]) + cs[cs_atom_type]
 
-                                if aux_data is not None and d < num_dim and axis_code != axis_codes[d]:
+                                if aux_data is not None and d < num_dim\
+                                   and axis_code not in (axis_codes[d], alt_axis_codes[d]) and cs[cs_atom_type] != axis_codes[d]:
 
                                     err = f"[Check row of {pk_id_name} {row[pk_id_name]}] Assignment of spectral peak "\
                                         + self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id,
@@ -30699,20 +30707,7 @@ class NmrDpUtility:
                                         self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
                                     eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
-                                    for c in containerList:
-                                        c.setType('data')
-
-                                        for cat in c.getObjNameList():
-                                            obj = c.getObj(cat)
-                                            attrs = obj.getAttributeList()
-                                            label_cols = [idx for idx, attr in enumerate(attrs) if attr.endswith('_label')]
-                                            if len(label_cols) == 0:
-                                                continue
-                                            for idx, row in enumerate(obj.getRowList()):
-                                                for col, val in enumerate(row):
-                                                    if col in label_cols and label_symbol_pattern.match(val):
-                                                        obj.setValue(val[1:], attrs[col], idx)
-
+                                    abandon_symbolic_labels(containerList)
                                     myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                             except Exception as e:
@@ -36222,20 +36217,7 @@ class NmrDpUtility:
                                     self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
                                 eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
-                                for c in containerList:
-                                    c.setType('data')
-
-                                    for cat in c.getObjNameList():
-                                        obj = c.getObj(cat)
-                                        attrs = obj.getAttributeList()
-                                        label_cols = [idx for idx, attr in enumerate(attrs) if attr.endswith('_label')]
-                                        if len(label_cols) == 0:
-                                            continue
-                                        for idx, row in enumerate(obj.getRowList()):
-                                            for col, val in enumerate(row):
-                                                if col in label_cols and label_symbol_pattern.match(val):
-                                                    obj.setValue(val[1:], attrs[col], idx)
-
+                                abandon_symbolic_labels(containerList)
                                 myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                         except Exception as e:
@@ -55685,20 +55667,7 @@ class NmrDpUtility:
                         self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
                     eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
-                    for c in containerList:
-                        c.setType('data')
-
-                        for cat in c.getObjNameList():
-                            obj = c.getObj(cat)
-                            attrs = obj.getAttributeList()
-                            label_cols = [idx for idx, attr in enumerate(attrs) if attr.endswith('_label')]
-                            if len(label_cols) == 0:
-                                continue
-                            for idx, row in enumerate(obj.getRowList()):
-                                for col, val in enumerate(row):
-                                    if col in label_cols and label_symbol_pattern.match(val):
-                                        obj.setValue(val[1:], attrs[col], idx)
-
+                    abandon_symbolic_labels(containerList)
                     myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
             except Exception as e:
@@ -55744,20 +55713,7 @@ class NmrDpUtility:
                         self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
                     eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
-                    for c in containerList:
-                        c.setType('data')
-
-                        for cat in c.getObjNameList():
-                            obj = c.getObj(cat)
-                            attrs = obj.getAttributeList()
-                            label_cols = [idx for idx, attr in enumerate(attrs) if attr.endswith('_label')]
-                            if len(label_cols) == 0:
-                                continue
-                            for idx, row in enumerate(obj.getRowList()):
-                                for col, val in enumerate(row):
-                                    if col in label_cols and label_symbol_pattern.match(val):
-                                        obj.setValue(val[1:], attrs[col], idx)
-
+                    abandon_symbolic_labels(containerList)
                     myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                     return True
@@ -59139,20 +59095,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
                         eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 else 0
-                        for c in containerList:
-                            c.setType('data')
-
-                            for cat in c.getObjNameList():
-                                obj = c.getObj(cat)
-                                attrs = obj.getAttributeList()
-                                label_cols = [idx for idx, attr in enumerate(attrs) if attr.endswith('_label')]
-                                if len(label_cols) == 0:
-                                    continue
-                                for idx, row in enumerate(obj.getRowList()):
-                                    for col, val in enumerate(row):
-                                        if col in label_cols and label_symbol_pattern.match(val):
-                                            obj.setValue(val[1:], attrs[col], idx)
-
+                        abandon_symbolic_labels(containerList)
                         myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
                 except Exception as e:

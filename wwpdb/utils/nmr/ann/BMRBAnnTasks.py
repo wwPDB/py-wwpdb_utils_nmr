@@ -26,7 +26,9 @@ try:
                                                        ALLOWED_AMBIGUITY_CODES,
                                                        ALLOWED_ISOTOPE_NUMBERS,
                                                        WELL_KNOWN_ISOTOPE_NUMBERS,
-                                                       CS_UNCERTAINTY_RANGE)
+                                                       CS_UNCERTAINTY_RANGE,
+                                                       getMaxEffDigits,
+                                                       roundString)
     from wwpdb.utils.nmr.CifToNmrStar import (CifToNmrStar,
                                               get_first_sf_tag,
                                               set_sf_tag)
@@ -42,7 +44,9 @@ except ImportError:
                                            ALLOWED_AMBIGUITY_CODES,
                                            ALLOWED_ISOTOPE_NUMBERS,
                                            WELL_KNOWN_ISOTOPE_NUMBERS,
-                                           CS_UNCERTAINTY_RANGE)
+                                           CS_UNCERTAINTY_RANGE,
+                                           getMaxEffDigits,
+                                           roundString)
     from nmr.CifToNmrStar import (CifToNmrStar,
                                   get_first_sf_tag,
                                   set_sf_tag)
@@ -946,6 +950,11 @@ class BMRBAnnTasks:
                 except KeyError:
                     continue
 
+        field_strength_max_didits = 0
+        if len(spectrometer_dict) > 0:
+            field_strength_max_didits = getMaxEffDigits([str(spectrometer['field_strength'])
+                                                         for spectrometer in spectrometer_dict.values()])
+
         sf_category = 'experiment_list'
 
         if sf_category in self.__sfCategoryList:
@@ -992,7 +1001,7 @@ class BMRBAnnTasks:
                     sf.add_tag('Manufacturer', spectrometer['manufacturer'])
                     sf.add_tag('Model', spectrometer['model'])
                     sf.add_tag('Serial_number', spectrometer['serial_number'] if 'serial_nubmer' in spectrometer else '.')
-                    sf.add_tag('Fiedl_strength', spectrometer['field_strength'])
+                    sf.add_tag('Field_strength', spectrometer['field_strength'])
 
                     master_entry.add_saveframe(sf)
 
@@ -1170,7 +1179,7 @@ class BMRBAnnTasks:
 
                     if '/' in _solvent_system:
                         for _solvent in _solvent_system.split('/'):
-                            _solvent = _solvent.strip()
+                            _solvent = _solvent.strip(',').strip()
                             if solvent_with_percent_pat.match(_solvent):
                                 g = solvent_with_percent_pat.search(_solvent).groups()
                                 solvent_name = g[1].strip()
@@ -2264,20 +2273,6 @@ class BMRBAnnTasks:
 
                 if _sf_category in self.__sfCategoryList:
 
-                    def get_field_strength(parent_sf_tag_prefix, parent_list_id):
-                        if isinstance(parent_list_id, int) or (isinstance(parent_list_id, str) and parent_list_id.isdigit()):
-                            try:
-                                parent_sf = master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', parent_list_id)[0]
-                                return get_first_sf_tag(parent_sf, 'Field_strength')
-                            except IndexError:
-                                try:
-                                    parent_sf = master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', int(parent_list_id)
-                                                                                             if isinstance(parent_list_id, str) else str(parent_list_id))[0]
-                                    return get_first_sf_tag(parent_sf, 'Field_strength')
-                                except IndexError:
-                                    pass
-                        return ''
-
                     for _sf in master_entry.get_saveframes_by_category(_sf_category):
                         exp_id = get_first_sf_tag(_sf, 'Experiment_ID')
 
@@ -2297,10 +2292,17 @@ class BMRBAnnTasks:
                                 if spectrometer_id in emptyValue:
                                     continue
 
-                                field_strength = get_field_strength('_NMR_spectrometer', spectrometer_id)
+                                if isinstance(spectrometer_id, str):
 
-                                if len(field_strength) == 0:
+                                    if not spectrometer_id.isdigit():
+                                        continue
+
+                                    spectrometer_id = int(spectrometer_id)
+
+                                if spectrometer_id not in spectrometer_dict:
                                     continue
+
+                                field_strength = spectrometer_dict[spectrometer_id]['field_strength']
 
                                 try:
 
@@ -2347,10 +2349,8 @@ class BMRBAnnTasks:
                                         spec_freq = _row[spec_freq_col]
 
                                         if spec_freq in emptyValue and isotope_num in cs_ref_ratio_map:
-                                            if cs_ref_ratio_map[isotope_num] == 1.0:
-                                                _lp.data[idx][spec_freq_col] = field_strength
-                                            else:
-                                                _lp.data[idx][spec_freq_col] = f'{field_strength * cs_ref_ratio_map[isotope_num]:.2f}'
+                                            _lp.data[idx][spec_freq_col] = roundString(f'{field_strength * cs_ref_ratio_map[isotope_num]}',
+                                                                                       field_strength_max_didits)
 
                                 except (KeyError, ValueError):
                                     continue

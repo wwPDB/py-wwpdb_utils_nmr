@@ -1,13 +1,23 @@
 ##
-# File: RCI.py
+# File: RCI.py derived from RCI v_1n_10_6_12_A with Python 2 to 3 conversion and simplified API
 # Date: 12-Jul-2021
 #
 # Updates:
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 ##
 """ Wrapper class for Random Coil Index calculation.
-    @author: Masashi Yokochi
+    @author: Gary Strangman, Masashi Yokochi
+    Reference:
+          Mark V. Berjanskii, David S. Wishart (2005) A Simple Method To Predict Protein
+          Flexibility Using Secondary Chemical Shifts. Journal of the American Chemical
+          DOI: 10.1021/ja054842f
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Gary Strangman, Masashi Yokochi"
+__email__ = "strang@nmr.mgh.harvard.edu, yokochi@protein.osaka-u.ac.jp"
+__license__ = "General Public License (GPL) v2"
+__version__ = "v_1n_10_6_12_A"
+
 import sys
 import numpy as np
 
@@ -6186,6 +6196,7 @@ class RCI:
     def __smoothing(self, L_smooth: list, L_list: list, l_atom_type: str) -> List[list]:
         """ Smoothing function.
         """
+
         # Building residue number list
         first_residue = last_residue = first_residue_flag = 0
         smooth_factor = L_smooth[2]
@@ -7269,6 +7280,7 @@ class RCI:
     def __final_smoothing(self, L_smooth: int, L_list: list) -> List[list]:
         """ Smoothing function for final result.
         """
+
         # Building residue number list
         first_residue = last_residue = first_residue_flag = 0
         smooth_factor = L_smooth

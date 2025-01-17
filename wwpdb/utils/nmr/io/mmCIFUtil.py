@@ -1,18 +1,19 @@
-"""
-File:    mmCIFUtil.py
-Author:  Zukang Feng
-Update:  21-August-2012
-Version: 001  Initial version
-# Update:
-# 07-Apr-2020  M. Yokochi - Re-write Zukang's version to being aware of multiple datablocks
-# 30-May-2024  M. Yokochi - Resolve duplication of datablock/saveframe name (DAOTHER-9437)
-# 16-Jan-2025  M. Yokochi - Abandon symbolic label representations in mmCIF for mutual format conversion
 ##
+# File: mmCIFUtil.py
+# Date: 21-Aug-2012  Zukang Feng
+#
+# Update:
+# 07-Apr-2020  M. Yokochi - re-write Zukang's version to being aware of multiple datablocks
+# 30-May-2024  M. Yokochi - resolve duplication of datablock/saveframe name (DAOTHER-9437)
+# 16-Jan-2025  M. Yokochi - abandon symbolic label representations in mmCIF for mutual format conversion
+##
+""" A collection of classes for manipulating CIF files containing multiple datablocks.
 """
-
-__author__ = "Zukang Feng"
-__email__ = "zfeng@rcsb.rutgers.edu"
-__version__ = "V0.001"
+__docformat__ = "restructuredtext en"
+__author__ = "Zukang Feng, Masashi Yokochi"
+__email__ = "zfeng@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
+__license__ = "Creative Commons Attribution 3.0 Unported"
+__version__ = "1.0.3"
 
 import sys
 import os
@@ -26,19 +27,24 @@ from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
 from mmcif.io.PdbxWriter import PdbxWriter
 
+try:
+    from wwpdb.utils.nmr.AlignUtil import emptyValue
+except ImportError:
+    from nmr.AlignUtil import emptyValue
+
 
 label_symbol_pattern = re.compile(r'^\$[^\s\$\?\\\'\"\`;]+$')
 
 
 def get_ext_block_name(name: str, ext: int = 1) -> str:
-    """ Return unique block name avoiding duplication
+    """ Return unique block name avoiding duplication.
     """
 
     return name if ext == 1 else f'{name}_{ext}'
 
 
 def abandon_symbolic_labels(containerList: list):
-    """ Abandon symbolic label representations that serve as saveframe pointers in NMR-STAR
+    """ Abandon symbolic label representations that serve as saveframe pointers in NMR-STAR.
     """
 
     for container in containerList:
@@ -57,10 +63,10 @@ def abandon_symbolic_labels(containerList: list):
 
 
 class mmCIFUtil:
-    """ Using pdbx mmCIF utility to parse mmCIF file
+    """ Accessor methods for manipulating CIF files containing multiple datablocks.
     """
 
-    def __init__(self, verbose: bool = False, log: IO = sys.stderr, filePath: Optional[str] = None):  # pylint: disable=unused-argument
+    def __init__(self, verbose: bool = False, log: IO = sys.stderr, filePath: Optional[str] = None):
         self.__class_name__ = self.__class__.__name__
 
         self.__verbose = verbose
@@ -71,7 +77,7 @@ class mmCIFUtil:
         self.__dataMap = {}
         self.__blockNameList = []
 
-        if not self.__filePath:
+        if self.__filePath is None:
             return
 
         try:
@@ -84,7 +90,7 @@ class mmCIFUtil:
                 pRd = PdbxReader(ifh)
                 pRd.read(self.__dataList)
 
-            if self.__dataList:
+            if len(self.__dataList) > 0:
                 is_star = all(container.getType() == 'data' for container in self.__dataList)
                 idx = 0
                 for container in self.__dataList:
@@ -109,33 +115,33 @@ class mmCIFUtil:
                 self.__lfh.write(f"+{self.__class_name__} ++ Error  - Read {self.__filePath} failed {str(e)}\n")
 
     def GetBlockIDList(self) -> List[str]:
-        """ Return list of block ID
+        """ Return list of blockID.
         """
 
         return self.__blockNameList
 
     def GetValueAndItemByBlock(self, blockName: str, catName: str, ext: int = 1) -> Tuple[List[dict], List[str]]:
-        """ Get category values and item names
+        """ Get category values and item names.
         """
 
-        dList, iList = [], []
         if blockName not in self.__dataMap:
-            return dList, iList
+            return [], []
 
         catObj = self.__dataList[self.__dataMap[get_ext_block_name(blockName, ext)]].getObj(catName)
-        if not catObj:
-            return dList, iList
+
+        if catObj is None:
+            return [], []
 
         iList = catObj.getAttributeList()
-        rowList = catObj.getRowList()
-        for row in rowList:
+        dList = []
+        for row in catObj.getRowList():
             try:
                 tD = {}
                 for idxIt, itName in enumerate(iList):
-                    if row[idxIt] != "?" and row[idxIt] != ".":
+                    if row[idxIt] not in emptyValue:
                         tD[itName] = row[idxIt]
 
-                if tD:
+                if len(tD) > 0:
                     dList.append(tD)
 
             except IndexError:
@@ -144,26 +150,24 @@ class mmCIFUtil:
         return dList, iList
 
     def GetValue(self, blockName: str, catName: str, ext: int = 1) -> List[dict]:
-        """ Get category values in a given Data Block and Category
-            The results are stored in a list of dictionaries with item name as key
+        """ Get category values in a given datablock and category.
         """
 
         return self.GetValueAndItemByBlock(blockName, catName, ext)[0]
 
     def GetSingleValue(self, blockName: str, catName: str, itemName: str, ext: int) -> Any:
-        """ Get the first value of a given Data Block, Category, Item
+        """ Get the first value of a given datablock, category, and item.
         """
 
-        text = ''
-
         dlist = self.GetValue(blockName, catName, ext)
-        if dlist:
-            if itemName in dlist[0]:
-                text = dlist[0][itemName]
-        return text
+
+        if len(dlist) > 0 and itemName in dlist[0]:
+            return dlist[0][itemName]
+
+        return ''
 
     def UpdateSingleRowValue(self, blockName: str, catName: str, itemName: str, rowIndex: int, value: Any, ext: int = 1):
-        """ Update value in single row
+        """ Update single row with a given value.
         """
 
         if blockName not in self.__dataMap:
@@ -171,13 +175,13 @@ class mmCIFUtil:
 
         catObj = self.__dataList[self.__dataMap[get_ext_block_name(blockName, ext)]].getObj(catName)
 
-        if not catObj:
+        if catObj is None:
             return
 
         catObj.setValue(value, itemName, rowIndex)
 
     def UpdateMultipleRowsValue(self, blockName: str, catName: str, itemName: str, value: Any, ext: int = 1):
-        """ Update value in multiple rows
+        """ Update multiple rows with a given value.
         """
 
         if blockName not in self.__dataMap:
@@ -185,24 +189,21 @@ class mmCIFUtil:
 
         catObj = self.__dataList[self.__dataMap[get_ext_block_name(blockName, ext)]].getObj(catName)
 
-        if not catObj:
+        if catObj is None:
             return
 
-        rowNo = catObj.getRowCount()
-        for rowIndex in range(0, rowNo):
+        for rowIndex in range(0, catObj.getRowCount()):
             catObj.setValue(value, itemName, rowIndex)
 
     def AddBlock(self, blockName: str, ext: int = 1):
-        """ Add Data Block
+        """ Add a datablock.
         """
 
-        container = DataContainer(blockName)
-
         self.__dataMap[get_ext_block_name(blockName, ext)] = len(self.__dataList)
-        self.__dataList.append(container)
+        self.__dataList.append(DataContainer(blockName))
 
     def AddCategory(self, blockName: str, catName: str, items: List[str], ext: int = 1):
-        """ Add Category in a given Data Block
+        """ Add a category in a given datablock.
         """
 
         if blockName not in self.__dataMap:
@@ -216,7 +217,7 @@ class mmCIFUtil:
         self.__dataList[self.__dataMap[get_ext_block_name(blockName, ext)]].append(category)
 
     def RemoveCategory(self, blockName: str, catName: str, ext: int = 1):
-        """ Remove Category in a given Data Block
+        """ Remove a category in a given datablock.
         """
 
         if blockName not in self.__dataMap:
@@ -232,7 +233,7 @@ class mmCIFUtil:
         self.__dataList[idx].remove(catName)
 
     def MoveCategoryToTop(self, blockName: str, catName: str, ext: int = 1):
-        """ Move Category to top in a given Data Block
+        """ Move category to top in a given datablock.
         """
 
         if blockName not in self.__dataMap:
@@ -258,7 +259,7 @@ class mmCIFUtil:
             self.__dataList[idx].append(_catObj)
 
     def InsertData(self, blockName: str, catName: str, dataList: list, ext: int = 1):
-        """ Insert data in a given Data Block and Category
+        """ Insert data in a given datablock and category.
         """
 
         if blockName not in self.__dataMap:
@@ -273,7 +274,7 @@ class mmCIFUtil:
             catObj.append(data)
 
     def ExtendCategory(self, blockName: str, catName: str, items: List[str], dataList: list, col: int = -1, ext: int = 1):
-        """ Extend existing Category in a given Data Block
+        """ Extend existing category in a given datablock.
         """
 
         if blockName not in self.__dataMap:
@@ -286,7 +287,7 @@ class mmCIFUtil:
 
         append_items = col < 0 or col >= catObj.getAttributeCount()
 
-        data_len = len(dataList)
+        len_data = len(dataList)
         empty_row = ['.'] * len(items)
 
         if append_items:
@@ -294,11 +295,8 @@ class mmCIFUtil:
             for item in items:
                 catObj.appendAttribute(item)
 
-            rowList = catObj.getRowList()
-
-            for idx, row in enumerate(rowList):
-
-                if idx < data_len:
+            for idx, row in enumerate(catObj.getRowList()):
+                if idx < len_data:
                     row.extend(dataList[idx])
                 else:
                     row.extend(empty_row)
@@ -306,17 +304,13 @@ class mmCIFUtil:
         else:
 
             attrNameList = catObj.getAttributeList()
-
             _attrNameList = attrNameList[0:col] + items + attrNameList[col:]
 
-            rowList = catObj.getRowList()
-
             _rowList = []
-
-            for idx, row in enumerate(rowList):
+            for idx, row in enumerate(catObj.getRowList()):
                 _row = row[0:col]
 
-                if idx < data_len:
+                if idx < len_data:
                     _row.extend(dataList[idx])
                 else:
                     _row.extend(empty_row)
@@ -329,10 +323,10 @@ class mmCIFUtil:
             catObj.setRowList(_rowList)
 
     def CopyValueInRow(self, blockName: str, catName: str, srcItems: List[str], dstItems: List[str], ext: int = 1):
-        """ Copy value from source items to destination items
+        """ Copy values of source items to destination items.
         """
 
-        if srcItems is None or dstItems is None or len(srcItems) != len(dstItems):
+        if None in (srcItems, dstItems) or len(srcItems) != len(dstItems):
             return
 
         if blockName not in self.__dataMap:
@@ -361,7 +355,7 @@ class mmCIFUtil:
                 row[dst_cols[j]] = row[src_col]
 
     def WriteCif(self, outputFilePath: Optional[str] = None):
-        """ Write out cif file
+        """ Write CIF file.
         """
 
         if not outputFilePath:
@@ -372,19 +366,13 @@ class mmCIFUtil:
             pdbxW.write(self.__dataList)
 
     def GetCategories(self) -> dict:
-        """ Get all Categories in all Data Blocks
+        """ Get all categories in all datablocks.
         """
 
-        data = {}
-
-        for container in self.__dataList:
-            blockName = container.getName()
-            data[blockName] = container.getObjNameList()
-
-        return data
+        return {container.getName(): container.getObjNameList() for container in self.__dataList}
 
     def GetAttributes(self, blockName: str, catName: str, ext: int = 1) -> List[str]:
-        """ Get item name in Data Block and Category
+        """ Get item name in given datablock and category.
         """
 
         if blockName not in self.__dataMap:
@@ -392,13 +380,13 @@ class mmCIFUtil:
 
         catObj = self.__dataList[self.__dataMap[get_ext_block_name(blockName, ext)]].getObj(catName)
 
-        if not catObj:
+        if catObj is None:
             return []
 
         return catObj.getAttributeList()
 
     def GetRowLength(self, blockName: str, catName: str, ext: int = 1) -> int:
-        """ Return length of rows of a given category
+        """ Return length of rows of a given datablock and category.
         """
 
         if blockName not in self.__dataMap:
@@ -406,13 +394,13 @@ class mmCIFUtil:
 
         catObj = self.__dataList[self.__dataMap[get_ext_block_name(blockName, ext)]].getObj(catName)
 
-        if not catObj:
+        if catObj is None:
             return 0
 
         return len(catObj.getRowList())
 
     def GetRowList(self, blockName: str, catName: str, ext: int = 1) -> List[list]:
-        """ Get a list of list of a geven Data Block and Category
+        """ Get a list of list of a given datablock and category.
         """
 
         if blockName not in self.__dataMap:
@@ -420,13 +408,13 @@ class mmCIFUtil:
 
         catObj = self.__dataList[self.__dataMap[get_ext_block_name(blockName, ext)]].getObj(catName)
 
-        if not catObj:
+        if catObj is None:
             return []
 
         return catObj.getRowList()
 
     def GetDictList(self, blockName: str, catName: str, ext: int = 1) -> dict:
-        """ Get a list of dictionaries of a given Data Block and Category
+        """ Get a list of dictionary of a given datablock and category.
         """
 
         dList, iList = self.GetValueAndItemByBlock(blockName, catName, ext)
@@ -435,15 +423,15 @@ class mmCIFUtil:
         return {catName: {"Items": iList, "Values": data}}
 
     def GetDataBlock(self, blockName: str, ext: int = 1) -> dict:
-        """ Get a list of dictionaries of a given Data Block
+        """ Get a dictionary of a given datablock.
         """
 
-        data = {}
-
         categories = self.GetCategories()
-        if blockName not in categories:
-            return data
 
+        if blockName not in categories:
+            return {}
+
+        data = {}
         for catName in categories[blockName]:
             data.update(self.GetDictList(blockName, catName, ext))
 

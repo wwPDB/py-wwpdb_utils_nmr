@@ -6,6 +6,12 @@
 """ ParserLister class for ARIA MR files.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 import re
 import itertools
@@ -849,7 +855,7 @@ class AriaMRParserListener(ParseTreeListener):
                     if self.__createSfDict and isinstance(memberId, int):
                         star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
                         star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
-                        if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                        if None in (star_atom1, star_atom2) or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                             continue
                     if self.__createSfDict and memberLogicCode == '.':
                         altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint(atoms, self.__csStat)
@@ -1372,7 +1378,7 @@ class AriaMRParserListener(ParseTreeListener):
                                 ligands += 1
                     if ligands == 1:
                         compId = _compId = __compId
-                    elif len(self.__nonPoly) == 1 and self.__ccU.updateChemCompDict(_compId):
+                    elif len(self.__nonPoly) == 1 and self.__ccU.updateChemCompDict(_compId, False):
                         if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
@@ -1966,7 +1972,7 @@ class AriaMRParserListener(ParseTreeListener):
                                 ligands += 1
                     if ligands == 1:
                         compId = _compId = __compId
-                    elif len(self.__nonPoly) == 1 and self.__ccU.updateChemCompDict(_compId):
+                    elif len(self.__nonPoly) == 1 and self.__ccU.updateChemCompDict(_compId, False):
                         if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
@@ -2756,6 +2762,7 @@ class AriaMRParserListener(ParseTreeListener):
                                       ) -> Tuple[str, str]:
         """ Return realistic bond constraint taking into account the current coordinates.
         """
+
         if not self.__hasCoord:
             return atom1, atom2
 
@@ -3113,26 +3120,31 @@ class AriaMRParserListener(ParseTreeListener):
     def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of ARIA MR file.
         """
+
         return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
     def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and ARIA MR.
         """
+
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
     def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and ARIA MR.
         """
+
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
     def getReasonsForReparsing(self) -> Optional[dict]:
         """ Return reasons for re-parsing ARIA MR file.
         """
+
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
     def getSfDict(self) -> Tuple[dict, Optional[dict]]:
         """ Return a dictionary of pynmrstar saveframes.
         """
+
         if len(self.sfDict) == 0:
             return self.__listIdCounter, None
         ign_keys = []

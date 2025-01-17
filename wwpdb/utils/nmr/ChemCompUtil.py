@@ -13,6 +13,12 @@
 """ Wrapper class for retrieving chemical component dictionary.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import os
 import sys
 import pickle
@@ -153,21 +159,24 @@ class ChemCompUtil:
         self.__cachedDict = load_dict_from_pickle(self.__cacheFile)
         self.__failedCompId = []
 
-    def updateChemCompDict(self, compId: str) -> bool:
+    def updateChemCompDict(self, compId: str, ligand: bool = True) -> bool:
         """ Update CCD information for a given comp_id.
             @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
         """
 
-        if compId in emptyValue or not ccd_id_pattern.match(compId) or is_reserved_lig_code(compId):
+        if compId in emptyValue:
             return False
 
         compId = compId.upper()
+
+        if not ccd_id_pattern.match(compId) or (not ligand and is_reserved_lig_code(compId)):
+            return False
 
         if compId in self.__failedCompId:
             return False
 
         if compId != self.lastCompId:
-            self.lastStatus = False if '_' in compId else self.__ccR.setCompId(compId)
+            self.lastStatus = False if '_' in compId else self.__ccR.setCompId(compId, ligand)
             self.lastCompId = compId
 
             if self.lastStatus:
@@ -468,6 +477,7 @@ class ChemCompUtil:
     def hasBond(self, compId: str, atomId1: str, atomId2: str) -> bool:
         """ Return whether given two atoms are connected by a covalent bond.
         """
+
         return atomId2 in self.getBondedAtoms(compId, atomId1)
 
     def peptideLike(self, compId: Optional[str] = None) -> bool:

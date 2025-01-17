@@ -6,6 +6,12 @@
 """ ParserLister class for CNS MR files.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 import re
 import itertools
@@ -2022,7 +2028,7 @@ class CnsMRParserListener(ParseTreeListener):
                     if self.__createSfDict and isinstance(memberId, int):
                         star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
                         star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
-                        if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                        if None in (star_atom1, star_atom2) or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                             continue
                     if self.__createSfDict and memberLogicCode == '.':
                         altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint(atoms, self.__csStat)
@@ -4986,6 +4992,7 @@ class CnsMRParserListener(ParseTreeListener):
     def __consumeFactor_expressions(self, _factor: dict, clauseName: str = 'atom selection expression', cifCheck: bool = True) -> dict:
         """ Consume factor expressions as atom selection if possible.
         """
+
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return _factor
 
@@ -5955,7 +5962,7 @@ class CnsMRParserListener(ParseTreeListener):
                         elif pref_alt_auth_seq_id:
                             continue
 
-                    if self.__authToInsCode is None or len(self.__authToInsCode) == 0 or _compId_ is None:
+                    if None in (self.__authToInsCode, _compId_) or len(self.__authToInsCode) == 0:
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, cifCheck=cifCheck)
                     else:
                         compId = _compId_
@@ -6704,7 +6711,7 @@ class CnsMRParserListener(ParseTreeListener):
         return foundCompId
 
     def getRealCompId(self, compId: str) -> str:
-        if self.__ccU.updateChemCompDict(compId):
+        if self.__ccU.updateChemCompDict(compId, False):
             if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' and '_chem_comp.pdbx_replaced_by' in self.__ccU.lastChemCompDict:
                 replacedBy = self.__ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
                 if replacedBy not in emptyValue and self.__ccU.updateChemCompDict(replacedBy):
@@ -6965,6 +6972,7 @@ class CnsMRParserListener(ParseTreeListener):
     def checkDistSequenceOffset(self, chainId: str, seqId: int, compId: str, origAtomId: str) -> bool:
         """ Try to find sequence offset.
         """
+
         if not self.__hasPolySeq or self.__cur_subtype != 'dist':
             return False
 
@@ -7041,7 +7049,7 @@ class CnsMRParserListener(ParseTreeListener):
         return _factor
 
     def __intersectionAtom_selections(self, _selection1: List[dict], _selection2: List[dict]) -> List[dict]:  # pylint: disable=no-self-use
-        if _selection1 is None or len(_selection1) == 0 or _selection2 is None or len(_selection2) == 0:
+        if None in (_selection1, _selection2) or len(_selection1) == 0 or len(_selection2) == 0:
             return []
 
         if isinstance(_selection2[0], str) and _selection2[0] == '*':
@@ -8943,6 +8951,7 @@ class CnsMRParserListener(ParseTreeListener):
                                       ) -> Tuple[str, str]:
         """ Return realistic bond constraint taking into account the current coordinates.
         """
+
         if not self.__hasCoord:
             return atom1, atom2
 
@@ -9053,6 +9062,7 @@ class CnsMRParserListener(ParseTreeListener):
                                            ) -> dict:
         """ Return realistic chi2 angle constraint taking into account the current coordinates.
         """
+
         if not self.__hasCoord:
             return dst_func
 
@@ -9221,6 +9231,7 @@ class CnsMRParserListener(ParseTreeListener):
     def isRealisticDistanceRestraint(self, atom1: str, atom2: str, dst_func: dict) -> bool:
         """ Return whether a given distance restraint is realistic in the assembly.
         """
+
         if not self.__hasCoord:
             return True
 
@@ -10187,6 +10198,7 @@ class CnsMRParserListener(ParseTreeListener):
     def hasAnyRestraints(self) -> bool:
         """ Return whether any restraint is parsed successfully.
         """
+
         if self.__createSfDict:
             if len(self.sfDict) == 0:
                 return False
@@ -10200,26 +10212,31 @@ class CnsMRParserListener(ParseTreeListener):
     def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of CNS MR file.
         """
+
         return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
     def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and CNS MR.
         """
+
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
     def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and CNS MR.
         """
+
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
     def getReasonsForReparsing(self) -> Optional[dict]:
         """ Return reasons for re-parsing CNS MR file.
         """
+
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
     def getSfDict(self) -> Tuple[dict, Optional[dict]]:
         """ Return a dictionary of pynmrstar saveframes.
         """
+
         if len(self.sfDict) == 0:
             return self.__listIdCounter, None
         ign_keys = []

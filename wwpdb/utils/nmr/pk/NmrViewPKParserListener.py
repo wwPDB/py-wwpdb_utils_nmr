@@ -6,6 +6,12 @@
 """ ParserLister class for NMRVIEW PK files.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 import re
 import copy
@@ -205,7 +211,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
-        if P1 is None or P2 is None or stat != 0:
+        if None in (P1, P2) or stat != 0:
             self.peaks2D -= 1
             return
 
@@ -309,7 +315,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
-        if P1 is None or P2 is None or P3 is None or stat != 0:
+        if None in (P1, P2, P3) or stat != 0:
             self.peaks3D -= 1
             return
 
@@ -428,7 +434,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
-        if P1 is None or P2 is None or P3 is None or P4 is None or stat != 0:
+        if None in (P1, P2, P3, P4) or stat != 0:
             self.peaks4D -= 1
             return
 
@@ -521,7 +527,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
-        if P1 is None or P2 is None or stat != 0:
+        if None in (P1, P2) or stat != 0:
             self.peaks2D -= 1
             return
 
@@ -611,7 +617,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
-        if P1 is None or P2 is None or P3 is None or stat != 0:
+        if None in (P1, P2, P3) or stat != 0:
             self.peaks3D -= 1
             return
 
@@ -713,7 +719,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
-        if P1 is None or P2 is None or P3 is None or P4 is None or stat != 0:
+        if None in (P1, P2, P3, P4) or stat != 0:
             self.peaks4D -= 1
             return
 

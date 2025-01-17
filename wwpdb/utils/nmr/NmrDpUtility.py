@@ -208,6 +208,12 @@
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "4.1.1"
+
 import sys
 import os
 import itertools
@@ -1794,7 +1800,7 @@ class NmrDpUtility:
         self.__csStat = BMRBChemShiftStat(self.__verbose, self.__lfh, self.__ccU)
 
         # CifToNmrStar
-        self.__c2S = CifToNmrStar(self.__verbose)
+        self.__c2S = CifToNmrStar(self.__lfh)
 
         # NEFTranslator
         self.__nefT = NEFTranslator(self.__verbose, self.__lfh, self.__ccU, self.__csStat, self.__c2S)
@@ -8449,13 +8455,13 @@ class NmrDpUtility:
                     j -= 1
 
             j += 1
-            i = 1
+            i = 0
 
             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                     open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                 ofh.write('data_' + os.path.basename(srcPath) + '\n\n')
                 for line in ifh:
-                    if i <= j:
+                    if i < j:
                         ofh.write(line)
                     i += 1
 
@@ -8515,7 +8521,7 @@ class NmrDpUtility:
 
                 line_num = int(g[0])
 
-                i = 1
+                i = 0
 
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
@@ -8557,7 +8563,7 @@ class NmrDpUtility:
 
                 line_num = int(g[0])
 
-                i = 1
+                i = 0
 
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
@@ -8708,7 +8714,7 @@ class NmrDpUtility:
 
                 line_num = int(g[0])
 
-                i = 1
+                i = 0
 
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
@@ -8862,7 +8868,7 @@ class NmrDpUtility:
                         pass_loop = False
 
                         lp_loc = -1
-                        i = 1
+                        i = 0
 
                         with open(_srcPath, 'r', encoding='utf-8') as ifh:
                             for line in ifh:
@@ -8900,7 +8906,7 @@ class NmrDpUtility:
                     if 'sf_category' not in target:
                         ignored_loop_locations.extend(list(range(target['loop_location'], target['stop_location'] + 1)))
 
-                i = 1
+                i = 0
 
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
@@ -8962,7 +8968,7 @@ class NmrDpUtility:
 
                     pass_sf_framecode = pass_category_1 = pass_category_2 = pass_sf_loop = False
 
-                    i = 1
+                    i = 0
 
                     with open(_srcPath, 'r', encoding='utf-8') as ifh:
                         for line in ifh:
@@ -9040,7 +9046,7 @@ class NmrDpUtility:
                     if target['category_type_2'] == 'loop':
                         loop_category_locations.extend(_range)
 
-                i = 1
+                i = 0
 
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
@@ -9108,10 +9114,10 @@ class NmrDpUtility:
                 self.__lfh.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
             if __pynmrstar_v3_3__:
-                msg_pattern = re.compile(r'^.*' + msg_template + r" Error occurred in tag _\S+ with value (\S+) which conflicts with the saveframe name (\S+)\. "
+                msg_pattern = re.compile(r'^.*' + msg_template + r" Error occurred in tag _\S+ with value ([\S ]+) which conflicts with the saveframe name (\S+)\. "
                                          r"Error detected on line (\d+).*$")
             else:
-                msg_pattern = re.compile(r'^.*' + msg_template + r" Error occurred in tag _\S+ with value (\S+) which conflicts with.* the saveframe name (\S+)\. "
+                msg_pattern = re.compile(r'^.*' + msg_template + r" Error occurred in tag _\S+ with value ([\S ]+) which conflicts with.* the saveframe name (\S+)\. "
                                          r"Error detected on line (\d+).*$")
 
             try:
@@ -9122,13 +9128,16 @@ class NmrDpUtility:
                 saveframe_name = g[1]
                 line_num = int(g[2])
 
-                i = 1
+                i = 0
 
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
                     for line in ifh:
                         if i == line_num:
-                            ofh.write(re.sub(sf_framecode + r'\s$', saveframe_name + r'\n', line))
+                            if sf_framecode not in emptyValue:
+                                ofh.write(re.sub(r'["\']?' + sf_framecode + r'["\']?\s*$', saveframe_name + r'\n', line))
+                            else:
+                                ofh.write(re.sub(rf'\{sf_framecode}\s*$', saveframe_name + r'\n', line))
                         else:
                             ofh.write(line)
                         i += 1
@@ -9148,7 +9157,7 @@ class NmrDpUtility:
 
             if not is_valid:
 
-                retry = len(message['error']) != len(_message['error'])
+                retry = len(message['error']) != len(_message['error']) or message['error'] != _message['error']
 
                 if not retry:
 
@@ -9157,7 +9166,7 @@ class NmrDpUtility:
                             retry = True
                             break
 
-                if retry and len_tmp_paths < 10:
+                if retry and len_tmp_paths < 40:
                     return self.__fixFormatIssueOfInputSource(file_list_id, file_name, file_type, _srcPath, fileSubType,
                                                               _message, tmpPaths, allowEmpty)
 
@@ -9371,7 +9380,7 @@ class NmrDpUtility:
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
-                if sf_category is None or lp_category is None:
+                if None in (sf_category, lp_category):
                     continue
 
                 for sf in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
@@ -9401,7 +9410,7 @@ class NmrDpUtility:
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
-                if sf_category is None or lp_category is None:
+                if None in (sf_category, lp_category):
                     continue
 
                 if self.__star_data_type[file_list_id] == 'Loop':
@@ -9744,7 +9753,7 @@ class NmrDpUtility:
             if content_subtype.startswith('spectral_peak'):
                 lp_category = self.aux_lp_categories[file_type][content_subtype][0]  # _Spectral_dim
 
-            if sf_category is None or lp_category is None:
+            if None in (sf_category, lp_category):
                 continue
 
             if self.__star_data_type[file_list_id] == 'Loop':
@@ -11957,7 +11966,7 @@ class NmrDpUtility:
 
             for (i, j) in itertools.combinations(range(0, ar_path_len), 2):
 
-                if md5_list[i] is None or md5_list[j] is None:
+                if None in (md5_list[i], md5_list[j]):
                     continue
 
                 if md5_list[i] == md5_list[j]:
@@ -17605,7 +17614,7 @@ class NmrDpUtility:
                 subtype1 = subtype_pair[0]  # poly_seq will appear only on subtype1
                 subtype2 = subtype_pair[1]
 
-                if subtype1 is None or subtype2 is None:
+                if None in (subtype1, subtype2):
                     continue
 
                 # reference polymer sequence exists
@@ -17752,7 +17761,7 @@ class NmrDpUtility:
                 subtype1 = subtype_pair[0]  # poly_seq will appear only on subtype1
                 subtype2 = subtype_pair[1]
 
-                if subtype1 is None or subtype2 is None:
+                if None in (subtype1, subtype2):
                     continue
 
                 lp_category2 = self.lp_categories[file_type][subtype2]
@@ -21833,7 +21842,7 @@ class NmrDpUtility:
                         if val_1 is None and val_2 is None:
                             continue
 
-                        if val_1 is None or val_2 is None:
+                        if None in (val_1, val_2):
                             redundant = False
                             continue
 
@@ -22123,7 +22132,7 @@ class NmrDpUtility:
                                                 elif atom_id == 'CB':
                                                     cb_chem_shift_1 = _row[value_name]
 
-                                            if ca_chem_shift_1 is None or cb_chem_shift_1 is None:
+                                            if None in (ca_chem_shift_1, cb_chem_shift_1):
                                                 if _row[chain_id_name] == chain_id_1 and _row[seq_id_name] > seq_id_1:
                                                     break
                                             else:
@@ -22144,7 +22153,7 @@ class NmrDpUtility:
                                                 elif atom_id == 'CB':
                                                     cb_chem_shift_2 = _row[value_name]
 
-                                            if ca_chem_shift_2 is None or cb_chem_shift_2 is None:
+                                            if None in (ca_chem_shift_2, cb_chem_shift_2):
                                                 if _row[chain_id_name] == chain_id_2 and _row[seq_id_name] > seq_id_2:
                                                     break
                                             else:
@@ -22294,7 +22303,7 @@ class NmrDpUtility:
                                                 elif atom_id == 'CB':
                                                     cb_chem_shift_1 = _row[value_name]
 
-                                            if ca_chem_shift_1 is None or cb_chem_shift_1 is None:
+                                            if None in (ca_chem_shift_1, cb_chem_shift_1):
                                                 if _row[chain_id_name] == chain_id_1 and _row[seq_id_name] > seq_id_1:
                                                     break
                                             else:
@@ -22315,7 +22324,7 @@ class NmrDpUtility:
                                                 elif atom_id == 'CB':
                                                     cb_chem_shift_2 = _row[value_name]
 
-                                            if ca_chem_shift_2 is None or cb_chem_shift_2 is None:
+                                            if None in (ca_chem_shift_2, cb_chem_shift_2):
                                                 if _row[chain_id_name] == chain_id_2 and _row[seq_id_name] > seq_id_2:
                                                     break
                                             else:
@@ -22847,7 +22856,7 @@ class NmrDpUtility:
                     for row in lp_data:
                         for j in range(num_dim):
 
-                            if min_points[j] is None or max_points[j] is None:
+                            if None in (min_points[j], max_points[j]):
                                 continue
 
                             position = row[position_names[j]]
@@ -22866,7 +22875,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Warning  - {err}\n")
 
-                            if min_limits[j] is None or max_limits[j] is None:
+                            if None in (min_limits[j], max_limits[j]):
                                 continue
 
                             if position < min_limits[j] or position > max_limits[j]:
@@ -23013,7 +23022,7 @@ class NmrDpUtility:
 
                         j = row[dim_id_name] - 1
 
-                        if j >= num_dim or min_points[j] is None or max_points[j] is None:
+                        if j >= num_dim or None in (min_points[j], max_points[j]):
                             continue
 
                         position = row[position_name]
@@ -23032,7 +23041,7 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Warning  - {warn}\n")
 
-                        if min_limits[j] is None or max_limits[j] is None:
+                        if None in (min_limits[j], max_limits[j]):
                             continue
 
                         if position < min_limits[j] or position > max_limits[j]:
@@ -25307,7 +25316,7 @@ class NmrDpUtility:
                             auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                 if test_seq_id == seq_id), None)
 
-                if (auth_asym_id is None or auth_seq_id is None) and br_seq_align is not None:
+                if None in (auth_asym_id, auth_seq_id) and br_seq_align is not None:
                     auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
                     if auth_asym_id is not None:
                         sa = next((sa for sa in br_seq_align
@@ -25318,7 +25327,7 @@ class NmrDpUtility:
                             auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                 if test_seq_id == seq_id), None)
 
-                if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
+                if None in (auth_asym_id, auth_seq_id) and np_seq_align is not None:
                     auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
                     if auth_asym_id is not None:
                         sa = next((sa for sa in np_seq_align
@@ -25350,7 +25359,7 @@ class NmrDpUtility:
                                                               in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                               if ref_seq_id == seq_id), (None, None))
 
-                if (auth_asym_id is None or auth_seq_id is None) and br_seq_align is not None:
+                if None in (auth_asym_id, auth_seq_id) and br_seq_align is not None:
                     auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
                     if auth_asym_id is not None:
                         sa = next((sa for sa in br_seq_align
@@ -25364,7 +25373,7 @@ class NmrDpUtility:
                                                               in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                               if ref_seq_id == seq_id), (None, None))
 
-                if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
+                if None in (auth_asym_id, auth_seq_id) and np_seq_align is not None:
                     auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
                     if auth_asym_id is not None:
                         sa = next((sa for sa in np_seq_align
@@ -30127,7 +30136,7 @@ class NmrDpUtility:
             a_1 = next((a for a in atom_site_1 if a['model_id'] == model_id), None)
             a_2 = next((a for a in atom_site_2 if a['model_id'] == model_id), None)
 
-            if a_1 is None or a_2 is None:
+            if None in (a_1, a_2):
                 continue
 
             bond.append({'model_id': model_id, 'distance': float(f"{distance(to_np_array(a_1), to_np_array(a_2)):.3f}")})
@@ -30876,7 +30885,7 @@ class NmrDpUtility:
                                     auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                         if test_seq_id == seq_id), None)
 
-                        if (auth_asym_id is None or auth_seq_id is None) and br_seq_align is not None:
+                        if None in (auth_asym_id, auth_seq_id) and br_seq_align is not None:
                             auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
                             if auth_asym_id is not None:
                                 sa = next((sa for sa in br_seq_align
@@ -30887,7 +30896,7 @@ class NmrDpUtility:
                                     auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                         if test_seq_id == seq_id), None)
 
-                        if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
+                        if None in (auth_asym_id, auth_seq_id) and np_seq_align is not None:
                             auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
                             if auth_asym_id is not None:
                                 sa = next((sa for sa in np_seq_align
@@ -31552,7 +31561,7 @@ class NmrDpUtility:
                                                         auth_seq_id += offset
                                                         break
 
-                                if (auth_asym_id is None or auth_seq_id is None) and br_seq_align is not None:
+                                if None in (auth_asym_id, auth_seq_id) and br_seq_align is not None:
                                     auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
                                     if auth_asym_id is not None:
                                         sa = next((sa for sa in br_seq_align
@@ -31562,7 +31571,7 @@ class NmrDpUtility:
                                             auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                                 if test_seq_id == seq_id), None)
 
-                                if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
+                                if None in (auth_asym_id, auth_seq_id) and np_seq_align is not None:
                                     auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
                                     if auth_asym_id is not None:
                                         sa = next((sa for sa in np_seq_align
@@ -31572,7 +31581,7 @@ class NmrDpUtility:
                                             auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                                 if test_seq_id == seq_id), None)
 
-                                if auth_asym_id is None or auth_seq_id is None:
+                                if None in (auth_asym_id, auth_seq_id):
                                     entity_id_name = key_entity_id_names[d]
                                     if entity_id_name not in loop.tags:
                                         continue
@@ -36366,7 +36375,7 @@ class NmrDpUtility:
                             auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                 if test_seq_id == seq_id), None)
 
-                if (auth_asym_id is None or auth_seq_id is None) and br_seq_align is not None:
+                if None in (auth_asym_id, auth_seq_id) and br_seq_align is not None:
                     auth_asym_id = next((ca['ref_chain_id'] for ca in br_chain_assign if ca['test_chain_id'] == chain_id), None)
                     if auth_asym_id is not None:
                         sa = next((sa for sa in br_seq_align
@@ -36377,7 +36386,7 @@ class NmrDpUtility:
                             auth_seq_id = next((ref_seq_id for ref_seq_id, test_seq_id in zip(sa[_ref_seq_id_name], sa['test_seq_id'])
                                                 if test_seq_id == seq_id), None)
 
-                if (auth_asym_id is None or auth_seq_id is None) and np_seq_align is not None:
+                if None in (auth_asym_id, auth_seq_id) and np_seq_align is not None:
                     auth_asym_id = next((ca['ref_chain_id'] for ca in np_chain_assign if ca['test_chain_id'] == chain_id), None)
                     if auth_asym_id is not None:
                         sa = next((sa for sa in np_seq_align
@@ -38427,7 +38436,7 @@ class NmrDpUtility:
 
                             break
 
-                if (not has_cs_stat) or std_value is None or std_value <= 0.0 or avg_value is None:
+                if (not has_cs_stat) or None in (std_value, avg_value) or std_value <= 0.0:
                     continue
 
                 z_score = (value - avg_value) / std_value
@@ -38520,7 +38529,7 @@ class NmrDpUtility:
                                     elif atom_id == 'CB':
                                         cb_chem_shift = row[value_name]
 
-                                if ca_chem_shift is None or cb_chem_shift is None:
+                                if None in (ca_chem_shift, cb_chem_shift):
                                     if row[chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
                                         break
                                 else:
@@ -38603,7 +38612,7 @@ class NmrDpUtility:
                                     elif atom_id == 'CG':
                                         cg_chem_shift = row[value_name]
 
-                                if cb_chem_shift is None or cg_chem_shift is None:
+                                if None in (cb_chem_shift, cg_chem_shift):
                                     if row[chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
                                         break
                                 else:
@@ -38715,7 +38724,7 @@ class NmrDpUtility:
                                     elif atom_id == 'NE2':
                                         ne2_chem_shift = row[value_name]
 
-                                if cg_chem_shift is None or cd2_chem_shift is None or nd1_chem_shift is None or ne2_chem_shift is None:
+                                if None in (cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift):
                                     if row[chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
                                         break
                                 else:
@@ -38827,7 +38836,7 @@ class NmrDpUtility:
                                         elif _atom_id == 'CG2':
                                             cg2_chem_shift = row[value_name]
 
-                                    if cg1_chem_shift is None or cg2_chem_shift is None:
+                                    if None in (cg1_chem_shift, cg2_chem_shift):
                                         if row[chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
                                             break
                                     else:
@@ -38920,7 +38929,7 @@ class NmrDpUtility:
                                         elif _atom_id == 'CD2':
                                             cd2_chem_shift = row[value_name]
 
-                                    if cd1_chem_shift is None or cd2_chem_shift is None:
+                                    if None in (cd1_chem_shift, cd2_chem_shift):
                                         if row[chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
                                             break
                                     else:
@@ -39165,7 +39174,7 @@ class NmrDpUtility:
                                             elif atom_id == 'CB':
                                                 cb_chem_shift = row[value_name]
 
-                                        if ca_chem_shift is None or cb_chem_shift is None:
+                                        if None in (ca_chem_shift, cb_chem_shift):
                                             if row[chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
                                                 break
                                         else:
@@ -39773,7 +39782,7 @@ class NmrDpUtility:
                             target_value_1 = get_est_target_value(row_1)
                             target_value_2 = get_est_target_value(row_2)
 
-                            if target_value_1 is None or target_value_2 is None:
+                            if None in (target_value_1, target_value_2):
                                 continue
 
                             if target_value_1 == target_value_2:
@@ -39853,7 +39862,7 @@ class NmrDpUtility:
                                     if target_value_1 is None and target_value_2 is None:
                                         continue
 
-                                    if target_value_1 is None or target_value_2 is None:
+                                    if None in (target_value_1, target_value_2):
                                         redundant = False
                                         continue
 
@@ -41046,7 +41055,7 @@ class NmrDpUtility:
                     phi['seq_id'] = seq_id_common[0][0]
                     phi['comp_id'] = comp_id_common[0][0]
                     phi['value'] = target_value
-                    phi['error'] = None if lower_limit is None or upper_limit is None else [lower_limit, upper_limit]
+                    phi['error'] = None if None in (lower_limit, upper_limit) else [lower_limit, upper_limit]
                     phi_list.append(phi)
 
                 elif data_type.startswith('psi_'):
@@ -41055,7 +41064,7 @@ class NmrDpUtility:
                     psi['seq_id'] = seq_id_common[0][0]
                     psi['comp_id'] = comp_id_common[0][0]
                     psi['value'] = target_value
-                    psi['error'] = None if lower_limit is None or upper_limit is None else [lower_limit, upper_limit]
+                    psi['error'] = None if None in (lower_limit, upper_limit) else [lower_limit, upper_limit]
                     psi_list.append(psi)
 
                 elif data_type.startswith('chi1_'):
@@ -41064,7 +41073,7 @@ class NmrDpUtility:
                     chi1['seq_id'] = seq_ids[0]
                     chi1['comp_id'] = comp_ids[0]
                     chi1['value'] = target_value
-                    chi1['error'] = None if lower_limit is None or upper_limit is None else [lower_limit, upper_limit]
+                    chi1['error'] = None if None in (lower_limit, upper_limit) else [lower_limit, upper_limit]
                     chi1_list.append(chi1)
 
                 elif data_type.startswith('chi2_'):
@@ -41073,7 +41082,7 @@ class NmrDpUtility:
                     chi2['seq_id'] = seq_ids[0]
                     chi2['comp_id'] = comp_ids[0]
                     chi2['value'] = target_value
-                    chi2['error'] = None if lower_limit is None or upper_limit is None else [lower_limit, upper_limit]
+                    chi2['error'] = None if None in (lower_limit, upper_limit) else [lower_limit, upper_limit]
                     chi2_list.append(chi2)
 
                 # detect weight
@@ -41261,7 +41270,7 @@ class NmrDpUtility:
                             target_value_1 = get_est_target_value(row_1)
                             target_value_2 = get_est_target_value(row_2)
 
-                            if target_value_1 is None or target_value_2 is None:
+                            if None in (target_value_1, target_value_2):
                                 continue
 
                             while target_value_1 > 180.0:
@@ -41360,7 +41369,7 @@ class NmrDpUtility:
                                     if target_value_1 is None and target_value_2 is None:
                                         continue
 
-                                    if target_value_1 is None or target_value_2 is None:
+                                    if None in (target_value_1, target_value_2):
                                         redundant = False
                                         continue
 
@@ -41777,7 +41786,7 @@ class NmrDpUtility:
                             target_value_1 = get_est_target_value(row_1)
                             target_value_2 = get_est_target_value(row_2)
 
-                            if target_value_1 is None or target_value_2 is None:
+                            if None in (target_value_1, target_value_2):
                                 continue
 
                             if target_value_1 == target_value_2:
@@ -41846,7 +41855,7 @@ class NmrDpUtility:
                                     if target_value_1 is None and target_value_2 is None:
                                         continue
 
-                                    if target_value_1 is None or target_value_2 is None:
+                                    if None in (target_value_1, target_value_2):
                                         redundant = False
                                         continue
 
@@ -42042,7 +42051,7 @@ class NmrDpUtility:
                             sp_freq = None
 
                         if center_point is None:
-                            center_point = None if first_point is None or sp_width is None else (first_point - sp_width / 2.0)
+                            center_point = None if None in (first_point, sp_width) else (first_point - sp_width / 2.0)
 
                         if under_sampling_type is not None and under_sampling_type in emptyValue:
                             under_sampling_type = None
@@ -42073,9 +42082,9 @@ class NmrDpUtility:
                             center_point /= sp_freq
                             sp_width /= sp_freq
 
-                        last_point = None if first_point is None or sp_width is None else (first_point - sp_width)
+                        last_point = None if None in (first_point, sp_width) else (first_point - sp_width)
 
-                        if center_point is None or last_point is None:
+                        if None in (center_point, last_point):
                             spectral_region = atom_type
                         elif atom_type == 'H':
                             if mag_link_id is None:
@@ -42121,7 +42130,7 @@ class NmrDpUtility:
                                             _sp_freq = None
 
                                         if _center_point is None:
-                                            _center_point = None if _first_point is None or _sp_width is None else (_first_point - _sp_width / 2.0)
+                                            _center_point = None if None in (_first_point, _sp_width) else (_first_point - _sp_width / 2.0)
 
                                         if _axis_unit == 'Hz' and _sp_freq is not None and _first_point is not None\
                                            and _center_point is not None and _sp_width is not None:
@@ -42129,9 +42138,9 @@ class NmrDpUtility:
                                             _center_point /= _sp_freq
                                             _sp_width /= _sp_freq
 
-                                        _last_point = None if _first_point is None or _sp_width is None else (_first_point - _sp_width)
+                                        _last_point = None if None in (_first_point, _sp_width) else (_first_point - _sp_width)
 
-                                        if _center_point is None or _last_point is None:
+                                        if None in (_center_point, _last_point):
                                             spectral_region = 'H'
                                         elif _center_point > 100.0 and _sp_width < 60.0:
                                             spectral_region = 'H-aromatic'
@@ -42301,7 +42310,7 @@ class NmrDpUtility:
                             sp_freq = None
 
                         if center_point is None:
-                            center_point = None if first_point is None or sp_width is None else (first_point - sp_width / 2.0)
+                            center_point = None if None in (first_point, sp_width) else (first_point - sp_width / 2.0)
 
                         if under_sampling_type is not None and under_sampling_type in emptyValue:
                             under_sampling_type = None
@@ -42331,9 +42340,9 @@ class NmrDpUtility:
                             center_point /= sp_freq
                             sp_width /= sp_freq
 
-                        last_point = None if first_point is None or sp_width is None else (first_point - sp_width)
+                        last_point = None if None in (first_point, sp_width) else (first_point - sp_width)
 
-                        if center_point is None or last_point is None:
+                        if None in (center_point, last_point):
                             spectral_region = atom_type
                         elif atom_type == 'H':
                             if mag_link_id is None:
@@ -42366,16 +42375,16 @@ class NmrDpUtility:
                                             _sp_freq = None
 
                                         if _center_point is None:
-                                            _center_point = None if _first_point is None or _sp_width is None else (_first_point - _sp_width / 2.0)
+                                            _center_point = None if None in (_first_point, _sp_width) else (_first_point - _sp_width / 2.0)
 
                                         if _axis_unit == 'Hz' and _sp_freq is not None and _first_point is not None and _center_point is not None and _sp_width is not None:
                                             _first_point /= _sp_freq
                                             _center_point /= _sp_freq
                                             _sp_width /= _sp_freq
 
-                                        _last_point = None if _first_point is None or _sp_width is None else (_first_point - _sp_width)
+                                        _last_point = None if None in (_first_point, _sp_width) else (_first_point - _sp_width)
 
-                                        if _center_point is None or _last_point is None:
+                                        if None in (_center_point, _last_point):
                                             spectral_region = 'H'
                                         elif _center_point > 100.0 and _sp_width < 60.0:
                                             spectral_region = 'H-aromatic'
@@ -45094,7 +45103,7 @@ class NmrDpUtility:
                         for p in range(len(_s2['auth_seq_id']) - 1):
                             s_p = _s2['auth_seq_id'][p]
                             s_q = _s2['auth_seq_id'][p + 1]
-                            if s_p is None or s_q is None or s_p + 1 == s_q:
+                            if None in (s_p, s_q) or s_p + 1 == s_q:
                                 continue
                             for s_o in range(s_p + 1, s_q):
                                 if s_o in __s1['seq_id']:
@@ -45622,7 +45631,7 @@ class NmrDpUtility:
                         for p in range(len(_s1['auth_seq_id']) - 1):
                             s_p = _s1['auth_seq_id'][p]
                             s_q = _s1['auth_seq_id'][p + 1]
-                            if s_p is None or s_q is None or s_p + 1 == s_q:
+                            if None in (s_p, s_q) or s_p + 1 == s_q:
                                 continue
                             for s_o in range(s_p + 1, s_q):
                                 if s_o in __s2['seq_id']:
@@ -46696,7 +46705,7 @@ class NmrDpUtility:
                                                         in zip(cif_ps['seq_id'], cif_ps['comp_id'])
                                                         if _seq_id == seq_id), (None, None))
 
-                    if cif_seq_id is None or cif_comp_id is None:
+                    if None in (cif_seq_id, cif_comp_id):
                         continue
 
                 else:
@@ -51906,7 +51915,7 @@ class NmrDpUtility:
                                                                nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
                                                                nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
-                        if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
+                        if None in (ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2):
                             pass
                         else:
                             break
@@ -52063,7 +52072,7 @@ class NmrDpUtility:
                         elif atom_id == 'CB' and cb_chem_shift_2 is None:
                             cb_chem_shift_2 = row[value_name]
 
-                    if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
+                    if None in (ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2):
                         pass
                     else:
                         break
@@ -52302,7 +52311,7 @@ class NmrDpUtility:
                                                            nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
                                                            nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
-                        if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
+                        if None in (ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2):
                             pass
                         else:
                             break
@@ -52459,7 +52468,7 @@ class NmrDpUtility:
                         elif atom_id == 'CB' and cb_chem_shift_2 is None:
                             cb_chem_shift_2 = row[value_name]
 
-                    if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
+                    if None in (ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2):
                         pass
                     else:
                         break

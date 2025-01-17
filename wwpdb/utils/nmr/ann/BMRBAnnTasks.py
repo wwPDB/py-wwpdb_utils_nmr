@@ -6,6 +6,12 @@
 """ Wrapper class for BMRB annotation tasks.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 import re
 import copy
@@ -88,7 +94,7 @@ class BMRBAnnTasks:
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
 
         # CifToNmrStar
-        self.__c2S = CifToNmrStar(verbose) if c2S is None else c2S
+        self.__c2S = CifToNmrStar(log) if c2S is None else c2S
 
         self.__defSfLabelTag = ['_Assigned_chem_shift_list.Sample_condition_list_label',
                                 '_Assigned_chem_shift_list.Chem_shift_reference_label',

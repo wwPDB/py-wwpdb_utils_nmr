@@ -7,6 +7,12 @@
     @author: Masashi Yokochi
     @see: https://aria-test.pasteur.fr/documentation/input-format/version-2.1/spectrum
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 
 from antlr4 import ParseTreeListener

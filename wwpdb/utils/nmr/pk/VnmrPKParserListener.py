@@ -6,6 +6,12 @@
 """ ParserLister class for VNMR PK files.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 import copy
 import re
@@ -207,7 +213,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if x_ppm is None or y_ppm is None:
+            if None in (x_ppm, y_ppm):
                 self.peaks2D -= 1
                 return
 
@@ -308,7 +314,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 y_lw_hz = self.numberSelection[offset + 1]
                 z_lw_hz = self.numberSelection[offset + 2]
 
-            if x_ppm is None or y_ppm is None or z_ppm is None:
+            if None in (x_ppm, y_ppm, z_ppm):
                 self.peaks3D -= 1
                 return
 
@@ -415,7 +421,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if x_ppm is None or y_ppm is None or z_ppm is None or a_ppm is None:
+            if None in (x_ppm, y_ppm, z_ppm, a_ppm):
                 self.peaks4D -= 1
                 return
 
@@ -536,7 +542,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if x_ppm is None or y_ppm is None:
+            if None in (x_ppm, y_ppm):
                 self.peaks2D -= 1
                 return
 
@@ -639,7 +645,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if x_ppm is None or y_ppm is None or z_ppm is None:
+            if None in (x_ppm, y_ppm, z_ppm):
                 self.peaks3D -= 1
                 return
 
@@ -745,7 +751,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if x_ppm is None or y_ppm is None or z_ppm is None or a_ppm is None:
+            if None in (x_ppm, y_ppm, z_ppm, a_ppm):
                 self.peaks4D -= 1
                 return
 

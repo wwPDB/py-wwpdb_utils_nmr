@@ -15,6 +15,12 @@
     @author: Masashi Yokochi
     @note: This class is alternative implementation of wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi, Kumaran Baskaran"
+__email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
+__license__ = "Apache License 2.0"
+__version__ = "v1.2"
+
 import os
 import sys
 import gzip
@@ -226,6 +232,7 @@ def dist_error(lower_bound: Optional[float], upper_bound: Optional[float], dist:
     """ Return distance outlier for given lower_bound and upper_bound.
         @author: Masashi Yokochi
     """
+
     error = 0.0
 
     try:
@@ -338,6 +345,7 @@ def angle_diff(x: float, y: float) -> float:
         @author: Kumaran Baskaran
         @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.angle_diff.ac
     """
+
     if x < 0.0:
         x += 360.0
     if y < 0.0:
@@ -363,6 +371,7 @@ def angle_error(lower_bound: Optional[float], upper_bound: Optional[float], targ
             @author: Kumaran Baskaran
             @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.angle_diff.check_ac
         """
+
         l = angle_diff(x, c)  # noqa: E741
         r = angle_diff(y, c)
 
@@ -432,6 +441,7 @@ def rdc_error(lower_bound: Optional[float], upper_bound: Optional[float], rdc: f
     """ Return RDC outlier for given lower_bound and upper_bound.
         @author: Masashi Yokochi
     """
+
     error = 0.0
 
     try:
@@ -511,8 +521,6 @@ def get_violation_statistics_for_each_bin(beg_err_bin: Optional[float], end_err_
 class NmrVrptUtility:
     """ Wrapper class for NMR restraint analysis.
     """
-
-    __version__ = "v1.2"
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
@@ -1430,7 +1438,7 @@ class NmrVrptUtility:
                     lower_linear_limit = r.get('lower_linear_limit')
                     upper_linear_limit = r.get('upper_linear_limit')
 
-                    if atom_id_1 is None or atom_id_2 is None\
+                    if None in (atom_id_1, atom_id_2)\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
                         if 'HOH' not in (comp_id_1, comp_id_2):
                             self.__lfh.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - distance restraint {rest_key} {r} is not interpretable, "
@@ -1671,7 +1679,7 @@ class NmrVrptUtility:
                     ins_code_3 = r.get('ins_code_3', '?')
                     ins_code_4 = r.get('ins_code_4', '?')
 
-                    if atom_id_1 is None or atom_id_2 is None or atom_id_3 is None or atom_id_4 is None\
+                    if None in (atom_id_1, atom_id_2, atom_id_3, atom_id_4)\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int)\
                        or not isinstance(auth_seq_id_3, int) or not isinstance(auth_seq_id_4, int):
                         if angle_type not in ('PPA', 'UNNAMED'):
@@ -1850,7 +1858,7 @@ class NmrVrptUtility:
                     ins_code_1 = r.get('ins_code_1', '?')
                     ins_code_2 = r.get('ins_code_2', '?')
 
-                    if atom_id_1 is None or atom_id_2 is None\
+                    if None in (atom_id_1, atom_id_2)\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
                         self.__lfh.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")

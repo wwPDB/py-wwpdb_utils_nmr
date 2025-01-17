@@ -6,6 +6,12 @@
 """ ParserLister class for NMRPIPE PK files.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 import re
 import copy
@@ -239,7 +245,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if x_ppm is None or y_ppm is None or type != 1:
+            if None in (x_ppm, y_ppm) or type != 1:
                 self.peaks2D -= 1
                 return
 
@@ -376,7 +382,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if x_ppm is None or y_ppm is None or z_ppm is None or type != 1:
+            if None in (x_ppm, y_ppm, z_ppm) or type != 1:
                 self.peaks3D -= 1
                 return
 
@@ -526,7 +532,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if x_ppm is None or y_ppm is None or z_ppm is None or a_ppm is None or type != 1:
+            if None in (x_ppm, y_ppm, z_ppm, a_ppm) or type != 1:
                 self.peaks4D -= 1
                 return
 

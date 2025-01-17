@@ -3,20 +3,19 @@
 # Date: 31-May-2010  John Westbrook
 #
 # Update:
-# 06-Aug-2010 - jdw - Generalized construction of methods to apply to any category
-#                     Add accessors for lists of dictionaries
-# 12-May-2011 - rps - Added check for None when asking for category Object in __getDataList()
-# 2012-10-24    RPS   Updated to reflect reorganization of modules in pdbx packages
-# 17-Jan-2025 - MY  - Added is_reserved_lig_code() from AlignUtil.py (DAOTHER-7204, 7388)
+# 06-Aug-2010 - jdw - generalized construction of methods to apply to any category
+#                     add accessors for lists of dictionaries
+# 12-May-2011 - rps - added check for None when asking for category Object in __getDataList()
+# 24-Oct-2012 - rps - updated to reflect reorganization of modules in pdbx packages
+# 17-Jan-2025 - my  - added is_reserved_lig_code() from AlignUtil.py (DAOTHER-7204, 7388)
 ##
-""" A collection of classes supporting chemical component dictionary data files
+""" A collection of classes parsing CCD CIF files.
 """
 __docformat__ = "restructuredtext en"
-__author__ = "John Westbrook"
-__email__ = "jwest@rcsb.rutgers.edu"
+__author__ = "John Westbrook, Masashi Yokochi"
+__email__ = "jwest@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "V0.01"
-
+__version__ = "1.0.3"
 
 import sys
 import os
@@ -24,7 +23,6 @@ import re
 
 from mmcif.io.PdbxReader import PdbxReader
 from typing import IO, List, Optional
-
 
 try:
     from wwpdb.utils.nmr.AlignUtil import emptyValue
@@ -36,10 +34,10 @@ ccd_id_pattern = re.compile(r'(\w{1,3}|\w{5})')
 
 
 def is_reserved_lig_code(comp_id: str) -> bool:
-    """ Return a given comp_id is reserved for new ligands (DAOTHER-7204, 7388)
+    """ Return a given comp_id is reserved for new ligands. (DAOTHER-7204, 7388)
     """
 
-    if comp_id.upper() in ('LIG', 'DRG', 'INH'):
+    if comp_id in ('LIG', 'DRG', 'INH'):
         return True
 
     if len(comp_id) == 2 and comp_id[0].isdigit() and comp_id[1].isdigit() and comp_id != '00':
@@ -49,7 +47,7 @@ def is_reserved_lig_code(comp_id: str) -> bool:
 
 
 class ChemCompReader:
-    """ Accessor methods chemical component definition data files
+    """ Accessor methods for parsing CCD CIF files.
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):
@@ -61,8 +59,10 @@ class ChemCompReader:
 
         self.__dBlock = None
         self.__topCachePath = None
-        self.__ccU = None
+        self.__compId = None
         self.__filePath = None
+
+        self.__cachedCompId = None
 
         self.__cDict = {
             'chem_comp': [
@@ -140,23 +140,27 @@ class ChemCompReader:
         }
 
     def setCachePath(self, topCachePath: str = '/data/components/ligand-dict-v4'):
-        """ Set the top file tree of chemical component dictionary
+        """ Set the top file tree of CCD.
         """
 
         self.__topCachePath = topCachePath
 
-    def setCompId(self, compId: str) -> bool:
-        """ Set chemical component definition data file path of the input chemical component
+    def setCompId(self, compId: str, ligand: bool = True) -> bool:
+        """ Set chemical component definition data file path of the input compId.
         """
 
-        if compId in emptyValue or not ccd_id_pattern.match(compId) or is_reserved_lig_code(compId):
+        if compId in emptyValue:
             return False
 
-        self.__ccU = compId.upper()
+        self.__compId = compId.upper()
 
-        hashKey = self.__ccU[-2:] if len(self.__ccU) > 3 else self.__ccU[0]
+        if not ccd_id_pattern.match(self.__compId) or (not ligand and is_reserved_lig_code(self.__compId)):
+            return False
 
-        self.__filePath = os.path.join(self.__topCachePath, hashKey, self.__ccU, self.__ccU + '.cif')
+        self.__filePath = os.path.join(self.__topCachePath,
+                                       self.__compId[-2:] if len(self.__compId) > 3 else self.__compId[0],
+                                       self.__compId,
+                                       self.__compId + '.cif')
 
         if not os.access(self.__filePath, os.R_OK):
             if self.__verbose:
@@ -165,16 +169,19 @@ class ChemCompReader:
 
         return True
 
-    def setFilePath(self, filePath: str, compId: Optional[str] = None) -> bool:
-        """ Set data file path directory with chemical component ID
+    def setFilePath(self, filePath: str, compId: str) -> bool:
+        """ Set data file path directory with compId.
         """
 
         try:
 
-            if compId in emptyValue or not ccd_id_pattern.match(compId) or is_reserved_lig_code(compId):
+            if compId in emptyValue:
                 return False
 
-            self.__ccU = str(compId).upper()
+            self.__compId = compId.upper()
+
+            if not ccd_id_pattern.match(self.__compId) or is_reserved_lig_code(self.__compId):
+                return False
 
             self.__filePath = filePath
 
@@ -191,7 +198,7 @@ class ChemCompReader:
             return False
 
     def getAtomList(self) -> List[list]:
-        """ Get a list of list of data from the chem_comp_atom category
+        """ Get a list of list of data from the chem_comp_atom category.
         """
 
         self.__getComp()
@@ -199,7 +206,7 @@ class ChemCompReader:
         return self.__getDataList(catName='chem_comp_atom')
 
     def getBonds(self) -> List[list]:
-        """ Get a list of list of data from the chem_comp_bond category
+        """ Get a list of list of data from the chem_comp_bond category.
         """
 
         self.__getComp()
@@ -207,46 +214,47 @@ class ChemCompReader:
         return self.__getDataList(catName='chem_comp_bond')
 
     def getChemCompDict(self) -> dict:
-        """ Get a list of dictionaries of a chem_comp category
+        """ Get a dictionary of the chem_comp category.
         """
 
         try:
 
             self.__getComp()
-            dL = self.__getDictList(catName='chem_comp')
 
-            return dL[0]
+            return self.__getDictList(catName='chem_comp')[0]
 
         except Exception:
             return {}
 
     def __getComp(self) -> bool:
-        """ Get the definition data for the input chemical component
-            Data is read from chemical component definition file stored in the organization
-            of CVS repository for chemical components
+        """ Get the definition data for the input compId.
             @return: True for success or False otherwise
         """
 
+        if self.__compId == self.__cachedCompId:
+            return True
+
         try:
 
-            block = self.__getDataBlock(self.__filePath, self.__ccU)
+            if self.__setDataBlock(self.__getDataBlock()):
+                self.__cachedCompId = self.__compId
+                return True
 
-            return self.__setDataBlock(block)
+            return False
 
         except Exception as e:
             if self.__verbose:
                 self.__lfh.write(f"+{self.__class_name__}.__getComp() ++ Error  - {str(e)}\n")
             return False
 
-    def __getDataBlock(self, filePath: str, blockId: Optional[str] = None):
-        """ Worker method to read chemical component definition file and set the target datablock
-            corresponding to the target chemical component
+    def __getDataBlock(self, blockId: Optional[str] = None):
+        """ Worker method to read CCD CIF file and set the target datablock.
             @return: the first datablock if no blockId is provided
         """
 
         try:
 
-            with open(filePath, 'r', encoding='utf-8') as ifh:
+            with open(self.__filePath, 'r', encoding='utf-8') as ifh:
                 myBlockList = []
                 pRd = PdbxReader(ifh)
                 pRd.read(myBlockList)
@@ -267,121 +275,96 @@ class ChemCompReader:
                             block.printIt(self.__lfh)
                         return block
 
-            return None
-
         except Exception as e:
             if self.__verbose:
                 self.__lfh.write(f"+{self.__class_name__}.__getDataBlock() ++ Error  - {str(e)}\n")
-            return None
+
+        return None
 
     def __setDataBlock(self, dataBlock) -> bool:
-        """ Assigns the input datablock as the active internal datablock containing the
-            target chemical component definition
+        """ Assigns the input datablock as the active internal datablock.
         """
 
-        ok = False
+        if dataBlock is None:
+            self.__dBlock = None
+            return False
 
         try:
 
             if dataBlock.getType() == 'data':
                 self.__dBlock = dataBlock
-                ok = True
-            else:
-                self.__dBlock = None
+                return True
 
         except Exception:
             pass
 
-        return ok
+        self.__dBlock = None
+
+        return False
 
     def __getDictList(self, catName: str = 'chem_comp') -> List[dict]:
-        """ Return a list of dictionaries of the input category
+        """ Return a list of dictionaries of the input category.
         """
 
-        # Get category object - from current datablock
-        itTupList = self.__cDict[catName]
         catObj = self.__dBlock.getObj(catName)
 
-        # Get column name index
+        if catObj is None:
+            return []
+
         itDict = {}
         itNameList = catObj.getItemNameList()
         for idxIt, itName in enumerate(itNameList):
             itDict[itName] = idxIt
 
-        # Find the mapping to the local category definition
         colDict = {}
+        for itTup in self.__cDict[catName]:
+            colDict[itTup[0]] = itDict[itTup[0]] if itTup[0] in itDict else -1
 
-        for _ii, itTup in enumerate(itTupList):
-            if itTup[0] in itDict:
-                colDict[itTup[0]] = itDict[itTup[0]]
-            else:
-                colDict[itTup[0]] = -1
-
-        rowList = catObj.getRowList()
         dList = []
-        for row in rowList:
-            tD = {}
-            for k, v in colDict.items():
-                if v < 0:
-                    tD[k] = ''
-                else:
-                    tD[k] = row[v]
+        for row in catObj.getRowList():
+            tD = {k: '' if v < 0 else row[v] for k, v in colDict.items()}
             dList.append(tD)
 
         return dList
 
     def __getDataList(self, catName: str = 'chem_comp_bond') -> List[list]:
         """ Return a list a list of data from the input category including
-            data types and default value replacement
+            data types and default value replacement.
         """
 
-        itTupList = self.__cDict[catName]
-        dataList = []
         catObj = self.__dBlock.getObj(catName)
 
-        if catObj is not None:
-            itDict = {}
-            itNameList = catObj.getItemNameList()
-            for idxIt, itName in enumerate(itNameList):
-                itDict[itName] = idxIt
+        if catObj is None:
+            return []
 
-            colTupList = []
-            # (column index of data or -1, type name, [default value])
-            for _ii, itTup in enumerate(itTupList):
-                if itTup[0] in itDict:
-                    colTupList.append((itDict[itTup[0]], itTup[2], itTup[3]))
+        def apply_type(ctype, default, val):
+            if val in emptyValue:
+                return default
+            if ctype == 'int':
+                return int(val)
+            if ctype == 'float':
+                return float(val)
+            return val
+
+        itDict = {}
+        for idxIt, itName in enumerate(catObj.getItemNameList()):
+            itDict[itName] = idxIt
+
+        colTupList = []
+        for itTup in self.__cDict[catName]:
+            if itTup[0] in itDict:
+                colTupList.append((itDict[itTup[0]], itTup[2], itTup[3]))
+            else:
+                colTupList.append((-1, itTup[2], itTup[3]))
+
+        dList = []
+        for row in catObj.getRowList():
+            uR = []
+            for cTup in colTupList:
+                if cTup[0] < 0:
+                    uR.append(apply_type(cTup[1], cTup[2], cTup[2]))
                 else:
-                    colTupList.append((-1, itTup[2], itTup[3]))
+                    uR.append(apply_type(cTup[1], cTup[2], row[cTup[0]]))
+            dList.append(uR)
 
-            rowList = catObj.getRowList()
-
-            for row in rowList:
-                uR = []
-                for cTup in colTupList:
-
-                    if cTup[0] < 0:
-                        uR.append(self.__applyType(cTup[1], cTup[2], cTup[2]))
-                    else:
-                        uR.append(self.__applyType(cTup[1], cTup[2], row[cTup[0]]))
-
-                dataList.append(uR)
-
-        return dataList
-
-    def __applyType(self, ctype: str, default, val):  # pylint: disable=no-self-use
-        """ Apply type conversion to the input value and assign default values to missing values
-        """
-
-        tval = val
-        if val is None:
-            tval = default
-        if isinstance(tval, str) and (len(tval) < 1 or tval in ('.', '?')):
-            tval = default
-        if ctype == "int":
-            return int(str(tval))
-        if ctype == "float":
-            return float(str(tval))
-        if ctype == "str":
-            return str(tval)
-
-        return tval
+        return dList

@@ -7,6 +7,12 @@
 """ Wrapper class for OneDep annotation tasks - merge NMRIF metadata.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 # import csv
 import pynmrstar
@@ -145,7 +151,7 @@ class OneDepAnnTasks:
         self.__entryId = entryId
 
         # CifToNmrStar
-        # self.__c2S = CifToNmrStar(verbose) if c2S is None else c2S
+        # self.__c2S = CifToNmrStar(log) if c2S is None else c2S
 
         # derived from wwpdb.apps.deposit.depui.constant.REQUIREMENTS
         self.__cifPages = ['nmrsample',

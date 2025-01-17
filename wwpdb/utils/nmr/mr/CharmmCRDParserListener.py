@@ -6,6 +6,12 @@
 """ ParserLister class for CHARMM CRD files.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 import collections
 import copy
@@ -353,7 +359,7 @@ class CharmmCRDParserListener(ParseTreeListener):
                                                 ligands += 1
                                     if ligands == 1:
                                         compId = __compId
-                                    elif len(self.__nonPolyModel) == 1 and self.__ccU.updateChemCompDict(authCompId):
+                                    elif len(self.__nonPolyModel) == 1 and self.__ccU.updateChemCompDict(authCompId, False):
                                         if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                                             compId = self.__nonPolyModel[0]['comp_id'][0]
 
@@ -409,7 +415,7 @@ class CharmmCRDParserListener(ParseTreeListener):
                                             ligands += 1
                                 if ligands == 1:
                                     compId = __compId
-                                elif len(self.__nonPolyModel) == 1 and self.__ccU.updateChemCompDict(authCompId):
+                                elif len(self.__nonPolyModel) == 1 and self.__ccU.updateChemCompDict(authCompId, False):
                                     if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                                         compId = self.__nonPolyModel[0]['comp_id'][0]
 
@@ -993,21 +999,25 @@ class CharmmCRDParserListener(ParseTreeListener):
     def getAtomNumberDict(self) -> Optional[dict]:
         """ Return CHARMM atomic number dictionary.
         """
+
         return self.__atomNumberDict
 
     def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of CHARMM CRD file.
         """
+
         return None if self.__polySeqPrmTop is None or len(self.__polySeqPrmTop) == 0 else self.__polySeqPrmTop
 
     def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and CHARMM CRD.
         """
+
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
     def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and CHARMM CRD.
         """
+
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
 

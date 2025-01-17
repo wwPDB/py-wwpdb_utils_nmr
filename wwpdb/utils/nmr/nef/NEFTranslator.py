@@ -107,6 +107,12 @@
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi, Kumaran Baskaran"
+__email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
+__license__ = "Apache License 2.0"
+__version__ = "4.1.1"
+
 import sys
 import os
 import ntpath
@@ -178,7 +184,6 @@ except ImportError:
 
 
 __package_name__ = 'wwpdb.utils.nmr'
-__version__ = '4.1.1'
 
 __pynmrstar_v3_3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.1")
 
@@ -1493,7 +1498,7 @@ class NEFTranslator:
         self.__csStat = BMRBChemShiftStat(self.__verbose, self.__lfh) if csStat is None else csStat
 
         # CifToNmrStar
-        self.__c2S = CifToNmrStar(self.__verbose) if c2S is None else c2S
+        self.__c2S = CifToNmrStar(self.__lfh) if c2S is None else c2S
 
         # readable item type
         self.readableItemType = {'str': 'a string',
@@ -1517,6 +1522,7 @@ class NEFTranslator:
     def get_ccu(self):
         """ Get instance of ChemCompUtil.
         """
+
         return self.__ccU
 
     def set_remediation_mode(self, flag: bool):

@@ -6,6 +6,12 @@
 """ ParserLister class for AMBER MR files.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 import copy
 import collections
@@ -1412,7 +1418,7 @@ class AmberMRParserListener(ParseTreeListener):
                                             if cca[self.__ccU.ccaAtomId] == dihed_factors[mis_idx - 1]['atom_id']), None)
                             atomId2 = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
                                             if cca[self.__ccU.ccaAtomId] == dihed_factors[mis_idx + 1]['atom_id']), None)
-                            if atomId1 is None or atomId2 is None:
+                            if None in (atomId1, atomId2):
                                 rescued = False
                             else:
                                 bondedTo1 = self.__ccU.getBondedAtoms(compId, atomId1)
@@ -1473,7 +1479,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict and isinstance(memberId, int):
                                     star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
                                     star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
-                                    if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                                    if None in (star_atom1, star_atom2) or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                                         continue
                                 if self.__createSfDict and memberLogicCode == '.':
                                     altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint(atoms, self.__csStat)
@@ -3676,7 +3682,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 if self.__createSfDict and isinstance(memberId, int):
                                     star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
                                     star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
-                                    if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                                    if None in (star_atom1, star_atom2) or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                                         continue
                                 if self.__createSfDict and memberLogicCode == '.':
                                     altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint(atoms, self.__csStat)
@@ -5187,6 +5193,7 @@ class AmberMRParserListener(ParseTreeListener):
                                          authChainId: Optional[str] = None) -> Optional[dict]:
         """ Return atom number dictionary like component from Amber 10 ambmask information.
         """
+
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return None
 
@@ -5653,6 +5660,7 @@ class AmberMRParserListener(ParseTreeListener):
     def reportSanderCommentIssue(self, subtype_name: str):
         """ Report Sander comment issue.
         """
+
         if self.lastComment is None:
             self.__f.append(f"[Missing data] {self.__getCurrentRestraint()}"
                             "Failed to recognize AMBER atom numbers in the restraint file "
@@ -5673,6 +5681,7 @@ class AmberMRParserListener(ParseTreeListener):
     def updateSanderAtomNumberDict(self, factor: dict, cifCheck: bool = True, useDefault: bool = True, useAuthSeqScheme: bool = False) -> bool:
         """ Try to update Sander atom number dictionary.
         """
+
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return False
 
@@ -6160,7 +6169,7 @@ class AmberMRParserListener(ParseTreeListener):
                                 ligands += 1
                     if ligands == 1:
                         authCompId = __compId
-                    elif len(self.__nonPoly) == 1 and self.__ccU.updateChemCompDict(authCompId):
+                    elif len(self.__nonPoly) == 1 and self.__ccU.updateChemCompDict(authCompId, False):
                         if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             authCompId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
@@ -6495,6 +6504,7 @@ class AmberMRParserListener(ParseTreeListener):
     def updateSanderAtomNumberDictWithAmbigCode(self, factor: dict, cifCheck: bool = True, useDefault: bool = True, useAuthSeqScheme: bool = False) -> bool:
         """ Try to update Sander atom number dictionary.
         """
+
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
             return False
 
@@ -7232,6 +7242,7 @@ class AmberMRParserListener(ParseTreeListener):
     def checkDistSequenceOffset(self, seqId1: int, compId1: str, seqId2: int, compId2: str) -> bool:
         """ Try to find sequence offset from Sander comments.
         """
+
         if not self.__hasPolySeq or self.__cur_subtype != 'dist':
             return False
 
@@ -7280,6 +7291,7 @@ class AmberMRParserListener(ParseTreeListener):
                                       ) -> Tuple[str, str]:
         """ Return realistic bond constraint taking into account the current coordinates.
         """
+
         if not self.__hasCoord:
             return atom1, atom2
 
@@ -7394,6 +7406,7 @@ class AmberMRParserListener(ParseTreeListener):
                                            ) -> dict:
         """ Return realistic chi2 angle constraint taking into account the current coordinates.
         """
+
         if not self.__hasCoord:
             return dst_func
 
@@ -7566,6 +7579,7 @@ class AmberMRParserListener(ParseTreeListener):
     def getNeighborCandidateAtom(self, factor: dict, src_atom: dict, around: float) -> Optional[dict]:
         """ Try to find neighbor atom from given conditions.
         """
+
         if not self.__hasCoord:
             return None
 
@@ -11297,13 +11311,13 @@ class AmberMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'dihed':
             return f"[Check the {self.dihedRestraints}th row of torsional angle restraints] "
         if self.__cur_subtype == 'rdc':
-            if dataset is None or n is None:
+            if None in (dataset, n):
                 return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints] "
             return f"[Check the {n}th row of residual dipolar coupling restraints (dataset={dataset})] "
         if self.__cur_subtype == 'plane':
             return f"[Check the {self.planeRestraints}th row of plane-point/plane angle restraints] "
         if self.__cur_subtype == 'noepk':
-            if dataset is None or n is None:
+            if None in (dataset, n):
                 return f"[Check the {self.noepkRestraints}th row of NOESY volume restraints] "
             return f"[Check the {n}th row of NOESY volume restraints (dataset={dataset})] "
         if self.__cur_subtype == 'procs':
@@ -11311,11 +11325,11 @@ class AmberMRParserListener(ParseTreeListener):
                 return f"[Check the {self.procsRestraints}th row of chemical shift restraints] "
             return f"[Check the {n}th row of chemical shift restraints] "
         if self.__cur_subtype == 'pcs':
-            if dataset is None or n is None:
+            if None in (dataset, n):
                 return f"[Check the {self.pcsRestraints}th row of pseudocontact shift restraints] "
             return f"[Check the {n}th row of pseudocontact shift restraints (name of paramagnetic center={dataset})] "
         if self.__cur_subtype == 'csa':
-            if dataset is None or n is None:
+            if None in (dataset, n):
                 return f"[Check the {self.csaRestraints}th row of residual CSA or pseudo-CSA restraints] "
             return f"[Check the {n}th row of residual CSA or pseudo-CSA restraints (dataset={dataset})] "
         if self.__cur_subtype == 'geo':
@@ -11436,41 +11450,49 @@ class AmberMRParserListener(ParseTreeListener):
     def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of AMBER MR file.
         """
+
         return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
     def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and AMBER MR.
         """
+
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
     def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and AMBER MR.
         """
+
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
     def getAtomNumberDict(self) -> dict:
         """ Return AMBER atomic number dictionary.
         """
+
         return self.__atomNumberDict
 
     def getSanderAtomNumberDict(self) -> dict:
         """ Return AMBER atomic number dictionary based on Sander comments.
         """
+
         return self.__sanderAtomNumberDict
 
     def getReasonsForReparsing(self) -> Optional[dict]:
         """ Return reasons for re-parsing AMBER MR file.
         """
+
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
     def hasComments(self) -> bool:
         """ Return whether Sander comments are available.
         """
+
         return self.__hasComments
 
     def getSfDict(self) -> Tuple[dict, Optional[dict]]:
         """ Return a dictionary of pynmrstar saveframes.
         """
+
         if len(self.sfDict) == 0:
             return self.__listIdCounter, None
         ign_keys = []

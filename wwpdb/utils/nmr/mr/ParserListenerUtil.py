@@ -13,6 +13,12 @@
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 import re
 import copy
@@ -3694,7 +3700,7 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
         if ccU is not None and ccU.updateChemCompDict(compId[:3]):
             return compId[:3]
 
-    if ccU is not None and ccU.updateChemCompDict(compId):
+    if ccU is not None and ccU.updateChemCompDict(compId, False):
         if ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' and '_chem_comp.pdbx_replaced_by' in ccU.lastChemCompDict:
             replaced_by = ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
             if replaced_by not in emptyValue and ccU.updateChemCompDict(replaced_by):
@@ -3745,7 +3751,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
     nonPolyAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_nonpoly_scheme', 'auth_mon_id') else 'mon_id'
     branchedAuthMonIdName = 'auth_mon_id' if cR.hasItem('pdbx_branch_scheme', 'auth_mon_id') else 'mon_id'
 
-    if polySeq is None or misPolyLink is None or nmrExtPolySeq is None or modResidue is None or splitLigand is None:
+    if None in (polySeq, misPolyLink, nmrExtPolySeq, modResidue, splitLigand):
         changed = True
 
         # loop categories
@@ -4031,7 +4037,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         s_p = ps['auth_seq_id'][p]
                         s_q = ps['auth_seq_id'][p + 1]
 
-                        if s_p is None or s_q is None:
+                        if None in (s_p, s_q):
                             continue
 
                         if s_p == s_q:
@@ -4303,7 +4309,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                             for p in range(len(ent['auth_seq_id']) - 1):
                                 s_p = ent['auth_seq_id'][p]
                                 s_q = ent['auth_seq_id'][p + 1]
-                                if s_p is None or s_q is None:
+                                if None in (s_p, s_q):
                                     continue
                                 if s_p + 1 != s_q:
                                     ent['gap_in_auth_seq'] = True
@@ -4491,8 +4497,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
         altAuthCompId = 'pdbx_auth_comp_id' if 'pdbx_auth_comp_id' in tags else None
         altAuthAtomId = 'pdbx_auth_atom_name' if 'pdbx_auth_atom_name' in tags else None
 
-        if coordAtomSite is None or labelToAuthSeq is None or authToLabelSeq is None or chemCompAtom is None\
-           or authAtomNameToId is None or authAtomNameToIdExt is None:
+        if None in (coordAtomSite, labelToAuthSeq, authToLabelSeq, chemCompAtom, authAtomNameToId, authAtomNameToIdExt):
             changed = True
 
             dataItems = [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
@@ -4865,7 +4870,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         if labelSeqKey not in labelToAuthSeq:
                             labelToAuthSeq[labelSeqKey] = authSeqKey
 
-        if authToStarSeq is None or authToEntityType is None or entityAssembly is None or authToStarSeqAnn is None:
+        if None in (authToStarSeq, authToEntityType, entityAssembly, authToStarSeqAnn):
             changed = True
 
             authToStarSeq, authToOrigSeq, authToInsCode, authToEntityType, authToStarSeqAnn =\
@@ -6136,7 +6141,7 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
 
     # DAOTHER-9063: permit dihedral angle restraint across entities due to ligand split
     def is_connected():
-        if cR is None or ccU is None:
+        if None in (cR, ccU):
             return False
         for idx, atom2 in enumerate(atoms):
             if idx == 0:
@@ -6691,7 +6696,7 @@ def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,
     """ Return whether a given chain is cyclic polymer based on coordinate annotation.
     """
 
-    if cR is None or polySeq is None:
+    if None in (cR, polySeq):
         return False
 
     ps = next((ps for ps in polySeq if ps['auth_chain_id'] == authAsymId), None)
@@ -6916,7 +6921,7 @@ def getCoordBondLength(cR, asymId1: str, seqId1: int, atomId1: str,
         a_1 = next((a for a in atom_site_1 if a['model_id'] == model_id), None)
         a_2 = next((a for a in atom_site_2 if a['model_id'] == model_id), None)
 
-        if a_1 is None or a_2 is None:
+        if None in (a_1, a_2):
             continue
 
         bond.append({'model_id': model_id, 'distance': float(f"{numpy.linalg.norm(to_np_array(a_1) - to_np_array(a_2)):.3f}")})
@@ -8557,6 +8562,7 @@ def getDstFuncForSsBond(atom1: dict, atom2: dict) -> dict:
 def getDstFuncAsNoe() -> dict:
     """ Return default upper/lower limits as an NOE.
     """
+
     return {'weight': '1.0', 'lower_limit': '2.0', 'upper_limit': str(DIST_AMBIG_MED)}
 
 
@@ -10114,13 +10120,13 @@ def getDistConstraintType(atomSelectionSet: List[List[dict]], dstFunc: dict, csS
     atom1 = atomSelectionSet[0][0]
     atom2 = atomSelectionSet[1][0]
 
-    if atom1 is None or atom2 is None:
+    if None in (atom1, atom2):
         return None
 
     atom_id_1 = atom1['atom_id'] if 'atom_id' in atom1 else atom1['auth_atom_id']
     atom_id_2 = atom2['atom_id'] if 'atom_id' in atom2 else atom2['auth_atom_id']
 
-    if atom_id_1 is None or atom_id_2 is None:
+    if None in (atom_id_1, atom_id_2):
         return None
 
     if ('comp_id' in atom1 and atom1['comp_id'] == atom_id_1)\

@@ -6,6 +6,12 @@
 """ ParserLister class for XEASY PK files.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 import re
 import copy
@@ -203,7 +209,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if x_ppm is None or y_ppm is None or type != 0:
+            if None in (x_ppm, y_ppm) or type != 0:
                 self.peaks2D -= 1
                 return
 
@@ -298,7 +304,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if x_ppm is None or y_ppm is None or z_ppm is None or type != 0:
+            if None in (x_ppm, y_ppm, z_ppm) or type != 0:
                 self.peaks3D -= 1
                 return
 
@@ -395,7 +401,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if x_ppm is None or y_ppm is None or z_ppm is None or a_ppm is None or type != 0:
+            if None in (x_ppm, y_ppm, z_ppm, a_ppm) or type != 0:
                 self.peaks4D -= 1
                 return
 

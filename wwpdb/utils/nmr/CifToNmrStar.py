@@ -15,6 +15,12 @@
 """ Wrapper class for CIF to NMR-STAR converter.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 import os
 import re
@@ -67,7 +73,7 @@ def get_value_safe(d: Optional[Union[dict, list, tuple]] = None, key: Optional =
         @return: value for a key, None (by default) otherwise
     """
 
-    if d is None or key is None:
+    if None in (d, key):
         return default
 
     return d.get(key, default)
@@ -270,7 +276,7 @@ class CifToNmrStar:
         """ Convert CIF formatted NMR data file to normalized NMR-STAR file.
         """
 
-        if cifPath is None or strPath is None:
+        if None in (cifPath, strPath):
             return False
 
         try:
@@ -639,7 +645,7 @@ class CifToNmrStar:
 
                     try:
                         if self.schema[fqtn]['entryIdFlg'] == 'Y':
-                            sf.add_tag(entry_id_tag, entryId)
+                            set_sf_tag(sf, entry_id_tag, entryId)
                         modified = True
                     except KeyError:
                         pass
@@ -659,12 +665,19 @@ class CifToNmrStar:
                             pass
 
                     if not filled:
-                        entry_id_tag = lp.category + '.Entry_ID'
+                        if 'Entry_ID' not in lp.tags:
+                            entry_id_tag = lp.category + '.Entry_ID'
 
-                        lp.add_tag(entry_id_tag)
+                            lp.add_tag(entry_id_tag)
 
-                        for row in lp:
-                            row.append(entryId)
+                            for row in lp:
+                                row.append(entryId)
+
+                        else:
+                            col = lp.tags.index('Entry_ID')
+
+                            for row in lp:
+                                row[col] = entryId
 
                         modified = True
 
@@ -692,7 +705,7 @@ class CifToNmrStar:
 
                 try:
                     if self.schema[fqtn]['entryIdFlg'] == 'Y':
-                        sf.add_tag(entry_id_tag, entryId)
+                        set_sf_tag(sf, entry_id_tag, entryId)
                         modified = True
                 except KeyError:
                     pass
@@ -712,12 +725,19 @@ class CifToNmrStar:
                         pass
 
                 if not filled:
-                    entry_id_tag = lp.category + '.Entry_ID'
+                    if 'Entry_ID' not in lp.tags:
+                        entry_id_tag = lp.category + '.Entry_ID'
 
-                    lp.add_tag(entry_id_tag)
+                        lp.add_tag(entry_id_tag)
 
-                    for row in lp:
-                        row.append(entryId)
+                        for row in lp:
+                            row.append(entryId)
+
+                    else:
+                        col = lp.tags.index('Entry_ID')
+
+                        for row in lp:
+                            row[col] = entryId
 
                     modified = True
 
@@ -739,12 +759,19 @@ class CifToNmrStar:
                     pass
 
             if not filled:
-                entry_id_tag = lp.category + '.Entry_ID'
+                if 'Entry_ID' not in lp.tags:
+                    entry_id_tag = lp.category + '.Entry_ID'
 
-                lp.add_tag(entry_id_tag)
+                    lp.add_tag(entry_id_tag)
 
-                for row in lp:
-                    row.append(entryId)
+                    for row in lp:
+                        row.append(entryId)
+
+                else:
+                    col = lp.tags.index('Entry_ID')
+
+                    for row in lp:
+                        row[col] = entryId
 
                 modified = True
 
@@ -801,6 +828,9 @@ class CifToNmrStar:
         """ Wrapper function of normalize_str() and normalize_nef().
         """
 
+        if strData is None:
+            return strData
+
         try:
             sf = strData.frame_list[0]
             if sf.category.startswith('nef'):
@@ -814,9 +844,13 @@ class CifToNmrStar:
             @see: pynmrstar.entry.normalize
         """
 
+        if strData is None:
+            return strData
+
         def sf_key(sf):
             """ Helper function to sort the saveframes.
-            Returns (category order, saveframe order) """
+                Returns (category order, saveframe order)
+            """
 
             # If not a real category, generate an artificial but stable order > the real saveframes
             try:
@@ -841,7 +875,8 @@ class CifToNmrStar:
 
         def lp_key(lp):
             """ Helper function to sort the loops.
-            Returns (category order) """
+                Returns (category order)
+            """
 
             try:
                 category_order = self.category_order.index(lp.category)
@@ -870,9 +905,13 @@ class CifToNmrStar:
         """ Sort saveframes of NEF.
         """
 
+        if strData is None:
+            return strData
+
         def sf_key(sf):
             """ Helper function to sort the saveframes.
-            Returns (saveframe order) """
+                Returns (saveframe order)
+            """
 
             try:
                 category_order = self.category_order_nef.index(sf.tag_prefix)

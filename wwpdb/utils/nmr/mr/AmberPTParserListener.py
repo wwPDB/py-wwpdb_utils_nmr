@@ -6,6 +6,12 @@
 """ ParserLister class for AMBER PT files.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 import re
 import collections
@@ -72,6 +78,7 @@ except ImportError:
 def chunk_string(line: str, length: int = 4) -> List[str]:
     """ Split a string into fixed length chunks.
     """
+
     return [line[i:i + length] for i in range(0, len(line), length)]
 
 
@@ -258,7 +265,7 @@ class AmberPTParserListener(ParseTreeListener):
             if not self.__hasPolySeqModel:
                 return
 
-            if self.__residueLabel is None or self.__residuePointer is None or self.__atomName is None or self.__amberAtomType is None:
+            if None in (self.__residueLabel, self.__residuePointer, self.__atomName, self.__amberAtomType):
                 return
 
             if len(self.__residueLabel) == 0 or len(self.__residuePointer) == 0 or len(self.__atomName) == 0 or len(self.__amberAtomType) == 0:
@@ -462,7 +469,7 @@ class AmberPTParserListener(ParseTreeListener):
                                                 ligands += 1
                                     if ligands == 1:
                                         compId = __compId
-                                    elif len(self.__nonPolyModel) == 1 and self.__ccU.updateChemCompDict(authCompId):
+                                    elif len(self.__nonPolyModel) == 1 and self.__ccU.updateChemCompDict(authCompId, False):
                                         if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                                             compId = self.__nonPolyModel[0]['comp_id'][0]
 
@@ -522,7 +529,7 @@ class AmberPTParserListener(ParseTreeListener):
                                             ligands += 1
                                 if ligands == 1:
                                     compId = __compId
-                                elif len(self.__nonPolyModel) == 1 and self.__ccU.updateChemCompDict(authCompId):
+                                elif len(self.__nonPolyModel) == 1 and self.__ccU.updateChemCompDict(authCompId, False):
                                     if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                                         compId = self.__nonPolyModel[0]['comp_id'][0]
 
@@ -1841,36 +1848,43 @@ class AmberPTParserListener(ParseTreeListener):
         """ Return version information of AMBER parameter/topology file.
             @return: version, date, time
         """
+
         return self.__version, self.__date, self.__time
 
     def getTitle(self) -> Optional[str]:
         """ Return title of AMBER parameter/topology file.
         """
+
         return self.__title
 
     def getRadiusSet(self) -> Optional[str]:
         """ Return radius set of AMBER parameter/topology file.
         """
+
         return self.__radiusSet
 
     def getAtomNumberDict(self) -> dict:
         """ Return AMBER atomic number dictionary.
         """
+
         return self.__atomNumberDict
 
     def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of AMBER parameter/topology file.
         """
+
         return None if self.__polySeqPrmTop is None or len(self.__polySeqPrmTop) == 0 else self.__polySeqPrmTop
 
     def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and AMBER parameter/topology.
         """
+
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
     def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and AMBER parameter/topology.
         """
+
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
 # del AmberPTParser

@@ -6,6 +6,12 @@
 """ Utilities for pairwise alignment.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import copy
 import json
 import re
@@ -444,7 +450,7 @@ def getGaugeCode(seqIdList: List[int], offset: int = 0) -> str:
                     break
                 _offset += 1
 
-            if lastSeqId is None or nextSeqId is None or nextSeqId > lastSeqId + 1:
+            if None in (lastSeqId, nextSeqId) or nextSeqId > lastSeqId + 1:
                 p = idx + offset
                 gaugeCode = gaugeCode[0:p] + ' ' + gaugeCode[p:]
                 offset += 1
@@ -917,7 +923,7 @@ def syncCompIdOfPolySeqRst(polySeqRst: List[dict], compIdMap: dict):
     """ Synchronize residue names of polymer sequence of the current MR file.
     """
 
-    if polySeqRst is None or compIdMap is None or len(polySeqRst) == 0 or len(compIdMap) == 0:
+    if None in (polySeqRst, compIdMap) or len(polySeqRst) == 0 or len(compIdMap) == 0:
         return
 
     for ps in polySeqRst:
@@ -1007,7 +1013,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
 
     seqAlign, compIdMapping = [], []
 
-    if pA is None or polySeqModel is None or polySeqRst is None:
+    if None in (pA, polySeqModel, polySeqRst):
         return seqAlign, compIdMapping
 
     tabooList, inhibitList = [], []
@@ -1130,7 +1136,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                 for p in range(len(s1[seq_id_name]) - 1):
                     s_p = s1[seq_id_name][p]
                     s_q = s1[seq_id_name][p + 1]
-                    if s_p is None or s_q is None or s_p not in s2['seq_id'] or s_q not in s2['seq_id']:
+                    if None in (s_p, s_q) or s_p not in s2['seq_id'] or s_q not in s2['seq_id']:
                         continue
                     if s_p + 1 != s_q:
                         beg = s2['seq_id'].index(s_p)
@@ -1160,7 +1166,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                     for p in range(len(s1[seq_id_name]) - 1):
                         s_p = s1[seq_id_name][p]
                         s_q = s1[seq_id_name][p + 1]
-                        if s_p is None or s_q is None or s_p not in __s2['seq_id'] or s_q not in __s2['seq_id']:
+                        if None in (s_p, s_q) or s_p not in __s2['seq_id'] or s_q not in __s2['seq_id']:
                             continue
                         if s_p + 1 != s_q:
                             beg = __s2['seq_id'].index(s_p)
@@ -1197,7 +1203,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                 for p in range(len(s1[seq_id_name]) - 1):
                     s_p = s1[seq_id_name][p]
                     s_q = s1[seq_id_name][p + 1]
-                    if s_p is None or s_q is None or s_p not in s2['seq_id'] or s_q not in s2['seq_id']:
+                    if None in (s_p, s_q) or s_p not in s2['seq_id'] or s_q not in s2['seq_id']:
                         continue
                     if s_p + 1 != s_q:
                         idx1 = idx2 = 0
@@ -1435,7 +1441,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
 
     seqAlign, compIdMapping = [], []
 
-    if pA is None or polySeqModel is None or polySeqRst is None:
+    if None in (pA, polySeqModel, polySeqRst):
         return seqAlign, compIdMapping
 
     truncated = None
@@ -1513,7 +1519,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                 for p in range(len(s1[seq_id_name]) - 1):
                     s_p = s1[seq_id_name][p]
                     s_q = s1[seq_id_name][p + 1]
-                    if s_p is None or s_q is None or s_p not in s2['seq_id'] or s_q not in s2['seq_id']:
+                    if None in (s_p, s_q) or s_p not in s2['seq_id'] or s_q not in s2['seq_id']:
                         continue
                     if s_p + 1 != s_q:
                         beg = s2['seq_id'].index(s_p)
@@ -1543,7 +1549,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                     for p in range(len(s1[seq_id_name]) - 1):
                         s_p = s1[seq_id_name][p]
                         s_q = s1[seq_id_name][p + 1]
-                        if s_p is None or s_q is None or s_p not in __s2['seq_id'] or s_q not in __s2['seq_id']:
+                        if None in (s_p, s_q) or s_p not in __s2['seq_id'] or s_q not in __s2['seq_id']:
                             continue
                         if s_p + 1 != s_q:
                             beg = __s2['seq_id'].index(s_p)
@@ -1580,7 +1586,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                 for p in range(len(s1[seq_id_name]) - 1):
                     s_p = s1[seq_id_name][p]
                     s_q = s1[seq_id_name][p + 1]
-                    if s_p is None or s_q is None or s_p not in s2['seq_id'] or s_q not in s2['seq_id']:
+                    if None in (s_p, s_q) or s_p not in s2['seq_id'] or s_q not in s2['seq_id']:
                         continue
                     if s_p + 1 != s_q:
                         idx1 = idx2 = 0
@@ -1749,7 +1755,7 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
     """ Assign polymer sequences of restraints.
     """
 
-    if pA is None or polySeqModel is None or polySeqRst is None or seqAlign is None:
+    if None in (pA, polySeqModel, polySeqRst, seqAlign):
         return None, []
 
     warnings = []
@@ -2041,7 +2047,7 @@ def trimSequenceAlignment(seqAlign: List[dict], chainAssign: List[dict]):
     """ Trim ineffective sequence alignments.
     """
 
-    if seqAlign is None or chainAssign is None:
+    if None in (seqAlign, chainAssign):
         return
 
     ineffSeqAlignIdx = list(range(len(seqAlign) - 1, -1, -1))
@@ -2693,7 +2699,7 @@ def splitPolySeqRstForMultimers(pA, polySeqModel: List[dict], polySeqRst: List[d
     """ Split polymer sequence of the current MR file for multimers.
     """
 
-    if polySeqModel is None or polySeqRst is None or chainAssign is None:
+    if None in (polySeqModel, polySeqRst, chainAssign):
         return None, None
 
     target_chain_ids = {}
@@ -2858,7 +2864,7 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel: List[dict], polySeqRst: List[d
     """ Split polymer sequence of the current MR file for eNOEs-guided multiple conformers.
     """
 
-    if polySeqModel is None or polySeqRst is None or chainAssign is None:
+    if None in (polySeqModel, polySeqRst, chainAssign):
         return None, None, None
 
     target_chain_ids = {}
@@ -3088,6 +3094,7 @@ def retrieveRemappedChainId(chainIdRemap: dict, seqId: int) -> Tuple[Optional[st
 def retrieveOriginalSeqIdFromMRMap(chainIdRemap: dict, chainId: str, seqId: int) -> int:
     """ Retrieve the original seq_id from mapping dictionary based on sequence alignments.
     """
+
     return next((_seqId for _seqId, remap in chainIdRemap.items()
                  if remap['chain_id'] == chainId and remap['seq_id'] == seqId), seqId)
 
@@ -3097,7 +3104,7 @@ def splitPolySeqRstForNonPoly(ccU, nonPolyModel: List[dict], polySeqRst: List[di
     """ Split polymer sequence of the current MR file for non-polymer.
     """
 
-    if polySeqRst is None or nonPolyModel is None or seqAlign is None or chainAssign is None:
+    if None in (polySeqRst, nonPolyModel, seqAlign, chainAssign):
         return None, None
 
     comp_ids = set()
@@ -3180,7 +3187,7 @@ def splitPolySeqRstForNonPoly(ccU, nonPolyModel: List[dict], polySeqRst: List[di
 
         for target, candidate in zip_longest(targets, candidates):
 
-            if target is None or candidate is None:
+            if None in (target, candidate):
                 break
 
             test_chain_id = target['chain_id']
@@ -3229,7 +3236,7 @@ def splitPolySeqRstForBranched(pA, polySeqModel: List[dict], branchedModel: List
     """ Split polymer sequence of the current MR file for branched polymer.
     """
 
-    if polySeqRst is None or polySeqModel is None or branchedModel is None or chainAssign is None:
+    if None in (polySeqRst, polySeqModel, branchedModel, chainAssign):
         return None, None
 
     target_chain_ids = {}

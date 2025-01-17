@@ -6,6 +6,12 @@
 """ ParserLister base class for any peak list file.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 import re
 import copy
@@ -3084,7 +3090,7 @@ class BasePKParserListener():
                                 ligands += 1
                     if ligands == 1:
                         compId = _compId = __compId
-                    elif len(self.nonPoly) == 1 and self.ccU.updateChemCompDict(_compId):
+                    elif len(self.nonPoly) == 1 and self.ccU.updateChemCompDict(_compId, False):
                         if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             compId = _compId = self.nonPoly[0]['comp_id'][0]
                             ligands = 1
@@ -3737,7 +3743,7 @@ class BasePKParserListener():
                                 ligands += 1
                     if ligands == 1:
                         compId = _compId = __compId
-                    elif len(self.nonPoly) == 1 and self.ccU.updateChemCompDict(_compId):
+                    elif len(self.nonPoly) == 1 and self.ccU.updateChemCompDict(_compId, False):
                         if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             compId = _compId = self.nonPoly[0]['comp_id'][0]
                             ligands = 1
@@ -5061,26 +5067,31 @@ class BasePKParserListener():
     def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of PK file.
         """
+
         return None if self.polySeqRst is None or len(self.polySeqRst) == 0 else self.polySeqRst
 
     def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and PK.
         """
+
         return None if self.seqAlign is None or len(self.seqAlign) == 0 else self.seqAlign
 
     def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and PK.
         """
+
         return None if self.chainAssign is None or len(self.chainAssign) == 0 else self.chainAssign
 
     def getReasonsForReparsing(self) -> Optional[dict]:
         """ Return reasons for re-parsing PK file.
         """
+
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
     def getSfDict(self) -> Tuple[dict, Optional[dict]]:
         """ Return a dictionary of pynmrstar saveframes.
         """
+
         if len(self.sfDict) == 0:
             return self.__listIdCounter, None
         ign_keys = []

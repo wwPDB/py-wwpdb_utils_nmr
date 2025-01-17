@@ -6,6 +6,12 @@
 """ ParserLister class for ROSETTA MR files.
     @author: Masashi Yokochi
 """
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.0.0"
+
 import sys
 import re
 import copy
@@ -1115,7 +1121,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__createSfDict and isinstance(memberId, int):
                     star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
                     star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
-                    if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                    if None in (star_atom1, star_atom2) or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                         continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
@@ -2140,6 +2146,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                       ) -> Tuple[str, str]:
         """ Return realistic bond constraint taking into account the current coordinates.
         """
+
         if not self.__hasCoord:
             return atom1, atom2
 
@@ -2250,6 +2257,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                            ) -> dict:
         """ Return realistic chi2 angle constraint taking into account the current coordinates.
         """
+
         if not self.__hasCoord:
             return dst_func
 
@@ -4889,7 +4897,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__createSfDict and isinstance(memberId, int):
                     star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
                     star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
-                    if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                    if None in (star_atom1, star_atom2) or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                         continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
@@ -5046,7 +5054,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__createSfDict and isinstance(memberId, int):
                     star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
                     star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
-                    if star_atom1 is None or star_atom2 is None or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                    if None in (star_atom1, star_atom2) or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
                         continue
                 if has_intra_chain and (atom1['chain_id'] != atom2['chain_id'] or atom1['chain_id'] not in rep_chain_id_set):
                     continue
@@ -5315,6 +5323,7 @@ class RosettaMRParserListener(ParseTreeListener):
     def hasAnyRestraints(self) -> bool:
         """ Return whether any restraint is parsed successfully.
         """
+
         if self.__createSfDict:
             if len(self.sfDict) == 0:
                 return False
@@ -5328,26 +5337,31 @@ class RosettaMRParserListener(ParseTreeListener):
     def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of ROSETTA MR file.
         """
+
         return None if self.__polySeqRst is None or len(self.__polySeqRst) == 0 else self.__polySeqRst
 
     def getSequenceAlignment(self) -> Optional[List[dict]]:
         """ Return sequence alignment between coordinates and ROSETTA MR.
         """
+
         return None if self.__seqAlign is None or len(self.__seqAlign) == 0 else self.__seqAlign
 
     def getChainAssignment(self) -> Optional[List[dict]]:
         """ Return chain assignment between coordinates and ROSETTA MR.
         """
+
         return None if self.__chainAssign is None or len(self.__chainAssign) == 0 else self.__chainAssign
 
     def getReasonsForReparsing(self) -> Optional[dict]:
         """ Return reasons for re-parsing ROSETTA MR file.
         """
+
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing
 
     def getSfDict(self) -> Tuple[dict, Optional[dict]]:
         """ Return a dictionary of pynmrstar saveframes.
         """
+
         if len(self.sfDict) == 0:
             return self.__listIdCounter, None
         ign_keys = []

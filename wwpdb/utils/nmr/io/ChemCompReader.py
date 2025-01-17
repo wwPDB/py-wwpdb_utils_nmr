@@ -1,5 +1,5 @@
 ##
-# File: ChemCompIo.py
+# File: ChemCompReader.py
 # Date: 31-May-2010  John Westbrook
 #
 # Update:
@@ -19,7 +19,7 @@ __version__ = "V0.01"
 
 import sys
 import os
-import traceback
+import re
 
 from mmcif.io.PdbxReader import PdbxReader
 from typing import IO, List, Optional
@@ -31,6 +31,9 @@ try:
 except ImportError:
     from nmr.AlignUtil import (emptyValue,
                                isReservedLigCode)
+
+
+ccd_id_pattern = re.compile(r'(\w{1,3}|\w{5})')
 
 
 class ChemCompReader:
@@ -134,7 +137,8 @@ class ChemCompReader:
         """ Set chemical component definition data file path of the input chemical component
         """
 
-        if compId in emptyValue:
+        if compId in emptyValue or not isinstance(compId, str)\
+           or not ccd_id_pattern.match(compId) or isReservedLigCode(compId):
             return False
 
         self.__ccU = compId.upper()
@@ -144,11 +148,8 @@ class ChemCompReader:
         self.__filePath = os.path.join(self.__topCachePath, hashKey, self.__ccU, self.__ccU + '.cif')
 
         if not os.access(self.__filePath, os.R_OK):
-
-            if self.__verbose and len(compId) in (3, 5) and compId[-1] not in ('+', '-')\
-               and not isReservedLigCode(compId):
+            if self.__verbose:
                 self.__lfh.write(f"+{self.__class_name__}.setCompId() ++ Error  - Missing file {self.__filePath}\n")
-
             return False
 
         return True
@@ -159,7 +160,8 @@ class ChemCompReader:
 
         try:
 
-            if compId in emptyValue:
+            if compId in emptyValue or not isinstance(compId, str)\
+               or not ccd_id_pattern.match(compId) or not isReservedLigCode(compId):
                 return False
 
             self.__ccU = str(compId).upper()
@@ -167,20 +169,15 @@ class ChemCompReader:
             self.__filePath = filePath
 
             if not os.access(self.__filePath, os.R_OK):
-
-                if self.__verbose and len(compId) in (3, 5) and compId[-1] not in ('+', '-')\
-                   and not isReservedLigCode(compId):
+                if self.__verbose:
                     self.__lfh.write(f"+{self.__class_name__}.setFilePath() ++ Error  - Missing file {self.__filePath}\n")
-
                 return False
 
             return True
 
         except Exception as e:
-
             if self.__verbose:
                 self.__lfh.write(f"+{self.__class_name__}.setFilePath() ++ Error  - Set {self.__filePath} failed {str(e)}\n")
-
             return False
 
     def getAtomList(self) -> List[list]:
@@ -226,8 +223,9 @@ class ChemCompReader:
 
             return self.__setDataBlock(block)
 
-        except Exception:
-            traceback.print_exc(file=sys.stdout)
+        except Exception as e:
+            if self.__verbose:
+                self.__lfh.write(f"+{self.__class_name__}.__getComp() ++ Error  - {str(e)}\n")
             return False
 
     def __getDataBlock(self, filePath: str, blockId: Optional[str] = None):
@@ -261,8 +259,9 @@ class ChemCompReader:
 
             return None
 
-        except Exception:
-            traceback.print_exc(file=self.__lfh)
+        except Exception as e:
+            if self.__verbose:
+                self.__lfh.write(f"+{self.__class_name__}.__getDataBlock() ++ Error  - {str(e)}\n")
             return None
 
     def __setDataBlock(self, dataBlock) -> bool:

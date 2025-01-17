@@ -95,7 +95,7 @@ def isReservedLigCode(compId: str) -> bool:
     """
     if compId in reservedLigCode:
         return True
-    if len(compId) == 2 and compId[0].isdigit() and compId[1].digit() and compId != '00':
+    if len(compId) == 2 and compId[0].isdigit() and compId[1].isdigit() and compId != '00':
         return True
     return False
 

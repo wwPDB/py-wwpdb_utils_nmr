@@ -614,7 +614,7 @@ expecting_l_paren = "expecting L_paren"  # NOTICE: depends on ANTLR v4 and (Xplo
 
 possible_typo_for_comment_out_pattern = re.compile(r'\s*([13])$')
 
-sparky_assignment_pattern = re.compile(r'[0-9A-Za-z_\+\*\?\'\"]+-[0-9A-Za-z_\+\*\?\'\"]+\S*')
+sparky_assignment_pattern = re.compile(r'[\w\+\*\?\'\"]+-[\w\+\*\?\'\"]+\S*')
 
 comment_code_mixed_set = {'#', '!'}
 

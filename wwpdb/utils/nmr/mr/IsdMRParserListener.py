@@ -374,7 +374,7 @@ class IsdMRParserListener(ParseTreeListener):
 
         self.distRestraints = 0      # ISD: Distance restraints
 
-        self.atom_sele_pat = re.compile(r'([A-Z][0-9A-Z]{2})(\d+)([A-Z][A-Z0-9]*)')
+        self.atom_sele_pat = re.compile(r'([A-Z][0-9A-Z]{2})(\d+)([A-Z][0-9A-Z]*)')
 
         self.sfDict = {}
 

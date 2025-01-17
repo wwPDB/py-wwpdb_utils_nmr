@@ -24,7 +24,8 @@ from typing import IO, List, Tuple, Optional
 try:
     from wwpdb.utils.config.ConfigInfo import getSiteId
     from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCc
-    from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
+    from wwpdb.utils.nmr.io.ChemCompReader import (ChemCompReader,
+                                                   ccd_id_pattern)
     from wwpdb.utils.nmr.AlignUtil import (emptyValue,
                                            monDict3,
                                            protonBeginCode,
@@ -32,7 +33,8 @@ try:
     cICc = ConfigInfoAppCc(getSiteId())
     CC_CVS_PATH = cICc.get_site_cc_cvs_path()
 except ImportError:
-    from nmr.io.ChemCompIo import ChemCompReader
+    from nmr.io.ChemCompReader import (ChemCompReader,
+                                       ccd_id_pattern)
     from nmr.AlignUtil import (emptyValue,
                                monDict3,
                                protonBeginCode,
@@ -58,7 +60,7 @@ class ChemCompUtil:
         self.lastAtomList = None
         self.lastBonds = None
 
-        # taken from wwpdb.utils.nmr.io.ChemCompIo
+        # taken from wwpdb.utils.nmr.io.ChemCompReader
         _chemCompAtomDict = [
             ('_chem_comp_atom.comp_id', '%s', 'str', ''),
             ('_chem_comp_atom.atom_id', '%s', 'str', ''),
@@ -114,7 +116,7 @@ class ChemCompUtil:
         cTerminalAtomFlag = next(d for d in _chemCompAtomDict if d[0] == '_chem_comp_atom.pdbx_c_terminal_atom_flag')
         self.ccaCTerminalAtomFlag = _chemCompAtomDict.index(cTerminalAtomFlag)
 
-        # taken from wwpdb.utils.nmr.io.ChemCompIo
+        # taken from wwpdb.utils.nmr.io.ChemCompReader
         _chemCompBondDict = [
             ('_chem_comp_bond.comp_id', '%s', 'str', ''),
             ('_chem_comp_bond.atom_id_1', '%s', 'str', ''),
@@ -156,7 +158,8 @@ class ChemCompUtil:
             @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
         """
 
-        if compId in emptyValue or isReservedLigCode(compId):
+        if compId in emptyValue or not isinstance(compId, str)\
+           or not ccd_id_pattern.match(compId) or isReservedLigCode(compId):
             return False
 
         compId = compId.upper()

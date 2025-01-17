@@ -171,7 +171,7 @@ class ChemCompReader:
 
         try:
 
-            if compId in emptyValue or not ccd_id_pattern.match(compId) or not is_reserved_lig_code(compId):
+            if compId in emptyValue or not ccd_id_pattern.match(compId) or is_reserved_lig_code(compId):
                 return False
 
             self.__ccU = str(compId).upper()

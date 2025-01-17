@@ -7,6 +7,7 @@
 #                     Add accessors for lists of dictionaries
 # 12-May-2011 - rps - Added check for None when asking for category Object in __getDataList()
 # 2012-10-24    RPS   Updated to reflect reorganization of modules in pdbx packages
+# 17-Jan-2025 - MY  - Added is_reserved_lig_code() from AlignUtil.py (DAOTHER-7204, 7388)
 ##
 """ A collection of classes supporting chemical component dictionary data files
 """
@@ -26,14 +27,25 @@ from typing import IO, List, Optional
 
 
 try:
-    from wwpdb.utils.nmr.AlignUtil import (emptyValue,
-                                           isReservedLigCode)
+    from wwpdb.utils.nmr.AlignUtil import emptyValue
 except ImportError:
-    from nmr.AlignUtil import (emptyValue,
-                               isReservedLigCode)
+    from nmr.AlignUtil import emptyValue
 
 
 ccd_id_pattern = re.compile(r'(\w{1,3}|\w{5})')
+
+
+def is_reserved_lig_code(comp_id: str) -> bool:
+    """ Return a given comp_id is reserved for new ligands (DAOTHER-7204, 7388)
+    """
+
+    if comp_id.upper() in ('LIG', 'DRG', 'INH'):
+        return True
+
+    if len(comp_id) == 2 and comp_id[0].isdigit() and comp_id[1].isdigit() and comp_id != '00':
+        return True
+
+    return False
 
 
 class ChemCompReader:
@@ -137,8 +149,7 @@ class ChemCompReader:
         """ Set chemical component definition data file path of the input chemical component
         """
 
-        if compId in emptyValue or not isinstance(compId, str)\
-           or not ccd_id_pattern.match(compId) or isReservedLigCode(compId):
+        if compId in emptyValue or not ccd_id_pattern.match(compId) or is_reserved_lig_code(compId):
             return False
 
         self.__ccU = compId.upper()
@@ -160,8 +171,7 @@ class ChemCompReader:
 
         try:
 
-            if compId in emptyValue or not isinstance(compId, str)\
-               or not ccd_id_pattern.match(compId) or not isReservedLigCode(compId):
+            if compId in emptyValue or not ccd_id_pattern.match(compId) or not is_reserved_lig_code(compId):
                 return False
 
             self.__ccU = str(compId).upper()

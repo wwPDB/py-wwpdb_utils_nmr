@@ -71,7 +71,6 @@ try:
                                            carboxylCode,
                                            zincIonCode,
                                            calciumIonCode,
-                                           isReservedLigCode,
                                            updatePolySeqRst,
                                            revertPolySeqRst,
                                            updatePolySeqRstAmbig,
@@ -148,7 +147,6 @@ except ImportError:
                                carboxylCode,
                                zincIonCode,
                                calciumIonCode,
-                               isReservedLigCode,
                                updatePolySeqRst,
                                revertPolySeqRst,
                                updatePolySeqRstAmbig,
@@ -1391,7 +1389,7 @@ class CyanaNOAParserListener(ParseTreeListener):
                     if ligands == 1:
                         compId = _compId = __compId
                     elif len(self.__nonPoly) == 1 and self.__ccU.updateChemCompDict(_compId):
-                        if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' or isReservedLigCode(_compId):
+                        if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
             for np in self.__nonPolySeq:

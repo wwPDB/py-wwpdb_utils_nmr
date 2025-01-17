@@ -32,7 +32,6 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            protonBeginCode,
                                            aminoProtonCode,
-                                           isReservedLigCode,
                                            letterToDigit,
                                            indexToLetter,
                                            alignPolymerSequence,
@@ -58,7 +57,6 @@ except ImportError:
     from nmr.AlignUtil import (monDict3,
                                protonBeginCode,
                                aminoProtonCode,
-                               isReservedLigCode,
                                letterToDigit,
                                indexToLetter,
                                alignPolymerSequence,
@@ -404,7 +402,7 @@ class GromacsPTParserListener(ParseTreeListener):
                                     if ligands == 1:
                                         compId = __compId
                                     elif len(self.__nonPolyModel) == 1 and self.__ccU.updateChemCompDict(authCompId):
-                                        if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' or isReservedLigCode(authCompId):
+                                        if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                                             compId = self.__nonPolyModel[0]['comp_id'][0]
 
                             if compId is not None:
@@ -464,7 +462,7 @@ class GromacsPTParserListener(ParseTreeListener):
                                 if ligands == 1:
                                     compId = __compId
                                 elif len(self.__nonPolyModel) == 1 and self.__ccU.updateChemCompDict(authCompId):
-                                    if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' or isReservedLigCode(authCompId):
+                                    if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                                         compId = self.__nonPolyModel[0]['comp_id'][0]
 
                         if compId is not None:

@@ -104,7 +104,6 @@ try:
                                            rdcBbPairCode,
                                            zincIonCode,
                                            calciumIonCode,
-                                           isReservedLigCode,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
@@ -213,7 +212,6 @@ except ImportError:
                                rdcBbPairCode,
                                zincIonCode,
                                calciumIonCode,
-                               isReservedLigCode,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
@@ -6706,7 +6704,7 @@ class CnsMRParserListener(ParseTreeListener):
         return foundCompId
 
     def getRealCompId(self, compId: str) -> str:
-        if self.__ccU.updateChemCompDict(compId) and not isReservedLigCode(compId):
+        if self.__ccU.updateChemCompDict(compId):
             if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' and '_chem_comp.pdbx_replaced_by' in self.__ccU.lastChemCompDict:
                 replacedBy = self.__ccU.lastChemCompDict['_chem_comp.pdbx_replaced_by']
                 if replacedBy not in emptyValue and self.__ccU.updateChemCompDict(replacedBy):

@@ -66,7 +66,6 @@ try:
                                            carboxylCode,
                                            zincIonCode,
                                            calciumIonCode,
-                                           isReservedLigCode,
                                            getOneLetterCode,
                                            updatePolySeqRst,
                                            revertPolySeqRst,
@@ -136,7 +135,6 @@ except ImportError:
                                carboxylCode,
                                zincIonCode,
                                calciumIonCode,
-                               isReservedLigCode,
                                getOneLetterCode,
                                updatePolySeqRst,
                                revertPolySeqRst,
@@ -3087,7 +3085,7 @@ class BasePKParserListener():
                     if ligands == 1:
                         compId = _compId = __compId
                     elif len(self.nonPoly) == 1 and self.ccU.updateChemCompDict(_compId):
-                        if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' or isReservedLigCode(_compId):
+                        if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             compId = _compId = self.nonPoly[0]['comp_id'][0]
                             ligands = 1
             for np in self.nonPolySeq:
@@ -3740,7 +3738,7 @@ class BasePKParserListener():
                     if ligands == 1:
                         compId = _compId = __compId
                     elif len(self.nonPoly) == 1 and self.ccU.updateChemCompDict(_compId):
-                        if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' or isReservedLigCode(_compId):
+                        if self.ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             compId = _compId = self.nonPoly[0]['comp_id'][0]
                             ligands = 1
             for np in self.nonPolySeq:

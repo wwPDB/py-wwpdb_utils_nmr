@@ -25,20 +25,20 @@ try:
     from wwpdb.utils.config.ConfigInfo import getSiteId
     from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCc
     from wwpdb.utils.nmr.io.ChemCompReader import (ChemCompReader,
-                                                   ccd_id_pattern)
+                                                   ccd_id_pattern,
+                                                   is_reserved_lig_code)
     from wwpdb.utils.nmr.AlignUtil import (emptyValue,
                                            monDict3,
-                                           protonBeginCode,
-                                           isReservedLigCode)
+                                           protonBeginCode)
     cICc = ConfigInfoAppCc(getSiteId())
     CC_CVS_PATH = cICc.get_site_cc_cvs_path()
 except ImportError:
     from nmr.io.ChemCompReader import (ChemCompReader,
-                                       ccd_id_pattern)
+                                       ccd_id_pattern,
+                                       is_reserved_lig_code)
     from nmr.AlignUtil import (emptyValue,
                                monDict3,
-                               protonBeginCode,
-                               isReservedLigCode)
+                               protonBeginCode)
     CC_CVS_PATH = os.path.dirname(__file__) + '/ligand_dict'  # need to setup 'ligand_dict' CCD resource for NMR restraint processing
 
 
@@ -158,8 +158,7 @@ class ChemCompUtil:
             @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
         """
 
-        if compId in emptyValue or not isinstance(compId, str)\
-           or not ccd_id_pattern.match(compId) or isReservedLigCode(compId):
+        if compId in emptyValue or not ccd_id_pattern.match(compId) or is_reserved_lig_code(compId):
             return False
 
         compId = compId.upper()

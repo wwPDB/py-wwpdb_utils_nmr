@@ -82,7 +82,6 @@ try:
                                            aminoProtonCode,
                                            carboxylCode,
                                            rdcBbPairCode,
-                                           isReservedLigCode,
                                            getOneLetterCodeCan,
                                            updatePolySeqRst,
                                            updatePolySeqRstFromAtomSelectionSet,
@@ -161,7 +160,6 @@ except ImportError:
                                aminoProtonCode,
                                carboxylCode,
                                rdcBbPairCode,
-                               isReservedLigCode,
                                getOneLetterCodeCan,
                                updatePolySeqRst,
                                updatePolySeqRstFromAtomSelectionSet,
@@ -6163,7 +6161,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if ligands == 1:
                         authCompId = __compId
                     elif len(self.__nonPoly) == 1 and self.__ccU.updateChemCompDict(authCompId):
-                        if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS' or isReservedLigCode(authCompId):
+                        if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             authCompId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
 

@@ -77,7 +77,6 @@ rdcBbPairCode = ('N', 'H', 'CA')
 zincIonCode = ('ZN', 'ME', 'Z1', 'Z2')
 calciumIonCode = ('CA2', 'CA2+', 'CA+2', 'ME')
 unknownResidue = ('UNK', 'DN', 'N')
-reservedLigCode = ('LIG', 'DRG', 'INH')  # DAOTHER-7204, 7388: reserved ligand codes for new ligands, which must include 2 digits 01-99
 
 dnrParentCode = ('DC', 'CYT', 'DC5', 'DC3')
 chParentCode = ('C', 'RCYT', 'C5', 'C3')
@@ -88,16 +87,6 @@ LEN_LARGE_ASYM_ID = len(LARGE_ASYM_ID)
 
 # maximum number of magnetically identifiable chain IDs
 MAX_MAG_IDENT_ASYM_ID = 2
-
-
-def isReservedLigCode(compId: str) -> bool:
-    """ Return a given comp_id is reserved for new ligands. (DAOTHER-7204, 7388)
-    """
-    if compId in reservedLigCode:
-        return True
-    if len(compId) == 2 and compId[0].isdigit() and compId[1].isdigit() and compId != '00':
-        return True
-    return False
 
 
 def hasLargeInnerSeqGap(polySeq: List[dict], seqIdName: str = 'seq_id') -> bool:

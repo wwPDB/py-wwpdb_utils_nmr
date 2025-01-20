@@ -107,7 +107,7 @@ def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> An
 
 
 def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
-    """ Set saveframe tag.
+    """ Set saveframe tag with a given value.
     """
 
     tagNames = [t[0] for t in sf.tags]
@@ -128,6 +128,23 @@ def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
         return
 
     sf.tags[tagNames.index(tag)][1] = value
+
+
+def set_lp_tag(lp: pynmrstar.Loop, tag: str, value: Any):
+    """ Set loop tag with a given value.
+    """
+
+    if tag not in lp.tags:
+        lp.add_tag(tag)
+
+        for row in lp:
+            row.append(value)
+
+    else:
+        col = lp.tags.index(tag)
+
+        for row in lp:
+            row[col] = value
 
 
 def retrieve_symbolic_labels(strData: pynmrstar.Entry):
@@ -665,19 +682,7 @@ class CifToNmrStar:
                             pass
 
                     if not filled:
-                        if 'Entry_ID' not in lp.tags:
-                            entry_id_tag = lp.category + '.Entry_ID'
-
-                            lp.add_tag(entry_id_tag)
-
-                            for row in lp:
-                                row.append(entryId)
-
-                        else:
-                            col = lp.tags.index('Entry_ID')
-
-                            for row in lp:
-                                row[col] = entryId
+                        set_lp_tag(lp, 'Entry_ID', entryId)
 
                         modified = True
 
@@ -725,19 +730,7 @@ class CifToNmrStar:
                         pass
 
                 if not filled:
-                    if 'Entry_ID' not in lp.tags:
-                        entry_id_tag = lp.category + '.Entry_ID'
-
-                        lp.add_tag(entry_id_tag)
-
-                        for row in lp:
-                            row.append(entryId)
-
-                    else:
-                        col = lp.tags.index('Entry_ID')
-
-                        for row in lp:
-                            row[col] = entryId
+                    set_lp_tag(lp, 'Entry_ID', entryId)
 
                     modified = True
 
@@ -759,19 +752,7 @@ class CifToNmrStar:
                     pass
 
             if not filled:
-                if 'Entry_ID' not in lp.tags:
-                    entry_id_tag = lp.category + '.Entry_ID'
-
-                    lp.add_tag(entry_id_tag)
-
-                    for row in lp:
-                        row.append(entryId)
-
-                else:
-                    col = lp.tags.index('Entry_ID')
-
-                    for row in lp:
-                        row[col] = entryId
+                set_lp_tag(lp, 'Entry_ID', entryId)
 
                 modified = True
 

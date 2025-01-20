@@ -347,8 +347,7 @@ class BMRBAnnTasks:
 
                                     tags = [lp_category + '.' + item for item in items]
 
-                                    for tag in tags:
-                                        lp.add_tag(tag)
+                                    lp.add_tag(tags)
 
                                     for exp in exp_list:
                                         row = exp
@@ -674,8 +673,7 @@ class BMRBAnnTasks:
 
                         tags = ['Hetero', 'Mon_ID', 'Num', 'Comp_index_ID', 'Entry_ID', 'Entity_ID']
 
-                        for tag in tags:
-                            _lp.add_tag(lp_category + '.' + tag)
+                        _lp.add_tag(tags)
 
                         dat = lp.get_tag(['ID', 'Comp_ID'])
 
@@ -1125,8 +1123,7 @@ class BMRBAnnTasks:
 
                                             tags = ['Type', 'Val', 'Val_err', 'Val_units']
 
-                                            for tag in tags:
-                                                _lp.add_tag(lp_category + '.' + tag)
+                                            _lp.add_tag(tags)
 
                                             data = lp.get_tag(tags)
 
@@ -1677,8 +1674,7 @@ class BMRBAnnTasks:
 
                     _lp = pynmrstar.Loop.from_scratch(lp_category)
 
-                    for tag in lp.tags:
-                        _lp.add_tag(lp_category + '.' + tag)
+                    _lp.add_tag(lp.tags)
 
                     cur_id = 1
 
@@ -1786,8 +1782,7 @@ class BMRBAnnTasks:
                             'Concentration_val_units',
                             'Concentration_val_err']
 
-                    for tag in tags:
-                        _lp.add_tag(lp_category + '.' + tag)
+                    _lp.add_tag(tags)
 
                     data = lp.get_tag(tags)
 
@@ -1836,8 +1831,7 @@ class BMRBAnnTasks:
                         'Concentration_val_units',
                         'Concentration_val_err']
 
-                for tag in tags:
-                    _lp.add_tag(lp_category + '.' + tag)
+                _lp.add_tag(tags)
 
                 data = lp.get_tag(tags)
 
@@ -2098,8 +2092,7 @@ class BMRBAnnTasks:
 
                         tags = [lp_category + '.' + item for item in items]
 
-                        for tag in tags:
-                            lp.add_tag(tag)
+                        lp.add_tag(tags)
 
                         for n in isotope_numbers:
                             if n in ALLOWED_ISOTOPE_NUMBERS:
@@ -2180,8 +2173,7 @@ class BMRBAnnTasks:
 
                 tags = [lp_category + '.' + item for item in items]
 
-                for tag in tags:
-                    lp.add_tag(tag)
+                lp.add_tag(tags)
 
                 for n in isotope_numbers:
                     if n in ALLOWED_ISOTOPE_NUMBERS:
@@ -2605,8 +2597,7 @@ class BMRBAnnTasks:
                             'Entity_assembly_name_1', 'Comp_ID_1', 'Seq_ID_1', 'Atom_ID_1',
                             'Entity_assembly_name_2', 'Comp_ID_2', 'Seq_ID_2', 'Atom_ID_2']
 
-                    for tag in tags:
-                        _lp.add_tag(lp_category + '.' + tag)
+                    _lp.add_tag(tags)
 
                     dat = lp.get_tag(tags)
 
@@ -2620,8 +2611,7 @@ class BMRBAnnTasks:
                             'Comp_ID_1', 'Seq_ID_1', 'Atom_ID_1',
                             'Comp_ID_2', 'Seq_ID_2', 'Atom_ID_2']
 
-                    for tag in tags:
-                        _lp.add_tag(lp_category + '.' + tag)
+                    _lp.add_tag(tags)
 
                     _lp.add_data(['?'] * len(tags))
 

@@ -7321,8 +7321,7 @@ def getLoop(mrSubtype: str, reduced: bool = True, hasInsCode: bool = False) -> O
     else:
         tags.extend([prefix + item['name'] for item in NMR_STAR_LP_DATA_ITEMS[contentSubtype]])
 
-    for tag in tags:
-        lp.add_tag(tag)
+    lp.add_tag(tags)
 
     return lp
 
@@ -7347,8 +7346,7 @@ def getPkLoop(pkSubtype: str) -> Optional[pynmrstar.Loop]:
     tags = [prefix + item['name'] for item in NMR_STAR_LP_KEY_ITEMS[contentSubtype]]
     tags.extend([prefix + item['name'] for item in NMR_STAR_LP_DATA_ITEMS[pkSubtype]])
 
-    for tag in tags:
-        lp.add_tag(tag)
+    lp.add_tag(tags)
 
     return lp
 
@@ -7377,8 +7375,7 @@ def getAltLoops(mrSubtype: str) -> Optional[List[pynmrstar.Loop]]:
         tags = [prefix + item['name'] for item in NMR_STAR_ALT_LP_KEY_ITEMS[contentSubtype][catName]]
         tags.extend([prefix + item['name'] for item in NMR_STAR_ALT_LP_DATA_ITEMS[contentSubtype][catName]])
 
-        for tag in tags:
-            alt_lp.add_tag(tag)
+        alt_lp.add_tag(tags)
 
         alt_lps.append(alt_lp)
 
@@ -7409,8 +7406,7 @@ def getAuxLoops(mrSubtype: str) -> Optional[List[pynmrstar.Loop]]:
         tags = [prefix + item['name'] for item in NMR_STAR_AUX_LP_KEY_ITEMS[contentSubtype][catName]]
         tags.extend([prefix + item['name'] for item in NMR_STAR_AUX_LP_DATA_ITEMS[contentSubtype][catName]])
 
-        for tag in tags:
-            aux_lp.add_tag(tag)
+        aux_lp.add_tag(tags)
 
         aux_lps.append(aux_lp)
 

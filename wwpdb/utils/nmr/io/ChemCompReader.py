@@ -62,7 +62,7 @@ class ChemCompReader:
         self.__compId = None
         self.__filePath = None
 
-        self.__cachedCompId = None
+        self.__lastCompId = None
 
         self.__cDict = {
             'chem_comp': [
@@ -231,13 +231,13 @@ class ChemCompReader:
             @return: True for success or False otherwise
         """
 
-        if self.__compId == self.__cachedCompId:
+        if self.__compId == self.__lastCompId:
             return True
 
         try:
 
             if self.__setDataBlock(self.__getDataBlock()):
-                self.__cachedCompId = self.__compId
+                self.__lastCompId = self.__compId
                 return True
 
             return False

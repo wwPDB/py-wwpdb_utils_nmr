@@ -20137,7 +20137,7 @@ class NmrDpUtility:
                                    and atom_id == "HO5'":
                                     continue
 
-                                err = f"Invalid atom_id {atom_id!r} (comp_id {comp_id!r}) in a loop {lp_category}."
+                                err = f"Invalid atom name {atom_id!r} (comp_id {comp_id!r}) in a loop {lp_category}."
 
                                 self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -20240,15 +20240,29 @@ class NmrDpUtility:
                                         cc_name = f"(Not available due to CCD status code {cc_rel_status})"
                                 cc_name = '' if cc_name is None else ', ' + cc_name
 
-                                err = f"Invalid atom_id {atom_id!r} (comp_id {comp_id!r}{cc_name}) in a loop {lp_category}."
+                                if content_subtype.startswith('spectral_peak'):
 
-                                self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                     'description': err})
-                                self.report.setError()
+                                    err = f"Unmatched atom name {atom_id!r} (comp_id {comp_id!r}{cc_name}) in a loop {lp_category}."
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - {err}\n")
+                                    self.report.warning.appendDescription('atom_nomenclature_mismatch',
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                           'description': err})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Warning  - {err}\n")
+
+                                else:
+
+                                    err = f"Invalid atom name {atom_id!r} (comp_id {comp_id!r}{cc_name}) in a loop {lp_category}."
+
+                                    self.report.error.appendDescription('invalid_atom_nomenclature',
+                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                         'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+{self.__class_name__}.__validateAtomNomenclature() ++ Error  - {err}\n")
 
                 # non-standard residue
                 else:
@@ -20858,7 +20872,7 @@ class NmrDpUtility:
                             if self.__remediation_mode and 1 in isotope_nums and atom_id[0] in ('Q', 'M'):  # DAOTHER-8663, 8751, 9520
                                 continue
 
-                            err = f"Invalid atom_id {atom_id!r} (atom_type {atom_type!r}) in a loop {lp_category}."
+                            err = f"Invalid atom name {atom_id!r} (atom_type {atom_type!r}) in a loop {lp_category}."
 
                             self.report.error.appendDescription('invalid_atom_nomenclature',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
@@ -21110,8 +21124,7 @@ class NmrDpUtility:
 
                     aux_tags = [aux_lp_category + '.' + item for item in aux_items]
 
-                    for tag in aux_tags:
-                        aux_lp.add_tag(tag)
+                    aux_lp.add_tag(aux_tags)
 
                     inter_residue_seq_id = {}
 
@@ -25475,8 +25488,7 @@ class NmrDpUtility:
 
             tags = [lp_category + '.' + item for item in items]
 
-            for tag in tags:
-                lp.add_tag(tag)
+            lp.add_tag(tags)
 
             for idx, row in enumerate(loop):
 
@@ -26306,8 +26318,7 @@ class NmrDpUtility:
 
             tags = [lp_category + '.' + item for item in items]
 
-            for tag in tags:
-                lp.add_tag(tag)
+            lp.add_tag(tags)
 
             prefer_auth_atom_name = False
 
@@ -27931,8 +27942,7 @@ class NmrDpUtility:
 
                     aux_tags = [aux_lp_category + '.' + item for item in aux_items]
 
-                    for tag in aux_tags:
-                        aux_lp.add_tag(tag)
+                    aux_lp.add_tag(aux_tags)
 
                     inter_residue_seq_id = {}
 
@@ -28576,8 +28586,7 @@ class NmrDpUtility:
 
                     lp = pynmrstar.Loop.from_scratch(lp_category)
 
-                    for tag in loop.tags:
-                        lp.add_tag(lp_category + '.' + tag)
+                    lp.add_tag(loop.tags)
 
                     chain_id_col = loop.tags.index(cs_chain_id_name)
                     seq_id_col = loop.tags.index(cs_seq_id_name)
@@ -32331,8 +32340,7 @@ class NmrDpUtility:
 
         lp = pynmrstar.Loop.from_scratch(loop.category)
 
-        for tag in loop.tags:
-            lp.add_tag(loop.category + '.' + tag)
+        lp.add_tag(loop.tags)
 
         id_col = loop.tags.index('ID')
         if 'Index_ID' not in loop.tags:
@@ -32600,8 +32608,7 @@ class NmrDpUtility:
 
         lp = pynmrstar.Loop.from_scratch(loop.category)
 
-        for tag in loop.tags:
-            lp.add_tag(loop.category + '.' + tag)
+        lp.add_tag(loop.tags)
 
         id_col = loop.tags.index('ID')
         if 'Index_ID' not in loop.tags:
@@ -36466,8 +36473,7 @@ class NmrDpUtility:
 
         tags = [lp_category + '.' + item for item in items]
 
-        for tag in tags:
-            lp.add_tag(tag)
+        lp.add_tag(tags)
 
         prefer_auth_atom_name = False
 
@@ -46940,13 +46946,24 @@ class NmrDpUtility:
                                     if seq_key in coord_unobs_atom and atom_id_ in coord_unobs_atom[seq_key]['atom_ids']:
                                         coord_issue = True
 
-                            self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'coordinate_issue' if coord_issue else 'atom_not_found',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                 'description': err})
-                            self.report.setError()
+                            if content_subtype.startswith('spectral_peak'):
+                                self.report.warning.appendDescription('atom_nomenclature_mismatch',
+                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                       'description': err})
+                                self.report.setWarning()
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.__testCoordAtomIdConsistency() ++ Error  - {err}\n")
+                                if self.__verbose:
+                                    self.__lfh.write(f"+{self.__class_name__}.__testCoordAtomIdConsistency() ++ Warning  - {err}\n")
+
+                            else:
+
+                                self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'coordinate_issue' if coord_issue else 'atom_not_found',
+                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                     'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+{self.__class_name__}.__testCoordAtomIdConsistency() ++ Error  - {err}\n")
 
                         else:
 
@@ -47297,9 +47314,7 @@ class NmrDpUtility:
                     lp = pynmrstar.Loop.from_scratch(lp_category)
 
                     lp.add_tag(lp_tag)
-
-                    for tag in loop.tags:
-                        lp.add_tag(lp_category + '.' + tag)
+                    lp.add_tag(loop.tags)
 
                     for idx, row in enumerate(loop, start=1):
                         lp.add_data([str(idx)] + row)
@@ -47913,8 +47928,7 @@ class NmrDpUtility:
             tags = [lp_category + '.' + _item['name'] for _item in ea_key_items]
             tags.extend([lp_category + '.' + _item['name'] for _item in ea_data_items])
 
-            for tag in tags:
-                ea_loop.add_tag(tag)
+            ea_loop.add_tag(tags)
 
             for item in entity_assembly:
                 entity_id = item['entity_id']
@@ -48232,8 +48246,7 @@ class NmrDpUtility:
 
                 tags = [lp_category + '.' + _item['name'] for _item in b_key_items]
 
-                for tag in tags:
-                    b_loop.add_tag(tag)
+                b_loop.add_tag(tags)
 
                 bonds = self.__cR.getDictList('struct_conn')
 
@@ -48547,8 +48560,7 @@ class NmrDpUtility:
                 tags = [lp_category + '.' + _item['name'] for _item in b_key_items]
                 tags.extend([lp_category + '.' + _item['name'] for _item in b_data_items])
 
-                for tag in tags:
-                    b_loop.add_tag(tag)
+                b_loop.add_tag(tags)
 
                 bonds = self.__cR.getDictList('struct_conn')
 
@@ -48681,8 +48693,7 @@ class NmrDpUtility:
                     tags = [lp_category + '.' + _item['name'] for _item in eda_key_items]
                     tags.extend([lp_category + '.' + _item['name'] for _item in eda_data_items])
 
-                    for tag in tags:
-                        eda_loop.add_tag(tag)
+                    eda_loop.add_tag(tags)
 
                     index = 1
 
@@ -49329,8 +49340,7 @@ class NmrDpUtility:
                 tags = [lp_category + '.' + _item['name'] for _item in ecn_key_items]
                 tags.extend([lp_category + '.' + _item['name'] for _item in ecn_data_items])
 
-                for tag in tags:
-                    ecn_loop.add_tag(tag)
+                ecn_loop.add_tag(tags)
 
                 ent_name_coms = self.__cR.getDictList('entity_name_com')
                 for ent_name_com in ent_name_coms:
@@ -49363,8 +49373,7 @@ class NmrDpUtility:
                 tags = [lp_category + '.' + _item['name'] for _item in esn_key_items]
                 tags.extend([lp_category + '.' + _item['name'] for _item in esn_data_items])
 
-                for tag in tags:
-                    esn_loop.add_tag(tag)
+                esn_loop.add_tag(tags)
 
                 ent_name_syss = self.__cR.getDictList('entity_name_sys')
                 for ent_name_sys in ent_name_syss:
@@ -49394,8 +49403,7 @@ class NmrDpUtility:
                 tags = [lp_category + '.' + _item['name'] for _item in ek_key_items]
                 tags.extend([lp_category + '.' + _item['name'] for _item in ek_data_items])
 
-                for tag in tags:
-                    ek_loop.add_tag(tag)
+                ek_loop.add_tag(tags)
 
                 ent_keys = self.__cR.getDictList('entity_keywords')
                 for ent_key in ent_keys:
@@ -49427,8 +49435,7 @@ class NmrDpUtility:
             tags = [lp_category + '.' + _item['name'] for _item in eci_key_items]
             tags.extend([lp_category + '.' + _item['name'] for _item in eci_data_items])
 
-            for tag in tags:
-                eci_loop.add_tag(tag)
+            eci_loop.add_tag(tags)
 
             index = 1
 
@@ -49539,8 +49546,7 @@ class NmrDpUtility:
                 tags = [lp_category + '.' + _item['name'] for _item in eps_key_items]
                 tags.extend([lp_category + '.' + _item['name'] for _item in eps_data_items])
 
-                for tag in tags:
-                    eps_loop.add_tag(tag)
+                eps_loop.add_tag(tags)
 
                 seq_keys = set()
 
@@ -55571,8 +55577,7 @@ class NmrDpUtility:
 
                 lp = pynmrstar.Loop.from_scratch(lp_category)
 
-                for tag in loop.tags:
-                    lp.add_tag(lp_category + '.' + tag)
+                lp.add_tag(loop.tags)
 
                 dat = [int(idx) for idx in loop.get_tag([idx_name])]
 
@@ -56879,8 +56884,7 @@ class NmrDpUtility:
         tags = [lp_category + '.' + _item['name'] for _item in cf_key_items]
         tags.extend([lp_category + '.' + _item['name'] for _item in cf_data_items])
 
-        for tag in tags:
-            cf_loop.add_tag(tag)
+        cf_loop.add_tag(tags)
 
         # inspect _Software saveframes to extend Software_ID in _Constraint_file loop
 
@@ -57243,8 +57247,7 @@ class NmrDpUtility:
 
                 tags = [lp_category + '.' + item for item in items]
 
-                for tag in tags:
-                    lp.add_tag(tag)
+                lp.add_tag(tags)
 
                 for content_subtype in self.nmr_rep_content_subtypes:
                     sf_category = self.sf_categories[file_type][content_subtype]
@@ -57275,8 +57278,7 @@ class NmrDpUtility:
 
                 tags = [lp_category + '.' + item for item in items]
 
-                for tag in tags:
-                    lp.add_tag(tag)
+                lp.add_tag(tags)
 
                 datum_counter = self.__getDatumCounter(master_entry)
 
@@ -58732,8 +58734,7 @@ class NmrDpUtility:
         tags = [lp_category + '.' + _item['name'] for _item in cf_key_items]
         tags.extend([lp_category + '.' + _item['name'] for _item in cf_data_items])
 
-        for tag in tags:
-            cf_loop.add_tag(tag)
+        cf_loop.add_tag(tags)
 
         if has_key_value(input_source_dic, 'content_subtype'):
 
@@ -58803,8 +58804,7 @@ class NmrDpUtility:
 
             tags = [lp_category + '.' + item for item in items]
 
-            for tag in tags:
-                lp.add_tag(tag)
+            lp.add_tag(tags)
 
             for content_subtype in self.nmr_rep_content_subtypes:
                 sf_category = self.sf_categories[file_type][content_subtype]
@@ -58836,8 +58836,7 @@ class NmrDpUtility:
 
             tags = [lp_category + '.' + item for item in items]
 
-            for tag in tags:
-                lp.add_tag(tag)
+            lp.add_tag(tags)
 
             datum_counter = self.__getDatumCounter(master_entry)
 

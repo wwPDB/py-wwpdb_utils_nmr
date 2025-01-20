@@ -10225,8 +10225,7 @@ class NEFTranslator:
             out_tags.append(f"_nef_peak.residue_name_{d}")
             out_tags.append(f"_nef_peak.atom_name_{d}")
 
-        for tag in out_tags:
-            out_lp.add_tag(tag)
+        out_lp.add_tag(out_tags)
 
         pk_tags = pk_loop.get_tag_names()
 
@@ -10495,8 +10494,7 @@ class NEFTranslator:
                     if len(tags) == 0:
                         continue
 
-                    for tag in tags:
-                        lp.add_tag(tag)
+                    lp.add_tag(tags)
 
                     if loop.category == '_nef_sequence':
                         if self.authSeqMap is None:
@@ -10747,8 +10745,7 @@ class NEFTranslator:
                 if len(tags) == 0:
                     continue
 
-                for tag in tags:
-                    lp.add_tag(tag)
+                lp.add_tag(tags)
 
                 if loop.category == '_nef_sequence':
                     if self.authSeqMap is None:
@@ -11001,8 +10998,7 @@ class NEFTranslator:
                         if len(tags) == 0:
                             continue
 
-                        for tag in tags:
-                            lp.add_tag(tag)
+                        lp.add_tag(tags)
 
                         if loop.category == '_Chem_comp_assembly':
                             if self.authSeqMap is None:
@@ -11202,8 +11198,7 @@ class NEFTranslator:
                     if len(tags) == 0:
                         continue
 
-                    for tag in tags:
-                        lp.add_tag(tag)
+                    lp.add_tag(tags)
 
                     if loop.category == '_Chem_comp_assembly':
                         if self.authSeqMap is None:

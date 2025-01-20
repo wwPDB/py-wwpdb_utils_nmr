@@ -57218,6 +57218,9 @@ class NmrDpUtility:
         if self.__merge_any_pk_as_is:  # DAOTHER-7407 enabled until Phase 2 release
             self.__mergeAnyPkAsIs()
 
+        if self.__bmrb_only and self.__internal_mode:
+            self.__performBMRBjAnnTasks()
+
         try:
 
             content_subtype = 'entry_info'
@@ -57294,9 +57297,6 @@ class NmrDpUtility:
 
             if self.__verbose:
                 self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - {str(e)}\n")
-
-        if self.__bmrb_only and self.__internal_mode:
-            self.__performBMRBjAnnTasks()
 
         master_entry = self.__c2S.normalize_str(master_entry)
 

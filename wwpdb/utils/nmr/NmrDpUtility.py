@@ -46632,8 +46632,9 @@ class NmrDpUtility:
                 if seq_key not in coord_atom_site:
                     return True, None, None
 
-                if seq_key not in auth_to_label_seq:
-                    return True, None, None
+                # 2lit: 1:104:LYS (nmr), A:99:LYS (model) overlaps A:104:HEC (model)
+                # if seq_key not in auth_to_label_seq:
+                #     return True, None, None
 
                 coord_atom_site_ = coord_atom_site[seq_key]
 
@@ -46654,8 +46655,9 @@ class NmrDpUtility:
                     if seq_key not in coord_atom_site:
                         return True, None, None
 
-                    if seq_key not in auth_to_label_seq:
-                        return True, None, None
+                    # 2lit: 1:104:LYS (nmr), A:99:LYS (model) overlaps A:104:HEC (model)
+                    # if seq_key not in auth_to_label_seq:
+                    #     return True, None, None
 
                     coord_atom_site_ = coord_atom_site[seq_key]
 
@@ -46665,6 +46667,8 @@ class NmrDpUtility:
                         return True, seq_key, coord_atom_site_
 
             return False, None, None
+
+        offset = {}
 
         for idx, row in enumerate(lp_data):
 
@@ -46785,8 +46789,14 @@ class NmrDpUtility:
                     if seq_key is None:
                         continue
 
+                    offset[chain_id] = seq_key[1] - seq_id
+
                     cif_chain_id, cif_seq_id = auth_to_label_seq[seq_key]
                     cif_comp_id = comp_id
+
+                elif chain_id in offset:
+
+                    _, seq_key, coord_atom_site_ = get_coord_atom_site_of(cif_chain_id, cif_seq_id + offset[chain_id], comp_id)
 
                 else:
 

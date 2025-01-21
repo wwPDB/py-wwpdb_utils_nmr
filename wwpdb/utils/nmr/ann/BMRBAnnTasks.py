@@ -322,20 +322,36 @@ class BMRBAnnTasks:
                                     tags = ['Experiment_ID', 'Experiment_name', 'Sample_ID', 'Sample_label', 'Sample_state']
 
                                     if set(tags) & set(lp.tags) == set(tags):
+                                        exp_id_col = lp.tags.index('Experiment_ID')
                                         exp_name_col = lp.tags.index('Experiment_name')
                                         sample_id_col = lp.tags.index('Sample_ID')
                                         sample_label_col = lp.tags.index('Sample_label')
                                         sample_state_col = lp.tags.index('Sample_state')
 
                                         cs_exp_list = lp.get_tag(tags)
+                                        reserved_names = []
 
                                         for idx, cs_exp in enumerate(cs_exp_list):
-                                            exp = next((exp for exp in exp_list if exp[0] == cs_exp[0]), None)
-                                            if exp is not None and cs_exp[2:5] != exp[2:5]:
-                                                lp.data[idx][exp_name_col] = exp[1]
-                                                lp.data[idx][sample_id_col] = exp[2]
-                                                lp.data[idx][sample_label_col] = exp[3]
-                                                lp.data[idx][sample_state_col] = exp[4]
+                                            if cs_exp[0] not in emptyValue:
+                                                exp = next((exp for exp in exp_list
+                                                            if exp[0] == cs_exp[0] and exp[1] not in reserved_names), None)
+                                                if exp is not None:
+                                                    if cs_exp[2:5] != exp[2:5]:
+                                                        lp.data[idx][exp_name_col] = exp[1]
+                                                        lp.data[idx][sample_id_col] = exp[2]
+                                                        lp.data[idx][sample_label_col] = exp[3]
+                                                        lp.data[idx][sample_state_col] = exp[4]
+                                                    reserved_names.append(exp[1])
+                                            else:
+                                                exp = next((exp for exp in exp_list
+                                                            if cs_exp[1] not in emptyValue and exp[1] in cs_exp[1] and exp[1] not in reserved_names), None)
+                                                if exp is not None:
+                                                    lp.data[idx][exp_id_col] = exp_list.index(exp) + 1
+                                                    lp.data[idx][exp_name_col] = exp[1]
+                                                    lp.data[idx][sample_id_col] = exp[2]
+                                                    lp.data[idx][sample_label_col] = exp[3]
+                                                    lp.data[idx][sample_state_col] = exp[4]
+                                                    reserved_names.append(exp[1])
 
                                 except KeyError:
                                     items = ['Experiment_ID', 'Experiment_name', 'Sample_ID', 'Sample_label', 'Sample_state',
@@ -1566,9 +1582,17 @@ class BMRBAnnTasks:
                                         lp.add_data(row)
                                     cur_id += 1
 
-                    if is_single_sample_loop:
+                    dat = lp.get_tag(tags)
 
-                        dat = lp.get_tag(tags)
+                    for idx, row in enumerate(dat):
+                        if row[1] == 'H2O':
+                            if row[2] != 'natural abundance':
+                                lp.data[idx][isotopic_labeling_col] = 'natural abundance'
+                        elif row[1] == 'D2O':
+                            if not row[2].endswith('2H]'):
+                                lp.data[idx][isotopic_labeling_col] = '[U-2H]'
+
+                    if is_single_sample_loop:
 
                         for row in dat:
                             if row[5] in emptyValue:

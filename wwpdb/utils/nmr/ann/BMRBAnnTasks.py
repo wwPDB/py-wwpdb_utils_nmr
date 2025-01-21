@@ -374,210 +374,215 @@ class BMRBAnnTasks:
 
                                     sf.add_loop(lp)
 
-                lp_category = '_Atom_chem_shift'
+                try:
 
-                lp = sf.get_loop(lp_category)
+                    lp_category = '_Atom_chem_shift'
 
-                if self.__report.getInputSourceIdOfCoord() < 0 and 'Index_ID' in lp.tags:
-                    idx_col = lp.tags.index('Index_ID')
-                    for idx, row in enumerate(lp.data, start=1):
-                        row[idx_col] = idx
+                    lp = sf.get_loop(lp_category)
 
-                tags = ['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Auth_seq_ID']
+                    if self.__report.getInputSourceIdOfCoord() < 0 and 'Index_ID' in lp.tags:
+                        idx_col = lp.tags.index('Index_ID')
+                        for idx, row in enumerate(lp.data, start=1):
+                            row[idx_col] = idx
 
-                if set(tags) & set(lp.tags) == set(tags):
+                    tags = ['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Auth_seq_ID']
 
-                    dat = lp.get_tag(tags)
-
-                    for row in dat:
-                        if isinstance(row[0], str) and row[0] not in emptyValue and row[0].isdigit():
-                            ent_asym_id_with_exptl_data.add(int(row[0]))
-                        if row[1] not in emptyValue and row[2] not in emptyValue and row[3] not in emptyValue:
-                            try:
-                                seq_key = (int(row[1]), int(row[2]))
-                                if seq_key not in label_to_auth_seq:
-                                    label_to_auth_seq[seq_key] = int(row[3])
-                            except ValueError:
-                                continue
-
-                tags = ['Atom_isotope_number', 'Val_err', 'Ambiguity_code', 'Entity_ID']
-
-                if set(tags) & set(lp.tags) == set(tags):
-
-                    dat = lp.get_tag(tags)
-
-                    val_err_col = lp.tags.index('Val_err')
-                    ambig_code_col = lp.tags.index('Ambiguity_code')
-
-                    isotope_nums_in_loop = set()
-                    isotope_nums_with_empty_val_err = set()
-                    isotope_nums_with_zero_val_err = set()
-                    empty_ambig_code = False
-
-                    for idx, row in enumerate(dat):
-                        try:
-                            isotope_number = int(row[0])
-                            isotope_nums[cs_ref_id].add(isotope_number)
-                            isotope_nums_in_loop.add(isotope_number)
-                            if row[1] in emptyValue and isotope_number in ALLOWED_ISOTOPE_NUMBERS:
-                                isotope_nums_with_empty_val_err.add(isotope_number)
-                            if row[1] not in emptyValue:
-                                try:
-                                    val_err = float(row[1])
-                                    if val_err > 0.0:
-                                        pass
-                                    elif val_err == 0.0:
-                                        if len(zero_shift_val_err) == 0:
-                                            zero_shift_val_err = row[1]
-                                        if isotope_number in ALLOWED_ISOTOPE_NUMBERS:
-                                            isotope_nums_with_zero_val_err.add(isotope_number)
-                                    else:
-                                        lp.data[idx][val_err_col] = abs(val_err)
-                                except ValueError:
-                                    pass
-                            if row[2] in emptyValue:
-                                empty_ambig_code = True
-                            if row[3] not in emptyValue:
-                                if isinstance(row[3], str):
-                                    entity_id = int(row[3])
-                                else:
-                                    entity_id = row[3]
-                                if entity_id not in isotope_nums_per_entity:
-                                    isotope_nums_per_entity[entity_id] = set()
-                                isotope_nums_per_entity[entity_id].add(isotope_number)
-                        except (ValueError, TypeError):
-                            continue
-
-                    if len(isotope_nums_with_empty_val_err) > 0:
-
-                        for isotope_number in isotope_nums_with_empty_val_err:
-
-                            if isotope_number in (1, 2, 13, 15, 19, 31):
-                                type_symbol = next(k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if isotope_number in v)
-                                cs_val_err = get_first_sf_tag(sf, f'Chem_shift_{isotope_number}{type_symbol}_err')
-                            else:
-                                continue
-
-                            if len(cs_val_err) == 0 or cs_val_err in emptyValue:
-                                empty_val_err_tag = f'_Assigned_chem_shift_list.Chem_shift_{isotope_number}{type_symbol}_err'
-                                if empty_val_err_tag not in empty_val_err_tags:
-                                    empty_val_err_tags.append(empty_val_err_tag)
-                                continue
-
-                            try:
-                                cs_val_err = abs(float(cs_val_err))
-                                if cs_val_err > CS_UNCERT_MAX:
-                                    continue
-
-                                for idx, row in enumerate(dat):
-                                    try:
-                                        if int(row[0]) != isotope_number:
-                                            continue
-                                        if row[1] in emptyValue:
-                                            lp.data[idx][val_err_col] = cs_val_err
-                                    except (ValueError, TypeError):
-                                        continue
-
-                            except ValueError:
-                                continue
-
-                    if len(isotope_nums_with_zero_val_err) > 0:
-
-                        for isotope_number in isotope_nums_with_zero_val_err:
-
-                            if isotope_number in (1, 2, 13, 15, 19, 31):
-                                type_symbol = next(k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if isotope_number in v)
-                                cs_val_err = get_first_sf_tag(sf, f'Chem_shift_{isotope_number}{type_symbol}_err')
-                            else:
-                                continue
-
-                            if len(cs_val_err) == 0 or cs_val_err in emptyValue:
-                                zero_val_err_tag = f'_Assigned_chem_shift_list.Chem_shift_{isotope_number}{type_symbol}_err'
-                                if zero_val_err_tag not in zero_val_err_tags:
-                                    zero_val_err_tags.append(zero_val_err_tag)
-                                continue
-
-                            try:
-                                cs_val_err = abs(float(cs_val_err))
-                                if cs_val_err > CS_UNCERT_MAX:
-                                    continue
-
-                                for idx, row in enumerate(dat):
-                                    try:
-                                        if int(row[0]) != isotope_number:
-                                            continue
-                                        if row[1] in emptyValue:
-                                            lp.data[idx][val_err_col] = cs_val_err
-                                    except (ValueError, TypeError):
-                                        continue
-
-                            except ValueError:
-                                continue
-
-                    if empty_ambig_code:
-
-                        tags = ['Comp_ID', 'Atom_ID', 'Ambiguity_code', 'Ambiguity_set_ID']
+                    if set(tags) & set(lp.tags) == set(tags):
 
                         dat = lp.get_tag(tags)
 
-                        # wo coordinates (bmrbdep)
-                        if self.__report.getInputSourceIdOfCoord() < 0:
+                        for row in dat:
+                            if isinstance(row[0], str) and row[0] not in emptyValue and row[0].isdigit():
+                                ent_asym_id_with_exptl_data.add(int(row[0]))
+                            if row[1] not in emptyValue and row[2] not in emptyValue and row[3] not in emptyValue:
+                                try:
+                                    seq_key = (int(row[1]), int(row[2]))
+                                    if seq_key not in label_to_auth_seq:
+                                        label_to_auth_seq[seq_key] = int(row[3])
+                                except ValueError:
+                                    continue
 
-                            for idx, row in enumerate(dat):
-                                comp_id = row[0]
-                                atom_id = row[1]
-                                ambig_code = row[2]
-                                ambig_set_id = row[3]
+                    tags = ['Atom_isotope_number', 'Val_err', 'Ambiguity_code', 'Entity_ID']
 
-                                _ambig_code = 1 if self.__sailFlag else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                    if set(tags) & set(lp.tags) == set(tags):
 
-                                checked = _ambig_code != 1
+                        dat = lp.get_tag(tags)
 
-                                if ambig_code in emptyValue or (isinstance(ambig_code, str) and not ambig_code.isdigit()):
-                                    checked = False
+                        val_err_col = lp.tags.index('Val_err')
+                        ambig_code_col = lp.tags.index('Ambiguity_code')
+
+                        isotope_nums_in_loop = set()
+                        isotope_nums_with_empty_val_err = set()
+                        isotope_nums_with_zero_val_err = set()
+                        empty_ambig_code = False
+
+                        for idx, row in enumerate(dat):
+                            try:
+                                isotope_number = int(row[0])
+                                isotope_nums[cs_ref_id].add(isotope_number)
+                                isotope_nums_in_loop.add(isotope_number)
+                                if row[1] in emptyValue and isotope_number in ALLOWED_ISOTOPE_NUMBERS:
+                                    isotope_nums_with_empty_val_err.add(isotope_number)
+                                if row[1] not in emptyValue:
+                                    try:
+                                        val_err = float(row[1])
+                                        if val_err > 0.0:
+                                            pass
+                                        elif val_err == 0.0:
+                                            if len(zero_shift_val_err) == 0:
+                                                zero_shift_val_err = row[1]
+                                            if isotope_number in ALLOWED_ISOTOPE_NUMBERS:
+                                                isotope_nums_with_zero_val_err.add(isotope_number)
+                                        else:
+                                            lp.data[idx][val_err_col] = abs(val_err)
+                                    except ValueError:
+                                        pass
+                                if row[2] in emptyValue:
+                                    empty_ambig_code = True
+                                if row[3] not in emptyValue:
+                                    if isinstance(row[3], str):
+                                        entity_id = int(row[3])
+                                    else:
+                                        entity_id = row[3]
+                                    if entity_id not in isotope_nums_per_entity:
+                                        isotope_nums_per_entity[entity_id] = set()
+                                    isotope_nums_per_entity[entity_id].add(isotope_number)
+                            except (ValueError, TypeError):
+                                continue
+
+                        if len(isotope_nums_with_empty_val_err) > 0:
+
+                            for isotope_number in isotope_nums_with_empty_val_err:
+
+                                if isotope_number in (1, 2, 13, 15, 19, 31):
+                                    type_symbol = next(k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if isotope_number in v)
+                                    cs_val_err = get_first_sf_tag(sf, f'Chem_shift_{isotope_number}{type_symbol}_err')
                                 else:
-                                    ambig_code = int(ambig_code)
-                                    if ambig_code not in ALLOWED_AMBIGUITY_CODES:
+                                    continue
+
+                                if len(cs_val_err) == 0 or cs_val_err in emptyValue:
+                                    empty_val_err_tag = f'_Assigned_chem_shift_list.Chem_shift_{isotope_number}{type_symbol}_err'
+                                    if empty_val_err_tag not in empty_val_err_tags:
+                                        empty_val_err_tags.append(empty_val_err_tag)
+                                    continue
+
+                                try:
+                                    cs_val_err = abs(float(cs_val_err))
+                                    if cs_val_err > CS_UNCERT_MAX:
+                                        continue
+
+                                    for idx, row in enumerate(dat):
+                                        try:
+                                            if int(row[0]) != isotope_number:
+                                                continue
+                                            if row[1] in emptyValue:
+                                                lp.data[idx][val_err_col] = cs_val_err
+                                        except (ValueError, TypeError):
+                                            continue
+
+                                except ValueError:
+                                    continue
+
+                        if len(isotope_nums_with_zero_val_err) > 0:
+
+                            for isotope_number in isotope_nums_with_zero_val_err:
+
+                                if isotope_number in (1, 2, 13, 15, 19, 31):
+                                    type_symbol = next(k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if isotope_number in v)
+                                    cs_val_err = get_first_sf_tag(sf, f'Chem_shift_{isotope_number}{type_symbol}_err')
+                                else:
+                                    continue
+
+                                if len(cs_val_err) == 0 or cs_val_err in emptyValue:
+                                    zero_val_err_tag = f'_Assigned_chem_shift_list.Chem_shift_{isotope_number}{type_symbol}_err'
+                                    if zero_val_err_tag not in zero_val_err_tags:
+                                        zero_val_err_tags.append(zero_val_err_tag)
+                                    continue
+
+                                try:
+                                    cs_val_err = abs(float(cs_val_err))
+                                    if cs_val_err > CS_UNCERT_MAX:
+                                        continue
+
+                                    for idx, row in enumerate(dat):
+                                        try:
+                                            if int(row[0]) != isotope_number:
+                                                continue
+                                            if row[1] in emptyValue:
+                                                lp.data[idx][val_err_col] = cs_val_err
+                                        except (ValueError, TypeError):
+                                            continue
+
+                                except ValueError:
+                                    continue
+
+                        if empty_ambig_code:
+
+                            tags = ['Comp_ID', 'Atom_ID', 'Ambiguity_code', 'Ambiguity_set_ID']
+
+                            dat = lp.get_tag(tags)
+
+                            # wo coordinates (bmrbdep)
+                            if self.__report.getInputSourceIdOfCoord() < 0:
+
+                                for idx, row in enumerate(dat):
+                                    comp_id = row[0]
+                                    atom_id = row[1]
+                                    ambig_code = row[2]
+                                    ambig_set_id = row[3]
+
+                                    _ambig_code = 1 if self.__sailFlag else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+
+                                    checked = _ambig_code != 1
+
+                                    if ambig_code in emptyValue or (isinstance(ambig_code, str) and not ambig_code.isdigit()):
                                         checked = False
                                     else:
-                                        if _ambig_code == 0:
-                                            pass
-                                        elif {ambig_code, _ambig_code} == {2, 3}:
+                                        ambig_code = int(ambig_code)
+                                        if ambig_code not in ALLOWED_AMBIGUITY_CODES:
                                             checked = False
-                                        elif ambig_code in (4, 5) and ambig_set_id not in emptyValue:
-                                            checked = True
+                                        else:
+                                            if _ambig_code == 0:
+                                                pass
+                                            elif {ambig_code, _ambig_code} == {2, 3}:
+                                                checked = False
+                                            elif ambig_code in (4, 5) and ambig_set_id not in emptyValue:
+                                                checked = True
 
-                                if not checked and _ambig_code > 0:
-                                    lp.data[idx][ambig_code_col] = _ambig_code
+                                    if not checked and _ambig_code > 0:
+                                        lp.data[idx][ambig_code_col] = _ambig_code
 
-                        # with coordinates
-                        else:
+                            # with coordinates
+                            else:
 
-                            for idx, row in enumerate(dat):
-                                comp_id = row[0]
-                                atom_id = row[1]
-                                ambig_code = row[2]
+                                for idx, row in enumerate(dat):
+                                    comp_id = row[0]
+                                    atom_id = row[1]
+                                    ambig_code = row[2]
 
-                                _ambig_code = 1 if self.__sailFlag else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                    _ambig_code = 1 if self.__sailFlag else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
 
-                                checked = _ambig_code != 1
+                                    checked = _ambig_code != 1
 
-                                if ambig_code in emptyValue or (isinstance(ambig_code, str) and not ambig_code.isdigit()):
-                                    pass
-                                else:
-                                    ambig_code = int(ambig_code)
-                                    if ambig_code not in ALLOWED_AMBIGUITY_CODES:
-                                        checked = False
-                                        if _ambig_code != 1:
-                                            _ambig_code = '.'
+                                    if ambig_code in emptyValue or (isinstance(ambig_code, str) and not ambig_code.isdigit()):
+                                        pass
                                     else:
-                                        if _ambig_code == 0:
-                                            pass
-                                        elif {ambig_code, _ambig_code} == {2, 3}:
+                                        ambig_code = int(ambig_code)
+                                        if ambig_code not in ALLOWED_AMBIGUITY_CODES:
                                             checked = False
+                                            if _ambig_code != 1:
+                                                _ambig_code = '.'
+                                        else:
+                                            if _ambig_code == 0:
+                                                pass
+                                            elif {ambig_code, _ambig_code} == {2, 3}:
+                                                checked = False
 
-                                if not checked:
-                                    lp.data[idx][ambig_code_col] = _ambig_code
+                                    if not checked:
+                                        lp.data[idx][ambig_code_col] = _ambig_code
+
+                except KeyError:
+                    pass
 
         # section 12: anomalous chemical shift assignments
 

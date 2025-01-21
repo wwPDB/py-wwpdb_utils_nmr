@@ -46794,18 +46794,18 @@ class NmrDpUtility:
                     cif_chain_id, cif_seq_id = auth_to_label_seq[seq_key]
                     cif_comp_id = comp_id
 
-                elif chain_id in offset:
-
-                    _, seq_key, coord_atom_site_ = get_coord_atom_site_of(cif_chain_id, cif_seq_id + offset[chain_id], comp_id)
-
                 else:
 
-                    seq_key = (cif_chain_id, cif_seq_id)
+                    if chain_id in offset:
+                        _, seq_key, coord_atom_site_ = get_coord_atom_site_of(cif_chain_id, cif_seq_id + offset[chain_id], comp_id)
 
-                    if seq_key in coord_unobs_res:  # DAOTHER-7665
-                        continue
+                    elif seq_key is not None:
+                        seq_key = (cif_chain_id, cif_seq_id)
 
-                    coord_atom_site_ = coord_atom_site.get(seq_key)
+                        if seq_key in coord_unobs_res:  # DAOTHER-7665
+                            continue
+
+                        coord_atom_site_ = coord_atom_site.get(seq_key)
 
                     if file_type == 'nmr-star' and seq_id != alt_seq_id:
 
@@ -46848,6 +46848,7 @@ class NmrDpUtility:
 
                     if auth_asym_id_name in row and auth_seq_id_name in row\
                        and row[auth_asym_id_name] not in emptyValue\
+                       and row[auth_seq_id_name] not in emptyValue\
                        and (isinstance(row[auth_seq_id_name], int) or row[auth_seq_id_name].isdigit()):
                         cif_chain_id = row[auth_asym_id_name]
                         cif_seq_id = row[auth_seq_id_name]

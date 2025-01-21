@@ -46960,7 +46960,11 @@ class NmrDpUtility:
                                     if seq_key in coord_unobs_atom and atom_id_ in coord_unobs_atom[seq_key]['atom_ids']:
                                         coord_issue = True
 
-                            if content_subtype.startswith('spectral_peak'):
+                            _atom_id, _, _ = self.__getAtomIdListWithAmbigCode(comp_id, atom_id_ + '%')
+
+                            if content_subtype.startswith('spectral_peak')\
+                               or (len(_atom_id) > 0 and coord_atom_site_ is not None and _atom_id[0] in coord_atom_site_['atom_id']):
+
                                 self.report.warning.appendDescription('atom_nomenclature_mismatch',
                                                                       {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                        'description': err})

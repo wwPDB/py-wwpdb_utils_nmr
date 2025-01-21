@@ -46782,6 +46782,9 @@ class NmrDpUtility:
                     atom_id_ = atom_id
                     atom_name = atom_id
 
+                if len(auth_to_star_seq) == 0:
+                    continue
+
                 found, seq_key, coord_atom_site_ = get_coord_atom_site_of(cif_chain_id, cif_seq_id, comp_id)
 
                 if found:

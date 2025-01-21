@@ -5841,7 +5841,7 @@ class CnsMRParserListener(ParseTreeListener):
         seqSpecified = True
         if 'seq_not_specified' in _factor:
             seqSpecified = not _factor['seq_not_specified']
-        foundCompId = False
+        foundCompId = prefNpSeqIdRemap = prefNpSeqIdRemapDone = False
 
         chainIds = (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)])
 
@@ -5878,7 +5878,7 @@ class CnsMRParserListener(ParseTreeListener):
                 else:
                     continue
 
-            pref_alt_auth_seq_id = False
+            prefAltAuthSeqId = False
 
             for ps in psList:
 
@@ -5899,10 +5899,13 @@ class CnsMRParserListener(ParseTreeListener):
                             fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
                             if fixedChainId != chainId:
                                 continue
-                        if not isPolySeq and 'np_seq_id_remap' in self.__reasons:
-                            _, seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
-                            if seqId is not None:
-                                _seqId_ = seqId
+                        if 'np_seq_id_remap' in self.__reasons:
+                            if not isPolySeq:
+                                _, seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
+                                if seqId is not None:
+                                    _seqId_ = seqId
+                                else:
+                                    prefNpSeqIdRemap = True
                         elif 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                             fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                             if fixedChainId != chainId:
@@ -5954,12 +5957,12 @@ class CnsMRParserListener(ParseTreeListener):
                                 idx = ps['alt_auth_seq_id'].index(seqId)
                                 seqId = ps['seq_id'][idx]
                                 compId = ps['comp_id'][idx]
-                                pref_alt_auth_seq_id = True
+                                prefAltAuthSeqId = True
                             elif seqId in ps['seq_id']:
                                 idx = ps['seq_id'].index(seqId)
                                 compId = ps['comp_id'][idx]
                                 _seqId_ = ps['auth_seq_id'][idx]
-                        elif pref_alt_auth_seq_id:
+                        elif prefAltAuthSeqId:
                             continue
 
                     if None in (self.__authToInsCode, _compId_) or len(self.__authToInsCode) == 0:
@@ -6429,6 +6432,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                                 if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
                                                     continue
+                                        if prefNpSeqIdRemap and not prefNpSeqIdRemapDone:
+                                            _atomSelection.clear()
+                                            prefNpSeqIdRemapDone = True
                                         _atomSelection.append(selection)
                                 else:
                                     ccdCheck = True

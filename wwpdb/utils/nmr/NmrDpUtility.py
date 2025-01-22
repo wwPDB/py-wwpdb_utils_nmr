@@ -46797,10 +46797,16 @@ class NmrDpUtility:
                     cif_chain_id, cif_seq_id = auth_to_label_seq[seq_key]
                     cif_comp_id = comp_id
 
+                    if seq_key in coord_unobs_res:  # DAOTHER-7665
+                        continue
+
                 else:
 
                     if chain_id in offset:
                         _, seq_key, coord_atom_site_ = get_coord_atom_site_of(cif_chain_id, cif_seq_id + offset[chain_id], comp_id)
+
+                        if seq_key is not None and seq_key in coord_unobs_res:
+                            continue
 
                     elif seq_key is not None:
                         seq_key = (cif_chain_id, cif_seq_id)
@@ -46809,6 +46815,20 @@ class NmrDpUtility:
                             continue
 
                         coord_atom_site_ = coord_atom_site.get(seq_key)
+
+                    else:
+
+                        for _offset in range(1, 10):
+                            if (cif_chain_id, cif_seq_id + _offset) in label_to_auth_seq:
+                                _, _cif_seq_id = label_to_auth_seq[(cif_chain_id, cif_seq_id + _offset)]
+                                if (cif_chain_id, _cif_seq_id) in auth_to_label_seq:
+                                    cif_seq_id = _cif_seq_id - _offset
+
+                                    seq_key = (cif_chain_id, cif_seq_id)
+                                    break
+
+                        if seq_key is not None and seq_key in coord_unobs_res:  # DAOTHER-7665
+                            continue
 
                     if file_type == 'nmr-star' and seq_id != alt_seq_id:
 

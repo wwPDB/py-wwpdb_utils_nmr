@@ -2699,6 +2699,9 @@ class BMRBAnnTasks:
                 if get_first_sf_tag(sf, 'Name') in emptyValue:
                     has_eff_sf_tag = False
 
+            if len(get_first_sf_tag(sf, 'Sf_framecode')) == 0:
+                has_eff_sf_tag = False
+
             entry_info_sf = sf.category == 'entry_information'
 
             list_id_tag = alt_list_id_tag = None
@@ -2742,8 +2745,28 @@ class BMRBAnnTasks:
 
                     if 'Name' in lp.tags:
                         if row[lp.tags.index('Name')] in emptyValue:
-                            empty_row_idx.append(idx)
-                            continue
+                            if lp.category != '_NMR_spectrometer_view':
+                                empty_row_idx.append(idx)
+                                continue
+
+                            try:
+                                vendor = row[lp.tags.index('Manufacturer')]
+                                model = row[lp.tags.index('Model')]
+                                field = row[lp.tags.index('Field_strength')]
+                                if vendor in emptyValue\
+                                   or model in emptyValue\
+                                   or field in emptyValue:
+                                    empty_row_idx.append(idx)
+                                    continue
+                            except ValueError:
+                                empty_row_idx.append(idx)
+                                continue
+
+                            for parent_sf in master_entry.get_saveframes_by_tag_and_value('_NMR_spectrometer.Manufacturer', vendor):
+                                if get_first_sf_tag(parent_sf, 'Model') == model\
+                                   and get_first_sf_tag(parent_sf, 'Field_strength', field) == field:
+                                    row[lp.tags.index('Name')] = get_first_sf_tag(parent_sf, 'Sf_framecode')
+                                    break
 
                     if lp.category == '_Assembly_db_link':
                         if 'Accession_code' in lp.tags and row[lp.tags.index('Accession_code')] in emptyValue:

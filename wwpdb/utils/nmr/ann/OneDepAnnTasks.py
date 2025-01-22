@@ -1345,7 +1345,7 @@ class OneDepAnnTasks:
                                     sf_framecode = None
                                     if sf_framecode_map is not None and sf_framecode_map[1] in row:
                                         sf_framecode = row[sf_framecode_map[1]]
-                                    if ' ' in sf_framecode or sf_framecode in emptyValue or sf_framecode.isdigit() or sf_framecode in sf_framecodes:
+                                    if sf_framecode in emptyValue or sf_framecode.isdigit() or sf_framecode in sf_framecodes or ' ' in sf_framecode:
                                         sf_framecode = f'{sf_category}_{list_id_dict[list_id]}'
                                     sf_framecodes.append(sf_framecode)
                                     if sf is None:

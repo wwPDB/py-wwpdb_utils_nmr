@@ -245,6 +245,7 @@ class BMRBAnnTasks:
                                                 if str(_list_id) == list_id:
                                                     set_sf_tag(parent_sf, 'Sf_framecode', sf_framecode)
                                                     set_sf_tag(parent_sf, 'ID', list_id)
+                                                    set_sf_tag(parent_sf, 'Name', _sf_framecode)
                                 else:
                                     list_id = row[id_col]
                                     if isinstance(list_id, int):
@@ -1071,7 +1072,7 @@ class BMRBAnnTasks:
             for spectrometer_id, spectrometer in spectrometer_dict.items():
 
                 sf_framecode = spectrometer['label']
-                if ' ' in sf_framecode:
+                if sf_framecode not in emptyValue and ' ' in sf_framecode:
                     sf_framecode = f'NMR_spectrometer_{spectrometer_id}'
 
                 sf = next((sf for sf in master_entry.frame_list if sf.category == 'NMR_spectrometer' and sf.name == sf_framecode), None)

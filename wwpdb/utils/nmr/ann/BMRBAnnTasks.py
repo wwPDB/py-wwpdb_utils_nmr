@@ -232,9 +232,11 @@ class BMRBAnnTasks:
                                 if row[id_col] in emptyValue:
                                     _sf_framecode = row[label_col].lstrip('$')
                                     sf_framecode = _sf_framecode.replace(' ', '_')
-                                    for parent_sf in master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.Sf_framecode', sf_framecode):
+                                    try:
+                                        parent_sf = master_entry.get_saveframe_by_name(sf_framecode)
                                         list_id = get_first_sf_tag(parent_sf, 'ID')
-                                        break
+                                    except KeyError:
+                                        pass
                                     if list_id in emptyValue and sf_framecode.split('_')[-1].isdigit():
                                         list_id = sf_framecode.split('_')[-1]
                                         if _sf_framecode != sf_framecode:
@@ -1068,12 +1070,16 @@ class BMRBAnnTasks:
 
             for spectrometer_id, spectrometer in spectrometer_dict.items():
 
-                sf = next((sf for sf in master_entry.frame_list if sf.category == 'NMR_spectrometer' and sf.name == spectrometer['label']), None)
+                sf_framecode = spectrometer['label']
+                if ' ' in sf_framecode:
+                    sf_framecode = f'NMR_spectrometer_{spectrometer_id}'
+
+                sf = next((sf for sf in master_entry.frame_list if sf.category == 'NMR_spectrometer' and sf.name == sf_framecode), None)
 
                 if sf is None:
-                    sf = pynmrstar.Saveframe.from_scratch(spectrometer['label'], '_NMR_spectrometer')
+                    sf = pynmrstar.Saveframe.from_scratch(sf_framecode, '_NMR_spectrometer')
                     sf.add_tag('Sf_category', 'NMR_spectrometer')
-                    sf.add_tag('Sf_framecode', spectrometer['label'])
+                    sf.add_tag('Sf_framecode', sf_framecode)
                     sf.add_tag('Entry_ID', self.__entryId)
                     sf.add_tag('ID', spectrometer_id)
                     sf.add_tag('Name', spectrometer['label'])

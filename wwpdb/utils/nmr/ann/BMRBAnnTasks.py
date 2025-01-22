@@ -207,6 +207,61 @@ class BMRBAnnTasks:
             except KeyError:
                 pass
 
+        sf_category = 'experiment_list'
+
+        if sf_category in self.__sfCategoryList:
+            for sf in master_entry.get_saveframes_by_category(sf_category):
+
+                lp_category = '_Experiment'
+
+                try:
+
+                    lp = sf.get_loop(lp_category)
+
+                    tags = ['Sample_ID', 'Sample_label',
+                            'Sample_condition_list_ID', 'Sample_condition_list_label',
+                            'NMR_spectrometer_ID', 'NMR_spectrometer_label']
+
+                    if set(tags) & set(lp.tags) == set(tags):
+                        exp_list = lp.get_tag(tags)
+
+                        def sync_exp_lp_and_sf(row, idx, id_col, label_col, parent_sf_tag_prefix):
+                            if (row[id_col] in emptyValue and row[label_col] not in emptyValue)\
+                               or (row[id_col] not in emptyValue and row[label_col] in emptyValue):
+                                list_id = sf_framecode = None
+                                if row[id_col] in emptyValue:
+                                    _sf_framecode = row[label_col].lstrip('$')
+                                    sf_framecode = _sf_framecode.replace(' ', '_')
+                                    for parent_sf in master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.Sf_framecode', sf_framecode):
+                                        list_id = get_first_sf_tag(parent_sf, 'ID')
+                                        break
+                                    if list_id in emptyValue and sf_framecode.split('_')[-1].isdigit():
+                                        list_id = sf_framecode.split('_')[-1]
+                                        if _sf_framecode != sf_framecode:
+                                            sf_framecode = f'{parent_sf_tag_prefix[1:]}_{list_id}'
+                                            for _list_id, parent_sf in enumerate(master_entry.get_saveframes_by_category(parent_sf_tag_prefix[1:]), start=1):
+                                                if str(_list_id) == list_id:
+                                                    set_sf_tag(parent_sf, 'Sf_framecode', sf_framecode)
+                                                    set_sf_tag(parent_sf, 'ID', list_id)
+                                else:
+                                    list_id = row[id_col]
+                                    if isinstance(list_id, int):
+                                        list_id = str(list_id)
+                                    for parent_sf in master_entry.get_saveframes_by_tag_and_value(f'{parent_sf_tag_prefix}.ID', list_id):
+                                        sf_framecode = get_first_sf_tag(parent_sf, 'Sf_framecode').replace(' ', '_')
+                                        break
+                                if None not in (list_id, sf_framecode):
+                                    lp.data[idx][lp.tags.index(tags[id_col])] = list_id
+                                    lp.data[idx][lp.tags.index(tags[label_col])] = f'${sf_framecode}'
+
+                        for idx, row in enumerate(exp_list):
+                            sync_exp_lp_and_sf(row, idx, 0, 1, '_Sample')
+                            sync_exp_lp_and_sf(row, idx, 2, 3, '_Sample_condition_list')
+                            sync_exp_lp_and_sf(row, idx, 4, 5, '_NMR_spectrometer')
+
+                except KeyError:
+                    pass
+
         # section 11: assigned chemical shifts
 
         isotope_nums, cs_ref_sf_framecode, smpl_cond_sf_framecode, isotope_nums_per_entity = {}, {}, {}, {}
@@ -2715,6 +2770,10 @@ class BMRBAnnTasks:
             for lp in sf.loops:
 
                 if entry_info_sf and lp.category == '_Release':
+                    continue
+
+                if lp.category.startswith('_PDBX_'):
+                    empty_loops.append(lp)
                     continue
 
                 entry_id_col = lp.tags.index('Entry_ID') if 'Entry_ID' in lp.tags else -1

@@ -2701,9 +2701,9 @@ class BMRBAnnTasks:
 
             entry_info_sf = sf.category == 'entry_information'
 
+            list_id_tag = alt_list_id_tag = None
             if not entry_info_sf:
                 list_id_tag = f'{sf.tag_prefix[1:]}_ID'
-                alt_list_id_tag = None
                 if sf.tag_prefix.endswith('_list'):
                     alt_list_id_tag = f'{sf.tag_prefix[1:-5]}_ID'
 

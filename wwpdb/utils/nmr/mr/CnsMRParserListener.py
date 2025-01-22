@@ -5647,7 +5647,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         if 'alt_chain_id' in _factor:
             for _atom in atomSelection:
-                self.updateSegmentIdDict(_factor, _atom['chain_id'], valid)
+                self.updateSegmentIdDict(_factor, _atom['chain_id'], _atom['is_poly'], valid)
 
         if 'atom_selection' not in _factor:
             _factor['atom_selection'] = atomSelection
@@ -5690,7 +5690,7 @@ class CnsMRParserListener(ParseTreeListener):
                                             f"The {clauseName} has no effect for a factor {__factor}.")
                             if 'alt_chain_id' in _factor:  # 2mnz
                                 for chainId in _factor['chain_id']:
-                                    self.updateSegmentIdDict(_factor, chainId, False)
+                                    self.updateSegmentIdDict(_factor, chainId, None, False)
                             if foundCompId and len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
                                 compIds = guessCompIdFromAtomId(_factor['atom_id'], self.__polySeq, self.__nefT)
                                 if compIds is not None:
@@ -5841,7 +5841,15 @@ class CnsMRParserListener(ParseTreeListener):
         seqSpecified = True
         if 'seq_not_specified' in _factor:
             seqSpecified = not _factor['seq_not_specified']
-        foundCompId = prefNpSeqIdRemap = prefNpSeqIdRemapDone = False
+        foundCompId = False
+
+        if self.__reasons is not None and 'segment_id_poly_type_stats' in self.__reasons\
+           and 'segment_id' in _factor and _factor['segment_id'] in self.__reasons['segment_id_poly_type_stats']:
+            stats = self.__reasons['segment_id_poly_type_stats'][_factor['segment_id']]
+            if isPolySeq and stats['polymer'] < stats['non-poly']:
+                return False
+            if not isPolySeq and stats['polymer'] >= stats['non-poly']:
+                return False
 
         chainIds = (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)])
 
@@ -5904,8 +5912,6 @@ class CnsMRParserListener(ParseTreeListener):
                                 _, seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
                                 if seqId is not None:
                                     _seqId_ = seqId
-                                else:
-                                    prefNpSeqIdRemap = True
                         elif 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                             fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                             if fixedChainId != chainId:
@@ -6424,7 +6430,7 @@ class CnsMRParserListener(ParseTreeListener):
                                     _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, ccU=self.__ccU) for _compId in _factor['comp_id']]
                                     if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
                                        and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
-                                        selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId}
+                                        selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId, 'is_poly': isPolySeq}
                                         if len(self.__cur_auth_atom_id) > 0:
                                             selection['auth_atom_id'] = self.__cur_auth_atom_id
                                         if not atomSpecified or not seqSpecified:
@@ -6432,9 +6438,6 @@ class CnsMRParserListener(ParseTreeListener):
                                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                                 if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
                                                     continue
-                                        if prefNpSeqIdRemap and not prefNpSeqIdRemapDone:
-                                            _atomSelection.clear()
-                                            prefNpSeqIdRemapDone = True
                                         _atomSelection.append(selection)
                                 else:
                                     ccdCheck = True
@@ -6470,7 +6473,7 @@ class CnsMRParserListener(ParseTreeListener):
                                     if cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y' and (not atomSpecified or not seqSpecified):
                                         continue
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
-                                        selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId}
+                                        selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId, 'is_poly': isPolySeq}
                                         if len(self.__cur_auth_atom_id) > 0:
                                             selection['auth_atom_id'] = self.__cur_auth_atom_id
                                         if _atomId.startswith('HOP') and isinstance(origAtomId, str) and '*' in origAtomId:
@@ -6855,7 +6858,7 @@ class CnsMRParserListener(ParseTreeListener):
                 chainId = _chainId
         return chainId
 
-    def updateSegmentIdDict(self, factor: dict, chainId: str, valid: bool):
+    def updateSegmentIdDict(self, factor: dict, chainId: str, isPolymer: Optional[bool], valid: bool):
         if self.__reasons is not None or 'alt_chain_id' not in factor\
            or len(self.reasonsForReParsing) == 0 or 'segment_id_mismatch' not in self.reasonsForReParsing:
             return
@@ -6864,14 +6867,28 @@ class CnsMRParserListener(ParseTreeListener):
             return
         if chainId not in self.reasonsForReParsing['segment_id_match_stats'][altChainId]:
             self.reasonsForReParsing['segment_id_match_stats'][altChainId][chainId] = 0
+            self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['polymer'] = 0
+            self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['non-polymer'] = 0
         if valid or chainId not in self.__failure_chain_ids:
             self.reasonsForReParsing['segment_id_match_stats'][altChainId][chainId] += 1
+            if isPolymer is not None:
+                if isPolymer:
+                    self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['polymer'] += 1
+                else:
+                    self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['non-poly'] += 1
         else:
             for _chainId in factor['chain_id']:
                 if _chainId in self.__failure_chain_ids:
                     if _chainId not in self.reasonsForReParsing['segment_id_match_stats'][altChainId]:
                         self.reasonsForReParsing['segment_id_match_stats'][altChainId][_chainId] = 0
+                        self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['polymer'] = 0
+                        self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['non-poly'] = 0
                     self.reasonsForReParsing['segment_id_match_stats'][altChainId][_chainId] -= 1
+                    if isPolymer is not None:
+                        if isPolymer:
+                            self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['polymer'] -= 1
+                        else:
+                            self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['non-poly'] -= 1
         stats = self.reasonsForReParsing['segment_id_match_stats'][altChainId]
         _chainId = max(stats, key=lambda key: stats[key])[0]
         self.reasonsForReParsing['segment_id_mismatch'][altChainId] = _chainId
@@ -7439,9 +7456,11 @@ class CnsMRParserListener(ParseTreeListener):
                         if 'segment_id_mismatch' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['segment_id_mismatch'] = {}
                             self.reasonsForReParsing['segment_id_match_stats'] = {}
+                            self.reasonsForReParsing['segment_id_poly_type_stats'] = {}
                         if chainId not in self.reasonsForReParsing['segment_id_mismatch']:
                             self.reasonsForReParsing['segment_id_mismatch'][chainId] = None
                             self.reasonsForReParsing['segment_id_match_stats'][chainId] = {}
+                            self.reasonsForReParsing['segment_id_poly_type_stats'][chainId] = {'polymer': 0, 'non-poly': 0}
                         self.factor['alt_chain_id'] = chainId
 
                 if ctx.Integer(0):
@@ -8806,6 +8825,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 _chainId = np['auth_chain_id']
                                 if _chainId == self.getRealChainId(chainId) and _chainId not in self.factor['chain_id']:
                                     self.factor['chain_id'].append(_chainId)
+                        self.factor['segment_id'] = chainId
                     if ctx.Simple_names(0):
                         chainId = str(ctx.Simple_names(0))
                         _chainId = toRegEx(chainId)
@@ -8822,12 +8842,14 @@ class CnsMRParserListener(ParseTreeListener):
                             val = self.evaluate[symbol_name]
                             if isinstance(val, list):
                                 self.factor['chain_id'] = val
+                                self.factor['segment_id'] = val
                             else:
                                 self.factor['chain_id'] = [val]
                         elif symbol_name in self.evaluateFor:
                             val = self.evaluateFor[symbol_name]
                             if isinstance(val, list):
                                 self.factor['chain_id'] = val
+                                self.factor['segment_id'] = val
                             else:
                                 self.factor['chain_id'] = [val]
                         else:
@@ -8854,9 +8876,11 @@ class CnsMRParserListener(ParseTreeListener):
                             if 'segment_id_mismatch' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['segment_id_mismatch'] = {}
                                 self.reasonsForReParsing['segment_id_match_stats'] = {}
+                                self.reasonsForReParsing['segment_id_poly_type_stats'] = {}
                             if chainId not in self.reasonsForReParsing['segment_id_mismatch']:
                                 self.reasonsForReParsing['segment_id_mismatch'][chainId] = None
                                 self.reasonsForReParsing['segment_id_match_stats'][chainId] = {}
+                                self.reasonsForReParsing['segment_id_poly_type_stats'][chainId] = {'polymer': 0, 'non-poly': 0}
                             self.factor['alt_chain_id'] = chainId
 
                 if eval_factor and 'atom_selection' in self.factor:

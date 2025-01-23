@@ -115,12 +115,12 @@ class mmCIFUtil:
                 self.__lfh.write(f"+{self.__class_name__} ++ Error  - Read {self.__filePath} failed {str(e)}\n")
 
     def GetBlockIDList(self) -> List[str]:
-        """ Return list of blockID.
+        """ Return list of datablock name.
         """
 
         return self.__blockNameList
 
-    def GetValueAndItemByBlock(self, blockName: str, catName: str, ext: int = 1) -> Tuple[List[dict], List[str]]:
+    def GetValueAndItem(self, blockName: str, catName: str, ext: int = 1) -> Tuple[List[dict], List[str]]:
         """ Get category values and item names.
         """
 
@@ -153,7 +153,7 @@ class mmCIFUtil:
         """ Get category values in a given datablock and category.
         """
 
-        return self.GetValueAndItemByBlock(blockName, catName, ext)[0]
+        return self.GetValueAndItem(blockName, catName, ext)[0]
 
     def GetSingleValue(self, blockName: str, catName: str, itemName: str, ext: int) -> Any:
         """ Get the first value of a given datablock, category, and item.
@@ -413,16 +413,16 @@ class mmCIFUtil:
 
         return catObj.getRowList()
 
-    def GetDictList(self, blockName: str, catName: str, ext: int = 1) -> dict:
-        """ Get a list of dictionary of a given datablock and category.
+    def GetCategoryDict(self, blockName: str, catName: str, ext: int = 1) -> dict:
+        """ Get a dictionary of a given datablock and category.
         """
 
-        dList, iList = self.GetValueAndItemByBlock(blockName, catName, ext)
+        dList, iList = self.GetValueAndItem(blockName, catName, ext)
         data = [[x.get(y) for y in iList] for x in dList]
 
         return {catName: {"Items": iList, "Values": data}}
 
-    def GetDataBlock(self, blockName: str, ext: int = 1) -> dict:
+    def GetDataBlockDict(self, blockName: str, ext: int = 1) -> dict:
         """ Get a dictionary of a given datablock.
         """
 
@@ -433,6 +433,6 @@ class mmCIFUtil:
 
         data = {}
         for catName in categories[blockName]:
-            data.update(self.GetDictList(blockName, catName, ext))
+            data.update(self.GetCategoryDict(blockName, catName, ext))
 
         return data

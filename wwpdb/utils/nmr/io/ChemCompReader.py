@@ -21,7 +21,9 @@ import sys
 import os
 import re
 
+from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
+
 from typing import IO, List, Optional
 
 try:
@@ -247,7 +249,7 @@ class ChemCompReader:
                 self.__lfh.write(f"+{self.__class_name__}.__getComp() ++ Error  - {str(e)}\n")
             return False
 
-    def __getDataBlock(self, blockId: Optional[str] = None):
+    def __getDataBlock(self, blockId: Optional[str] = None) -> Optional[DataContainer]:
         """ Worker method to read CCD CIF file and set the target datablock.
             @return: the first datablock if no blockId is provided
         """
@@ -281,7 +283,7 @@ class ChemCompReader:
 
         return None
 
-    def __setDataBlock(self, dataBlock) -> bool:
+    def __setDataBlock(self, dataBlock: Optional[DataContainer]) -> bool:
         """ Assigns the input datablock as the active internal datablock.
         """
 

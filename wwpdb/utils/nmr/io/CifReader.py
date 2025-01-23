@@ -56,9 +56,11 @@ import inspect
 import pickle
 
 import numpy as np
+
 from operator import itemgetter
 from typing import IO, List, Tuple, Optional
 
+from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
 
 from sklearn.cluster import DBSCAN
@@ -326,7 +328,7 @@ class CifReader:
                 self.__lfh.write(f"+{self.__class_name__} ++ Error  - Parse {self.__filePath} failed {str(e)}\n")
             return False
 
-    def __getDataBlockFromFile(self, blockId: Optional[str] = None):
+    def __getDataBlockFromFile(self, blockId: Optional[str] = None) -> Optional[DataContainer]:
         """ Worker method to read CIF file and set the target datablock.
             If no blockId is provided return the first datablock.
             @return: target datablock
@@ -373,7 +375,7 @@ class CifReader:
 
         return None
 
-    def __setDataBlock(self, dataBlock: Optional[str] = None) -> bool:
+    def __setDataBlock(self, dataBlock: Optional[DataContainer] = None) -> bool:
         """ Assigns the input datablock as the active internal datablock.
             @return: True for success or False otherwise
         """
@@ -418,7 +420,7 @@ class CifReader:
 
         return self.__dBlockList
 
-    def getDataBlock(self, blockId: Optional[str] = None):
+    def getDataBlock(self, blockId: Optional[str] = None) -> Optional[DataContainer]:
         """ Return target datablock.
             Return None in case current blockId does not exist or no blockId does not match.
             @return: target datablock

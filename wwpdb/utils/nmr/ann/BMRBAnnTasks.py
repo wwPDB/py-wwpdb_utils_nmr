@@ -245,7 +245,9 @@ class BMRBAnnTasks:
                                                 if str(_list_id) == list_id:
                                                     set_sf_tag(parent_sf, 'Sf_framecode', sf_framecode)
                                                     set_sf_tag(parent_sf, 'ID', list_id)
-                                                    set_sf_tag(parent_sf, 'Name', _sf_framecode)
+                                                    name = get_first_sf_tag(parent_sf, 'Name')
+                                                    if len(name) == 0:
+                                                        set_sf_tag(parent_sf, 'Name', _sf_framecode)
                                 else:
                                     list_id = row[id_col]
                                     if isinstance(list_id, int):

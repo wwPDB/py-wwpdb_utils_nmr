@@ -1342,9 +1342,11 @@ class OneDepAnnTasks:
                             for row in rows:
 
                                 if sf_id_map is None or (sf_id_map[1] in row and row[sf_id_map[1]] == str(list_id)):
-                                    sf_framecode = None
+                                    sf_name = sf_framecode = None
                                     if sf_framecode_map is not None and sf_framecode_map[1] in row:
-                                        sf_framecode = row[sf_framecode_map[1]]
+                                        sf_name = sf_framecode = row[sf_framecode_map[1]]
+                                        if sf_name is not None and sf_name.isdigit():
+                                            sf_name = '?'
                                     if sf_framecode in emptyValue or sf_framecode.isdigit() or sf_framecode in sf_framecodes or ' ' in sf_framecode:
                                         sf_framecode = f'{sf_category}_{list_id_dict[list_id]}'
                                     sf_framecodes.append(sf_framecode)
@@ -1355,6 +1357,8 @@ class OneDepAnnTasks:
                                             sf.add_tag('Sf_framecode', sf_framecode)
                                             sf.add_tag('Sf_category', sf_category)
                                             sf.add_tag('ID', str(list_id))
+                                            if sf_name is not None and sf_name != sf_framecode:
+                                                sf.add_tag('Name', sf_name)
 
                                         else:
 
@@ -1384,6 +1388,8 @@ class OneDepAnnTasks:
                                                         sf.add_tag('Sf_framecode', sf_framecode)
                                                         sf.add_tag('Sf_category', sf_category)
                                                         sf.add_tag('ID', str(list_id))
+                                                        if sf_name is not None and sf_name != sf_framecode:
+                                                            sf.add_tag('Name', sf_name)
                                                         reset = True
 
                                         set_sf_tag(sf, 'Entry_ID', self.__entryId)

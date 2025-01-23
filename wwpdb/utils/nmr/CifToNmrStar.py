@@ -761,7 +761,7 @@ class CifToNmrStar:
 
         return modified
 
-    def set_local_sf_id(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], listId: int):
+    def set_local_sf_id(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], listId: Union[int, str]):
         """ Set list ID for a given saveframe or loop.
         """
 
@@ -950,10 +950,12 @@ class CifToNmrStar:
 
             has_list_id = any(tag[0] == 'ID' for tag in sf.tags)
 
-            if has_list_id:
-                list_id = next(tag[1] for tag in sf.tags if tag[0] == 'ID')
-                if list_id in emptyValue:
-                    self.set_local_sf_id(sf, list_id_dict[sf.category])
+            if has_list_id and sf.category != 'entry_information':
+                list_id_tag = 'ID' if sf.category != 'chem_comp' else 'PDB_code'
+                list_id = next(tag[1] for tag in sf.tags if tag[0] == list_id_tag)
+                if list_id not in emptyValue:
+                    self.set_local_sf_id(sf, list_id_dict[sf.category]
+                                         if isinstance(list_id, int) or list_id.isdigit() else list_id)
 
             has_eff_sf_tag = any(tag[1] not in emptyValue for tag in sf.tags
                                  if tag[0] not in ('Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID'))

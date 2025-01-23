@@ -3398,6 +3398,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                        isPolySeq=False, isChainSpecified=False,
                                                        altPolySeq=self.__nonPolySeq, resolved=foundCompId)
 
+        if 'segment_id' in _factor:
+            del _factor['segment_id']
         if 'atom_ids' in _factor:
             del _factor['atom_ids']
         if 'atom_not_specified' in _factor:

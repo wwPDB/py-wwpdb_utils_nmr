@@ -289,7 +289,8 @@ class CifToNmrStar:
             ofh.write(schema.version)
         self.__lfh.write(f"version: {schema.version}\n")
 
-    def convert(self, cifPath: Optional[str] = None, strPath: Optional[str] = None, datablockName: Optional[str] = None, maxRepeat: int = 1) -> bool:
+    def convert(self, cifPath: Optional[str] = None, strPath: Optional[str] = None, datablockName: Optional[str] = None, maxRepeat: int = 1
+                ) -> bool:
         """ Convert CIF formatted NMR data file to normalized NMR-STAR file.
         """
 
@@ -627,9 +628,11 @@ class CifToNmrStar:
 
             return False
 
-    def set_entry_id(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], entryId: str):
+    def set_entry_id(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], entryId: str
+                     ) -> bool:
         """ Set entry ID without changing datablock name.
             @see: pynmrstar.entry
+            @return: whether document is modified
         """
 
         modified = False
@@ -805,7 +808,8 @@ class CifToNmrStar:
                 except KeyError:
                     pass
 
-    def normalize(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]):
+    def normalize(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]
+                  ) -> Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]:
         """ Wrapper function of normalize_str() and normalize_nef().
         """
 
@@ -820,7 +824,8 @@ class CifToNmrStar:
         except (IndexError, AttributeError):
             return strData
 
-    def normalize_str(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]):
+    def normalize_str(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]
+                      ) -> Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]:
         """ Sort saveframes, loops, and tags according to NMR-STAR schema.
             @see: pynmrstar.entry.normalize
         """
@@ -882,7 +887,8 @@ class CifToNmrStar:
 
         return strData
 
-    def normalize_nef(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]):
+    def normalize_nef(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]
+                      ) -> Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]:
         """ Sort saveframes of NEF.
         """
 
@@ -908,5 +914,227 @@ class CifToNmrStar:
             strData.frame_list.sort(key=sf_key)
         except Exception as e:
             self.__lfh.write(f"+{self.__class_name__}.normalize_nef() ++ Error  - {str(e)}\n")
+
+        return strData
+
+    def cleanup(self, strData: pynmrstar.Entry) -> pynmrstar.Entry:
+        """ Wrapper function of cleanup_str() and cleanup_nef().
+        """
+
+        if strData is None:
+            return strData
+
+        try:
+            sf = strData.frame_list[0]
+            if sf.category.startswith('nef'):
+                return self.cleanup_nef(strData)
+            return self.cleanup_str(strData)
+        except (IndexError, AttributeError):
+            return strData
+
+    def cleanup_str(self, strData: pynmrstar.Entry) -> pynmrstar.Entry:
+        """ Remove empty/ineffective saveframes and loops of NMR-STAR.
+        """
+
+        strData.remove_empty_saveframes()
+
+        list_id_dict = {}
+        empty_saveframes = []
+
+        for sf in strData.frame_list:
+
+            if sf.category not in list_id_dict:
+                list_id_dict[sf.category] = 1
+            else:
+                list_id_dict[sf.category] += 1
+
+            has_list_id = any(tag[0] == 'ID' for tag in sf.tags)
+
+            if has_list_id:
+                list_id = next(tag[1] for tag in sf.tags if tag[0] == 'ID')
+                if list_id in emptyValue:
+                    self.set_local_sf_id(sf, list_id_dict[sf.category])
+
+            has_eff_sf_tag = any(tag[1] not in emptyValue for tag in sf.tags
+                                 if tag[0] not in ('Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID'))
+
+            if sf.category == 'NMR_spectrometer_expt':
+                if get_first_sf_tag(sf, 'Name') in emptyValue:
+                    has_eff_sf_tag = False
+
+            if len(get_first_sf_tag(sf, 'Sf_framecode')) == 0:
+                has_eff_sf_tag = False
+
+            entry_info_sf = sf.category == 'entry_information'
+
+            list_id_tag = alt_list_id_tag = None
+            if not entry_info_sf:
+                list_id_tag = f'{sf.tag_prefix[1:]}_ID'
+                if sf.tag_prefix.endswith('_list'):
+                    alt_list_id_tag = f'{sf.tag_prefix[1:-5]}_ID'
+
+            empty_loops = []
+
+            for lp in sf.loops:
+
+                if entry_info_sf and lp.category == '_Release':
+                    continue
+
+                if lp.category.startswith('_PDBX_'):
+                    empty_loops.append(lp)
+                    continue
+
+                entry_id_col = lp.tags.index('Entry_ID') if 'Entry_ID' in lp.tags else -1
+                sf_id_col = lp.tags.index('Sf_ID') if 'Sf_ID' in lp.tags else -1
+                if entry_info_sf:
+                    list_id_col = -1
+                else:
+                    list_id_col = lp.tags.index(list_id_tag) if list_id_tag in lp.tags else -1
+                    if list_id_col == -1 and alt_list_id_tag is not None:
+                        list_id_col = lp.tags.index(alt_list_id_tag) if alt_list_id_tag in lp.tags else -1
+
+                id_tag = None
+                if 'ID' in lp.tags:
+                    id_tag = 'ID'
+                elif 'Ordinal' in lp.tags:
+                    id_tag = 'Ordinal'
+                else:
+                    id_tags = [tag for tag in lp.tags
+                               if tag.endswith('ID') and tag not in ('Sf_ID', 'Entry_ID', list_id_tag, alt_list_id_tag)]
+                    if len(id_tags) == 1:
+                        id_tag = id_tags[0]
+
+                id_col = lp.tags.index(id_tag) if id_tag is not None else -1
+
+                empty_row_idx = []
+
+                for idx, row in enumerate(lp):
+
+                    if 'Name' in lp.tags:
+                        if row[lp.tags.index('Name')] in emptyValue:
+                            if lp.category != '_NMR_spectrometer_view':
+                                empty_row_idx.append(idx)
+                                continue
+
+                            try:
+                                vendor = row[lp.tags.index('Manufacturer')]
+                                model = row[lp.tags.index('Model')]
+                                field = row[lp.tags.index('Field_strength')]
+                                if vendor in emptyValue\
+                                   or model in emptyValue\
+                                   or field in emptyValue:
+                                    empty_row_idx.append(idx)
+                                    continue
+                            except ValueError:
+                                empty_row_idx.append(idx)
+                                continue
+
+                            for parent_sf in strData.get_saveframes_by_tag_and_value('_NMR_spectrometer.Manufacturer', vendor):
+                                if get_first_sf_tag(parent_sf, 'Model') == model\
+                                   and get_first_sf_tag(parent_sf, 'Field_strength', field) == field:
+                                    row[lp.tags.index('Name')] = get_first_sf_tag(parent_sf, 'Sf_framecode')
+                                    break
+
+                    if lp.category == '_Assembly_db_link':
+                        if 'Accession_code' in lp.tags and row[lp.tags.index('Accession_code')] in emptyValue:
+                            empty_row_idx.append(idx)
+                            continue
+
+                    if lp.category == '_Entity_purity':
+                        if 'Val' in lp.tags and row[lp.tags.index('Val')] in emptyValue:
+                            empty_row_idx.append(idx)
+                            continue
+
+                    if any(row[col] not in emptyValue for col in range(len(row))
+                           if col not in (entry_id_col, sf_id_col, list_id_col, id_col)):
+                        continue
+
+                    empty_row_idx.append(idx)
+
+                if len(empty_row_idx) > 0:
+                    for idx in reversed(empty_row_idx):
+                        del lp.data[idx]
+
+                if len(lp) == 0:
+                    empty_loops.append(lp)
+                    continue
+
+                if id_col != -1:
+                    for idx, row in enumerate(lp, start=1):
+                        if row[id_col] in emptyValue:
+                            row[id_col] = idx
+
+            if len(empty_loops) > 0:
+                for lp in empty_loops:
+                    del sf[lp]
+
+            if not has_eff_sf_tag and len(sf.loops) == 0:
+                empty_saveframes.append(sf)
+
+        if len(empty_saveframes) > 0:
+            for sf in empty_saveframes:
+                strData.remove_saveframe(sf)
+
+        return strData
+
+    def cleanup_nef(self, strData: pynmrstar.Entry) -> pynmrstar.Entry:  # pylint: disable=no-self-use
+        """ Remove empty/ineffective saveframes and loops of NEF.
+        """
+
+        strData.remove_empty_saveframes()
+
+        empty_saveframes = []
+
+        for sf in strData.frame_list:
+
+            has_eff_sf_tag = any(tag[1] not in emptyValue for tag in sf.tags
+                                 if tag[0] not in ('sf_category', 'sf_framecode'))
+
+            if len(get_first_sf_tag(sf, 'sf_framecode')) == 0:
+                has_eff_sf_tag = False
+
+            empty_loops = []
+
+            for lp in sf.loops:
+
+                id_tag = None
+                id_tags = [tag for tag in lp.tags if tag.endswith('_id')]
+                if len(id_tags) == 1:
+                    id_tag = id_tags[0]
+
+                id_col = lp.tags.index(id_tag) if id_tag is not None else -1
+
+                empty_row_idx = []
+
+                for idx, row in enumerate(lp):
+
+                    if any(row[col] not in emptyValue for col in range(len(row)) if col != id_col):
+                        continue
+
+                    empty_row_idx.append(idx)
+
+                if len(empty_row_idx) > 0:
+                    for idx in reversed(empty_row_idx):
+                        del lp.data[idx]
+
+                if len(lp) == 0:
+                    empty_loops.append(lp)
+                    continue
+
+                if id_col != -1:
+                    for idx, row in enumerate(lp, start=1):
+                        if row[id_col] in emptyValue:
+                            row[id_col] = idx
+
+            if len(empty_loops) > 0:
+                for lp in empty_loops:
+                    del sf[lp]
+
+            if not has_eff_sf_tag and len(sf.loops) == 0:
+                empty_saveframes.append(sf)
+
+        if len(empty_saveframes) > 0:
+            for sf in empty_saveframes:
+                strData.remove_saveframe(sf)
 
         return strData

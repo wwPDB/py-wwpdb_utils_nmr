@@ -555,7 +555,7 @@ class ChemCompUtil:
 
         return results
 
-    def getEffectiveFormulaWeight(self, compId: str):
+    def getEffectiveFormulaWeight(self, compId: str) -> float:
         """ Return effective formula weight of a given comp_id.
         """
 

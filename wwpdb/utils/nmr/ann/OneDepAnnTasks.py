@@ -150,9 +150,6 @@ class OneDepAnnTasks:
         self.__sfCategoryList = sfCategoryList
         self.__entryId = entryId
 
-        # CifToNmrStar
-        # self.__c2S = CifToNmrStar(log) if c2S is None else c2S
-
         # derived from wwpdb.apps.deposit.depui.constant.REQUIREMENTS
         self.__cifPages = ['nmrsample',
                            'nmrdatacollection',
@@ -1677,10 +1674,6 @@ class OneDepAnnTasks:
                         sf.remove_tag(extra_sf_tags)
 
         retrieve_symbolic_labels(master_entry)
-
-        # BMRBAnnTask class will normalize later
-        # self.__c2S.set_entry_id(master_entry, self.__entryId)
-        # self.__c2S.normalize(master_entry)
 
         return True
 

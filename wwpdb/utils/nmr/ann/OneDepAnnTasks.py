@@ -1689,9 +1689,9 @@ class OneDepAnnTasks:
                     array[idx] = str(val)
             return array
 
-        cif_util = mmCIFUtil(self.__verbose, self.__lfh)
+        cifObj = mmCIFUtil(self.__verbose, self.__lfh)
 
-        cif_util.AddBlock(self.__entryId)
+        cifObj.addDataBlock(self.__entryId)
 
         if not isinstance(master_entry, pynmrstar.Entry):
 
@@ -1704,14 +1704,14 @@ class OneDepAnnTasks:
                     row_list = cR.getRowList(cif_category)
                     if len(row_list) > 0:
                         item_tags = cR.getItemTags(cif_category)
-                        cif_util.AddCategory(self.__entryId, cif_category, item_tags)
-                        cif_util.InsertData(self.__entryId, cif_category, row_list)
+                        cifObj.addCategory(self.__entryId, cif_category, item_tags)
+                        cifObj.appendRowList(self.__entryId, cif_category, row_list)
 
             # DAOTHER-3018, 3848: force to reset 'pdbx_nmr_representative.conformer_id'
-            cif_util.UpdateMultipleRowsValue(self.__entryId, 'pdbx_nmr_representative', 'conformer_id', '?')
+            cifObj.updateMultipleValue(self.__entryId, 'pdbx_nmr_representative', 'conformer_id', '?')
 
             try:
-                cif_util.WriteCif(file_path)
+                cifObj.writeToFile(file_path)
             except Exception:
                 return False
 
@@ -1739,7 +1739,7 @@ class OneDepAnnTasks:
                 if -11 not in sf_map_code:
 
                     if has_uniq_sf_tags:
-                        cif_util.AddCategory(self.__entryId, cif_category, sf_cif_tags)
+                        cifObj.addCategory(self.__entryId, cif_category, sf_cif_tags)
 
                     for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
                         tag_values = [get_first_sf_tag(sf, sf_tag, '?') for sf_tag in sf_tags]
@@ -1748,7 +1748,7 @@ class OneDepAnnTasks:
                             tag_values[sf_tags.index('ID')] = list_id
                         if has_uniq_sf_tags:
                             tag_values = replace_none(tag_values, '?')
-                            cif_util.InsertData(self.__entryId, sf_cif_category, [tag_values])
+                            cifObj.appendRow(self.__entryId, sf_cif_category, tag_values)
 
                         if len(lp_cat_map) > 0:
                             list_id_tag = f'{sf_tag_prefix[1:]}_ID'
@@ -1775,8 +1775,8 @@ class OneDepAnnTasks:
 
                                     if -22 not in lp_map_codes:
 
-                                        if cif_category not in cif_util.GetCategories()[self.__entryId]:
-                                            cif_util.AddCategory(self.__entryId, cif_category, lp_cif_tags)
+                                        if cif_category not in cifObj.getCategoryNameList(self.__entryId):
+                                            cifObj.addCategory(self.__entryId, cif_category, lp_cif_tags)
 
                                         missing_lp_tags = set(lp_tags) - set(lp.tags)
 
@@ -1814,7 +1814,7 @@ class OneDepAnnTasks:
                                                         if _tag_map is not None:
                                                             _row[lp_cif_tags.index(tag_map[1])] = row[lp_tags.index(tag_map[3])]
                                                 _row = replace_none(_row)
-                                                cif_util.InsertData(self.__entryId, cif_category, [_row])
+                                                cifObj.appendRow(self.__entryId, cif_category, _row)
 
                                         else:
                                             _lp_tags = [tag for tag in lp_tags if tag not in missing_lp_tags]
@@ -1854,7 +1854,7 @@ class OneDepAnnTasks:
                                                         if _tag_map is not None:
                                                             _row[lp_cif_tags.index(tag_map[1])] = row[_lp_tags.index(tag_map[3])]
                                                 _row = replace_none(_row)
-                                                cif_util.InsertData(self.__entryId, cif_category, [_row])
+                                                cifObj.appendRow(self.__entryId, cif_category, _row)
 
                                     elif any(cif_item.endswith('range') for cif_item in lp_cif_tags)\
                                             and any(lp_item.endswith('max') for lp_item in lp_tags)\
@@ -1863,8 +1863,8 @@ class OneDepAnnTasks:
                                         lp_cif_tags = sorted(list(set(lp_cif_tags)))
                                         lp_tags = list(set(lp_tags))
 
-                                        if cif_category not in cif_util.GetCategories()[self.__entryId]:
-                                            cif_util.AddCategory(self.__entryId, cif_category, lp_cif_tags)
+                                        if cif_category not in cifObj.getCategoryNameList(self.__entryId):
+                                            cifObj.addCategory(self.__entryId, cif_category, lp_cif_tags)
 
                                         missing_lp_tags = set(lp_tags) - set(lp.tags)
 
@@ -1915,15 +1915,15 @@ class OneDepAnnTasks:
                                                        and row[_lp_tags.index(max_lp_item)] not in emptyValue:
                                                         _row[idx] = f'{row[_lp_tags.index(min_lp_item)]}-{row[_lp_tags.index(max_lp_item)]}'
                                             _row = replace_none(_row)
-                                            cif_util.InsertData(self.__entryId, cif_category, [_row])
+                                            cifObj.appendRow(self.__entryId, cif_category, _row)
 
                                     elif any(lp_item == 'Type' for lp_item in lp_tags) and any(lp_item == 'Val' for lp_item in lp_tags):
 
                                         lp_cif_tags = sorted(list(set(lp_cif_tags)))
                                         lp_tags = list(set(lp_tags))
 
-                                        if cif_category not in cif_util.GetCategories()[self.__entryId]:
-                                            cif_util.AddCategory(self.__entryId, cif_category, lp_cif_tags)
+                                        if cif_category not in cifObj.getCategoryNameList(self.__entryId):
+                                            cifObj.addCategory(self.__entryId, cif_category, lp_cif_tags)
 
                                         missing_lp_tags = set(lp_tags) - set(lp.tags)
 
@@ -1982,7 +1982,7 @@ class OneDepAnnTasks:
                                                 if f'{_type}_units' in lp_cif_tags:
                                                     row[lp_cif_tags.index(f'{_type}_units')] = _val_units
                                         row = replace_none(row)
-                                        cif_util.InsertData(self.__entryId, cif_category, [row])
+                                        cifObj.appendRow(self.__entryId, cif_category, row)
 
                                 else:
 
@@ -2013,8 +2013,8 @@ class OneDepAnnTasks:
                                         continue
 
                                     if len(lp_cif_tags) > 0:
-                                        if cif_category not in cif_util.GetCategories()[self.__entryId]:
-                                            cif_util.AddCategory(self.__entryId, cif_category, lp_cif_tags)
+                                        if cif_category not in cifObj.getCategoryNameList(self.__entryId):
+                                            cifObj.addCategory(self.__entryId, cif_category, lp_cif_tags)
 
                                         row = ['.'] * len(lp_cif_tags)
 
@@ -2095,7 +2095,7 @@ class OneDepAnnTasks:
                                                     break
 
                                         row = replace_none(row)
-                                        cif_util.InsertData(self.__entryId, cif_category, [row])
+                                        cifObj.appendRow(self.__entryId, cif_category, row)
 
                 else:
 
@@ -2104,7 +2104,7 @@ class OneDepAnnTasks:
                         if has_uniq_sf_tags:
 
                             sf_cif_tags = [tag_map[1] for tag_map in sf_tag_maps]
-                            cif_util.AddCategory(self.__entryId, cif_category, sf_cif_tags)
+                            cifObj.addCategory(self.__entryId, cif_category, sf_cif_tags)
 
                             for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
                                 tag_values = [get_first_sf_tag(sf, sf_tag, '?') for sf_tag in sf_tags]
@@ -2114,7 +2114,7 @@ class OneDepAnnTasks:
                                 if sf_tag_prefix == '_Software' and 'Name' in sf_tags:
                                     tag_values[sf_tags.index('Name')] = get_nmr_software(tag_values[sf_tags.index('Name')])
                                 tag_values = replace_none(tag_values, '?')
-                                cif_util.InsertData(self.__entryId, sf_cif_category, [tag_values])
+                                cifObj.appendRow(self.__entryId, sf_cif_category, tag_values)
 
                         continue
 
@@ -2127,7 +2127,7 @@ class OneDepAnnTasks:
                             lp_cif_tags = [tag_map[1] for tag_map in lp_tag_maps]
                             sf_lp_cif_tags.extend(lp_cif_tags)
 
-                    cif_util.AddCategory(self.__entryId, sf_cif_category, sf_lp_cif_tags)
+                    cifObj.addCategory(self.__entryId, sf_cif_category, sf_lp_cif_tags)
 
                     for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
                         tag_values = [get_first_sf_tag(sf, sf_tag, '?') for sf_tag in sf_tags]
@@ -2175,13 +2175,13 @@ class OneDepAnnTasks:
                                     break
 
                         _row = replace_none(_row, '?')
-                        cif_util.InsertData(self.__entryId, sf_cif_category, [_row])
+                        cifObj.appendRow(self.__entryId, sf_cif_category, _row)
 
         # merge categories of model file as secondary source of NMRIF
         if cR is not None:
             existing_categories, target_categories = [], []
 
-            for categories in cif_util.GetCategories():
+            for categories in cifObj.getCategoryNameList(self.__entryId):
                 existing_categories.extend(categories)
 
             for cif_page in self.__cifPages:
@@ -2195,14 +2195,14 @@ class OneDepAnnTasks:
                     if cR.hasCategory(cif_category):
                         row_list = cR.getRowList(cif_category)
                         if len(row_list) > 0:
-                            cif_util.AddCategory(self.__entryId, cif_category, cR.getItemTags(cif_category))
-                            cif_util.InsertData(self.__entryId, cif_category, row_list)
+                            cifObj.addCategory(self.__entryId, cif_category, cR.getItemTags(cif_category))
+                            cifObj.appendRowList(self.__entryId, cif_category, row_list)
 
         # DAOTHER-3018, 3848: force to reset 'pdbx_nmr_representative.conformer_id'
-        cif_util.UpdateMultipleRowsValue(self.__entryId, 'pdbx_nmr_representative', 'conformer_id', '?')
+        cifObj.updateMultipleValue(self.__entryId, 'pdbx_nmr_representative', 'conformer_id', '?')
 
         try:
-            cif_util.WriteCif(file_path)
+            cifObj.writeToFile(file_path)
         except Exception:
             return False
 

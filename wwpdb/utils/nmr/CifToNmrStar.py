@@ -301,7 +301,7 @@ class CifToNmrStar:
 
             cifObj = mmCIFUtil(filePath=cifPath)
 
-            block_name_list = cifObj.GetBlockIDList()
+            block_name_list = cifObj.getBlockIdList()
 
             if len(block_name_list) == 0:  # single loop
                 return False
@@ -329,12 +329,12 @@ class CifToNmrStar:
                 block_name_counter[block_name] += 1
                 ext = block_name_counter[block_name]
 
-                dict_list = cifObj.GetDataBlockDict(block_name, ext)
+                datablock_struct = cifObj.getDataBlockStructure(block_name, ext)
 
                 ordered_block = True
                 sf_category = ''
 
-                for category, itVals in dict_list.items():
+                for category, itVals in datablock_struct.items():
                     try:
                         current_order = self.category_order.index('_' + category)
                     except ValueError:
@@ -536,8 +536,8 @@ class CifToNmrStar:
                     reserved_block_names.append(new_block_name)
                     sf.set_tag_prefix(category)
 
-                    dict_list = cifObj.GetDataBlockDict(block_name, ext)
-                    itVals = next(v for k, v in dict_list.items() if k == category)
+                    datablock_struct = cifObj.getDataBlockStructure(block_name, ext)
+                    itVals = next(v for k, v in datablock_struct.items() if k == category)
 
                     sf.add_tag('Sf_category', sf_category)
                     sf.add_tag('Sf_framecode', new_block_name)
@@ -554,8 +554,8 @@ class CifToNmrStar:
                 if not item['sf_category_flag']:
                     lp = pynmrstar.Loop.from_scratch(category)
 
-                    dict_list = cifObj.GetDataBlockDict(block_name, ext)
-                    itVals = next(v for k, v in dict_list.items() if k == category)
+                    datablock_struct = cifObj.getDataBlockStructure(block_name, ext)
+                    itVals = next(v for k, v in datablock_struct.items() if k == category)
 
                     list_id_idx = entry_id_idx = -1
 

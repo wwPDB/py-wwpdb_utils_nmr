@@ -53,7 +53,7 @@ class NmrStarToCif:
 
             cifObj = mmCIFUtil(filePath=cifPath)
 
-            categories = cifObj.GetCategories()
+            categories = cifObj.getIntegratedCategoryNameList()
 
             cs_loop_str = 'Atom_chem_shift'
             cs_list_cif = 'pdbx_nmr_assigned_chem_shift_list'
@@ -67,7 +67,7 @@ class NmrStarToCif:
                 if cs_list_cif in v:
 
                     if cs_loop_str in v:
-                        dList, _ = cifObj.GetValueAndItemByBlock(k, cs_list_cif)
+                        dList = cifObj.getDictList(k, cs_list_cif)
 
                         if len(dList) == 0:
                             continue
@@ -83,7 +83,7 @@ class NmrStarToCif:
                             cs_list_cif_info.append(info)
 
                     if self.__remove_cs_list_cif or cs_loop_str not in v:
-                        cifObj.RemoveCategory(k, cs_list_cif)
+                        cifObj.removeCategory(k, cs_list_cif)
 
             # add the following saveframe tag
             if self.__remove_cs_list_cif:
@@ -126,7 +126,7 @@ class NmrStarToCif:
 
                         if lp_tags[content_subtype] in v:
 
-                            dList, _ = cifObj.GetValueAndItemByBlock(k, lp_tags[content_subtype])
+                            dList = cifObj.getDictList(k, lp_tags[content_subtype])
 
                             try:
                                 entry_id = next(row[entry_id_tag] for row in dList if row[entry_id_tag] not in emptyValue)
@@ -160,20 +160,20 @@ class NmrStarToCif:
                             sf_item_values = [sf_catgories[content_subtype], k, entry_id, list_id, originalFileName]
 
                             if sf_tags[content_subtype] in v:
-                                attrs = cifObj.GetAttributes(k, sf_tags[content_subtype])
+                                attrs = cifObj.getAttributeList(k, sf_tags[content_subtype])
                                 for i, sf_item_name in enumerate(sf_item_names):
                                     if sf_item_name in attrs:
-                                        cifObj.UpdateSingleRowValue(k, sf_tags[content_subtype], sf_item_name, 0, sf_item_values[i])
+                                        cifObj.updateSingleValue(k, sf_tags[content_subtype], sf_item_name, 0, sf_item_values[i])
                                     else:
-                                        cifObj.ExtendCategory(k, sf_tags[content_subtype], [sf_item_name], [[sf_item_values[i]]])
+                                        cifObj.extendCategory(k, sf_tags[content_subtype], [sf_item_name], [[sf_item_values[i]]])
 
                             else:
-                                cifObj.AddCategory(k, sf_tags[content_subtype], sf_item_names)
-                                cifObj.InsertData(k, sf_tags[content_subtype], [sf_item_values])
+                                cifObj.addCategory(k, sf_tags[content_subtype], sf_item_names)
+                                cifObj.appendRow(k, sf_tags[content_subtype], sf_item_values)
 
-                            cifObj.MoveCategoryToTop(k, sf_tags[content_subtype])
+                            cifObj.moveCategoryToTop(k, sf_tags[content_subtype])
 
-            cifObj.WriteCif(outputFilePath=cifPath)
+            cifObj.writeToFile(outputFilePath=cifPath)
 
             return True
 
@@ -212,7 +212,7 @@ class NmrStarToCif:
 
                 cifObj = mmCIFUtil(filePath=cifPath)
 
-                categories = cifObj.GetCategories()
+                categories = cifObj.getIntegratedCategoryNameList()
 
                 # add Data_file_name item in the following saveframe tag
 
@@ -224,12 +224,12 @@ class NmrStarToCif:
                     for k, v in categories.items():
 
                         if sf_tag in v:
-                            attrs = cifObj.GetAttributes(k, sf_tag)
+                            attrs = cifObj.getAttributeList(k, sf_tag)
 
                             if data_file_name_tag in attrs:
-                                cifObj.UpdateSingleRowValue(k, sf_tag, data_file_name_tag, 0, originalFileName)
+                                cifObj.updateSingleValue(k, sf_tag, data_file_name_tag, 0, originalFileName)
                             else:
-                                cifObj.ExtendCategory(k, sf_tag, [data_file_name_tag], [[originalFileName]])
+                                cifObj.extendCategory(k, sf_tag, [data_file_name_tag], [[originalFileName]])
 
                 cs_loop_str = 'Atom_chem_shift'
                 cs_list_cif = 'pdbx_nmr_assigned_chem_shift_list'
@@ -244,7 +244,7 @@ class NmrStarToCif:
                             entry_id_tag = 'Entry_ID'
                             list_id_tag = 'Assigned_chem_shift_list_ID'
 
-                            dList, _ = cifObj.GetValueAndItemByBlock(k, cs_loop_str)
+                            dList = cifObj.getDictList(k, cs_loop_str)
 
                             try:
                                 entry_id = next(row[entry_id_tag] for row in dList if row[entry_id_tag] not in emptyValue)
@@ -256,8 +256,8 @@ class NmrStarToCif:
                             except (StopIteration, KeyError):
                                 list_id = '?'
 
-                            cifObj.AddCategory(k, cs_list_cif, ['entry_id', 'id', 'data_file_name'])
-                            cifObj.InsertData(k, cs_list_cif, [[entry_id, list_id, originalFileName]])
+                            cifObj.addCategory(k, cs_list_cif, ['entry_id', 'id', 'data_file_name'])
+                            cifObj.appendRow(k, cs_list_cif, [entry_id, list_id, originalFileName])
 
                 # add _Atom_chem_shift.Original_PDB_* items
 
@@ -273,12 +273,12 @@ class NmrStarToCif:
                 for k, v in categories.items():
 
                     if lp_category in v:
-                        items = cifObj.GetAttributes(k, lp_category)
+                        items = cifObj.getAttributeList(k, lp_category)
 
                         extended_items = [original_item for original_item in original_items if original_item not in items]
 
                         if len(extended_items) > 0:
-                            dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
+                            dList = cifObj.getDictList(k, lp_category)
 
                             auth_items = [original_auth_map[original_item] for original_item in extended_items]
 
@@ -291,10 +291,10 @@ class NmrStarToCif:
                                 extended_data_list.append(dst)
 
                             if self.__insert_original_pdb_cs_items:
-                                cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID') + 1)
+                                cifObj.extendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID') + 1)
 
                         if overwrite_auth_atom_id:
-                            cifObj.CopyValueInRow(k, lp_category, atom_id_tags, auth_atom_id_tags)
+                            cifObj.copyItemValues(k, lp_category, atom_id_tags, auth_atom_id_tags)
 
                 original_items = ['Auth_atom_name']
                 original_auth_map = {'Auth_atom_name': 'Auth_atom_ID'}
@@ -319,12 +319,12 @@ class NmrStarToCif:
                 for k, v in categories.items():
 
                     if lp_category in v:
-                        items = cifObj.GetAttributes(k, lp_category)
+                        items = cifObj.getAttributeList(k, lp_category)
 
                         extended_items = [original_item for original_item in _original_items if original_item not in items]
 
                         if len(extended_items) > 0:
-                            dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
+                            dList = cifObj.getDictList(k, lp_category)
 
                             auth_items = [_original_auth_map[original_item] for original_item in extended_items]
 
@@ -337,10 +337,10 @@ class NmrStarToCif:
                                 extended_data_list.append(dst)
 
                             if self.__insert_original_atom_name_items:
-                                cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_2') + 1)
+                                cifObj.extendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_2') + 1)
 
                         if overwrite_auth_atom_id:
-                            cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
+                            cifObj.copyItemValues(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
 
                 # add _Torsion_angle_constraint.Auth_atom_name_* items
 
@@ -362,12 +362,12 @@ class NmrStarToCif:
                 for k, v in categories.items():
 
                     if lp_category in v:
-                        items = cifObj.GetAttributes(k, lp_category)
+                        items = cifObj.getAttributeList(k, lp_category)
 
                         extended_items = [original_item for original_item in _original_items if original_item not in items]
 
                         if len(extended_items) > 0:
-                            dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
+                            dList = cifObj.getDictList(k, lp_category)
 
                             auth_items = [_original_auth_map[original_item] for original_item in extended_items]
 
@@ -380,10 +380,10 @@ class NmrStarToCif:
                                 extended_data_list.append(dst)
 
                             if self.__insert_original_atom_name_items:
-                                cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_4') + 1)
+                                cifObj.extendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_4') + 1)
 
                         if overwrite_auth_atom_id:
-                            cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
+                            cifObj.copyItemValues(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
 
                 # add _RDC_constraint.Auth_atom_name_* items
 
@@ -405,12 +405,12 @@ class NmrStarToCif:
                 for k, v in categories.items():
 
                     if lp_category in v:
-                        items = cifObj.GetAttributes(k, lp_category)
+                        items = cifObj.getAttributeList(k, lp_category)
 
                         extended_items = [original_item for original_item in _original_items if original_item not in items]
 
                         if len(extended_items) > 0:
-                            dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
+                            dList = cifObj.getDictList(k, lp_category)
 
                             auth_items = [_original_auth_map[original_item] for original_item in extended_items]
 
@@ -423,17 +423,17 @@ class NmrStarToCif:
                                 extended_data_list.append(dst)
 
                             if self.__insert_original_atom_name_items:
-                                cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_2') + 1)
+                                cifObj.extendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_2') + 1)
 
                         if overwrite_auth_atom_id:
-                            cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
+                            cifObj.copyItemValues(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
                 # """
                 # lp_category = 'Peak_row_format'
 
                 # for k, v in categories.items():
 
                 #     if lp_category in v:
-                #         items = cifObj.GetAttributes(k, lp_category)
+                #         items = cifObj.getAttributeList(k, lp_category)
                 #         max_dim = 0
                 #         for i in range(1, 16):
                 #             if 'Atom_ID_' + str(i) not in items:
@@ -460,7 +460,7 @@ class NmrStarToCif:
                 #             has_auth_value = False
 
                 #             if len(extended_items) > 0:
-                #                 dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
+                #                 dList = cifObj.getDictList(k, lp_category)
 
                 #                 auth_items = [_original_auth_map[original_item] for original_item in extended_items]
 
@@ -475,12 +475,12 @@ class NmrStarToCif:
                 #                     extended_data_list.append(dst)
 
                 #                 if has_auth_value:
-                #                     cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index(f"Auth_atom_ID_{max_dim - 1}") + 1)
+                #                     cifObj.extendCategory(k, lp_category, extended_items, extended_data_list, items.index(f"Auth_atom_ID_{max_dim - 1}") + 1)
 
                 #             if overwrite_auth_atom_id and has_auth_value:
-                #                 cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
+                #                 cifObj.copyItemValues(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
                 # """
-                cifObj.WriteCif(outputFilePath=cifPath)
+                cifObj.writeToFile(outputFilePath=cifPath)
 
                 return True
 

@@ -238,16 +238,16 @@ class CifReader:
         # whether to use cache file
         self.__use_cache = use_cache
 
-        # sub_directory name for cache file
+        # sub directory name for cache file
         self.__sub_dir_name_for_cache = sub_dir_name_for_cache
 
-        # file path
+        # the current file path
         self.__filePath = None
 
-        # current working directory path
+        # the current working directory path
         self.__dirPath = None
 
-        # datablock list
+        # the datablock list
         self.__dBlockList = None
 
         # the primary datablock
@@ -414,7 +414,7 @@ class CifReader:
 
         return self.__hashCode
 
-    def getDataBlockList(self) -> list:
+    def getDataBlockList(self) -> List[DataContainer]:
         """ Return whole list of datablock.
         """
 

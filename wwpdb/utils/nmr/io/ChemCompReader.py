@@ -59,14 +59,23 @@ class ChemCompReader:
         self.__lfh = log
         self.__debug = False
 
+        # the primary datablock
         self.__dBlock = None
+
+        # the top file tree of CCD
         self.__topCachePath = None
-        self.__compId = None
+
+        # the current file path
         self.__filePath = None
 
+        # the current compId
+        self.__compId = None
+
+        # the compId of the current datablock
         self.__lastCompId = None
 
-        self.__cDict = {
+        # items of CCD category
+        self.__itemDict = {
             'chem_comp': [
                 ('_chem_comp.id', '%s', 'str', ''),
                 ('_chem_comp.name', '%s', 'str', ''),
@@ -148,7 +157,7 @@ class ChemCompReader:
         self.__topCachePath = topCachePath
 
     def setCompId(self, compId: str, ligand: bool = True) -> bool:
-        """ Set chemical component definition data file path of the input compId.
+        """ Set compId and CCD CIF file path based on file tree of CCD.
         """
 
         if compId in emptyValue:
@@ -172,7 +181,7 @@ class ChemCompReader:
         return True
 
     def setFilePath(self, filePath: str, compId: str) -> bool:
-        """ Set data file path directory with compId.
+        """ Set compId and CCD CIF file path.
         """
 
         try:
@@ -203,7 +212,7 @@ class ChemCompReader:
         """ Get a list of list of data from the chem_comp_atom category.
         """
 
-        self.__getComp()
+        self.__updateDataBlock()
 
         return self.__getDataList(catName='chem_comp_atom')
 
@@ -211,7 +220,7 @@ class ChemCompReader:
         """ Get a list of list of data from the chem_comp_bond category.
         """
 
-        self.__getComp()
+        self.__updateDataBlock()
 
         return self.__getDataList(catName='chem_comp_bond')
 
@@ -221,15 +230,15 @@ class ChemCompReader:
 
         try:
 
-            self.__getComp()
+            self.__updateDataBlock()
 
             return self.__getDictList(catName='chem_comp')[0]
 
         except Exception:
             return {}
 
-    def __getComp(self) -> bool:
-        """ Get the definition data for the input compId.
+    def __updateDataBlock(self) -> bool:
+        """ Update the definition data for the input compId.
             @return: True for success or False otherwise
         """
 
@@ -246,7 +255,7 @@ class ChemCompReader:
 
         except Exception as e:
             if self.__verbose:
-                self.__lfh.write(f"+{self.__class_name__}.__getComp() ++ Error  - {str(e)}\n")
+                self.__lfh.write(f"+{self.__class_name__}.__updateDataBlock() ++ Error  - {str(e)}\n")
             return False
 
     def __getDataBlock(self, blockId: Optional[str] = None) -> Optional[DataContainer]:
@@ -319,7 +328,7 @@ class ChemCompReader:
             itDict[itName] = idxIt
 
         colDict = {}
-        for itTup in self.__cDict[catName]:
+        for itTup in self.__itemDict[catName]:
             colDict[itTup[0]] = itDict[itTup[0]] if itTup[0] in itDict else -1
 
         dList = []
@@ -353,7 +362,7 @@ class ChemCompReader:
             itDict[itName] = idxIt
 
         colTupList = []
-        for itTup in self.__cDict[catName]:
+        for itTup in self.__itemDict[catName]:
             if itTup[0] in itDict:
                 colTupList.append((itDict[itTup[0]], itTup[2], itTup[3]))
             else:

@@ -230,7 +230,7 @@ NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S', 'SE')
 MAX_DIM_NUM_OF_SPECTRA = 16
 
 # maximum number of rows to perform explicit redundancy check
-MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK = 100000
+MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK = 20000
 
 
 # maximum number of rows to perform index order check

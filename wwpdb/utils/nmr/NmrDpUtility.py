@@ -7724,7 +7724,22 @@ class NmrDpUtility:
                                 convert_codec(arPath, _arPath, codec, 'utf-8')
                                 arPath = _arPath
 
-                            file_type, _ = self.__getPeakListFileTypeAndContentSubtype(arPath)
+                            file_type = None
+
+                            with open(arPath, 'r', encoding='utf-8') as ifh:
+                                has_header = False
+                                for idx, line in enumerate(ifh):
+                                    if line.isspace() or comment_pattern.match(line):
+                                        if line.startswith('#INAME'):
+                                            has_header = True
+                                        else:  # XwinNMR
+                                            file_type = get_peak_list_format(line, as_code=True)
+                                            if file_type is not None:
+                                                break
+                                        continue
+                                    file_type = get_peak_list_format(line, has_header, as_code=True)
+                                    if file_type is not None or idx >= self.mr_max_spacer_lines:
+                                        break
 
                             if file_type is not None:
                                 ar['file_type'] = file_type
@@ -7732,7 +7747,7 @@ class NmrDpUtility:
                     input_source.setItemValue('file_name', os.path.basename(arPath))
                     input_source.setItemValue('file_type', ar['file_type'])
                     input_source.setItemValue('content_type',
-                                              'nmr-restraints' if ar['file_type'] not in parsable_pk_file_types else 'nmr-peaks')
+                                              'nmr-restraints' if ar['file_type'].startswith('nm-res') else 'nmr-peaks')
                     if 'original_file_name' in ar:
                         input_source.setItemValue('original_file_name', ar['original_file_name'])
 
@@ -12294,6 +12309,9 @@ class NmrDpUtility:
                     self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {str(e)}\n")
 
                 return False
+
+            if file_type != 'nm-pea-any':
+                continue
 
             _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMr(file_path, file_name, 'nm-pea-any', [], True)
 
@@ -23335,7 +23353,7 @@ class NmrDpUtility:
                 for row in lp_data:
                     if child_key_name in row and row[child_key_name] != parent_key:
 
-                        if index_tag is None:
+                        if index_tag is None or index_tag not in row:
                             err = f"{child_key_name} {str(row[child_key_name])!r} must be {parent_key}."
                         else:
                             err = f"[Check row of {index_tag} {row[index_tag]}] {child_key_name} {row[child_key_name]!r} must be {parent_key}."
@@ -23367,7 +23385,7 @@ class NmrDpUtility:
                     for row in aux_data:
                         if child_key_name in row and row[child_key_name] != parent_key:
 
-                            if index_tag is None:
+                            if index_tag is None or index_tag not in row:
                                 err = f"{child_key_name} {str(row[child_key_name])!r} must be {parent_key}."
                             else:
                                 err = f"[Check row of {index_tag} {row[index_tag]}] {child_key_name} {row[child_key_name]!r} must be {parent_key}."
@@ -34967,6 +34985,53 @@ class NmrDpUtility:
 
         fileListId = self.__file_path_list_len
 
+        def deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+            _err = ''
+            if lexer_err_listener is not None:
+                messageList = lexer_err_listener.getMessageList()
+
+                if messageList is not None:
+                    for description in messageList:
+                        _err = f"[Syntax error as {a_pk_format_name} file] "\
+                               f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            is_not_ascii = False
+                            if enc is not None and enc != 'ascii':
+                                _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                is_not_ascii = True
+                            else:
+                                _err += f"{description['input']}\n"
+                            _err += f"{description['marker']}\n"
+                            if is_not_ascii:
+                                _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
+
+            if parser_err_listener is not None and len(_err) == 0:
+                messageList = parser_err_listener.getMessageList()
+
+                if messageList is not None:
+                    for description in messageList:
+                        _err += f"[Syntax error as {a_pk_format_name} file] "\
+                                f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                        if 'input' in description:
+                            _err += f"{description['input']}\n"
+                            _err += f"{description['marker']}\n"
+
+            if len(_err) == 0:
+                return False
+
+            err = f"The NMR spectral peak list file {file_name!r} looks like {a_pk_format_name} file. "\
+                "Please re-upload the NMR spectral peak list file.\n"\
+                "The following issues need to be fixed before re-upload.\n" + _err[:-1]
+
+            self.report.error.appendDescription('format_issue',
+                                                {'file_name': file_name, 'description': err})
+            self.report.setError()
+
+            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {file_name} {err}\n")
+
+            return True
+
         def deal_aux_warn_message(listener):
 
             if listener.warningMessage is not None:
@@ -35042,7 +35107,20 @@ class NmrDpUtility:
                                          self.__cR, self.__caC,
                                          self.__ccU, self.__csStat, self.__nefT)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath)
+                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, self.__cifPath)
+
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+
+                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                        or _content_subtype is not None):
+                    _pk_format_name = getRestraintFormatName(file_type)
+                    pk_format_name = _pk_format_name.split()[0]
+                    a_pk_format_name = ('an ' if pk_format_name[0] in ('AINMX') else 'a ') + _pk_format_name
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+                        continue
 
                 if listener is not None:
 
@@ -35375,6 +35453,10 @@ class NmrDpUtility:
             if _content_subtype is None or len(_content_subtype) == 0:
                 continue
 
+            _pk_format_name = getRestraintFormatName(file_type)
+            pk_format_name = _pk_format_name.split()[0]
+            a_pk_format_name = ('an ' if pk_format_name[0] in ('AINMX') else 'a ') + _pk_format_name
+
             suspended_errors_for_lazy_eval.clear()
 
             if file_type == 'nm-pea-ari':
@@ -35387,9 +35469,16 @@ class NmrDpUtility:
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                # ignore lexer error beacuse of imcomplete XML file format
+                listener, parser_err_listener, _ =\
+                    reader.parse(file_path, self.__cifPath,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                if parser_err_listener is not None and listener is not None\
+                   and (parser_err_listener.getMessageList() is None or _content_subtype is not None):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, None, parser_err_listener):
+                        continue
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -35450,9 +35539,20 @@ class NmrDpUtility:
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                listener, parser_err_listener, lexer_err_listener =\
+                    reader.parse(file_path, self.__cifPath,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+
+                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                        or _content_subtype is not None):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+                        continue
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -35513,9 +35613,20 @@ class NmrDpUtility:
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                listener, parser_err_listener, lexer_err_listener =\
+                    reader.parse(file_path, self.__cifPath,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+
+                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                        or _content_subtype is not None):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+                        continue
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -35576,9 +35687,16 @@ class NmrDpUtility:
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                # ignore lexer error beacuse of imcomplete XML file format
+                listener, parser_err_listener, _ =\
+                    reader.parse(file_path, self.__cifPath,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                if parser_err_listener is not None and listener is not None\
+                   and (parser_err_listener.getMessageList() is None or _content_subtype is not None):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, None, parser_err_listener):
+                        continue
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -35639,9 +35757,20 @@ class NmrDpUtility:
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                listener, parser_err_listener, lexer_err_listener =\
+                    reader.parse(file_path, self.__cifPath,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+
+                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                        or _content_subtype is not None):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+                        continue
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -35702,9 +35831,20 @@ class NmrDpUtility:
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                listener, parser_err_listener, lexer_err_listener =\
+                    reader.parse(file_path, self.__cifPath,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+
+                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                        or _content_subtype is not None):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+                        continue
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -35766,9 +35906,20 @@ class NmrDpUtility:
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                listener, parser_err_listener, lexer_err_listener =\
+                    reader.parse(file_path, self.__cifPath,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+
+                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                        or _content_subtype is not None):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+                        continue
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -35830,9 +35981,20 @@ class NmrDpUtility:
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                listener, parser_err_listener, lexer_err_listener =\
+                    reader.parse(file_path, self.__cifPath,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+
+                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                        or _content_subtype is not None):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+                        continue
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()

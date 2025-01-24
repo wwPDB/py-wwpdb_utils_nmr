@@ -455,8 +455,7 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_chem_shift_ref', 'solvent', '_Chem_shift_ref', 'Solvent', 1, None),
                            ('pdbx_nmr_chem_shift_software', 'assigned_chem_shift_list_id', '_Chem_shift_software', 'Assigned_chem_shift_list_ID', 1, None),
                            ('pdbx_nmr_chem_shift_software', 'entry_id', '_Chem_shift_software', 'Entry_ID', 1, None),
-                           # map_code '-33' indicates redirection to parent saveframe tag: '_Software.Name'
-                           ('pdbx_nmr_chem_shift_software', 'software_id', '_Chem_shift_software', 'Software_ID', -33, '_Software.Name'),
+                           ('pdbx_nmr_chem_shift_software', 'software_id', '_Chem_shift_software', 'Software_ID', 1, None),
                            ('pdbx_nmr_constraint_file', 'constraint_filename', '_Constraint_file', 'Constraint_filename', 1, None),
                            ('pdbx_nmr_constraint_file', 'constraint_number', '_Constraint_file', 'Constraint_number', 1, None),
                            ('pdbx_nmr_constraint_file', 'constraint_subtype', '_Constraint_file', 'Constraint_subtype', 1, None),

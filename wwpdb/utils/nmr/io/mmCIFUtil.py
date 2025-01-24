@@ -85,6 +85,7 @@ class mmCIFUtil:
             return
 
         try:
+
             if not os.access(filePath, os.R_OK):
                 if self.__verbose:
                     self.__lfh.write(f"+{self.__class_name__} ++ Error  - Missing file {filePath}\n")
@@ -139,12 +140,10 @@ class mmCIFUtil:
         iList = catObj.getAttributeList()
         dList = []
         for row in catObj.getRowList():
-            try:
-                tD = {}
-                for idxIt, itName in enumerate(iList):
-                    if row[idxIt] not in emptyValue:
-                        tD[itName] = row[idxIt]
 
+            try:
+
+                tD = {itName: row[idxIt] for idxIt, itName in enumerate(iList) if row[idxIt] not in emptyValue}
                 if len(tD) > 0:
                     dList.append(tD)
 
@@ -163,10 +162,10 @@ class mmCIFUtil:
         """ Get the first value of a given datablock, category, and item.
         """
 
-        dlist = self.getDictList(blockName, catName, ext)
+        dList = self.getDictList(blockName, catName, ext)
 
-        if len(dlist) > 0 and itemName in dlist[0]:
-            return dlist[0][itemName]
+        if len(dList) > 0 and itemName in dList[0]:
+            return dList[0][itemName]
 
         return ''
 
@@ -213,12 +212,12 @@ class mmCIFUtil:
         if blockName not in self.__dBlockMap:
             return
 
-        category = DataCategory(catName)
+        catObj = DataCategory(catName)
 
         for item in items:
-            category.appendAttribute(item)
+            catObj.appendAttribute(item)
 
-        self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].append(category)
+        self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].append(catObj)
 
     def removeCategory(self, blockName: str, catName: str, ext: int = 1):
         """ Remove a category in a given datablock.
@@ -365,12 +364,12 @@ class mmCIFUtil:
             if item not in attrs:
                 return
 
-        src_cols = [attrs.index(item) for item in srcItems]
-        dst_cols = [attrs.index(item) for item in dstItems]
+        srcCols = [attrs.index(item) for item in srcItems]
+        dstCols = [attrs.index(item) for item in dstItems]
 
         for row in catObj.getRowList():
-            for j, src_col in enumerate(src_cols):
-                row[dst_cols[j]] = row[src_col]
+            for j, srcCol in enumerate(srcCols):
+                row[dstCols[j]] = row[srcCol]
 
     def writeToFile(self, outputFilePath: Optional[str] = None):
         """ Write CIF file.
@@ -441,7 +440,7 @@ class mmCIFUtil:
         return catObj.getRowList()
 
     def getDataBlockStructure(self, blockName: str, ext: int = 1) -> dict:
-        """ Get a dictionary {category_name: {"Items": list_of_attributes, "Values": list_of_dictinary}}
+        """ Get a dictionary {category_name: {"Items": list_of_attributes, "Values": list_of_list}}
             of a given datablock.
         """
 
@@ -450,8 +449,8 @@ class mmCIFUtil:
 
         struct = {}
         for catName in self.getCategoryNameList(blockName, ext):
-            dList, iList = self.getDictListWithItemNames(blockName, catName, ext)
-            values = [[x.get(y) for y in iList] for x in dList]
-            struct[catName] = {"Items": iList, "Values": values}
+            catObj = self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].getObj(catName)
+            struct[catName] = {"Items": catObj.getAttributeList(),
+                               "Values": catObj.getRowList()}
 
         return struct

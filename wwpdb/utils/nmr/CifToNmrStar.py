@@ -329,12 +329,12 @@ class CifToNmrStar:
                 block_name_counter[block_name] += 1
                 ext = block_name_counter[block_name]
 
-                datablock_struct = cifObj.getDataBlockStructure(block_name, ext)
+                dBlockStruct = cifObj.getDataBlockStructure(block_name, ext)
 
                 ordered_block = True
                 sf_category = ''
 
-                for category, itVals in datablock_struct.items():
+                for category, itVals in dBlockStruct.items():
                     try:
                         current_order = self.category_order.index('_' + category)
                     except ValueError:
@@ -536,8 +536,8 @@ class CifToNmrStar:
                     reserved_block_names.append(new_block_name)
                     sf.set_tag_prefix(category)
 
-                    datablock_struct = cifObj.getDataBlockStructure(block_name, ext)
-                    itVals = next(v for k, v in datablock_struct.items() if k == category)
+                    dBlockStruct = cifObj.getDataBlockStructure(block_name, ext)
+                    itVals = next(v for k, v in dBlockStruct.items() if k == category)
 
                     sf.add_tag('Sf_category', sf_category)
                     sf.add_tag('Sf_framecode', new_block_name)
@@ -554,8 +554,8 @@ class CifToNmrStar:
                 if not item['sf_category_flag']:
                     lp = pynmrstar.Loop.from_scratch(category)
 
-                    datablock_struct = cifObj.getDataBlockStructure(block_name, ext)
-                    itVals = next(v for k, v in datablock_struct.items() if k == category)
+                    dBlockStruct = cifObj.getDataBlockStructure(block_name, ext)
+                    itVals = next(v for k, v in dBlockStruct.items() if k == category)
 
                     list_id_idx = entry_id_idx = -1
 

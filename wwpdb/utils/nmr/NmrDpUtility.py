@@ -56937,8 +56937,9 @@ class NmrDpUtility:
                 _code = get_first_sf_tag(sf, 'Sf_framecode')
                 defined_software.append(_name)
                 if _id not in emptyValue and _name not in emptyValue \
-                   and _id.isdigit() and _name not in software_dict:
-                    _id_ = int(_id)
+                   and (isinstance(_id, int) or _id.isdigit())\
+                   and _name not in software_dict:
+                    _id_ = int(_id) if isinstance(_id, str) else _id
                     software_dict[_name] = (_id_, _code)
                     software_id = max(software_id, _id_)
 

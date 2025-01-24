@@ -347,12 +347,16 @@ class CifReader:
             self.__cachePath = os.path.join(cache_dir, f"{self.__hashCode}{'' if blockId is None else '_' + blockId}.pkl")
 
             if os.path.exists(self.__cachePath):
+
                 try:
+
                     with open(self.__cachePath, 'rb') as ifh:
                         dBlock = pickle.load(ifh)
                         if dBlock is not None:
                             return dBlock
+
                     os.remove(self.__cachePath)
+
                 except Exception:
                     pass
 

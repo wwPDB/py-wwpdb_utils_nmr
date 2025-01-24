@@ -56,6 +56,7 @@ class CharmmCRDReader:
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
                  csStat: Optional[BMRBChemShiftStat] = None):
         self.__class_name__ = self.__class__.__name__
+        self.__version__ = __version__
 
         self.__verbose = verbose
         self.__lfh = log

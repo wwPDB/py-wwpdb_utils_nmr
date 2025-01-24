@@ -59,6 +59,7 @@ class CyanaMRReader:
                  csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
                  reasons: Optional[dict] = None, upl_or_lol: Optional[str] = None, file_ext: Optional[str] = None):
         self.__class_name__ = self.__class__.__name__
+        self.__version__ = __version__
 
         self.__verbose = verbose
         self.__lfh = log

@@ -230,6 +230,7 @@ class CifReader:
                  use_cache: bool = True,
                  sub_dir_name_for_cache: str = '.'):
         self.__class_name__ = self.__class__.__name__
+        self.__version__ = __version__
 
         self.__verbose = verbose
         self.__lfh = log

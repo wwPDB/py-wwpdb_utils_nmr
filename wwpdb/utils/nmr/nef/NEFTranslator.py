@@ -608,6 +608,7 @@ class NEFTranslator:
                  ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
                  c2S: Optional[CifToNmrStar] = None):
         self.__class_name__ = self.__class__.__name__
+        self.__version__ = __version__
 
         self.__verbose = verbose
         self.__lfh = log

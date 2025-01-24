@@ -209,6 +209,7 @@ class CifToNmrStar:
 
     def __init__(self, log: IO = sys.stderr):
         self.__class_name__ = self.__class__.__name__
+        self.__version__ = __version__
 
         self.__lfh = log
 

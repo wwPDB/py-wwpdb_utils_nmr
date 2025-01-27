@@ -415,6 +415,8 @@ class OneDepAnnTasks:
                 self.__uniqSfCatMap[cif_category] = (sf_category, sf_tag_prefix)
         # 'pdbx_nmr_exptl' category has no effective item to relate '_Experiment_list'
         self.__uniqSfCatMap['pdbx_nmr_exptl'] = ('experiment_list', '_Experiment_list')
+        # 'pdbx_nmr_refine' category has no effective item to relate '_Conformer_family_coord_set'
+        self.__uniqSfCatMap['pdbx_nmr_refine'] = ('conformer_family_coord_set', '_Conformer_family_coord_set')
 
         # add pdbx_nmr_sample_condisions.label, pdbx_nmr_sample_condisions.conditions_id
         self.__sfTagMap.extend([('pdbx_nmr_exptl_sample_conditions', 'label', '_Sample_condition_list', 'Details', 1, None),
@@ -503,6 +505,10 @@ class OneDepAnnTasks:
                            ('pdbx_nmr_exptl_sample_conditions', 'temperature_units', '_Sample_condition_variable', 'Val_units', -22, None),
                            ('pdbx_nmr_refine', 'details', '_Conformer_family_refinement', 'Refine_details', 1, None),
                            ('pdbx_nmr_refine', 'method', '_Conformer_family_refinement', 'Refine_method', 1, None),
+                           # add pdbx_nmr_refine.software_ordinal
+                           ('pdbx_nmr_refine', 'software_ordinal', '_Conformer_family_refinement', 'Software_ID', 1, None),
+                           # add pdbx_nmr_refine.details
+                           ('pdbx_nmr_refine', 'details', '_Conformer_family_refinement', 'Refine_details', 1, None),
                            # map_code '-11' indicates metadata need to be merged with parent saveframe tags
                            ('pdbx_nmr_software', 'authors', '_Vendor', 'Name', -11, None),
                            ('pdbx_nmr_software', 'classification', '_Task', 'Task', -11, None),
@@ -1276,13 +1282,15 @@ class OneDepAnnTasks:
                         cif_categories = {'pdbx_nmr_spectrometer'}
                     elif sf_category == 'experiment_list':
                         cif_categories = {'pdbx_nmr_exptl'}
-
-                has_cif_category = True
+                    elif sf_category == 'conformer_family_coord_set':
+                        cif_categories = {'pdbx_nmr_refine'}
+                has_cif_category = False
                 for cif_category in cif_categories:
-                    if not nmrif.hasCategory(cif_category) or nmrif.getRowLength(cif_category) == 0:
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.perform() ++ Warning  - {cif_category!r} saveframe category does not exist in NMRIF\n")
-                        has_cif_category = False
+                    if nmrif.hasCategory(cif_category) and nmrif.getRowLength(cif_category) > 0:
+                        has_cif_category = True
+                        break
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.perform() ++ Warning  - {cif_category!r} saveframe category does not exist in NMRIF\n")
                 if not has_cif_category:
                     continue
 

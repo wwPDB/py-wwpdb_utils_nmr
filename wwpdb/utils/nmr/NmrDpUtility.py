@@ -14913,6 +14913,8 @@ class NmrDpUtility:
                 if has_content or file_type != 'nm-res-oth':
 
                     is_valid = True
+                    if (has_lexer_error or has_parser_error) and _file_type == 'nm-aux-xea':  # 2lcn
+                        is_valid = False
 
                     err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like {_a_mr_format_name} file, "\
                           f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
@@ -14964,7 +14966,7 @@ class NmrDpUtility:
                             if has_content and lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None:
                                 genuine_type = _file_type
                             valid_types[_file_type] = len(_content_subtype)
-                        else:
+                        elif _file_type != 'nm-aux-xea':  # 2lcn
                             possible_types[_file_type] = len(_content_subtype)
 
                     if file_type == 'nm-res-oth':

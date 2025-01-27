@@ -398,6 +398,12 @@ class mmCIFUtil:
 
         return self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].getObjNameList()
 
+    def hasCategory(self, blockName: str, catName: str, ext: int = 1) -> bool:
+        """ Return whether a given category exists.
+        """
+
+        return catName in self.getCategoryNameList(blockName, ext)
+
     def getAttributeList(self, blockName: str, catName: str, ext: int = 1) -> List[str]:
         """ Get item names in given datablock and category.
         """
@@ -411,6 +417,12 @@ class mmCIFUtil:
             return []
 
         return catObj.getAttributeList()
+
+    def hasItem(self, blockName: str, catName: str, itName: str, ext: int = 1) -> bool:
+        """ Return whether a given item exists in a category.
+        """
+
+        return itName in self.getAttributeList(blockName, catName, ext)
 
     def getRowLength(self, blockName: str, catName: str, ext: int = 1) -> int:
         """ Return length of rows of a given datablock and category.

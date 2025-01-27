@@ -441,17 +441,23 @@ class CifReader:
 
         return dBlock if self.__setDataBlock(dBlock) else None
 
-    def hasCategory(self, catName: str, blockId: Optional[str] = None) -> bool:
-        """ Return whether a given category exists.
+    def getCategoryNameList(self, blockId: Optional[str] = None) -> List[str]:
+        """ Return all category names in a given datablock.
         """
 
         if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
             self.__setDataBlock(self.getDataBlock(blockId))
 
         if self.__dBlock is None:
-            return False
+            return []
 
-        return catName in self.__dBlock.getObjNameList()
+        return self.__dBlock.getObjNameList()
+
+    def hasCategory(self, catName: str, blockId: Optional[str] = None) -> bool:
+        """ Return whether a given category exists.
+        """
+
+        return catName in self.getCategoryNameList(blockId)
 
     def hasItem(self, catName: str, itName: str, blockId: Optional[str] = None) -> bool:
         """ Return whether a given item exists in a category.

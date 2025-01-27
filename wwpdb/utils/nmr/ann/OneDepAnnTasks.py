@@ -2187,16 +2187,20 @@ class OneDepAnnTasks:
 
         # merge categories of model file as secondary source of NMRIF
         if cR is not None:
-            existing_categories, target_categories = [], []
+            primary_categories = cifObj.getCategoryNameList(self.__entryId)
+            secondary_categories = cR.getCategoryNameList()
 
-            for categories in cifObj.getCategoryNameList(self.__entryId):
-                existing_categories.extend(categories)
-
+            target_categories = []
             for cif_page in self.__cifPages:
-                if not any(cif_category in existing_categories for cif_category in self.__cifRequirements[cif_page]):
+                if not any(cif_category in primary_categories for cif_category in self.__cifRequirements[cif_page]):
                     for cif_category in self.__cifRequirements[cif_page]:
                         if cif_category not in target_categories:
                             target_categories.append(cif_category)
+                else:
+                    for cif_category in self.__cifRequirements[cif_page]:
+                        if cif_category not in primary_categories and cif_category in secondary_categories:
+                            if cif_category not in target_categories:
+                                target_categories.append(cif_category)
 
             if len(target_categories) > 0:
                 for cif_category in target_categories:

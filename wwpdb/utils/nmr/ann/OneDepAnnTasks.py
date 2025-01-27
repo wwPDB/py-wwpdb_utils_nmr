@@ -1265,8 +1265,8 @@ class OneDepAnnTasks:
     #     return data_map
     # """
 
-    def perform(self, master_entry: pynmrstar.Entry, nmrif) -> bool:
-        """ Perform a series of OneDep annotation tasks.
+    def merge(self, master_entry: pynmrstar.Entry, nmrif) -> bool:
+        """ Merge NMRIF metadata to NMR-STAR.
         """
 
         if not isinstance(master_entry, pynmrstar.Entry):
@@ -2192,23 +2192,24 @@ class OneDepAnnTasks:
 
             target_categories = []
             for cif_page in self.__cifPages:
+                # safe merge
                 if not any(cif_category in primary_categories for cif_category in self.__cifRequirements[cif_page]):
                     for cif_category in self.__cifRequirements[cif_page]:
-                        if cif_category not in target_categories:
+                        if cif_category in secondary_categories and cif_category not in target_categories:
                             target_categories.append(cif_category)
+                # unsafe merge (cherry picking because of cross-page category such as pdbx_nmr_software)
                 else:
                     for cif_category in self.__cifRequirements[cif_page]:
-                        if cif_category not in primary_categories and cif_category in secondary_categories:
-                            if cif_category not in target_categories:
-                                target_categories.append(cif_category)
+                        if cif_category not in primary_categories and cif_category in secondary_categories\
+                           and cif_category not in target_categories:
+                            target_categories.append(cif_category)
 
             if len(target_categories) > 0:
                 for cif_category in target_categories:
-                    if cR.hasCategory(cif_category):
-                        row_list = cR.getRowList(cif_category)
-                        if len(row_list) > 0:
-                            cifObj.addCategory(self.__entryId, cif_category, cR.getItemTags(cif_category))
-                            cifObj.appendRowList(self.__entryId, cif_category, row_list)
+                    row_list = cR.getRowList(cif_category)
+                    if len(row_list) > 0:
+                        cifObj.addCategory(self.__entryId, cif_category, cR.getItemTags(cif_category))
+                        cifObj.appendRowList(self.__entryId, cif_category, row_list)
 
         # DAOTHER-3018, 3848: force to reset 'pdbx_nmr_representative.conformer_id'
         cifObj.updateMultipleValue(self.__entryId, 'pdbx_nmr_representative', 'conformer_id', '?')

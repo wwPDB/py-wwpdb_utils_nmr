@@ -59540,7 +59540,7 @@ class NmrDpUtility:
         ann = OneDepAnnTasks(self.__verbose, self.__lfh,
                              self.__sf_category_list, self.__entry_id)
 
-        return ann.perform(master_entry, self.__nmrIfR)
+        return ann.merge(master_entry, self.__nmrIfR)
 
     def __performBMRBAnnTasks(self) -> bool:
         """ Perform a series of standalone BMRB annotation tasks.

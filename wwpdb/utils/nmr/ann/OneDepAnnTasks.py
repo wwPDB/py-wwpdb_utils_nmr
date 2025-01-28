@@ -1331,6 +1331,7 @@ class OneDepAnnTasks:
                     list_ids.append(1)
 
                 list_ids = sorted(list_ids)
+
                 # map_code: '5' @see https://github.com/bmrb-io/onedep2bmrb/blob/master/pdbx2bmrb/convert.py#L148
                 list_id_dict = {list_id: order for order, list_id in enumerate(list_ids, 1)}
                 sf_framecodes = []
@@ -1361,7 +1362,7 @@ class OneDepAnnTasks:
                                             sf = pynmrstar.Saveframe.from_scratch(sf_framecode, sf_tag_prefix)
                                             sf.add_tag('Sf_framecode', sf_framecode)
                                             sf.add_tag('Sf_category', sf_category)
-                                            sf.add_tag('ID', str(list_id))
+                                            sf.add_tag('ID', str(list_id_dict[list_id]))
                                             if sf_name is not None and sf_name != sf_framecode:
                                                 sf.add_tag('Name', sf_name)
 
@@ -1392,7 +1393,7 @@ class OneDepAnnTasks:
                                                         sf = pynmrstar.Saveframe.from_scratch(sf_framecode, sf_tag_prefix)
                                                         sf.add_tag('Sf_framecode', sf_framecode)
                                                         sf.add_tag('Sf_category', sf_category)
-                                                        sf.add_tag('ID', str(list_id))
+                                                        sf.add_tag('ID', str(list_id_dict[list_id]))
                                                         if sf_name is not None and sf_name != sf_framecode:
                                                             sf.add_tag('Name', sf_name)
                                                         reset = True
@@ -1538,7 +1539,7 @@ class OneDepAnnTasks:
                                                     continue
                                                 _row = [None] * len(lp.tags)
                                                 if lp_list_id_col != -1:
-                                                    _row[lp_list_id_col] = str(list_id)
+                                                    _row[lp_list_id_col] = str(list_id_dict[list_id])
                                                 if entry_id_col != -1:
                                                     _row[entry_id_col] = self.__entryId
                                                 if type_col != -1:
@@ -1714,9 +1715,6 @@ class OneDepAnnTasks:
                         item_tags = cR.getAttributeList(cif_category)
                         cifObj.addCategory(self.__entryId, cif_category, item_tags)
                         cifObj.appendRowList(self.__entryId, cif_category, row_list)
-
-            # DAOTHER-3018, 3848: force to reset 'pdbx_nmr_representative.conformer_id'
-            cifObj.updateMultipleValue(self.__entryId, 'pdbx_nmr_representative', 'conformer_id', '?')
 
             try:
                 cifObj.writeToFile(file_path)
@@ -2210,9 +2208,6 @@ class OneDepAnnTasks:
                     if len(row_list) > 0:
                         cifObj.addCategory(self.__entryId, cif_category, cR.getAttributeList(cif_category))
                         cifObj.appendRowList(self.__entryId, cif_category, row_list)
-
-        # DAOTHER-3018, 3848: force to reset 'pdbx_nmr_representative.conformer_id'
-        cifObj.updateMultipleValue(self.__entryId, 'pdbx_nmr_representative', 'conformer_id', '?')
 
         try:
             cifObj.writeToFile(file_path)

@@ -1668,6 +1668,71 @@ class OneDepAnnTasks:
 
                                 sf.add_loop(lp)
 
+        # synchronize software
+        cif_category = 'pdbx_nmr_software'
+        if nmrif.hasCategory(cif_category) and nmrif.getRowLength(cif_category) > 0:
+            attrs = nmrif.getAttributeList(cif_category)
+            if 'ordinal' in attrs and 'name' in attrs:
+                ordinal_col = attrs.index('ordinal')
+                name_col = attrs.index('name')
+                data = nmrif.getRowList(cif_category)
+                sorted_ord = sorted([int(row[ordinal_col]) for row in data])
+                sw_ord_to_id = {str(_ord): str(_id) for _id, _ord in enumerate(sorted_ord, start=1)}
+                sw_name_to_id = {}
+                for row in data:
+                    _ord = row[ordinal_col]
+                    _name = row[name_col]
+                    if _name not in sw_name_to_id:
+                        sw_name_to_id[_name] = sw_ord_to_id[_ord]
+
+                for lp in master_entry.get_loops_by_category('_Chem_shift_software'):
+                    if 'Software_ID' in lp.tags:
+                        sw_id_col = lp.tags.index('Software_ID')
+                        for idx, row in enumerate(lp):
+                            sw_id = row[sw_id_col]
+                            if sw_id in emptyValue:
+                                continue
+                            if isinstance(sw_id, int):
+                                sw_id = str(sw_id)
+                            if sw_id not in sw_ord_to_id.values() and sw_id in sw_ord_to_id:
+                                lp.data[idx][sw_id_col] = sw_ord_to_id[sw_id]
+
+                for lp in master_entry.get_loops_by_category('_Conformer_family_refinement'):
+                    if 'Software_ID' in lp.tags:
+                        sw_id_col = lp.tags.index('Software_ID')
+                        for idx, row in enumerate(lp):
+                            sw_id = row[sw_id_col]
+                            if sw_id in emptyValue:
+                                continue
+                            if isinstance(sw_id, int):
+                                sw_id = str(sw_id)
+                            if sw_id not in sw_ord_to_id.values() and sw_id in sw_ord_to_id:
+                                lp.data[idx][sw_id_col] = sw_ord_to_id[sw_id]
+
+                for lp in master_entry.get_loops_by_category('_Constraint_file'):
+                    if 'Software_ID' in lp.tags and 'Software_name' in lp.tags:
+                        sw_id_col = lp.tags.index('Software_ID')
+                        sw_name_col = lp.tags.index('Software_name')
+                        for idx, row in enumerate(lp):
+                            sw_id = row[sw_id_col]
+                            sw_name = row[sw_name_col]
+                            if isinstance(sw_id, int):
+                                sw_id = str(sw_id)
+                            if sw_name in sw_name_to_id:
+                                _sw_id = sw_name_to_id[sw_name]
+                                if sw_id != _sw_id:
+                                    parent_sf = master_entry.get_saveframes_by_tag_and_value('_Software.ID', sw_id)
+                                    if len(parent_sf) > 0 and get_first_sf_tag(parent_sf[0], 'Name') == sw_name:
+                                        continue
+                                    lp.data[idx][sw_id_col] = _sw_id
+                            elif '/' in sw_name:
+                                for _sw_name in sw_name.split('/'):
+                                    if _sw_name in sw_name_to_id:
+                                        _sw_id = sw_name_to_id[_sw_name]
+                                        lp.data[idx][sw_id_col] = _sw_id
+                                        lp.data[idx][sw_name_col] = _sw_name
+                                        break
+
         allowed_sf_tags = set(self.__allowedSfTags)
 
         for page in self.__pages:

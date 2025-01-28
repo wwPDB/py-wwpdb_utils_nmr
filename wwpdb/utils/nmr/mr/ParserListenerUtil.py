@@ -4207,7 +4207,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
             authSeqId = None if prevResult is None else prevResult.get('auth_seq_id')
             authAtomId = None if prevResult is None else prevResult.get('auth_atom_id')
 
-            tags = cR.getItemTags('atom_site')
+            tags = cR.getAttributeList('atom_site')
 
             if modelNumName is None:
                 modelNumName = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in tags else 'ndb_model'
@@ -4484,7 +4484,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
     try:
 
-        tags = cR.getItemTags('atom_site')
+        tags = cR.getAttributeList('atom_site')
 
         if modelNumName is None:
             modelNumName = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in tags else 'ndb_model'
@@ -4803,7 +4803,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
                     if any(seqKey for seqKey in coordUnobsRes.keys() if seqKey not in authToLabelSeq):
 
-                        tags = cR.getItemTags('pdbx_unobs_or_zero_occ_residues')
+                        tags = cR.getAttributeList('pdbx_unobs_or_zero_occ_residues')
 
                         if 'label_asym_id' in tags and 'label_seq_id' in tags:
 
@@ -4919,7 +4919,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                     nstdChirality = None
                     if cR.hasCategory('entity_poly'):
 
-                        tags = cR.getItemTags('entity_poly')
+                        tags = cR.getAttributeList('entity_poly')
 
                         hasSeqOneLetterCodeCan = 'pdbx_seq_one_letter_code_can' in tags
                         hasPdbxTargetIdentifier = 'pdbx_target_identifier' in tags

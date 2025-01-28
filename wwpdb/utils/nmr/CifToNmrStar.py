@@ -302,7 +302,7 @@ class CifToNmrStar:
 
             cifObj = mmCIFUtil(filePath=cifPath)
 
-            block_name_list = cifObj.getBlockIdList()
+            block_name_list = cifObj.getDataBlockNameList()
 
             if len(block_name_list) == 0:  # single loop
                 return False

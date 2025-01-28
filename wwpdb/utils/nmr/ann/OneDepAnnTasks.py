@@ -1711,7 +1711,7 @@ class OneDepAnnTasks:
                 if cR.hasCategory(cif_category):
                     row_list = cR.getRowList(cif_category)
                     if len(row_list) > 0:
-                        item_tags = cR.getItemTags(cif_category)
+                        item_tags = cR.getAttributeList(cif_category)
                         cifObj.addCategory(self.__entryId, cif_category, item_tags)
                         cifObj.appendRowList(self.__entryId, cif_category, row_list)
 
@@ -2208,7 +2208,7 @@ class OneDepAnnTasks:
                 for cif_category in target_categories:
                     row_list = cR.getRowList(cif_category)
                     if len(row_list) > 0:
-                        cifObj.addCategory(self.__entryId, cif_category, cR.getItemTags(cif_category))
+                        cifObj.addCategory(self.__entryId, cif_category, cR.getAttributeList(cif_category))
                         cifObj.appendRowList(self.__entryId, cif_category, row_list)
 
         # DAOTHER-3018, 3848: force to reset 'pdbx_nmr_representative.conformer_id'

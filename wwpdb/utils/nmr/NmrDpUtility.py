@@ -43693,7 +43693,7 @@ class NmrDpUtility:
 
                 self.__cifHashCode = self.__cR.getHashCode()
 
-                self.__coord_atom_site_tags = self.__cR.getItemTags('atom_site')
+                self.__coord_atom_site_tags = self.__cR.getAttributeList('atom_site')
 
         return False
 

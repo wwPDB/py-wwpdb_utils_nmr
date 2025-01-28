@@ -215,7 +215,7 @@ class ChemCompReader:
 
         self.__updateDataBlock()
 
-        return self.__getDataList(catName='chem_comp_atom')
+        return self.__getRowList(catName='chem_comp_atom')
 
     def getBonds(self) -> List[list]:
         """ Get a list of list of data from the chem_comp_bond category.
@@ -223,7 +223,7 @@ class ChemCompReader:
 
         self.__updateDataBlock()
 
-        return self.__getDataList(catName='chem_comp_bond')
+        return self.__getRowList(catName='chem_comp_bond')
 
     def getChemCompDict(self) -> dict:
         """ Get a dictionary of the chem_comp category.
@@ -323,10 +323,7 @@ class ChemCompReader:
         if catObj is None:
             return []
 
-        itDict = {}
-        itNameList = catObj.getItemNameList()
-        for idxIt, itName in enumerate(itNameList):
-            itDict[itName] = idxIt
+        itDict = {itName: idxIt for idxIt, itName in enumerate(catObj.getItemNameList())}
 
         colDict = {}
         for itTup in self.__itemDict[catName]:
@@ -334,12 +331,11 @@ class ChemCompReader:
 
         dList = []
         for row in catObj.getRowList():
-            tD = {k: '' if v < 0 else row[v] for k, v in colDict.items()}
-            dList.append(tD)
+            dList.append({itName: '' if idxIt < 0 else row[idxIt] for itName, idxIt in colDict.items()})
 
         return dList
 
-    def __getDataList(self, catName: str = 'chem_comp_bond') -> List[list]:
+    def __getRowList(self, catName: str = 'chem_comp_bond') -> List[list]:
         """ Return a list a list of data from the input category including
             data types and default value replacement.
         """
@@ -358,25 +354,17 @@ class ChemCompReader:
                 return float(val)
             return val
 
-        itDict = {}
-        for idxIt, itName in enumerate(catObj.getItemNameList()):
-            itDict[itName] = idxIt
+        itDict = {itName: idxIt for idxIt, itName in enumerate(catObj.getItemNameList())}
 
         colTupList = []
         for itTup in self.__itemDict[catName]:
-            if itTup[0] in itDict:
-                colTupList.append((itDict[itTup[0]], itTup[2], itTup[3]))
-            else:
-                colTupList.append((-1, itTup[2], itTup[3]))
+            colTupList.append((itDict[itTup[0]] if itTup[0] in itDict else -1, itTup[2], itTup[3]))
 
         dList = []
         for row in catObj.getRowList():
             uR = []
             for cTup in colTupList:
-                if cTup[0] < 0:
-                    uR.append(apply_type(cTup[1], cTup[2], cTup[2]))
-                else:
-                    uR.append(apply_type(cTup[1], cTup[2], row[cTup[0]]))
+                uR.append(apply_type(cTup[1], cTup[2], cTup[2] if cTup[0] < 0 else row[cTup[0]]))
             dList.append(uR)
 
         return dList

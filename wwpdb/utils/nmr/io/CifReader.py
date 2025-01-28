@@ -251,8 +251,14 @@ class CifReader:
         # the datablock list
         self.__dBlockList = None
 
+        # the current list of datablock names
+        self.__dBlockNameList = None
+
         # the primary datablock
         self.__dBlock = None
+
+        # the category name list
+        self.__categoryNameList = None
 
         # hash code of current cif file
         self.__hashCode = None
@@ -308,7 +314,13 @@ class CifReader:
         if self.__dBlock is not None and self.__filePath == filePath:
             return True
 
-        self.__dBlockList = self.__dBlock = self.__hashCode = None
+        self.__dBlockList = None
+        self.__dBlockNameList = None
+        self.__categoryNameList = None
+
+        self.__dBlock = None
+        self.__hashCode = None
+
         self.__filePath = filePath
 
         try:
@@ -329,9 +341,9 @@ class CifReader:
                 self.__lfh.write(f"+{self.__class_name__} ++ Error  - Parse {self.__filePath} failed {str(e)}\n")
             return False
 
-    def __getDataBlockFromFile(self, blockId: Optional[str] = None) -> Optional[DataContainer]:
+    def __getDataBlockFromFile(self, blockName: Optional[str] = None) -> Optional[DataContainer]:
         """ Worker method to read CIF file and set the target datablock.
-            If no blockId is provided return the first datablock.
+            If no blockName is provided return the first datablock.
             @return: target datablock
         """
 
@@ -345,7 +357,7 @@ class CifReader:
             if not os.path.isdir(cache_dir):
                 os.makedirs(cache_dir)
 
-            self.__cachePath = os.path.join(cache_dir, f"{self.__hashCode}{'' if blockId is None else '_' + blockId}.pkl")
+            self.__cachePath = os.path.join(cache_dir, f"{self.__hashCode}{'' if blockName is None else '_' + blockName}.pkl")
 
             if os.path.exists(self.__cachePath):
 
@@ -362,15 +374,22 @@ class CifReader:
                     pass
 
         if self.__dBlockList is None:
-            self.__dBlockList = []
+            self.__dBlockList, self.__dBlockNameList = [], []
+            self.__categoryNameList = {}
 
             with open(self.__filePath, 'r', encoding='utf-8') as ifh:
                 pRd = PdbxReader(ifh)
                 pRd.read(self.__dBlockList)
 
-        if blockId is not None:
+                is_star = all(container.getType() == 'data' for container in self.__dBlockList)
+                for container in self.__dBlockList:
+                    if is_star or (not is_star and container.getType() != 'data'):
+                        blockName = container.getName()
+                        self.__dBlockNameList.append(blockName)
+
+        if blockName is not None:
             for dBlock in self.__dBlockList:
-                if dBlock.getType() == 'data' and dBlock.getName() == blockId:
+                if dBlock.getType() == 'data' and dBlock.getName() == blockName:
                     return dBlock
 
         else:
@@ -420,51 +439,70 @@ class CifReader:
         return self.__hashCode
 
     def getDataBlockList(self) -> List[DataContainer]:
-        """ Return whole list of datablock.
+        """ Return list of datablocks.
         """
 
         return self.__dBlockList
 
-    def getDataBlock(self, blockId: Optional[str] = None) -> Optional[DataContainer]:
+    def getDataBlockNameList(self) -> List[str]:
+        """ Return list of datablock names.
+        """
+
+        return self.__dBlockNameList
+
+    def getDataBlock(self, blockName: Optional[str] = None) -> Optional[DataContainer]:
         """ Return target datablock.
-            Return None in case current blockId does not exist or no blockId does not match.
+            Return None in case current blockName does not exist or no blockName does not match.
             @return: target datablock
         """
 
         if self.__dBlock is None or self.__dBlock.getType() != 'data':
             return None
 
-        if blockId is None and self.__dBlock.getName() == blockId:
+        if blockName is None or self.__dBlock.getName() == blockName:
             return self.__dBlock
 
-        dBlock = self.__getDataBlockFromFile(blockId)
+        dBlock = self.__getDataBlockFromFile(blockName)
 
         return dBlock if self.__setDataBlock(dBlock) else None
 
-    def getCategoryNameList(self, blockId: Optional[str] = None) -> List[str]:
+    def getCategoryNameList(self, blockName: Optional[str] = None) -> List[str]:
         """ Return all category names in a given datablock.
         """
 
-        if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
-            self.__setDataBlock(self.getDataBlock(blockId))
+        if blockName is not None and self.__dBlock is not None and self.__dBlock.getName() != blockName:
+            self.__setDataBlock(self.getDataBlock(blockName))
 
         if self.__dBlock is None:
             return []
 
-        return self.__dBlock.getObjNameList()
+        if self.__categoryNameList is None:
+            self.__categoryNameList = {}
 
-    def hasCategory(self, catName: str, blockId: Optional[str] = None) -> bool:
+        if blockName in self.__categoryNameList:
+            return self.__categoryNameList[blockName]
+
+        try:
+
+            categoryNameList = self.__dBlock.getObjNameList()
+
+            return categoryNameList
+
+        finally:
+            self.__categoryNameList[blockName] = categoryNameList
+
+    def hasCategory(self, catName: str, blockName: Optional[str] = None) -> bool:
         """ Return whether a given category exists.
         """
 
-        return catName in self.getCategoryNameList(blockId)
+        return catName in self.getCategoryNameList(blockName)
 
-    def hasItem(self, catName: str, itName: str, blockId: Optional[str] = None) -> bool:
+    def hasItem(self, catName: str, itName: str, blockName: Optional[str] = None) -> bool:
         """ Return whether a given item exists in a category.
         """
 
-        if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
-            self.__setDataBlock(self.getDataBlock(blockId))
+        if blockName is not None and self.__dBlock is not None and self.__dBlock.getName() != blockName:
+            self.__setDataBlock(self.getDataBlock(blockName))
 
         if self.__dBlock is None:
             return False
@@ -474,16 +512,14 @@ class CifReader:
         if catObj is None:
             return False
 
-        len_catName = len(catName) + 2
+        return itName in catObj.getAttributeList()
 
-        return itName in [name[len_catName:] for name in catObj.getItemNameList()]
-
-    def getItemTags(self, catName: str, blockId: Optional[str] = None) -> List[str]:
-        """ Return item tag names of a given category.
+    def getAttributeList(self, catName: str, blockName: Optional[str] = None) -> List[str]:
+        """ Return item names of a given category.
         """
 
-        if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
-            self.__setDataBlock(self.getDataBlock(blockId))
+        if blockName is not None and self.__dBlock is not None and self.__dBlock.getName() != blockName:
+            self.__setDataBlock(self.getDataBlock(blockName))
 
         if self.__dBlock is None:
             return []
@@ -493,16 +529,14 @@ class CifReader:
         if catObj is None:
             return []
 
-        len_catName = len(catName) + 2
+        return catObj.getAttributeList()
 
-        return [name[len_catName:] for name in catObj.getItemNameList()]
-
-    def getRowLength(self, catName: str, blockId: Optional[str] = None) -> int:
+    def getRowLength(self, catName: str, blockName: Optional[str] = None) -> int:
         """ Return length of rows of a given category.
         """
 
-        if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
-            self.__setDataBlock(self.getDataBlock(blockId))
+        if blockName is not None and self.__dBlock is not None and self.__dBlock.getName() != blockName:
+            self.__setDataBlock(self.getDataBlock(blockName))
 
         if self.__dBlock is None:
             return 0
@@ -514,12 +548,12 @@ class CifReader:
 
         return 0
 
-    def getRowList(self, catName: str, blockId: Optional[str] = None) -> List[list]:
+    def getRowList(self, catName: str, blockName: Optional[str] = None) -> List[list]:
         """ Return length of rows of a given category.
         """
 
-        if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
-            self.__setDataBlock(self.getDataBlock(blockId))
+        if blockName is not None and self.__dBlock is not None and self.__dBlock.getName() != blockName:
+            self.__setDataBlock(self.getDataBlock(blockName))
 
         if self.__dBlock is None:
             return []
@@ -531,12 +565,12 @@ class CifReader:
 
         return []
 
-    def getDictList(self, catName: str, blockId: Optional[str] = None) -> List[dict]:
+    def getDictList(self, catName: str, blockName: Optional[str] = None) -> List[dict]:
         """ Return a list of dictionaries of a given category.
         """
 
-        if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
-            self.__setDataBlock(self.getDataBlock(blockId))
+        if blockName is not None and self.__dBlock is not None and self.__dBlock.getName() != blockName:
+            self.__setDataBlock(self.getDataBlock(blockName))
 
         if self.__dBlock is None:
             return []
@@ -546,21 +580,16 @@ class CifReader:
         if catObj is None:
             return []
 
-        len_catName = len(catName) + 2
-
-        itDict = {}
-        for idxIt, itName in enumerate(catObj.getItemNameList()):
-            itDict[itName[len_catName:]] = idxIt
+        iList = catObj.getAttributeList()
 
         dList = []
         for row in catObj.getRowList():
-            tD = {k: row[v] for k, v in itDict.items()}
-            dList.append(tD)
+            dList.append({itName: row[idxIt] for idxIt, itName in enumerate(iList)})
 
         return dList
 
     def getDictListWithFilter(self, catName: str, dataItems: List[dict], filterItems: Optional[List[dict]] = None,
-                              blockId: Optional[str] = None) -> List[dict]:
+                              blockName: Optional[str] = None) -> List[dict]:
         """ Return a list of dictionaries of a given category with filter.
         """
 
@@ -578,8 +607,8 @@ class CifReader:
                 if f['type'] not in self.itemTypes:
                     raise TypeError(f"Type {f['type']} of filter item {f['name']} must be one of {self.itemTypes}.")
 
-        if blockId is not None and self.__dBlock is not None and self.__dBlock.getName() != blockId:
-            self.__setDataBlock(self.getDataBlock(blockId))
+        if blockName is not None and self.__dBlock is not None and self.__dBlock.getName() != blockName:
+            self.__setDataBlock(self.getDataBlock(blockName))
 
         if self.__dBlock is None:
             return []
@@ -589,23 +618,21 @@ class CifReader:
         if catObj is None:
             return []
 
-        len_catName = len(catName) + 2
-
         # get column name index
         colDict, fcolDict, fetchDict = {}, {}, {}  # 'fetch_first_match': True
 
-        itNameList = [name[len_catName:] for name in catObj.getItemNameList()]
+        iList = catObj.getAttributeList()
 
-        for idxIt, itName in enumerate(itNameList):
+        for idxIt, itName in enumerate(iList):
             if itName in dataNames:
                 colDict[itName] = idxIt
             if filterNames is not None and itName in filterNames:
                 fcolDict[itName] = idxIt
 
-        if set(dataNames) & set(itNameList) != set(dataNames):
+        if set(dataNames) & set(iList) != set(dataNames):
             raise LookupError(f"Missing one of data items {dataNames}.")
 
-        if filterItems is not None and set(filterNames) & set(itNameList) != set(filterNames):
+        if filterItems is not None and set(filterNames) & set(iList) != set(filterNames):
             raise LookupError(f"Missing one of filter items {filterNames}.")
 
         abort = False
@@ -764,14 +791,12 @@ class CifReader:
         if catObj is None:
             return []
 
-        len_catName = len(catName) + 2
-
         # get column name index
         itDict, altDict = {}, {}
 
-        itNameList = [name[len_catName:] for name in catObj.getItemNameList()]
+        iList = catObj.getAttributeList()
 
-        for idxIt, itName in enumerate(itNameList):
+        for idxIt, itName in enumerate(iList):
             itDict[itName] = idxIt
             if itName in keyNames:
                 altDict[next(k['alt_name'] if 'alt_name' in k else itName for k in keyItems if k['name'] == itName)] = idxIt
@@ -895,9 +920,9 @@ class CifReader:
             for row in rowList:
                 key = (row[chain_id_col], int(row[seq_id_col]))
                 if keyDict[key] != row[comp_id_col]:
-                    raise KeyError(f"Sequence must be unique. {itNameList[chain_id_col]} {row[chain_id_col]}, "
-                                   f"{itNameList[seq_id_col]} {row[seq_id_col]}, "
-                                   f"{itNameList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
+                    raise KeyError(f"Sequence must be unique. {iList[chain_id_col]} {row[chain_id_col]}, "
+                                   f"{iList[seq_id_col]} {row[seq_id_col]}, "
+                                   f"{iList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
 
             for c in chainIds:
                 compDict[c] = [x[2] for x in sortedSeq if x[0] == c]
@@ -920,11 +945,11 @@ class CifReader:
             for row in rowList:
                 key = (row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col])
                 if keyDict[key] != row[comp_id_col]:
-                    raise KeyError(f"Sequence must be unique. {itNameList[chain_id_col]} {row[chain_id_col]}, "
-                                   f"{itNameList[seq_id_col]} {row[seq_id_col]}, "
-                                   f"{itNameList[ins_code_col]} {row[ins_code_col]}, "
-                                   f"{itNameList[label_seq_col]} {row[label_seq_col]}, "
-                                   f"{itNameList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
+                    raise KeyError(f"Sequence must be unique. {iList[chain_id_col]} {row[chain_id_col]}, "
+                                   f"{iList[seq_id_col]} {row[seq_id_col]}, "
+                                   f"{iList[ins_code_col]} {row[ins_code_col]}, "
+                                   f"{iList[label_seq_col]} {row[label_seq_col]}, "
+                                   f"{iList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
 
             for c in chainIds:
                 compDict[c] = [x[4] for x in sortedSeq if x[0] == c]

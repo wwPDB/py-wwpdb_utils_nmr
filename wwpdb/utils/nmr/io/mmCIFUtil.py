@@ -20,17 +20,12 @@ import os
 import copy
 import re
 
-from typing import Any, IO, List, Tuple, Optional
+from typing import Any, IO, List, Optional
 
 from mmcif.api.DataCategory import DataCategory
 from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
 from mmcif.io.PdbxWriter import PdbxWriter
-
-try:
-    from wwpdb.utils.nmr.AlignUtil import emptyValue
-except ImportError:
-    from nmr.AlignUtil import emptyValue
 
 
 label_symbol_pattern = re.compile(r'^\$[^\s\$\?\\\'\"\`;]+$')
@@ -76,11 +71,11 @@ class mmCIFUtil:
         # the datablock list
         self.__dBlockList = []
 
+        # the datablock names
+        self.__dBlockNameList = []
+
         # mapping of datablock name to index of datablock list
         self.__dBlockMap = {}
-
-        # the current list of datablock names
-        self.__blockNameList = []
 
         if filePath is None:
             return
@@ -102,7 +97,7 @@ class mmCIFUtil:
                 for container in self.__dBlockList:
                     if is_star or (not is_star and container.getType() != 'data'):
                         blockName = container.getName()
-                        self.__blockNameList.append(blockName)
+                        self.__dBlockNameList.append(blockName)
 
                         if blockName not in self.__dBlockMap:
                             self.__dBlockMap[blockName] = idx
@@ -120,44 +115,133 @@ class mmCIFUtil:
             if self.__verbose and 'loop_ declaration outside of data_ block or save_ frame' not in str(e):
                 self.__lfh.write(f"+{self.__class_name__} ++ Error  - Read {filePath} failed {str(e)}\n")
 
-    def getBlockIdList(self) -> List[str]:
-        """ Return list of datablock name.
+    def getDataBlockList(self) -> List[DataContainer]:
+        """ Return list of datablocks.
         """
 
-        return self.__blockNameList
+        return self.__dBlockList
 
-    def getDictListWithItemNames(self, blockName: str, catName: str, ext: int = 1) -> Tuple[List[dict], List[str]]:
-        """ Get category values as a list of dictionaries and its item names.
+    def getDataBlockNameList(self) -> List[str]:
+        """ Return list of datablock names.
+        """
+
+        return self.__dBlockNameList
+
+    def getDataBlock(self, blockName: str, ext: int = 1) -> Optional[DataCategory]:
+        """ Return target datablock.
+            Return None in case current blockName does not exist or no blockName does not match.
+            @return: target datablock
         """
 
         if blockName not in self.__dBlockMap:
-            return [], []
+            return None
 
-        catObj = self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].getObj(catName)
+        return self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]]
+
+    def getDataBlockStructure(self, blockName: str, ext: int = 1) -> dict:
+        """ Get a dictionary {category_name: {"Items": attributes, "Values": rows}}
+            of a given datablock.
+        """
+
+        if blockName not in self.__dBlockMap:
+            return {}
+
+        struct = {}
+        for catName in self.getCategoryNameList(blockName, ext):
+            catObj = self.getDataBlock(blockName, ext).getObj(catName)
+            struct[catName] = {"Items": catObj.getAttributeList(),
+                               "Values": catObj.getRowList()}
+
+        return struct
+
+    def getIntegratedCategoryNameList(self) -> dict:
+        """ Get all category names in all datablocks.
+        """
+
+        return {container.getName(): container.getObjNameList() for container in self.__dBlockList}
+
+    def getCategoryNameList(self, blockName: str, ext: int = 1) -> List[str]:
+        """ Get all category names in a given datablock.
+        """
+
+        if blockName not in self.__dBlockMap:
+            return []
+
+        return self.getDataBlock(blockName, ext).getObjNameList()
+
+    def hasCategory(self, blockName: str, catName: str, ext: int = 1) -> bool:
+        """ Return whether a given category exists.
+        """
+
+        return catName in self.getCategoryNameList(blockName, ext)
+
+    def getAttributeList(self, blockName: str, catName: str, ext: int = 1) -> List[str]:
+        """ Get item names in given datablock and category.
+        """
+
+        if blockName not in self.__dBlockMap:
+            return []
+
+        catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
         if catObj is None:
-            return [], []
+            return []
 
-        iList = catObj.getAttributeList()
-        dList = []
-        for row in catObj.getRowList():
+        return catObj.getAttributeList()
 
-            try:
+    def hasItem(self, blockName: str, catName: str, itName: str, ext: int = 1) -> bool:
+        """ Return whether a given item exists in a category.
+        """
 
-                tD = {itName: row[idxIt] for idxIt, itName in enumerate(iList) if row[idxIt] not in emptyValue}
-                if len(tD) > 0:
-                    dList.append(tD)
+        return itName in self.getAttributeList(blockName, catName, ext)
 
-            except IndexError:
-                pass
+    def getRowLength(self, blockName: str, catName: str, ext: int = 1) -> int:
+        """ Return length of rows of a given datablock and category.
+        """
 
-        return dList, iList
+        if blockName not in self.__dBlockMap:
+            return 0
+
+        catObj = self.getDataBlock(blockName, ext).getObj(catName)
+
+        if catObj is None:
+            return 0
+
+        return len(catObj.getRowList())
+
+    def getRowList(self, blockName: str, catName: str, ext: int = 1) -> List[list]:
+        """ Get a list of list of a given datablock and category.
+        """
+
+        if blockName not in self.__dBlockMap:
+            return []
+
+        catObj = self.getDataBlock(blockName, ext).getObj(catName)
+
+        if catObj is None:
+            return []
+
+        return catObj.getRowList()
 
     def getDictList(self, blockName: str, catName: str, ext: int = 1) -> List[dict]:
         """ Get category values as a list of dictionaries in a given datablock and category.
         """
 
-        return self.getDictListWithItemNames(blockName, catName, ext)[0]
+        if blockName not in self.__dBlockMap:
+            return []
+
+        catObj = self.getDataBlock(blockName, ext).getObj(catName)
+
+        if catObj is None:
+            return []
+
+        iList = catObj.getAttributeList()
+
+        dList = []
+        for row in catObj.getRowList():
+            dList.append({itName: row[idxIt] for idxIt, itName in enumerate(iList)})
+
+        return dList
 
     def getFirstValue(self, blockName: str, catName: str, itemName: str, ext: int) -> Any:
         """ Get the first value of a given datablock, category, and item.
@@ -177,7 +261,7 @@ class mmCIFUtil:
         if blockName not in self.__dBlockMap:
             return
 
-        catObj = self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].getObj(catName)
+        catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
         if catObj is None:
             return
@@ -191,7 +275,7 @@ class mmCIFUtil:
         if blockName not in self.__dBlockMap:
             return
 
-        catObj = self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].getObj(catName)
+        catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
         if catObj is None:
             return
@@ -205,6 +289,7 @@ class mmCIFUtil:
 
         self.__dBlockMap[get_ext_block_name(blockName, ext)] = len(self.__dBlockList)
         self.__dBlockList.append(DataContainer(blockName))
+        self.__dBlockNameList.append(blockName)
 
     def addCategory(self, blockName: str, catName: str, items: List[str], ext: int = 1):
         """ Add a category in a given datablock.
@@ -218,7 +303,7 @@ class mmCIFUtil:
         for item in items:
             catObj.appendAttribute(item)
 
-        self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].append(catObj)
+        self.getDataBlock(blockName, ext).append(catObj)
 
     def removeCategory(self, blockName: str, catName: str, ext: int = 1):
         """ Remove a category in a given datablock.
@@ -269,7 +354,7 @@ class mmCIFUtil:
         if blockName not in self.__dBlockMap:
             return
 
-        catObj = self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].getObj(catName)
+        catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
         if catObj is None:
             return
@@ -283,7 +368,7 @@ class mmCIFUtil:
         if blockName not in self.__dBlockMap:
             return
 
-        catObj = self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].getObj(catName)
+        catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
         if catObj is None:
             return
@@ -298,7 +383,7 @@ class mmCIFUtil:
         if blockName not in self.__dBlockMap:
             return
 
-        catObj = self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].getObj(catName)
+        catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
         if catObj is None:
             return
@@ -350,7 +435,7 @@ class mmCIFUtil:
         if blockName not in self.__dBlockMap:
             return
 
-        catObj = self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].getObj(catName)
+        catObj = self.getDataBlock(blockName, ext).getObj(catName)
 
         if catObj is None:
             return
@@ -382,88 +467,3 @@ class mmCIFUtil:
         with open(outputFilePath, 'w', encoding='utf-8') as ofh:
             pdbxW = PdbxWriter(ofh)
             pdbxW.write(self.__dBlockList)
-
-    def getIntegratedCategoryNameList(self) -> dict:
-        """ Get all category names in all datablocks.
-        """
-
-        return {container.getName(): container.getObjNameList() for container in self.__dBlockList}
-
-    def getCategoryNameList(self, blockName: str, ext: int = 1) -> List[str]:
-        """ Get all category names in a given datablock.
-        """
-
-        if blockName not in self.__dBlockMap:
-            return []
-
-        return self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].getObjNameList()
-
-    def hasCategory(self, blockName: str, catName: str, ext: int = 1) -> bool:
-        """ Return whether a given category exists.
-        """
-
-        return catName in self.getCategoryNameList(blockName, ext)
-
-    def getAttributeList(self, blockName: str, catName: str, ext: int = 1) -> List[str]:
-        """ Get item names in given datablock and category.
-        """
-
-        if blockName not in self.__dBlockMap:
-            return []
-
-        catObj = self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].getObj(catName)
-
-        if catObj is None:
-            return []
-
-        return catObj.getAttributeList()
-
-    def hasItem(self, blockName: str, catName: str, itName: str, ext: int = 1) -> bool:
-        """ Return whether a given item exists in a category.
-        """
-
-        return itName in self.getAttributeList(blockName, catName, ext)
-
-    def getRowLength(self, blockName: str, catName: str, ext: int = 1) -> int:
-        """ Return length of rows of a given datablock and category.
-        """
-
-        if blockName not in self.__dBlockMap:
-            return 0
-
-        catObj = self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].getObj(catName)
-
-        if catObj is None:
-            return 0
-
-        return len(catObj.getRowList())
-
-    def getRowList(self, blockName: str, catName: str, ext: int = 1) -> List[list]:
-        """ Get a list of list of a given datablock and category.
-        """
-
-        if blockName not in self.__dBlockMap:
-            return []
-
-        catObj = self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].getObj(catName)
-
-        if catObj is None:
-            return []
-
-        return catObj.getRowList()
-
-    def getDataBlockStructure(self, blockName: str, ext: int = 1) -> dict:
-        """ Get a dictionary {category_name: {"Items": list_of_attributes, "Values": list_of_list}}
-            of a given datablock.
-        """
-
-        if blockName not in self.__dBlockMap:
-            return {}
-
-        struct = {}
-        for catName in self.getCategoryNameList(blockName, ext):
-            catObj = self.__dBlockList[self.__dBlockMap[get_ext_block_name(blockName, ext)]].getObj(catName)
-            struct[catName] = {"Items": catObj.getAttributeList(),
-                               "Values": catObj.getRowList()}
-
-        return struct

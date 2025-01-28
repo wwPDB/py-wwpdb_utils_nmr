@@ -1354,9 +1354,9 @@ class NmrVrptUtility:
 
             skipped = False
 
-            for dBlock in self.__rR.getDataBlockList():
+            for datablock_name in self.__rR.getDataBlockNameList():
 
-                if not self.__rR.hasCategory(lp_category, dBlock.getName()):
+                if not self.__rR.hasCategory(lp_category, datablock_name):
                     continue
 
                 sf_tag = self.__rR.getDictList(sf_category)
@@ -1378,7 +1378,7 @@ class NmrVrptUtility:
                               {'name': 'Distance_upper_bound_val', 'type': 'float', 'alt_name': 'upper_limit'}
                               ]
 
-                tags = self.__rR.getItemTags(lp_category)
+                tags = self.__rR.getAttributeList(lp_category)
 
                 has_combination_id = 'Combination_ID' in tags
                 has_member_logic_code = 'Member_logic_code' in tags
@@ -1584,9 +1584,9 @@ class NmrVrptUtility:
 
             skipped = False
 
-            for dBlock in self.__rR.getDataBlockList():
+            for datablock_name in self.__rR.getDataBlockNameList():
 
-                if not self.__rR.hasCategory(lp_category, dBlock.getName()):
+                if not self.__rR.hasCategory(lp_category, datablock_name):
                     continue
 
                 sf_tag = self.__rR.getDictList(sf_category)
@@ -1615,7 +1615,7 @@ class NmrVrptUtility:
                               {'name': 'Angle_target_val', 'type': 'float', 'alt_name': 'target_value'}
                               ]
 
-                tags = self.__rR.getItemTags(lp_category)
+                tags = self.__rR.getAttributeList(lp_category)
 
                 has_torsion_angle_name = 'Torsion_angle_name' in tags
                 has_combination_id = 'Combination_ID' in tags
@@ -1774,9 +1774,9 @@ class NmrVrptUtility:
 
             skipped = False
 
-            for dBlock in self.__rR.getDataBlockList():
+            for datablock_name in self.__rR.getDataBlockNameList():
 
-                if not self.__rR.hasCategory(lp_category, dBlock.getName()):
+                if not self.__rR.hasCategory(lp_category, datablock_name):
                     continue
 
                 sf_tag = self.__rR.getDictList(sf_category)
@@ -1802,7 +1802,7 @@ class NmrVrptUtility:
                               {'name': 'Target_value', 'type': 'float', 'alt_name': 'target_value'},
                               ]
 
-                tags = self.__rR.getItemTags(lp_category)
+                tags = self.__rR.getAttributeList(lp_category)
 
                 has_combination_id = 'Combination_ID' in tags
                 has_pdb_ins_code_1 = 'PDB_ins_code_1' in tags
@@ -2572,9 +2572,9 @@ class NmrVrptUtility:
         self.__results = {'total_models': self.__total_models, 'eff_model_ids': self.__eff_model_ids,
                           'atom_ids': self.__atomIdList, 'key_lists': {}}
 
-        for dBlock in self.__rR.getDataBlockList():
+        for datablock_name in self.__rR.getDataBlockNameList():
 
-            if not self.__rR.hasCategory('Chem_comp_assembly', dBlock.getName()):
+            if not self.__rR.hasCategory('Chem_comp_assembly', datablock_name):
                 continue
 
             self.__results['seq_length'] = self.__rR.getRowLength('Chem_comp_assembly')

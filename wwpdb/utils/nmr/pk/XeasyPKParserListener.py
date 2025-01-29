@@ -539,11 +539,12 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         if assignments is not None and self.__atomNumberDict is None:
             if self.ass_expr_debug:
                 print(f'{self.__last_comment!r} -> {assignments}')
-            for idx, factor in enumerate(assignments, start=self.__comment_offset):
-                if idx >= len(self.assignmentSelection):
-                    self.assignmentSelection.append(factor)
-                elif self.assignmentSelection[idx] is None:
-                    self.assignmentSelection[idx] = factor
+            if isinstance(self.__comment_offset, int):
+                for idx, factor in enumerate(assignments, start=self.__comment_offset):
+                    if idx >= len(self.assignmentSelection):
+                        self.assignmentSelection.append(factor)
+                    elif self.assignmentSelection[idx] is None:
+                        self.assignmentSelection[idx] = factor
             self.__last_comment = None
             self.__g.clear()
         self.__comment_offset = len(self.assignmentSelection)

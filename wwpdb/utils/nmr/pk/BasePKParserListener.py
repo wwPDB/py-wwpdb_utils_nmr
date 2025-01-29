@@ -2089,7 +2089,7 @@ class BasePKParserListener():
         """ Extract peak assignment from a given string.
         """
 
-        if numOfDim not in (1, 2, 3, 4):
+        if numOfDim not in (1, 2, 3, 4) or string is None:
             return None
 
         _str = PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', string.upper()).split()

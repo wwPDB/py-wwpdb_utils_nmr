@@ -81,6 +81,8 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             self.num_of_dim = max(self.num_of_dim, _dim_id)
             if _dim_id not in self.cur_spectral_dim:
                 cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
+            else:
+                cur_spectral_dim = self.cur_spectral_dim[_dim_id]
 
             if ctx.Simple_name_DA():
                 cur_spectral_dim['axis_code'] = axis_code = str(ctx.Simple_name_DA())

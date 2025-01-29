@@ -1198,7 +1198,7 @@ def get_peak_list_format(line: str, has_header: bool = True, as_code: bool = Fal
         return 'nm-pea-pip' if as_code else 'NMRPipe'
 
     if '<!DOCTYPE spectrum SYSTEM' in line or '<spectrum name=' in line:  # ARIA peak list
-        return 'ARIA'
+        return 'nm-pea-ari' if as_code else 'ARIA'
 
     if '# PEAKLIST_VERSION' in line or '# PEAKLIST_DIMENSION' in line:  # XwinNMR peak list
         return 'nm-pea-xwi' if as_code else 'XwinNMR'

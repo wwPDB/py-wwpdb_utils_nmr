@@ -18,6 +18,8 @@ lexer grammar XeasyPKLexer;
 
 Num_of_dim:		'#' ~[\t\r\n]* 'Number of dimensions' -> pushMode(NUM_OF_DIM_MODE);
 
+Num_of_peaks:		'#' ~[\t\r\n]* 'Number of peaks' -> pushMode(NUM_OF_PEAK_MODE);
+
 Format:			'#FORMAT' -> pushMode(FORMAT_MODE);
 
 Iname:			'#INAME' -> pushMode(INAME_MODE);
@@ -65,6 +67,13 @@ Integer_ND:		('+' | '-')? DECIMAL;
 
 SPACE_ND:		[ \t]+ -> skip;
 RETURN_ND:		[\r\n]+ -> popMode;
+
+mode NUM_OF_PEAK_MODE;
+
+Integer_NP:		('+' | '-')? DECIMAL;
+
+SPACE_NP:		[ \t]+ -> skip;
+RETURN_NP:		[\r\n]+ -> popMode;
 
 mode FORMAT_MODE;
 

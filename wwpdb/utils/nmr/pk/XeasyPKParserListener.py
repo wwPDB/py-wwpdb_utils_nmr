@@ -89,6 +89,14 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
     def exitDimension(self, ctx: XeasyPKParser.DimensionContext):  # pylint: disable=unused-argument
         pass
 
+    # Enter a parse tree produced by XeasyPKParser#peak.
+    def enterPeak(self, ctx: XeasyPKParser.PeakContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by XeasyPKParser#peak.
+    def exitPeak(self, ctx: XeasyPKParser.PeakContext):  # pylint: disable=unused-argument
+        pass
+
     # Enter a parse tree produced by XeasyPKParser#format.
     def enterFormat(self, ctx: XeasyPKParser.FormatContext):
         if ctx.Simple_name_FO():

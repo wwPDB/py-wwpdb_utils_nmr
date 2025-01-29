@@ -22,6 +22,7 @@ xeasy_pk:
 	RETURN?
 	(
 	dimension |
+	peak |
 	format |
 	iname |
 	cyana_format |
@@ -35,6 +36,9 @@ xeasy_pk:
 
 dimension:
 	Num_of_dim Integer_ND RETURN_ND;
+
+peak:
+	Num_of_peaks Integer_NP RETURN_NP;
 
 format:
 	Format Simple_name_FO RETURN_FO;

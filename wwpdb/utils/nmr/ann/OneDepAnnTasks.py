@@ -1353,6 +1353,11 @@ class OneDepAnnTasks:
                                         sf_name = sf_framecode = row[sf_framecode_map[1]]
                                         if sf_name is not None and sf_name.isdigit():
                                             sf_name = '?'
+                                    try:
+                                        master_entry.get_saveframe_by_name(sf_framecode)
+                                        sf_framecode = f'{sf_category}_{list_id_dict[list_id]}'
+                                    except KeyError:
+                                        pass
                                     if sf_framecode in emptyValue or sf_framecode.isdigit() or sf_framecode in sf_framecodes or ' ' in sf_framecode:
                                         sf_framecode = f'{sf_category}_{list_id_dict[list_id]}'
                                     sf_framecodes.append(sf_framecode)

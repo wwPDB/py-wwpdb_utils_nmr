@@ -61,7 +61,7 @@ peak_list_2d:
 
 peak_2d:
 	Integer
-	Float Float
+	position position
 	Integer Simple_name
 	number number
 	Simple_name Integer
@@ -73,7 +73,7 @@ peak_list_3d:
 
 peak_3d:
 	Integer
-	Float Float Float
+	position position position
 	Integer Simple_name
 	number number
 	Simple_name Integer
@@ -85,12 +85,15 @@ peak_list_4d:
 
 peak_4d:
 	Integer
-	Float Float Float Float
+	position position position position
 	Integer Simple_name
 	number number
 	Simple_name Integer
 	assign assign assign assign Integer? (RETURN | comment)
 	(assign assign assign assign Integer? (RETURN | comment))* EOF?;
+
+/* number expression for peak position */
+position: Float | Integer;
 
 /* number expression in peak list */
 number: Float | Real | Integer | Simple_name;

@@ -197,13 +197,13 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            if len(self.numberSelection) == 0 or len(self.assignmentSelection) == 0:
+            if len(self.positionSelection) == 0 or len(self.numberSelection) == 0 or len(self.assignmentSelection) == 0:
                 self.peaks2D -= 1
                 return
 
             index = int(str(ctx.Integer(0)))
-            x_ppm = float(str(ctx.Float(0)))
-            y_ppm = float(str(ctx.Float(1)))
+            x_ppm = self.positionSelection[0]
+            y_ppm = self.positionSelection[1]
             # color_code = int(str(ctx.Integer(1)))
             # spectrum_type = str(ctx.Simple_name(0))
             vol = self.originalNumberSelection[0]
@@ -260,6 +260,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                                     asis1, asis2, '', None)
 
         finally:
+            self.positionSelection.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
             self.assignmentSelection.clear()
@@ -293,14 +294,14 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            if len(self.numberSelection) == 0 or len(self.assignmentSelection) == 0:
+            if len(self.positionSelection) == 0 or len(self.numberSelection) == 0 or len(self.assignmentSelection) == 0:
                 self.peaks3D -= 1
                 return
 
             index = int(str(ctx.Integer(0)))
-            x_ppm = float(str(ctx.Float(0)))
-            y_ppm = float(str(ctx.Float(1)))
-            z_ppm = float(str(ctx.Float(2)))
+            x_ppm = self.positionSelection[0]
+            y_ppm = self.positionSelection[1]
+            z_ppm = self.positionSelection[2]
             # color_code = int(str(ctx.Integer(1)))
             # spectrum_type = str(ctx.Simple_name(0))
             vol = self.originalNumberSelection[0]
@@ -358,6 +359,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                                     asis1, asis2, asis3, '', None)
 
         finally:
+            self.positionSelection.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
             self.assignmentSelection.clear()
@@ -391,15 +393,15 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            if len(self.numberSelection) == 0 or len(self.assignmentSelection) == 0:
+            if len(self.positionSelection) == 0 or len(self.numberSelection) == 0 or len(self.assignmentSelection) == 0:
                 self.peaks4D -= 1
                 return
 
             index = int(str(ctx.Integer(0)))
-            x_ppm = float(str(ctx.Float(0)))
-            y_ppm = float(str(ctx.Float(1)))
-            z_ppm = float(str(ctx.Float(2)))
-            a_ppm = float(str(ctx.Float(3)))
+            x_ppm = self.positionSelection[0]
+            y_ppm = self.positionSelection[1]
+            z_ppm = self.positionSelection[2]
+            a_ppm = self.positionSelection[3]
             # color_code = int(str(ctx.Integer(1)))
             # spectrum_type = str(ctx.Simple_name(0))
             vol = self.originalNumberSelection[0]
@@ -458,9 +460,27 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                                     asis1, asis2, asis3, asis4, '', None)
 
         finally:
+            self.positionSelection.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
             self.assignmentSelection.clear()
+
+    # Enter a parse tree produced by XeasyPKParser#position.
+    def enterPosition(self, ctx: XeasyPKParser.PositionContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by XeasyPKParser#position.
+    def exitPosition(self, ctx: XeasyPKParser.PositionContext):
+        if ctx.Float():
+            value = str(ctx.Float())
+            self.positionSelection.append(float(value))
+
+        elif ctx.Integer():
+            value = str(ctx.Integer())
+            self.positionSelection.append(float(value))
+
+        else:
+            self.positionSelection.append(None)
 
     # Enter a parse tree produced by XeasyPKParser#number.
     def enterNumber(self, ctx: XeasyPKParser.NumberContext):  # pylint: disable=unused-argument

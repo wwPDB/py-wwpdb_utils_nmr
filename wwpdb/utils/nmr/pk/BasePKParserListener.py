@@ -298,6 +298,9 @@ class BasePKParserListener():
     # collection of auxiliary atom selection
     auxAtomSelectionSet = []
 
+    # collection of position selection
+    positionSelection = []
+
     # collection of number selection
     numberSelection = []
     originalNumberSelection = []

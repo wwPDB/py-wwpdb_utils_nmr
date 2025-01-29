@@ -1716,6 +1716,8 @@ class OneDepAnnTasks:
                         for idx, row in enumerate(lp):
                             sw_id = row[sw_id_col]
                             sw_name = row[sw_name_col]
+                            if sw_name in emptyValue:
+                                continue
                             if isinstance(sw_id, int):
                                 sw_id = str(sw_id)
                             if sw_name in sw_name_to_id:

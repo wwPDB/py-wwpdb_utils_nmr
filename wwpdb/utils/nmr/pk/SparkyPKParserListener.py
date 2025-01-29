@@ -42,6 +42,7 @@ except ImportError:
 # This class defines a complete listener for a parse tree produced by SparkyPKParser.
 class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
+    __has_height = False
     __has_volume = False
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -74,8 +75,11 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
         if ctx.W4_LA():
             self.num_of_dim = max(self.num_of_dim, 4)
 
-        self.__has_volume = False
+        self.__has_height = False
+        if ctx.Height_LA():
+            self.__has_height = True
 
+        self.__has_volume = False
         if ctx.Volume_LA():
             self.__has_volume = True
 
@@ -94,8 +98,11 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
         if ctx.W4_LA():
             self.num_of_dim = max(self.num_of_dim, 4)
 
-        self.__has_volume = False
+        self.__has_height = False
+        if ctx.Height_LA():
+            self.__has_height = True
 
+        self.__has_volume = False
         if ctx.Volume_LA():
             self.__has_volume = True
 
@@ -134,9 +141,11 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             x_ppm = float(str(ctx.Float(0)))
             y_ppm = float(str(ctx.Float(1)))
 
-            height = self.originalNumberSelection[0]
+            height = volume = None
+            if self.__has_height:
+                height = self.originalNumberSelection[0]
             if self.__has_volume:
-                volume = self.originalNumberSelection[1]
+                volume = self.originalNumberSelection[1 if self.__has_height else 0]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -146,7 +155,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, None, None, None, None,
-                                          None, None, None, None, height, None, volume if self.__has_volume else None, None)
+                                          None, None, None, None, height, None, volume, None)
 
             if dstFunc is None:
                 self.peaks2D -= 1
@@ -209,9 +218,11 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             y_ppm = float(str(ctx.Float(1)))
             z_ppm = float(str(ctx.Float(2)))
 
-            height = self.originalNumberSelection[0]
+            height = volume = None
+            if self.__has_height:
+                height = self.originalNumberSelection[0]
             if self.__has_volume:
-                volume = self.originalNumberSelection[1]
+                volume = self.originalNumberSelection[1 if self.__has_height else 0]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -221,7 +232,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, None, None, None, None, None, None,
-                                          None, None, None, None, None, None, height, None, volume if self.__has_volume else None, None)
+                                          None, None, None, None, None, None, height, None, volume, None)
 
             if dstFunc is None:
                 self.peaks3D -= 1
@@ -286,9 +297,11 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             z_ppm = float(str(ctx.Float(2)))
             a_ppm = float(str(ctx.Float(3)))
 
-            height = self.originalNumberSelection[0]
+            height = volume = None
+            if self.__has_height:
+                height = self.originalNumberSelection[0]
             if self.__has_volume:
-                volume = self.originalNumberSelection[1]
+                volume = self.originalNumberSelection[1 if self.__has_height else 0]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -298,7 +311,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, None, None, None, None, None, None, None, None,
-                                          None, None, None, None, None, None, None, None, height, None, volume if self.__has_volume else None, None)
+                                          None, None, None, None, None, None, None, None, height, None, volume, None)
 
             if dstFunc is None:
                 self.peaks4D -= 1
@@ -365,9 +378,12 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                     index = self.peaks2D
                     x_ppm = self.numberSelection[0]
                     y_ppm = self.numberSelection[1]
-                    height = self.originalNumberSelection[2]
+
+                    height = volume = None
+                    if self.__has_height:
+                        height = self.originalNumberSelection[2]
                     if self.__has_volume:
-                        volume = self.originalNumberSelection[3]
+                        volume = self.originalNumberSelection[3 if self.__has_height else 2]
 
                     if not self.hasPolySeq and not self.hasNonPolySeq:
                         return
@@ -377,7 +393,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         return
 
                     dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, None, None, None, None,
-                                                  None, None, None, None, height, None, volume if self.__has_volume else None, None)
+                                                  None, None, None, None, height, None, volume, None)
 
                     if dstFunc is None:
                         self.peaks2D -= 1
@@ -415,9 +431,12 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                     x_ppm = self.numberSelection[0]
                     y_ppm = self.numberSelection[1]
                     z_ppm = self.numberSelection[2]
-                    height = self.originalNumberSelection[3]
+
+                    height = volume = None
+                    if self.__has_height:
+                        height = self.originalNumberSelection[3]
                     if self.__has_volume:
-                        volume = self.originalNumberSelection[4]
+                        volume = self.originalNumberSelection[4 if self.__has_height else 3]
 
                     if not self.hasPolySeq and not self.hasNonPolySeq:
                         return
@@ -427,7 +446,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         return
 
                     dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, None, None, None, None, None, None,
-                                                  None, None, None, None, None, None, height, None, volume if self.__has_volume else None, None)
+                                                  None, None, None, None, None, None, height, None, volume, None)
 
                     if dstFunc is None:
                         self.peaks3D -= 1
@@ -467,9 +486,12 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                     y_ppm = self.numberSelection[1]
                     z_ppm = self.numberSelection[2]
                     a_ppm = self.numberSelection[3]
-                    height = self.originalNumberSelection[4]
+
+                    height = volume = None
+                    if self.__has_height:
+                        height = self.originalNumberSelection[4]
                     if self.__has_volume:
-                        volume = self.originalNumberSelection[5]
+                        volume = self.originalNumberSelection[5 if self.__has_height else 4]
 
                     if not self.hasPolySeq and not self.hasNonPolySeq:
                         return
@@ -479,7 +501,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         return
 
                     dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, None, None, None, None, None, None, None, None,
-                                                  None, None, None, None, None, None, None, None, height, None, volume if self.__has_volume else None, None)
+                                                  None, None, None, None, None, None, None, None, height, None, volume, None)
 
                     if dstFunc is None:
                         self.peaks4D -= 1

@@ -38,16 +38,16 @@ data_label_wo_assign:
 	peak_wo_assign+;
 
 peak_2d:
-	Assignment_2d_ex Float Float number+ RETURN;
+	Assignment_2d_ex Float Float number+ Simple_name? RETURN;
 
 peak_3d:
-	Assignment_3d_ex Float Float Float number+ RETURN;
+	Assignment_3d_ex Float Float Float number+ Simple_name? RETURN;
 
 peak_4d:
-	Assignment_4d_ex Float Float Float Float number+ RETURN;
+	Assignment_4d_ex Float Float Float Float number+ Simple_name? RETURN;
 
 peak_wo_assign:
-	number+ RETURN;
+	number+ Simple_name? RETURN;
 
 /* number expression in peak list */
 number: Real | Float | Integer;

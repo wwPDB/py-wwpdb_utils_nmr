@@ -36,14 +36,14 @@ Assignment_2d_ex:	ASS_EACH_AXIS '-' ASS_EACH_AXIS;
 Assignment_3d_ex:	ASS_EACH_AXIS '-' ASS_EACH_AXIS '-' ASS_EACH_AXIS;
 Assignment_4d_ex:	ASS_EACH_AXIS '-' ASS_EACH_AXIS '-' ASS_EACH_AXIS '-' ASS_EACH_AXIS;
 
-//Simple_name:		SIMPLE_NAME;
+Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;
 //Residue_name:		SIMPLE_NAME;
 //Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
 
 fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
-fragment START_CHAR:	ALPHA_NUM | '_' | '+' | '*' | '?';
+fragment START_CHAR:	ALPHA_NUM | '_' | '+' | '-' | '*' | '?';
 fragment NAME_CHAR:	START_CHAR | '\'' | '"' | '#' | '%';
 //fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;

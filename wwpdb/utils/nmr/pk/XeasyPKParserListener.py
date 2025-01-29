@@ -559,7 +559,11 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         if self.__labels is None or len(self.__labels) == 0:
             return
         for _dim_id, _axis_code in self.__labels.items():
-            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
+
+            try:
+                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
+            except KeyError:
+                continue
 
             cur_spectral_dim['axis_code'] = _axis_code
 

@@ -12,12 +12,12 @@ def serializedATN():
     return [
         4,1,11,26,2,0,7,0,2,1,7,1,2,2,7,2,1,0,3,0,8,8,0,1,0,4,0,11,8,0,11,
         0,12,0,12,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,2,1,2,0,0,3,
-        0,2,4,0,1,2,0,1,1,6,6,24,0,7,1,0,0,0,2,16,1,0,0,0,4,23,1,0,0,0,6,
-        8,5,8,0,0,7,6,1,0,0,0,7,8,1,0,0,0,8,10,1,0,0,0,9,11,3,2,1,0,10,9,
-        1,0,0,0,11,12,1,0,0,0,12,10,1,0,0,0,12,13,1,0,0,0,13,14,1,0,0,0,
-        14,15,5,0,0,1,15,1,1,0,0,0,16,17,5,1,0,0,17,18,5,2,0,0,18,19,5,2,
-        0,0,19,20,5,6,0,0,20,21,3,4,2,0,21,22,5,8,0,0,22,3,1,0,0,0,23,24,
-        7,0,0,0,24,5,1,0,0,0,2,7,12
+        0,2,4,0,2,1,1,8,8,2,0,1,1,6,6,24,0,7,1,0,0,0,2,16,1,0,0,0,4,23,1,
+        0,0,0,6,8,5,8,0,0,7,6,1,0,0,0,7,8,1,0,0,0,8,10,1,0,0,0,9,11,3,2,
+        1,0,10,9,1,0,0,0,11,12,1,0,0,0,12,10,1,0,0,0,12,13,1,0,0,0,13,14,
+        1,0,0,0,14,15,5,0,0,1,15,1,1,0,0,0,16,17,5,1,0,0,17,18,5,2,0,0,18,
+        19,5,2,0,0,19,20,5,6,0,0,20,21,3,4,2,0,21,22,7,0,0,0,22,3,1,0,0,
+        0,23,24,7,1,0,0,24,5,1,0,0,0,2,7,12
     ]
 
 class XeasyPROTParser ( Parser ):
@@ -162,6 +162,9 @@ class XeasyPROTParser ( Parser ):
         def RETURN(self):
             return self.getToken(XeasyPROTParser.RETURN, 0)
 
+        def EOF(self):
+            return self.getToken(XeasyPROTParser.EOF, 0)
+
         def getRuleIndex(self):
             return XeasyPROTParser.RULE_prot
 
@@ -180,6 +183,7 @@ class XeasyPROTParser ( Parser ):
 
         localctx = XeasyPROTParser.ProtContext(self, self._ctx, self.state)
         self.enterRule(localctx, 2, self.RULE_prot)
+        self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 16
@@ -193,7 +197,12 @@ class XeasyPROTParser ( Parser ):
             self.state = 20
             self.residue()
             self.state = 21
-            self.match(XeasyPROTParser.RETURN)
+            _la = self._input.LA(1)
+            if not(_la==-1 or _la==8):
+                self._errHandler.recoverInline(self)
+            else:
+                self._errHandler.reportMatch(self)
+                self.consume()
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)

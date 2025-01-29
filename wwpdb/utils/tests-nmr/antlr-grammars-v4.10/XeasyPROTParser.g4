@@ -24,7 +24,7 @@ xeasy_prot:
 	EOF;
 
 prot:
-	Integer Float Float Simple_name residue RETURN;
+	Integer Float Float Simple_name residue (RETURN | EOF);
 	
 residue:
 	Integer | Simple_name;

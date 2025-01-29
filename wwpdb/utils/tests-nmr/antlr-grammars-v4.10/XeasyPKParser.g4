@@ -42,7 +42,7 @@ peak:
 	Num_of_peaks Integer_NP RETURN_NP;
 
 format:
-	Format Simple_name_FO RETURN_FO;
+	Format Simple_name_FO+ RETURN_FO;
 
 iname:
 	Iname Integer_IN Simple_name_IN RETURN_IN;
@@ -66,7 +66,7 @@ peak_2d:
 	number number
 	Simple_name Integer
 	assign assign Integer? (RETURN | comment)
-	(assign assign Integer? (RETURN | comment))*;
+	(assign assign Integer? (RETURN | comment))* EOF?;
 
 peak_list_3d:
 	(peak_3d | comment)+;
@@ -78,7 +78,7 @@ peak_3d:
 	number number
 	Simple_name Integer
 	assign assign assign Integer? (RETURN | comment)
-	(assign assign assign Integer? (RETURN | comment))*;
+	(assign assign assign Integer? (RETURN | comment))* EOF?;
 
 peak_list_4d:
 	(peak_4d | comment)+;
@@ -90,7 +90,7 @@ peak_4d:
 	number number
 	Simple_name Integer
 	assign assign assign assign Integer? (RETURN | comment)
-	(assign assign assign assign Integer? (RETURN | comment))*;
+	(assign assign assign assign Integer? (RETURN | comment))* EOF?;
 
 /* number expression in peak list */
 number: Float | Real | Integer | Simple_name;

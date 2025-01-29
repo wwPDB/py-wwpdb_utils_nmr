@@ -32,6 +32,7 @@ xeasy_pk:
 	peak_list_3d |
 	peak_list_4d
 	)*
+	RETURN?
 	EOF;
 
 dimension:

@@ -285,6 +285,9 @@ class BasePKParserListener():
     # whether to allow extended sequence temporary
     __allow_ext_seq = False
 
+    # whether current assignment derived not from unreliable extra comment
+    no_extra_comment = False
+
     # collection of atom selection set for multiple assignments to a peak
     atomSelectionSets = []
     asIsSets = []
@@ -929,10 +932,10 @@ class BasePKParserListener():
                     for __v in _v.values():
                         if __v['axis_code'] == 'HN/H-aromatic':
                             has_a = any(___v['spectral_region'] == 'C-aromatic' for ___v in _v.values())
-                            __v['axis_code'] = 'H-aromatic' if has_a else 'HN'
+                            __v['axis_code'] = 'H-aromatic' if has_a else 'H'
                         if __v['spectral_region'] == 'HN/H-aromatic':
                             has_a = any(___v['spectral_region'] == 'C-aromatic' for ___v in _v.values())
-                            __v['spectral_region'] = 'H-aromatic' if has_a else 'HN'
+                            __v['spectral_region'] = 'H-aromatic' if has_a else 'H'
 
             for d, v in self.spectral_dim.items():
                 for _id, cur_spectral_dim in v.items():
@@ -3332,7 +3335,7 @@ class BasePKParserListener():
                     resKey = (_seqId, _compId)
                     if resKey not in self.extResKey:
                         self.extResKey.append(resKey)
-                else:
+                elif self.no_extra_comment:
                     self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
                                   f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                   f"The residue number '{_seqId}' is not present in polymer sequence "
@@ -3376,7 +3379,7 @@ class BasePKParserListener():
                         for _refChainId in refChainIds:
                             chainAssign.add((_refChainId, _seqId, compId, True))
                     asis = True
-                else:
+                elif self.no_extra_comment:
                     self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
                                   f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                 updatePolySeqRst(self.polySeqRstFailed, self.polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, compId, _compId)
@@ -3991,7 +3994,7 @@ class BasePKParserListener():
                         resKey = (_seqId, _compId)
                         if resKey not in self.extResKey:
                             self.extResKey.append(resKey)
-                    else:
+                    elif self.no_extra_comment:
                         self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
                                       f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                       f"The residue number '{_seqId}' is not present in polymer sequence "
@@ -4035,7 +4038,7 @@ class BasePKParserListener():
                             for _refChainId in refChainIds:
                                 chainAssign.add((_refChainId, _seqId, compId, True))
                         asis = True
-                    else:
+                    elif self.no_extra_comment:
                         self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
                                       f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                     updatePolySeqRst(self.polySeqRstFailed, str(refChainId), _seqId, compId, _compId)
@@ -4234,19 +4237,22 @@ class BasePKParserListener():
                 if atomId is not None and atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1', index)
             if atomId is not None and (('-' in atomId and ':' in atomId) or '.' in atomId):
-                self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
-                              f"{_seqId}:?:{atomId} is not present in the coordinates.")
+                if self.no_extra_comment:
+                    self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
+                                  f"{_seqId}:?:{atomId} is not present in the coordinates.")
             elif atomId is not None:
                 if len(self.polySeq) == 1 and seqId < 1:
                     refChainId = self.polySeq[0]['auth_chain_id']
-                    self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
-                                  f"{_seqId}:?:{atomId} is not present in the coordinates. "
-                                  f"The residue number '{_seqId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                    if self.no_extra_comment:
+                        self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
+                                      f"{_seqId}:?:{atomId} is not present in the coordinates. "
+                                      f"The residue number '{_seqId}' is not present in polymer sequence "
+                                      f"of chain {refChainId} of the coordinates. "
+                                      "Please update the sequence in the Macromolecules page.")
                 else:
-                    self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
-                                  f"{_seqId}:{atomId} is not present in the coordinates.")
+                    if self.no_extra_comment:
+                        self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
+                                      f"{_seqId}:{atomId} is not present in the coordinates.")
                     compIds = guessCompIdFromAtomId([atomId], self.polySeq, self.nefT)
                     if compIds is not None:
                         chainId = fixedChainId
@@ -4450,19 +4456,22 @@ class BasePKParserListener():
                 if atomId in aminoProtonCode and atomId != 'H1':
                     return self.assignCoordPolymerSequenceWithChainIdWithoutCompId(fixedChainId, seqId, 'H1', index)
             if (('-' in atomId and ':' in atomId) or '.' in atomId):
-                self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
-                              f"{fixedChainId}:{_seqId}:?:{atomId} is not present in the coordinates.")
+                if self.no_extra_comment:
+                    self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
+                                  f"{fixedChainId}:{_seqId}:?:{atomId} is not present in the coordinates.")
             else:
                 if len(self.polySeq) == 1 and seqId < 1:
                     refChainId = self.polySeq[0]['auth_chain_id']
-                    self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
-                                  f"{_seqId}:?:{atomId} is not present in the coordinates. "
-                                  f"The residue number '{_seqId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                    if self.no_extra_comment:
+                        self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
+                                      f"{_seqId}:?:{atomId} is not present in the coordinates. "
+                                      f"The residue number '{_seqId}' is not present in polymer sequence "
+                                      f"of chain {refChainId} of the coordinates. "
+                                      "Please update the sequence in the Macromolecules page.")
                 else:
-                    self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
-                                  f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates.")
+                    if self.no_extra_comment:
+                        self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
+                                      f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates.")
                     compIds = guessCompIdFromAtomId([atomId], self.polySeq, self.nefT)
                     if compIds is not None:
                         if len(compIds) == 1:
@@ -4921,11 +4930,13 @@ class BasePKParserListener():
                         else:
                             if atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
                                and atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
-                                self.f.append(f"[Coordinate issue] {self.getCurrentRestraint(n=index)}"
-                                              f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                                if self.no_extra_comment:
+                                    self.f.append(f"[Coordinate issue] {self.getCurrentRestraint(n=index)}"
+                                                  f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                                 return atomId, asis
-                            self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
-                                          f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                            if self.no_extra_comment:
+                                self.f.append(f"[Atom not found] {self.getCurrentRestraint(n=index)}"
+                                              f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                             updatePolySeqRst(self.polySeqRstFailed, chainId, seqId, compId)
         return atomId, asis
 

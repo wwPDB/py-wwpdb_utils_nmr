@@ -190,6 +190,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__comment_offset = 0
         self.__g.clear()
 
+        self.no_extra_comment = True
+
     # Exit a parse tree produced by XeasyPKParser#peak_2d.
     def exitPeak_2d(self, ctx: XeasyPKParser.Peak_2dContext):
 
@@ -283,6 +285,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__last_comment = None
         self.__comment_offset = 0
         self.__g.clear()
+
+        self.no_extra_comment = True
 
     # Exit a parse tree produced by XeasyPKParser#peak_3d.
     def exitPeak_3d(self, ctx: XeasyPKParser.Peak_3dContext):
@@ -379,6 +383,8 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__last_comment = None
         self.__comment_offset = 0
         self.__g.clear()
+
+        self.no_extra_comment = True
 
     # Exit a parse tree produced by XeasyPKParser#peak_4d.
     def exitPeak_4d(self, ctx: XeasyPKParser.Peak_4dContext):
@@ -518,7 +524,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by XeasyPKParser#comment.
     def enterComment(self, ctx: XeasyPKParser.CommentContext):  # pylint: disable=unused-argument
-        pass
+        self.no_extra_comment = False
 
     # Exit a parse tree produced by XeasyPKParser#comment.
     def exitComment(self, ctx: XeasyPKParser.CommentContext):

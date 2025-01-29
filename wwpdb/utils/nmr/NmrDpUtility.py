@@ -5368,7 +5368,8 @@ class NmrDpUtility:
                                                              'enforce-enum': True},
                                                             {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
-                                                            {'name': 'Chemical_shift_list', 'type': 'str', 'mandatory': True}
+                                                            # 'Chemical_shift_list' should not be mandatory because of auto-population if possible, otherwise null
+                                                            {'name': 'Chemical_shift_list', 'type': 'str', 'mandatory': False}
                                                             ],
                                           'spectral_peak_alt': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                                 {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},

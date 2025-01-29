@@ -71,7 +71,7 @@ Vol:			'vol';
 Int:			'int';
 Stat:			'stat';
 Comment:		'comment';
-Flag0:			'flag0' [\r\n]+ -> popMode;
+Flag0:			'flag0' ' '* [\r\n]+ -> popMode;
 
 Simple_name_LA:		SIMPLE_NAME;
 Float_LA:		Float;

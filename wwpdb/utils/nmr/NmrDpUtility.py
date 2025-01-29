@@ -1751,6 +1751,7 @@ class NmrDpUtility:
         __mergeCsAndMrTasks.append(self.__updatePolymerSequence)
         __mergeCsAndMrTasks.append(self.__mergeLegacyCsAndMr)
         __mergeCsAndMrTasks.append(self.__detectSimpleDistanceRestraint)
+        __mergeCsAndMrTasks.append(self.__mergeCoordAsNmrIf)  # DAOTHER-8905: NMR data remediation Phase 2 (internal remediation)
         __mergeCsAndMrTasks.append(self.__calculateStatsOfExptlData)
         __mergeCsAndMrTasks.append(self.__performBMRBAnnTasks)
 
@@ -59516,6 +59517,31 @@ class NmrDpUtility:
             pass
 
         return False
+
+    def __mergeCoordAsNmrIf(self) -> bool:
+        """ Merge NMRIF metadata of the cooridnates (DAOTHER-8905: NMR data remediation Phase 2).
+        """
+
+        if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
+            return False
+
+        if not self.__internal_mode or not self.__remediation_mode or self.report.getInputSourceIdOfCoord() < 0:
+            return False
+
+        master_entry = self.__star_data[0]
+
+        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
+
+        if self.__cR.hasCategory('entry'):
+            entry = self.__cR.getDictList('entry')
+
+            if len(entry) > 0 and 'id' in entry[0]:
+                self.__entry_id = entry[0]['id'].strip().replace(' ', '_')
+
+        ann = OneDepAnnTasks(self.__verbose, self.__lfh,
+                             self.__sf_category_list, self.__entry_id)
+
+        return ann.merge(master_entry, self.__cR)
 
     def __mergeNmrIf(self) -> bool:
         """ Merge NMRIF metadata.

@@ -1853,8 +1853,57 @@ class BMRBAnnTasks:
                 except (ValueError, KeyError):
                     continue
 
-        if ionic_strength is not None and not has_salt and not has_buffer:
-            if not has_chelating_agent:
+            if ionic_strength is not None and not has_salt and not has_buffer:
+                if not has_chelating_agent:
+                    sf = master_entry.get_saveframes_by_category(sf_category)[0]
+
+                    lp_category = '_Sample_component'
+
+                    try:
+
+                        lp = sf.get_loop(lp_category)
+
+                        _lp = pynmrstar.Loop.from_scratch(lp_category)
+
+                        tags = ['ID',
+                                'Mol_common_name',
+                                'Isotopic_labeling',
+                                'Type',
+                                'Concentration_val',
+                                'Concentration_val_min',
+                                'Concentration_val_max',
+                                'Concentration_val_units',
+                                'Concentration_val_err']
+
+                        _lp.add_tag(tags)
+
+                        data = lp.get_tag(tags)
+
+                        for row in data:
+                            _lp.add_data(row)
+
+                        cur_id = len(data) + 1
+
+                        row = ['?'] * len(tags)
+                        row[0] = cur_id
+                        row[3] = 'salt'
+                        row[7] = 'mM'
+                        cur_id += 1
+
+                        _lp.add_data(row)
+
+                        if not has_buffer:
+                            row = ['?'] * len(tags)
+                            row[0] = cur_id
+                            row[3] = 'buffer'
+                            row[7] = 'mM'
+
+                            _lp.add_data(row)
+
+                    except KeyError:
+                        pass
+
+            elif pH is not None and not has_buffer:
                 sf = master_entry.get_saveframes_by_category(sf_category)[0]
 
                 lp_category = '_Sample_component'
@@ -1886,62 +1935,13 @@ class BMRBAnnTasks:
 
                     row = ['?'] * len(tags)
                     row[0] = cur_id
-                    row[3] = 'salt'
+                    row[3] = 'buffer'
                     row[7] = 'mM'
-                    cur_id += 1
 
                     _lp.add_data(row)
-
-                    if not has_buffer:
-                        row = ['?'] * len(tags)
-                        row[0] = cur_id
-                        row[3] = 'buffer'
-                        row[7] = 'mM'
-
-                        _lp.add_data(row)
 
                 except KeyError:
                     pass
-
-        elif pH is not None and not has_buffer:
-            sf = master_entry.get_saveframes_by_category(sf_category)[0]
-
-            lp_category = '_Sample_component'
-
-            try:
-
-                lp = sf.get_loop(lp_category)
-
-                _lp = pynmrstar.Loop.from_scratch(lp_category)
-
-                tags = ['ID',
-                        'Mol_common_name',
-                        'Isotopic_labeling',
-                        'Type',
-                        'Concentration_val',
-                        'Concentration_val_min',
-                        'Concentration_val_max',
-                        'Concentration_val_units',
-                        'Concentration_val_err']
-
-                _lp.add_tag(tags)
-
-                data = lp.get_tag(tags)
-
-                for row in data:
-                    _lp.add_data(row)
-
-                cur_id = len(data) + 1
-
-                row = ['?'] * len(tags)
-                row[0] = cur_id
-                row[3] = 'buffer'
-                row[7] = 'mM'
-
-                _lp.add_data(row)
-
-            except KeyError:
-                pass
 
         # update sample and sample_condition of spectral peak list saveframe
 

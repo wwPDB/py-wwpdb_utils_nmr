@@ -57,6 +57,7 @@ mode LABEL_MODE;
 Dataset:		'dataset';
 Sw:			'sw';
 Sf:			'sf';
+Condition:		'condition';
 
 L_name:			Simple_name '.L';
 P_name:			Simple_name '.P';

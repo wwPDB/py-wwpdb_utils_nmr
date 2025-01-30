@@ -16,7 +16,7 @@ limitations under the License.
 
 lexer grammar SparkyPKLexer;
 
-Assignment:		'Assignment' -> pushMode(LABEL_MODE);
+Assignment:		'Assignment' 's'? -> pushMode(LABEL_MODE);
 W1:			'w1' -> pushMode(LABEL_MODE);
 
 Integer:		('+' | '-')? DECIMAL;
@@ -62,9 +62,10 @@ W2_LA:			'w2';
 W3_LA:			'w3';
 W4_LA:			'w4';
 
-Height_LA:		'Data '? 'Height';
+Height_LA:		'Data '? 'Height' 's'?;
 Volume_LA:		'Volume';
 S_N_LA:			'S/N';
+Note_LA:		'Note';
 
 SPACE_LA:		[ \t]+ -> skip;
 RETURN_LA:		[\r\n]+ -> popMode;

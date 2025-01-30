@@ -1660,7 +1660,7 @@ class OneDepAnnTasks:
 
                                         lp.add_data(_row)
 
-                            if reset and len(lp) > 0:
+                            if reset and lp is not None and len(lp) > 0:
 
                                 try:
 

@@ -44,7 +44,7 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 SPACE:			[ \t]+ -> skip;
 RETURN:			[\r\n]+;
 
-ENCLOSE_DATA:		'{' ' '* (Float | (SIMPLE_NAME | ' ')*?) ' '* '}';
+ENCLOSE_DATA:		'{' ' '* (ENCLOSE_DATA | Float | (SIMPLE_NAME | ' ')*?) ' '* '}';
 SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
 LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
 

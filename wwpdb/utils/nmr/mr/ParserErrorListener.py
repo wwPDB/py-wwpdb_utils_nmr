@@ -41,7 +41,10 @@ class ParserErrorListener(ErrorListener):
     __maxErrorReport = MAX_ERROR_REPORT
     __errLineNumOverflowed = False
 
-    def __init__(self, filePath: str, inputString: Optional[str] = None, maxErrorReport: int = MAX_ERROR_REPORT):
+    __ignoreCodicError = False
+
+    def __init__(self, filePath: str, inputString: Optional[str] = None,
+                 maxErrorReport: int = MAX_ERROR_REPORT, ignoreCodicError: bool = False):
 
         self.__messageList = []
         self.__errorLineNumber = []
@@ -55,6 +58,8 @@ class ParserErrorListener(ErrorListener):
 
         self.__maxErrorReport = maxErrorReport
         self.__errLineNumOverflowed = False
+
+        self.__ignoreCodicError = ignoreCodicError
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
 
@@ -108,7 +113,8 @@ class ParserErrorListener(ErrorListener):
 
         if self.__filePath is not None:
             _line = 1
-            with open(self.__filePath, 'r', encoding='utf-8') as ifh:
+            with open(self.__filePath, 'r', encoding='utf-8',
+                      errors='ignore' if self.__ignoreCodicError else None) as ifh:
                 for content in ifh:
                     if _line == line:
                         _dict['input'] = content.replace('\t', ' ')\

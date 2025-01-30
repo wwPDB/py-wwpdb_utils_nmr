@@ -128,7 +128,7 @@ class XeasyPKReader:
                         self.__lfh.write(f"+{self.__class_name__}.parse() {pkFilePath} is not accessible.\n")
                     return None, None, None
 
-                ifh = open(pkFilePath, 'r')  # pylint: disable=consider-using-with
+                ifh = open(pkFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
                 input = InputStream(ifh.read())
 
             else:
@@ -166,7 +166,7 @@ class XeasyPKReader:
             lexer = XeasyPKLexer(input)
             lexer.removeErrorListeners()
 
-            lexer_error_listener = LexerErrorListener(pkFilePath, maxErrorReport=self.__maxLexerErrorReport)
+            lexer_error_listener = LexerErrorListener(pkFilePath, maxErrorReport=self.__maxLexerErrorReport, ignoreCodicError=True)
             lexer.addErrorListener(lexer_error_listener)
 
             messageList = lexer_error_listener.getMessageList()
@@ -183,7 +183,7 @@ class XeasyPKReader:
             # try with simpler/faster SLL prediction mode
             # parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
-            parser_error_listener = ParserErrorListener(pkFilePath, maxErrorReport=self.__maxParserErrorReport)
+            parser_error_listener = ParserErrorListener(pkFilePath, maxErrorReport=self.__maxParserErrorReport, ignoreCodicError=True)
             parser.addErrorListener(parser_error_listener)
             tree = parser.xeasy_pk()
 

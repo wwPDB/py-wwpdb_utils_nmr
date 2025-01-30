@@ -12110,7 +12110,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyPk() ++ Error  - {err}\n")
 
                 continue
 
@@ -12160,7 +12160,7 @@ class NmrDpUtility:
 
                 i = 0
 
-                with open(file_path, 'r') as ifh:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
                     for line in ifh:
                         i += 1
 
@@ -12226,7 +12226,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyPk() ++ Error  - {err}\n")
 
                     continue
 
@@ -12239,7 +12239,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyPk() ++ Error  - {err}\n")
 
                     continue
 
@@ -12287,7 +12287,7 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyPk() ++ Error  - {err}\n")
 
                     continue
 
@@ -12301,17 +12301,17 @@ class NmrDpUtility:
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                        self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyPk() ++ Error  - {err}\n")
 
                     continue
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - " + str(e))
+                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__detectContentSubTypeOfLegacyPk() ++ Error  - " + str(e))
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {str(e)}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyPk() ++ Error  - {str(e)}\n")
 
                 return False
 
@@ -12336,7 +12336,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyPk() ++ Error  - {err}\n")
 
             elif len_valid_types == 0:
 
@@ -12348,7 +12348,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyPk() ++ Error  - {err}\n")
 
             else:
 
@@ -12361,7 +12361,7 @@ class NmrDpUtility:
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyPk() ++ Error  - {err}\n")
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyPk() ++ Error  - {err}\n")
 
         return not self.report.isError()
 

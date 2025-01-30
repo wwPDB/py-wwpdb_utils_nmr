@@ -1,6 +1,6 @@
 /*
- Sparky NPK (Non-spectral peak list) parser grammar for ANTLR v4.
- Copyright 2024 Masashi Yokochi
+ Sparky NPK (No height/volume data) parser grammar for ANTLR v4.
+ Copyright 2025 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -33,7 +33,7 @@ data_label:
 	Assignment W1_LA W2_LA W3_LA? W4_LA?
 	W1_Hz_LA? W2_Hz_LA? W3_Hz_LA? W4_Hz_LA?
 	Dev_w1_LA? Dev_w2_LA? Dev_w3_LA? Dev_w4_LA?
-	Dummy_H_LA? Height_LA? Volume_LA? S_N_LA?
+	(Height_LA | Volume_LA)? (Height_LA | Volume_LA)? S_N_LA?
 	Atom1_LA? Atom2_LA? Atom3_LA? Atom4_LA? Distance_LA? Note_LA? RETURN_LA RETURN?;
 //	(peak_2d+ | peak_3d+ | peak_4d+);
 

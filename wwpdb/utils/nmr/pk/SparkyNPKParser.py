@@ -10,67 +10,66 @@ else:
 
 def serializedATN():
     return [
-        4,1,41,167,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,41,164,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,1,0,3,0,16,8,0,1,0,1,0,4,0,20,8,0,11,0,12,0,21,1,0,4,0,25,8,0,
         11,0,12,0,26,1,0,4,0,30,8,0,11,0,12,0,31,1,0,5,0,35,8,0,10,0,12,
         0,38,9,0,1,0,1,0,1,1,1,1,1,1,1,1,3,1,46,8,1,1,1,3,1,49,8,1,1,1,3,
         1,52,8,1,1,1,3,1,55,8,1,1,1,3,1,58,8,1,1,1,3,1,61,8,1,1,1,3,1,64,
         8,1,1,1,3,1,67,8,1,1,1,3,1,70,8,1,1,1,3,1,73,8,1,1,1,3,1,76,8,1,
         1,1,3,1,79,8,1,1,1,3,1,82,8,1,1,1,3,1,85,8,1,1,1,3,1,88,8,1,1,1,
-        3,1,91,8,1,1,1,3,1,94,8,1,1,1,3,1,97,8,1,1,1,3,1,100,8,1,1,1,3,1,
-        103,8,1,1,1,1,1,3,1,107,8,1,1,2,1,2,1,2,1,2,5,2,113,8,2,10,2,12,
-        2,116,9,2,1,2,5,2,119,8,2,10,2,12,2,122,9,2,1,2,1,2,1,3,1,3,1,3,
-        1,3,1,3,5,3,131,8,3,10,3,12,3,134,9,3,1,3,5,3,137,8,3,10,3,12,3,
-        140,9,3,1,3,1,3,1,4,1,4,1,4,1,4,1,4,1,4,5,4,150,8,4,10,4,12,4,153,
-        9,4,1,4,5,4,156,8,4,10,4,12,4,159,9,4,1,4,1,4,1,5,1,5,1,6,1,6,1,
-        6,0,0,7,0,2,4,6,8,10,12,0,3,1,1,14,14,1,0,3,5,2,0,3,4,12,12,195,
-        0,15,1,0,0,0,2,41,1,0,0,0,4,108,1,0,0,0,6,125,1,0,0,0,8,143,1,0,
-        0,0,10,162,1,0,0,0,12,164,1,0,0,0,14,16,5,14,0,0,15,14,1,0,0,0,15,
-        16,1,0,0,0,16,36,1,0,0,0,17,35,3,2,1,0,18,20,3,4,2,0,19,18,1,0,0,
-        0,20,21,1,0,0,0,21,19,1,0,0,0,21,22,1,0,0,0,22,35,1,0,0,0,23,25,
-        3,6,3,0,24,23,1,0,0,0,25,26,1,0,0,0,26,24,1,0,0,0,26,27,1,0,0,0,
-        27,35,1,0,0,0,28,30,3,8,4,0,29,28,1,0,0,0,30,31,1,0,0,0,31,29,1,
-        0,0,0,31,32,1,0,0,0,32,35,1,0,0,0,33,35,5,14,0,0,34,17,1,0,0,0,34,
-        19,1,0,0,0,34,24,1,0,0,0,34,29,1,0,0,0,34,33,1,0,0,0,35,38,1,0,0,
-        0,36,34,1,0,0,0,36,37,1,0,0,0,37,39,1,0,0,0,38,36,1,0,0,0,39,40,
-        5,0,0,1,40,1,1,0,0,0,41,42,5,1,0,0,42,43,5,22,0,0,43,45,5,23,0,0,
-        44,46,5,24,0,0,45,44,1,0,0,0,45,46,1,0,0,0,46,48,1,0,0,0,47,49,5,
-        25,0,0,48,47,1,0,0,0,48,49,1,0,0,0,49,51,1,0,0,0,50,52,5,18,0,0,
-        51,50,1,0,0,0,51,52,1,0,0,0,52,54,1,0,0,0,53,55,5,19,0,0,54,53,1,
-        0,0,0,54,55,1,0,0,0,55,57,1,0,0,0,56,58,5,20,0,0,57,56,1,0,0,0,57,
-        58,1,0,0,0,58,60,1,0,0,0,59,61,5,21,0,0,60,59,1,0,0,0,60,61,1,0,
-        0,0,61,63,1,0,0,0,62,64,5,26,0,0,63,62,1,0,0,0,63,64,1,0,0,0,64,
-        66,1,0,0,0,65,67,5,27,0,0,66,65,1,0,0,0,66,67,1,0,0,0,67,69,1,0,
-        0,0,68,70,5,28,0,0,69,68,1,0,0,0,69,70,1,0,0,0,70,72,1,0,0,0,71,
-        73,5,29,0,0,72,71,1,0,0,0,72,73,1,0,0,0,73,75,1,0,0,0,74,76,5,30,
-        0,0,75,74,1,0,0,0,75,76,1,0,0,0,76,78,1,0,0,0,77,79,5,31,0,0,78,
-        77,1,0,0,0,78,79,1,0,0,0,79,81,1,0,0,0,80,82,5,32,0,0,81,80,1,0,
-        0,0,81,82,1,0,0,0,82,84,1,0,0,0,83,85,5,33,0,0,84,83,1,0,0,0,84,
-        85,1,0,0,0,85,87,1,0,0,0,86,88,5,34,0,0,87,86,1,0,0,0,87,88,1,0,
-        0,0,88,90,1,0,0,0,89,91,5,35,0,0,90,89,1,0,0,0,90,91,1,0,0,0,91,
-        93,1,0,0,0,92,94,5,36,0,0,93,92,1,0,0,0,93,94,1,0,0,0,94,96,1,0,
-        0,0,95,97,5,37,0,0,96,95,1,0,0,0,96,97,1,0,0,0,97,99,1,0,0,0,98,
-        100,5,38,0,0,99,98,1,0,0,0,99,100,1,0,0,0,100,102,1,0,0,0,101,103,
-        5,39,0,0,102,101,1,0,0,0,102,103,1,0,0,0,103,104,1,0,0,0,104,106,
-        5,41,0,0,105,107,5,14,0,0,106,105,1,0,0,0,106,107,1,0,0,0,107,3,
-        1,0,0,0,108,109,5,9,0,0,109,110,5,4,0,0,110,114,5,4,0,0,111,113,
-        3,10,5,0,112,111,1,0,0,0,113,116,1,0,0,0,114,112,1,0,0,0,114,115,
-        1,0,0,0,115,120,1,0,0,0,116,114,1,0,0,0,117,119,3,12,6,0,118,117,
-        1,0,0,0,119,122,1,0,0,0,120,118,1,0,0,0,120,121,1,0,0,0,121,123,
-        1,0,0,0,122,120,1,0,0,0,123,124,7,0,0,0,124,5,1,0,0,0,125,126,5,
-        10,0,0,126,127,5,4,0,0,127,128,5,4,0,0,128,132,5,4,0,0,129,131,3,
-        10,5,0,130,129,1,0,0,0,131,134,1,0,0,0,132,130,1,0,0,0,132,133,1,
-        0,0,0,133,138,1,0,0,0,134,132,1,0,0,0,135,137,3,12,6,0,136,135,1,
-        0,0,0,137,140,1,0,0,0,138,136,1,0,0,0,138,139,1,0,0,0,139,141,1,
-        0,0,0,140,138,1,0,0,0,141,142,7,0,0,0,142,7,1,0,0,0,143,144,5,11,
-        0,0,144,145,5,4,0,0,145,146,5,4,0,0,146,147,5,4,0,0,147,151,5,4,
-        0,0,148,150,3,10,5,0,149,148,1,0,0,0,150,153,1,0,0,0,151,149,1,0,
-        0,0,151,152,1,0,0,0,152,157,1,0,0,0,153,151,1,0,0,0,154,156,3,12,
-        6,0,155,154,1,0,0,0,156,159,1,0,0,0,157,155,1,0,0,0,157,158,1,0,
-        0,0,158,160,1,0,0,0,159,157,1,0,0,0,160,161,7,0,0,0,161,9,1,0,0,
-        0,162,163,7,1,0,0,163,11,1,0,0,0,164,165,7,2,0,0,165,13,1,0,0,0,
-        33,15,21,26,31,34,36,45,48,51,54,57,60,63,66,69,72,75,78,81,84,87,
-        90,93,96,99,102,106,114,120,132,138,151,157
+        3,1,91,8,1,1,1,3,1,94,8,1,1,1,3,1,97,8,1,1,1,3,1,100,8,1,1,1,1,1,
+        3,1,104,8,1,1,2,1,2,1,2,1,2,5,2,110,8,2,10,2,12,2,113,9,2,1,2,5,
+        2,116,8,2,10,2,12,2,119,9,2,1,2,1,2,1,3,1,3,1,3,1,3,1,3,5,3,128,
+        8,3,10,3,12,3,131,9,3,1,3,5,3,134,8,3,10,3,12,3,137,9,3,1,3,1,3,
+        1,4,1,4,1,4,1,4,1,4,1,4,5,4,147,8,4,10,4,12,4,150,9,4,1,4,5,4,153,
+        8,4,10,4,12,4,156,9,4,1,4,1,4,1,5,1,5,1,6,1,6,1,6,0,0,7,0,2,4,6,
+        8,10,12,0,4,1,0,31,32,1,1,14,14,1,0,3,5,2,0,3,4,12,12,191,0,15,1,
+        0,0,0,2,41,1,0,0,0,4,105,1,0,0,0,6,122,1,0,0,0,8,140,1,0,0,0,10,
+        159,1,0,0,0,12,161,1,0,0,0,14,16,5,14,0,0,15,14,1,0,0,0,15,16,1,
+        0,0,0,16,36,1,0,0,0,17,35,3,2,1,0,18,20,3,4,2,0,19,18,1,0,0,0,20,
+        21,1,0,0,0,21,19,1,0,0,0,21,22,1,0,0,0,22,35,1,0,0,0,23,25,3,6,3,
+        0,24,23,1,0,0,0,25,26,1,0,0,0,26,24,1,0,0,0,26,27,1,0,0,0,27,35,
+        1,0,0,0,28,30,3,8,4,0,29,28,1,0,0,0,30,31,1,0,0,0,31,29,1,0,0,0,
+        31,32,1,0,0,0,32,35,1,0,0,0,33,35,5,14,0,0,34,17,1,0,0,0,34,19,1,
+        0,0,0,34,24,1,0,0,0,34,29,1,0,0,0,34,33,1,0,0,0,35,38,1,0,0,0,36,
+        34,1,0,0,0,36,37,1,0,0,0,37,39,1,0,0,0,38,36,1,0,0,0,39,40,5,0,0,
+        1,40,1,1,0,0,0,41,42,5,1,0,0,42,43,5,22,0,0,43,45,5,23,0,0,44,46,
+        5,24,0,0,45,44,1,0,0,0,45,46,1,0,0,0,46,48,1,0,0,0,47,49,5,25,0,
+        0,48,47,1,0,0,0,48,49,1,0,0,0,49,51,1,0,0,0,50,52,5,18,0,0,51,50,
+        1,0,0,0,51,52,1,0,0,0,52,54,1,0,0,0,53,55,5,19,0,0,54,53,1,0,0,0,
+        54,55,1,0,0,0,55,57,1,0,0,0,56,58,5,20,0,0,57,56,1,0,0,0,57,58,1,
+        0,0,0,58,60,1,0,0,0,59,61,5,21,0,0,60,59,1,0,0,0,60,61,1,0,0,0,61,
+        63,1,0,0,0,62,64,5,26,0,0,63,62,1,0,0,0,63,64,1,0,0,0,64,66,1,0,
+        0,0,65,67,5,27,0,0,66,65,1,0,0,0,66,67,1,0,0,0,67,69,1,0,0,0,68,
+        70,5,28,0,0,69,68,1,0,0,0,69,70,1,0,0,0,70,72,1,0,0,0,71,73,5,29,
+        0,0,72,71,1,0,0,0,72,73,1,0,0,0,73,75,1,0,0,0,74,76,7,0,0,0,75,74,
+        1,0,0,0,75,76,1,0,0,0,76,78,1,0,0,0,77,79,7,0,0,0,78,77,1,0,0,0,
+        78,79,1,0,0,0,79,81,1,0,0,0,80,82,5,33,0,0,81,80,1,0,0,0,81,82,1,
+        0,0,0,82,84,1,0,0,0,83,85,5,34,0,0,84,83,1,0,0,0,84,85,1,0,0,0,85,
+        87,1,0,0,0,86,88,5,35,0,0,87,86,1,0,0,0,87,88,1,0,0,0,88,90,1,0,
+        0,0,89,91,5,36,0,0,90,89,1,0,0,0,90,91,1,0,0,0,91,93,1,0,0,0,92,
+        94,5,37,0,0,93,92,1,0,0,0,93,94,1,0,0,0,94,96,1,0,0,0,95,97,5,38,
+        0,0,96,95,1,0,0,0,96,97,1,0,0,0,97,99,1,0,0,0,98,100,5,39,0,0,99,
+        98,1,0,0,0,99,100,1,0,0,0,100,101,1,0,0,0,101,103,5,41,0,0,102,104,
+        5,14,0,0,103,102,1,0,0,0,103,104,1,0,0,0,104,3,1,0,0,0,105,106,5,
+        9,0,0,106,107,5,4,0,0,107,111,5,4,0,0,108,110,3,10,5,0,109,108,1,
+        0,0,0,110,113,1,0,0,0,111,109,1,0,0,0,111,112,1,0,0,0,112,117,1,
+        0,0,0,113,111,1,0,0,0,114,116,3,12,6,0,115,114,1,0,0,0,116,119,1,
+        0,0,0,117,115,1,0,0,0,117,118,1,0,0,0,118,120,1,0,0,0,119,117,1,
+        0,0,0,120,121,7,1,0,0,121,5,1,0,0,0,122,123,5,10,0,0,123,124,5,4,
+        0,0,124,125,5,4,0,0,125,129,5,4,0,0,126,128,3,10,5,0,127,126,1,0,
+        0,0,128,131,1,0,0,0,129,127,1,0,0,0,129,130,1,0,0,0,130,135,1,0,
+        0,0,131,129,1,0,0,0,132,134,3,12,6,0,133,132,1,0,0,0,134,137,1,0,
+        0,0,135,133,1,0,0,0,135,136,1,0,0,0,136,138,1,0,0,0,137,135,1,0,
+        0,0,138,139,7,1,0,0,139,7,1,0,0,0,140,141,5,11,0,0,141,142,5,4,0,
+        0,142,143,5,4,0,0,143,144,5,4,0,0,144,148,5,4,0,0,145,147,3,10,5,
+        0,146,145,1,0,0,0,147,150,1,0,0,0,148,146,1,0,0,0,148,149,1,0,0,
+        0,149,154,1,0,0,0,150,148,1,0,0,0,151,153,3,12,6,0,152,151,1,0,0,
+        0,153,156,1,0,0,0,154,152,1,0,0,0,154,155,1,0,0,0,155,157,1,0,0,
+        0,156,154,1,0,0,0,157,158,7,1,0,0,158,9,1,0,0,0,159,160,7,2,0,0,
+        160,11,1,0,0,0,161,162,7,3,0,0,162,13,1,0,0,0,32,15,21,26,31,34,
+        36,45,48,51,54,57,60,63,66,69,72,75,78,81,84,87,90,93,96,99,103,
+        111,117,129,135,148,154
     ]
 
 class SparkyNPKParser ( Parser ):
@@ -369,15 +368,6 @@ class SparkyNPKParser ( Parser ):
         def Dev_w4_LA(self):
             return self.getToken(SparkyNPKParser.Dev_w4_LA, 0)
 
-        def Dummy_H_LA(self):
-            return self.getToken(SparkyNPKParser.Dummy_H_LA, 0)
-
-        def Height_LA(self):
-            return self.getToken(SparkyNPKParser.Height_LA, 0)
-
-        def Volume_LA(self):
-            return self.getToken(SparkyNPKParser.Volume_LA, 0)
-
         def S_N_LA(self):
             return self.getToken(SparkyNPKParser.S_N_LA, 0)
 
@@ -401,6 +391,18 @@ class SparkyNPKParser ( Parser ):
 
         def RETURN(self):
             return self.getToken(SparkyNPKParser.RETURN, 0)
+
+        def Height_LA(self, i:int=None):
+            if i is None:
+                return self.getTokens(SparkyNPKParser.Height_LA)
+            else:
+                return self.getToken(SparkyNPKParser.Height_LA, i)
+
+        def Volume_LA(self, i:int=None):
+            if i is None:
+                return self.getTokens(SparkyNPKParser.Volume_LA)
+            else:
+                return self.getToken(SparkyNPKParser.Volume_LA, i)
 
         def getRuleIndex(self):
             return SparkyNPKParser.RULE_data_label
@@ -511,91 +513,93 @@ class SparkyNPKParser ( Parser ):
 
             self.state = 75
             self._errHandler.sync(self)
-            _la = self._input.LA(1)
-            if _la==30:
+            la_ = self._interp.adaptivePredict(self._input,16,self._ctx)
+            if la_ == 1:
                 self.state = 74
-                self.match(SparkyNPKParser.Dummy_H_LA)
+                _la = self._input.LA(1)
+                if not(_la==31 or _la==32):
+                    self._errHandler.recoverInline(self)
+                else:
+                    self._errHandler.reportMatch(self)
+                    self.consume()
 
 
             self.state = 78
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==31:
+            if _la==31 or _la==32:
                 self.state = 77
-                self.match(SparkyNPKParser.Height_LA)
+                _la = self._input.LA(1)
+                if not(_la==31 or _la==32):
+                    self._errHandler.recoverInline(self)
+                else:
+                    self._errHandler.reportMatch(self)
+                    self.consume()
 
 
             self.state = 81
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==32:
+            if _la==33:
                 self.state = 80
-                self.match(SparkyNPKParser.Volume_LA)
+                self.match(SparkyNPKParser.S_N_LA)
 
 
             self.state = 84
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==33:
+            if _la==34:
                 self.state = 83
-                self.match(SparkyNPKParser.S_N_LA)
+                self.match(SparkyNPKParser.Atom1_LA)
 
 
             self.state = 87
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==34:
+            if _la==35:
                 self.state = 86
-                self.match(SparkyNPKParser.Atom1_LA)
+                self.match(SparkyNPKParser.Atom2_LA)
 
 
             self.state = 90
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==35:
+            if _la==36:
                 self.state = 89
-                self.match(SparkyNPKParser.Atom2_LA)
+                self.match(SparkyNPKParser.Atom3_LA)
 
 
             self.state = 93
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==36:
+            if _la==37:
                 self.state = 92
-                self.match(SparkyNPKParser.Atom3_LA)
+                self.match(SparkyNPKParser.Atom4_LA)
 
 
             self.state = 96
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==37:
+            if _la==38:
                 self.state = 95
-                self.match(SparkyNPKParser.Atom4_LA)
+                self.match(SparkyNPKParser.Distance_LA)
 
 
             self.state = 99
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==38:
-                self.state = 98
-                self.match(SparkyNPKParser.Distance_LA)
-
-
-            self.state = 102
-            self._errHandler.sync(self)
-            _la = self._input.LA(1)
             if _la==39:
-                self.state = 101
+                self.state = 98
                 self.match(SparkyNPKParser.Note_LA)
 
 
-            self.state = 104
+            self.state = 101
             self.match(SparkyNPKParser.RETURN_LA)
-            self.state = 106
+            self.state = 103
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,26,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,25,self._ctx)
             if la_ == 1:
-                self.state = 105
+                self.state = 102
                 self.match(SparkyNPKParser.RETURN)
 
 
@@ -665,34 +669,34 @@ class SparkyNPKParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 108
+            self.state = 105
             self.match(SparkyNPKParser.Assignment_2d_ex)
-            self.state = 109
+            self.state = 106
             self.match(SparkyNPKParser.Float)
-            self.state = 110
+            self.state = 107
             self.match(SparkyNPKParser.Float)
-            self.state = 114
+            self.state = 111
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,27,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,26,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 111
+                    self.state = 108
                     self.number() 
-                self.state = 116
+                self.state = 113
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,27,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,26,self._ctx)
 
-            self.state = 120
+            self.state = 117
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while (((_la) & ~0x3f) == 0 and ((1 << _la) & 4120) != 0):
-                self.state = 117
+                self.state = 114
                 self.note()
-                self.state = 122
+                self.state = 119
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 123
+            self.state = 120
             _la = self._input.LA(1)
             if not(_la==-1 or _la==14):
                 self._errHandler.recoverInline(self)
@@ -765,36 +769,36 @@ class SparkyNPKParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 125
+            self.state = 122
             self.match(SparkyNPKParser.Assignment_3d_ex)
-            self.state = 126
+            self.state = 123
             self.match(SparkyNPKParser.Float)
-            self.state = 127
+            self.state = 124
             self.match(SparkyNPKParser.Float)
-            self.state = 128
+            self.state = 125
             self.match(SparkyNPKParser.Float)
-            self.state = 132
+            self.state = 129
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,29,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,28,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 129
+                    self.state = 126
                     self.number() 
-                self.state = 134
+                self.state = 131
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,29,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,28,self._ctx)
 
-            self.state = 138
+            self.state = 135
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while (((_la) & ~0x3f) == 0 and ((1 << _la) & 4120) != 0):
-                self.state = 135
+                self.state = 132
                 self.note()
-                self.state = 140
+                self.state = 137
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 141
+            self.state = 138
             _la = self._input.LA(1)
             if not(_la==-1 or _la==14):
                 self._errHandler.recoverInline(self)
@@ -867,38 +871,38 @@ class SparkyNPKParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 143
+            self.state = 140
             self.match(SparkyNPKParser.Assignment_4d_ex)
+            self.state = 141
+            self.match(SparkyNPKParser.Float)
+            self.state = 142
+            self.match(SparkyNPKParser.Float)
+            self.state = 143
+            self.match(SparkyNPKParser.Float)
             self.state = 144
             self.match(SparkyNPKParser.Float)
-            self.state = 145
-            self.match(SparkyNPKParser.Float)
-            self.state = 146
-            self.match(SparkyNPKParser.Float)
-            self.state = 147
-            self.match(SparkyNPKParser.Float)
-            self.state = 151
+            self.state = 148
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,31,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,30,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 148
+                    self.state = 145
                     self.number() 
-                self.state = 153
+                self.state = 150
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,31,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,30,self._ctx)
 
-            self.state = 157
+            self.state = 154
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while (((_la) & ~0x3f) == 0 and ((1 << _la) & 4120) != 0):
-                self.state = 154
+                self.state = 151
                 self.note()
-                self.state = 159
+                self.state = 156
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 160
+            self.state = 157
             _la = self._input.LA(1)
             if not(_la==-1 or _la==14):
                 self._errHandler.recoverInline(self)
@@ -951,7 +955,7 @@ class SparkyNPKParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 162
+            self.state = 159
             _la = self._input.LA(1)
             if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 56) != 0)):
                 self._errHandler.recoverInline(self)
@@ -1004,7 +1008,7 @@ class SparkyNPKParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 164
+            self.state = 161
             _la = self._input.LA(1)
             if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 4120) != 0)):
                 self._errHandler.recoverInline(self)

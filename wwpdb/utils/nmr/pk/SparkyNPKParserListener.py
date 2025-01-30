@@ -3,7 +3,7 @@
 # Date: 30-Jan-2025
 #
 # Updates:
-""" ParserLister class for SPARKY NPK files.
+""" ParserLister class for SPARKY PK files.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"
@@ -259,7 +259,7 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, x_dev, y_dev, Z_dev, None, None, None,
+            dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, x_dev, y_dev, z_dev, None, None, None,
                                           x_hz, y_hz, z_hz, None, None, None, height, None, volume, None)
 
             if dstFunc is None:

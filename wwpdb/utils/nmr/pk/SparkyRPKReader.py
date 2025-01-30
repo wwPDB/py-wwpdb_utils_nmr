@@ -1,5 +1,5 @@
 ##
-# SparkyNPKReader.py
+# SparkyRPKReader.py
 #
 # Update:
 ##
@@ -21,8 +21,8 @@ try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
     from wwpdb.utils.nmr.pk.SparkyPKLexer import SparkyPKLexer
-    from wwpdb.utils.nmr.pk.SparkyNPKParser import SparkyNPKParser
-    from wwpdb.utils.nmr.pk.SparkyNPKParserListener import SparkyNPKParserListener
+    from wwpdb.utils.nmr.pk.SparkyRPKParser import SparkyRPKParser
+    from wwpdb.utils.nmr.pk.SparkyRPKParserListener import SparkyRPKParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -35,8 +35,8 @@ except ImportError:
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.pk.SparkyPKLexer import SparkyPKLexer
-    from nmr.pk.SparkyNPKParser import SparkyNPKParser
-    from nmr.pk.SparkyNPKParserListener import SparkyNPKParserListener
+    from nmr.pk.SparkyRPKParser import SparkyRPKParser
+    from nmr.pk.SparkyRPKParserListener import SparkyRPKParserListener
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID,
@@ -47,7 +47,7 @@ except ImportError:
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
-class SparkyNPKReader:
+class SparkyRPKReader:
     """ Accessor methods for parsing SPARKY PK files.
     """
 
@@ -64,7 +64,6 @@ class SparkyNPKReader:
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
-        self.__internal = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
         self.__maxParserErrorReport = MAX_ERROR_REPORT
@@ -97,9 +96,6 @@ class SparkyNPKReader:
     def setDebugMode(self, debug: bool):
         self.__debug = debug
 
-    def setInternalMode(self, internal: bool):
-        self.__internal = internal
-
     def setLexerMaxErrorReport(self, maxErrReport: int):
         self.__maxLexerErrorReport = maxErrReport
 
@@ -109,9 +105,9 @@ class SparkyNPKReader:
     def parse(self, pkFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True,
               createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None,
               reservedListIds: Optional[dict] = None, entryId: Optional[str] = None
-              ) -> Tuple[Optional[SparkyNPKParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
+              ) -> Tuple[Optional[SparkyRPKParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
         """ Parse SPARKY PK file.
-            @return: SparkyNPKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
+            @return: SparkyRPKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
         ifh = None
@@ -166,16 +162,16 @@ class SparkyNPKReader:
                         self.__lfh.write(f"{description['marker']}\n")
 
             stream = CommonTokenStream(lexer)
-            parser = SparkyNPKParser(stream)
+            parser = SparkyRPKParser(stream)
             # try with simpler/faster SLL prediction mode
             # parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(pkFilePath, maxErrorReport=self.__maxParserErrorReport, ignoreCodicError=True)
             parser.addErrorListener(parser_error_listener)
-            tree = parser.sparky_npk()
+            tree = parser.sparky_rpk()
 
             walker = ParseTreeWalker()
-            listener = SparkyNPKParserListener(self.__verbose, self.__lfh,
+            listener = SparkyRPKParserListener(self.__verbose, self.__lfh,
                                                self.__representativeModelId,
                                                self.__representativeAltId,
                                                self.__mrAtomNameMapping,
@@ -183,7 +179,6 @@ class SparkyNPKReader:
                                                self.__ccU, self.__csStat, self.__nefT,
                                                self.__reasons)
             listener.setDebugMode(self.__debug)
-            listener.setInternalMode(self.__internal)
             listener.createSfDict(createSfDict)
             if createSfDict:
                 if originalFileName is not None:
@@ -223,8 +218,7 @@ class SparkyNPKReader:
 
 
 if __name__ == "__main__":
-    reader = SparkyNPKReader(True)
+    reader = SparkyRPKReader(True)
     reader.setDebugMode(True)
-    reader.setInternalMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/5uzf/bmr30254/work/data/D_1000226668_nmr-peaks-upload_P1.dat.V1',
-                 '../../tests-nmr/mock-data-remediation/5uzf/5uzf.cif')
+    reader.parse('../../tests-nmr/mock-data-remediation/5z80/bmr36159/work/data/D_1300006579_nmr-peaks-upload_P1.dat.V7',
+                 '../../tests-nmr/mock-data-remediation/5z80/5z80.cif')

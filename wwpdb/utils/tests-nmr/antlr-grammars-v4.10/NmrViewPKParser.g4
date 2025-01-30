@@ -136,5 +136,5 @@ jcoupling:
 	Float | Simple_name | ENCLOSE_DATA;
 
 /* number expression in peak list */
-number: Float | Integer;
+number: Float | Integer | Simple_name;
 

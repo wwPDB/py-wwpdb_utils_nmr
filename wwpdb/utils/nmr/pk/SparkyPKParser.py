@@ -27,7 +27,7 @@ def serializedATN():
         1,5,1,5,4,5,181,8,5,11,5,12,5,182,1,5,5,5,186,8,5,10,5,12,5,189,
         9,5,1,5,1,5,1,6,4,6,194,8,6,11,6,12,6,195,1,6,3,6,199,8,6,1,6,1,
         6,1,7,1,7,1,8,1,8,1,8,0,0,9,0,2,4,6,8,10,12,14,16,0,3,1,1,14,14,
-        1,0,3,5,2,0,3,3,12,12,243,0,19,1,0,0,0,2,45,1,0,0,0,4,97,1,0,0,0,
+        1,0,3,5,2,0,3,4,12,12,243,0,19,1,0,0,0,2,45,1,0,0,0,4,97,1,0,0,0,
         6,141,1,0,0,0,8,157,1,0,0,0,10,174,1,0,0,0,12,193,1,0,0,0,14,202,
         1,0,0,0,16,204,1,0,0,0,18,20,5,14,0,0,19,18,1,0,0,0,19,20,1,0,0,
         0,20,40,1,0,0,0,21,39,3,2,1,0,22,39,3,4,2,0,23,25,3,6,3,0,24,23,
@@ -851,7 +851,7 @@ class SparkyPKParser ( Parser ):
             self.state = 152
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==3 or _la==12:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 4120) != 0):
                 self.state = 149
                 self.note()
                 self.state = 154
@@ -956,7 +956,7 @@ class SparkyPKParser ( Parser ):
             self.state = 169
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==3 or _la==12:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 4120) != 0):
                 self.state = 166
                 self.note()
                 self.state = 171
@@ -1063,7 +1063,7 @@ class SparkyPKParser ( Parser ):
             self.state = 187
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==3 or _la==12:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 4120) != 0):
                 self.state = 184
                 self.note()
                 self.state = 189
@@ -1232,6 +1232,9 @@ class SparkyPKParser ( Parser ):
         def Integer(self):
             return self.getToken(SparkyPKParser.Integer, 0)
 
+        def Float(self):
+            return self.getToken(SparkyPKParser.Float, 0)
+
         def getRuleIndex(self):
             return SparkyPKParser.RULE_note
 
@@ -1255,7 +1258,7 @@ class SparkyPKParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 204
             _la = self._input.LA(1)
-            if not(_la==3 or _la==12):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 4120) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

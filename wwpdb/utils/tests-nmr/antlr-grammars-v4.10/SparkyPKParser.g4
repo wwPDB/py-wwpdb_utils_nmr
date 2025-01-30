@@ -59,5 +59,5 @@ peak_wo_assign:
 number:	Real | Float | Integer;
 
 /* note expression in peak list */
-note:	Simple_name | Integer;
+note:	Simple_name | Integer | Float;
 

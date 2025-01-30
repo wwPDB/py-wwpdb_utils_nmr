@@ -22,6 +22,7 @@ W1:			'w1' -> pushMode(LABEL_MODE);
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
 Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ([Ee] ('+' | '-')? DECIMAL)?;
+Real_vol:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ([Ee] ('+' | '-')? DECIMAL)? ' ' [a-z][a-z];
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
@@ -43,7 +44,7 @@ Simple_name:		SIMPLE_NAME;
 
 fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
-fragment START_CHAR:	ALPHA_NUM | '_' | '+' | '-' | '*' | '?';
+fragment START_CHAR:	ALPHA_NUM | '_' | '+' | '*' | '?';
 fragment NAME_CHAR:	START_CHAR | '\'' | '"' | '#' | '%';
 //fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
@@ -59,25 +60,30 @@ LINE_COMMENT:		(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHA
 
 mode LABEL_MODE;
 
-W1_Hz_LA:		'w1 (Hz)';
-W2_Hz_LA:		'w2 (Hz)';
-W3_Hz_LA:		'w3 (Hz)';
-W4_Hz_LA:		'w4 (Hz)';
+W1_Hz_LA:		'w1 (' [Hh] 'z)';
+W2_Hz_LA:		'w2 (' [Hh] 'z)';
+W3_Hz_LA:		'w3 (' [Hh] 'z)';
+W4_Hz_LA:		'w4 (' [Hh] 'z)';
+
+Lw1_Hz_LA:		[Ll] 'w1 (' [Hh] 'z)';
+Lw2_Hz_LA:		[Ll] 'w2 (' [Hh] 'z)';
+Lw3_Hz_LA:		[Ll] 'w3 (' [Hh] 'z)';
+Lw4_Hz_LA:		[Ll] 'w4 (' [Hh] 'z)';
 
 W1_LA:			'w1';
 W2_LA:			'w2';
 W3_LA:			'w3';
 W4_LA:			'w4';
 
-Dev_w1_LA:		'Dev w1';
-Dev_w2_LA:		'Dev w2';
-Dev_w3_LA:		'Dev w3';
-Dev_w4_LA:		'Dev w4';
+Dev_w1_LA:		[Dd] 'ev w1';
+Dev_w2_LA:		[Dd] 'ev w2';
+Dev_w3_LA:		[Dd] 'ev w3';
+Dev_w4_LA:		[Dd] 'ev w4';
 
 Dummy_H_LA:		'Fit Height' 's'?;
 Height_LA:		('Data '? 'Height' 's'? | 'Data');
 Volume_LA:		'Volume';
-S_N_LA:			'S/N';
+S_N_LA:			[Ss] '/' [Nn];
 Atom1_LA:		'Atom1' | 'ATOM1';
 Atom2_LA:		'Atom2' | 'ATOM2';
 Atom3_LA:		'Atom3' | 'ATOM3';

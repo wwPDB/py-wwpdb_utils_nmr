@@ -46,6 +46,9 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
     __has_dev = False
     __has_height = False
     __has_volume = False
+    __has_lw_hz = False
+    __has_real_vol = False
+    __real_vol = None
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
@@ -59,6 +62,9 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.file_type = 'nm-pea-spa'
         self.software_name = 'SPARKY'
+
+        if reasons is not None and 'has_real_vol' in reasons:
+            self.__has_real_vol = True
 
     # Enter a parse tree produced by SparkyRPKParser#sparky_pk.
     def enterSparky_rpk(self, ctx: SparkyRPKParser.Sparky_rpkContext):  # pylint: disable=unused-argument
@@ -92,6 +98,10 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__has_volume = False
         if ctx.Volume_LA():
             self.__has_volume = True
+
+        self.__has_lw_hz = False
+        if ctx.Lw2_Hz_LA():
+            self.__has_lw_hz = True
 
         self.initSpectralDim()
 
@@ -181,10 +191,25 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
 
             height = volume = None
             if self.__has_volume and len(self.originalNumberSelection) > offset:
-                volume = self.originalNumberSelection[offset]
-                offset += 1
+                if self.__has_real_vol:
+                    volume = self.__real_vol
+                    if volume == self.originalNumberSelection[offset]:
+                        offset += 1
+                else:
+                    volume = self.originalNumberSelection[offset]
+                    offset += 1
             if self.__has_height and len(self.originalNumberSelection) > offset:
                 height = self.originalNumberSelection[offset]
+                offset += 1
+
+            x_lw_hz = y_lw_hz = None
+            if self.__has_lw_hz:
+                if len(self.numberSelection) > offset:
+                    x_lw_hz = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    y_lw_hz = self.numberSelection[offset]
+                    offset += 1
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -194,7 +219,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, x_dev, y_dev, None, None,
-                                          x_hz, y_hz, None, None, height, None, volume, None)
+                                          x_hz, y_hz, x_lw_hz, y_lw_hz, height, None, volume, None)
 
             if dstFunc is None:
                 self.peaks2D -= 1
@@ -226,6 +251,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
+            self.__real_vol = None
 
     # Enter a parse tree produced by SparkyRPKParser#peak_3d.
     def enterPeak_3d(self, ctx: SparkyRPKParser.Peak_3dContext):  # pylint: disable=unused-argument
@@ -285,10 +311,28 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
 
             height = volume = None
             if self.__has_volume and len(self.originalNumberSelection) > offset:
-                volume = self.originalNumberSelection[offset]
-                offset += 1
+                if self.__has_real_vol:
+                    volume = self.__real_vol
+                    if volume == self.originalNumberSelection[offset]:
+                        offset += 1
+                else:
+                    volume = self.originalNumberSelection[offset]
+                    offset += 1
             if self.__has_height and len(self.originalNumberSelection) > offset:
                 height = self.originalNumberSelection[offset]
+                offset += 1
+
+            x_lw_hz = y_lw_hz = z_lw_hz = None
+            if self.__has_lw_hz:
+                if len(self.numberSelection) > offset:
+                    x_lw_hz = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    y_lw_hz = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    z_lw_hz = self.numberSelection[offset]
+                    offset += 1
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -298,7 +342,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, x_dev, y_dev, z_dev, None, None, None,
-                                          x_hz, y_hz, z_hz, None, None, None, height, None, volume, None)
+                                          x_hz, y_hz, z_hz, x_lw_hz, y_lw_hz, z_lw_hz, height, None, volume, None)
 
             if dstFunc is None:
                 self.peaks3D -= 1
@@ -331,6 +375,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
+            self.__real_vol = None
 
     # Enter a parse tree produced by SparkyRPKParser#peak_4d.
     def enterPeak_4d(self, ctx: SparkyRPKParser.Peak_4dContext):  # pylint: disable=unused-argument
@@ -397,10 +442,31 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
 
             height = volume = None
             if self.__has_volume and len(self.originalNumberSelection) > offset:
-                volume = self.originalNumberSelection[offset]
-                offset += 1
+                if self.__has_real_vol:
+                    volume = self.__real_vol
+                    if volume == self.originalNumberSelection[offset]:
+                        offset += 1
+                else:
+                    volume = self.originalNumberSelection[offset]
+                    offset += 1
             if self.__has_height and len(self.originalNumberSelection) > offset:
                 height = self.originalNumberSelection[offset]
+                offset += 1
+
+            x_lw_hz = y_lw_hz = z_lw_hz = a_lw_hz = None
+            if self.__has_lw_hz:
+                if len(self.numberSelection) > offset:
+                    x_lw_hz = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    y_lw_hz = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    z_lw_hz = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    a_lw_hz = self.numberSelection[offset]
+                    offset += 1
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -410,7 +476,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, x_dev, y_dev, z_dev, a_dev, None, None, None, None,
-                                          x_hz, y_hz, z_hz, a_hz, None, None, None, None, height, None, volume, None)
+                                          x_hz, y_hz, z_hz, a_hz, x_lw_hz, y_lw_hz, z_lw_hz, a_lw_hz, height, None, volume, None)
 
             if dstFunc is None:
                 self.peaks4D -= 1
@@ -444,6 +510,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
+            self.__real_vol = None
 
     # Enter a parse tree produced by SparkyRPKParser#peak_wo_assign.
     def enterPeak_wo_assign(self, ctx: SparkyRPKParser.Peak_wo_assignContext):  # pylint: disable=unused-argument
@@ -500,10 +567,25 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
 
                     height = volume = None
                     if self.__has_volume and len(self.originalNumberSelection) > offset:
-                        volume = self.originalNumberSelection[offset]
-                        offset += 1
+                        if self.__has_real_vol:
+                            volume = self.__real_vol
+                            if volume == self.originalNumberSelection[offset]:
+                                offset += 1
+                        else:
+                            volume = self.originalNumberSelection[offset]
+                            offset += 1
                     if self.__has_height and len(self.originalNumberSelection) > offset:
                         height = self.originalNumberSelection[offset]
+                        offset += 1
+
+                    x_lw_hz = y_lw_hz = None
+                    if self.__has_lw_hz:
+                        if len(self.numberSelection) > offset:
+                            x_lw_hz = self.numberSelection[offset]
+                            offset += 1
+                        if len(self.numberSelection) > offset:
+                            y_lw_hz = self.numberSelection[offset]
+                            offset += 1
 
                     if not self.hasPolySeq and not self.hasNonPolySeq:
                         return
@@ -513,7 +595,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                         return
 
                     dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, x_dev, y_dev, None, None,
-                                                  x_hz, y_hz, None, None, height, None, volume, None)
+                                                  x_hz, y_hz, x_lw_hz, y_lw_hz, height, None, volume, None)
 
                     if dstFunc is None:
                         self.peaks2D -= 1
@@ -578,10 +660,28 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
 
                     height = volume = None
                     if self.__has_volume and len(self.originalNumberSelection) > offset:
-                        volume = self.originalNumberSelection[offset]
-                        offset += 1
+                        if self.__has_real_vol:
+                            volume = self.__real_vol
+                            if volume == self.originalNumberSelection[offset]:
+                                offset += 1
+                        else:
+                            volume = self.originalNumberSelection[offset]
+                            offset += 1
                     if self.__has_height and len(self.originalNumberSelection) > offset:
                         height = self.originalNumberSelection[offset]
+                        offset += 1
+
+                    x_lw_hz = y_lw_hz = z_lw_hz = None
+                    if self.__has_lw_hz:
+                        if len(self.numberSelection) > offset:
+                            x_lw_hz = self.numberSelection[offset]
+                            offset += 1
+                        if len(self.numberSelection) > offset:
+                            y_lw_hz = self.numberSelection[offset]
+                            offset += 1
+                        if len(self.numberSelection) > offset:
+                            z_lw_hz = self.numberSelection[offset]
+                            offset += 1
 
                     if not self.hasPolySeq and not self.hasNonPolySeq:
                         return
@@ -591,7 +691,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                         return
 
                     dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, x_dev, y_dev, z_dev, None, None, None,
-                                                  x_hz, y_hz, z_hz, None, None, None, height, None, volume, None)
+                                                  x_hz, y_hz, z_hz, x_lw_hz, y_lw_hz, z_lw_hz, height, None, volume, None)
 
                     if dstFunc is None:
                         self.peaks3D -= 1
@@ -664,10 +764,31 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
 
                     height = volume = None
                     if self.__has_volume and len(self.originalNumberSelection) > offset:
-                        volume = self.originalNumberSelection[offset]
-                        offset += 1
+                        if self.__has_real_vol:
+                            volume = self.__real_vol
+                            if volume == self.originalNumberSelection[offset]:
+                                offset += 1
+                        else:
+                            volume = self.originalNumberSelection[offset]
+                            offset += 1
                     if self.__has_height and len(self.originalNumberSelection) > offset:
                         height = self.originalNumberSelection[offset]
+                        offset += 1
+
+                    x_lw_hz = y_lw_hz = z_lw_hz = a_lw_hz = None
+                    if self.__has_lw_hz:
+                        if len(self.numberSelection) > offset:
+                            x_lw_hz = self.numberSelection[offset]
+                            offset += 1
+                        if len(self.numberSelection) > offset:
+                            y_lw_hz = self.numberSelection[offset]
+                            offset += 1
+                        if len(self.numberSelection) > offset:
+                            z_lw_hz = self.numberSelection[offset]
+                            offset += 1
+                        if len(self.numberSelection) > offset:
+                            a_lw_hz = self.numberSelection[offset]
+                            offset += 1
 
                     if not self.hasPolySeq and not self.hasNonPolySeq:
                         return
@@ -677,7 +798,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                         return
 
                     dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, x_dev, y_dev, z_dev, a_dev, None, None, None, None,
-                                                  x_hz, y_hz, z_hz, a_hz, None, None, None, None, height, None, volume, None)
+                                                  x_hz, y_hz, z_hz, a_hz, x_lw_hz, y_lw_hz, z_lw_hz, a_lw_hz, height, None, volume, None)
 
                     if dstFunc is None:
                         self.peaks4D -= 1
@@ -712,6 +833,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
+            self.__real_vol = None
 
     # Enter a parse tree produced by SparkyRPKParser#number.
     def enterNumber(self, ctx: SparkyRPKParser.NumberContext):
@@ -722,6 +844,17 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
 
         elif ctx.Real():
             value = str(ctx.Real())
+            self.numberSelection.append(float(value))
+            self.originalNumberSelection.append(value)
+
+        elif ctx.Real_vol():
+            self.__has_real_vol = True
+            if self.reasons is None and 'has_real_vol' not in self.reasonsForReParsing:
+                self.reasonsForReParsing['has_real_vol'] = True
+            value = str(ctx.Real_vol())
+            if ' ' in value:
+                value = value.split()[0]
+                self.__real_vol = value
             self.numberSelection.append(float(value))
             self.originalNumberSelection.append(value)
 

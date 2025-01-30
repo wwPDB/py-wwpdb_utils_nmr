@@ -62,6 +62,7 @@ W2_LA:			'w2';
 W3_LA:			'w3';
 W4_LA:			'w4';
 
+Dummy_H_LA:		'Fit Height' 's'?;
 Height_LA:		'Data '? 'Height' 's'?;
 Volume_LA:		'Volume';
 S_N_LA:			'S/N';

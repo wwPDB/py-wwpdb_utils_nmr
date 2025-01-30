@@ -213,28 +213,35 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            index = int(str(ctx.Integer(0)))
-            # x_axis = self.numberSelection[0]
-            # y_axis = self.numberSelection[1]
-            # dx = self.numberSelection[2]
-            # dy = self.numberSelection[3]
-            x_ppm = self.numberSelection[4]
-            y_ppm = self.numberSelection[5]
-            x_hz = self.numberSelection[6]
-            y_hz = self.numberSelection[7]
-            # xw = self.numberSelection[8]
-            # yw = self.numberSelection[9]
-            xw_hz = self.numberSelection[10]
-            yw_hz = self.numberSelection[11]
-            # x1 = int(str(ctx.Integer(1)))
-            # x3 = int(str(ctx.Integer(2)))
-            # y1 = int(str(ctx.Integer(3)))
-            # y3 = int(str(ctx.Integer(4)))
-            height = self.originalNumberSelection[12]
-            dheight = self.originalNumberSelection[13]
-            vol = self.originalNumberSelection[14]
-            # pchi2 = self.originalNumberSelection[15]
-            # type = int(str(ctx.Integer(5)))
+            try:
+
+                index = int(str(ctx.Integer(0)))
+                # x_axis = self.numberSelection[0]
+                # y_axis = self.numberSelection[1]
+                # dx = self.numberSelection[2]
+                # dy = self.numberSelection[3]
+                x_ppm = self.numberSelection[4]
+                y_ppm = self.numberSelection[5]
+                x_hz = self.numberSelection[6]
+                y_hz = self.numberSelection[7]
+                # xw = self.numberSelection[8]
+                # yw = self.numberSelection[9]
+                xw_hz = self.numberSelection[10]
+                yw_hz = self.numberSelection[11]
+                # x1 = int(str(ctx.Integer(1)))
+                # x3 = int(str(ctx.Integer(2)))
+                # y1 = int(str(ctx.Integer(3)))
+                # y3 = int(str(ctx.Integer(4)))
+                height = self.originalNumberSelection[12]
+                dheight = self.originalNumberSelection[13]
+                vol = self.originalNumberSelection[14]
+                # pchi2 = self.originalNumberSelection[15]
+                # type = int(str(ctx.Integer(5)))
+
+            except IndexError:
+                self.peaks2D -= 1
+                return
+
             if ctx.Any_name():
                 ass = str(ctx.Any_name())
                 if ass in emptyValue or (self.null_string is not None and ass == self.null_string):
@@ -346,36 +353,43 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            index = int(str(ctx.Integer(0)))
-            # x_axis = self.numberSelection[0]
-            # y_axis = self.numberSelection[1]
-            # z_axis = self.numberSelection[2]
-            # dx = self.numberSelection[3]
-            # dy = self.numberSelection[4]
-            # dz = self.numberSelection[5]
-            x_ppm = self.numberSelection[6]
-            y_ppm = self.numberSelection[7]
-            z_ppm = self.numberSelection[8]
-            x_hz = self.numberSelection[9]
-            y_hz = self.numberSelection[10]
-            z_hz = self.numberSelection[11]
-            # xw = self.numberSelection[12]
-            # yw = self.numberSelection[13]
-            # zw = self.numberSelection[14]
-            xw_hz = self.numberSelection[15]
-            yw_hz = self.numberSelection[16]
-            zw_hz = self.numberSelection[17]
-            # x1 = int(str(ctx.Integer(1)))
-            # x3 = int(str(ctx.Integer(2)))
-            # y1 = int(str(ctx.Integer(3)))
-            # y3 = int(str(ctx.Integer(4)))
-            # z1 = int(str(ctx.Integer(5)))
-            # z3 = int(str(ctx.Integer(6)))
-            height = self.originalNumberSelection[18]
-            dheight = self.originalNumberSelection[19]
-            vol = self.originalNumberSelection[20]
-            # pchi2 = self.originalNumberSelection[21]
-            # type = int(str(ctx.Integer(7)))
+            try:
+
+                index = int(str(ctx.Integer(0)))
+                # x_axis = self.numberSelection[0]
+                # y_axis = self.numberSelection[1]
+                # z_axis = self.numberSelection[2]
+                # dx = self.numberSelection[3]
+                # dy = self.numberSelection[4]
+                # dz = self.numberSelection[5]
+                x_ppm = self.numberSelection[6]
+                y_ppm = self.numberSelection[7]
+                z_ppm = self.numberSelection[8]
+                x_hz = self.numberSelection[9]
+                y_hz = self.numberSelection[10]
+                z_hz = self.numberSelection[11]
+                # xw = self.numberSelection[12]
+                # yw = self.numberSelection[13]
+                # zw = self.numberSelection[14]
+                xw_hz = self.numberSelection[15]
+                yw_hz = self.numberSelection[16]
+                zw_hz = self.numberSelection[17]
+                # x1 = int(str(ctx.Integer(1)))
+                # x3 = int(str(ctx.Integer(2)))
+                # y1 = int(str(ctx.Integer(3)))
+                # y3 = int(str(ctx.Integer(4)))
+                # z1 = int(str(ctx.Integer(5)))
+                # z3 = int(str(ctx.Integer(6)))
+                height = self.originalNumberSelection[18]
+                dheight = self.originalNumberSelection[19]
+                vol = self.originalNumberSelection[20]
+                # pchi2 = self.originalNumberSelection[21]
+                # type = int(str(ctx.Integer(7)))
+
+            except IndexError:
+                self.peaks3D -= 1
+                return
+
             if ctx.Any_name():
                 ass = str(ctx.Any_name())
                 if ass in emptyValue or (self.null_string is not None and ass == self.null_string):
@@ -492,44 +506,51 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            index = int(str(ctx.Integer(0)))
-            # x_axis = self.numberSelection[0]
-            # y_axis = self.numberSelection[1]
-            # z_axis = self.numberSelection[2]
-            # a_axis = self.numberSelection[3]
-            # dx = self.numberSelection[4]
-            # dy = self.numberSelection[5]
-            # dz = self.numberSelection[6]
-            # da = self.numberSelection[7]
-            x_ppm = self.numberSelection[8]
-            y_ppm = self.numberSelection[9]
-            z_ppm = self.numberSelection[10]
-            a_ppm = self.numberSelection[11]
-            x_hz = self.numberSelection[12]
-            y_hz = self.numberSelection[13]
-            z_hz = self.numberSelection[14]
-            a_hz = self.numberSelection[15]
-            # xw = self.numberSelection[16]
-            # yw = self.numberSelection[17]
-            # zw = self.numberSelection[18]
-            # aw = self.numberSelection[19]
-            xw_hz = self.numberSelection[20]
-            yw_hz = self.numberSelection[21]
-            zw_hz = self.numberSelection[22]
-            aw_hz = self.numberSelection[23]
-            # x1 = int(str(ctx.Integer(1)))
-            # x3 = int(str(ctx.Integer(2)))
-            # y1 = int(str(ctx.Integer(3)))
-            # y3 = int(str(ctx.Integer(4)))
-            # z1 = int(str(ctx.Integer(5)))
-            # z3 = int(str(ctx.Integer(6)))
-            # a1 = int(str(ctx.Integer(7)))
-            # a3 = int(str(ctx.Integer(8)))
-            height = self.originalNumberSelection[24]
-            dheight = self.originalNumberSelection[25]
-            vol = self.originalNumberSelection[26]
-            # pchi2 = self.originalNumberSelection[27]
-            # type = int(str(ctx.Integer(9)))
+            try:
+
+                index = int(str(ctx.Integer(0)))
+                # x_axis = self.numberSelection[0]
+                # y_axis = self.numberSelection[1]
+                # z_axis = self.numberSelection[2]
+                # a_axis = self.numberSelection[3]
+                # dx = self.numberSelection[4]
+                # dy = self.numberSelection[5]
+                # dz = self.numberSelection[6]
+                # da = self.numberSelection[7]
+                x_ppm = self.numberSelection[8]
+                y_ppm = self.numberSelection[9]
+                z_ppm = self.numberSelection[10]
+                a_ppm = self.numberSelection[11]
+                x_hz = self.numberSelection[12]
+                y_hz = self.numberSelection[13]
+                z_hz = self.numberSelection[14]
+                a_hz = self.numberSelection[15]
+                # xw = self.numberSelection[16]
+                # yw = self.numberSelection[17]
+                # zw = self.numberSelection[18]
+                # aw = self.numberSelection[19]
+                xw_hz = self.numberSelection[20]
+                yw_hz = self.numberSelection[21]
+                zw_hz = self.numberSelection[22]
+                aw_hz = self.numberSelection[23]
+                # x1 = int(str(ctx.Integer(1)))
+                # x3 = int(str(ctx.Integer(2)))
+                # y1 = int(str(ctx.Integer(3)))
+                # y3 = int(str(ctx.Integer(4)))
+                # z1 = int(str(ctx.Integer(5)))
+                # z3 = int(str(ctx.Integer(6)))
+                # a1 = int(str(ctx.Integer(7)))
+                # a3 = int(str(ctx.Integer(8)))
+                height = self.originalNumberSelection[24]
+                dheight = self.originalNumberSelection[25]
+                vol = self.originalNumberSelection[26]
+                # pchi2 = self.originalNumberSelection[27]
+                # type = int(str(ctx.Integer(9)))
+
+            except IndexError:
+                self.peaks4D -= 1
+                return
+
             if ctx.Any_name():
                 ass = str(ctx.Any_name())
                 if ass in emptyValue or (self.null_string is not None and ass == self.null_string):

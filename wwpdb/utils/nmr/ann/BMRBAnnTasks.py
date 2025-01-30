@@ -1130,11 +1130,11 @@ class BMRBAnnTasks:
                                     _val = row[1].split('-')
                                     _val_0 = float(_val[0])
                                     _val_1 = float(_val[1])
-                                    _eff_digits_0 = eff_digits(_val[0] if isinstance(_val[0], str) else str(_val[0]))
-                                    _eff_digits_1 = eff_digits(_val[1] if isinstance(_val[1], str) else str(_val[1]))
-                                    eff_digits = max([_eff_digits_0, _eff_digits_1])
-                                    lp.data[idx][val_col] = round((_val_0 + _val_1) / 2.0, eff_digits)
-                                    lp.data[idx][val_err_col] = round(abs(_val_0 - _val_1) / 2.0, eff_digits)
+                                    _eff_digits_0 = eff_digits(_val[0])
+                                    _eff_digits_1 = eff_digits(_val[1])
+                                    max__eff_digits = max([_eff_digits_0, _eff_digits_1])
+                                    lp.data[idx][val_col] = round((_val_0 + _val_1) / 2.0, max__eff_digits)
+                                    lp.data[idx][val_err_col] = round(abs(_val_0 - _val_1) / 2.0, max__eff_digits)
                                 except ValueError:
                                     pass
                         elif minus_code_count == 2 and row[1].startswith('-'):
@@ -1142,11 +1142,11 @@ class BMRBAnnTasks:
                                 _val = row[1][1:].split('-')
                                 _val_0 = float('-' + _val[0])
                                 _val_1 = float(_val[1])
-                                _eff_digits_0 = eff_digits(_val[0] if isinstance(_val[0], str) else str(_val[0]))
-                                _eff_digits_1 = eff_digits(_val[1] if isinstance(_val[1], str) else str(_val[1]))
-                                eff_digits = max([_eff_digits_0, _eff_digits_1])
-                                lp.data[idx][val_col] = round((_val_0 + _val_1) / 2.0, eff_digits)
-                                lp.data[idx][val_err_col] = round(abs(_val_0 - _val_1) / 2.0, eff_digits)
+                                _eff_digits_0 = eff_digits(_val[0])
+                                _eff_digits_1 = eff_digits(_val[1])
+                                max_eff_digits = max([_eff_digits_0, _eff_digits_1])
+                                lp.data[idx][val_col] = round((_val_0 + _val_1) / 2.0, max_eff_digits)
+                                lp.data[idx][val_err_col] = round(abs(_val_0 - _val_1) / 2.0, max_eff_digits)
                             except ValueError:
                                 pass
 
@@ -1161,9 +1161,9 @@ class BMRBAnnTasks:
                                     _val_1 = float(_val[1])
                                     _eff_digits_0 = eff_digits(_val[0] if isinstance(_val[0], str) else str(_val[0]))
                                     _eff_digits_1 = eff_digits(_val[1] if isinstance(_val[1], str) else str(_val[1]))
-                                    eff_digits = max([_eff_digits_0, _eff_digits_1])
-                                    lp.data[idx][val_col] = round((_val_0 + _val_1) / 2.0, eff_digits)
-                                    lp.data[idx][val_err_col] = round(abs(_val_0 - _val_1) / 2.0, eff_digits)
+                                    max_eff_digits = max([_eff_digits_0, _eff_digits_1])
+                                    lp.data[idx][val_col] = round((_val_0 + _val_1) / 2.0, max_eff_digits)
+                                    lp.data[idx][val_err_col] = round(abs(_val_0 - _val_1) / 2.0, max_eff_digits)
                                     break
                                 except ValueError:
                                     pass

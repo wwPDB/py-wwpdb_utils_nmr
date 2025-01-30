@@ -79,7 +79,7 @@ Simple_name_LA:		SIMPLE_NAME;
 Float_LA:		Float;
 
 SPACE_LA:		[ \t]+ -> skip;
-RETURN_LA:		[\r\n]+;
+RETURN_LA:		[\r\n];
 
 ENCLOSE_DATA_LA:	'{' ' '* (Float | (SIMPLE_NAME | ' ')*?) ' '* '}';
 

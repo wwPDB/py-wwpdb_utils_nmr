@@ -38,7 +38,7 @@ nmrview_pk:
 data_label:
 	Label Dataset Sw Sf Condition? RETURN_LA
 	labels RETURN_LA
-	Simple_name_LA+ RETURN_LA
+	Simple_name_LA* RETURN_LA
 	labels RETURN_LA
 	labels RETURN_LA;
 

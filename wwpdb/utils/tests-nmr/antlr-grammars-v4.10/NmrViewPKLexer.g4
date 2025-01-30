@@ -25,7 +25,7 @@ fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
-SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
+//SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
@@ -44,9 +44,10 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 SPACE:			[ \t]+ -> skip;
 RETURN:			[\r\n]+;
 
-fragment COMMENT_START_CHAR:	('#' | '!' | ';' | '\\' | '&' | '/' | '*' | '=');
+fragment COMMENT_START_CHAR:	('!' | ';' | '\\' | '&' | '/' | '*' | '=');
 
-ENCLOSE_DATA:		'{' ' '* (ENCLOSE_DATA | Float | (SIMPLE_NAME | ' ')*?) ' '* '}';
+L_brace:		'{'+ -> pushMode(ENCLOSE_DATA_MODE);
+
 SECTION_COMMENT:	(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
 LINE_COMMENT:		(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
 
@@ -82,4 +83,11 @@ SPACE_LA:		[ \t]+ -> skip;
 RETURN_LA:		[\r\n];
 
 ENCLOSE_DATA_LA:	'{' ' '* (Float | (SIMPLE_NAME | ' ')*?) ' '* '}';
+
+mode ENCLOSE_DATA_MODE;
+
+Any_name:		~[{} \t\r\n]+;
+
+SPACE_CM:		[ \t]+ -> skip;
+R_brace:		'}'+ -> popMode;
 

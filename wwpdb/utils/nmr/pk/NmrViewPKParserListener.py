@@ -52,6 +52,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
     __labels = None
     __jcouplings = None
+    __enclose_data = []
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
@@ -182,21 +183,21 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = int(str(ctx.Integer(0)))
 
-            L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
+            L1 = self.__enclose_data[0]
             P1 = self.numberSelection[0]
             W1 = self.numberSelection[1]
             B1 = self.numberSelection[2]
             # E1 = str(ctx.Simple_name(0))
             # J1 = self.__jcouplings[0]
-            # U1 = str(ctx.ENCLOSE_DATA(1))[1:-1]
+            # U1 = self.__enclose_data[1]
 
-            L2 = str(ctx.ENCLOSE_DATA(2))[1:-1]
+            L2 = self.__enclose_data[2]
             P2 = self.numberSelection[3]
             W2 = self.numberSelection[4]
             B2 = self.numberSelection[5]
             # E2 = str(ctx.Simple_name(1))
             # J2 = self.__jcouplings[1]
-            # U2 = str(ctx.ENCLOSE_DATA(3))[1:-1]
+            # U2 = self.__enclose_data[3]
 
             vol = self.originalNumberSelection[6]
             _int = self.originalNumberSelection[7]
@@ -204,8 +205,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             #     stat = int(str(ctx.Integer(1)))
             # except ValueError:
             #     stat = None
-            if ctx.ENCLOSE_DATA(4):
-                comment = str(ctx.ENCLOSE_DATA(4))[1:-1]
+            if len(self.__enclose_data) > 4:
+                comment = self.__enclose_data[4]
                 if comment in emptyValue:
                     comment = None
             else:
@@ -258,6 +259,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{L1} {L2} -> ', comment)
 
         finally:
+            self.__enclose_data.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
@@ -289,29 +291,29 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = int(str(ctx.Integer(0)))
 
-            L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
+            L1 = self.__enclose_data[0]
             P1 = self.numberSelection[0]
             W1 = self.numberSelection[1]
             B1 = self.numberSelection[2]
             # E1 = str(ctx.Simple_name(0))
             # J1 = self.__jcouplings[0]
-            # U1 = str(ctx.ENCLOSE_DATA(1))[1:-1]
+            # U1 = self.__enclose_data[1]
 
-            L2 = str(ctx.ENCLOSE_DATA(2))[1:-1]
+            L2 = self.__enclose_data[2]
             P2 = self.numberSelection[3]
             W2 = self.numberSelection[4]
             B2 = self.numberSelection[5]
             # E2 = str(ctx.Simple_name(1))
             # J2 = self.__jcouplings[1]
-            # U2 = str(ctx.ENCLOSE_DATA(3))[1:-1]
+            # U2 = self.__enclose_data[3]
 
-            L3 = str(ctx.ENCLOSE_DATA(4))[1:-1]
+            L3 = self.__enclose_data[4]
             P3 = self.numberSelection[6]
             W3 = self.numberSelection[7]
             B3 = self.numberSelection[8]
             # E3 = str(ctx.Simple_name(2))
             # J3 = self.__jcouplings[2]
-            # U3 = str(ctx.ENCLOSE_DATA(5))[1:-1]
+            # U3 = self.__enclose_data[5]
 
             vol = self.originalNumberSelection[9]
             _int = self.originalNumberSelection[10]
@@ -319,8 +321,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             #     stat = int(str(ctx.Integer(1)))
             # except ValueError:
             #     stat = None
-            if ctx.ENCLOSE_DATA(6):
-                comment = str(ctx.ENCLOSE_DATA(6))[1:-1]
+            if len(self.__enclose_data) > 6:
+                comment = self.__enclose_data[6]
                 if comment in emptyValue:
                     comment = None
             else:
@@ -380,6 +382,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{L1} {L2} {L3} -> ', comment)
 
         finally:
+            self.__enclose_data.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
@@ -411,37 +414,37 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = int(str(ctx.Integer(0)))
 
-            L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
+            L1 = self.__enclose_data[0]
             P1 = self.numberSelection[0]
             W1 = self.numberSelection[1]
             B1 = self.numberSelection[2]
             # E1 = str(ctx.Simple_name(0))
             # J1 = self.__jcouplings[0]
-            # U1 = str(ctx.ENCLOSE_DATA(1))[1:-1]
+            # U1 = self.__enclose_data[1]
 
-            L2 = str(ctx.ENCLOSE_DATA(2))[1:-1]
+            L2 = self.__enclose_data[2]
             P2 = self.numberSelection[3]
             W2 = self.numberSelection[4]
             B2 = self.numberSelection[5]
             # E2 = str(ctx.Simple_name(1))
             # J2 = self.__jcouplings[1]
-            # U2 = str(ctx.ENCLOSE_DATA(3))[1:-1]
+            # U2 = self.__enclose_data[3]
 
-            L3 = str(ctx.ENCLOSE_DATA(4))[1:-1]
+            L3 = self.__enclose_data[4]
             P3 = self.numberSelection[6]
             W3 = self.numberSelection[7]
             B3 = self.numberSelection[8]
             # E3 = str(ctx.Simple_name(2))
             # J3 = self.__jcouplings[2]
-            # U3 = str(ctx.ENCLOSE_DATA(5))[1:-1]
+            # U3 = self.__enclose_data[5]
 
-            L4 = str(ctx.ENCLOSE_DATA(6))[1:-1]
+            L4 = self.__enclose_data[6]
             P4 = self.numberSelection[9]
             W4 = self.numberSelection[10]
             B4 = self.numberSelection[11]
             # E4 = str(ctx.Simple_name(3))
             # J4 = self.__jcouplings[3]
-            # U4 = str(ctx.ENCLOSE_DATA(7))[1:-1]
+            # U4 = self.__enclose_data[7]
 
             vol = self.originalNumberSelection[12]
             _int = self.originalNumberSelection[13]
@@ -449,8 +452,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             #     stat = int(str(ctx.Integer(1)))
             # except ValueError:
             #     stat = None
-            if ctx.ENCLOSE_DATA(8):
-                comment = str(ctx.ENCLOSE_DATA(8))[1:-1]
+            if len(self.__enclose_data) > 8:
+                comment = self.__enclose_data[8]
                 if comment in emptyValue:
                     comment = None
             else:
@@ -517,6 +520,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{L1} {L2} {L3} {L4} -> ', comment)
 
         finally:
+            self.__enclose_data.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
@@ -543,12 +547,12 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = int(str(ctx.Integer(0)))
 
-            L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
+            L1 = self.__enclose_data[0]
             P1 = self.numberSelection[0]
             W1 = self.numberSelection[1]
             B1 = self.numberSelection[2]
 
-            L2 = str(ctx.ENCLOSE_DATA(1))[1:-1]
+            L2 = self.__enclose_data[1]
             P2 = self.numberSelection[3]
             W2 = self.numberSelection[4]
             B2 = self.numberSelection[5]
@@ -559,8 +563,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             #     stat = int(str(ctx.Integer(1)))
             # except ValueError:
             #     stat = None
-            if ctx.ENCLOSE_DATA(2):
-                comment = str(ctx.ENCLOSE_DATA(2))[1:-1]
+            if len(self.__enclose_data) > 2:
+                comment = self.__enclose_data[2]
                 if comment in emptyValue:
                     comment = None
             else:
@@ -613,6 +617,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{L1} {L2} -> ', comment)
 
         finally:
+            self.__enclose_data.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
@@ -639,17 +644,17 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = int(str(ctx.Integer(0)))
 
-            L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
+            L1 = self.__enclose_data[0]
             P1 = self.numberSelection[0]
             W1 = self.numberSelection[1]
             B1 = self.numberSelection[2]
 
-            L2 = str(ctx.ENCLOSE_DATA(1))[1:-1]
+            L2 = self.__enclose_data[1]
             P2 = self.numberSelection[3]
             W2 = self.numberSelection[4]
             B2 = self.numberSelection[5]
 
-            L3 = str(ctx.ENCLOSE_DATA(2))[1:-1]
+            L3 = self.__enclose_data[2]
             P3 = self.numberSelection[6]
             W3 = self.numberSelection[7]
             B3 = self.numberSelection[8]
@@ -660,8 +665,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             #     stat = int(str(ctx.Integer(1)))
             # except ValueError:
             #     stat = None
-            if ctx.ENCLOSE_DATA(3):
-                comment = str(ctx.ENCLOSE_DATA(3))[1:-1]
+            if len(self.__enclose_data) > 3:
+                comment = self.__enclose_data[3]
                 if comment in emptyValue:
                     comment = None
             else:
@@ -721,6 +726,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{L1} {L2} {L3} -> ', comment)
 
         finally:
+            self.__enclose_data.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
@@ -747,22 +753,22 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = int(str(ctx.Integer(0)))
 
-            L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
+            L1 = self.__enclose_data[0]
             P1 = self.numberSelection[0]
             W1 = self.numberSelection[1]
             B1 = self.numberSelection[2]
 
-            L2 = str(ctx.ENCLOSE_DATA(1))[1:-1]
+            L2 = self.__enclose_data[1]
             P2 = self.numberSelection[3]
             W2 = self.numberSelection[4]
             B2 = self.numberSelection[5]
 
-            L3 = str(ctx.ENCLOSE_DATA(2))[1:-1]
+            L3 = self.__enclose_data[2]
             P3 = self.numberSelection[6]
             W3 = self.numberSelection[7]
             B3 = self.numberSelection[8]
 
-            L4 = str(ctx.ENCLOSE_DATA(3))[1:-1]
+            L4 = self.__enclose_data[3]
             P4 = self.numberSelection[9]
             W4 = self.numberSelection[10]
             B4 = self.numberSelection[11]
@@ -773,8 +779,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             #     stat = int(str(ctx.Integer(1)))
             # except ValueError:
             #     stat = None
-            if ctx.ENCLOSE_DATA(4):
-                comment = str(ctx.ENCLOSE_DATA(4))[1:-1]
+            if len(self.__enclose_data) > 4:
+                comment = self.__enclose_data[4]
                 if comment in emptyValue:
                     comment = None
             else:
@@ -841,6 +847,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{L1} {L2} {L3} {L4} -> ', comment)
 
         finally:
+            self.__enclose_data.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
@@ -898,6 +905,21 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         else:
             self.numberSelection.append(None)
             self.originalNumberSelection.append(None)
+
+    # Enter a parse tree produced by NmrViewPKParser#enclose_data.
+    def enterEnclose_data(self, ctx: NmrViewPKParser.Enclose_dataContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by NmrViewPKParser#enclose_data.
+    def exitEnclose_data(self, ctx: NmrViewPKParser.Enclose_dataContext):
+        comment = []
+        for col in range(20):
+            if ctx.Any_name(col):
+                comment.append(str(ctx.Any_name(col)))
+            else:
+                break
+        last_comment = None if len(comment) == 0 else ' '.join(comment)
+        self.__enclose_data.append(last_comment)
 
 
 # del NmrViewPKParser

@@ -25,7 +25,8 @@ xwinnmr_pk:
 	dimension |
 	peak_2d+ |
 	peak_3d+ |
-	peak_4d+
+	peak_4d+ |
+	RETURN
 	)*
 	EOF;
 

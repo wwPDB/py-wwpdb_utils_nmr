@@ -27,7 +27,8 @@ nmrview_pk:
 	peak_list_4d |
 	peak_list_wo_eju_2d |
 	peak_list_wo_eju_3d |
-	peak_list_wo_eju_4d
+	peak_list_wo_eju_4d |
+	RETURN
 	)*
 	EOF;
 

@@ -26,7 +26,8 @@ vnmr_pk:
 	data_label |
 	peak_2d+ |
 	peak_3d+ |
-	peak_4d+
+	peak_4d+ |
+	RETURN
 	)*
 	EOF;
 

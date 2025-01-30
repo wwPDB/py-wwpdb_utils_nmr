@@ -21,6 +21,7 @@ options { tokenVocab=XeasyPROTLexer; }
 xeasy_prot:
 	RETURN?
 	prot+
+	RETURN*
 	EOF;
 
 prot:

@@ -10,14 +10,16 @@ else:
 
 def serializedATN():
     return [
-        4,1,11,26,2,0,7,0,2,1,7,1,2,2,7,2,1,0,3,0,8,8,0,1,0,4,0,11,8,0,11,
-        0,12,0,12,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,2,1,2,0,0,3,
-        0,2,4,0,2,1,1,8,8,2,0,1,1,6,6,24,0,7,1,0,0,0,2,16,1,0,0,0,4,23,1,
-        0,0,0,6,8,5,8,0,0,7,6,1,0,0,0,7,8,1,0,0,0,8,10,1,0,0,0,9,11,3,2,
-        1,0,10,9,1,0,0,0,11,12,1,0,0,0,12,10,1,0,0,0,12,13,1,0,0,0,13,14,
-        1,0,0,0,14,15,5,0,0,1,15,1,1,0,0,0,16,17,5,1,0,0,17,18,5,2,0,0,18,
-        19,5,2,0,0,19,20,5,6,0,0,20,21,3,4,2,0,21,22,7,0,0,0,22,3,1,0,0,
-        0,23,24,7,1,0,0,24,5,1,0,0,0,2,7,12
+        4,1,11,32,2,0,7,0,2,1,7,1,2,2,7,2,1,0,3,0,8,8,0,1,0,4,0,11,8,0,11,
+        0,12,0,12,1,0,5,0,16,8,0,10,0,12,0,19,9,0,1,0,1,0,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,2,1,2,1,2,0,0,3,0,2,4,0,2,1,1,8,8,2,0,1,1,6,6,31,
+        0,7,1,0,0,0,2,22,1,0,0,0,4,29,1,0,0,0,6,8,5,8,0,0,7,6,1,0,0,0,7,
+        8,1,0,0,0,8,10,1,0,0,0,9,11,3,2,1,0,10,9,1,0,0,0,11,12,1,0,0,0,12,
+        10,1,0,0,0,12,13,1,0,0,0,13,17,1,0,0,0,14,16,5,8,0,0,15,14,1,0,0,
+        0,16,19,1,0,0,0,17,15,1,0,0,0,17,18,1,0,0,0,18,20,1,0,0,0,19,17,
+        1,0,0,0,20,21,5,0,0,1,21,1,1,0,0,0,22,23,5,1,0,0,23,24,5,2,0,0,24,
+        25,5,2,0,0,25,26,5,6,0,0,26,27,3,4,2,0,27,28,7,0,0,0,28,3,1,0,0,
+        0,29,30,7,1,0,0,30,5,1,0,0,0,3,7,12,17
     ]
 
 class XeasyPROTParser ( Parser ):
@@ -74,8 +76,11 @@ class XeasyPROTParser ( Parser ):
         def EOF(self):
             return self.getToken(XeasyPROTParser.EOF, 0)
 
-        def RETURN(self):
-            return self.getToken(XeasyPROTParser.RETURN, 0)
+        def RETURN(self, i:int=None):
+            if i is None:
+                return self.getTokens(XeasyPROTParser.RETURN)
+            else:
+                return self.getToken(XeasyPROTParser.RETURN, i)
 
         def prot(self, i:int=None):
             if i is None:
@@ -125,7 +130,17 @@ class XeasyPROTParser ( Parser ):
                 if not (_la==1):
                     break
 
-            self.state = 14
+            self.state = 17
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            while _la==8:
+                self.state = 14
+                self.match(XeasyPROTParser.RETURN)
+                self.state = 19
+                self._errHandler.sync(self)
+                _la = self._input.LA(1)
+
+            self.state = 20
             self.match(XeasyPROTParser.EOF)
         except RecognitionException as re:
             localctx.exception = re
@@ -186,17 +201,17 @@ class XeasyPROTParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 16
+            self.state = 22
             self.match(XeasyPROTParser.Integer)
-            self.state = 17
+            self.state = 23
             self.match(XeasyPROTParser.Float)
-            self.state = 18
+            self.state = 24
             self.match(XeasyPROTParser.Float)
-            self.state = 19
+            self.state = 25
             self.match(XeasyPROTParser.Simple_name)
-            self.state = 20
+            self.state = 26
             self.residue()
-            self.state = 21
+            self.state = 27
             _la = self._input.LA(1)
             if not(_la==-1 or _la==8):
                 self._errHandler.recoverInline(self)
@@ -246,7 +261,7 @@ class XeasyPROTParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 23
+            self.state = 29
             _la = self._input.LA(1)
             if not(_la==1 or _la==6):
                 self._errHandler.recoverInline(self)

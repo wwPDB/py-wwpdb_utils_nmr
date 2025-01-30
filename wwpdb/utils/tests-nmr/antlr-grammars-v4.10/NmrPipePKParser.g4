@@ -24,7 +24,8 @@ nmrpipe_pk:
 	data_label |
 	peak_list_2d |
 	peak_list_3d |
-	peak_list_4d
+	peak_list_4d |
+	RETURN
 	)*
 	EOF;
 

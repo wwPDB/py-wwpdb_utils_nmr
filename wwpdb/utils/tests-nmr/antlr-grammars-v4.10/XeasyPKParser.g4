@@ -30,7 +30,8 @@ xeasy_pk:
 	tolerance |
 	peak_list_2d |
 	peak_list_3d |
-	peak_list_4d
+	peak_list_4d |
+	RETURN
 	)*
 	(RETURN | comment)?
 	EOF;

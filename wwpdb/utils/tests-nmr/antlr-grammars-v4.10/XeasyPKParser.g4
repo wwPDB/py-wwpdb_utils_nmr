@@ -65,8 +65,8 @@ peak_2d:
 	Integer Simple_name
 	number number
 	Simple_name Integer
-	assign assign Integer? (RETURN | comment)
-	(assign assign Integer? (RETURN | comment))* EOF?;
+	assign assign Integer? (RETURN | comment | EOF)
+	(assign assign Integer? (RETURN | comment | EOF))*;
 
 peak_list_3d:
 	(peak_3d | comment)+;
@@ -77,8 +77,8 @@ peak_3d:
 	Integer Simple_name
 	number number
 	Simple_name Integer
-	assign assign assign Integer? (RETURN | comment)
-	(assign assign assign Integer? (RETURN | comment))* EOF?;
+	assign assign assign Integer? (RETURN | comment | EOF)
+	(assign assign assign Integer? (RETURN | comment | EOF))*;
 
 peak_list_4d:
 	(peak_4d | comment)+;
@@ -89,8 +89,8 @@ peak_4d:
 	Integer Simple_name
 	number number
 	Simple_name Integer
-	assign assign assign assign Integer? (RETURN | comment)
-	(assign assign assign assign Integer? (RETURN | comment))* EOF?;
+	assign assign assign assign Integer? (RETURN | comment | EOF)
+	(assign assign assign assign Integer? (RETURN | comment | EOF))*;
 
 /* number expression for peak position */
 position: Float | Integer;

@@ -10,7 +10,7 @@ else:
 
 def serializedATN():
     return [
-        4,1,44,254,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,44,251,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
         2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,1,0,3,0,38,8,0,1,0,1,0,1,
         0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,5,0,50,8,0,10,0,12,0,53,9,0,1,0,1,
@@ -18,90 +18,89 @@ def serializedATN():
         71,8,3,11,3,12,3,72,1,3,1,3,1,4,1,4,1,4,1,4,1,4,1,5,1,5,1,5,1,5,
         1,6,1,6,4,6,88,8,6,11,6,12,6,89,1,6,1,6,1,7,1,7,4,7,96,8,7,11,7,
         12,7,97,1,7,1,7,1,8,1,8,4,8,104,8,8,11,8,12,8,105,1,9,1,9,1,9,1,
-        9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,3,9,120,8,9,1,9,1,9,3,9,124,8,
-        9,1,9,1,9,1,9,3,9,129,8,9,1,9,1,9,3,9,133,8,9,5,9,135,8,9,10,9,12,
-        9,138,9,9,1,9,3,9,141,8,9,1,10,1,10,4,10,145,8,10,11,10,12,10,146,
-        1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,
-        1,11,3,11,163,8,11,1,11,1,11,3,11,167,8,11,1,11,1,11,1,11,1,11,3,
-        11,173,8,11,1,11,1,11,3,11,177,8,11,5,11,179,8,11,10,11,12,11,182,
-        9,11,1,11,3,11,185,8,11,1,12,1,12,4,12,189,8,12,11,12,12,12,190,
+        9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,3,9,120,8,9,1,9,1,9,1,9,3,9,125,
+        8,9,1,9,1,9,1,9,3,9,130,8,9,1,9,1,9,1,9,3,9,135,8,9,5,9,137,8,9,
+        10,9,12,9,140,9,9,1,10,1,10,4,10,144,8,10,11,10,12,10,145,1,11,1,
+        11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,3,
+        11,162,8,11,1,11,1,11,1,11,3,11,167,8,11,1,11,1,11,1,11,1,11,3,11,
+        173,8,11,1,11,1,11,1,11,3,11,178,8,11,5,11,180,8,11,10,11,12,11,
+        183,9,11,1,12,1,12,4,12,187,8,12,11,12,12,12,188,1,13,1,13,1,13,
         1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,
-        1,13,1,13,1,13,3,13,209,8,13,1,13,1,13,3,13,213,8,13,1,13,1,13,1,
-        13,1,13,1,13,3,13,220,8,13,1,13,1,13,3,13,224,8,13,5,13,226,8,13,
-        10,13,12,13,229,9,13,1,13,3,13,232,8,13,1,14,1,14,1,15,1,15,1,16,
-        1,16,1,16,3,16,241,8,16,3,16,243,8,16,1,17,1,17,5,17,247,8,17,10,
-        17,12,17,250,9,17,1,17,1,17,1,17,0,0,18,0,2,4,6,8,10,12,14,16,18,
-        20,22,24,26,28,30,32,34,0,3,1,0,8,9,2,0,8,10,14,14,1,1,44,44,278,
-        0,37,1,0,0,0,2,60,1,0,0,0,4,64,1,0,0,0,6,68,1,0,0,0,8,76,1,0,0,0,
-        10,81,1,0,0,0,12,85,1,0,0,0,14,93,1,0,0,0,16,103,1,0,0,0,18,107,
-        1,0,0,0,20,144,1,0,0,0,22,148,1,0,0,0,24,188,1,0,0,0,26,192,1,0,
-        0,0,28,233,1,0,0,0,30,235,1,0,0,0,32,242,1,0,0,0,34,244,1,0,0,0,
-        36,38,5,16,0,0,37,36,1,0,0,0,37,38,1,0,0,0,38,51,1,0,0,0,39,50,3,
-        2,1,0,40,50,3,4,2,0,41,50,3,6,3,0,42,50,3,8,4,0,43,50,3,10,5,0,44,
-        50,3,12,6,0,45,50,3,14,7,0,46,50,3,16,8,0,47,50,3,20,10,0,48,50,
-        3,24,12,0,49,39,1,0,0,0,49,40,1,0,0,0,49,41,1,0,0,0,49,42,1,0,0,
-        0,49,43,1,0,0,0,49,44,1,0,0,0,49,45,1,0,0,0,49,46,1,0,0,0,49,47,
-        1,0,0,0,49,48,1,0,0,0,50,53,1,0,0,0,51,49,1,0,0,0,51,52,1,0,0,0,
-        52,56,1,0,0,0,53,51,1,0,0,0,54,57,5,16,0,0,55,57,3,34,17,0,56,54,
-        1,0,0,0,56,55,1,0,0,0,56,57,1,0,0,0,57,58,1,0,0,0,58,59,5,0,0,1,
-        59,1,1,0,0,0,60,61,5,1,0,0,61,62,5,20,0,0,62,63,5,22,0,0,63,3,1,
-        0,0,0,64,65,5,2,0,0,65,66,5,23,0,0,66,67,5,25,0,0,67,5,1,0,0,0,68,
-        70,5,3,0,0,69,71,5,26,0,0,70,69,1,0,0,0,71,72,1,0,0,0,72,70,1,0,
-        0,0,72,73,1,0,0,0,73,74,1,0,0,0,74,75,5,28,0,0,75,7,1,0,0,0,76,77,
-        5,4,0,0,77,78,5,29,0,0,78,79,5,30,0,0,79,80,5,32,0,0,80,9,1,0,0,
-        0,81,82,5,5,0,0,82,83,5,33,0,0,83,84,5,35,0,0,84,11,1,0,0,0,85,87,
-        5,6,0,0,86,88,5,36,0,0,87,86,1,0,0,0,88,89,1,0,0,0,89,87,1,0,0,0,
-        89,90,1,0,0,0,90,91,1,0,0,0,91,92,5,38,0,0,92,13,1,0,0,0,93,95,5,
-        7,0,0,94,96,5,39,0,0,95,94,1,0,0,0,96,97,1,0,0,0,97,95,1,0,0,0,97,
-        98,1,0,0,0,98,99,1,0,0,0,99,100,5,41,0,0,100,15,1,0,0,0,101,104,
-        3,18,9,0,102,104,3,34,17,0,103,101,1,0,0,0,103,102,1,0,0,0,104,105,
-        1,0,0,0,105,103,1,0,0,0,105,106,1,0,0,0,106,17,1,0,0,0,107,108,5,
-        8,0,0,108,109,3,28,14,0,109,110,3,28,14,0,110,111,5,8,0,0,111,112,
-        5,14,0,0,112,113,3,30,15,0,113,114,3,30,15,0,114,115,5,14,0,0,115,
-        116,5,8,0,0,116,117,3,32,16,0,117,119,3,32,16,0,118,120,5,8,0,0,
-        119,118,1,0,0,0,119,120,1,0,0,0,120,123,1,0,0,0,121,124,5,16,0,0,
-        122,124,3,34,17,0,123,121,1,0,0,0,123,122,1,0,0,0,124,136,1,0,0,
-        0,125,126,3,32,16,0,126,128,3,32,16,0,127,129,5,8,0,0,128,127,1,
-        0,0,0,128,129,1,0,0,0,129,132,1,0,0,0,130,133,5,16,0,0,131,133,3,
-        34,17,0,132,130,1,0,0,0,132,131,1,0,0,0,133,135,1,0,0,0,134,125,
-        1,0,0,0,135,138,1,0,0,0,136,134,1,0,0,0,136,137,1,0,0,0,137,140,
-        1,0,0,0,138,136,1,0,0,0,139,141,5,0,0,1,140,139,1,0,0,0,140,141,
-        1,0,0,0,141,19,1,0,0,0,142,145,3,22,11,0,143,145,3,34,17,0,144,142,
-        1,0,0,0,144,143,1,0,0,0,145,146,1,0,0,0,146,144,1,0,0,0,146,147,
-        1,0,0,0,147,21,1,0,0,0,148,149,5,8,0,0,149,150,3,28,14,0,150,151,
-        3,28,14,0,151,152,3,28,14,0,152,153,5,8,0,0,153,154,5,14,0,0,154,
-        155,3,30,15,0,155,156,3,30,15,0,156,157,5,14,0,0,157,158,5,8,0,0,
-        158,159,3,32,16,0,159,160,3,32,16,0,160,162,3,32,16,0,161,163,5,
-        8,0,0,162,161,1,0,0,0,162,163,1,0,0,0,163,166,1,0,0,0,164,167,5,
-        16,0,0,165,167,3,34,17,0,166,164,1,0,0,0,166,165,1,0,0,0,167,180,
-        1,0,0,0,168,169,3,32,16,0,169,170,3,32,16,0,170,172,3,32,16,0,171,
-        173,5,8,0,0,172,171,1,0,0,0,172,173,1,0,0,0,173,176,1,0,0,0,174,
-        177,5,16,0,0,175,177,3,34,17,0,176,174,1,0,0,0,176,175,1,0,0,0,177,
-        179,1,0,0,0,178,168,1,0,0,0,179,182,1,0,0,0,180,178,1,0,0,0,180,
-        181,1,0,0,0,181,184,1,0,0,0,182,180,1,0,0,0,183,185,5,0,0,1,184,
-        183,1,0,0,0,184,185,1,0,0,0,185,23,1,0,0,0,186,189,3,26,13,0,187,
-        189,3,34,17,0,188,186,1,0,0,0,188,187,1,0,0,0,189,190,1,0,0,0,190,
-        188,1,0,0,0,190,191,1,0,0,0,191,25,1,0,0,0,192,193,5,8,0,0,193,194,
-        3,28,14,0,194,195,3,28,14,0,195,196,3,28,14,0,196,197,3,28,14,0,
-        197,198,5,8,0,0,198,199,5,14,0,0,199,200,3,30,15,0,200,201,3,30,
-        15,0,201,202,5,14,0,0,202,203,5,8,0,0,203,204,3,32,16,0,204,205,
-        3,32,16,0,205,206,3,32,16,0,206,208,3,32,16,0,207,209,5,8,0,0,208,
-        207,1,0,0,0,208,209,1,0,0,0,209,212,1,0,0,0,210,213,5,16,0,0,211,
-        213,3,34,17,0,212,210,1,0,0,0,212,211,1,0,0,0,213,227,1,0,0,0,214,
-        215,3,32,16,0,215,216,3,32,16,0,216,217,3,32,16,0,217,219,3,32,16,
-        0,218,220,5,8,0,0,219,218,1,0,0,0,219,220,1,0,0,0,220,223,1,0,0,
-        0,221,224,5,16,0,0,222,224,3,34,17,0,223,221,1,0,0,0,223,222,1,0,
-        0,0,224,226,1,0,0,0,225,214,1,0,0,0,226,229,1,0,0,0,227,225,1,0,
-        0,0,227,228,1,0,0,0,228,231,1,0,0,0,229,227,1,0,0,0,230,232,5,0,
-        0,1,231,230,1,0,0,0,231,232,1,0,0,0,232,27,1,0,0,0,233,234,7,0,0,
-        0,234,29,1,0,0,0,235,236,7,1,0,0,236,31,1,0,0,0,237,243,5,8,0,0,
-        238,240,5,14,0,0,239,241,5,8,0,0,240,239,1,0,0,0,240,241,1,0,0,0,
-        241,243,1,0,0,0,242,237,1,0,0,0,242,238,1,0,0,0,243,33,1,0,0,0,244,
-        248,5,11,0,0,245,247,5,42,0,0,246,245,1,0,0,0,247,250,1,0,0,0,248,
-        246,1,0,0,0,248,249,1,0,0,0,249,251,1,0,0,0,250,248,1,0,0,0,251,
-        252,7,2,0,0,252,35,1,0,0,0,34,37,49,51,56,72,89,97,103,105,119,123,
-        128,132,136,140,144,146,162,166,172,176,180,184,188,190,208,212,
-        219,223,227,231,240,242,248
+        3,13,207,8,13,1,13,1,13,1,13,3,13,212,8,13,1,13,1,13,1,13,1,13,1,
+        13,3,13,219,8,13,1,13,1,13,1,13,3,13,224,8,13,5,13,226,8,13,10,13,
+        12,13,229,9,13,1,14,1,14,1,15,1,15,1,16,1,16,1,16,3,16,238,8,16,
+        3,16,240,8,16,1,17,1,17,5,17,244,8,17,10,17,12,17,247,9,17,1,17,
+        1,17,1,17,0,0,18,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,
+        0,3,1,0,8,9,2,0,8,10,14,14,1,1,44,44,278,0,37,1,0,0,0,2,60,1,0,0,
+        0,4,64,1,0,0,0,6,68,1,0,0,0,8,76,1,0,0,0,10,81,1,0,0,0,12,85,1,0,
+        0,0,14,93,1,0,0,0,16,103,1,0,0,0,18,107,1,0,0,0,20,143,1,0,0,0,22,
+        147,1,0,0,0,24,186,1,0,0,0,26,190,1,0,0,0,28,230,1,0,0,0,30,232,
+        1,0,0,0,32,239,1,0,0,0,34,241,1,0,0,0,36,38,5,16,0,0,37,36,1,0,0,
+        0,37,38,1,0,0,0,38,51,1,0,0,0,39,50,3,2,1,0,40,50,3,4,2,0,41,50,
+        3,6,3,0,42,50,3,8,4,0,43,50,3,10,5,0,44,50,3,12,6,0,45,50,3,14,7,
+        0,46,50,3,16,8,0,47,50,3,20,10,0,48,50,3,24,12,0,49,39,1,0,0,0,49,
+        40,1,0,0,0,49,41,1,0,0,0,49,42,1,0,0,0,49,43,1,0,0,0,49,44,1,0,0,
+        0,49,45,1,0,0,0,49,46,1,0,0,0,49,47,1,0,0,0,49,48,1,0,0,0,50,53,
+        1,0,0,0,51,49,1,0,0,0,51,52,1,0,0,0,52,56,1,0,0,0,53,51,1,0,0,0,
+        54,57,5,16,0,0,55,57,3,34,17,0,56,54,1,0,0,0,56,55,1,0,0,0,56,57,
+        1,0,0,0,57,58,1,0,0,0,58,59,5,0,0,1,59,1,1,0,0,0,60,61,5,1,0,0,61,
+        62,5,20,0,0,62,63,5,22,0,0,63,3,1,0,0,0,64,65,5,2,0,0,65,66,5,23,
+        0,0,66,67,5,25,0,0,67,5,1,0,0,0,68,70,5,3,0,0,69,71,5,26,0,0,70,
+        69,1,0,0,0,71,72,1,0,0,0,72,70,1,0,0,0,72,73,1,0,0,0,73,74,1,0,0,
+        0,74,75,5,28,0,0,75,7,1,0,0,0,76,77,5,4,0,0,77,78,5,29,0,0,78,79,
+        5,30,0,0,79,80,5,32,0,0,80,9,1,0,0,0,81,82,5,5,0,0,82,83,5,33,0,
+        0,83,84,5,35,0,0,84,11,1,0,0,0,85,87,5,6,0,0,86,88,5,36,0,0,87,86,
+        1,0,0,0,88,89,1,0,0,0,89,87,1,0,0,0,89,90,1,0,0,0,90,91,1,0,0,0,
+        91,92,5,38,0,0,92,13,1,0,0,0,93,95,5,7,0,0,94,96,5,39,0,0,95,94,
+        1,0,0,0,96,97,1,0,0,0,97,95,1,0,0,0,97,98,1,0,0,0,98,99,1,0,0,0,
+        99,100,5,41,0,0,100,15,1,0,0,0,101,104,3,18,9,0,102,104,3,34,17,
+        0,103,101,1,0,0,0,103,102,1,0,0,0,104,105,1,0,0,0,105,103,1,0,0,
+        0,105,106,1,0,0,0,106,17,1,0,0,0,107,108,5,8,0,0,108,109,3,28,14,
+        0,109,110,3,28,14,0,110,111,5,8,0,0,111,112,5,14,0,0,112,113,3,30,
+        15,0,113,114,3,30,15,0,114,115,5,14,0,0,115,116,5,8,0,0,116,117,
+        3,32,16,0,117,119,3,32,16,0,118,120,5,8,0,0,119,118,1,0,0,0,119,
+        120,1,0,0,0,120,124,1,0,0,0,121,125,5,16,0,0,122,125,3,34,17,0,123,
+        125,5,0,0,1,124,121,1,0,0,0,124,122,1,0,0,0,124,123,1,0,0,0,125,
+        138,1,0,0,0,126,127,3,32,16,0,127,129,3,32,16,0,128,130,5,8,0,0,
+        129,128,1,0,0,0,129,130,1,0,0,0,130,134,1,0,0,0,131,135,5,16,0,0,
+        132,135,3,34,17,0,133,135,5,0,0,1,134,131,1,0,0,0,134,132,1,0,0,
+        0,134,133,1,0,0,0,135,137,1,0,0,0,136,126,1,0,0,0,137,140,1,0,0,
+        0,138,136,1,0,0,0,138,139,1,0,0,0,139,19,1,0,0,0,140,138,1,0,0,0,
+        141,144,3,22,11,0,142,144,3,34,17,0,143,141,1,0,0,0,143,142,1,0,
+        0,0,144,145,1,0,0,0,145,143,1,0,0,0,145,146,1,0,0,0,146,21,1,0,0,
+        0,147,148,5,8,0,0,148,149,3,28,14,0,149,150,3,28,14,0,150,151,3,
+        28,14,0,151,152,5,8,0,0,152,153,5,14,0,0,153,154,3,30,15,0,154,155,
+        3,30,15,0,155,156,5,14,0,0,156,157,5,8,0,0,157,158,3,32,16,0,158,
+        159,3,32,16,0,159,161,3,32,16,0,160,162,5,8,0,0,161,160,1,0,0,0,
+        161,162,1,0,0,0,162,166,1,0,0,0,163,167,5,16,0,0,164,167,3,34,17,
+        0,165,167,5,0,0,1,166,163,1,0,0,0,166,164,1,0,0,0,166,165,1,0,0,
+        0,167,181,1,0,0,0,168,169,3,32,16,0,169,170,3,32,16,0,170,172,3,
+        32,16,0,171,173,5,8,0,0,172,171,1,0,0,0,172,173,1,0,0,0,173,177,
+        1,0,0,0,174,178,5,16,0,0,175,178,3,34,17,0,176,178,5,0,0,1,177,174,
+        1,0,0,0,177,175,1,0,0,0,177,176,1,0,0,0,178,180,1,0,0,0,179,168,
+        1,0,0,0,180,183,1,0,0,0,181,179,1,0,0,0,181,182,1,0,0,0,182,23,1,
+        0,0,0,183,181,1,0,0,0,184,187,3,26,13,0,185,187,3,34,17,0,186,184,
+        1,0,0,0,186,185,1,0,0,0,187,188,1,0,0,0,188,186,1,0,0,0,188,189,
+        1,0,0,0,189,25,1,0,0,0,190,191,5,8,0,0,191,192,3,28,14,0,192,193,
+        3,28,14,0,193,194,3,28,14,0,194,195,3,28,14,0,195,196,5,8,0,0,196,
+        197,5,14,0,0,197,198,3,30,15,0,198,199,3,30,15,0,199,200,5,14,0,
+        0,200,201,5,8,0,0,201,202,3,32,16,0,202,203,3,32,16,0,203,204,3,
+        32,16,0,204,206,3,32,16,0,205,207,5,8,0,0,206,205,1,0,0,0,206,207,
+        1,0,0,0,207,211,1,0,0,0,208,212,5,16,0,0,209,212,3,34,17,0,210,212,
+        5,0,0,1,211,208,1,0,0,0,211,209,1,0,0,0,211,210,1,0,0,0,212,227,
+        1,0,0,0,213,214,3,32,16,0,214,215,3,32,16,0,215,216,3,32,16,0,216,
+        218,3,32,16,0,217,219,5,8,0,0,218,217,1,0,0,0,218,219,1,0,0,0,219,
+        223,1,0,0,0,220,224,5,16,0,0,221,224,3,34,17,0,222,224,5,0,0,1,223,
+        220,1,0,0,0,223,221,1,0,0,0,223,222,1,0,0,0,224,226,1,0,0,0,225,
+        213,1,0,0,0,226,229,1,0,0,0,227,225,1,0,0,0,227,228,1,0,0,0,228,
+        27,1,0,0,0,229,227,1,0,0,0,230,231,7,0,0,0,231,29,1,0,0,0,232,233,
+        7,1,0,0,233,31,1,0,0,0,234,240,5,8,0,0,235,237,5,14,0,0,236,238,
+        5,8,0,0,237,236,1,0,0,0,237,238,1,0,0,0,238,240,1,0,0,0,239,234,
+        1,0,0,0,239,235,1,0,0,0,240,33,1,0,0,0,241,245,5,11,0,0,242,244,
+        5,42,0,0,243,242,1,0,0,0,244,247,1,0,0,0,245,243,1,0,0,0,245,246,
+        1,0,0,0,246,248,1,0,0,0,247,245,1,0,0,0,248,249,7,2,0,0,249,35,1,
+        0,0,0,31,37,49,51,56,72,89,97,103,105,119,124,129,134,138,143,145,
+        161,166,172,177,181,186,188,206,211,218,223,227,237,239,245
     ]
 
 class XeasyPKParser ( Parser ):
@@ -948,8 +947,11 @@ class XeasyPKParser ( Parser ):
                 return self.getTypedRuleContext(XeasyPKParser.CommentContext,i)
 
 
-        def EOF(self):
-            return self.getToken(XeasyPKParser.EOF, 0)
+        def EOF(self, i:int=None):
+            if i is None:
+                return self.getTokens(XeasyPKParser.EOF)
+            else:
+                return self.getToken(XeasyPKParser.EOF, i)
 
         def getRuleIndex(self):
             return XeasyPKParser.RULE_peak_2d
@@ -1002,7 +1004,7 @@ class XeasyPKParser ( Parser ):
                 self.match(XeasyPKParser.Integer)
 
 
-            self.state = 123
+            self.state = 124
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [16]:
@@ -1013,51 +1015,51 @@ class XeasyPKParser ( Parser ):
                 self.state = 122
                 self.comment()
                 pass
+            elif token in [-1]:
+                self.state = 123
+                self.match(XeasyPKParser.EOF)
+                pass
             else:
                 raise NoViableAltException(self)
 
-            self.state = 136
+            self.state = 138
             self._errHandler.sync(self)
             _alt = self._interp.adaptivePredict(self._input,13,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 125
-                    self.assign()
                     self.state = 126
                     self.assign()
-                    self.state = 128
+                    self.state = 127
+                    self.assign()
+                    self.state = 129
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     if _la==8:
-                        self.state = 127
+                        self.state = 128
                         self.match(XeasyPKParser.Integer)
 
 
-                    self.state = 132
+                    self.state = 134
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
                     if token in [16]:
-                        self.state = 130
+                        self.state = 131
                         self.match(XeasyPKParser.RETURN)
                         pass
                     elif token in [11]:
-                        self.state = 131
+                        self.state = 132
                         self.comment()
+                        pass
+                    elif token in [-1]:
+                        self.state = 133
+                        self.match(XeasyPKParser.EOF)
                         pass
                     else:
                         raise NoViableAltException(self)
              
-                self.state = 138
+                self.state = 140
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,13,self._ctx)
-
-            self.state = 140
-            self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,14,self._ctx)
-            if la_ == 1:
-                self.state = 139
-                self.match(XeasyPKParser.EOF)
-
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1109,20 +1111,20 @@ class XeasyPKParser ( Parser ):
         self.enterRule(localctx, 20, self.RULE_peak_list_3d)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 144 
+            self.state = 143 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 144
+                    self.state = 143
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
                     if token in [8]:
-                        self.state = 142
+                        self.state = 141
                         self.peak_3d()
                         pass
                     elif token in [11]:
-                        self.state = 143
+                        self.state = 142
                         self.comment()
                         pass
                     else:
@@ -1131,9 +1133,9 @@ class XeasyPKParser ( Parser ):
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 146 
+                self.state = 145 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,16,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,15,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1197,8 +1199,11 @@ class XeasyPKParser ( Parser ):
                 return self.getTypedRuleContext(XeasyPKParser.CommentContext,i)
 
 
-        def EOF(self):
-            return self.getToken(XeasyPKParser.EOF, 0)
+        def EOF(self, i:int=None):
+            if i is None:
+                return self.getTokens(XeasyPKParser.EOF)
+            else:
+                return self.getToken(XeasyPKParser.EOF, i)
 
         def getRuleIndex(self):
             return XeasyPKParser.RULE_peak_3d
@@ -1221,37 +1226,37 @@ class XeasyPKParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 148
+            self.state = 147
             self.match(XeasyPKParser.Integer)
+            self.state = 148
+            self.position()
             self.state = 149
             self.position()
             self.state = 150
             self.position()
             self.state = 151
-            self.position()
-            self.state = 152
             self.match(XeasyPKParser.Integer)
-            self.state = 153
+            self.state = 152
             self.match(XeasyPKParser.Simple_name)
+            self.state = 153
+            self.number()
             self.state = 154
             self.number()
             self.state = 155
-            self.number()
-            self.state = 156
             self.match(XeasyPKParser.Simple_name)
-            self.state = 157
+            self.state = 156
             self.match(XeasyPKParser.Integer)
+            self.state = 157
+            self.assign()
             self.state = 158
             self.assign()
             self.state = 159
             self.assign()
-            self.state = 160
-            self.assign()
-            self.state = 162
+            self.state = 161
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==8:
-                self.state = 161
+                self.state = 160
                 self.match(XeasyPKParser.Integer)
 
 
@@ -1259,19 +1264,23 @@ class XeasyPKParser ( Parser ):
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [16]:
-                self.state = 164
+                self.state = 163
                 self.match(XeasyPKParser.RETURN)
                 pass
             elif token in [11]:
-                self.state = 165
+                self.state = 164
                 self.comment()
+                pass
+            elif token in [-1]:
+                self.state = 165
+                self.match(XeasyPKParser.EOF)
                 pass
             else:
                 raise NoViableAltException(self)
 
-            self.state = 180
+            self.state = 181
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,21,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,20,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
                     self.state = 168
@@ -1288,7 +1297,7 @@ class XeasyPKParser ( Parser ):
                         self.match(XeasyPKParser.Integer)
 
 
-                    self.state = 176
+                    self.state = 177
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
                     if token in [16]:
@@ -1299,20 +1308,16 @@ class XeasyPKParser ( Parser ):
                         self.state = 175
                         self.comment()
                         pass
+                    elif token in [-1]:
+                        self.state = 176
+                        self.match(XeasyPKParser.EOF)
+                        pass
                     else:
                         raise NoViableAltException(self)
              
-                self.state = 182
-                self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,21,self._ctx)
-
-            self.state = 184
-            self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,22,self._ctx)
-            if la_ == 1:
                 self.state = 183
-                self.match(XeasyPKParser.EOF)
-
+                self._errHandler.sync(self)
+                _alt = self._interp.adaptivePredict(self._input,20,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1364,20 +1369,20 @@ class XeasyPKParser ( Parser ):
         self.enterRule(localctx, 24, self.RULE_peak_list_4d)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 188 
+            self.state = 186 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 188
+                    self.state = 186
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
                     if token in [8]:
-                        self.state = 186
+                        self.state = 184
                         self.peak_4d()
                         pass
                     elif token in [11]:
-                        self.state = 187
+                        self.state = 185
                         self.comment()
                         pass
                     else:
@@ -1386,9 +1391,9 @@ class XeasyPKParser ( Parser ):
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 190 
+                self.state = 188 
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,24,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,22,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1452,8 +1457,11 @@ class XeasyPKParser ( Parser ):
                 return self.getTypedRuleContext(XeasyPKParser.CommentContext,i)
 
 
-        def EOF(self):
-            return self.getToken(XeasyPKParser.EOF, 0)
+        def EOF(self, i:int=None):
+            if i is None:
+                return self.getTokens(XeasyPKParser.EOF)
+            else:
+                return self.getToken(XeasyPKParser.EOF, i)
 
         def getRuleIndex(self):
             return XeasyPKParser.RULE_peak_4d
@@ -1476,76 +1484,80 @@ class XeasyPKParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 192
+            self.state = 190
             self.match(XeasyPKParser.Integer)
+            self.state = 191
+            self.position()
+            self.state = 192
+            self.position()
             self.state = 193
             self.position()
             self.state = 194
             self.position()
             self.state = 195
-            self.position()
+            self.match(XeasyPKParser.Integer)
             self.state = 196
-            self.position()
+            self.match(XeasyPKParser.Simple_name)
             self.state = 197
-            self.match(XeasyPKParser.Integer)
+            self.number()
             self.state = 198
-            self.match(XeasyPKParser.Simple_name)
+            self.number()
             self.state = 199
-            self.number()
-            self.state = 200
-            self.number()
-            self.state = 201
             self.match(XeasyPKParser.Simple_name)
-            self.state = 202
+            self.state = 200
             self.match(XeasyPKParser.Integer)
+            self.state = 201
+            self.assign()
+            self.state = 202
+            self.assign()
             self.state = 203
             self.assign()
             self.state = 204
             self.assign()
-            self.state = 205
-            self.assign()
             self.state = 206
-            self.assign()
-            self.state = 208
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==8:
-                self.state = 207
+                self.state = 205
                 self.match(XeasyPKParser.Integer)
 
 
-            self.state = 212
+            self.state = 211
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [16]:
-                self.state = 210
+                self.state = 208
                 self.match(XeasyPKParser.RETURN)
                 pass
             elif token in [11]:
-                self.state = 211
+                self.state = 209
                 self.comment()
+                pass
+            elif token in [-1]:
+                self.state = 210
+                self.match(XeasyPKParser.EOF)
                 pass
             else:
                 raise NoViableAltException(self)
 
             self.state = 227
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,29,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,27,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
+                    self.state = 213
+                    self.assign()
                     self.state = 214
                     self.assign()
                     self.state = 215
                     self.assign()
                     self.state = 216
                     self.assign()
-                    self.state = 217
-                    self.assign()
-                    self.state = 219
+                    self.state = 218
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     if _la==8:
-                        self.state = 218
+                        self.state = 217
                         self.match(XeasyPKParser.Integer)
 
 
@@ -1553,27 +1565,23 @@ class XeasyPKParser ( Parser ):
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
                     if token in [16]:
-                        self.state = 221
+                        self.state = 220
                         self.match(XeasyPKParser.RETURN)
                         pass
                     elif token in [11]:
-                        self.state = 222
+                        self.state = 221
                         self.comment()
+                        pass
+                    elif token in [-1]:
+                        self.state = 222
+                        self.match(XeasyPKParser.EOF)
                         pass
                     else:
                         raise NoViableAltException(self)
              
                 self.state = 229
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,29,self._ctx)
-
-            self.state = 231
-            self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,30,self._ctx)
-            if la_ == 1:
-                self.state = 230
-                self.match(XeasyPKParser.EOF)
-
+                _alt = self._interp.adaptivePredict(self._input,27,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1618,7 +1626,7 @@ class XeasyPKParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 233
+            self.state = 230
             _la = self._input.LA(1)
             if not(_la==8 or _la==9):
                 self._errHandler.recoverInline(self)
@@ -1674,7 +1682,7 @@ class XeasyPKParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 235
+            self.state = 232
             _la = self._input.LA(1)
             if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 18176) != 0)):
                 self._errHandler.recoverInline(self)
@@ -1722,23 +1730,23 @@ class XeasyPKParser ( Parser ):
         localctx = XeasyPKParser.AssignContext(self, self._ctx, self.state)
         self.enterRule(localctx, 32, self.RULE_assign)
         try:
-            self.state = 242
+            self.state = 239
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [8]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 237
+                self.state = 234
                 self.match(XeasyPKParser.Integer)
                 pass
             elif token in [14]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 238
+                self.state = 235
                 self.match(XeasyPKParser.Simple_name)
-                self.state = 240
+                self.state = 237
                 self._errHandler.sync(self)
-                la_ = self._interp.adaptivePredict(self._input,31,self._ctx)
+                la_ = self._interp.adaptivePredict(self._input,28,self._ctx)
                 if la_ == 1:
-                    self.state = 239
+                    self.state = 236
                     self.match(XeasyPKParser.Integer)
 
 
@@ -1798,19 +1806,19 @@ class XeasyPKParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 244
+            self.state = 241
             self.match(XeasyPKParser.COMMENT)
-            self.state = 248
+            self.state = 245
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==42:
-                self.state = 245
+                self.state = 242
                 self.match(XeasyPKParser.Any_name)
-                self.state = 250
+                self.state = 247
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 251
+            self.state = 248
             _la = self._input.LA(1)
             if not(_la==-1 or _la==44):
                 self._errHandler.recoverInline(self)

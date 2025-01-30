@@ -174,82 +174,92 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     # Exit a parse tree produced by NmrViewPKParser#peak_2d.
     def exitPeak_2d(self, ctx: NmrViewPKParser.Peak_2dContext):
 
-        index = int(str(ctx.Integer(0)))
-
-        L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
-        P1 = float(str(ctx.Float(0)))
-        W1 = float(str(ctx.Float(1)))
-        B1 = float(str(ctx.Float(2)))
-        # E1 = str(ctx.Simple_name(0))
-        # J1 = self.__jcouplings[0]
-        # U1 = str(ctx.ENCLOSE_DATA(1))[1:-1]
-
-        L2 = str(ctx.ENCLOSE_DATA(2))[1:-1]
-        P2 = float(str(ctx.Float(3)))
-        W2 = float(str(ctx.Float(4)))
-        B2 = float(str(ctx.Float(5)))
-        # E2 = str(ctx.Simple_name(1))
-        # J2 = self.__jcouplings[1]
-        # U2 = str(ctx.ENCLOSE_DATA(3))[1:-1]
-
-        vol = str(ctx.Float(6))
-        _int = str(ctx.Float(7))
         try:
-            stat = int(str(ctx.Integer(1)))
-        except ValueError:
-            stat = None
-        if ctx.ENCLOSE_DATA(4):
-            comment = str(ctx.ENCLOSE_DATA(4))[1:-1]
-            if comment in emptyValue:
+
+            if len(self.numberSelection) == 0 or len(self.assignmentSelection) == 0:
+                self.peaks2D -= 1
+                return
+
+            index = int(str(ctx.Integer(0)))
+
+            L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
+            P1 = self.numberSelection[0]
+            W1 = self.numberSelection[1]
+            B1 = self.numberSelection[2]
+            # E1 = str(ctx.Simple_name(0))
+            # J1 = self.__jcouplings[0]
+            # U1 = str(ctx.ENCLOSE_DATA(1))[1:-1]
+
+            L2 = str(ctx.ENCLOSE_DATA(2))[1:-1]
+            P2 = self.numberSelection[3]
+            W2 = self.numberSelection[4]
+            B2 = self.numberSelection[5]
+            # E2 = str(ctx.Simple_name(1))
+            # J2 = self.__jcouplings[1]
+            # U2 = str(ctx.ENCLOSE_DATA(3))[1:-1]
+
+            vol = self.originalNumberSelection[6]
+            _int = self.originalNumberSelection[7]
+            try:
+                stat = int(str(ctx.Integer(1)))
+            except ValueError:
+                stat = None
+            if ctx.ENCLOSE_DATA(4):
+                comment = str(ctx.ENCLOSE_DATA(4))[1:-1]
+                if comment in emptyValue:
+                    comment = None
+            else:
                 comment = None
-        else:
-            comment = None
-        # flag0 = int(str(ctx.Integer(2)))
+            # flag0 = int(str(ctx.Integer(2)))
 
-        if L1 in emptyValue:
-            L1 = None
-        if L2 in emptyValue:
-            L2 = None
+            if L1 in emptyValue:
+                L1 = None
+            if L2 in emptyValue:
+                L2 = None
 
-        if not self.hasPolySeq and not self.hasNonPolySeq:
-            return
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
 
-        if None in (P1, P2) or stat not in (0, None):
-            self.peaks2D -= 1
-            return
+            if None in (P1, P2) or stat not in (0, None):
+                self.peaks2D -= 1
+                return
 
-        dstFunc = self.validatePeak2D(index, P1, P2, B1, B2, W1, W2,
-                                      None, None, None, None, _int, None, vol, None)
+            dstFunc = self.validatePeak2D(index, P1, P2, B1, B2, W1, W2,
+                                          None, None, None, None, _int, None, vol, None)
 
-        if dstFunc is None:
-            self.peaks2D -= 1
-            return
+            if dstFunc is None:
+                self.peaks2D -= 1
+                return
 
-        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-        cur_spectral_dim[1]['freq_hint'].append(P1)
-        cur_spectral_dim[2]['freq_hint'].append(P2)
+            cur_spectral_dim[1]['freq_hint'].append(P1)
+            cur_spectral_dim[2]['freq_hint'].append(P2)
 
-        has_assignments = has_multiple_assignments = False
-        asis1 = asis2 = None
+            has_assignments = has_multiple_assignments = False
+            asis1 = asis2 = None
 
-        if L1 is not None and L2 is not None:
-            assignments = [None] * self.num_of_dim
-            if L1 is not None:
-                ext = self.extractPeakAssignment(1, L1, index)
-                if ext is not None:
-                    assignments[0] = ext
-            if L2 is not None:
-                ext = self.extractPeakAssignment(1, L2, index)
-                if ext is not None:
-                    assignments[1] = ext
+            if L1 is not None and L2 is not None:
+                assignments = [None] * self.num_of_dim
+                if L1 is not None:
+                    ext = self.extractPeakAssignment(1, L1, index)
+                    if ext is not None:
+                        assignments[0] = ext
+                if L2 is not None:
+                    ext = self.extractPeakAssignment(1, L2, index)
+                    if ext is not None:
+                        assignments[1] = ext
 
-            has_assignments, has_multiple_assignments, asis1, asis2 =\
-                self.checkAssignments2D(index, assignments)
+                has_assignments, has_multiple_assignments, asis1, asis2 =\
+                    self.checkAssignments2D(index, assignments)
 
-        self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
-                                asis1, asis2,
-                                f'{L1} {L2} -> ', comment)
+            self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                    asis1, asis2,
+                                    f'{L1} {L2} -> ', comment)
+
+        finally:
+            self.numberSelection.clear()
+            self.originalNumberSelection.clear()
 
     # Enter a parse tree produced by NmrViewPKParser#peak_list_3d.
     def enterPeak_list_3d(self, ctx: NmrViewPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
@@ -271,97 +281,107 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     # Exit a parse tree produced by NmrViewPKParser#peak_3d.
     def exitPeak_3d(self, ctx: NmrViewPKParser.Peak_3dContext):
 
-        index = int(str(ctx.Integer(0)))
-
-        L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
-        P1 = float(str(ctx.Float(0)))
-        W1 = float(str(ctx.Float(1)))
-        B1 = float(str(ctx.Float(2)))
-        # E1 = str(ctx.Simple_name(0))
-        # J1 = self.__jcouplings[0]
-        # U1 = str(ctx.ENCLOSE_DATA(1))[1:-1]
-
-        L2 = str(ctx.ENCLOSE_DATA(2))[1:-1]
-        P2 = float(str(ctx.Float(3)))
-        W2 = float(str(ctx.Float(4)))
-        B2 = float(str(ctx.Float(5)))
-        # E2 = str(ctx.Simple_name(1))
-        # J2 = self.__jcouplings[1]
-        # U2 = str(ctx.ENCLOSE_DATA(3))[1:-1]
-
-        L3 = str(ctx.ENCLOSE_DATA(4))[1:-1]
-        P3 = float(str(ctx.Float(6)))
-        W3 = float(str(ctx.Float(7)))
-        B3 = float(str(ctx.Float(8)))
-        # E3 = str(ctx.Simple_name(2))
-        # J3 = self.__jcouplings[2]
-        # U3 = str(ctx.ENCLOSE_DATA(5))[1:-1]
-
-        vol = str(ctx.Float(9))
-        _int = str(ctx.Float(10))
         try:
-            stat = int(str(ctx.Integer(1)))
-        except ValueError:
-            stat = None
-        if ctx.ENCLOSE_DATA(6):
-            comment = str(ctx.ENCLOSE_DATA(6))[1:-1]
-            if comment in emptyValue:
+
+            if len(self.numberSelection) == 0 or len(self.assignmentSelection) == 0:
+                self.peaks3D -= 1
+                return
+
+            index = int(str(ctx.Integer(0)))
+
+            L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
+            P1 = self.numberSelection[0]
+            W1 = self.numberSelection[1]
+            B1 = self.numberSelection[2]
+            # E1 = str(ctx.Simple_name(0))
+            # J1 = self.__jcouplings[0]
+            # U1 = str(ctx.ENCLOSE_DATA(1))[1:-1]
+
+            L2 = str(ctx.ENCLOSE_DATA(2))[1:-1]
+            P2 = self.numberSelection[3]
+            W2 = self.numberSelection[4]
+            B2 = self.numberSelection[5]
+            # E2 = str(ctx.Simple_name(1))
+            # J2 = self.__jcouplings[1]
+            # U2 = str(ctx.ENCLOSE_DATA(3))[1:-1]
+
+            L3 = str(ctx.ENCLOSE_DATA(4))[1:-1]
+            P3 = self.numberSelection[6]
+            W3 = self.numberSelection[7]
+            B3 = self.numberSelection[8]
+            # E3 = str(ctx.Simple_name(2))
+            # J3 = self.__jcouplings[2]
+            # U3 = str(ctx.ENCLOSE_DATA(5))[1:-1]
+
+            vol = self.originalNumberSelection[9]
+            _int = self.originalNumberSelection[10]
+            try:
+                stat = int(str(ctx.Integer(1)))
+            except ValueError:
+                stat = None
+            if ctx.ENCLOSE_DATA(6):
+                comment = str(ctx.ENCLOSE_DATA(6))[1:-1]
+                if comment in emptyValue:
+                    comment = None
+            else:
                 comment = None
-        else:
-            comment = None
-        # flag0 = int(str(ctx.Integer(2)))
+            # flag0 = int(str(ctx.Integer(2)))
 
-        if L1 in emptyValue:
-            L1 = None
-        if L2 in emptyValue:
-            L2 = None
-        if L3 in emptyValue:
-            L3 = None
+            if L1 in emptyValue:
+                L1 = None
+            if L2 in emptyValue:
+                L2 = None
+            if L3 in emptyValue:
+                L3 = None
 
-        if not self.hasPolySeq and not self.hasNonPolySeq:
-            return
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
 
-        if None in (P1, P2, P3) or stat not in (0, None):
-            self.peaks3D -= 1
-            return
+            if None in (P1, P2, P3) or stat not in (0, None):
+                self.peaks3D -= 1
+                return
 
-        dstFunc = self.validatePeak3D(index, P1, P2, P3, B1, B2, B3, W1, W2, W3,
-                                      None, None, None, None, None, None, _int, None, vol, None)
+            dstFunc = self.validatePeak3D(index, P1, P2, P3, B1, B2, B3, W1, W2, W3,
+                                          None, None, None, None, None, None, _int, None, vol, None)
 
-        if dstFunc is None:
-            self.peaks3D -= 1
-            return
+            if dstFunc is None:
+                self.peaks3D -= 1
+                return
 
-        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-        cur_spectral_dim[1]['freq_hint'].append(P1)
-        cur_spectral_dim[2]['freq_hint'].append(P2)
-        cur_spectral_dim[3]['freq_hint'].append(P3)
+            cur_spectral_dim[1]['freq_hint'].append(P1)
+            cur_spectral_dim[2]['freq_hint'].append(P2)
+            cur_spectral_dim[3]['freq_hint'].append(P3)
 
-        has_assignments = has_multiple_assignments = False
-        asis1 = asis2 = asis3 = None
+            has_assignments = has_multiple_assignments = False
+            asis1 = asis2 = asis3 = None
 
-        if L1 is not None and L2 is not None and L3 is not None:
-            assignments = [None] * self.num_of_dim
-            if L1 is not None:
-                ext = self.extractPeakAssignment(1, L1, index)
-                if ext is not None:
-                    assignments[0] = ext
-            if L2 is not None:
-                ext = self.extractPeakAssignment(1, L2, index)
-                if ext is not None:
-                    assignments[1] = ext
-            if L3 is not None:
-                ext = self.extractPeakAssignment(1, L3, index)
-                if ext is not None:
-                    assignments[2] = ext
+            if L1 is not None and L2 is not None and L3 is not None:
+                assignments = [None] * self.num_of_dim
+                if L1 is not None:
+                    ext = self.extractPeakAssignment(1, L1, index)
+                    if ext is not None:
+                        assignments[0] = ext
+                if L2 is not None:
+                    ext = self.extractPeakAssignment(1, L2, index)
+                    if ext is not None:
+                        assignments[1] = ext
+                if L3 is not None:
+                    ext = self.extractPeakAssignment(1, L3, index)
+                    if ext is not None:
+                        assignments[2] = ext
 
-            has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
-                self.checkAssignments3D(index, assignments)
+                has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
+                    self.checkAssignments3D(index, assignments)
 
-        self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
-                                asis1, asis2, asis3,
-                                f'{L1} {L2} {L3} -> ', comment)
+            self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                    asis1, asis2, asis3,
+                                    f'{L1} {L2} {L3} -> ', comment)
+
+        finally:
+            self.numberSelection.clear()
+            self.originalNumberSelection.clear()
 
     # Enter a parse tree produced by NmrViewPKParser#peak_list_4d.
     def enterPeak_list_4d(self, ctx: NmrViewPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
@@ -383,112 +403,122 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     # Exit a parse tree produced by NmrViewPKParser#peak_4d.
     def exitPeak_4d(self, ctx: NmrViewPKParser.Peak_4dContext):
 
-        index = int(str(ctx.Integer(0)))
-
-        L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
-        P1 = float(str(ctx.Float(0)))
-        W1 = float(str(ctx.Float(1)))
-        B1 = float(str(ctx.Float(2)))
-        # E1 = str(ctx.Simple_name(0))
-        # J1 = self.__jcouplings[0]
-        # U1 = str(ctx.ENCLOSE_DATA(1))[1:-1]
-
-        L2 = str(ctx.ENCLOSE_DATA(2))[1:-1]
-        P2 = float(str(ctx.Float(3)))
-        W2 = float(str(ctx.Float(4)))
-        B2 = float(str(ctx.Float(5)))
-        # E2 = str(ctx.Simple_name(1))
-        # J2 = self.__jcouplings[1]
-        # U2 = str(ctx.ENCLOSE_DATA(3))[1:-1]
-
-        L3 = str(ctx.ENCLOSE_DATA(4))[1:-1]
-        P3 = float(str(ctx.Float(6)))
-        W3 = float(str(ctx.Float(7)))
-        B3 = float(str(ctx.Float(8)))
-        # E3 = str(ctx.Simple_name(2))
-        # J3 = self.__jcouplings[2]
-        # U3 = str(ctx.ENCLOSE_DATA(5))[1:-1]
-
-        L4 = str(ctx.ENCLOSE_DATA(6))[1:-1]
-        P4 = float(str(ctx.Float(9)))
-        W4 = float(str(ctx.Float(10)))
-        B4 = float(str(ctx.Float(11)))
-        # E4 = str(ctx.Simple_name(3))
-        # J4 = self.__jcouplings[3]
-        # U4 = str(ctx.ENCLOSE_DATA(7))[1:-1]
-
-        vol = str(ctx.Float(12))
-        _int = str(ctx.Float(13))
         try:
-            stat = int(str(ctx.Integer(1)))
-        except ValueError:
-            stat = None
-        if ctx.ENCLOSE_DATA(8):
-            comment = str(ctx.ENCLOSE_DATA(8))[1:-1]
-            if comment in emptyValue:
+
+            if len(self.numberSelection) == 0 or len(self.assignmentSelection) == 0:
+                self.peaks4D -= 1
+                return
+
+            index = int(str(ctx.Integer(0)))
+
+            L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
+            P1 = self.numberSelection[0]
+            W1 = self.numberSelection[1]
+            B1 = self.numberSelection[2]
+            # E1 = str(ctx.Simple_name(0))
+            # J1 = self.__jcouplings[0]
+            # U1 = str(ctx.ENCLOSE_DATA(1))[1:-1]
+
+            L2 = str(ctx.ENCLOSE_DATA(2))[1:-1]
+            P2 = self.numberSelection[3]
+            W2 = self.numberSelection[4]
+            B2 = self.numberSelection[5]
+            # E2 = str(ctx.Simple_name(1))
+            # J2 = self.__jcouplings[1]
+            # U2 = str(ctx.ENCLOSE_DATA(3))[1:-1]
+
+            L3 = str(ctx.ENCLOSE_DATA(4))[1:-1]
+            P3 = self.numberSelection[6]
+            W3 = self.numberSelection[7]
+            B3 = self.numberSelection[8]
+            # E3 = str(ctx.Simple_name(2))
+            # J3 = self.__jcouplings[2]
+            # U3 = str(ctx.ENCLOSE_DATA(5))[1:-1]
+
+            L4 = str(ctx.ENCLOSE_DATA(6))[1:-1]
+            P4 = self.numberSelection[9]
+            W4 = self.numberSelection[10]
+            B4 = self.numberSelection[11]
+            # E4 = str(ctx.Simple_name(3))
+            # J4 = self.__jcouplings[3]
+            # U4 = str(ctx.ENCLOSE_DATA(7))[1:-1]
+
+            vol = self.originalNumberSelection[12]
+            _int = self.originalNumberSelection[13]
+            try:
+                stat = int(str(ctx.Integer(1)))
+            except ValueError:
+                stat = None
+            if ctx.ENCLOSE_DATA(8):
+                comment = str(ctx.ENCLOSE_DATA(8))[1:-1]
+                if comment in emptyValue:
+                    comment = None
+            else:
                 comment = None
-        else:
-            comment = None
-        # flag0 = int(str(ctx.Integer(2)))
+            # flag0 = int(str(ctx.Integer(2)))
 
-        if L1 in emptyValue:
-            L1 = None
-        if L2 in emptyValue:
-            L2 = None
-        if L3 in emptyValue:
-            L3 = None
-        if L4 in emptyValue:
-            L4 = None
+            if L1 in emptyValue:
+                L1 = None
+            if L2 in emptyValue:
+                L2 = None
+            if L3 in emptyValue:
+                L3 = None
+            if L4 in emptyValue:
+                L4 = None
 
-        if not self.hasPolySeq and not self.hasNonPolySeq:
-            return
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
 
-        if None in (P1, P2, P3, P4) or stat not in (0, None):
-            self.peaks4D -= 1
-            return
+            if None in (P1, P2, P3, P4) or stat not in (0, None):
+                self.peaks4D -= 1
+                return
 
-        dstFunc = self.validatePeak4D(index, P1, P2, P3, P4, B1, B2, B3, B4, W1, W2, W3, W4,
-                                      None, None, None, None, None, None, None, None, _int, None, vol, None)
+            dstFunc = self.validatePeak4D(index, P1, P2, P3, P4, B1, B2, B3, B4, W1, W2, W3, W4,
+                                          None, None, None, None, None, None, None, None, _int, None, vol, None)
 
-        if dstFunc is None:
-            self.peaks4D -= 1
-            return
+            if dstFunc is None:
+                self.peaks4D -= 1
+                return
 
-        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-        cur_spectral_dim[1]['freq_hint'].append(P1)
-        cur_spectral_dim[2]['freq_hint'].append(P2)
-        cur_spectral_dim[3]['freq_hint'].append(P3)
-        cur_spectral_dim[4]['freq_hint'].append(P4)
+            cur_spectral_dim[1]['freq_hint'].append(P1)
+            cur_spectral_dim[2]['freq_hint'].append(P2)
+            cur_spectral_dim[3]['freq_hint'].append(P3)
+            cur_spectral_dim[4]['freq_hint'].append(P4)
 
-        has_assignments = has_multiple_assignments = False
-        asis1 = asis2 = asis3 = asis4 = None
+            has_assignments = has_multiple_assignments = False
+            asis1 = asis2 = asis3 = asis4 = None
 
-        if L1 is not None and L2 is not None and L3 is not None and L4 is not None:
-            assignments = [None] * self.num_of_dim
-            if L1 is not None:
-                ext = self.extractPeakAssignment(1, L1, index)
-                if ext is not None:
-                    assignments[0] = ext
-            if L2 is not None:
-                ext = self.extractPeakAssignment(1, L2, index)
-                if ext is not None:
-                    assignments[1] = ext
-            if L3 is not None:
-                ext = self.extractPeakAssignment(1, L3, index)
-                if ext is not None:
-                    assignments[2] = ext
-            if L4 is not None:
-                ext = self.extractPeakAssignment(1, L4, index)
-                if ext is not None:
-                    assignments[3] = ext
+            if L1 is not None and L2 is not None and L3 is not None and L4 is not None:
+                assignments = [None] * self.num_of_dim
+                if L1 is not None:
+                    ext = self.extractPeakAssignment(1, L1, index)
+                    if ext is not None:
+                        assignments[0] = ext
+                if L2 is not None:
+                    ext = self.extractPeakAssignment(1, L2, index)
+                    if ext is not None:
+                        assignments[1] = ext
+                if L3 is not None:
+                    ext = self.extractPeakAssignment(1, L3, index)
+                    if ext is not None:
+                        assignments[2] = ext
+                if L4 is not None:
+                    ext = self.extractPeakAssignment(1, L4, index)
+                    if ext is not None:
+                        assignments[3] = ext
 
-            has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
-                self.checkAssignments4D(index, assignments)
+                has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
+                    self.checkAssignments4D(index, assignments)
 
-        self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
-                                asis1, asis2, asis3, asis4,
-                                f'{L1} {L2} {L3} {L4} -> ', comment)
+            self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                    asis1, asis2, asis3, asis4,
+                                    f'{L1} {L2} {L3} {L4} -> ', comment)
+
+        finally:
+            self.numberSelection.clear()
+            self.originalNumberSelection.clear()
 
     # Enter a parse tree produced by NmrViewPKParser#peak_list_wo_eju_2d.
     def enterPeak_list_wo_eju_2d(self, ctx: NmrViewPKParser.Peak_list_wo_eju_2dContext):  # pylint: disable=unused-argument
@@ -505,76 +535,86 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     # Exit a parse tree produced by NmrViewPKParser#peak_wo_eju_2d.
     def exitPeak_wo_eju_2d(self, ctx: NmrViewPKParser.Peak_wo_eju_2dContext):
 
-        index = int(str(ctx.Integer(0)))
-
-        L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
-        P1 = float(str(ctx.Float(0)))
-        W1 = float(str(ctx.Float(1)))
-        B1 = float(str(ctx.Float(2)))
-
-        L2 = str(ctx.ENCLOSE_DATA(1))[1:-1]
-        P2 = float(str(ctx.Float(3)))
-        W2 = float(str(ctx.Float(4)))
-        B2 = float(str(ctx.Float(5)))
-
-        vol = str(ctx.Float(6))
-        _int = str(ctx.Float(7))
         try:
-            stat = int(str(ctx.Integer(1)))
-        except ValueError:
-            stat = None
-        if ctx.ENCLOSE_DATA(2):
-            comment = str(ctx.ENCLOSE_DATA(2))[1:-1]
-            if comment in emptyValue:
+
+            if len(self.numberSelection) == 0 or len(self.assignmentSelection) == 0:
+                self.peaks2D -= 1
+                return
+
+            index = int(str(ctx.Integer(0)))
+
+            L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
+            P1 = self.numberSelection[0]
+            W1 = self.numberSelection[1]
+            B1 = self.numberSelection[2]
+
+            L2 = str(ctx.ENCLOSE_DATA(1))[1:-1]
+            P2 = self.numberSelection[3]
+            W2 = self.numberSelection[4]
+            B2 = self.numberSelection[5]
+
+            vol = self.originalNumberSelection[6]
+            _int = self.originalNumberSelection[7]
+            try:
+                stat = int(str(ctx.Integer(1)))
+            except ValueError:
+                stat = None
+            if ctx.ENCLOSE_DATA(2):
+                comment = str(ctx.ENCLOSE_DATA(2))[1:-1]
+                if comment in emptyValue:
+                    comment = None
+            else:
                 comment = None
-        else:
-            comment = None
-        # flag0 = int(str(ctx.Integer(2)))
+            # flag0 = int(str(ctx.Integer(2)))
 
-        if L1 in emptyValue:
-            L1 = None
-        if L2 in emptyValue:
-            L2 = None
+            if L1 in emptyValue:
+                L1 = None
+            if L2 in emptyValue:
+                L2 = None
 
-        if not self.hasPolySeq and not self.hasNonPolySeq:
-            return
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
 
-        if None in (P1, P2) or stat not in (0, None):
-            self.peaks2D -= 1
-            return
+            if None in (P1, P2) or stat not in (0, None):
+                self.peaks2D -= 1
+                return
 
-        dstFunc = self.validatePeak2D(index, P1, P2, B1, B2, W1, W2,
-                                      None, None, None, None, _int, None, vol, None)
+            dstFunc = self.validatePeak2D(index, P1, P2, B1, B2, W1, W2,
+                                          None, None, None, None, _int, None, vol, None)
 
-        if dstFunc is None:
-            self.peaks2D -= 1
-            return
+            if dstFunc is None:
+                self.peaks2D -= 1
+                return
 
-        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-        cur_spectral_dim[1]['freq_hint'].append(P1)
-        cur_spectral_dim[2]['freq_hint'].append(P2)
+            cur_spectral_dim[1]['freq_hint'].append(P1)
+            cur_spectral_dim[2]['freq_hint'].append(P2)
 
-        has_assignments = has_multiple_assignments = False
-        asis1 = asis2 = None
+            has_assignments = has_multiple_assignments = False
+            asis1 = asis2 = None
 
-        if L1 is not None and L2 is not None:
-            assignments = [None] * self.num_of_dim
-            if L1 is not None:
-                ext = self.extractPeakAssignment(1, L1, index)
-                if ext is not None:
-                    assignments[0] = ext
-            if L2 is not None:
-                ext = self.extractPeakAssignment(1, L2, index)
-                if ext is not None:
-                    assignments[1] = ext
+            if L1 is not None and L2 is not None:
+                assignments = [None] * self.num_of_dim
+                if L1 is not None:
+                    ext = self.extractPeakAssignment(1, L1, index)
+                    if ext is not None:
+                        assignments[0] = ext
+                if L2 is not None:
+                    ext = self.extractPeakAssignment(1, L2, index)
+                    if ext is not None:
+                        assignments[1] = ext
 
-            has_assignments, has_multiple_assignments, asis1, asis2 =\
-                self.checkAssignments2D(index, assignments)
+                has_assignments, has_multiple_assignments, asis1, asis2 =\
+                    self.checkAssignments2D(index, assignments)
 
-        self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
-                                asis1, asis2,
-                                f'{L1} {L2} -> ', comment)
+            self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                    asis1, asis2,
+                                    f'{L1} {L2} -> ', comment)
+
+        finally:
+            self.numberSelection.clear()
+            self.originalNumberSelection.clear()
 
     # Enter a parse tree produced by NmrViewPKParser#peak_list_wo_eju_3d.
     def enterPeak_list_wo_eju_3d(self, ctx: NmrViewPKParser.Peak_list_wo_eju_3dContext):  # pylint: disable=unused-argument
@@ -591,88 +631,98 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     # Exit a parse tree produced by NmrViewPKParser#peak_wo_eju_3d.
     def exitPeak_wo_eju_3d(self, ctx: NmrViewPKParser.Peak_wo_eju_3dContext):
 
-        index = int(str(ctx.Integer(0)))
-
-        L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
-        P1 = float(str(ctx.Float(0)))
-        W1 = float(str(ctx.Float(1)))
-        B1 = float(str(ctx.Float(2)))
-
-        L2 = str(ctx.ENCLOSE_DATA(1))[1:-1]
-        P2 = float(str(ctx.Float(3)))
-        W2 = float(str(ctx.Float(4)))
-        B2 = float(str(ctx.Float(5)))
-
-        L3 = str(ctx.ENCLOSE_DATA(2))[1:-1]
-        P3 = float(str(ctx.Float(6)))
-        W3 = float(str(ctx.Float(7)))
-        B3 = float(str(ctx.Float(8)))
-
-        vol = str(ctx.Float(9))
-        _int = str(ctx.Float(10))
         try:
-            stat = int(str(ctx.Integer(1)))
-        except ValueError:
-            stat = None
-        if ctx.ENCLOSE_DATA(3):
-            comment = str(ctx.ENCLOSE_DATA(3))[1:-1]
-            if comment in emptyValue:
+
+            if len(self.numberSelection) == 0 or len(self.assignmentSelection) == 0:
+                self.peaks3D -= 1
+                return
+
+            index = int(str(ctx.Integer(0)))
+
+            L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
+            P1 = self.numberSelection[0]
+            W1 = self.numberSelection[1]
+            B1 = self.numberSelection[2]
+
+            L2 = str(ctx.ENCLOSE_DATA(1))[1:-1]
+            P2 = self.numberSelection[3]
+            W2 = self.numberSelection[4]
+            B2 = self.numberSelection[5]
+
+            L3 = str(ctx.ENCLOSE_DATA(2))[1:-1]
+            P3 = self.numberSelection[6]
+            W3 = self.numberSelection[7]
+            B3 = self.numberSelection[8]
+
+            vol = self.originalNumberSelection[9]
+            _int = self.originalNumberSelection[10]
+            try:
+                stat = int(str(ctx.Integer(1)))
+            except ValueError:
+                stat = None
+            if ctx.ENCLOSE_DATA(3):
+                comment = str(ctx.ENCLOSE_DATA(3))[1:-1]
+                if comment in emptyValue:
+                    comment = None
+            else:
                 comment = None
-        else:
-            comment = None
-        # flag0 = int(str(ctx.Integer(2)))
+            # flag0 = int(str(ctx.Integer(2)))
 
-        if L1 in emptyValue:
-            L1 = None
-        if L2 in emptyValue:
-            L2 = None
-        if L3 in emptyValue:
-            L3 = None
+            if L1 in emptyValue:
+                L1 = None
+            if L2 in emptyValue:
+                L2 = None
+            if L3 in emptyValue:
+                L3 = None
 
-        if not self.hasPolySeq and not self.hasNonPolySeq:
-            return
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
 
-        if None in (P1, P2, P3) or stat not in (0, None):
-            self.peaks3D -= 1
-            return
+            if None in (P1, P2, P3) or stat not in (0, None):
+                self.peaks3D -= 1
+                return
 
-        dstFunc = self.validatePeak3D(index, P1, P2, P3, B1, B2, B3, W1, W2, W3,
-                                      None, None, None, None, None, None, _int, None, vol, None)
+            dstFunc = self.validatePeak3D(index, P1, P2, P3, B1, B2, B3, W1, W2, W3,
+                                          None, None, None, None, None, None, _int, None, vol, None)
 
-        if dstFunc is None:
-            self.peaks3D -= 1
-            return
+            if dstFunc is None:
+                self.peaks3D -= 1
+                return
 
-        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-        cur_spectral_dim[1]['freq_hint'].append(P1)
-        cur_spectral_dim[2]['freq_hint'].append(P2)
-        cur_spectral_dim[3]['freq_hint'].append(P3)
+            cur_spectral_dim[1]['freq_hint'].append(P1)
+            cur_spectral_dim[2]['freq_hint'].append(P2)
+            cur_spectral_dim[3]['freq_hint'].append(P3)
 
-        has_assignments = has_multiple_assignments = False
-        asis1 = asis2 = asis3 = None
+            has_assignments = has_multiple_assignments = False
+            asis1 = asis2 = asis3 = None
 
-        if L1 is not None and L2 is not None and L3 is not None:
-            assignments = [None] * self.num_of_dim
-            if L1 is not None:
-                ext = self.extractPeakAssignment(1, L1, index)
-                if ext is not None:
-                    assignments[0] = ext
-            if L2 is not None:
-                ext = self.extractPeakAssignment(1, L2, index)
-                if ext is not None:
-                    assignments[1] = ext
-            if L3 is not None:
-                ext = self.extractPeakAssignment(1, L3, index)
-                if ext is not None:
-                    assignments[2] = ext
+            if L1 is not None and L2 is not None and L3 is not None:
+                assignments = [None] * self.num_of_dim
+                if L1 is not None:
+                    ext = self.extractPeakAssignment(1, L1, index)
+                    if ext is not None:
+                        assignments[0] = ext
+                if L2 is not None:
+                    ext = self.extractPeakAssignment(1, L2, index)
+                    if ext is not None:
+                        assignments[1] = ext
+                if L3 is not None:
+                    ext = self.extractPeakAssignment(1, L3, index)
+                    if ext is not None:
+                        assignments[2] = ext
 
-            has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
-                self.checkAssignments3D(index, assignments)
+                has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
+                    self.checkAssignments3D(index, assignments)
 
-        self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
-                                asis1, asis2, asis3,
-                                f'{L1} {L2} {L3} -> ', comment)
+            self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                    asis1, asis2, asis3,
+                                    f'{L1} {L2} {L3} -> ', comment)
+
+        finally:
+            self.numberSelection.clear()
+            self.originalNumberSelection.clear()
 
     # Enter a parse tree produced by NmrViewPKParser#peak_list_wo_eju_4d.
     def enterPeak_list_wo_eju_4d(self, ctx: NmrViewPKParser.Peak_list_wo_eju_4dContext):  # pylint: disable=unused-argument
@@ -689,100 +739,110 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     # Exit a parse tree produced by NmrViewPKParser#peak_wo_eju_4d.
     def exitPeak_wo_eju_4d(self, ctx: NmrViewPKParser.Peak_wo_eju_4dContext):
 
-        index = int(str(ctx.Integer(0)))
-
-        L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
-        P1 = float(str(ctx.Float(0)))
-        W1 = float(str(ctx.Float(1)))
-        B1 = float(str(ctx.Float(2)))
-
-        L2 = str(ctx.ENCLOSE_DATA(1))[1:-1]
-        P2 = float(str(ctx.Float(3)))
-        W2 = float(str(ctx.Float(4)))
-        B2 = float(str(ctx.Float(5)))
-
-        L3 = str(ctx.ENCLOSE_DATA(2))[1:-1]
-        P3 = float(str(ctx.Float(6)))
-        W3 = float(str(ctx.Float(7)))
-        B3 = float(str(ctx.Float(8)))
-
-        L4 = str(ctx.ENCLOSE_DATA(3))[1:-1]
-        P4 = float(str(ctx.Float(9)))
-        W4 = float(str(ctx.Float(10)))
-        B4 = float(str(ctx.Float(11)))
-
-        vol = str(ctx.Float(12))
-        _int = str(ctx.Float(13))
         try:
-            stat = int(str(ctx.Integer(1)))
-        except ValueError:
-            stat = None
-        if ctx.ENCLOSE_DATA(4):
-            comment = str(ctx.ENCLOSE_DATA(4))[1:-1]
-            if comment in emptyValue:
+
+            if len(self.numberSelection) == 0 or len(self.assignmentSelection) == 0:
+                self.peaks4D -= 1
+                return
+
+            index = int(str(ctx.Integer(0)))
+
+            L1 = str(ctx.ENCLOSE_DATA(0))[1:-1]
+            P1 = self.numberSelection[0]
+            W1 = self.numberSelection[1]
+            B1 = self.numberSelection[2]
+
+            L2 = str(ctx.ENCLOSE_DATA(1))[1:-1]
+            P2 = self.numberSelection[3]
+            W2 = self.numberSelection[4]
+            B2 = self.numberSelection[5]
+
+            L3 = str(ctx.ENCLOSE_DATA(2))[1:-1]
+            P3 = self.numberSelection[6]
+            W3 = self.numberSelection[7]
+            B3 = self.numberSelection[8]
+
+            L4 = str(ctx.ENCLOSE_DATA(3))[1:-1]
+            P4 = self.numberSelection[9]
+            W4 = self.numberSelection[10]
+            B4 = self.numberSelection[11]
+
+            vol = self.originalNumberSelection[12]
+            _int = self.originalNumberSelection[13]
+            try:
+                stat = int(str(ctx.Integer(1)))
+            except ValueError:
+                stat = None
+            if ctx.ENCLOSE_DATA(4):
+                comment = str(ctx.ENCLOSE_DATA(4))[1:-1]
+                if comment in emptyValue:
+                    comment = None
+            else:
                 comment = None
-        else:
-            comment = None
-        # flag0 = int(str(ctx.Integer(2)))
+            # flag0 = int(str(ctx.Integer(2)))
 
-        if L1 in emptyValue:
-            L1 = None
-        if L2 in emptyValue:
-            L2 = None
-        if L3 in emptyValue:
-            L3 = None
-        if L4 in emptyValue:
-            L4 = None
+            if L1 in emptyValue:
+                L1 = None
+            if L2 in emptyValue:
+                L2 = None
+            if L3 in emptyValue:
+                L3 = None
+            if L4 in emptyValue:
+                L4 = None
 
-        if not self.hasPolySeq and not self.hasNonPolySeq:
-            return
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
 
-        if None in (P1, P2, P3, P4) or stat not in (0, None):
-            self.peaks4D -= 1
-            return
+            if None in (P1, P2, P3, P4) or stat not in (0, None):
+                self.peaks4D -= 1
+                return
 
-        dstFunc = self.validatePeak4D(index, P1, P2, P3, P4, B1, B2, B3, B4, W1, W2, W3, W4,
-                                      None, None, None, None, None, None, None, None, _int, None, vol, None)
+            dstFunc = self.validatePeak4D(index, P1, P2, P3, P4, B1, B2, B3, B4, W1, W2, W3, W4,
+                                          None, None, None, None, None, None, None, None, _int, None, vol, None)
 
-        if dstFunc is None:
-            self.peaks4D -= 1
-            return
+            if dstFunc is None:
+                self.peaks4D -= 1
+                return
 
-        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-        cur_spectral_dim[1]['freq_hint'].append(P1)
-        cur_spectral_dim[2]['freq_hint'].append(P2)
-        cur_spectral_dim[3]['freq_hint'].append(P3)
-        cur_spectral_dim[4]['freq_hint'].append(P4)
+            cur_spectral_dim[1]['freq_hint'].append(P1)
+            cur_spectral_dim[2]['freq_hint'].append(P2)
+            cur_spectral_dim[3]['freq_hint'].append(P3)
+            cur_spectral_dim[4]['freq_hint'].append(P4)
 
-        has_assignments = has_multiple_assignments = False
-        asis1 = asis2 = asis3 = asis4 = None
+            has_assignments = has_multiple_assignments = False
+            asis1 = asis2 = asis3 = asis4 = None
 
-        if L1 is not None and L2 is not None and L3 is not None and L4 is not None:
-            assignments = [None] * self.num_of_dim
-            if L1 is not None:
-                ext = self.extractPeakAssignment(1, L1, index)
-                if ext is not None:
-                    assignments[0] = ext
-            if L2 is not None:
-                ext = self.extractPeakAssignment(1, L2, index)
-                if ext is not None:
-                    assignments[1] = ext
-            if L3 is not None:
-                ext = self.extractPeakAssignment(1, L3, index)
-                if ext is not None:
-                    assignments[2] = ext
-            if L4 is not None:
-                ext = self.extractPeakAssignment(1, L4, index)
-                if ext is not None:
-                    assignments[3] = ext
+            if L1 is not None and L2 is not None and L3 is not None and L4 is not None:
+                assignments = [None] * self.num_of_dim
+                if L1 is not None:
+                    ext = self.extractPeakAssignment(1, L1, index)
+                    if ext is not None:
+                        assignments[0] = ext
+                if L2 is not None:
+                    ext = self.extractPeakAssignment(1, L2, index)
+                    if ext is not None:
+                        assignments[1] = ext
+                if L3 is not None:
+                    ext = self.extractPeakAssignment(1, L3, index)
+                    if ext is not None:
+                        assignments[2] = ext
+                if L4 is not None:
+                    ext = self.extractPeakAssignment(1, L4, index)
+                    if ext is not None:
+                        assignments[3] = ext
 
-            has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
-                self.checkAssignments4D(index, assignments)
+                has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
+                    self.checkAssignments4D(index, assignments)
 
-        self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
-                                asis1, asis2, asis3, asis4,
-                                f'{L1} {L2} {L3} {L4} -> ', comment)
+            self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                    asis1, asis2, asis3, asis4,
+                                    f'{L1} {L2} {L3} {L4} -> ', comment)
+
+        finally:
+            self.numberSelection.clear()
+            self.originalNumberSelection.clear()
 
     # Enter a parse tree produced by NmrViewPKParser#label.
     def enterLabel(self, ctx: NmrViewPKParser.LabelContext):
@@ -818,6 +878,26 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     # Exit a parse tree produced by NmrViewPKParser#jcoupling.
     def exitJcoupling(self, ctx: NmrViewPKParser.JcouplingContext):  # pylint: disable=unused-argument
         pass
+
+    # Enter a parse tree produced by NmrViewPKParser#number.
+    def enterNumber(self, ctx: NmrViewPKParser.NumberContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by NmrViewPKParser#number.
+    def exitNumber(self, ctx: NmrViewPKParser.NumberContext):
+        if ctx.Float():
+            value = str(ctx.Float())
+            self.numberSelection.append(float(value))
+            self.originalNumberSelection.append(value)
+
+        elif ctx.Integer():
+            value = str(ctx.Integer())
+            self.numberSelection.append(float(value))
+            self.originalNumberSelection.append(value)
+
+        else:
+            self.numberSelection.append(None)
+            self.originalNumberSelection.append(None)
 
 
 # del NmrViewPKParser

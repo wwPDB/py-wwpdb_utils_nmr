@@ -35029,7 +35029,7 @@ class NmrDpUtility:
                             spa_order = 'reverse'
                         elif self.__internal_mode and 'SPARKY' in a_pk_format_name\
                                 and mismatched_input_err_msg in description['message']\
-                                and "'\\n' expecting {Integer, Float, Real}" in description['message']:
+                                and "'\\n' expecting {Integer, Float, Real, Real_vol}" in description['message']:
                             spa_order = 'no'
                         else:
                             _err += f"[Syntax error as {a_pk_format_name} file] "\

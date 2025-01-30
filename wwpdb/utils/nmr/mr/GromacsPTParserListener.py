@@ -837,7 +837,7 @@ class GromacsPTParserListener(ParseTreeListener):
                                                 atomNum['atom_id'] = atomId
                                                 continue
 
-                        if orphan and test_seq_id == first_seq_id\
+                        if 'atom_id' in atomNum and orphan and test_seq_id == first_seq_id\
                            and self.__csStat.peptideLike(translateToStdResName(atomNum['comp_id'], ccU=self.__ccU)):
                             if self.__ccU.updateChemCompDict(atomNum['comp_id']):
                                 chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]

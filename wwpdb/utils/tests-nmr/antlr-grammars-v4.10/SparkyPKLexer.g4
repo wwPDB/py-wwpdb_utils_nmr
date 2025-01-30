@@ -77,6 +77,7 @@ Atom1_LA:		'Atom1' | 'ATOM1';
 Atom2_LA:		'Atom2' | 'ATOM2';
 Atom3_LA:		'Atom3' | 'ATOM3';
 Atom4_LA:		'Atom4' | 'ATOM4';
+Distance_LA:		'Distance' | 'DISTANCE';
 Note_LA:		'Note' | 'NOTE';
 
 SPACE_LA:		[ \t]+ -> skip;

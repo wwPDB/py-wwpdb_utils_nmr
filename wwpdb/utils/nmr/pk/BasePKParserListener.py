@@ -1733,7 +1733,7 @@ class BasePKParserListener():
                             has_assignments = False
                             break
 
-            except KeyError:
+            except (KeyError, TypeError):
                 pass
 
         return has_assignments, has_multiple_assignments, asis1, asis2
@@ -1798,7 +1798,7 @@ class BasePKParserListener():
                             has_assignments = False
                             break
 
-            except KeyError:
+            except (KeyError, TypeError):
                 pass
 
         return has_assignments, has_multiple_assignments, asis1, asis2, asis3
@@ -1869,7 +1869,7 @@ class BasePKParserListener():
                             has_assignments = False
                             break
 
-            except KeyError:
+            except (KeyError, TypeError):
                 pass
 
         return has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4

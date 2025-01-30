@@ -194,7 +194,10 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         vol = str(ctx.Float(6))
         _int = str(ctx.Float(7))
-        stat = int(str(ctx.Integer(1)))
+        try:
+            stat = int(str(ctx.Integer(1)))
+        except ValueError:
+            stat = None
         if ctx.ENCLOSE_DATA(4):
             comment = str(ctx.ENCLOSE_DATA(4))[1:-1]
             if comment in emptyValue:
@@ -211,7 +214,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
-        if None in (P1, P2) or stat != 0:
+        if None in (P1, P2) or stat not in (0, None):
             self.peaks2D -= 1
             return
 
@@ -296,7 +299,10 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         vol = str(ctx.Float(9))
         _int = str(ctx.Float(10))
-        stat = int(str(ctx.Integer(1)))
+        try:
+            stat = int(str(ctx.Integer(1)))
+        except ValueError:
+            stat = None
         if ctx.ENCLOSE_DATA(6):
             comment = str(ctx.ENCLOSE_DATA(6))[1:-1]
             if comment in emptyValue:
@@ -315,7 +321,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
-        if None in (P1, P2, P3) or stat != 0:
+        if None in (P1, P2, P3) or stat not in (0, None):
             self.peaks3D -= 1
             return
 
@@ -413,7 +419,10 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         vol = str(ctx.Float(12))
         _int = str(ctx.Float(13))
-        stat = int(str(ctx.Integer(1)))
+        try:
+            stat = int(str(ctx.Integer(1)))
+        except ValueError:
+            stat = None
         if ctx.ENCLOSE_DATA(8):
             comment = str(ctx.ENCLOSE_DATA(8))[1:-1]
             if comment in emptyValue:
@@ -434,7 +443,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
-        if None in (P1, P2, P3, P4) or stat != 0:
+        if None in (P1, P2, P3, P4) or stat not in (0, None):
             self.peaks4D -= 1
             return
 
@@ -510,7 +519,10 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         vol = str(ctx.Float(6))
         _int = str(ctx.Float(7))
-        stat = int(str(ctx.Integer(1)))
+        try:
+            stat = int(str(ctx.Integer(1)))
+        except ValueError:
+            stat = None
         if ctx.ENCLOSE_DATA(2):
             comment = str(ctx.ENCLOSE_DATA(2))[1:-1]
             if comment in emptyValue:
@@ -527,7 +539,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
-        if None in (P1, P2) or stat != 0:
+        if None in (P1, P2) or stat not in (0, None):
             self.peaks2D -= 1
             return
 
@@ -598,7 +610,10 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         vol = str(ctx.Float(9))
         _int = str(ctx.Float(10))
-        stat = int(str(ctx.Integer(1)))
+        try:
+            stat = int(str(ctx.Integer(1)))
+        except ValueError:
+            stat = None
         if ctx.ENCLOSE_DATA(3):
             comment = str(ctx.ENCLOSE_DATA(3))[1:-1]
             if comment in emptyValue:
@@ -617,7 +632,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
-        if None in (P1, P2, P3) or stat != 0:
+        if None in (P1, P2, P3) or stat not in (0, None):
             self.peaks3D -= 1
             return
 
@@ -698,7 +713,10 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         vol = str(ctx.Float(12))
         _int = str(ctx.Float(13))
-        stat = int(str(ctx.Integer(1)))
+        try:
+            stat = int(str(ctx.Integer(1)))
+        except ValueError:
+            stat = None
         if ctx.ENCLOSE_DATA(4):
             comment = str(ctx.ENCLOSE_DATA(4))[1:-1]
             if comment in emptyValue:
@@ -719,7 +737,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         if not self.hasPolySeq and not self.hasNonPolySeq:
             return
 
-        if None in (P1, P2, P3, P4) or stat != 0:
+        if None in (P1, P2, P3, P4) or stat not in (0, None):
             self.peaks4D -= 1
             return
 

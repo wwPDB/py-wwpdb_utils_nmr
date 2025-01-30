@@ -70,7 +70,7 @@ Dev_w3_LA:		'Dev w3';
 Dev_w4_LA:		'Dev w4';
 
 Dummy_H_LA:		'Fit Height' 's'?;
-Height_LA:		'Data '? 'Height' 's'?;
+Height_LA:		('Data '? 'Height' 's'? | 'Data');
 Volume_LA:		'Volume';
 S_N_LA:			'S/N';
 Atom1_LA:		'Atom1' | 'ATOM1';

@@ -30,11 +30,17 @@ sparky_pk:
 	EOF;
 
 data_label:
-	Assignment W1_LA W2_LA W3_LA? W4_LA? Dummy_H_LA? Height_LA? Volume_LA? S_N_LA? Atom1_LA? Atom2_LA? Atom3_LA? Atom4_LA? Note_LA? RETURN_LA RETURN?;
+	Assignment W1_LA W2_LA W3_LA? W4_LA?
+	Dev_w1_LA? Dev_w2_LA? Dev_w3_LA? Dev_w4_LA?
+	Dummy_H_LA? Height_LA? Volume_LA? S_N_LA?
+	Atom1_LA? Atom2_LA? Atom3_LA? Atom4_LA? Note_LA? RETURN_LA RETURN?;
 //	(peak_2d+ | peak_3d+ | peak_4d+);
 
 data_label_wo_assign:
-	W1 W2_LA W3_LA? W4_LA? Dummy_H_LA? Height_LA? Volume_LA? S_N_LA? Atom1_LA? Atom2_LA? Atom3_LA? Atom4_LA? Note_LA? RETURN_LA RETURN?
+	W1 W2_LA W3_LA? W4_LA?
+	Dev_w1_LA? Dev_w2_LA? Dev_w3_LA? Dev_w4_LA?
+	Dummy_H_LA? Height_LA? Volume_LA? S_N_LA?
+	Note_LA? RETURN_LA RETURN?
 	peak_wo_assign+;
 
 peak_2d:

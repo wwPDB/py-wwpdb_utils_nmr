@@ -64,6 +64,11 @@ W2_LA:			'w2';
 W3_LA:			'w3';
 W4_LA:			'w4';
 
+Dev_w1_LA:		'Dev w1';
+Dev_w2_LA:		'Dev w2';
+Dev_w3_LA:		'Dev w3';
+Dev_w4_LA:		'Dev w4';
+
 Dummy_H_LA:		'Fit Height' 's'?;
 Height_LA:		'Data '? 'Height' 's'?;
 Volume_LA:		'Volume';

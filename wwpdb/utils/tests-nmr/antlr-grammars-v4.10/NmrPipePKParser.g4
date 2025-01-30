@@ -76,7 +76,7 @@ peak_2d:
 	Integer Integer Integer Integer
 	number number number
 	number Integer Any_name?
-	Integer Integer Integer? RETURN;
+	Integer Integer Integer? (RETURN | EOF);
 
 peak_list_3d:
 	Vars
@@ -117,7 +117,7 @@ peak_3d:
 	Integer Integer Integer Integer Integer Integer
 	number number number
 	number Integer Any_name?
-	Integer Integer Integer? RETURN;
+	Integer Integer Integer? (RETURN | EOF);
 
 peak_list_4d:
 	Vars
@@ -158,7 +158,7 @@ peak_4d:
 	Integer Integer Integer Integer Integer Integer Integer Integer
 	number number number
 	number Integer Any_name?
-	Integer Integer Integer? RETURN;
+	Integer Integer Integer? (RETURN | EOF);
 
 /* number expression in peak list */
 number: Float | Real | Any_name;

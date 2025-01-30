@@ -39,17 +39,17 @@ peak_2d:
 	Integer
 	Float Float
 	Float Float
-	Float Float? Annotation* RETURN;
+	Float Float? Annotation* (RETURN | EOF);
 
 peak_3d:
 	Integer
 	Float Float Float
 	Float Float Float
-	Float Float? Annotation* RETURN;
+	Float Float? Annotation* (RETURN | EOF);
 
 peak_4d:
 	Integer
 	Float Float Float Float
 	Float Float Float Float
-	Float Float? Annotation* RETURN;
+	Float Float? Annotation* (RETURN | EOF);
 

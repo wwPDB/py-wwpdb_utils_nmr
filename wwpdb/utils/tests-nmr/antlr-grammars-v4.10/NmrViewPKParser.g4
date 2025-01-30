@@ -55,7 +55,7 @@ peak_2d:
 	Integer
 	ENCLOSE_DATA number number number Simple_name jcoupling ENCLOSE_DATA
 	ENCLOSE_DATA number number number Simple_name jcoupling ENCLOSE_DATA
-	number number Integer ENCLOSE_DATA? Integer+ RETURN;
+	number number Integer ENCLOSE_DATA? Integer+ (RETURN | EOF);
 
 peak_list_3d:
 	L_name P_name W_name B_name E_name J_name U_name
@@ -69,7 +69,7 @@ peak_3d:
 	ENCLOSE_DATA number number number Simple_name jcoupling ENCLOSE_DATA
 	ENCLOSE_DATA number number number Simple_name jcoupling ENCLOSE_DATA
 	ENCLOSE_DATA number number number Simple_name jcoupling ENCLOSE_DATA
-	number number Integer ENCLOSE_DATA? Integer+ RETURN;
+	number number Integer ENCLOSE_DATA? Integer+ (RETURN | EOF);
 
 peak_list_4d:
 	L_name P_name W_name B_name E_name J_name U_name
@@ -85,7 +85,7 @@ peak_4d:
 	ENCLOSE_DATA number number number Simple_name jcoupling ENCLOSE_DATA
 	ENCLOSE_DATA number number number Simple_name jcoupling ENCLOSE_DATA
 	ENCLOSE_DATA number number number Simple_name jcoupling ENCLOSE_DATA
-	number number Integer ENCLOSE_DATA? Integer+ RETURN;
+	number number Integer ENCLOSE_DATA? Integer+ (RETURN | EOF);
 
 peak_list_wo_eju_2d:
 	L_name P_name W_name B_name
@@ -97,7 +97,7 @@ peak_wo_eju_2d:
 	Integer
 	ENCLOSE_DATA number number number
 	ENCLOSE_DATA number number number
-	number number Integer ENCLOSE_DATA? Integer+ RETURN;
+	number number Integer ENCLOSE_DATA? Integer+ (RETURN | EOF);
 
 peak_list_wo_eju_3d:
 	L_name P_name W_name B_name
@@ -111,7 +111,7 @@ peak_wo_eju_3d:
 	ENCLOSE_DATA number number number
 	ENCLOSE_DATA number number number
 	ENCLOSE_DATA number number number
-	number number Integer ENCLOSE_DATA? Integer+ RETURN;
+	number number Integer ENCLOSE_DATA? Integer+ (RETURN | EOF);
 
 peak_list_wo_eju_4d:
 	L_name P_name W_name B_name
@@ -127,7 +127,7 @@ peak_wo_eju_4d:
 	ENCLOSE_DATA number number number
 	ENCLOSE_DATA number number number
 	ENCLOSE_DATA number number number
-	number number Integer ENCLOSE_DATA? Integer+ RETURN;
+	number number Integer ENCLOSE_DATA? Integer+ (RETURN | EOF);
 
 label:
 	Float_LA | Simple_name_LA | ENCLOSE_DATA_LA;

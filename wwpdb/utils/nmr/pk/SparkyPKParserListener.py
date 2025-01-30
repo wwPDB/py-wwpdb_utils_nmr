@@ -145,7 +145,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             if self.__has_height and len(self.originalNumberSelection) > 0:
                 height = self.originalNumberSelection[0]
             if self.__has_volume:
-                volume = self.originalNumberSelection[1 if self.__has_height else 0]
+                if not self.__has_height or (self.__has_height and len(self.originalNumberSelection) > 1):
+                    volume = self.originalNumberSelection[1 if self.__has_height else 0]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -222,7 +223,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             if self.__has_height and len(self.originalNumberSelection) > 0:
                 height = self.originalNumberSelection[0]
             if self.__has_volume:
-                volume = self.originalNumberSelection[1 if self.__has_height else 0]
+                if not self.__has_height or (self.__has_height and len(self.originalNumberSelection) > 1):
+                    volume = self.originalNumberSelection[1 if self.__has_height else 0]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -301,7 +303,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             if self.__has_height and len(self.originalNumberSelection) > 0:
                 height = self.originalNumberSelection[0]
             if self.__has_volume:
-                volume = self.originalNumberSelection[1 if self.__has_height else 0]
+                if not self.__has_height or (self.__has_height and len(self.originalNumberSelection) > 1):
+                    volume = self.originalNumberSelection[1 if self.__has_height else 0]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -383,7 +386,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                     if self.__has_height and len(self.originalNumberSelection) > 2:
                         height = self.originalNumberSelection[2]
                     if self.__has_volume:
-                        volume = self.originalNumberSelection[3 if self.__has_height else 2]
+                        if not self.__has_height or (self.__has_height and len(self.originalNumberSelection) > 3):
+                            volume = self.originalNumberSelection[3 if self.__has_height else 2]
 
                     if not self.hasPolySeq and not self.hasNonPolySeq:
                         return
@@ -436,7 +440,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                     if self.__has_height and len(self.originalNumberSelection) > 3:
                         height = self.originalNumberSelection[3]
                     if self.__has_volume:
-                        volume = self.originalNumberSelection[4 if self.__has_height else 3]
+                        if not self.__has_height or (self.__has_height and len(self.originalNumberSelection) > 4):
+                            volume = self.originalNumberSelection[4 if self.__has_height else 3]
 
                     if not self.hasPolySeq and not self.hasNonPolySeq:
                         return
@@ -491,7 +496,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                     if self.__has_height and len(self.originalNumberSelection) > 4:
                         height = self.originalNumberSelection[4]
                     if self.__has_volume:
-                        volume = self.originalNumberSelection[5 if self.__has_height else 4]
+                        if not self.__has_height or (self.__has_height and len(self.originalNumberSelection) > 5):
+                            volume = self.originalNumberSelection[5 if self.__has_height else 4]
 
                     if not self.hasPolySeq and not self.hasNonPolySeq:
                         return

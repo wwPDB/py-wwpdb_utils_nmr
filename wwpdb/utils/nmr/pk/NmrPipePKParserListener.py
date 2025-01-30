@@ -133,8 +133,8 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 first_ppm = float(row[0])
                 last_ppm = float(row[1])
                 cur_spectral_dim['value_first_point'] = first_ppm
-                cur_spectral_dim['center_frequency_offset'] = roundString(str((first_ppm + last_ppm) / 2.0),
-                                                                          max_eff_digits)
+                cur_spectral_dim['center_frequency_offset'] = float(roundString(str((first_ppm + last_ppm) / 2.0),
+                                                                                max_eff_digits))
 
                 if truncated and isotope_number in (1, 13, 15):
                     _last_point = int(pow(2.0, round_log2_last_point + 1.0))

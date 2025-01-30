@@ -524,23 +524,26 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 factor = assignment[0]
                 self.assignmentSelection.append(factor)
         else:
-            ai = int(str(ctx.Integer()))
-            if ai == 0 or self.__atomNumberDict is None or ai not in self.__atomNumberDict:
+            if ctx.Integer() is None:
                 self.assignmentSelection.append(None)
-                if ai == 0:
-                    pass
-                elif self.__atomNumberDict is None:
-                    self.__g.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
-                                    "Failed to recognize XEASY atom numbers in the spectral peak list file "
-                                    "because XEASY PROT file is not available.")
-                elif ai not in self.__atomNumberDict:
-                    self.__g.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
-                                    f"'{ai})' is not defined in the XEASY PROT file.")
             else:
-                _factor = copy.copy(self.__atomNumberDict[ai])
-                _factor['atom_id'] = _factor['auth_atom_id']
-                del _factor['auth_atom_id']
-                self.assignmentSelection.append(_factor)
+                ai = int(str(ctx.Integer()))
+                if ai == 0 or self.__atomNumberDict is None or ai not in self.__atomNumberDict:
+                    self.assignmentSelection.append(None)
+                    if ai == 0:
+                        pass
+                    elif self.__atomNumberDict is None:
+                        self.__g.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
+                                        "Failed to recognize XEASY atom numbers in the spectral peak list file "
+                                        "because XEASY PROT file is not available.")
+                    elif ai not in self.__atomNumberDict:
+                        self.__g.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
+                                        f"'{ai})' is not defined in the XEASY PROT file.")
+                else:
+                    _factor = copy.copy(self.__atomNumberDict[ai])
+                    _factor['atom_id'] = _factor['auth_atom_id']
+                    del _factor['auth_atom_id']
+                    self.assignmentSelection.append(_factor)
 
     # Enter a parse tree produced by XeasyPKParser#comment.
     def enterComment(self, ctx: XeasyPKParser.CommentContext):  # pylint: disable=unused-argument

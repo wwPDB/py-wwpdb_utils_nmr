@@ -29,7 +29,7 @@ sparky_npk:
 	EOF;
 
 data_label:
-	Assignment W1_LA W2_LA W3_LA? W4_LA? Dummy_H_LA? Height_LA? Volume_LA? S_N_LA? Note_LA? RETURN_LA;
+	Assignment W1_LA W2_LA W3_LA? W4_LA? Dummy_H_LA? Height_LA? Volume_LA? S_N_LA? Note_LA? RETURN_LA RETURN?;
 //	(peak_2d+ | peak_3d+ | peak_4d+);
 
 peak_2d:

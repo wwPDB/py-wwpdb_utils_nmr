@@ -947,7 +947,12 @@ class BasePKParserListener():
                         print(f'original file name: {self.__originalFileName}{", spectrum name: " + spectrum_names[d][_id] if spectrum_names is not None else ""}')
 
                     file_name = self.__originalFileName.lower()
-                    alt_file_name = spectrum_names[d][_id].lower() if spectrum_names is not None else ''
+                    alt_file_name = ''
+                    try:
+                        if spectrum_names is not None:
+                            alt_file_name = spectrum_names[d][_id].lower()
+                    except KeyError:
+                        pass
                     cur_spectral_dim_transfer = self.spectral_dim_transfer[d][_id]
 
                     # onebond: 'Any transfer that connects only directly bonded atoms in this experiment'

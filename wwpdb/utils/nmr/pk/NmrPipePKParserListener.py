@@ -258,6 +258,10 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
+            if self.num_of_dim != 2:
+                self.num_of_dim = 2
+                self.initSpectralDim()
+
             cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
             cur_spectral_dim[1]['freq_hint'].append(x_ppm)
@@ -394,6 +398,10 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if dstFunc is None:
                 self.peaks3D -= 1
                 return
+
+            if self.num_of_dim != 3:
+                self.num_of_dim = 3
+                self.initSpectralDim()
 
             cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
@@ -544,6 +552,10 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if dstFunc is None:
                 self.peaks4D -= 1
                 return
+
+            if self.num_of_dim != 4:
+                self.num_of_dim = 4
+                self.initSpectralDim()
 
             cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 

@@ -775,6 +775,8 @@ class BasePKParserListener():
             self.warningMessage = sorted(list(set(self.f)), key=self.f.index)
 
     def initSpectralDim(self):
+        if self.num_of_dim not in (2, 3, 4):
+            return
         self.cur_subtype = f'peak{self.num_of_dim}d'
         if self.num_of_dim not in self.listIdInternal:
             self.listIdInternal[self.num_of_dim] = 0

@@ -161,5 +161,5 @@ peak_4d:
 	Integer Integer Integer? (RETURN | EOF);
 
 /* number expression in peak list */
-number: Float | Real | Any_name;
+number:	Float | Real | Any_name;
 

@@ -68,7 +68,11 @@ Dummy_H_LA:		'Fit Height' 's'?;
 Height_LA:		'Data '? 'Height' 's'?;
 Volume_LA:		'Volume';
 S_N_LA:			'S/N';
-Note_LA:		'Note';
+Atom1_LA:		'Atom1' | 'ATOM1';
+Atom2_LA:		'Atom2' | 'ATOM2';
+Atom3_LA:		'Atom3' | 'ATOM3';
+Atom4_LA:		'Atom4' | 'ATOM4';
+Note_LA:		'Note' | 'NOTE';
 
 SPACE_LA:		[ \t]+ -> skip;
 RETURN_LA:		[\r\n]+ -> popMode;

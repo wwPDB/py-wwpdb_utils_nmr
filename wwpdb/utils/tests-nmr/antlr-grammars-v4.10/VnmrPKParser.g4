@@ -66,5 +66,5 @@ peak_4d:
 	Integer Float Float Float Float Float Float Float Float number Assignment_4d_ex? (RETURN | EOF);
 
 /* number expression in peak list */
-number: Real | Float | Integer;
+number:	Real | Float | Integer;
 

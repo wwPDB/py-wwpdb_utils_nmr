@@ -96,7 +96,7 @@ peak_4d:
 position: Float | Integer;
 
 /* number expression in peak list */
-number: Float | Real | Integer | Simple_name;
+number:	Float | Real | Integer | Simple_name;
 
 /* assignment expression in peak list */
 assign: Integer | (Simple_name Integer?);

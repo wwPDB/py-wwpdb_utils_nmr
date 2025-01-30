@@ -30,25 +30,28 @@ sparky_pk:
 	EOF;
 
 data_label:
-	Assignment W1_LA W2_LA W3_LA? W4_LA? Dummy_H_LA? Height_LA? Volume_LA? S_N_LA? Note_LA? RETURN_LA RETURN?;
+	Assignment W1_LA W2_LA W3_LA? W4_LA? Dummy_H_LA? Height_LA? Volume_LA? S_N_LA? Atom1_LA? Atom2_LA? Atom3_LA? Atom4_LA? Note_LA? RETURN_LA RETURN?;
 //	(peak_2d+ | peak_3d+ | peak_4d+);
 
 data_label_wo_assign:
-	W1 W2_LA W3_LA? W4_LA? Dummy_H_LA? Height_LA? Volume_LA? S_N_LA? Note_LA? RETURN_LA RETURN?
+	W1 W2_LA W3_LA? W4_LA? Dummy_H_LA? Height_LA? Volume_LA? S_N_LA? Atom1_LA? Atom2_LA? Atom3_LA? Atom4_LA? Note_LA? RETURN_LA RETURN?
 	peak_wo_assign+;
 
 peak_2d:
-	Assignment_2d_ex Float Float number+ Simple_name? (RETURN | EOF);
+	Assignment_2d_ex Float Float number+ note* (RETURN | EOF);
 
 peak_3d:
-	Assignment_3d_ex Float Float Float number+ Simple_name? (RETURN | EOF);
+	Assignment_3d_ex Float Float Float number+ note* (RETURN | EOF);
 
 peak_4d:
-	Assignment_4d_ex Float Float Float Float number+ Simple_name? (RETURN | EOF);
+	Assignment_4d_ex Float Float Float Float number+ note* (RETURN | EOF);
 
 peak_wo_assign:
 	number+ Simple_name? (RETURN | EOF);
 
 /* number expression in peak list */
-number: Real | Float | Integer;
+number:	Real | Float | Integer;
+
+/* note expression in peak list */
+note:	Simple_name | Integer;
 

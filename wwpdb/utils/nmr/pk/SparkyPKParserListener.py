@@ -558,5 +558,13 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
     def exitNumber(self, ctx: SparkyPKParser.NumberContext):  # pylint: disable=unused-argument
         pass
 
+    # Enter a parse tree produced by SparkyPKParser#note.
+    def enterNote(self, ctx: SparkyPKParser.NoteContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by SparkyPKParser#note.
+    def exitNote(self, ctx: SparkyPKParser.NoteContext):  # pylint: disable=unused-argument
+        pass
+
 
 # del SparkyPKParser

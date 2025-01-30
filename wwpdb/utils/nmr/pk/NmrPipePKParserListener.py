@@ -234,7 +234,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             dheight = self.originalNumberSelection[13]
             vol = self.originalNumberSelection[14]
             # pchi2 = self.originalNumberSelection[15]
-            type = int(str(ctx.Integer(5)))
+            # type = int(str(ctx.Integer(5)))
             if ctx.Any_name():
                 ass = str(ctx.Any_name())
                 if ass in emptyValue or (self.null_string is not None and ass == self.null_string):
@@ -247,7 +247,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if None in (x_ppm, y_ppm) or type != 1:
+            if None in (x_ppm, y_ppm):  # or type != 1:
                 self.peaks2D -= 1
                 return
 
@@ -375,7 +375,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             dheight = self.originalNumberSelection[19]
             vol = self.originalNumberSelection[20]
             # pchi2 = self.originalNumberSelection[21]
-            type = int(str(ctx.Integer(7)))
+            # type = int(str(ctx.Integer(7)))
             if ctx.Any_name():
                 ass = str(ctx.Any_name())
                 if ass in emptyValue or (self.null_string is not None and ass == self.null_string):
@@ -388,7 +388,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if None in (x_ppm, y_ppm, z_ppm) or type != 1:
+            if None in (x_ppm, y_ppm, z_ppm):  # or type != 1:
                 self.peaks3D -= 1
                 return
 
@@ -529,7 +529,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             dheight = self.originalNumberSelection[25]
             vol = self.originalNumberSelection[26]
             # pchi2 = self.originalNumberSelection[27]
-            type = int(str(ctx.Integer(9)))
+            # type = int(str(ctx.Integer(9)))
             if ctx.Any_name():
                 ass = str(ctx.Any_name())
                 if ass in emptyValue or (self.null_string is not None and ass == self.null_string):
@@ -542,7 +542,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if None in (x_ppm, y_ppm, z_ppm, a_ppm) or type != 1:
+            if None in (x_ppm, y_ppm, z_ppm, a_ppm):  # or type != 1:
                 self.peaks4D -= 1
                 return
 

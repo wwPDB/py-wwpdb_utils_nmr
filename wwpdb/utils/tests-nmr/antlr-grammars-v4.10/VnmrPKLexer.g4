@@ -53,9 +53,11 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 SPACE:			[ \t]+ -> skip;
 RETURN:			[\r\n]+;
 
+fragment COMMENT_STAR_CHAR:	('#' | '/' | '*' | '=');
+
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	(';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
-LINE_COMMENT:		(';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '=' '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
+SECTION_COMMENT:	(';' | '\\' | '&' | COMMENT_STAR_CHAR '/'+ | COMMENT_STAR_CHAR '*'+ | COMMENT_STAR_CHAR '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
+LINE_COMMENT:		(';' | '\\' | '&' | COMMENT_STAR_CHAR '/'+ | COMMENT_STAR_CHAR '*'+ | COMMENT_STAR_CHAR '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
 
 /* VNMR: Peak list format
  See also https://sites.google.com/site/ccpnwiki/home/documentation/contributed-software/bruce-d-ray-utility-programs/readme

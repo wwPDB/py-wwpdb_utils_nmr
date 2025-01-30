@@ -42,8 +42,10 @@ fragment NAME_CHAR:	START_CHAR | '\'' | '"';
 SPACE:			[ \t]+ -> skip;
 RETURN:			[\r\n]+;
 
-SECTION_COMMENT:	(';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
-LINE_COMMENT:		(';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
+fragment COMMENT_START_CHAR:	('#' | '/' | '*' | '-' | '+' | '=' | '>');
+
+SECTION_COMMENT:	(';' | '\\' | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '-'+ | COMMENT_START_CHAR '+'+ | COMMENT_START_CHAR '='+ | COMMENT_START_CHAR '>'+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
+LINE_COMMENT:		(';' | '\\' | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '-'+ | COMMENT_START_CHAR '+'+ | COMMENT_START_CHAR '='+ | COMMENT_START_CHAR '>'+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
 
 Annotation:		~[ \t\r\n]+;
 

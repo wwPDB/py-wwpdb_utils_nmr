@@ -59,6 +59,11 @@ LINE_COMMENT:		(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHA
 
 mode LABEL_MODE;
 
+W1_Hz_LA:		'w1 (Hz)';
+W2_Hz_LA:		'w2 (Hz)';
+W3_Hz_LA:		'w3 (Hz)';
+W4_Hz_LA:		'w4 (Hz)';
+
 W1_LA:			'w1';
 W2_LA:			'w2';
 W3_LA:			'w3';

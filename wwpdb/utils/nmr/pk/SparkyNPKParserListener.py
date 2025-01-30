@@ -40,6 +40,8 @@ except ImportError:
 # This class defines a complete listener for a parse tree produced by SparkyNPKParser.
 class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
 
+    __has_hz = False
+    __has_dev = False
     __has_height = False
     __has_volume = False
 
@@ -75,6 +77,14 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.num_of_dim = max(self.num_of_dim, 3)
         if ctx.W4_LA():
             self.num_of_dim = max(self.num_of_dim, 4)
+
+        self.__has_hz = False
+        if ctx.W2_Hz_LA():
+            self.__has_hz = True
+
+        self.__has_dev = False
+        if ctx.Dev_w2_LA():
+            self.__has_dev = True
 
         self.__has_height = False
         if ctx.Height_LA():
@@ -115,12 +125,32 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             x_ppm = float(str(ctx.Float(0)))
             y_ppm = float(str(ctx.Float(1)))
 
+            offset = 0
+
+            x_hz = y_hz = None
+            if self.__has_hz:
+                if len(self.numberSelection) > offset:
+                    x_hz = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    y_hz = self.numberSelection[offset]
+                    offset += 1
+
+            x_dev = y_dev = None
+            if self.__has_dev:
+                if len(self.numberSelection) > offset:
+                    x_dev = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    y_dev = self.numberSelection[offset]
+                    offset += 1
+
             height = volume = None
-            if self.__has_height and len(self.originalNumberSelection) > 0:
-                height = self.originalNumberSelection[0]
-            if self.__has_volume and len(self.originalNumberSelection) > 0:
-                if not self.__has_height or (self.__has_height and len(self.originalNumberSelection) > 1):
-                    volume = self.originalNumberSelection[1 if self.__has_height else 0]
+            if self.__has_height and len(self.originalNumberSelection) > offset:
+                height = self.originalNumberSelection[offset]
+                offset += 1
+            if self.__has_volume and len(self.originalNumberSelection) > offset:
+                volume = self.originalNumberSelection[offset]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -129,8 +159,8 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, None, None, None, None,
-                                          None, None, None, None, height, None, volume, None)
+            dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, x_dev, y_dev, None, None,
+                                          x_hz, y_hz, None, None, height, None, volume, None)
 
             if dstFunc is None:
                 self.peaks2D -= 1
@@ -160,6 +190,7 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     None if has_assignments and not has_multiple_assignments else ass)
 
         finally:
+            self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
     # Enter a parse tree produced by SparkyNPKParser#peak_3d.
@@ -188,12 +219,38 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             y_ppm = float(str(ctx.Float(1)))
             z_ppm = float(str(ctx.Float(2)))
 
+            offset = 0
+
+            x_hz = y_hz = z_hz = None
+            if self.__has_hz:
+                if len(self.numberSelection) > offset:
+                    x_hz = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    y_hz = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    z_hz = self.numberSelection[offset]
+                    offset += 1
+
+            x_dev = y_dev = z_dev = None
+            if self.__has_dev:
+                if len(self.numberSelection) > offset:
+                    x_dev = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    y_dev = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    z_dev = self.numberSelection[offset]
+                    offset += 1
+
             height = volume = None
-            if self.__has_height and len(self.originalNumberSelection) > 0:
-                height = self.originalNumberSelection[0]
-            if self.__has_volume and len(self.originalNumberSelection) > 0:
-                if not self.__has_height or (self.__has_height and len(self.originalNumberSelection) > 1):
-                    volume = self.originalNumberSelection[1 if self.__has_height else 0]
+            if self.__has_height and len(self.originalNumberSelection) > offset:
+                height = self.originalNumberSelection[offset]
+                offset += 1
+            if self.__has_volume and len(self.originalNumberSelection) > offset:
+                volume = self.originalNumberSelection[offset]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -202,8 +259,8 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, None, None, None, None, None, None,
-                                          None, None, None, None, None, None, height, None, volume, None)
+            dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, x_dev, y_dev, Z_dev, None, None, None,
+                                          x_hz, y_hz, z_hz, None, None, None, height, None, volume, None)
 
             if dstFunc is None:
                 self.peaks3D -= 1
@@ -234,6 +291,7 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     None if has_assignments and not has_multiple_assignments else ass)
 
         finally:
+            self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
     # Enter a parse tree produced by SparkyNPKParser#peak_4d.
@@ -263,12 +321,44 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             z_ppm = float(str(ctx.Float(2)))
             a_ppm = float(str(ctx.Float(3)))
 
+            offset = 0
+
+            x_hz = y_hz = z_hz = a_hz = None
+            if self.__has_hz:
+                if len(self.numberSelection) > offset:
+                    x_hz = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    y_hz = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    z_hz = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    a_hz = self.numberSelection[offset]
+                    offset += 1
+
+            x_dev = y_dev = z_dev = a_dev = None
+            if self.__has_dev:
+                if len(self.numberSelection) > offset:
+                    x_dev = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    y_dev = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    z_dev = self.numberSelection[offset]
+                    offset += 1
+                if len(self.numberSelection) > offset:
+                    a_dev = self.numberSelection[offset]
+                    offset += 1
+
             height = volume = None
-            if self.__has_height and len(self.originalNumberSelection) > 0:
-                height = self.originalNumberSelection[0]
-            if self.__has_volume and len(self.originalNumberSelection) > 0:
-                if not self.__has_height or (self.__has_height and len(self.originalNumberSelection) > 1):
-                    volume = self.originalNumberSelection[1 if self.__has_height else 0]
+            if self.__has_height and len(self.originalNumberSelection) > offset:
+                height = self.originalNumberSelection[offset]
+                offset += 1
+            if self.__has_volume and len(self.originalNumberSelection) > offset:
+                volume = self.originalNumberSelection[offset]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -277,8 +367,8 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, None, None, None, None, None, None, None, None,
-                                          None, None, None, None, None, None, None, None, height, None, volume, None)
+            dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, x_dev, y_dev, z_dev, a_dev, None, None, None, None,
+                                          x_hz, y_hz, z_hz, a_hz, None, None, None, None, height, None, volume, None)
 
             if dstFunc is None:
                 self.peaks4D -= 1
@@ -310,18 +400,25 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     None if has_assignments and not has_multiple_assignments else ass)
 
         finally:
+            self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
     # Enter a parse tree produced by SparkyNPKParser#number.
     def enterNumber(self, ctx: SparkyNPKParser.NumberContext):
         if ctx.Float():
-            self.originalNumberSelection.append(str(ctx.Float()))
+            value = str(ctx.Float())
+            self.numberSelection.append(float(value))
+            self.originalNumberSelection.append(value)
 
         elif ctx.Real():
-            self.originalNumberSelection.append(str(ctx.Real()))
+            value = str(ctx.Real())
+            self.numberSelection.append(float(value))
+            self.originalNumberSelection.append(value)
 
         else:
-            self.originalNumberSelection.append(str(ctx.Integer()))
+            value = str(ctx.Integer())
+            self.numberSelection.append(int(value))
+            self.originalNumberSelection.append(value)
 
     # Exit a parse tree produced by SparkyNPKParser#number.
     def exitNumber(self, ctx: SparkyNPKParser.NumberContext):  # pylint: disable=unused-argument

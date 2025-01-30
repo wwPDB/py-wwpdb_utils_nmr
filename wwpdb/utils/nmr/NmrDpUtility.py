@@ -35322,12 +35322,14 @@ class NmrDpUtility:
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         consume_suspended_message()
 
-                        self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                            {'file_name': file_name, 'description': warn})
-                        self.report.setError()
+                        # DAOTHER-8905: change warning level from 'invalid_atom_nomenclature' error to 'atom_nomenclature_mismatch' warning
+                        # because we accept atom nomenclature provided by depositor for peak list
+                        self.report.warning.appendDescription('atom_nomenclature_mismatch',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         consume_suspended_message()

@@ -7729,7 +7729,7 @@ class NmrDpUtility:
 
                             file_type = None
 
-                            with open(arPath, 'r', encoding='utf-8') as ifh:
+                            with open(arPath, 'r', encoding='utf-8', errors='ignore') as ifh:
                                 has_header = False
                                 for idx, line in enumerate(ifh):
                                     if line.isspace() or comment_pattern.match(line):
@@ -11319,7 +11319,7 @@ class NmrDpUtility:
 
                 if file_type == 'nm-res-oth':
 
-                    with open(file_path, 'r', encoding='utf-8') as ifh:
+                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
                         has_header = False
                         for idx, line in enumerate(ifh):
                             if line.isspace() or comment_pattern.match(line):
@@ -14730,7 +14730,7 @@ class NmrDpUtility:
 
         _file_type = None
 
-        with open(file_path, 'r', encoding='utf-8') as ifh:
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
             has_header = False
             for idx, line in enumerate(ifh):
                 if line.isspace() or comment_pattern.match(line):
@@ -17043,7 +17043,7 @@ class NmrDpUtility:
 
         file_type = None
 
-        with open(file_path, 'r', encoding='utf-8') as ifh:
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
             has_header = False
             for idx, line in enumerate(ifh):
                 if line.isspace() or comment_pattern.match(line):
@@ -32938,7 +32938,7 @@ class NmrDpUtility:
 
                 file_format = None
 
-                with open(file_path, 'r', encoding='utf-8') as ifh:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
                     has_header = False
                     for idx, line in enumerate(ifh):
                         if line.isspace() or comment_pattern.match(line):
@@ -33022,7 +33022,7 @@ class NmrDpUtility:
 
                 file_format = None
 
-                with open(file_path, 'r', encoding='utf-8') as ifh:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
                     has_header = False
                     for idx, line in enumerate(ifh):
                         if line.isspace() or comment_pattern.match(line):

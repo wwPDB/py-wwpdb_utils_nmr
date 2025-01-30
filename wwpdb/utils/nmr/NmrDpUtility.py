@@ -372,6 +372,7 @@ try:
     from wwpdb.utils.nmr.pk.NmrPipePKReader import NmrPipePKReader
     from wwpdb.utils.nmr.pk.NmrViewPKReader import NmrViewPKReader
     from wwpdb.utils.nmr.pk.SparkyPKReader import SparkyPKReader
+    from wwpdb.utils.nmr.pk.SparkyNPKReader import SparkyNPKReader
     from wwpdb.utils.nmr.pk.TopSpinPKReader import TopSpinPKReader
     from wwpdb.utils.nmr.pk.VnmrPKReader import VnmrPKReader
     from wwpdb.utils.nmr.pk.XeasyPKReader import XeasyPKReader
@@ -514,6 +515,7 @@ except ImportError:
     from nmr.pk.NmrPipePKReader import NmrPipePKReader
     from nmr.pk.NmrViewPKReader import NmrViewPKReader
     from nmr.pk.SparkyPKReader import SparkyPKReader
+    from nmr.pk.SparkyNPKReader import SparkyNPKReader
     from nmr.pk.TopSpinPKReader import TopSpinPKReader
     from nmr.pk.VnmrPKReader import VnmrPKReader
     from nmr.pk.XeasyPKReader import XeasyPKReader
@@ -34991,6 +34993,7 @@ class NmrDpUtility:
         fileListId = self.__file_path_list_len
 
         def deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+            sparky_npk = False
             _err = ''
             if lexer_err_listener is not None:
                 messageList = lexer_err_listener.getMessageList()
@@ -35016,14 +35019,19 @@ class NmrDpUtility:
 
                 if messageList is not None:
                     for description in messageList:
-                        _err += f"[Syntax error as {a_pk_format_name} file] "\
-                                f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
-                        if 'input' in description:
-                            _err += f"{description['input']}\n"
-                            _err += f"{description['marker']}\n"
+                        if self.__internal_mode and 'SPARKY' in a_pk_format_name\
+                           and mismatched_input_err_msg in description['message']\
+                           and "'\\n' expecting {Integer, Float, Real}" in description['message']:
+                            sparky_npk = True
+                        else:
+                            _err += f"[Syntax error as {a_pk_format_name} file] "\
+                                    f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                            if 'input' in description:
+                                _err += f"{description['input']}\n"
+                                _err += f"{description['marker']}\n"
 
             if len(_err) == 0:
-                return False
+                return False, sparky_npk
 
             err = f"The NMR spectral peak list file {file_name!r} looks like {a_pk_format_name} file. "\
                 "Please re-upload the NMR spectral peak list file.\n"\
@@ -35035,7 +35043,7 @@ class NmrDpUtility:
 
             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {file_name} {err}\n")
 
-            return True
+            return True, False
 
         def deal_aux_warn_message(listener):
 
@@ -35124,7 +35132,7 @@ class NmrDpUtility:
                     _pk_format_name = getRestraintFormatName(file_type)
                     pk_format_name = _pk_format_name.split()[0]
                     a_pk_format_name = ('an ' if pk_format_name[0] in ('AINMX') else 'a ') + _pk_format_name
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
                         continue
 
                 if listener is not None:
@@ -35482,7 +35490,7 @@ class NmrDpUtility:
 
                 if parser_err_listener is not None and listener is not None\
                    and (parser_err_listener.getMessageList() is None or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, None, parser_err_listener):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, None, parser_err_listener)[0]:
                         continue
 
                 if listener is not None:
@@ -35556,7 +35564,7 @@ class NmrDpUtility:
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
                         continue
 
                 if listener is not None:
@@ -35609,6 +35617,8 @@ class NmrDpUtility:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-pea-spa':
+                __list_id_counter = copy.copy(self.__list_id_counter)
+
                 reader = SparkyPKReader(self.__verbose, self.__lfh,
                                         self.__representative_model_id,
                                         self.__representative_alt_id,
@@ -35627,11 +35637,42 @@ class NmrDpUtility:
                 if _content_subtype is not None and len(_content_subtype) == 0:
                     _content_subtype = None
 
+                npk = False
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+                    skip, npk = deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)
+                    if skip:
                         continue
+
+                if npk and self.__internal_mode:
+                    self.__list_id_counter = copy.copy(__list_id_counter)
+
+                    reader = SparkyNPKReader(self.__verbose, self.__lfh,
+                                             self.__representative_model_id,
+                                             self.__representative_alt_id,
+                                             self.__mr_atom_name_mapping,
+                                             self.__cR, self.__caC,
+                                             self.__ccU, self.__csStat, self.__nefT)
+                    reader.setInternalMode(self.__internal_mode)
+
+                    _list_id_counter = copy.copy(self.__list_id_counter)
+
+                    listener, parser_err_listener, lexer_err_listener =\
+                        reader.parse(file_path, self.__cifPath,
+                                     createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                     listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                    _content_subtype = listener.getContentSubtype() if listener is not None else None
+                    if _content_subtype is not None and len(_content_subtype) == 0:
+                        _content_subtype = None
+
+                    npk = False
+                    if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                       and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                            or _content_subtype is not None):
+                        if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
+                            continue
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -35639,13 +35680,23 @@ class NmrDpUtility:
                     if reasons is not None:
                         deal_pea_warn_message_for_lazy_eval(listener)
 
-                        reader = SparkyPKReader(self.__verbose, self.__lfh,
-                                                self.__representative_model_id,
-                                                self.__representative_alt_id,
-                                                self.__mr_atom_name_mapping,
-                                                self.__cR, self.__caC,
-                                                self.__ccU, self.__csStat, self.__nefT,
-                                                reasons)
+                        if not npk or not self.__internal_mode:
+                            reader = SparkyPKReader(self.__verbose, self.__lfh,
+                                                    self.__representative_model_id,
+                                                    self.__representative_alt_id,
+                                                    self.__mr_atom_name_mapping,
+                                                    self.__cR, self.__caC,
+                                                    self.__ccU, self.__csStat, self.__nefT,
+                                                    reasons)
+                        else:
+                            reader = SparkyNPKReader(self.__verbose, self.__lfh,
+                                                     self.__representative_model_id,
+                                                     self.__representative_alt_id,
+                                                     self.__mr_atom_name_mapping,
+                                                     self.__cR, self.__caC,
+                                                     self.__ccU, self.__csStat, self.__nefT,
+                                                     reasons)
+                            reader.setInternalMode(self.__internal_mode)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -35700,7 +35751,7 @@ class NmrDpUtility:
 
                 if parser_err_listener is not None and listener is not None\
                    and (parser_err_listener.getMessageList() is None or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, None, parser_err_listener):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, None, parser_err_listener)[0]:
                         continue
 
                 if listener is not None:
@@ -35774,7 +35825,7 @@ class NmrDpUtility:
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
                         continue
 
                 if listener is not None:
@@ -35848,7 +35899,7 @@ class NmrDpUtility:
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
                         continue
 
                 if listener is not None:
@@ -35923,7 +35974,7 @@ class NmrDpUtility:
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
                         continue
 
                 if listener is not None:
@@ -35998,7 +36049,7 @@ class NmrDpUtility:
                 if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
                         continue
 
                 if listener is not None:

@@ -182,6 +182,7 @@ class BasePKParserListener():
 
     debug = False
     ass_expr_debug = False
+    internal = False
 
     createSfDict__ = False
 
@@ -1461,7 +1462,7 @@ class BasePKParserListener():
         if volume_uncertainty is not None and float(volume_uncertainty) != 0.0:
             dstFunc['volume_uncertainty'] = volume_uncertainty
 
-        if 'height' not in dstFunc and 'volume' not in dstFunc:
+        if 'height' not in dstFunc and 'volume' not in dstFunc and not self.internal:
             self.f.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
                           "Neither height nor volume value is set.")
             return None
@@ -1544,7 +1545,7 @@ class BasePKParserListener():
         if volume_uncertainty is not None and float(volume_uncertainty) != 0.0:
             dstFunc['volume_uncertainty'] = volume_uncertainty
 
-        if 'height' not in dstFunc and 'volume' not in dstFunc:
+        if 'height' not in dstFunc and 'volume' not in dstFunc and not self.internal:
             self.f.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
                           "Neither height nor volume value is set.")
             return None
@@ -1646,7 +1647,7 @@ class BasePKParserListener():
         if volume_uncertainty is not None and float(volume_uncertainty) != 0.0:
             dstFunc['volume_uncertainty'] = volume_uncertainty
 
-        if 'height' not in dstFunc and 'volume' not in dstFunc:
+        if 'height' not in dstFunc and 'volume' not in dstFunc and not self.internal:
             self.f.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
                           "Neither height nor volume value is set.")
             return None

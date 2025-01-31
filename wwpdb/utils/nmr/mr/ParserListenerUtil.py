@@ -3943,7 +3943,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                 offset = -_offset
                                                 break
 
-                                    if None not in (offset, cif_auth_seq_ids[i + offset]):
+                                    if offset is not None and cif_auth_seq_ids[i + offset] is not None:
                                         cif_label_seq_id = cif_label_seq_ids[i + offset] - offset - offset_2
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
 

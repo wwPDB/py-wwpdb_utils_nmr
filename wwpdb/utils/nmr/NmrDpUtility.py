@@ -33461,7 +33461,7 @@ class NmrDpUtility:
                                                 offset = -_offset
                                                 break
 
-                                    if None not in (offset, cif_auth_seq_ids[i + offset]):
+                                    if offset is not None and cif_auth_seq_ids[i + offset] is not None:
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
                                         self.__nmr_ext_poly_seq.append({'auth_chain_id': s2['auth_chain_id'],
                                                                         'auth_seq_id': cif_auth_seq_id,
@@ -35243,7 +35243,7 @@ class NmrDpUtility:
                                                 offset = -_offset
                                                 break
 
-                                    if None not in (offset, cif_auth_seq_ids[i + offset]):
+                                    if offset is not None and cif_auth_seq_ids[i + offset] is not None:
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
                                         self.__nmr_ext_poly_seq.append({'auth_chain_id': s2['auth_chain_id'],
                                                                         'auth_seq_id': cif_auth_seq_id,
@@ -50200,7 +50200,7 @@ class NmrDpUtility:
                                                 offset = -_offset
                                                 break
 
-                                    if None not in (offset, cif_auth_seq_ids[i + offset]):
+                                    if offset is not None and cif_auth_seq_ids[i + offset] is not None:
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
                                         self.__nmr_ext_poly_seq.append({'auth_chain_id': s2['auth_chain_id'],
                                                                         'auth_seq_id': cif_auth_seq_id,

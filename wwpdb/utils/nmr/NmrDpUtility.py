@@ -35312,7 +35312,7 @@ class NmrDpUtility:
                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                             consume_suspended_message()
 
-                            self.report.warning.appendDescription('assined_peak_atom_not_found',
+                            self.report.warning.appendDescription('assigned_peak_atom_not_found',
                                                                   {'file_name': file_name, 'description': warn})
                             self.report.setWarning()
 

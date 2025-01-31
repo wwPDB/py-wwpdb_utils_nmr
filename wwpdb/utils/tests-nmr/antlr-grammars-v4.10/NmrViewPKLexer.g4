@@ -79,8 +79,9 @@ Flag0:			'flag0' ' '* ('flag' [1-9] ' '*)* [\r\n]+ -> popMode;
 Simple_name_LA:		SIMPLE_NAME;
 Float_LA:		Float;
 
-SPACE_LA:		[ \t]+ -> skip;
-RETURN_LA:		'\r'? '\n';
+SPACE_LA:		[ \t\r]+ -> skip;
+
+SINGLE_NL_LA:		'\n';
 
 ENCLOSE_DATA_LA:	'{' ' '* (Float | (SIMPLE_NAME | ' ')*?) ' '* '}';
 

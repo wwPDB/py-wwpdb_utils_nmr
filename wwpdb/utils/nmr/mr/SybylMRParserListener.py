@@ -746,7 +746,7 @@ class SybylMRParserListener(ParseTreeListener):
             chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
             chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)

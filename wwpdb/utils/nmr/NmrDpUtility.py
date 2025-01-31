@@ -13945,7 +13945,7 @@ class NmrDpUtility:
         err_column_position = err_desc['column_position']
         err_input = err_desc.get('input', '')
 
-        if err_column_position == 0 or len(err_input) == 0:
+        if 0 in (err_column_position, len(err_input)):
 
             if self.__mr_debug:
                 self.__lfh.write('DO-DIV-MR-EXIT #1\n')

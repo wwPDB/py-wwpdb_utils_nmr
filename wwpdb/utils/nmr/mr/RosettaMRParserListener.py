@@ -1041,7 +1041,7 @@ class RosettaMRParserListener(ParseTreeListener):
             chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
@@ -2478,7 +2478,7 @@ class RosettaMRParserListener(ParseTreeListener):
         chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
         chainAssign3 = self.assignCoordPolymerSequence(seqId3, atomId3)
 
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0 or len(chainAssign3) == 0:
+        if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3)):
             return
 
         self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False, 'an angle')
@@ -2756,8 +2756,7 @@ class RosettaMRParserListener(ParseTreeListener):
         chainAssign3 = self.assignCoordPolymerSequence(seqId3, atomId3)
         chainAssign4 = self.assignCoordPolymerSequence(seqId4, atomId4)
 
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0\
-           or len(chainAssign3) == 0 or len(chainAssign4) == 0:
+        if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4)):
             return
 
         self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False, 'a dihedral angle')
@@ -2918,10 +2917,8 @@ class RosettaMRParserListener(ParseTreeListener):
         chainAssign7 = self.assignCoordPolymerSequence(seqId7, atomId7)
         chainAssign8 = self.assignCoordPolymerSequence(seqId8, atomId8)
 
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0\
-           or len(chainAssign3) == 0 or len(chainAssign4) == 0\
-           or len(chainAssign5) == 0 or len(chainAssign6) == 0\
-           or len(chainAssign7) == 0 or len(chainAssign8) == 0:
+        if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4),
+                 len(chainAssign5), len(chainAssign6), len(chainAssign7), len(chainAssign8)):
             return
 
         self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False, 'a dihedral angle pair')
@@ -3093,7 +3090,7 @@ class RosettaMRParserListener(ParseTreeListener):
             chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1, fixedChainId1)
             chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2, fixedChainId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
@@ -3216,8 +3213,7 @@ class RosettaMRParserListener(ParseTreeListener):
             chainAssign3 = self.assignCoordPolymerSequence(seqId234, atomId3)
             chainAssign4 = self.assignCoordPolymerSequence(seqId234, atomId4)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0\
-               or len(chainAssign3) == 0 or len(chainAssign4) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
@@ -3409,7 +3405,7 @@ class RosettaMRParserListener(ParseTreeListener):
         chainAssign2 = self.assignCoordPolymerSequence(seqId2)
         chainAssign3 = self.assignCoordPolymerSequence(seqId3)
 
-        if len(chainAssign2) == 0 or len(chainAssign3) == 0:
+        if 0 in (len(chainAssign2), len(chainAssign3)):
             return
 
         self.selectCoordResidues(chainAssign2, seqId2)
@@ -3492,7 +3488,7 @@ class RosettaMRParserListener(ParseTreeListener):
             chainAssign1 = self.assignCoordPolymerSequence(seqId1)
             chainAssign2 = self.assignCoordPolymerSequence(seqId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.selectCoordResidues(chainAssign1, seqId1)
@@ -4625,7 +4621,7 @@ class RosettaMRParserListener(ParseTreeListener):
             chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, atomId1, False, 'an RDC')
@@ -4807,7 +4803,7 @@ class RosettaMRParserListener(ParseTreeListener):
             chainAssign1 = self.assignCoordPolymerSequence(seqId1)
             chainAssign2 = self.assignCoordPolymerSequence(seqId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, 'SG')
@@ -4974,7 +4970,7 @@ class RosettaMRParserListener(ParseTreeListener):
             chainAssign1 = self.assignCoordPolymerSequence(seqId1, atomId1, fixedChainId=chainId1)
             chainAssign2 = self.assignCoordPolymerSequence(seqId2, atomId2, fixedChainId=chainId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, atomId1)

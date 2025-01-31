@@ -268,7 +268,7 @@ class AmberPTParserListener(ParseTreeListener):
             if None in (self.__residueLabel, self.__residuePointer, self.__atomName, self.__amberAtomType):
                 return
 
-            if len(self.__residueLabel) == 0 or len(self.__residuePointer) == 0 or len(self.__atomName) == 0 or len(self.__amberAtomType) == 0:
+            if 0 in (len(self.__residueLabel), len(self.__residuePointer), len(self.__atomName), len(self.__amberAtomType)):
                 return
 
             residuePointer2 = [resPoint - 1 for resPoint in self.__residuePointer]

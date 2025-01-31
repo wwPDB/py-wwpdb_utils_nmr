@@ -787,16 +787,13 @@ class AriaMRParserListener(ParseTreeListener):
                 chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)\
                     if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                if 0 in (len(chainAssign1), len(chainAssign2)):
                     continue
 
                 self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
                 self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
 
                 if len(self.atomSelectionSet) < (total + 1) * 2:
-                    continue
-
-                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
                     continue
 
                 self.__allowZeroUpperLimit = False

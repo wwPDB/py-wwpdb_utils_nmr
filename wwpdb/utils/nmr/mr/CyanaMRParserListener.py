@@ -1276,7 +1276,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                 chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                if 0 in (len(chainAssign1), len(chainAssign2)):
                     return
 
                 self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -1538,7 +1538,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                 chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                if 0 in (len(chainAssign1), len(chainAssign2)):
                     return
 
                 self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -1876,7 +1876,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
                 chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
 
-                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                if 0 in (len(chainAssign1), len(chainAssign2)):
                     return
 
                 self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
@@ -2138,7 +2138,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1)
                 chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2)
 
-                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                if 0 in (len(chainAssign1), len(chainAssign2)):
                     return
 
                 self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
@@ -5828,7 +5828,7 @@ class CyanaMRParserListener(ParseTreeListener):
             chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
             chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -6376,7 +6376,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                         chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                        if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
 
                         self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -6434,7 +6434,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                     chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                    if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    if 0 in (len(chainAssign1), len(chainAssign2)):
                         return
 
                     self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -6723,7 +6723,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                         chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                        if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
 
                         self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -6784,7 +6784,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                     chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                    if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    if 0 in (len(chainAssign1), len(chainAssign2)):
                         return
 
                     self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -6982,7 +6982,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                         chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                        if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
 
                         self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -7041,7 +7041,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                     chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                    if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    if 0 in (len(chainAssign1), len(chainAssign2)):
                         return
 
                     self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -7256,7 +7256,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                         chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                        if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
 
                         self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -7314,7 +7314,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                     chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                    if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    if 0 in (len(chainAssign1), len(chainAssign2)):
                         return
 
                     self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -7603,7 +7603,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                         chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                        if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
 
                         self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -7664,7 +7664,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                     chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                    if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    if 0 in (len(chainAssign1), len(chainAssign2)):
                         return
 
                     self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -7862,7 +7862,7 @@ class CyanaMRParserListener(ParseTreeListener):
                         chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                         chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                        if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                        if 0 in (len(chainAssign1), len(chainAssign2)):
                             return
 
                         self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -7921,7 +7921,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
                     chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-                    if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    if 0 in (len(chainAssign1), len(chainAssign2)):
                         return
 
                     self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -8079,7 +8079,7 @@ class CyanaMRParserListener(ParseTreeListener):
             chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
             chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId2, atomId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -8584,7 +8584,7 @@ class CyanaMRParserListener(ParseTreeListener):
             chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
             chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -8738,7 +8738,7 @@ class CyanaMRParserListener(ParseTreeListener):
             chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
             chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.atomSelectionSet.clear()
@@ -9499,7 +9499,7 @@ class CyanaMRParserListener(ParseTreeListener):
             chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId1, atomId1)
             chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId1, compId1, atomId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -9649,7 +9649,7 @@ class CyanaMRParserListener(ParseTreeListener):
             chainAssign1, asis1 = self.assignCoordPolymerSequence(seqId1, compId, atomId)
             chainAssign2, asis2 = self.assignCoordPolymerSequence(seqId2, compId, atomId)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, compId, atomId)
@@ -9771,7 +9771,7 @@ class CyanaMRParserListener(ParseTreeListener):
             chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
@@ -9882,7 +9882,7 @@ class CyanaMRParserListener(ParseTreeListener):
             chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
             chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             # circular shift
@@ -10084,7 +10084,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId2)
 
-                if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                if 0 in (len(chainAssign1), len(chainAssign2)):
                     return
 
                 self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)
@@ -10122,7 +10122,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1)
                     chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId2)
 
-                    if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+                    if 0 in (len(chainAssign1), len(chainAssign2)):
                         return
 
                     self.selectCoordAtoms(chainAssign1, seqId1, None, atomId1)

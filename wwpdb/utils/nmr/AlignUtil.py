@@ -923,7 +923,7 @@ def syncCompIdOfPolySeqRst(polySeqRst: List[dict], compIdMap: dict):
     """ Synchronize residue names of polymer sequence of the current MR file.
     """
 
-    if None in (polySeqRst, compIdMap) or len(polySeqRst) == 0 or len(compIdMap) == 0:
+    if None in (polySeqRst, compIdMap) or 0 in (len(polySeqRst), len(compIdMap)):
         return
 
     for ps in polySeqRst:

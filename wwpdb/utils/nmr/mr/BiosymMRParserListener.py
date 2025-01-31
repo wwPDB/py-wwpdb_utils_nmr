@@ -782,7 +782,7 @@ class BiosymMRParserListener(ParseTreeListener):
             chainAssign1, asis1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
             chainAssign2, asis2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -921,7 +921,7 @@ class BiosymMRParserListener(ParseTreeListener):
             chainAssign1, asis1 = self.assignCoordPolymerSequence(chainId1, seqId1, compId1, atomId1)
             chainAssign2, asis2 = self.assignCoordPolymerSequence(chainId2, seqId2, compId2, atomId2)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
@@ -2730,8 +2730,7 @@ class BiosymMRParserListener(ParseTreeListener):
             chainAssign3, asis3 = self.assignCoordPolymerSequence(chainId3, seqId3, compId3, atomId3)
             chainAssign4, asis4 = self.assignCoordPolymerSequence(chainId4, seqId4, compId4, atomId4)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0\
-               or len(chainAssign3) == 0 or len(chainAssign4) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1, False)
@@ -2932,8 +2931,7 @@ class BiosymMRParserListener(ParseTreeListener):
             chainAssign3, asis3 = self.assignCoordPolymerSequence(chainId3, seqId3, compId3, atomId3)
             chainAssign4, asis4 = self.assignCoordPolymerSequence(chainId4, seqId4, compId4, atomId4)
 
-            if len(chainAssign1) == 0 or len(chainAssign2) == 0\
-               or len(chainAssign3) == 0 or len(chainAssign4) == 0:
+            if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4)):
                 return
 
             self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1, False)
@@ -3215,9 +3213,7 @@ class BiosymMRParserListener(ParseTreeListener):
         chainAssign4, _ = self.assignCoordPolymerSequence(chainId4, seqId4, compId4, atomId4)
         chainAssign5, _ = self.assignCoordPolymerSequence(chainId5, seqId5, compId5, atomId5)
 
-        if len(chainAssign1) == 0 or len(chainAssign2) == 0\
-           or len(chainAssign3) == 0 or len(chainAssign4) == 0\
-           or len(chainAssign5) == 0:
+        if 0 in (len(chainAssign1), len(chainAssign2), len(chainAssign3), len(chainAssign4), len(chainAssign5)):
             return
 
         self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)

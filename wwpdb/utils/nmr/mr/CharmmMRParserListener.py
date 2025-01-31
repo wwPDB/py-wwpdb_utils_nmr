@@ -1301,7 +1301,7 @@ class CharmmMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            if len(self.atomSelectionSet[0]) == 0 or len(self.atomSelectionSet[1]) == 0:
+            if 0 in (len(self.atomSelectionSet[0]), len(self.atomSelectionSet[1])):
                 if len(self.__g) > 0:
                     self.__f.extend(self.__g)
                 return
@@ -4791,7 +4791,7 @@ class CharmmMRParserListener(ParseTreeListener):
         return _factor
 
     def __intersectionAtom_selections(self, _selection1: List[dict], _selection2: List[dict]) -> List[dict]:  # pylint: disable=no-self-use
-        if None in (_selection1, _selection2) or len(_selection1) == 0 or len(_selection2) == 0:
+        if None in (_selection1, _selection2) or 0 in (len(_selection1), len(_selection2)):
             return []
 
         if isinstance(_selection2[0], str) and _selection2[0] == '*':

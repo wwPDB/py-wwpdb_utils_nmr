@@ -3716,7 +3716,7 @@ class NEFTranslator:
                         _tags_exist = True
                         pair_data += loop.get_tag(_tags)
 
-                if not _tags_exist:
+                if not _tags_exist and lp_category != '_Peak_row_format':
                     missing_tags = list(set(tags) - set(loop.tags))
                     raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 

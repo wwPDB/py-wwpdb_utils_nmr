@@ -869,22 +869,22 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         pass
 
     # Enter a parse tree produced by NmrViewPKParser#jcoupling.
-    def enterJcoupling(self, ctx: NmrViewPKParser.JcouplingContext):
+    def enterJcoupling(self, ctx: NmrViewPKParser.JcouplingContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by NmrViewPKParser#jcoupling.
+    def exitJcoupling(self, ctx: NmrViewPKParser.JcouplingContext):  # pylint: disable=unused-argument
         if ctx.Float():
             self.__jcouplings.append(float(str(ctx.Float())))
         elif ctx.Simple_name():
             self.__jcouplings.append(str(ctx.Simple_name()))
         else:
-            value = str(ctx.ENCLOSE_DATA())[1:-1].strip()
+            value = self.__enclose_data[-1].strip()
             try:
                 _value = float(value)
                 self.__jcouplings.append(_value)
             except ValueError:
                 self.__jcouplings.append(value)
-
-    # Exit a parse tree produced by NmrViewPKParser#jcoupling.
-    def exitJcoupling(self, ctx: NmrViewPKParser.JcouplingContext):  # pylint: disable=unused-argument
-        pass
 
     # Enter a parse tree produced by NmrViewPKParser#number.
     def enterNumber(self, ctx: NmrViewPKParser.NumberContext):  # pylint: disable=unused-argument

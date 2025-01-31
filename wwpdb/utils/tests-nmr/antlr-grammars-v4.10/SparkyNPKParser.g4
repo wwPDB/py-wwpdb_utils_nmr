@@ -48,7 +48,7 @@ peak_4d:
 	Assignment_4d_ex Float Float Float Float number* note* (RETURN | EOF);
 
 /* number expression in peak list */
-number:	Real | Float | Integer;
+number:	Real_vol | Real | Float | Integer;
 
 /* note expression in peak list */
 note:	Simple_name | Integer | Float;

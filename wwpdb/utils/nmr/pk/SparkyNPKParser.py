@@ -24,7 +24,7 @@ def serializedATN():
         8,3,10,3,12,3,143,9,3,1,3,5,3,146,8,3,10,3,12,3,149,9,3,1,3,1,3,
         1,4,1,4,1,4,1,4,1,4,1,4,5,4,159,8,4,10,4,12,4,162,9,4,1,4,5,4,165,
         8,4,10,4,12,4,168,9,4,1,4,1,4,1,5,1,5,1,6,1,6,1,6,0,0,7,0,2,4,6,
-        8,10,12,0,4,1,0,36,37,1,1,15,15,1,0,3,5,2,0,3,4,13,13,207,0,15,1,
+        8,10,12,0,4,1,0,36,37,1,1,15,15,1,0,3,6,2,0,3,4,13,13,207,0,15,1,
         0,0,0,2,41,1,0,0,0,4,117,1,0,0,0,6,134,1,0,0,0,8,152,1,0,0,0,10,
         171,1,0,0,0,12,173,1,0,0,0,14,16,5,15,0,0,15,14,1,0,0,0,15,16,1,
         0,0,0,16,36,1,0,0,0,17,35,3,2,1,0,18,20,3,4,2,0,19,18,1,0,0,0,20,
@@ -981,6 +981,9 @@ class SparkyNPKParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
+        def Real_vol(self):
+            return self.getToken(SparkyNPKParser.Real_vol, 0)
+
         def Real(self):
             return self.getToken(SparkyNPKParser.Real, 0)
 
@@ -1013,7 +1016,7 @@ class SparkyNPKParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 171
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 56) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 120) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

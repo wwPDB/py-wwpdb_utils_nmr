@@ -22,6 +22,9 @@ sparky_npk:
 	RETURN?
 	(
 	data_label |
+	peak_2d_po+ |
+	peak_3d_po+ |
+	peak_4d_po+ |
 	peak_2d+ |
 	peak_3d+ |
 	peak_4d+ |
@@ -46,6 +49,15 @@ peak_3d:
 
 peak_4d:
 	Assignment_4d_ex Float Float Float Float number* note* (RETURN | EOF);
+
+peak_2d_po:
+	(Assignment_2d_ex | Assignment_3d_ex | Assignment_4d_ex) Float Float (RETURN | EOF);
+
+peak_3d_po:
+	(Assignment_3d_ex | Assignment_4d_ex) Float Float Float (RETURN | EOF);
+
+peak_4d_po:
+	Assignment_4d_ex Float Float Float Float (RETURN | EOF);
 
 /* number expression in peak list */
 number:	Real_vol | Real | Float | Integer;

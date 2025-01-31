@@ -4650,7 +4650,7 @@ class BasePKParserListener():
                                 self.__setLocalSeqScheme()
                                 continue
                     self.f.append(f"[Sequence mismatch] {self.getCurrentRestraint(n=index)}"
-                                  f"Residue name {__compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
+                                  f"Residue name {__compId!r} of the spectral peak list does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
                     continue
 
             if compId != cifCompId and compId in monDict3 and not isPolySeq:

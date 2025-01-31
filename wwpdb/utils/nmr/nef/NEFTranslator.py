@@ -8325,6 +8325,8 @@ class NEFTranslator:
 
             self.star2NefChainMapping[star_chain] = nef_chain
 
+        seq_align = None
+
         if report is not None:
 
             for star_chain in self.authChainId:

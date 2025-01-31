@@ -147,7 +147,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         elif self.__cur_label_type == 'sw':
 
             for _dim_id, _spectral_width in enumerate(labels, start=1):
-                if _spectral_width is not None:
+                if _spectral_width not in emptyValue:
                     self.cur_spectral_dim[_dim_id]['sweep_width'] = float(_spectral_width)
                     self.cur_spectral_dim[_dim_id]['sweep_width_units'] = 'Hz'
 

@@ -1051,7 +1051,7 @@ class BiosymMRParserListener(ParseTreeListener):
         validRange = True
         dstFunc = {'weight': weight}
 
-        if target_value is not None and upper_limit is not None and lower_limit is not None\
+        if None not in (target_value, upper_limit, lower_limit)\
            and abs(target_value - lower_limit) <= DIST_AMBIG_UNCERT\
            and abs(target_value - upper_limit) <= DIST_AMBIG_UNCERT:
             if target_value >= DIST_AMBIG_MED:
@@ -1114,7 +1114,7 @@ class BiosymMRParserListener(ParseTreeListener):
 
         else:
 
-            if lower_limit is not None and upper_limit is not None:
+            if None not in (lower_limit, upper_limit):
                 if lower_limit > upper_limit:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
@@ -3114,7 +3114,7 @@ class BiosymMRParserListener(ParseTreeListener):
         if target_value is None and lower_limit is None and upper_limit is None:
             return None
 
-        if upper_limit is not None and lower_limit is not None\
+        if None not in (upper_limit, lower_limit)\
            and (PLANE_LIKE_LOWER_LIMIT <= lower_limit < 0.0 < upper_limit <= PLANE_LIKE_UPPER_LIMIT
                 or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 180.0 < 0.0 < upper_limit - 180.0 <= PLANE_LIKE_UPPER_LIMIT
                 or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 360.0 < 0.0 < upper_limit - 360.0 <= PLANE_LIKE_UPPER_LIMIT):

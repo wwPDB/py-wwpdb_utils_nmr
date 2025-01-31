@@ -1314,10 +1314,10 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                 _seq_id1_ = copy.deepcopy(seq_id1)
                 for idx1, _seq_id1 in enumerate(_seq_id1_):
                     if _seq_id1 is None and 1 < idx1 < length - 2\
-                       and seq_id1[idx1 - 1] is not None and seq_id1[idx1 + 1] is not None\
+                       and None not in (seq_id1[idx1 - 1], seq_id1[idx1 + 1])\
                        and seq_id1[idx1 + 1] - seq_id1[idx1 - 1] == 1:
                         for _idx1 in range(idx1 + 1, length - 1):
-                            if seq_id1[_idx1] is not None and seq_id1[_idx1 + 1] is not None\
+                            if None not in (seq_id1[_idx1], seq_id1[_idx1 + 1])\
                                and seq_id1[_idx1 + 1] - seq_id1[_idx1] == 2:
                                 seq_id1.insert(_idx1 + 1, None)
                                 seq_id1.pop(idx1)
@@ -1331,10 +1331,10 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                 _seq_id2_ = copy.deepcopy(seq_id2)
                 for idx2, _seq_id2 in enumerate(_seq_id2_):
                     if _seq_id2 is None and 1 < idx2 < length - 2\
-                       and seq_id2[idx2 - 1] is not None and seq_id2[idx2 + 1] is not None\
+                       and None not in (seq_id2[idx2 - 1], seq_id2[idx2 + 1])\
                        and seq_id2[idx2 + 1] - seq_id2[idx2 - 1] == 1:
                         for _idx2 in range(idx2 + 1, length - 1):
-                            if seq_id2[_idx2] is not None and seq_id2[_idx2 + 1] is not None\
+                            if None not in (seq_id2[_idx2], seq_id2[_idx2 + 1])\
                                and seq_id2[_idx2 + 1] - seq_id2[_idx2] == 2:
                                 seq_id2.insert(_idx2 + 1, None)
                                 seq_id2.pop(idx2)
@@ -2986,7 +2986,7 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel: List[dict], polySeqRst: List[d
 
                     _test_seq_id = test_ps['seq_id'][0]
                     for ref_seq_id, test_seq_id in zip(ref_seq_ids, test_seq_ids):
-                        if ref_seq_id is not None and test_seq_id is not None:
+                        if None not in (ref_seq_id, test_seq_id):
                             _test_seq_id = test_seq_id
 
                     end = test_ps['seq_id'].index(_test_seq_id) + 1

@@ -218,7 +218,7 @@ def dist_target_values(target_value: Optional[float], target_value_uncertainty: 
         upper_bound = max(upper_bound, 0.0)
 
     if target_value is None:
-        if lower_bound is not None and upper_bound is not None:
+        if None not in (lower_bound, upper_bound):
             target_value = (lower_bound + upper_bound) / 2.0
         elif lower_bound is not None:
             target_value = lower_bound
@@ -237,7 +237,7 @@ def dist_error(lower_bound: Optional[float], upper_bound: Optional[float], dist:
 
     try:
 
-        if lower_bound is not None and upper_bound is not None:
+        if None not in (lower_bound, upper_bound):
             if lower_bound <= dist <= upper_bound:
                 pass
             elif dist > upper_bound:
@@ -427,7 +427,7 @@ def rdc_target_values(target_value: Optional[float], target_value_uncertainty: O
         upper_bound = upper_linear_limit
 
     if target_value is None:
-        if lower_bound is not None and upper_bound is not None:
+        if None not in (lower_bound, upper_bound):
             target_value = (lower_bound + upper_bound) / 2.0
         elif lower_bound is not None:
             target_value = lower_bound
@@ -446,7 +446,7 @@ def rdc_error(lower_bound: Optional[float], upper_bound: Optional[float], rdc: f
 
     try:
 
-        if lower_bound is not None and upper_bound is not None:
+        if None not in (lower_bound, upper_bound):
             if lower_bound <= rdc <= upper_bound:
                 pass
             elif rdc > upper_bound:
@@ -1145,7 +1145,7 @@ class NmrVrptUtility:
         """ Retrieve the previous results using the identical data sources, if available.
         """
 
-        if self.__cifHashCode is not None and self.__nmrDataHashCode is not None:
+        if None not in (self.__cifHashCode, self.__nmrDataHashCode):
             self.__resultsCacheName = f"{self.__cifHashCode}_{self.__nmrDataHashCode}_vrpt_results.pkl"
             cache_path = os.path.join(self.__cacheDirPath, self.__resultsCacheName)
 
@@ -1217,7 +1217,7 @@ class NmrVrptUtility:
             vrpt_atom_site_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_vrpt_atom_site.pkl")
             self.__coordinates = load_from_pickle(vrpt_atom_site_cache_path, None)
 
-            if self.__atomIdList is not None and self.__coordinates is not None:
+            if None not in (self.__atomIdList, self.__coordinates):
                 return True
 
         _auth_atom_id = 'pdbx_auth_atom_name'\
@@ -1271,7 +1271,7 @@ class NmrVrptUtility:
                     atom_name_unchecked = False
                     if _auth_atom_id == 'pdbx_auth_atom_name':
                         for c in coord:
-                            if c['auth_atom_id'] is not None and c['alt_auth_atom_id'] is not None\
+                            if None not in (c['auth_atom_id'], c['alt_auth_atom_id'])\
                                and c['auth_atom_id'][0].isdigit() and c['alt_auth_atom_id'][0] == 'H':
                                 _auth_atom_id_ = 'alt_auth_atom_id'
                                 break

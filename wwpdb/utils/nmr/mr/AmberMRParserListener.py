@@ -2460,7 +2460,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                         for chainId in chainIds:
                                                             updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId, factor['auth_comp_id'])
 
-                        if failed and factor1 is not None and factor2 is not None\
+                        if failed and None not in (factor1, factor2)\
                            and factor1['auth_seq_id'] != factor2['auth_seq_id']\
                            and factor1['auth_comp_id'] != factor2['auth_comp_id']:
                             compId1 = self.translateToStdResNameWrapper(factor1['auth_seq_id'], factor1['auth_comp_id'])
@@ -4858,37 +4858,37 @@ class AmberMRParserListener(ParseTreeListener):
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
                                     f"The upper linear limit value 'r4={self.upperLinearLimit}' must be within range {DIST_RESTRAINT_ERROR}.")
 
-        if self.lowerLimit is not None and self.upperLimit is not None:
+        if None not in (self.lowerLimit, self.upperLimit):
             if self.lowerLimit > self.upperLimit:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
                                 f"The lower limit value 'r2={self.lowerLimit}' must be less than the upper limit value 'r3={self.upperLimit}'.")
 
-        if self.lowerLinearLimit is not None and self.upperLimit is not None:
+        if None not in (self.lowerLinearLimit, self.upperLimit):
             if self.lowerLinearLimit > self.upperLimit:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
                                 f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the upper limit value 'r3={self.upperLimit}'.")
 
-        if self.lowerLimit is not None and self.upperLinearLimit is not None:
+        if None not in (self.lowerLimit, self.upperLinearLimit):
             if self.lowerLimit > self.upperLinearLimit:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
                                 f"The lower limit value 'r2={self.lowerLimit}' must be less than the upper limit value 'r4={self.upperLinearLimit}'.")
 
-        if self.lowerLinearLimit is not None and self.upperLinearLimit is not None:
+        if None not in (self.lowerLinearLimit, self.upperLinearLimit):
             if self.lowerLinearLimit > self.upperLinearLimit:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
                                 f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the upper limit value 'r4={self.upperLinearLimit}'.")
 
-        if self.lowerLimit is not None and self.lowerLinearLimit is not None:
+        if None not in (self.lowerLimit, self.lowerLinearLimit):
             if self.lowerLinearLimit > self.lowerLimit:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
                                 f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the lower limit value 'r2={self.lowerLimit}'.")
 
-        if self.upperLimit is not None and self.upperLinearLimit is not None:
+        if None not in (self.upperLimit, self.upperLinearLimit):
             if self.upperLimit > self.upperLinearLimit:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
@@ -4993,13 +4993,13 @@ class AmberMRParserListener(ParseTreeListener):
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
                                 f"The upper linear limit value 'r4={self.upperLinearLimit}' must be within range {ANGLE_RESTRAINT_ERROR}.")
 
-        if self.lowerLimit is not None and self.lowerLinearLimit is not None:
+        if None not in (self.lowerLimit, self.lowerLinearLimit):
             if self.lowerLinearLimit > self.lowerLimit:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
                                 f"The lower linear limit value 'r1={self.lowerLinearLimit}' must be less than the lower limit value 'r2={self.lowerLimit}'.")
 
-        if self.upperLimit is not None and self.upperLinearLimit is not None:
+        if None not in (self.upperLimit, self.upperLinearLimit):
             if self.upperLimit > self.upperLinearLimit:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
@@ -5041,7 +5041,7 @@ class AmberMRParserListener(ParseTreeListener):
             self.lastComment = None
             return None
 
-        if self.upperLimit is not None and self.lowerLimit is not None\
+        if None not in (self.upperLimit, self.lowerLimit)\
            and (PLANE_LIKE_LOWER_LIMIT <= self.lowerLimit < 0.0 < self.upperLimit <= PLANE_LIKE_UPPER_LIMIT
                 or PLANE_LIKE_LOWER_LIMIT <= self.lowerLimit - 180.0 < 0.0 < self.upperLimit - 180.0 <= PLANE_LIKE_UPPER_LIMIT
                 or PLANE_LIKE_LOWER_LIMIT <= self.lowerLimit - 360.0 < 0.0 < self.upperLimit - 360.0 <= PLANE_LIKE_UPPER_LIMIT):

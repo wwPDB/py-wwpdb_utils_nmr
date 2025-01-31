@@ -240,7 +240,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             has_assignments = has_multiple_assignments = False
             asis1 = asis2 = None
 
-            if L1 is not None and L2 is not None:
+            if None not in (L1, L2):
                 assignments = [None] * self.num_of_dim
                 if L1 is not None:
                     ext = self.extractPeakAssignment(1, L1, index)
@@ -359,7 +359,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             has_assignments = has_multiple_assignments = False
             asis1 = asis2 = asis3 = None
 
-            if L1 is not None and L2 is not None and L3 is not None:
+            if None not in (L1, L2, L3):
                 assignments = [None] * self.num_of_dim
                 if L1 is not None:
                     ext = self.extractPeakAssignment(1, L1, index)
@@ -493,7 +493,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             has_assignments = has_multiple_assignments = False
             asis1 = asis2 = asis3 = asis4 = None
 
-            if L1 is not None and L2 is not None and L3 is not None and L4 is not None:
+            if None not in (L1, L2, L3, L4):
                 assignments = [None] * self.num_of_dim
                 if L1 is not None:
                     ext = self.extractPeakAssignment(1, L1, index)
@@ -598,7 +598,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             has_assignments = has_multiple_assignments = False
             asis1 = asis2 = None
 
-            if L1 is not None and L2 is not None:
+            if None not in (L1, L2):
                 assignments = [None] * self.num_of_dim
                 if L1 is not None:
                     ext = self.extractPeakAssignment(1, L1, index)
@@ -703,7 +703,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             has_assignments = has_multiple_assignments = False
             asis1 = asis2 = asis3 = None
 
-            if L1 is not None and L2 is not None and L3 is not None:
+            if None not in (L1, L2, L3):
                 assignments = [None] * self.num_of_dim
                 if L1 is not None:
                     ext = self.extractPeakAssignment(1, L1, index)
@@ -820,7 +820,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             has_assignments = has_multiple_assignments = False
             asis1 = asis2 = asis3 = asis4 = None
 
-            if L1 is not None and L2 is not None and L3 is not None and L4 is not None:
+            if None not in (L1, L2, L3, L4):
                 assignments = [None] * self.num_of_dim
                 if L1 is not None:
                     ext = self.extractPeakAssignment(1, L1, index)

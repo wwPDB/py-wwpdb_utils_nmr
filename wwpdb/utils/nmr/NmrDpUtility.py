@@ -982,7 +982,7 @@ def predict_rotamer_state_of_leucine(cd1_chem_shift: Optional[float], cd2_chem_s
           DOI: 10.1021/ja802729t
     """
 
-    if cd1_chem_shift is not None and cd2_chem_shift is not None:
+    if None not in (cd1_chem_shift, cd2_chem_shift):
 
         delta = cd1_chem_shift - cd2_chem_shift
 
@@ -13305,7 +13305,7 @@ class NmrDpUtility:
 
                     return False  # not split MR file because of the lexer errors to be handled by manual
 
-            if next_input is not None and re.search(r'[A-Za-z]', next_input) is not None:
+            if None not in (next_input, re.search(r'[A-Za-z]', next_input)):
                 test_line = next_input
 
                 if reader is None:
@@ -14916,7 +14916,7 @@ class NmrDpUtility:
                 _content_subtype = None
             has_content = _content_subtype is not None
 
-            if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+            if None not in (lexer_err_listener, parser_err_listener, listener)\
                and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None) or has_content):
 
                 if has_content or file_type != 'nm-res-oth':
@@ -22830,7 +22830,7 @@ class NmrDpUtility:
                             abs_positions[i - 1] = False if 'absolute_peak_positions' not in sp_dim else sp_dim['absolute_peak_positions']
 
                             if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz'\
-                               and sp_freq is not None and first_point is not None and sp_width is not None:
+                               and None not in (sp_freq, first_point, sp_width):
                                 first_point /= sp_freq
                                 sp_width /= sp_freq
 
@@ -22845,13 +22845,13 @@ class NmrDpUtility:
                             abs_positions[i - 1] = False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions']
 
                             if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
-                               and sp_freq is not None and first_point is not None and sp_width is not None:
+                               and None not in (sp_freq, first_point, sp_width):
                                 first_point /= sp_freq
                                 sp_width /= sp_freq
 
                         min_point = max_point = min_limit = max_limit = None
 
-                        if first_point is not None and sp_width is not None:
+                        if None not in (first_point, sp_width):
 
                             last_point = first_point - sp_width
 
@@ -22862,7 +22862,7 @@ class NmrDpUtility:
                             min_limit = min_point
                             max_limit = max_point
 
-                            if sp_freq is not None and min_point is not None and max_point is not None:
+                            if None not in (sp_freq, min_point, max_point):
                                 center_point = (max_point - min_point) / 2.0
                                 min_limit = center_point - self.hard_probe_limit / 2.0 / sp_freq
                                 max_limit = center_point + self.hard_probe_limit / 2.0 / sp_freq
@@ -23005,13 +23005,13 @@ class NmrDpUtility:
                         abs_positions[i - 1] = False if 'Absolute_peak_positions' not in sp_dim else sp_dim['Absolute_peak_positions']
 
                         if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
-                           and sp_freq is not None and first_point is not None and sp_width is not None:
+                           and None not in (sp_freq, first_point, sp_width):
                             first_point /= sp_freq
                             sp_width /= sp_freq
 
                         min_point = max_point = min_limit = max_limit = None
 
-                        if first_point is not None and sp_width is not None:
+                        if None not in (first_point, sp_width):
 
                             last_point = first_point - sp_width
 
@@ -23022,7 +23022,7 @@ class NmrDpUtility:
                             min_limit = min_point
                             max_limit = max_point
 
-                            if sp_freq is not None and min_point is not None and max_point is not None:
+                            if None not in (sp_freq, min_point, max_point):
                                 center_point = (max_point - min_point) / 2.0
                                 min_limit = center_point - self.hard_probe_limit / 2.0 / sp_freq
                                 max_limit = center_point + self.hard_probe_limit / 2.0 / sp_freq
@@ -26983,7 +26983,7 @@ class NmrDpUtility:
 
                         resolved = True
 
-                        if auth_asym_id is not None and auth_seq_id is not None:
+                        if None not in (auth_asym_id, auth_seq_id):
                             seq_key = (auth_asym_id, auth_seq_id, _orig_comp_id)
                             _seq_key = (seq_key[0], seq_key[1])
                             if seq_key in auth_to_star_seq:
@@ -27330,7 +27330,7 @@ class NmrDpUtility:
                                 _index = index
 
                                 auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id + offset)
-                                if auth_asym_id is not None and auth_seq_id is not None:
+                                if None not in (auth_asym_id, auth_seq_id):
                                     _found = _resolved = True
 
                                     item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
@@ -27568,7 +27568,7 @@ class NmrDpUtility:
                                     _index = index
 
                                     auth_asym_id, auth_seq_id, label_seq_id = get_label_seq_scheme(chain_id, seq_id + offset)
-                                    if auth_asym_id is not None and auth_seq_id is not None:
+                                    if None not in (auth_asym_id, auth_seq_id):
                                         _resolved = True
 
                                         item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
@@ -30097,7 +30097,7 @@ class NmrDpUtility:
         result_2 = result_1 if intra_chain else next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                                       if seq_align['ref_chain_id'] == nmr_chain_id_2 and seq_align['test_chain_id'] == cif_chain_id_2), None)
 
-        if result_1 is not None and result_2 is not None:
+        if None not in (result_1, result_2):
 
             cif_seq_id_1 = next((test_seq_id for ref_seq_id, test_seq_id
                                  in zip(result_1['ref_seq_id'], result_1['test_seq_id']) if ref_seq_id == nmr_seq_id_1), None)
@@ -30656,7 +30656,7 @@ class NmrDpUtility:
                                           self.__representative_alt_id,
                                           self.__cR, self.__ccU, None, nmrPolySeq)
 
-        if self.__caC is not None and self.__asmChkCachePath is not None:
+        if None not in (self.__caC, self.__asmChkCachePath):
             write_as_pickle(self.__caC, self.__asmChkCachePath)
 
         # DAOTHER-8817
@@ -33461,7 +33461,7 @@ class NmrDpUtility:
                                                 offset = -_offset
                                                 break
 
-                                    if offset is not None and cif_auth_seq_ids[i + offset] is not None:
+                                    if None not in (offset, cif_auth_seq_ids[i + offset]):
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
                                         self.__nmr_ext_poly_seq.append({'auth_chain_id': s2['auth_chain_id'],
                                                                         'auth_seq_id': cif_auth_seq_id,
@@ -34061,7 +34061,7 @@ class NmrDpUtility:
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
 
-                    if reasons is not None and _reasons is not None:
+                    if None not in (reasons, _reasons):
 
                         reader = CharmmMRReader(self.__verbose, self.__lfh,
                                                 self.__representative_model_id,
@@ -34153,7 +34153,7 @@ class NmrDpUtility:
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
 
-                    if reasons is not None and _reasons is not None:
+                    if None not in (reasons, _reasons):
 
                         reader = CnsMRReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
@@ -34262,7 +34262,7 @@ class NmrDpUtility:
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
 
-                    if reasons is not None and _reasons is not None:
+                    if None not in (reasons, _reasons):
 
                         reader = CyanaMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
@@ -34538,7 +34538,7 @@ class NmrDpUtility:
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
 
-                    if reasons is not None and _reasons is not None:
+                    if None not in (reasons, _reasons):
 
                         reader = CyanaNOAReader(self.__verbose, self.__lfh,
                                                 self.__representative_model_id,
@@ -34632,7 +34632,7 @@ class NmrDpUtility:
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
 
-                    if reasons is not None and _reasons is not None:
+                    if None not in (reasons, _reasons):
 
                         reader = RosettaMRReader(self.__verbose, self.__lfh,
                                                  self.__representative_model_id,
@@ -34793,7 +34793,7 @@ class NmrDpUtility:
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
 
-                    if reasons is not None and _reasons is not None:
+                    if None not in (reasons, _reasons):
 
                         reader = XplorMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
@@ -35137,7 +35137,7 @@ class NmrDpUtility:
                 if _content_subtype is not None and len(_content_subtype) == 0:
                     _content_subtype = None
 
-                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                if None not in (lexer_err_listener, parser_err_listener, listener)\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
                     _pk_format_name = getRestraintFormatName(file_type)
@@ -35243,7 +35243,7 @@ class NmrDpUtility:
                                                 offset = -_offset
                                                 break
 
-                                    if offset is not None and cif_auth_seq_ids[i + offset] is not None:
+                                    if None not in (offset, cif_auth_seq_ids[i + offset]):
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
                                         self.__nmr_ext_poly_seq.append({'auth_chain_id': s2['auth_chain_id'],
                                                                         'auth_seq_id': cif_auth_seq_id,
@@ -35501,7 +35501,7 @@ class NmrDpUtility:
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
                                  listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                if parser_err_listener is not None and listener is not None\
+                if None not in (parser_err_listener, listener)\
                    and (parser_err_listener.getMessageList() is None or _content_subtype is not None):
                     if deal_lexer_or_parser_error(a_pk_format_name, file_name, None, parser_err_listener)[0]:
                         continue
@@ -35574,7 +35574,7 @@ class NmrDpUtility:
                 if _content_subtype is not None and len(_content_subtype) == 0:
                     _content_subtype = None
 
-                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                if None not in (lexer_err_listener, parser_err_listener, listener)\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
                     if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
@@ -35651,7 +35651,7 @@ class NmrDpUtility:
                     _content_subtype = None
 
                 spa_order = 'default'
-                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                if None not in (lexer_err_listener, parser_err_listener, listener)\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
                     skip, spa_order = deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)
@@ -35679,7 +35679,7 @@ class NmrDpUtility:
                     if _content_subtype is not None and len(_content_subtype) == 0:
                         _content_subtype = None
 
-                    if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                    if None not in (lexer_err_listener, parser_err_listener, listener)\
                        and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                             or _content_subtype is not None):
                         if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
@@ -35707,7 +35707,7 @@ class NmrDpUtility:
                     if _content_subtype is not None and len(_content_subtype) == 0:
                         _content_subtype = None
 
-                    if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                    if None not in (lexer_err_listener, parser_err_listener, listener)\
                        and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                             or _content_subtype is not None):
                         if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
@@ -35796,7 +35796,7 @@ class NmrDpUtility:
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
                                  listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                if parser_err_listener is not None and listener is not None\
+                if None not in (parser_err_listener, listener)\
                    and (parser_err_listener.getMessageList() is None or _content_subtype is not None):
                     if deal_lexer_or_parser_error(a_pk_format_name, file_name, None, parser_err_listener)[0]:
                         continue
@@ -35869,7 +35869,7 @@ class NmrDpUtility:
                 if _content_subtype is not None and len(_content_subtype) == 0:
                     _content_subtype = None
 
-                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                if None not in (lexer_err_listener, parser_err_listener, listener)\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
                     if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
@@ -35943,7 +35943,7 @@ class NmrDpUtility:
                 if _content_subtype is not None and len(_content_subtype) == 0:
                     _content_subtype = None
 
-                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                if None not in (lexer_err_listener, parser_err_listener, listener)\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
                     if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
@@ -36018,7 +36018,7 @@ class NmrDpUtility:
                 if _content_subtype is not None and len(_content_subtype) == 0:
                     _content_subtype = None
 
-                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                if None not in (lexer_err_listener, parser_err_listener, listener)\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
                     if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
@@ -36093,7 +36093,7 @@ class NmrDpUtility:
                 if _content_subtype is not None and len(_content_subtype) == 0:
                     _content_subtype = None
 
-                if lexer_err_listener is not None and parser_err_listener is not None and listener is not None\
+                if None not in (lexer_err_listener, parser_err_listener, listener)\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
                     if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
@@ -36813,10 +36813,10 @@ class NmrDpUtility:
                                 else:
                                     atom_id = row[loop.tags.index(assign_item)]
 
-                            if chain_id is not None and seq_id is not None:
+                            if None not in (chain_id, seq_id):
                                 auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
 
-                            if auth_asym_id is not None and auth_seq_id is not None:
+                            if None not in (auth_asym_id, auth_seq_id):
                                 seq_key = (auth_asym_id, auth_seq_id, comp_id)
                                 if seq_key not in auth_to_star_seq:
                                     comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
@@ -36888,10 +36888,10 @@ class NmrDpUtility:
                             else:
                                 atom_id = row[loop.tags.index(assign_item)]
 
-                        if chain_id is not None and seq_id is not None:
+                        if None not in (chain_id, seq_id):
                             auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
 
-                        if auth_asym_id is not None and auth_seq_id is not None:
+                        if None not in (auth_asym_id, auth_seq_id):
                             seq_key = (auth_asym_id, auth_seq_id, comp_id)
                             if seq_key not in auth_to_star_seq:
                                 comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
@@ -36976,10 +36976,10 @@ class NmrDpUtility:
                                     else:
                                         atom_id = row[loop.tags.index(assign_item)]
 
-                                if chain_id is not None and seq_id is not None:
+                                if None not in (chain_id, seq_id):
                                     auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
 
-                                if auth_asym_id is not None and auth_seq_id is not None:
+                                if None not in (auth_asym_id, auth_seq_id):
                                     seq_key = (auth_asym_id, auth_seq_id, comp_id)
                                     if seq_key in auth_to_star_seq_ann:
                                         _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
@@ -37050,10 +37050,10 @@ class NmrDpUtility:
                                 else:
                                     atom_id = row[loop.tags.index(assign_item)]
 
-                            if chain_id is not None and seq_id is not None:
+                            if None not in (chain_id, seq_id):
                                 auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
 
-                            if auth_asym_id is not None and auth_seq_id is not None:
+                            if None not in (auth_asym_id, auth_seq_id):
                                 seq_key = (auth_asym_id, auth_seq_id, comp_id)
                                 if seq_key in auth_to_star_seq_ann:
                                     _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
@@ -37233,10 +37233,10 @@ class NmrDpUtility:
                             else:
                                 atom_id = row[loop.tags.index(assign_item)]
 
-                        if chain_id is not None and seq_id is not None:
+                        if None not in (chain_id, seq_id):
                             auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
 
-                        if auth_asym_id is not None and auth_seq_id is not None:
+                        if None not in (auth_asym_id, auth_seq_id):
                             seq_key = (auth_asym_id, auth_seq_id, comp_id)
                             if self.__annotation_mode and seq_key not in auth_to_star_seq:
                                 comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
@@ -37469,10 +37469,10 @@ class NmrDpUtility:
                         else:
                             atom_id = row[loop.tags.index(assign_item)]
 
-                    if chain_id is not None and seq_id is not None:
+                    if None not in (chain_id, seq_id):
                         auth_asym_id, auth_seq_id = get_auth_seq_scheme(chain_id, seq_id)
 
-                    if auth_asym_id is not None and auth_seq_id is not None:
+                    if None not in (auth_asym_id, auth_seq_id):
                         seq_key = (auth_asym_id, auth_seq_id, comp_id)
                         if self.__annotation_mode and seq_key not in auth_to_star_seq:
                             comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
@@ -39693,7 +39693,7 @@ class NmrDpUtility:
                              'seq_id': int(seq_id_2) if seq_id_2 not in emptyValue else None,
                              'comp_id': comp_id_2,
                              'atom_id': atom_id_2}
-                    if _atom1 is not None and _atom2 is not None:
+                    if None not in (_atom1, _atom2):
                         if not isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
                            and not isAmbigAtomSelection([_atom2, atom2], self.__csStat):
                             _rest_id, _atom1, _atom2 = rest_id, atom1, atom2
@@ -42347,8 +42347,7 @@ class NmrDpUtility:
                                         'under_sampling_type': under_sampling_type, 'encoding_code': encoding_code,
                                         'encoded_source_dimension_id': encoded_src_dim_id, 'magnetization_linkage_id': mag_link_id}
 
-                        if axis_unit == 'Hz' and sp_freq is not None and first_point is not None\
-                           and center_point is not None and sp_width is not None:
+                        if axis_unit == 'Hz' and None not in (sp_freq, first_point, center_point, sp_width):
                             first_point /= sp_freq
                             center_point /= sp_freq
                             sp_width /= sp_freq
@@ -42403,8 +42402,7 @@ class NmrDpUtility:
                                         if _center_point is None:
                                             _center_point = None if None in (_first_point, _sp_width) else (_first_point - _sp_width / 2.0)
 
-                                        if _axis_unit == 'Hz' and _sp_freq is not None and _first_point is not None\
-                                           and _center_point is not None and _sp_width is not None:
+                                        if _axis_unit == 'Hz' and None not in (_sp_freq, _first_point, _center_point, _sp_width):
                                             _first_point /= _sp_freq
                                             _center_point /= _sp_freq
                                             _sp_width /= _sp_freq
@@ -42606,7 +42604,7 @@ class NmrDpUtility:
                                         'under_sampling_type': under_sampling_type, 'encoding_code': encoding_code,
                                         'encoded_source_dimension_id': encoded_src_dim_id, 'magnetization_linkage_id': mag_link_id}
 
-                        if axis_unit == 'Hz' and sp_freq is not None and first_point is not None and center_point is not None and sp_width is not None:
+                        if axis_unit == 'Hz' and None not in (sp_freq, first_point, center_point, sp_width):
                             first_point /= sp_freq
                             center_point /= sp_freq
                             sp_width /= sp_freq
@@ -42648,7 +42646,7 @@ class NmrDpUtility:
                                         if _center_point is None:
                                             _center_point = None if None in (_first_point, _sp_width) else (_first_point - _sp_width / 2.0)
 
-                                        if _axis_unit == 'Hz' and _sp_freq is not None and _first_point is not None and _center_point is not None and _sp_width is not None:
+                                        if _axis_unit == 'Hz' and None not in (_sp_freq, _first_point, _center_point, _sp_width):
                                             _first_point /= _sp_freq
                                             _center_point /= _sp_freq
                                             _sp_width /= _sp_freq
@@ -48603,7 +48601,7 @@ class NmrDpUtility:
                     except ValueError:
                         pass
 
-                    if row[0] is not None and row[4] is not None:
+                    if None not in (row[0], row[4]):
                         b_loop.add_data(row)
 
                 if len(b_loop) > 0:
@@ -50202,7 +50200,7 @@ class NmrDpUtility:
                                                 offset = -_offset
                                                 break
 
-                                    if offset is not None and cif_auth_seq_ids[i + offset] is not None:
+                                    if None not in (offset, cif_auth_seq_ids[i + offset]):
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
                                         self.__nmr_ext_poly_seq.append({'auth_chain_id': s2['auth_chain_id'],
                                                                         'auth_seq_id': cif_auth_seq_id,

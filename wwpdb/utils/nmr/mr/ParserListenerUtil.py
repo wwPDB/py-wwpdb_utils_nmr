@@ -2283,7 +2283,7 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
         if atomId in refAtomIdList:
             return atomId
 
-    if refCompId is not None and ccU is not None:
+    if None not in (refCompId, ccU):
         refCompId = translateToStdResName(refCompId, ccU=ccU)
         if ccU.updateChemCompDict(refCompId):
             if refAtomIdList is not None:
@@ -3943,7 +3943,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                 offset = -_offset
                                                 break
 
-                                    if offset is not None and cif_auth_seq_ids[i + offset] is not None:
+                                    if None not in (offset, cif_auth_seq_ids[i + offset]):
                                         cif_label_seq_id = cif_label_seq_ids[i + offset] - offset - offset_2
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
 
@@ -4817,7 +4817,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
                             if len(unobs) > 0:
                                 for u in unobs:
-                                    if u['auth_asym_id'] is not None and u['auth_seq_id'] is not None and u['label_asym_id'] is not None and u['label_seq_id'] is not None:
+                                    if None not in (u['auth_asym_id'], u['auth_seq_id'], u['label_asym_id'], u['label_seq_id']):
                                         authSeqKey = (u['auth_asym_id'], int(u['auth_seq_id']))
                                         labelSeqKey = (u['label_asym_id'], int(u['label_seq_id']))
 
@@ -7754,13 +7754,13 @@ def getRow(mrSubtype: str, id: int, indexId: int,
             row[key_size + 23] = ins_code2
 
     elif mrSubtype == 'dihed':
-        if atom1 is not None and star_atom3 is not None:
+        if None not in (atom1, star_atom3):
             row[11], row[12], row[13], row[14], row[15] =\
                 star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
         elif star_atom5 is not None:  # PPA, phase angle of pseudorotation
             row[11], row[12], row[13], row[14] =\
                 star_atom5['chain_id'], star_atom5['entity_id'], star_atom5['seq_id'], star_atom5['comp_id']
-        if atom2 is not None and star_atom4 is not None:
+        if None not in (atom2, star_atom4):
             row[16], row[17], row[18], row[19], row[20] =\
                 star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
         elif star_atom5 is not None:  # PPA, phase angle of pseudorotation

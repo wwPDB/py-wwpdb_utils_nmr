@@ -602,7 +602,7 @@ class GromacsMRParserListener(ParseTreeListener):
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
                                     f"The upper linear limit value='{upper_linear_limit}' must be within range {DIST_RESTRAINT_ERROR}.")
 
-        if upper_limit is not None and upper_linear_limit is not None:
+        if None not in (upper_limit, upper_linear_limit):
             if upper_limit > upper_linear_limit:
                 validRange = False
                 self.__f.append(f"[Range value error] {self.__getCurrentRestraint(n=index)}"
@@ -1158,7 +1158,7 @@ class GromacsMRParserListener(ParseTreeListener):
         if target_value is None and lower_limit is None and upper_limit is None:
             return None
 
-        if upper_limit is not None and lower_limit is not None\
+        if None not in (upper_limit, lower_limit)\
            and (PLANE_LIKE_LOWER_LIMIT <= lower_limit < 0.0 < upper_limit <= PLANE_LIKE_UPPER_LIMIT
                 or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 180.0 < 0.0 < upper_limit - 180.0 <= PLANE_LIKE_UPPER_LIMIT
                 or PLANE_LIKE_LOWER_LIMIT <= lower_limit - 360.0 < 0.0 < upper_limit - 360.0 <= PLANE_LIKE_UPPER_LIMIT):

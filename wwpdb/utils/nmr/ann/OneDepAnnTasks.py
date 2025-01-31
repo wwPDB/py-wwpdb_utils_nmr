@@ -1988,7 +1988,7 @@ class OneDepAnnTasks:
                                                 elif cif_item.endswith('range'):
                                                     max_lp_item = next((lp_tag for lp_tag in _lp_tags if lp_tag.endswith('max')), None)
                                                     min_lp_item = next((lp_tag for lp_tag in _lp_tags if lp_tag.endswith('min')), None)
-                                                    if max_lp_item is not None and min_lp_item is not None\
+                                                    if None not in (max_lp_item, min_lp_item)\
                                                        and row[_lp_tags.index(max_lp_item)] not in emptyValue\
                                                        and row[_lp_tags.index(max_lp_item)] not in emptyValue:
                                                         _row[idx] = f'{row[_lp_tags.index(min_lp_item)]}-{row[_lp_tags.index(max_lp_item)]}'

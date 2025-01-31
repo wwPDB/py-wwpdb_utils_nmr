@@ -7946,7 +7946,7 @@ class RCI:
 
             N_coil_value = CO_coil_value = CA_coil_value = CB_coil_value = NH_coil_value = HA_coil_value = None
 
-            if dyna_simp_res_num_i is not None and dyna_simp_res_name_i is not None:
+            if None not in (dyna_simp_res_num_i, dyna_simp_res_name_i):
                 N_coil_value = self.random_coil_dic[dyna_simp_res_name_i][self.__N_place]
                 CO_coil_value = self.random_coil_dic[dyna_simp_res_name_i][self.__CO_place]
                 CA_coil_value = self.random_coil_dic[dyna_simp_res_name_i][self.__CA_place]
@@ -7954,7 +7954,8 @@ class RCI:
                 NH_coil_value = self.random_coil_dic[dyna_simp_res_name_i][self.__NH_place]
                 HA_coil_value = self.random_coil_dic[dyna_simp_res_name_i][self.__HA_place]
 
-            if self.preceed_res_effect_flag == 1 and dyna_simp_res_num_i_minus_1 is not None and dyna_simp_res_name_i_minus_1 is not None:
+            if self.preceed_res_effect_flag == 1\
+               and None not in (dyna_simp_res_num_i_minus_1, dyna_simp_res_name_i_minus_1):
                 if res_i_csi_sec_str == res_i_minus_1_csi_sec_str and res_num_i_minus_1_sec_str_found == 1 and res_num_i_sec_str_found == 1:
                     preceed_res_cor_N = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__N_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
                     preceed_res_cor_CO = self.preceed_res_effect[dyna_simp_res_name_i_minus_1][self.__CO_place][self.__sec_str_place[res_i_minus_1_csi_sec_str]]
@@ -7992,7 +7993,7 @@ class RCI:
                     preceed_res_cor_CB = preceed_res_cor_NH = preceed_res_cor_HA = 0.0
 
             if self.preceed_res_effect_flag == 1 and self.preceed_preceed_res_effect_flag == 1\
-               and dyna_simp_res_num_i_minus_2 is not None and dyna_simp_res_name_i_minus_2 is not None:
+               and None not in (dyna_simp_res_num_i_minus_2, dyna_simp_res_name_i_minus_2):
                 if res_i_csi_sec_str == res_i_minus_2_csi_sec_str and res_num_i_minus_2_sec_str_found == 1 and res_num_i_sec_str_found == 1:
                     preceed_preceed_res_cor_N = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__N_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]
                     preceed_preceed_res_cor_CO = self.preceed_preceed_res_effect[dyna_simp_res_name_i_minus_2][self.__CO_place][self.__sec_str_place[res_i_minus_2_csi_sec_str]]

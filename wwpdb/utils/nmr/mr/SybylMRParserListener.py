@@ -874,7 +874,7 @@ class SybylMRParserListener(ParseTreeListener):
         validRange = True
         dstFunc = {'weight': weight}
 
-        if target_value is not None and upper_limit is not None and lower_limit is not None\
+        if None not in (target_value, upper_limit, lower_limit)\
            and abs(target_value - lower_limit) <= DIST_AMBIG_UNCERT\
            and abs(target_value - upper_limit) <= DIST_AMBIG_UNCERT:
             if target_value >= DIST_AMBIG_MED:
@@ -937,7 +937,7 @@ class SybylMRParserListener(ParseTreeListener):
 
         else:
 
-            if lower_limit is not None and upper_limit is not None:
+            if None not in (lower_limit, upper_limit):
                 if lower_limit > upper_limit:
                     validRange = False
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"

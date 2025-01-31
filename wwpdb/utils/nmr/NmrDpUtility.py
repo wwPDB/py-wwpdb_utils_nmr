@@ -12008,6 +12008,9 @@ class NmrDpUtility:
                     else:
                         file_type = 'spectral peak list/restraint'
 
+                    if self.__internal_mode and os.path.exists(self.__inputParamDict[ar_file_path_list][j]['file_name'] + '-ignored'):
+                        continue
+
                     err = f"You have uploaded the same NMR {file_type} file twice. "\
                         f"Please replace/delete either {file_name_1} or {file_name_2}."
 

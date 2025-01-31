@@ -90,6 +90,7 @@
 # 22-Nov-2024  M. Yokochi - add 'nm-res-noa' file type for CYANA NOA (NOE Assignment) file
 # 05-Dec-2024  M. Yokochi - add 'nm-aux-xea' file type for XEASY PROT (Assignment) file (NMR restraint remediation)
 # 16-Dec-2024  M. Yokochi - add 'nm-pea-vnm' file types for VNMR spectral list file (NMR restraint remediation)
+# 31-Jan-2025  M. Yokochi - add 'coordinate_issue' and 'assigned_peak_atom_not_found' warning (DAOTHER-8509, 9785, NMR data remediation, standalone NMR data conversion service)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -2259,8 +2260,8 @@ class NmrDpReportWarning:
                       'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data',
                       'conflicted_data', 'inconsistent_data', 'redundant_data',
                       'insufficient_mr_data', 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data',
-                      'concatenated_sequence', 'not_superimposed_model', 'exactly_overlaid_model',
-                      'hydrogen_not_instantiated')
+                      'concatenated_sequence', 'coordinate_issue', 'not_superimposed_model', 'exactly_overlaid_model',
+                      'assigned_peak_atom_not_found', 'hydrogen_not_instantiated')
 
         self.group_items = ('sequence_mismatch',
                             'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',

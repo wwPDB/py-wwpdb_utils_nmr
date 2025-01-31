@@ -4535,10 +4535,16 @@
         "concatenated_sequence": {
           "$ref": "#/definitions/common_message"
         },
+        "coordinate_issue": {
+          "$ref": "#/definitions/common_message"
+        },
         "not_superimposed_model": {
           "$ref": "#/definitions/common_message"
         },
         "exactly_overlaid_model": {
+          "$ref": "#/definitions/common_message"
+        },
+        "assigned_peak_atom_not_found": {
           "$ref": "#/definitions/common_message"
         },
         "hydrogen_not_instantiated": {

@@ -203,7 +203,8 @@
 # 16-Dec-2024  M. Yokochi - combine spectral peak lists written in software native formats into single NMR-STAR file (DAOTHER-8905, NMR data remediation Phase 2)
 # 19-Dec-2024  M. Yokochi - add 'nmr-if-merge-deposit' workflow operation (DAOTHER-8905, NMR data remediation Phase 2)
 # 27-Dec-2024  M. Yokochi - extract NMRIF metadata from NMR-STAR (DAOTHER-1728, 9846)
-# 09-Jan-2025  M. Yokochi - Extract NMRIF metadata from NMR-STAR (as primary source) and model (as secondary source) (DAOTHER-1728, 9846)
+# 09-Jan-2025  M. Yokochi - extract NMRIF metadata from NMR-STAR (as primary source) and model (as secondary source) (DAOTHER-1728, 9846)
+# 31-Jan-2025  M. Yokochi - add 'coordinate_issue' and 'assigned_peak_atom_not_found' warnings used in NMR data remediation with peak list (DAOTHER-8509, 9785)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -30476,13 +30477,25 @@ class NmrDpUtility:
                                     if self.__remediation_mode and checked:
                                         continue
 
-                                    self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'atom_not_found',
-                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                         'description': err})
-                                    self.report.setError()
+                                    if content_subtype.startswith('spectral_peak'):
 
-                                    if self.__verbose:
-                                        self.__lfh.write(f"+{self.__class_name__}.__testResidueVariant() ++ Error  - {err}\n")
+                                        self.report.warning.appendDescription('hydrogen_not_instantiated' if checked else 'assigned_peak_atom_not_found',
+                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                               'description': err})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+{self.__class_name__}.__testResidueVariant() ++ Warning  - {err}\n")
+
+                                    else:
+
+                                        self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'atom_not_found',
+                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                             'description': err})
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+{self.__class_name__}.__testResidueVariant() ++ Error  - {err}\n")
 
                     else:
 
@@ -33543,12 +33556,23 @@ class NmrDpUtility:
                     elif warn.startswith('[Coordinate issue]'):
                         # consume_suspended_message()
 
-                        self.report.error.appendDescription('coordinate_issue',
-                                                            {'file_name': file_name, 'description': warn})
-                        self.report.setError()
+                        if self.__internal_mode:
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {warn}\n")
+                            self.report.warning.appendDescription('coordinate_issue',
+                                                                  {'file_name': file_name, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
+
+                        else:
+
+                            self.report.error.appendDescription('coordinate_issue',
+                                                                {'file_name': file_name, 'description': warn})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         consume_suspended_message()
@@ -35288,12 +35312,12 @@ class NmrDpUtility:
                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                             consume_suspended_message()
 
-                            self.report.error.appendDescription('atom_not_found',
-                                                                {'file_name': file_name, 'description': warn})
-                            self.report.setError()
+                            self.report.warning.appendDescription('assined_peak_atom_not_found',
+                                                                  {'file_name': file_name, 'description': warn})
+                            self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
                         else:
                             self.report.warning.appendDescription('sequence_mismatch',
                                                                   {'file_name': file_name, 'description': warn})
@@ -35323,12 +35347,23 @@ class NmrDpUtility:
                     elif warn.startswith('[Coordinate issue]'):
                         # consume_suspended_message()
 
-                        self.report.error.appendDescription('coordinate_issue',
-                                                            {'file_name': file_name, 'description': warn})
-                        self.report.setError()
+                        if self.__internal_mode:
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
+                            self.report.warning.appendDescription('coordinate_issue',
+                                                                  {'file_name': file_name, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
+
+                        else:
+
+                            self.report.error.appendDescription('coordinate_issue',
+                                                                {'file_name': file_name, 'description': warn})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         consume_suspended_message()
@@ -35411,17 +35446,17 @@ class NmrDpUtility:
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch':
                                                                {'file_name': file_name, 'description': warn}})
 
-                    elif warn.startswith('[Atom not found]'):
-                        if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                            suspended_errors_for_lazy_eval.append({'atom_not_found':
-                                                                   {'file_name': file_name, 'description': warn}})
+                    # elif warn.startswith('[Atom not found]'):
+                    #     if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                    #         suspended_errors_for_lazy_eval.append({'atom_not_found':
+                    #                                                {'file_name': file_name, 'description': warn}})
 
-                    elif warn.startswith('[Hydrogen not instantiated]'):
-                        if self.__remediation_mode:
-                            pass
-                        else:
-                            suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated':
-                                                                   {'file_name': file_name, 'description': warn}})
+                    # elif warn.startswith('[Hydrogen not instantiated]'):
+                    #     if self.__remediation_mode:
+                    #         pass
+                    #     else:
+                    #         suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated':
+                    #                                                 {'file_name': file_name, 'description': warn}})
 
                     # elif warn.startswith('[Coordinate issue]'):
                     #     suspended_errors_for_lazy_eval.append({'coordinate_issue':
@@ -47248,7 +47283,14 @@ class NmrDpUtility:
                             if content_subtype.startswith('spectral_peak')\
                                or (len(_atom_id) > 0 and coord_atom_site_ is not None and _atom_id[0] in coord_atom_site_['atom_id']):
 
-                                self.report.warning.appendDescription('atom_nomenclature_mismatch',
+                                if len(_atom_id) > 0 and coord_atom_site_ is not None and _atom_id[0] in coord_atom_site_['atom_id']:
+                                    item = 'atom_nomenclature_mismatch'
+                                elif content_subtype.startswith('spectral_peak'):
+                                    item = 'hydrogen_not_instantiated' if checked else 'coordinate_issue' if coord_issue else 'assigned_peak_atom_not_found'
+                                else:
+                                    item = 'hydrogen_not_instantiated' if checked else 'coordinate_issue' if coord_issue else 'atom_nomenclature_mismatch'
+
+                                self.report.warning.appendDescription(item,
                                                                       {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                        'description': err})
                                 self.report.setWarning()
@@ -50247,13 +50289,13 @@ class NmrDpUtility:
                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                             consume_suspended_message()
 
-                            self.report.error.appendDescription('atom_not_found',
-                                                                {'file_name': data_file_name, 'sf_framecode': sf_framecode,
-                                                                 'description': warn})
-                            self.report.setError()
+                            self.report.warning.appendDescription('assigned_peak_atom_not_found',
+                                                                  {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                                   'description': warn})
+                            self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {warn}\n")
+                                self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
                         else:
                             self.report.warning.appendDescription('sequence_mismatch',
                                                                   {'file_name': data_file_name, 'sf_framecode': sf_framecode,
@@ -50286,13 +50328,25 @@ class NmrDpUtility:
                     elif warn.startswith('[Coordinate issue]'):
                         # consume_suspended_message()
 
-                        self.report.error.appendDescription('coordinate_issue',
-                                                            {'file_name': data_file_name, 'sf_framecode': sf_framecode,
-                                                             'description': warn})
-                        self.report.setError()
+                        if self.__internal_mode:
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {warn}\n")
+                            self.report.warning.appendDescription('coordinate_issue',
+                                                                  {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                                   'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
+
+                        else:
+
+                            self.report.error.appendDescription('coordinate_issue',
+                                                                {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                                 'description': warn})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         consume_suspended_message()
@@ -50380,19 +50434,19 @@ class NmrDpUtility:
                                                                {'file_name': data_file_name, 'sf_framecode': sf_framecode,
                                                                 'description': warn}})
 
-                    elif warn.startswith('[Atom not found]'):
-                        if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                            suspended_errors_for_lazy_eval.append({'atom_not_found':
-                                                                   {'file_name': data_file_name, 'sf_framecode': sf_framecode,
-                                                                    'description': warn}})
+                    # elif warn.startswith('[Atom not found]'):
+                    #     if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                    #         suspended_errors_for_lazy_eval.append({'atom_not_found':
+                    #                                                {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                    #                                                 'description': warn}})
 
-                    elif warn.startswith('[Hydrogen not instantiated]'):
-                        if self.__remediation_mode:
-                            pass
-                        else:
-                            suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated':
-                                                                   {'file_name': data_file_name, 'sf_framecode': sf_framecode,
-                                                                    'description': warn}})
+                    # elif warn.startswith('[Hydrogen not instantiated]'):
+                    #     if self.__remediation_mode:
+                    #         pass
+                    #     else:
+                    #         suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated':
+                    #                                                {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                    #                                                 'description': warn}})
 
                     # elif warn.startswith('[Coordinate issue]'):
                     #     suspended_errors_for_lazy_eval.append({'coordinate_issue':
@@ -51406,13 +51460,25 @@ class NmrDpUtility:
                     err = f'{cif_seq_code} has been instantiated with different tautomeric states across models, {tautomer_per_model}. '\
                         'Please re-upload the model file.'
 
-                    self.report.error.appendDescription('coordinate_issue',
-                                                        {'file_name': file_name, 'category': 'atom_site',
-                                                         'description': err})
-                    self.report.setError()
+                    if self.__internal_mode:
 
-                    if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.__testTautomerOfHistidinePerModel() ++ Error  - {err}\n")
+                        self.report.warning.appendDescription('coordinate_issue',
+                                                              {'file_name': file_name, 'category': 'atom_site',
+                                                               'description': err})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__testTautomerOfHistidinePerModel() ++ Warning  - {err}\n")
+
+                    else:
+
+                        self.report.error.appendDescription('coordinate_issue',
+                                                            {'file_name': file_name, 'category': 'atom_site',
+                                                             'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__testTautomerOfHistidinePerModel() ++ Error  - {err}\n")
 
             return True
 
@@ -51521,13 +51587,25 @@ class NmrDpUtility:
                         err = f'{cif_seq_code} has been instantiated with different tautomeric states across models, {tautomer_per_model}. '\
                             'Please re-upload the model file.'
 
-                        self.report.error.appendDescription('coordinate_issue',
-                                                            {'file_name': file_name, 'category': 'atom_site',
-                                                             'description': err})
-                        self.report.setError()
+                        if self.__internal_mode:
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__testTautomerOfHistidinePerModel() ++ Error  - {err}\n")
+                            self.report.warning.appendDescription('coordinate_issue',
+                                                                  {'file_name': file_name, 'category': 'atom_site',
+                                                                   'description': err})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__testTautomerOfHistidinePerModel() ++ Warning  - {err}\n")
+
+                        else:
+
+                            self.report.error.appendDescription('coordinate_issue',
+                                                                {'file_name': file_name, 'category': 'atom_site',
+                                                                 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__testTautomerOfHistidinePerModel() ++ Error  - {err}\n")
 
         if self.__coordPropCachePath is not None:
             hash_value = hash(str(self.__cpC))

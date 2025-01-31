@@ -122,8 +122,14 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             if '?' in ass:
                 ass = None
 
-            x_ppm = float(str(ctx.Float(0)))
-            y_ppm = float(str(ctx.Float(1)))
+            try:
+
+                x_ppm = float(str(ctx.Float(0)))
+                y_ppm = float(str(ctx.Float(1)))
+
+            except ValueError:
+                self.peaks2D -= 1
+                return
 
             offset = 0
 
@@ -215,9 +221,15 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             if '?' in ass:
                 ass = None
 
-            x_ppm = float(str(ctx.Float(0)))
-            y_ppm = float(str(ctx.Float(1)))
-            z_ppm = float(str(ctx.Float(2)))
+            try:
+
+                x_ppm = float(str(ctx.Float(0)))
+                y_ppm = float(str(ctx.Float(1)))
+                z_ppm = float(str(ctx.Float(2)))
+
+            except ValueError:
+                self.peaks3D -= 1
+                return
 
             offset = 0
 
@@ -316,10 +328,16 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             if '?' in ass:
                 ass = None
 
-            x_ppm = float(str(ctx.Float(0)))
-            y_ppm = float(str(ctx.Float(1)))
-            z_ppm = float(str(ctx.Float(2)))
-            a_ppm = float(str(ctx.Float(3)))
+            try:
+
+                x_ppm = float(str(ctx.Float(0)))
+                y_ppm = float(str(ctx.Float(1)))
+                z_ppm = float(str(ctx.Float(2)))
+                a_ppm = float(str(ctx.Float(3)))
+
+            except ValueError:
+                self.peaks4D -= 1
+                return
 
             offset = 0
 

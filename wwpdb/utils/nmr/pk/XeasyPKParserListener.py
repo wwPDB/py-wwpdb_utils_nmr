@@ -197,7 +197,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            if 0 in (len(self.positionSelection), len(self.numberSelection), len(self.assignmentSelection)):
+            if 0 in (len(self.positionSelection), len(self.numberSelection)):
                 self.peaks2D -= 1
                 return
 
@@ -294,7 +294,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            if 0 in (len(self.positionSelection), len(self.numberSelection), len(self.assignmentSelection)):
+            if 0 in (len(self.positionSelection), len(self.numberSelection)):
                 self.peaks3D -= 1
                 return
 
@@ -393,7 +393,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            if 0 in (len(self.positionSelection), len(self.numberSelection), len(self.assignmentSelection)):
+            if 0 in (len(self.positionSelection), len(self.numberSelection)):
                 self.peaks4D -= 1
                 return
 

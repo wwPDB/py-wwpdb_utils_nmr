@@ -2283,6 +2283,7 @@ class BasePKParserListener():
                     atomId = term[_atomNameSpan[idx][0]:atomNameSpan[idx][1]]
                     if resNameLike[idx]:
                         compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                        resId = term[resIdSpan[idx][0]:resIdSpan[idx][1]] if resIdLike[idx] else '.'
                         if len(compId) == 1 and aaOnly:
                             compId = next(k for k, v in monDict3.items() if v == compId)
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
@@ -2294,12 +2295,32 @@ class BasePKParserListener():
                                 _atomNameLike[idx] = False
                                 for shift in range(_atomNameSpan[idx][0], atomNameSpan[idx][1]):
                                     _atomId = term[_atomNameSpan[idx][0] + shift:atomNameSpan[idx][1]]
+                                    if _atomId[0] == resId[0]:
+                                        continue
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                                     if details is None:
                                         _atomNameSpan[idx] = (_atomNameSpan[idx][0] + shift, len(_atomId))
+                                        atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                        concat = True
                                         break
+                        else:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                _atomNameLike[idx] = False
                                 atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
                                 concat = True
+                            elif numOfDim == 1:
+                                _atomNameLike[idx] = False
+                                for shift in range(_atomNameSpan[idx][0], atomNameSpan[idx][1]):
+                                    _atomId = term[_atomNameSpan[idx][0] + shift:atomNameSpan[idx][1]]
+                                    if _atomId[0] == resId[0]:
+                                        continue
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                    if details is None:
+                                        _atomNameSpan[idx] = (_atomNameSpan[idx][0] + shift, len(_atomId))
+                                        atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                        concat = True
+                                        break
                     if not concat:
                         for compId in self.compIdSet:
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)

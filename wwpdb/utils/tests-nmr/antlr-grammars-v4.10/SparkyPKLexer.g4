@@ -52,7 +52,7 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 SPACE:			[ \t]+ -> skip;
 RETURN:			[\r\n]+;
 
-fragment COMMENT_START_CHAR:	('#' | '!' | ';' | '\\' | '&' | '/' | '*' | '=');
+fragment COMMENT_START_CHAR:	('!' | ';' | '\\' | '&' | '/' | '*' | '=');
 
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
 SECTION_COMMENT:	(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);

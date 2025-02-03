@@ -2290,6 +2290,16 @@ class BasePKParserListener():
                                 _atomNameLike[idx] = False
                                 atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
                                 concat = True
+                            elif numOfDim == 1:
+                                _atomNameLike[idx] = False
+                                for shift in range(_atomNameSpan[idx][0], atomNameSpan[idx][1]):
+                                    _atomId = term[_atomNameSpan[idx][0] + shift:atomNameSpan[idx][1]]
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                    if details is None:
+                                        _atomNameSpan[idx] = (_atomNameSpan[idx][0] + shift, len(_atomId))
+                                        break
+                                atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                concat = True
                     if not concat:
                         for compId in self.compIdSet:
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)

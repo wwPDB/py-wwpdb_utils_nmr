@@ -2295,6 +2295,8 @@ class BasePKParserListener():
                                 _atomNameLike[idx] = False
                                 for shift in range(_atomNameSpan[idx][0], atomNameSpan[idx][1]):
                                     _atomId = term[_atomNameSpan[idx][0] + shift:atomNameSpan[idx][1]]
+                                    if len(_atomId) == 0:
+                                        break
                                     if _atomId[0] == resId[0]:
                                         continue
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
@@ -2313,6 +2315,8 @@ class BasePKParserListener():
                                 _atomNameLike[idx] = False
                                 for shift in range(_atomNameSpan[idx][0], atomNameSpan[idx][1]):
                                     _atomId = term[_atomNameSpan[idx][0] + shift:atomNameSpan[idx][1]]
+                                    if len(_atomId) == 0:
+                                        break
                                     if _atomId[0] == resId[0]:
                                         continue
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)

@@ -52,6 +52,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
     __labels = None
     __jcouplings = None
+    __jcoupling_types = None
     __enclose_data = []
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -160,6 +161,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     def enterPeak_list_2d(self, ctx: NmrViewPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
         self.initSpectralDim()
         self.__jcouplings = []
+        self.__jcoupling_types = []
 
     # Exit a parse tree produced by NmrViewPKParser#peak_list_2d.
     def exitPeak_list_2d(self, ctx: NmrViewPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
@@ -184,21 +186,32 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = int(str(ctx.Integer(0)))
 
+            # j_simple_name_offset = 0
+            j_eclose_data__offset = 0
+
             L1 = self.__enclose_data[0]
             P1 = self.numberSelection[0]
             W1 = self.numberSelection[1]
             B1 = self.numberSelection[2]
             # E1 = str(ctx.Simple_name(0))
             # J1 = self.__jcouplings[0]
-            # U1 = self.__enclose_data[1]
+            # if self.__jcoupling_types[0] == 'simple_name':
+            #     j_simple_name_offset += 1
+            if self.__jcoupling_types[0] == 'enclose_data':
+                j_eclose_data__offset += 1
+            # U1 = self.__enclose_data[1 + j_eclose_data__offset]
 
-            L2 = self.__enclose_data[2]
+            L2 = self.__enclose_data[2 + j_eclose_data__offset]
             P2 = self.numberSelection[3]
             W2 = self.numberSelection[4]
             B2 = self.numberSelection[5]
-            # E2 = str(ctx.Simple_name(1))
+            # E2 = str(ctx.Simple_name(1 + j_simple_name_offset))
             # J2 = self.__jcouplings[1]
-            # U2 = self.__enclose_data[3]
+            # if self.__jcoupling_types[1] == 'simple_name':
+            #     j_simple_name_offset += 1
+            if self.__jcoupling_types[1] == 'enclose_data':
+                j_eclose_data__offset += 1
+            # U2 = self.__enclose_data[3 + j_eclose_data__offset]
 
             vol = self.originalNumberSelection[6]
             _int = self.originalNumberSelection[7]
@@ -206,8 +219,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             #     stat = int(str(ctx.Integer(1)))
             # except ValueError:
             #     stat = None
-            if len(self.__enclose_data) > 4:
-                comment = self.__enclose_data[4]
+            if len(self.__enclose_data) > 4 + j_eclose_data__offset:
+                comment = self.__enclose_data[4 + j_eclose_data__offset]
                 if comment in emptyValue:
                     comment = None
             else:
@@ -268,6 +281,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     def enterPeak_list_3d(self, ctx: NmrViewPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
         self.initSpectralDim()
         self.__jcouplings = []
+        self.__jcoupling_types = []
 
     # Exit a parse tree produced by NmrViewPKParser#peak_list_3d.
     def exitPeak_list_3d(self, ctx: NmrViewPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
@@ -292,29 +306,44 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = int(str(ctx.Integer(0)))
 
+            # j_simple_name_offset = 0
+            j_eclose_data__offset = 0
+
             L1 = self.__enclose_data[0]
             P1 = self.numberSelection[0]
             W1 = self.numberSelection[1]
             B1 = self.numberSelection[2]
             # E1 = str(ctx.Simple_name(0))
             # J1 = self.__jcouplings[0]
-            # U1 = self.__enclose_data[1]
+            # if self.__jcoupling_types[0] == 'simple_name':
+            #     j_simple_name_offset += 1
+            if self.__jcoupling_types[0] == 'enclose_data':
+                j_eclose_data__offset += 1
+            # U1 = self.__enclose_data[1 + j_eclose_data__offset]
 
-            L2 = self.__enclose_data[2]
+            L2 = self.__enclose_data[2 + j_eclose_data__offset]
             P2 = self.numberSelection[3]
             W2 = self.numberSelection[4]
             B2 = self.numberSelection[5]
-            # E2 = str(ctx.Simple_name(1))
+            # E2 = str(ctx.Simple_name(1 + j_simple_name_offset))
             # J2 = self.__jcouplings[1]
-            # U2 = self.__enclose_data[3]
+            # if self.__jcoupling_types[1] == 'simple_name':
+            #     j_simple_name_offset += 1
+            if self.__jcoupling_types[1] == 'enclose_data':
+                j_eclose_data__offset += 1
+            # U2 = self.__enclose_data[3 + j_eclose_data__offset]
 
-            L3 = self.__enclose_data[4]
+            L3 = self.__enclose_data[4 + j_eclose_data__offset]
             P3 = self.numberSelection[6]
             W3 = self.numberSelection[7]
             B3 = self.numberSelection[8]
-            # E3 = str(ctx.Simple_name(2))
+            # E3 = str(ctx.Simple_name(2 + j_simple_name_offset))
             # J3 = self.__jcouplings[2]
-            # U3 = self.__enclose_data[5]
+            # if self.__jcoupling_types[2] == 'simple_name':
+            #     j_simple_name_offset += 1
+            if self.__jcoupling_types[2] == 'enclose_data':
+                j_eclose_data__offset += 1
+            # U3 = self.__enclose_data[5 + j_eclose_data__offset]
 
             vol = self.originalNumberSelection[9]
             _int = self.originalNumberSelection[10]
@@ -322,8 +351,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             #     stat = int(str(ctx.Integer(1)))
             # except ValueError:
             #     stat = None
-            if len(self.__enclose_data) > 6:
-                comment = self.__enclose_data[6]
+            if len(self.__enclose_data) > 6 + j_eclose_data__offset:
+                comment = self.__enclose_data[6 + j_eclose_data__offset]
                 if comment in emptyValue:
                     comment = None
             else:
@@ -391,6 +420,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     def enterPeak_list_4d(self, ctx: NmrViewPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
         self.initSpectralDim()
         self.__jcouplings = []
+        self.__jcoupling_types = []
 
     # Exit a parse tree produced by NmrViewPKParser#peak_list_4d.
     def exitPeak_list_4d(self, ctx: NmrViewPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
@@ -415,37 +445,56 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = int(str(ctx.Integer(0)))
 
+            # j_simple_name_offset = 0
+            j_eclose_data__offset = 0
+
             L1 = self.__enclose_data[0]
             P1 = self.numberSelection[0]
             W1 = self.numberSelection[1]
             B1 = self.numberSelection[2]
             # E1 = str(ctx.Simple_name(0))
             # J1 = self.__jcouplings[0]
-            # U1 = self.__enclose_data[1]
+            # if self.__jcoupling_types[0] == 'simple_name':
+            #     j_simple_name_offset += 1
+            if self.__jcoupling_types[0] == 'enclose_data':
+                j_eclose_data__offset += 1
+            # U1 = self.__enclose_data[1 + j_eclose_data__offset]
 
-            L2 = self.__enclose_data[2]
+            L2 = self.__enclose_data[2 + j_eclose_data__offset]
             P2 = self.numberSelection[3]
             W2 = self.numberSelection[4]
             B2 = self.numberSelection[5]
-            # E2 = str(ctx.Simple_name(1))
+            # E2 = str(ctx.Simple_name(1 + j_simple_name_offset))
             # J2 = self.__jcouplings[1]
-            # U2 = self.__enclose_data[3]
+            # if self.__jcoupling_types[1] == 'simple_name':
+            #     j_simple_name_offset += 1
+            if self.__jcoupling_types[1] == 'enclose_data':
+                j_eclose_data__offset += 1
+            # U2 = self.__enclose_data[3 + j_eclose_data__offset]
 
-            L3 = self.__enclose_data[4]
+            L3 = self.__enclose_data[4 + j_eclose_data__offset]
             P3 = self.numberSelection[6]
             W3 = self.numberSelection[7]
             B3 = self.numberSelection[8]
-            # E3 = str(ctx.Simple_name(2))
+            # E3 = str(ctx.Simple_name(2 + j_simple_name_offset))
             # J3 = self.__jcouplings[2]
-            # U3 = self.__enclose_data[5]
+            # if self.__jcoupling_types[2] == 'simple_name':
+            #     j_simple_name_offset += 1
+            if self.__jcoupling_types[2] == 'enclose_data':
+                j_eclose_data__offset += 1
+            # U3 = self.__enclose_data[5 + j_eclose_data__offset]
 
-            L4 = self.__enclose_data[6]
+            L4 = self.__enclose_data[6 + j_eclose_data__offset]
             P4 = self.numberSelection[9]
             W4 = self.numberSelection[10]
             B4 = self.numberSelection[11]
-            # E4 = str(ctx.Simple_name(3))
+            # E4 = str(ctx.Simple_name(3 + j_simple_name_offset))
             # J4 = self.__jcouplings[3]
-            # U4 = self.__enclose_data[7]
+            # if self.__jcoupling_types[3] == 'simple_name':
+            #     j_simple_name_offset += 1
+            if self.__jcoupling_types[3] == 'enclose_data':
+                j_eclose_data__offset += 1
+            # U4 = self.__enclose_data[7 + j_eclose_data__offset]
 
             vol = self.originalNumberSelection[12]
             _int = self.originalNumberSelection[13]
@@ -453,8 +502,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             #     stat = int(str(ctx.Integer(1)))
             # except ValueError:
             #     stat = None
-            if len(self.__enclose_data) > 8:
-                comment = self.__enclose_data[8]
+            if len(self.__enclose_data) > 8 + j_eclose_data__offset:
+                comment = self.__enclose_data[8 + j_eclose_data__offset]
                 if comment in emptyValue:
                     comment = None
             else:
@@ -877,8 +926,10 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     def exitJcoupling(self, ctx: NmrViewPKParser.JcouplingContext):  # pylint: disable=unused-argument
         if ctx.Float():
             self.__jcouplings.append(float(str(ctx.Float())))
+            self.__jcoupling_types.append('float')
         elif ctx.Simple_name():
             self.__jcouplings.append(str(ctx.Simple_name()))
+            self.__jcoupling_types.append('simple_name')
         else:
             value = self.__enclose_data[-1].strip()
             try:
@@ -886,6 +937,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.__jcouplings.append(_value)
             except ValueError:
                 self.__jcouplings.append(value)
+            self.__jcoupling_types.append('enclose_data')
 
     # Enter a parse tree produced by NmrViewPKParser#number.
     def enterNumber(self, ctx: NmrViewPKParser.NumberContext):  # pylint: disable=unused-argument

@@ -17577,20 +17577,22 @@ class NmrDpUtility:
 
                 if err.startswith('[Invalid data]'):
 
-                    _err = err.split('#')[0]
+                    if not content_subtype.startswith('spectral_peak'):
 
-                    if 'Auth' not in _err or self.__check_auth_seq:
+                        _err = err.split('#')[0]
 
-                        p = err.index(']') + 2
-                        err = err[p:]
+                        if 'Auth' not in _err or self.__check_auth_seq:
 
-                        self.report.error.appendDescription('format_issue',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                             'description': err})
-                        self.report.setError()
+                            p = err.index(']') + 2
+                            err = err[p:]
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ ValueError  - {err}\n")
+                            self.report.error.appendDescription('format_issue',
+                                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ ValueError  - {err}\n")
 
                 else:
 
@@ -56012,7 +56014,7 @@ class NmrDpUtility:
 
         if not self.__combined_mode:
 
-            if self.__bmrb_only and self.__internal_mode:
+            if self.__bmrb_only or self.__internal_mode:
                 master_entry = self.__star_data[0]
 
                 master_entry = self.__c2S.normalize(master_entry)
@@ -59743,7 +59745,12 @@ class NmrDpUtility:
         ann = OneDepAnnTasks(self.__verbose, self.__lfh,
                              self.__sf_category_list, self.__entry_id)
 
-        return ann.merge(master_entry, self.__cR)
+        is_done = ann.merge(master_entry, self.__cR)
+
+        if is_done:
+            self.__depositNmrData()
+
+        return is_done
 
     def __mergeNmrIf(self) -> bool:
         """ Merge NMRIF metadata.
@@ -59768,7 +59775,12 @@ class NmrDpUtility:
         ann = OneDepAnnTasks(self.__verbose, self.__lfh,
                              self.__sf_category_list, self.__entry_id)
 
-        return ann.merge(master_entry, self.__nmrIfR)
+        is_done = ann.merge(master_entry, self.__nmrIfR)
+
+        if is_done:
+            self.__depositNmrData()
+
+        return is_done
 
     def __performBMRBAnnTasks(self) -> bool:
         """ Perform a series of standalone BMRB annotation tasks.

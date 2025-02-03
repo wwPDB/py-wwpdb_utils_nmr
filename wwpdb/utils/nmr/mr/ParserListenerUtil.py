@@ -1899,6 +1899,14 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                      {'name': 'Position_uncertainty_1', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_1', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_uncertainty_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_1', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_1', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_1', 'type': 'positive-int', 'mandatory': False},
                                      {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                      {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                      {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -1910,6 +1918,14 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                      {'name': 'Position_uncertainty_2', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_2', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_uncertainty_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_2', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_2', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_2', 'type': 'positive-int', 'mandatory': False},
                                      {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
                                      {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                      {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
@@ -1931,6 +1947,14 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                      {'name': 'Position_uncertainty_1', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_1', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_uncertainty_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_1', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_1', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_1', 'type': 'positive-int', 'mandatory': False},
                                      {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                      {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                      {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -1942,6 +1966,14 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                      {'name': 'Position_uncertainty_2', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_2', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_uncertainty_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_2', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_2', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_2', 'type': 'positive-int', 'mandatory': False},
                                      {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
                                      {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                      {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
@@ -1953,6 +1985,14 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                      {'name': 'Position_uncertainty_3', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_3', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_uncertainty_3', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_3', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_3', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_3', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_3', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_3', 'type': 'positive-int', 'mandatory': False},
                                      {'name': 'Auth_asym_ID_3', 'type': 'str', 'mandatory': False},
                                      {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
                                      {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
@@ -1974,6 +2014,14 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                      {'name': 'Position_uncertainty_1', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_1', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_uncertainty_1', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_1', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_1', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_1', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_1', 'type': 'positive-int', 'mandatory': False},
                                      {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                      {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                      {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -1985,6 +2033,14 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                      {'name': 'Position_uncertainty_2', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_2', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_uncertainty_2', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_2', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_2', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_2', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_2', 'type': 'positive-int', 'mandatory': False},
                                      {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
                                      {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                      {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
@@ -1996,6 +2052,14 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                      {'name': 'Position_uncertainty_3', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_3', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_uncertainty_3', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_3', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_3', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_3', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_3', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_3', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_3', 'type': 'positive-int', 'mandatory': False},
                                      {'name': 'Auth_asym_ID_3', 'type': 'str', 'mandatory': False},
                                      {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
                                      {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
@@ -2007,6 +2071,14 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                      {'name': 'Position_uncertainty_4', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_4', 'type': 'float', 'mandatory': False},
                                      {'name': 'Line_width_uncertainty_4', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Entity_assembly_ID_4', 'type': 'positive-int-as-str', 'mandatory': False},
+                                     {'name': 'Entity_ID_4', 'type': 'positive-int'},
+                                     {'name': 'Comp_index_ID_4', 'type': 'int', 'mandatory': False},
+                                     {'name': 'Comp_ID_4', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                     {'name': 'Atom_ID_4', 'type': 'str', 'mandatory': False},
+                                     {'name': 'Ambiguity_code_4', 'type': 'enum-int', 'mandatory': False,
+                                      'enum': ALLOWED_AMBIGUITY_CODES},
+                                     {'name': 'Ambiguity_set_ID_4', 'type': 'positive-int', 'mandatory': False},
                                      {'name': 'Auth_asym_ID_4', 'type': 'str', 'mandatory': False},
                                      {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
                                      {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
@@ -8169,12 +8241,15 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
     if has_key_value(dstFunc, 'line_width_uncertainty_1'):
         row[_key_size + 4] = dstFunc['line_width_uncertainty_1']
     if atom1 is not None:
+        if star_atom1 is not None:
+            row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8], row[_key_size + 9] =\
+                star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], star_atom1['comp_id'], star_atom1['atom_id']
         row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         if ambig_code1 is not None:
-            row[_key_size + 9] = ambig_code1
+            row[_key_size + 10] = row[_key_size + 16] = ambig_code1
 
-    _key_size += 9
+    _key_size += 16
 
     row[_key_size + 1] = dstFunc['position_2']
     if has_key_value(dstFunc, 'position_uncertainty_2'):
@@ -8184,14 +8259,17 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
     if has_key_value(dstFunc, 'line_width_uncertainty_2'):
         row[_key_size + 4] = dstFunc['line_width_uncertainty_2']
     if atom2 is not None:
+        if star_atom2 is not None:
+            row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8], row[_key_size + 9] =\
+                star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['atom_id']
         row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
         if ambig_code2 is not None:
-            row[_key_size + 9] = ambig_code2
+            row[_key_size + 10] = row[_key_size + 16] = ambig_code2
 
     if pkSubtype in ('peak3d', 'peak4d'):
 
-        _key_size += 9
+        _key_size += 16
 
         row[_key_size + 1] = dstFunc['position_3']
         if has_key_value(dstFunc, 'position_uncertainty_3'):
@@ -8201,14 +8279,17 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         if has_key_value(dstFunc, 'line_width_uncertainty_3'):
             row[_key_size + 4] = dstFunc['line_width_uncertainty_3']
         if atom3 is not None:
+            if star_atom3 is not None:
+                row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8], row[_key_size + 9] =\
+                    star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
             row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
                 atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
             if ambig_code3 is not None:
-                row[_key_size + 9] = ambig_code3
+                row[_key_size + 10] = row[_key_size + 16] = ambig_code3
 
     if pkSubtype == 'peak4d':
 
-        _key_size += 9
+        _key_size += 16
 
         row[_key_size + 1] = dstFunc['position_4']
         if has_key_value(dstFunc, 'position_uncertainty_4'):
@@ -8218,10 +8299,13 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         if has_key_value(dstFunc, 'line_width_uncertainty_4'):
             row[_key_size + 4] = dstFunc['line_width_uncertainty_4']
         if atom4 is not None:
+            if star_atom4 is not None:
+                row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8], row[_key_size + 9] =\
+                    star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
             row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
                 atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
             if ambig_code4 is not None:
-                row[_key_size + 9] = ambig_code4
+                row[_key_size + 10] = row[_key_size + 16] = ambig_code4
 
     if has_key_value(dstFunc, 'volume'):
         row[-7] = dstFunc['volume']

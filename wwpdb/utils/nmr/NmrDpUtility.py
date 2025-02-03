@@ -33518,6 +33518,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Atom not found]'):
+
                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                             consume_suspended_message()
 
@@ -33536,13 +33537,16 @@ class NmrDpUtility:
                                 self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
+
                         if self.__remediation_mode:
+
                             self.report.warning.appendDescription('hydrogen_not_instantiated',
                                                                   {'file_name': file_name, 'description': warn})
                             self.report.setWarning()
 
                             if self.__verbose:
                                 self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
+
                         else:
                             consume_suspended_message()
 
@@ -33736,11 +33740,13 @@ class NmrDpUtility:
                                                                {'file_name': file_name, 'description': warn}})
 
                     elif warn.startswith('[Atom not found]'):
+
                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                             suspended_errors_for_lazy_eval.append({'atom_not_found':
                                                                    {'file_name': file_name, 'description': warn}})
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
+
                         if self.__remediation_mode:
                             pass
                         else:
@@ -35331,13 +35337,16 @@ class NmrDpUtility:
                                 self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
-                        if self.__remediation_mode:
+
+                        if self.__remediation_mode or self.__internal_mode:
+
                             self.report.warning.appendDescription('hydrogen_not_instantiated',
                                                                   {'file_name': file_name, 'description': warn})
                             self.report.setWarning()
 
                             if self.__verbose:
                                 self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
+
                         else:
                             consume_suspended_message()
 
@@ -47304,13 +47313,27 @@ class NmrDpUtility:
 
                             else:
 
-                                self.report.error.appendDescription('hydrogen_not_instantiated' if checked else 'coordinate_issue' if coord_issue else 'atom_not_found',
-                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-                                                                     'description': err})
-                                self.report.setError()
+                                item = 'hydrogen_not_instantiated' if checked else 'coordinate_issue' if coord_issue else 'atom_not_found'
 
-                                if self.__verbose:
-                                    self.__lfh.write(f"+{self.__class_name__}.__testCoordAtomIdConsistency() ++ Error  - {err}\n")
+                                if self.__internal_mode and item in ('hydrogen_not_instantiated', 'coordinate_issue'):
+
+                                    self.report.warning.appendDescription(item,
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                           'description': err})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+{self.__class_name__}.__testCoordAtomIdConsistency() ++ Warning  - {err}\n")
+
+                                else:
+
+                                    self.report.error.appendDescription(item,
+                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                         'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+{self.__class_name__}.__testCoordAtomIdConsistency() ++ Error  - {err}\n")
 
                         else:
 

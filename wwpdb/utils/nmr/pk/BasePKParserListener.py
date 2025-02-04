@@ -2198,6 +2198,8 @@ class BasePKParserListener():
                                 if details is None:
                                     atomNameLike[idx] = True
                                     atomNameSpan[idx] = (index, len(term))
+                                    if resNameSpan[idx][0] == atomNameSpan[idx][0]:
+                                        resNameLike[idx] = False
                                     break
                         for compId in self.compIdSet:
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
@@ -2223,6 +2225,8 @@ class BasePKParserListener():
                                     if details is None:
                                         _atomNameLike[idx] = True
                                         _atomNameSpan[idx] = (index, len(_term))
+                                        if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
+                                            resNameLike[idx] = False
                                         break
                             for compId in self.compIdSet:
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
@@ -2248,6 +2252,8 @@ class BasePKParserListener():
                                     if details is None:
                                         __atomNameLike[idx] = True
                                         __atomNameSpan[idx] = (index, len(__term))
+                                        if resNameSpan[idx][0] == __atomNameSpan[idx][0]:
+                                            resNameLike[idx] = False
                                         break
                             for compId in self.compIdSet:
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
@@ -2273,6 +2279,8 @@ class BasePKParserListener():
                                     if details is None:
                                         ___atomNameLike[idx] = True
                                         ___atomNameSpan[idx] = (index, len(___term))
+                                        if resNameSpan[idx][0] == ___atomNameSpan[idx][0]:
+                                            resNameLike[idx] = False
                                         break
                             for compId in self.compIdSet:
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
@@ -2296,6 +2304,8 @@ class BasePKParserListener():
                             if details is None:
                                 _atomNameLike[idx] = False
                                 atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                if resNameSpan[idx][0] == atomNameSpan[idx][0]:
+                                    resNameLike[idx] = False
                                 concat = True
                             elif numOfDim == 1:
                                 _atomNameLike[idx] = False
@@ -2351,6 +2361,8 @@ class BasePKParserListener():
                             if details is None:
                                 __atomNameLike[idx] = _atomNameLike[idx] = False
                                 atomNameSpan[idx] = (__atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                if resNameSpan[idx][0] == atomNameSpan[idx][0]:
+                                    resNameLike[idx] = False
                                 concat = True
                     if not concat:
                         for compId in self.compIdSet:
@@ -2373,6 +2385,8 @@ class BasePKParserListener():
                             if details is None:
                                 ___atomNameLike[idx] = __atomNameLike[idx] = _atomNameLike[idx] = False
                                 atomNameSpan[idx] = (___atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                if resNameSpan[idx][0] == atomNameSpan[idx][0]:
+                                    resNameLike[idx] = False
                                 concat = True
                     if not concat:
                         for compId in self.compIdSet:
@@ -2394,6 +2408,8 @@ class BasePKParserListener():
                             if details is None:
                                 __atomNameLike[idx] = False
                                 _atomNameSpan[idx] = (__atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
+                                    resNameLike[idx] = False
                                 concat = True
                     if not concat:
                         for compId in self.compIdSet:
@@ -2415,6 +2431,8 @@ class BasePKParserListener():
                             if details is None:
                                 ___atomNameLike[idx] = __atomNameLike[idx] = False
                                 _atomNameSpan[idx] = (___atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
+                                    resNameLike[idx] = False
                                 concat = True
                     if not concat:
                         for compId in self.compIdSet:
@@ -2436,6 +2454,8 @@ class BasePKParserListener():
                             if details is None:
                                 ___atomNameLike[idx] = False
                                 __atomNameSpan[idx] = (___atomNameSpan[idx][0], __atomNameSpan[idx][1])
+                                if resNameSpan[idx][0] == __atomNameSpan[idx][0]:
+                                    resNameLike[idx] = False
                                 concat = True
                     if not concat:
                         for compId in self.compIdSet:

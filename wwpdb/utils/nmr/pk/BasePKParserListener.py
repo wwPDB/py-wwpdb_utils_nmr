@@ -1698,7 +1698,15 @@ class BasePKParserListener():
 
                 has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
 
-                for a1, a2 in itertools.product(assignments[0], assignments[1]):
+                pairs = []
+                if len(assignments[0]) == len(assignments[1]):
+                    for a1, a2 in zip(assignments[0], assignments[1]):
+                        pairs.append((a1, a2))
+                else:
+                    for a1, a2 in itertools.product(assignments[0], assignments[1]):
+                        pairs.append((a1, a2))
+
+                for a1, a2 in pairs:
 
                     self.atomSelectionSet.clear()
                     asis1 = asis2 = None
@@ -1730,9 +1738,11 @@ class BasePKParserListener():
                                 self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2])
                             else:
+                                print('fail')
                                 break
                         else:
                             has_assignments = False
+                            print('fail2')
                             break
 
             except (KeyError, TypeError):
@@ -1756,7 +1766,15 @@ class BasePKParserListener():
 
                 has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
 
-                for a1, a2, a3 in itertools.product(assignments[0], assignments[1], assignments[2]):
+                pairs = []
+                if len(assignments[0]) == len(assignments[1]) == len(assignments[2]):
+                    for a1, a2, a3 in zip(assignments[0], assignments[1], assignments[2]):
+                        pairs.append((a1, a2, a3))
+                else:
+                    for a1, a2, a3 in itertools.product(assignments[0], assignments[1], assignments[2]):
+                        pairs.append((a1, a2, a3))
+
+                for a1, a2, a3 in pairs:
 
                     self.atomSelectionSet.clear()
                     asis1 = asis2 = asis3 = None
@@ -1821,7 +1839,15 @@ class BasePKParserListener():
 
                 has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
 
-                for a1, a2, a3, a4 in itertools.product(assignments[0], assignments[1], assignments[2], assignments[3]):
+                pairs = []
+                if len(assignments[0]) == len(assignments[1]) == len(assignments[2]) == len(assignments[3]):
+                    for a1, a2, a3, a4 in zip(assignments[0], assignments[1], assignments[2], assignments[3]):
+                        pairs.append((a1, a2, a3, a4))
+                else:
+                    for a1, a2, a3, a4 in itertools.product(assignments[0], assignments[1], assignments[2], assignments[3]):
+                        pairs.append((a1, a2, a3, a4))
+
+                for a1, a2, a3, a4 in pairs:
 
                     self.atomSelectionSet.clear()
                     asis1 = asis2 = asis3 = asis4 = None
@@ -2688,7 +2714,7 @@ class BasePKParserListener():
         if atomNameCount < numOfDim:
             return None
 
-        if atomNameCount > numOfDim and '&' not in string:
+        if atomNameCount > numOfDim > 1:
             atomNameCount = 0
             ignoreBefore = False
             for idx in range(lenStr - 1, 0, -1):
@@ -2810,13 +2836,19 @@ class BasePKParserListener():
 
         ret = []
 
-        segId = resId = resName = atomName = None
+        segId = resId = resName = atomName = _segId = _resId = None
         dimId = 1
         for idx, term in enumerate(_str):
             if segIdLike[idx]:
                 segId = term[segIdSpan[idx][0]:segIdSpan[idx][1]]
+                if _segId is not None and segId != _segId:
+                    resId = resName = None
+                _segId = segId
             if resIdLike[idx]:
                 resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
+                if _resId is not None and resId != _resId:
+                    resName = None
+                _resId = resId
             if resNameLike[idx]:
                 resName = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                 if len(resName) == 1 and hasOneLetterCodeSet:

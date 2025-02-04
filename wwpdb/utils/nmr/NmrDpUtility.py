@@ -33139,8 +33139,6 @@ class NmrDpUtility:
 
         cyanaUplDistRest = cyanaLolDistRest = 0
 
-        fileListId = self.__file_path_list_len
-
         def deal_aux_warn_message(listener):
 
             if listener.warningMessage is not None:
@@ -33185,6 +33183,8 @@ class NmrDpUtility:
 
                         if self.__verbose:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ KeyError  - {warn}\n")
+
+        fileListId = self.__file_path_list_len
 
         for ar in self.__inputParamDict[ar_file_path_list]:
 
@@ -35025,9 +35025,24 @@ class NmrDpUtility:
 
         xeasyAtomNumberDict = None
 
-        has_nm_aux_xea_file = False
+        has_nm_aux_xea_file = has_nm_pea_xea_file = False
 
         fileListId = self.__file_path_list_len
+
+        for ar in self.__inputParamDict[ar_file_path_list]:
+
+            file_path = ar['file_name']
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+
+            if file_type == 'nm-pea-xea':
+                has_nm_pea_xea_file = True
+                break
+
+            fileListId += 1
 
         def deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
             spa_order = 'default'
@@ -35137,56 +35152,62 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ KeyError  - {warn}\n")
 
-        for ar in self.__inputParamDict[ar_file_path_list]:
+        if has_nm_pea_xea_file:
 
-            file_path = ar['file_name']
+            fileListId = self.__file_path_list_len
 
-            input_source = self.report.input_sources[fileListId]
-            input_source_dic = input_source.get()
+            for ar in self.__inputParamDict[ar_file_path_list]:
 
-            file_type = input_source_dic['file_type']
+                file_path = ar['file_name']
 
-            fileListId += 1
+                input_source = self.report.input_sources[fileListId]
+                input_source_dic = input_source.get()
 
-            if file_type == 'nm-aux-xea':
-                has_nm_aux_xea_file = True
+                file_type = input_source_dic['file_type']
 
-                file_name = input_source_dic['file_name']
+                fileListId += 1
 
-                original_file_name = None
-                if 'original_file_name' in input_source_dic:
-                    if input_source_dic['original_file_name'] is not None:
-                        original_file_name = os.path.basename(input_source_dic['original_file_name'])
-                    if file_name != original_file_name and original_file_name is not None:
-                        file_name = f"{original_file_name} ({file_name})"
+                if file_type == 'nm-aux-xea':
+                    has_nm_aux_xea_file = True
 
-                reader = XeasyPROTReader(self.__verbose, self.__lfh,
-                                         self.__representative_model_id,
-                                         self.__representative_alt_id,
-                                         self.__mr_atom_name_mapping,
-                                         self.__cR, self.__caC,
-                                         self.__ccU, self.__csStat, self.__nefT)
+                    file_name = input_source_dic['file_name']
 
-                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, self.__cifPath)
+                    original_file_name = None
+                    if 'original_file_name' in input_source_dic:
+                        if input_source_dic['original_file_name'] is not None:
+                            original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                        if file_name != original_file_name and original_file_name is not None:
+                            file_name = f"{original_file_name} ({file_name})"
 
-                _content_subtype = listener.getContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
+                    reader = XeasyPROTReader(self.__verbose, self.__lfh,
+                                             self.__representative_model_id,
+                                             self.__representative_alt_id,
+                                             self.__mr_atom_name_mapping,
+                                             self.__cR, self.__caC,
+                                             self.__ccU, self.__csStat, self.__nefT)
 
-                if None not in (lexer_err_listener, parser_err_listener, listener)\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
-                        or _content_subtype is not None):
-                    _pk_format_name = getRestraintFormatName(file_type)
-                    pk_format_name = _pk_format_name.split()[0]
-                    a_pk_format_name = ('an ' if pk_format_name[0] in ('AINMX') else 'a ') + _pk_format_name
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
-                        continue
+                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, self.__cifPath)
 
-                if listener is not None:
+                    _content_subtype = listener.getContentSubtype() if listener is not None else None
+                    if _content_subtype is not None and len(_content_subtype) == 0:
+                        _content_subtype = None
 
-                    deal_aux_warn_message(listener)
+                    if None not in (lexer_err_listener, parser_err_listener, listener)\
+                       and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                            or _content_subtype is not None):
+                        _pk_format_name = getRestraintFormatName(file_type)
+                        pk_format_name = _pk_format_name.split()[0]
+                        a_pk_format_name = ('an ' if pk_format_name[0] in ('AINMX') else 'a ') + _pk_format_name
+                        if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
+                            continue
 
-                    xeasyAtomNumberDict = listener.getAtomNumberDict()
+                    if listener is not None:
+
+                        deal_aux_warn_message(listener)
+
+                        xeasyAtomNumberDict = listener.getAtomNumberDict()
+
+                    break
 
         poly_seq_set = []
 

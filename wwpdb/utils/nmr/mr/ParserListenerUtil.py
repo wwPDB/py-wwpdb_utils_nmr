@@ -2494,6 +2494,10 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                     if "H5'A" in refAtomIdList:
                         return "H5'A"
 
+            if atomId.startswith('NH'):
+                if atomId[1:] in _refAtomIdList:
+                    return atomId[1:]
+
             if atomId in _refAtomIdList:
                 return atomId
 

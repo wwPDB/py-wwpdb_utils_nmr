@@ -17,8 +17,8 @@ import re
 import copy
 import collections
 import numpy
+import itertools
 
-from itertools import zip_longest
 from typing import IO, List, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -170,7 +170,7 @@ CS_ERROR_MIN = CS_RESTRAINT_ERROR['min_exclusive']
 CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_exclusive']
 
 
-PEAK_ASSIGNMENT_SEPARATOR_PAT = re.compile('[^0-9A-Za-z]+')
+PEAK_ASSIGNMENT_SEPARATOR_PAT = re.compile('[^0-9A-Za-z\'\"]+')
 PEAK_ASSIGNMENT_RESID_PAT = re.compile('[0-9]+')
 PEAK_HALF_SPIN_NUCLEUS = ('H', 'Q', 'M', 'C', 'N', 'P', 'F')
 
@@ -1698,7 +1698,7 @@ class BasePKParserListener():
 
                 has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
 
-                for a1, a2 in zip_longest(assignments[0], assignments[1]):
+                for a1, a2 in itertools.product(assignments[0], assignments[1]):
 
                     self.atomSelectionSet.clear()
                     asis1 = asis2 = None
@@ -1722,7 +1722,6 @@ class BasePKParserListener():
                     if len(chainAssign1) > 0 and len(chainAssign2) > 0:
                         self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
                         self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
-
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
                             has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
@@ -1757,7 +1756,7 @@ class BasePKParserListener():
 
                 has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
 
-                for a1, a2, a3 in zip_longest(assignments[0], assignments[1], assignments[2]):
+                for a1, a2, a3 in itertools.product(assignments[0], assignments[1], assignments[2]):
 
                     self.atomSelectionSet.clear()
                     asis1 = asis2 = asis3 = None
@@ -1822,7 +1821,7 @@ class BasePKParserListener():
 
                 has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
 
-                for a1, a2, a3, a4 in zip_longest(assignments[0], assignments[1], assignments[2], assignments[3]):
+                for a1, a2, a3, a4 in itertools.product(assignments[0], assignments[1], assignments[2], assignments[3]):
 
                     self.atomSelectionSet.clear()
                     asis1 = asis2 = asis3 = asis4 = None
@@ -2144,6 +2143,7 @@ class BasePKParserListener():
         elif not self.polyPeptide and not self.polyDeoxyribonucleotide and self.polyRibonucleotide:
             oneLetterCodeSet = [getOneLetterCode(compId) for compId in self.compIdSet if len(compId) == 1]
         hasOneLetterCodeSet = len(oneLetterCodeSet) > 0
+        ligCompId = ligAtomId = None
 
         for idx, term in enumerate(_str):
             for segId in self.authAsymIdSet:
@@ -2185,16 +2185,38 @@ class BasePKParserListener():
                             resNameSpan[idx] = (index, index + len(compId))
                             minIndex = index
 
+            if resNameLike[idx]:
+                compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                if compId in self.compIdSet and compId not in monDict3:
+                    ligCompId = compId
+
+            if ligCompId is not None and ligCompId != term:
+                _, _, details = self.nefT.get_valid_star_atom_in_xplor(ligCompId, term, leave_unmatched=True)
+                if details is None or term[0] in PEAK_HALF_SPIN_NUCLEUS:
+                    atomNameLike[idx] = True
+                    atomNameSpan[idx] = (0, len(term) + 1)
+                    ligAtomId = term
+
             for elem in PEAK_HALF_SPIN_NUCLEUS:
-                if len(elem) == 1:
+                if len(elem) == 1 and ligAtomId is None:
                     if elem in term:
                         index = term.rindex(elem)
                         atomId = term[index:len(term)]
+                        if index - 1 >= 0 and term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
+                            continue
                         if resNameLike[idx]:
                             compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                             if len(compId) == 1 and hasOneLetterCodeSet:
                                 compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    atomNameLike[idx] = True
+                                    atomNameSpan[idx] = (index, len(term))
+                                    if resNameSpan[idx][0] == atomNameSpan[idx][0]:
+                                        resNameLike[idx] = False
+                                    break
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                                 if details is None:
                                     atomNameLike[idx] = True
                                     atomNameSpan[idx] = (index, len(term))
@@ -2207,21 +2229,37 @@ class BasePKParserListener():
                                 atomNameLike[idx] = True
                                 atomNameSpan[idx] = (index, len(term))
                                 break
+                            _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                            if details is None:
+                                atomNameLike[idx] = True
+                                atomNameSpan[idx] = (index, len(term))
+                                break
                         if atomNameLike[idx]:
                             break
 
             if atomNameLike[idx]:
                 _term = term[0:atomNameSpan[idx][0]]
                 for elem in PEAK_HALF_SPIN_NUCLEUS:
-                    if len(elem) == 1:
+                    if len(elem) == 1 and ligAtomId is None:
                         if elem in _term:
                             index = _term.rindex(elem)
                             atomId = _term[index:len(_term)]
+                            if index - 1 >= 0 and _term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
+                                continue
                             if resNameLike[idx]:
                                 compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                                 if len(compId) == 1 and hasOneLetterCodeSet:
                                     compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                    if details is None:
+                                        _atomNameLike[idx] = True
+                                        _atomNameSpan[idx] = (index, len(_term))
+                                        if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
+                                            resNameLike[idx] = False
+                                        break
+                                    _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                                     if details is None:
                                         _atomNameLike[idx] = True
                                         _atomNameSpan[idx] = (index, len(_term))
@@ -2234,21 +2272,37 @@ class BasePKParserListener():
                                     _atomNameLike[idx] = True
                                     _atomNameSpan[idx] = (index, len(_term))
                                     break
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    _atomNameLike[idx] = True
+                                    _atomNameSpan[idx] = (index, len(_term))
+                                    break
                             if _atomNameLike[idx]:
                                 break
 
             if numOfDim >= 3 and _atomNameLike[idx]:
                 __term = term[0:_atomNameSpan[idx][0]]
                 for elem in PEAK_HALF_SPIN_NUCLEUS:
-                    if len(elem) == 1:
+                    if len(elem) == 1 and ligAtomId is None:
                         if elem in __term:
                             index = __term.rindex(elem)
                             atomId = __term[index:len(__term)]
+                            if index - 1 >= 0 and __term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
+                                continue
                             if resNameLike[idx]:
                                 compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                                 if len(compId) == 1 and hasOneLetterCodeSet:
                                     compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                    if details is None:
+                                        __atomNameLike[idx] = True
+                                        __atomNameSpan[idx] = (index, len(__term))
+                                        if resNameSpan[idx][0] == __atomNameSpan[idx][0]:
+                                            resNameLike[idx] = False
+                                        break
+                                    _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                                     if details is None:
                                         __atomNameLike[idx] = True
                                         __atomNameSpan[idx] = (index, len(__term))
@@ -2261,16 +2315,24 @@ class BasePKParserListener():
                                     __atomNameLike[idx] = True
                                     __atomNameSpan[idx] = (index, len(__term))
                                     break
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    __atomNameLike[idx] = True
+                                    __atomNameSpan[idx] = (index, len(__term))
+                                    break
                             if __atomNameLike[idx]:
                                 break
 
             if numOfDim >= 4 and __atomNameLike[idx]:
                 ___term = term[0:__atomNameSpan[idx][0]]
                 for elem in PEAK_HALF_SPIN_NUCLEUS:
-                    if len(elem) == 1:
+                    if len(elem) == 1 and ligAtomId is None:
                         if elem in ___term:
                             index = ___term.rindex(elem)
                             atomId = ___term[index:len(___term)]
+                            if index - 1 >= 0 and ___term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
+                                continue
                             if resNameLike[idx]:
                                 compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                                 if len(compId) == 1 and hasOneLetterCodeSet:
@@ -2282,8 +2344,22 @@ class BasePKParserListener():
                                         if resNameSpan[idx][0] == ___atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
                                         break
+                                    _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                    if details is None:
+                                        ___atomNameLike[idx] = True
+                                        ___atomNameSpan[idx] = (index, len(___term))
+                                        if resNameSpan[idx][0] == ___atomNameSpan[idx][0]:
+                                            resNameLike[idx] = False
+                                        break
                             for compId in self.compIdSet:
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    ___atomNameLike[idx] = True
+                                    ___atomNameSpan[idx] = (index, len(___term))
+                                    break
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                                 if details is None:
                                     ___atomNameLike[idx] = True
                                     ___atomNameSpan[idx] = (index, len(___term))
@@ -2307,7 +2383,16 @@ class BasePKParserListener():
                                 if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                     resNameLike[idx] = False
                                 concat = True
-                            elif numOfDim == 1:
+                            else:
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    _atomNameLike[idx] = False
+                                    atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                    if resNameSpan[idx][0] == atomNameSpan[idx][0]:
+                                        resNameLike[idx] = False
+                                    concat = True
+                            if details is not None and numOfDim == 1:
                                 _atomNameLike[idx] = False
                                 for shift in range(_atomNameSpan[idx][0], atomNameSpan[idx][1]):
                                     _atomId = term[_atomNameSpan[idx][0] + shift:atomNameSpan[idx][1]]
@@ -2316,6 +2401,13 @@ class BasePKParserListener():
                                     if _atomId[0] == resId[0]:
                                         continue
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                    if details is None:
+                                        _atomNameSpan[idx] = (_atomNameSpan[idx][0] + shift, len(_atomId))
+                                        atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                        concat = True
+                                        break
+                                    __atomId = translateToStdAtomName(_atomId, compId, ccU=self.ccU)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, __atomId, leave_unmatched=True)
                                     if details is None:
                                         _atomNameSpan[idx] = (_atomNameSpan[idx][0] + shift, len(_atomId))
                                         atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
@@ -2327,7 +2419,14 @@ class BasePKParserListener():
                                 _atomNameLike[idx] = False
                                 atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
                                 concat = True
-                            elif numOfDim == 1:
+                            else:
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    _atomNameLike[idx] = False
+                                    atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                    concat = True
+                            if details is not None and numOfDim == 1:
                                 _atomNameLike[idx] = False
                                 for shift in range(_atomNameSpan[idx][0], atomNameSpan[idx][1]):
                                     _atomId = term[_atomNameSpan[idx][0] + shift:atomNameSpan[idx][1]]
@@ -2341,9 +2440,22 @@ class BasePKParserListener():
                                         atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
                                         concat = True
                                         break
+                                    __atomId = translateToStdAtomName(_atomId, compId, ccU=self.ccU)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, __atomId, leave_unmatched=True)
+                                    if details is None:
+                                        _atomNameSpan[idx] = (_atomNameSpan[idx][0] + shift, len(_atomId))
+                                        atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                        concat = True
+                                        break
                     if not concat:
                         for compId in self.compIdSet:
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                break
+                            _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                             if details is None:
                                 _atomNameLike[idx] = False
                                 atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
@@ -2364,9 +2476,25 @@ class BasePKParserListener():
                                 if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                     resNameLike[idx] = False
                                 concat = True
+                            else:
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    __atomNameLike[idx] = _atomNameLike[idx] = False
+                                    atomNameSpan[idx] = (__atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                    if resNameSpan[idx][0] == atomNameSpan[idx][0]:
+                                        resNameLike[idx] = False
+                                    concat = True
+
                     if not concat:
                         for compId in self.compIdSet:
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                __atomNameLike[idx] = _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (__atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                break
+                            _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                             if details is None:
                                 __atomNameLike[idx] = _atomNameLike[idx] = False
                                 atomNameSpan[idx] = (__atomNameSpan[idx][0], atomNameSpan[idx][1])
@@ -2388,9 +2516,24 @@ class BasePKParserListener():
                                 if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                     resNameLike[idx] = False
                                 concat = True
+                            else:
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    ___atomNameLike[idx] = __atomNameLike[idx] = _atomNameLike[idx] = False
+                                    atomNameSpan[idx] = (___atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                    if resNameSpan[idx][0] == atomNameSpan[idx][0]:
+                                        resNameLike[idx] = False
+                                    concat = True
                     if not concat:
                         for compId in self.compIdSet:
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = __atomNameLike[idx] = _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (___atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                break
+                            _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                             if details is None:
                                 ___atomNameLike[idx] = __atomNameLike[idx] = _atomNameLike[idx] = False
                                 atomNameSpan[idx] = (___atomNameSpan[idx][0], atomNameSpan[idx][1])
@@ -2411,9 +2554,24 @@ class BasePKParserListener():
                                 if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
                                     resNameLike[idx] = False
                                 concat = True
+                            else:
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    __atomNameLike[idx] = False
+                                    _atomNameSpan[idx] = (__atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                    if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
+                                        resNameLike[idx] = False
+                                    concat = True
                     if not concat:
                         for compId in self.compIdSet:
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                __atomNameLike[idx] = False
+                                _atomNameSpan[idx] = (__atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                break
+                            _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                             if details is None:
                                 __atomNameLike[idx] = False
                                 _atomNameSpan[idx] = (__atomNameSpan[idx][0], _atomNameSpan[idx][1])
@@ -2434,9 +2592,24 @@ class BasePKParserListener():
                                 if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
                                     resNameLike[idx] = False
                                 concat = True
+                            else:
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    ___atomNameLike[idx] = __atomNameLike[idx] = False
+                                    _atomNameSpan[idx] = (___atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                    if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
+                                        resNameLike[idx] = False
+                                    concat = True
                     if not concat:
                         for compId in self.compIdSet:
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = __atomNameLike[idx] = False
+                                _atomNameSpan[idx] = (___atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                break
+                            _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                             if details is None:
                                 ___atomNameLike[idx] = __atomNameLike[idx] = False
                                 _atomNameSpan[idx] = (___atomNameSpan[idx][0], _atomNameSpan[idx][1])
@@ -2457,6 +2630,15 @@ class BasePKParserListener():
                                 if resNameSpan[idx][0] == __atomNameSpan[idx][0]:
                                     resNameLike[idx] = False
                                 concat = True
+                            else:
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    ___atomNameLike[idx] = False
+                                    __atomNameSpan[idx] = (___atomNameSpan[idx][0], __atomNameSpan[idx][1])
+                                    if resNameSpan[idx][0] == __atomNameSpan[idx][0]:
+                                        resNameLike[idx] = False
+                                    concat = True
                     if not concat:
                         for compId in self.compIdSet:
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
@@ -2464,6 +2646,24 @@ class BasePKParserListener():
                                 ___atomNameLike[idx] = False
                                 __atomNameSpan[idx] = (___atomNameSpan[idx][0], __atomNameSpan[idx][1])
                                 break
+                            _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = False
+                                __atomNameSpan[idx] = (___atomNameSpan[idx][0], __atomNameSpan[idx][1])
+                                break
+
+            if idx == 0 and not segIdLike[0] and not resIdLike[0] and not resNameLike[0]\
+               and atomNameLike[0] and not _atomNameLike[0] and self.hasNonPoly:
+                ligands = 0
+                for np in self.nonPoly:
+                    if 'alt_comp_id' in np and np['alt_comp_id'][0][0] == _str[0][0]:
+                        ligands += 1
+                if ligands == 1:
+                    for np in self.nonPoly:
+                        if 'alt_comp_id' in np and np['alt_comp_id'][0][0] == _str[0][0]:
+                            _string = f"{np['auth_chain_id']} {np['auth_seq_id'][0]} {np['comp_id'][0]}{string[atomNameSpan[0][1]:]}"
+                            return self.extractPeakAssignment(numOfDim, _string, src_index, hint)
 
             if self.ass_expr_debug:
                 print(f'{idx} {term!r} segid:{segIdLike[idx]} {term[segIdSpan[idx][0]:segIdSpan[idx][1]] if segIdLike[idx] else ""}, '
@@ -2488,7 +2688,7 @@ class BasePKParserListener():
         if atomNameCount < numOfDim:
             return None
 
-        if atomNameCount > numOfDim:
+        if atomNameCount > numOfDim and '&' not in string:
             atomNameCount = 0
             ignoreBefore = False
             for idx in range(lenStr - 1, 0, -1):
@@ -2569,6 +2769,11 @@ class BasePKParserListener():
                         else:
                             resNameLike[idx] = False
 
+            if resIdLike[idx]:
+                if atomNameLike[idx]:
+                    if resIdSpan[idx][1] >= atomNameSpan[idx][0]:
+                        resIdLike[idx] = False
+
             if self.ass_expr_debug:
                 print(f' -> {idx} segid:{segIdLike[idx]}, resid:{resIdLike[idx]}, resname:{resNameLike[idx]}, '
                       f'atomname:{atomNameLike[idx]}, _atomname:{_atomNameLike[idx]}, __atomname:{__atomNameLike[idx]}, ___atomname:{___atomNameLike[idx]}')
@@ -2641,6 +2846,9 @@ class BasePKParserListener():
                         chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
                         if len(chainAssign) > 0:
                             resName = chainAssign[0][2]
+                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
+                    if details is not None:
+                        atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     ass = {'dim': dimId, 'atom_id': atomName}
@@ -2677,6 +2885,9 @@ class BasePKParserListener():
                         chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
                         if len(chainAssign) > 0:
                             resName = chainAssign[0][2]
+                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
+                    if details is not None:
+                        atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     ass = {'dim': dimId, 'atom_id': atomName}
@@ -2713,6 +2924,9 @@ class BasePKParserListener():
                         chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
                         if len(chainAssign) > 0:
                             resName = chainAssign[0][2]
+                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
+                    if details is not None:
+                        atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     ass = {'dim': dimId, 'atom_id': atomName}
@@ -2749,6 +2963,9 @@ class BasePKParserListener():
                         chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
                         if len(chainAssign) > 0:
                             resName = chainAssign[0][2]
+                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
+                    if details is not None:
+                        atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     ass = {'dim': dimId, 'atom_id': atomName}

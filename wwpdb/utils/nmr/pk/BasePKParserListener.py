@@ -1738,11 +1738,9 @@ class BasePKParserListener():
                                 self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2])
                             else:
-                                print('fail')
                                 break
                         else:
                             has_assignments = False
-                            print('fail2')
                             break
 
             except (KeyError, TypeError):
@@ -2292,6 +2290,8 @@ class BasePKParserListener():
                                 continue
                             if atomId[0] in ('Q', 'M') and index + 1 < len(_term) and _term[index + 1].isdigit():
                                 continue
+                            if len(_term) == atomNameSpan[idx][0]:
+                                continue
                             if resNameLike[idx]:
                                 compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                                 if len(compId) == 1 and hasOneLetterCodeSet:
@@ -2337,6 +2337,8 @@ class BasePKParserListener():
                                 continue
                             if atomId[0] in ('Q', 'M') and index + 1 < len(__term) and __term[index + 1].isdigit():
                                 continue
+                            if len(__term) == _atomNameSpan[idx][0]:
+                                continue
                             if resNameLike[idx]:
                                 compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                                 if len(compId) == 1 and hasOneLetterCodeSet:
@@ -2381,6 +2383,8 @@ class BasePKParserListener():
                             if index - 1 >= 0 and ___term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
                                 continue
                             if atomId[0] in ('Q', 'M') and index + 1 < len(___term) and ___term[index + 1].isdigit():
+                                continue
+                            if len(___term) == __atomNameSpan[idx][0]:
                                 continue
                             if resNameLike[idx]:
                                 compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]

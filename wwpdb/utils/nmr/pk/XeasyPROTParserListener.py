@@ -649,6 +649,8 @@ class XeasyPROTParserListener(ParseTreeListener):
                                 if atomNum['atom_id'] not in chemCompAtomIds or atomNum['atom_id'] in leavingAtomIds:
                                     delete_atom_nums.append(atom_num)
 
+            trial = 0
+
             while True:
 
                 orphanPolySeqPrmTop = []
@@ -698,6 +700,11 @@ class XeasyPROTParserListener(ParseTreeListener):
                                 break
 
                 if not resolved:
+                    break
+
+                trial += 1
+
+                if trial > 10:
                     break
 
             for ps in self.__polySeqPrmTop:

@@ -1949,8 +1949,13 @@ class BasePKParserListener():
                                details=details)
                 sf['loop'].add_data(row)
 
-                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc)
-                sf['alt_loops'][0].add_data(row)
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'volume')
+                if row is not None:
+                    sf['alt_loops'][0].add_data(row)
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'height')
+                if row is not None:
+                    sf['alt_loops'][0].add_data(row)
+
                 for idx in range(self.num_of_dim):
                     row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
                     sf['alt_loops'][1].add_data(row)
@@ -2028,8 +2033,13 @@ class BasePKParserListener():
                                details=details)
                 sf['loop'].add_data(row)
 
-                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc)
-                sf['alt_loops'][0].add_data(row)
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'volume')
+                if row is not None:
+                    sf['alt_loops'][0].add_data(row)
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'height')
+                if row is not None:
+                    sf['alt_loops'][0].add_data(row)
+
                 for idx in range(self.num_of_dim):
                     row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
                     sf['alt_loops'][1].add_data(row)
@@ -2115,8 +2125,13 @@ class BasePKParserListener():
                                details=details)
                 sf['loop'].add_data(row)
 
-                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc)
-                sf['alt_loops'][0].add_data(row)
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'volume')
+                if row is not None:
+                    sf['alt_loops'][0].add_data(row)
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'height')
+                if row is not None:
+                    sf['alt_loops'][0].add_data(row)
+
                 for idx in range(self.num_of_dim):
                     row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
                     sf['alt_loops'][1].add_data(row)
@@ -2230,6 +2245,8 @@ class BasePKParserListener():
                         atomId = term[index:len(term)]
                         if index - 1 >= 0 and term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
                             continue
+                        if atomId[0] in ('Q', 'M') and index + 1 < len(term) and term[index + 1].isdigit():
+                            continue
                         if resNameLike[idx]:
                             compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                             if len(compId) == 1 and hasOneLetterCodeSet:
@@ -2272,6 +2289,8 @@ class BasePKParserListener():
                             index = _term.rindex(elem)
                             atomId = _term[index:len(_term)]
                             if index - 1 >= 0 and _term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
+                                continue
+                            if atomId[0] in ('Q', 'M') and index + 1 < len(_term) and _term[index + 1].isdigit():
                                 continue
                             if resNameLike[idx]:
                                 compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
@@ -2316,6 +2335,8 @@ class BasePKParserListener():
                             atomId = __term[index:len(__term)]
                             if index - 1 >= 0 and __term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
                                 continue
+                            if atomId[0] in ('Q', 'M') and index + 1 < len(__term) and __term[index + 1].isdigit():
+                                continue
                             if resNameLike[idx]:
                                 compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                                 if len(compId) == 1 and hasOneLetterCodeSet:
@@ -2358,6 +2379,8 @@ class BasePKParserListener():
                             index = ___term.rindex(elem)
                             atomId = ___term[index:len(___term)]
                             if index - 1 >= 0 and ___term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
+                                continue
+                            if atomId[0] in ('Q', 'M') and index + 1 < len(___term) and ___term[index + 1].isdigit():
                                 continue
                             if resNameLike[idx]:
                                 compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
@@ -2790,14 +2813,15 @@ class BasePKParserListener():
                 hasResName = True
                 if segIdLike[idx]:
                     if segIdSpan[idx][1] > resNameSpan[idx][0]:
-                        if numOfDim > 1 or not any(resNameLike[_idx] for _idx in range(idx + 1, lenStr)):
+                        if numOfDim > 1 or not any(resNameLike[_idx] for _idx in range(idx + 1, lenStr))\
+                           or (resIdSpan[idx] and segIdSpan[idx][1] == resIdSpan[idx][0]):
                             segIdLike[idx] = False
                         else:
                             resNameLike[idx] = False
 
             if resIdLike[idx]:
                 if atomNameLike[idx]:
-                    if resIdSpan[idx][1] >= atomNameSpan[idx][0]:
+                    if resIdSpan[idx][1] > atomNameSpan[idx][0]:
                         resIdLike[idx] = False
 
             if self.ass_expr_debug:
@@ -2836,19 +2860,19 @@ class BasePKParserListener():
 
         ret = []
 
-        segId = resId = resName = atomName = _segId = _resId = None
+        segId = resId = resName = atomName = _segId_ = _resId_ = None
         dimId = 1
         for idx, term in enumerate(_str):
             if segIdLike[idx]:
                 segId = term[segIdSpan[idx][0]:segIdSpan[idx][1]]
-                if _segId is not None and segId != _segId:
+                if _segId_ is not None and segId != _segId_:
                     resId = resName = None
-                _segId = segId
+                _segId_ = segId
             if resIdLike[idx]:
                 resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
-                if _resId is not None and resId != _resId:
+                if _resId_ is not None and resId != _resId_:
                     resName = None
-                _resId = resId
+                _resId_ = resId
             if resNameLike[idx]:
                 resName = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                 if len(resName) == 1 and hasOneLetterCodeSet:

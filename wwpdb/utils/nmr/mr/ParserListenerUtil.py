@@ -8327,7 +8327,7 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
     return row
 
 
-def getPkGenCharRow(pkSubtype: str, indexId: int, listId: int, entryId: str, dstFunc: dict) -> Optional[List[Any]]:
+def getPkGenCharRow(pkSubtype: str, indexId: int, listId: int, entryId: str, dstFunc: dict, volume_or_height: str) -> Optional[List[Any]]:
     """ Return row data for a _Peak_general_char loop.
         @return: data array
     """
@@ -8346,21 +8346,16 @@ def getPkGenCharRow(pkSubtype: str, indexId: int, listId: int, entryId: str, dst
 
     row[0] = indexId
 
-    if has_key_value(dstFunc, 'volume'):
-        row[1] = dstFunc['volume']
-        if has_key_value(dstFunc, 'volume_uncertainty'):
-            row[2] = dstFunc['volume_uncertainty']
-        row[3] = 'volume'
-    elif has_key_value(dstFunc, 'height'):
-        row[1] = dstFunc['height']
-        if has_key_value(dstFunc, 'height_uncertainty'):
-            row[2] = dstFunc['height_uncertainty']
-        row[3] = 'height'
+    if has_key_value(dstFunc, volume_or_height):
+        row[1] = dstFunc[volume_or_height]
+        if has_key_value(dstFunc, f'{volume_or_height}_uncertainty'):
+            row[2] = dstFunc[f'{volume_or_height}_uncertainty']
+        row[3] = volume_or_height
 
     row[-2] = listId
     row[-1] = entryId
 
-    return row
+    return row if row[1] is not None else None
 
 
 def getPkCharRow(pkSubtype: str, indexId: int, listId: int, entryId: str, dstFunc: dict, dimId: int) -> Optional[List[Any]]:

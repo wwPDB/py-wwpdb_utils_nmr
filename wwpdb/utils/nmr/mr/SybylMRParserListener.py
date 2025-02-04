@@ -1020,7 +1020,7 @@ class SybylMRParserListener(ParseTreeListener):
             _ps = next((_ps for _ps in self.__reasons['extend_seq_scheme'] if _ps['chain_id'] == ps['auth_chain_id']), None)
             if _ps is not None:
                 if seqId in _ps['seq_id']:
-                    return ps['auth_chain_id'], _ps['comp_id'][_ps['seq_id'].index(seqId)]
+                    return ps['auth_chain_id'], seqId, _ps['comp_id'][_ps['seq_id'].index(seqId)]
         return ps['auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequence(self, seqId: int, compId: str, atomId: str) -> Tuple[List[Tuple[str, int, str, bool]], bool]:

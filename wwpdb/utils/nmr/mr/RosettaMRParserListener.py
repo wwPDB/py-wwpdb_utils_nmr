@@ -1459,8 +1459,8 @@ class RosettaMRParserListener(ParseTreeListener):
         if self.__reasons is not None and 'extend_seq_scheme' in self.__reasons:
             _ps = next((_ps for _ps in self.__reasons['extend_seq_scheme'] if _ps['chain_id'] == ps['auth_chain_id']), None)
             if _ps is not None:
-                if seqId in _ps['seq_id']:
-                    return ps['auth_chain_id'], seqId, _ps['comp_id'][_ps['seq_id'].index(seqId)]
+                if seqId + offset in _ps['seq_id']:
+                    return ps['auth_chain_id'], seqId + offset, _ps['comp_id'][_ps['seq_id'].index(seqId + offset)]
         return ps['auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequence(self, seqId: int, atomId: Optional[str] = None, fixedChainId: Optional[str] = None

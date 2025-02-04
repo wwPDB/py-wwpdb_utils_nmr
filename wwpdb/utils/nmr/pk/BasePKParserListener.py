@@ -2136,8 +2136,14 @@ class BasePKParserListener():
             if self.compIdSet is None:
                 self.compIdSet = self.altCompIdSet = set(monDict3.keys())
 
-        aaOnly = self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide
-        oneLetterCodeSet = [getOneLetterCode(compId) for compId in self.compIdSet] if aaOnly else []
+        oneLetterCodeSet = []
+        if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+            oneLetterCodeSet = [getOneLetterCode(compId) for compId in self.compIdSet if len(compId) == 3]
+        elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+            oneLetterCodeSet = [getOneLetterCode(compId) for compId in self.compIdSet if len(compId) == 2]
+        elif not self.polyPeptide and not self.polyDeoxyribonucleotide and self.polyRibonucleotide:
+            oneLetterCodeSet = [getOneLetterCode(compId) for compId in self.compIdSet if len(compId) == 1]
+        hasOneLetterCodeSet = len(oneLetterCodeSet) > 0
 
         for idx, term in enumerate(_str):
             for segId in self.authAsymIdSet:
@@ -2170,7 +2176,7 @@ class BasePKParserListener():
                             resNameSpan[idx] = (index, index + len(compId))
                             minIndex = index
 
-            if not resNameLike[idx] and aaOnly:
+            if not resNameLike[idx] and hasOneLetterCodeSet:
                 for compId in oneLetterCodeSet:
                     if compId in term:
                         resNameLike[idx] = True
@@ -2186,8 +2192,8 @@ class BasePKParserListener():
                         atomId = term[index:len(term)]
                         if resNameLike[idx]:
                             compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
-                            if len(compId) == 1 and aaOnly:
-                                compId = next(k for k, v in monDict3.items() if v == compId)
+                            if len(compId) == 1 and hasOneLetterCodeSet:
+                                compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                 if details is None:
                                     atomNameLike[idx] = True
@@ -2211,8 +2217,8 @@ class BasePKParserListener():
                             atomId = _term[index:len(_term)]
                             if resNameLike[idx]:
                                 compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
-                                if len(compId) == 1 and aaOnly:
-                                    compId = next(k for k, v in monDict3.items() if v == compId)
+                                if len(compId) == 1 and hasOneLetterCodeSet:
+                                    compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                     if details is None:
                                         _atomNameLike[idx] = True
@@ -2236,8 +2242,8 @@ class BasePKParserListener():
                             atomId = __term[index:len(__term)]
                             if resNameLike[idx]:
                                 compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
-                                if len(compId) == 1 and aaOnly:
-                                    compId = next(k for k, v in monDict3.items() if v == compId)
+                                if len(compId) == 1 and hasOneLetterCodeSet:
+                                    compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                     if details is None:
                                         __atomNameLike[idx] = True
@@ -2261,8 +2267,8 @@ class BasePKParserListener():
                             atomId = ___term[index:len(___term)]
                             if resNameLike[idx]:
                                 compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
-                                if len(compId) == 1 and aaOnly:
-                                    compId = next(k for k, v in monDict3.items() if v == compId)
+                                if len(compId) == 1 and hasOneLetterCodeSet:
+                                    compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                     if details is None:
                                         ___atomNameLike[idx] = True
@@ -2284,8 +2290,8 @@ class BasePKParserListener():
                     if resNameLike[idx]:
                         compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                         resId = term[resIdSpan[idx][0]:resIdSpan[idx][1]] if resIdLike[idx] else '.'
-                        if len(compId) == 1 and aaOnly:
-                            compId = next(k for k, v in monDict3.items() if v == compId)
+                        if len(compId) == 1 and hasOneLetterCodeSet:
+                            compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                             if details is None:
                                 _atomNameLike[idx] = False
@@ -2339,8 +2345,8 @@ class BasePKParserListener():
                     atomId = term[__atomNameSpan[idx][0]:atomNameSpan[idx][1]]
                     if resNameLike[idx]:
                         compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
-                        if len(compId) == 1 and aaOnly:
-                            compId = next(k for k, v in monDict3.items() if v == compId)
+                        if len(compId) == 1 and hasOneLetterCodeSet:
+                            compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                             if details is None:
                                 __atomNameLike[idx] = _atomNameLike[idx] = False
@@ -2361,8 +2367,8 @@ class BasePKParserListener():
                     atomId = term[___atomNameSpan[idx][0]:atomNameSpan[idx][1]]
                     if resNameLike[idx]:
                         compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
-                        if len(compId) == 1 and aaOnly:
-                            compId = next(k for k, v in monDict3.items() if v == compId)
+                        if len(compId) == 1 and hasOneLetterCodeSet:
+                            compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                             if details is None:
                                 ___atomNameLike[idx] = __atomNameLike[idx] = _atomNameLike[idx] = False
@@ -2382,8 +2388,8 @@ class BasePKParserListener():
                     atomId = term[__atomNameSpan[idx][0]:_atomNameSpan[idx][1]]
                     if resNameLike[idx]:
                         compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
-                        if len(compId) == 1 and aaOnly:
-                            compId = next(k for k, v in monDict3.items() if v == compId)
+                        if len(compId) == 1 and hasOneLetterCodeSet:
+                            compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                             if details is None:
                                 __atomNameLike[idx] = False
@@ -2403,8 +2409,8 @@ class BasePKParserListener():
                     atomId = term[___atomNameSpan[idx][0]:_atomNameSpan[idx][1]]
                     if resNameLike[idx]:
                         compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
-                        if len(compId) == 1 and aaOnly:
-                            compId = next(k for k, v in monDict3.items() if v == compId)
+                        if len(compId) == 1 and hasOneLetterCodeSet:
+                            compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                             if details is None:
                                 ___atomNameLike[idx] = __atomNameLike[idx] = False
@@ -2424,8 +2430,8 @@ class BasePKParserListener():
                     atomId = term[___atomNameSpan[idx][0]:__atomNameSpan[idx][1]]
                     if resNameLike[idx]:
                         compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
-                        if len(compId) == 1 and aaOnly:
-                            compId = next(k for k, v in monDict3.items() if v == compId)
+                        if len(compId) == 1 and hasOneLetterCodeSet:
+                            compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                             if details is None:
                                 ___atomNameLike[idx] = False
@@ -2588,8 +2594,8 @@ class BasePKParserListener():
                 resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
             if resNameLike[idx]:
                 resName = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
-                if len(resName) == 1 and aaOnly:
-                    resName = next(k for k, v in monDict3.items() if v == resName)
+                if len(resName) == 1 and hasOneLetterCodeSet:
+                    resName = next(k for k, v in monDict3.items() if k in self.compIdSet and v == resName)
             if ___atomNameLike[idx]:
                 if resIdLater:
                     for _idx, _term in enumerate(_str):
@@ -2775,7 +2781,7 @@ class BasePKParserListener():
             _ps = next((_ps for _ps in self.reasons['extend_seq_scheme'] if _ps['chain_id'] == ps['auth_chain_id']), None)
             if _ps is not None:
                 if seqId in _ps['seq_id']:
-                    return ps['auth_chain_id'], _ps['comp_id'][_ps['seq_id'].index(seqId)]
+                    return ps['auth_chain_id'], seqId, _ps['comp_id'][_ps['seq_id'].index(seqId)]
         return ps['auth_chain_id'], seqId, None
 
     def translateToStdResNameWrapper(self, seqId: int, compId: str, preferNonPoly: bool = False) -> str:

@@ -2246,6 +2246,9 @@ class BasePKParserListener():
                             continue
                         if atomId[0] in ('Q', 'M') and index + 1 < len(term) and term[index + 1].isdigit():
                             continue
+                        if atomId.startswith('MET') and ((index + 3 < len(term) and term[index + 3].isdigit()
+                                                         or (index + 4 < len(term) and term[index + 4].isdigit()))):
+                            continue
                         if resNameLike[idx]:
                             compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                             if len(compId) == 1 and hasOneLetterCodeSet:
@@ -2290,6 +2293,9 @@ class BasePKParserListener():
                             if index - 1 >= 0 and _term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
                                 continue
                             if atomId[0] in ('Q', 'M') and index + 1 < len(_term) and _term[index + 1].isdigit():
+                                continue
+                            if atomId.startswith('MET') and ((index + 3 < len(_term) and _term[index + 3].isdigit()
+                                                              or (index + 4 < len(_term) and _term[index + 4].isdigit()))):
                                 continue
                             if len(_term) == atomNameSpan[idx][0]:
                                 continue
@@ -2338,6 +2344,9 @@ class BasePKParserListener():
                                 continue
                             if atomId[0] in ('Q', 'M') and index + 1 < len(__term) and __term[index + 1].isdigit():
                                 continue
+                            if atomId.startswith('MET') and ((index + 3 < len(__term) and __term[index + 3].isdigit()
+                                                              or (index + 4 < len(__term) and __term[index + 4].isdigit()))):
+                                continue
                             if len(__term) == _atomNameSpan[idx][0]:
                                 continue
                             if resNameLike[idx]:
@@ -2384,6 +2393,9 @@ class BasePKParserListener():
                             if index - 1 >= 0 and ___term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
                                 continue
                             if atomId[0] in ('Q', 'M') and index + 1 < len(___term) and ___term[index + 1].isdigit():
+                                continue
+                            if atomId.startswith('MET') and ((index + 3 < len(___term) and ___term[index + 3].isdigit()
+                                                              or (index + 4 < len(___term) and ___term[index + 4].isdigit()))):
                                 continue
                             if len(___term) == __atomNameSpan[idx][0]:
                                 continue
@@ -2907,7 +2919,7 @@ class BasePKParserListener():
                             else:
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[0] == self.__defaultSegId and a[1] == resId), -1)
                             if idx != -1:
-                                if self.__defaultSegId is not None:
+                                if self.__defaultSegId is None:
                                     self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0
@@ -2917,7 +2929,7 @@ class BasePKParserListener():
                         if len(chainAssign) > 0:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:
-                                if self.__defaultSegId is not None:
+                                if self.__defaultSegId is None:
                                     self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0
@@ -2962,7 +2974,7 @@ class BasePKParserListener():
                             else:
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[0] == self.__defaultSegId and a[1] == resId), -1)
                             if idx != -1:
-                                if self.__defaultSegId is not None:
+                                if self.__defaultSegId is None:
                                     self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0
@@ -2972,7 +2984,7 @@ class BasePKParserListener():
                         if len(chainAssign) > 0:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:
-                                if self.__defaultSegId is not None:
+                                if self.__defaultSegId is None:
                                     self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0
@@ -3017,7 +3029,7 @@ class BasePKParserListener():
                             else:
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[0] == self.__defaultSegId and a[1] == resId), -1)
                             if idx != -1:
-                                if self.__defaultSegId is not None:
+                                if self.__defaultSegId is None:
                                     self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0
@@ -3027,7 +3039,7 @@ class BasePKParserListener():
                         if len(chainAssign) > 0:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:
-                                if self.__defaultSegId is not None:
+                                if self.__defaultSegId is None:
                                     self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0
@@ -3072,7 +3084,7 @@ class BasePKParserListener():
                             else:
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[0] == self.__defaultSegId and a[1] == resId), -1)
                             if idx != -1:
-                                if self.__defaultSegId is not None:
+                                if self.__defaultSegId is None:
                                     self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0
@@ -3082,7 +3094,7 @@ class BasePKParserListener():
                         if len(chainAssign) > 0:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:
-                                if self.__defaultSegId is not None:
+                                if self.__defaultSegId is None:
                                     self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0

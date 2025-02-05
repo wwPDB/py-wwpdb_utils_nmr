@@ -220,6 +220,21 @@ class SparkyPKReader:
 if __name__ == "__main__":
     reader = SparkyPKReader(True)
     reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_nmr-peaks-upload_P2.dat.V3',
+                     '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')
+    reader = SparkyPKReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_nmr-peaks-upload_P2.dat.V3',
+                 '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')
+
+    reader = SparkyPKReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_nmr-peaks-upload_P1.dat.V4',
+                 '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')
+
+    reader = SparkyPKReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6uz5/bmr30687/work/data/D_1000245462_nmr-peaks-upload_P2.dat.V1',
                  '../../tests-nmr/mock-data-remediation/6uz5/6uz5.cif')
 

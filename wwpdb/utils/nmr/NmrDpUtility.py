@@ -1622,8 +1622,8 @@ class NmrDpUtility:
         # validation tasks for NMR data only
         __nmrCheckTasks = [self.__detectContentSubType,
                            self.__extractPublicMrFileIntoLegacyMr,
-                           self.__detectContentSubTypeOfLegacyMr,
                            self.__detectContentSubTypeOfLegacyPk,
+                           self.__detectContentSubTypeOfLegacyMr,
                            self.__extractPolymerSequence,
                            self.__extractPolymerSequenceInLoop,
                            self.__extractCommonPolymerSequence,
@@ -12060,6 +12060,7 @@ class NmrDpUtility:
             self.__validateInputSource()
             self.__detectContentSubType()
             self.__extractPublicMrFileIntoLegacyMr()
+            self.__detectContentSubTypeOfLegacyPk()
             self.__detectContentSubTypeOfLegacyMr()
 
             self.__remediation_loop_count += 1
@@ -12098,6 +12099,10 @@ class NmrDpUtility:
             fileListId += 1
 
             if not file_type.startswith('nm-pea'):
+                continue
+
+            # DAOTHER-8905: ignore the file in NMR data remediation (Phase 2)
+            if self.__internal_mode and os.path.exists(file_path + '-ignored'):
                 continue
 
             original_file_name = None
@@ -12333,6 +12338,33 @@ class NmrDpUtility:
                 continue
 
             if len_possible_types == 0:
+
+                # DAOTHER-8905: rescue the file as restraint file in NMR data remediation (Phase 2)
+                if self.__internal_mode:
+
+                    _file_type = None
+
+                    if len_valid_types == 1:
+                        _file_type = valid_types[0]
+
+                    elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
+                        _file_type = 'nm-res-xpl'
+
+                    elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
+                        _file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
+
+                    elif len_valid_types == 3:
+                        set_valid_types = set(valid_types)
+                        if set_valid_types in ({'nm-res-cya', 'nm-res-cns', 'nm-res-xpl'},
+                                               {'nm-res-isd', 'nm-res-cns', 'nm-res-xpl'}):
+                            _file_type = 'nm-res-xpl'
+                        if set_valid_types == {'nm-res-cha', 'nm-res-cns', 'nm-res-xpl'}:
+                            _file_type = 'nm-res-cha'
+
+                    if _file_type is not None and _file_type.startswith('nm-res'):
+                        input_source_dic['file_type'] = _file_type
+                        input_source_dic['content_type'] = 'nmr-restraints'
+                        continue
 
                 err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as {getRestraintFormatNames(valid_types)} file. "\
                     "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."

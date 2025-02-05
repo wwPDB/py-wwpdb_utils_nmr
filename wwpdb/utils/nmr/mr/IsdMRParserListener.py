@@ -973,6 +973,8 @@ class IsdMRParserListener(ParseTreeListener):
             _, _, refCompId = self.getRealChainSeqId(ps, seqId, _compId)
             if refCompId is not None:
                 compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.__ccU)
+                if compId != _compId and compId in monDict3 and _compId in monDict3:
+                    continue
                 break
         if refCompId is None and self.__hasNonPolySeq:
             for np in self.__nonPolySeq:

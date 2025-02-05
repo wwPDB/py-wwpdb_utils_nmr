@@ -243,6 +243,7 @@ class BasePKParserListener():
 
     offsetHolder = None
     __shiftNonPosSeq = None
+    __defaultSegId = None
 
     representativeModelId = REPRESENTATIVE_MODEL_ID
     representativeAltId = REPRESENTATIVE_ALT_ID
@@ -2838,6 +2839,7 @@ class BasePKParserListener():
                 resIdCount += 1
 
         _resId = [h['seq_id'] for h in hint] if hint is not None else None
+        _resName = [h['comp_id'] for h in hint] if hint is not None else None
         if resIdCount == 0:
             if _resId is None:
                 return None
@@ -2881,6 +2883,9 @@ class BasePKParserListener():
                 resName = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                 if len(resName) == 1 and hasOneLetterCodeSet:
                     resName = next(k for k, v in monDict3.items() if k in self.compIdSet and v == resName)
+            elif _resName is not None:
+                if len(ret) < len(_resName):
+                    resName = _resName[len(ret)]
             if ___atomNameLike[idx]:
                 if resIdLater:
                     for _idx, _term in enumerate(_str):
@@ -2897,15 +2902,31 @@ class BasePKParserListener():
                     if segId is None and resName is None:
                         chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
                         if len(chainAssign) > 0:
-                            segId, _, resName, _ = chainAssign[0]
+                            if self.__defaultSegId is None:
+                                idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
+                            else:
+                                idx = next((chainAssign.index(a) for a in chainAssign if a[0] == self.__defaultSegId and a[1] == resId), -1)
+                            if idx != -1:
+                                if self.__defaultSegId is not None:
+                                    self.__defaultSegId = chainAssign[idx][0]
+                            else:
+                                idx = 0
+                            segId, _, resName, _ = chainAssign[idx]
                     elif segId is None:
-                        chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
+                        chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId, resId, resName, atomName, src_index)
                         if len(chainAssign) > 0:
-                            segId = chainAssign[0][0]
+                            idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
+                            if idx != -1:
+                                if self.__defaultSegId is not None:
+                                    self.__defaultSegId = chainAssign[idx][0]
+                            else:
+                                idx = 0
+                            segId = chainAssign[idx][0]
                     elif resName is None:
                         chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
                         if len(chainAssign) > 0:
-                            resName = chainAssign[0][2]
+                            idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), 0)
+                            resName = chainAssign[idx][2]
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
@@ -2936,15 +2957,31 @@ class BasePKParserListener():
                     if segId is None and resName is None:
                         chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
                         if len(chainAssign) > 0:
-                            segId, _, resName, _ = chainAssign[0]
+                            if self.__defaultSegId is None:
+                                idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
+                            else:
+                                idx = next((chainAssign.index(a) for a in chainAssign if a[0] == self.__defaultSegId and a[1] == resId), -1)
+                            if idx != -1:
+                                if self.__defaultSegId is not None:
+                                    self.__defaultSegId = chainAssign[idx][0]
+                            else:
+                                idx = 0
+                            segId, _, resName, _ = chainAssign[idx]
                     elif segId is None:
-                        chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
+                        chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId, resId, resName, atomName, src_index)
                         if len(chainAssign) > 0:
-                            segId = chainAssign[0][0]
+                            idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
+                            if idx != -1:
+                                if self.__defaultSegId is not None:
+                                    self.__defaultSegId = chainAssign[idx][0]
+                            else:
+                                idx = 0
+                            segId = chainAssign[idx][0]
                     elif resName is None:
                         chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
                         if len(chainAssign) > 0:
-                            resName = chainAssign[0][2]
+                            idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), 0)
+                            resName = chainAssign[idx][2]
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
@@ -2975,15 +3012,31 @@ class BasePKParserListener():
                     if segId is None and resName is None:
                         chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
                         if len(chainAssign) > 0:
-                            segId, _, resName, _ = chainAssign[0]
+                            if self.__defaultSegId is None:
+                                idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
+                            else:
+                                idx = next((chainAssign.index(a) for a in chainAssign if a[0] == self.__defaultSegId and a[1] == resId), -1)
+                            if idx != -1:
+                                if self.__defaultSegId is not None:
+                                    self.__defaultSegId = chainAssign[idx][0]
+                            else:
+                                idx = 0
+                            segId, _, resName, _ = chainAssign[idx]
                     elif segId is None:
-                        chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
+                        chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId, resId, resName, atomName, src_index)
                         if len(chainAssign) > 0:
-                            segId = chainAssign[0][0]
+                            idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
+                            if idx != -1:
+                                if self.__defaultSegId is not None:
+                                    self.__defaultSegId = chainAssign[idx][0]
+                            else:
+                                idx = 0
+                            segId = chainAssign[idx][0]
                     elif resName is None:
                         chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
                         if len(chainAssign) > 0:
-                            resName = chainAssign[0][2]
+                            idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), 0)
+                            resName = chainAssign[idx][2]
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
@@ -3014,15 +3067,31 @@ class BasePKParserListener():
                     if segId is None and resName is None:
                         chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
                         if len(chainAssign) > 0:
-                            segId, _, resName, _ = chainAssign[0]
+                            if self.__defaultSegId is None:
+                                idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
+                            else:
+                                idx = next((chainAssign.index(a) for a in chainAssign if a[0] == self.__defaultSegId and a[1] == resId), -1)
+                            if idx != -1:
+                                if self.__defaultSegId is not None:
+                                    self.__defaultSegId = chainAssign[idx][0]
+                            else:
+                                idx = 0
+                            segId, _, resName, _ = chainAssign[idx]
                     elif segId is None:
-                        chainAssign, _ = self.assignCoordPolymerSequence(segId, resId, resName, atomName, src_index)
+                        chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId, resId, resName, atomName, src_index)
                         if len(chainAssign) > 0:
-                            segId = chainAssign[0][0]
+                            idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
+                            if idx != -1:
+                                if self.__defaultSegId is not None:
+                                    self.__defaultSegId = chainAssign[idx][0]
+                            else:
+                                idx = 0
+                            segId = chainAssign[idx][0]
                     elif resName is None:
                         chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
                         if len(chainAssign) > 0:
-                            resName = chainAssign[0][2]
+                            idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), 0)
+                            resName = chainAssign[idx][2]
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
@@ -3090,6 +3159,8 @@ class BasePKParserListener():
             _, _, refCompId = self.getRealChainSeqId(ps, seqId, _compId)
             if refCompId is not None:
                 compId = translateToStdResName(_compId, refCompId=refCompId, ccU=self.ccU)
+                if compId != _compId and compId in monDict3 and _compId in monDict3:
+                    continue
                 break
         if refCompId is None and self.hasNonPolySeq:
             for np in self.nonPolySeq:

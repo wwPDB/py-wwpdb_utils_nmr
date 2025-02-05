@@ -2851,10 +2851,11 @@ class BasePKParserListener():
                 resIdCount += 1
 
         _resId = [h['seq_id'] for h in hint] if hint is not None else None
-        _resName = [h['comp_id'] for h in hint] if hint is not None else None
         if resIdCount == 0:
             if _resId is None:
                 return None
+
+        _resName = [h['comp_id'] for h in hint] if hint is not None else None
 
         resIdLater = resIdCount == numOfDim
         if resIdLater:
@@ -2895,9 +2896,8 @@ class BasePKParserListener():
                 resName = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                 if len(resName) == 1 and hasOneLetterCodeSet:
                     resName = next(k for k, v in monDict3.items() if k in self.compIdSet and v == resName)
-            elif _resName is not None:
-                if len(ret) < len(_resName):
-                    resName = _resName[len(ret)]
+            elif _resName is not None and resName is None and len(ret) < len(_resName):
+                resName = _resName[len(ret)]
             if ___atomNameLike[idx]:
                 if resIdLater:
                     for _idx, _term in enumerate(_str):
@@ -2925,7 +2925,8 @@ class BasePKParserListener():
                                 idx = 0
                             segId, _, resName, _ = chainAssign[idx]
                     elif segId is None:
-                        chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId, resId, resName, atomName, src_index)
+                        chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId,
+                                                                         resId, resName, atomName, src_index)
                         if len(chainAssign) > 0:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:
@@ -2980,7 +2981,8 @@ class BasePKParserListener():
                                 idx = 0
                             segId, _, resName, _ = chainAssign[idx]
                     elif segId is None:
-                        chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId, resId, resName, atomName, src_index)
+                        chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId,
+                                                                         resId, resName, atomName, src_index)
                         if len(chainAssign) > 0:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:
@@ -3035,7 +3037,8 @@ class BasePKParserListener():
                                 idx = 0
                             segId, _, resName, _ = chainAssign[idx]
                     elif segId is None:
-                        chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId, resId, resName, atomName, src_index)
+                        chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId,
+                                                                         resId, resName, atomName, src_index)
                         if len(chainAssign) > 0:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:
@@ -3090,7 +3093,8 @@ class BasePKParserListener():
                                 idx = 0
                             segId, _, resName, _ = chainAssign[idx]
                     elif segId is None:
-                        chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId, resId, resName, atomName, src_index)
+                        chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId,
+                                                                         resId, resName, atomName, src_index)
                         if len(chainAssign) > 0:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:

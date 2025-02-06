@@ -12179,11 +12179,11 @@ class NmrDpUtility:
                         if header:
                             if line.startswith('*'):
                                 continue
-                            if startsWithPdbRecord(line):
+                            if startsWithPdbRecord(line, True):
                                 continue
                             header = False
 
-                        if line.startswith('*') and startsWithPdbRecord(line[1:]):
+                        if line.startswith('*') and startsWithPdbRecord(line[1:], True):
                             in_header = True
                             continue
 
@@ -12195,7 +12195,7 @@ class NmrDpUtility:
                             has_mr_header = True
 
                         # skip legacy PDB
-                        if startsWithPdbRecord(line):
+                        if startsWithPdbRecord(line, True):
                             has_pdb_format = pdb_record = True
                             continue
                         if pdb_record:
@@ -24696,7 +24696,19 @@ class NmrDpUtility:
                         if ambig_code != allowed_ambig_code:
 
                             if allowed_ambig_code == 1:
-                                pass
+
+                                try:
+
+                                    _row = next(_row for _row in lp_data
+                                                if _row[chain_id_name] == chain_id
+                                                and _row[seq_id_name] == seq_id
+                                                and _row[comp_id_name] == comp_id
+                                                and _row[atom_id_name] == _atom_id2)
+
+                                    loop.data[lp_data.index(_row)][loop.tags.index(ambig_code_name)] = 1
+
+                                except StopIteration:
+                                    pass
 
                             elif allowed_ambig_code > 0:
 

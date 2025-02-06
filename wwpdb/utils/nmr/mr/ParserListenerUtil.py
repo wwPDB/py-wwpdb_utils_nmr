@@ -289,7 +289,7 @@ NITROOXIDE_ANCHOR_RES_NAMES = ('CYS', 'SER', 'GLU', 'ASP', 'GLN', 'ASN', 'LYS', 
 HEME_LIKE_RES_NAMES = ('HEM', 'HEB', 'HEC', 'MH0')
 
 LEGACY_PDB_RECORDS = ('HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND', 'SOURCE', 'KEYWDS', 'EXPDTA',
-                      'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL',  # 'REMARK',
+                      'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL', 'REMARK',
                       'DBREF', 'DBREF1', 'DBREF2', 'SEQADV', 'SEQRES', 'MODRES',
                       'HET ', 'HETNAM', 'HETSYN', 'FORMUL',
                       'HELIX ', 'SHEET ',
@@ -300,6 +300,9 @@ LEGACY_PDB_RECORDS = ('HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND'
                       'MODEL ', 'ATOM ', 'ANISOU', 'TER ', 'HETATM', 'ENDMDL',
                       'CONECT',
                       'MASTER')
+
+LEGACY_PDB_RECORDS_WO_REMARK = [record for record in LEGACY_PDB_RECORDS if record != 'REMARK']
+LEGACY_PDB_RECORDS_WO_REMARK = tuple(LEGACY_PDB_RECORDS_WO_REMARK)
 
 CYANA_MR_FILE_EXTS = (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cco')
 
@@ -6755,14 +6758,16 @@ def getRdcCode(atoms: List[dict]) -> Optional[str]:
     return 'RDC_other'
 
 
-def startsWithPdbRecord(line: str) -> bool:
+def startsWithPdbRecord(line: str, ignoreRemark: bool = False) -> bool:
     """ Return whether a given line string starts with legacy PDB records.
     """
 
-    if any(line.startswith(pdb_record) for pdb_record in LEGACY_PDB_RECORDS):
+    PDB_RECORDS = LEGACY_PDB_RECORDS_WO_REMARK if ignoreRemark else LEGACY_PDB_RECORDS
+
+    if any(line.startswith(pdb_record) for pdb_record in PDB_RECORDS):
         return True
 
-    return any(line[:-1] == pdb_record[:-1] for pdb_record in LEGACY_PDB_RECORDS if pdb_record.endswith(' '))
+    return any(line[:-1] == pdb_record[:-1] for pdb_record in PDB_RECORDS if pdb_record.endswith(' '))
 
 
 def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,

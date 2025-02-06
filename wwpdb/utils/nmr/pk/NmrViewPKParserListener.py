@@ -50,6 +50,8 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
     __cur_label_type = None
 
+    __spectrum_names = None
+
     __labels = None
     __jcouplings = None
     __jcoupling_types = None
@@ -70,11 +72,13 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by NmrViewPKParser#nmrview_pk.
     def enterNmrview_pk(self, ctx: NmrViewPKParser.Nmrview_pkContext):  # pylint: disable=unused-argument
+        self.__spectrum_names = {}
+
         self.enter()
 
     # Exit a parse tree produced by NmrViewPKParser#nmrview_pk.
     def exitNmrview_pk(self, ctx: NmrViewPKParser.Nmrview_pkContext):  # pylint: disable=unused-argument
-        self.exit()
+        self.exit(self.__spectrum_names if len(self.__spectrum_names) > 0 else None)
 
     # Enter a parse tree produced by NmrViewPKParser#data_label.
     def enterData_label(self, ctx: NmrViewPKParser.Data_labelContext):  # pylint: disable=unused-argument
@@ -82,9 +86,20 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__cur_label_type = None
 
     # Exit a parse tree produced by NmrViewPKParser#data_label.
-    def exitData_label(self, ctx: NmrViewPKParser.Data_labelContext):  # pylint: disable=unused-argument
+    def exitData_label(self, ctx: NmrViewPKParser.Data_labelContext):
         self.__labels = None
         self.__cur_label_type = None
+
+        if ctx.Simple_name_LA(0):
+            dataset_name = []
+            for col in range(20):
+                if ctx.Simple_name_LA(col):
+                    if str(ctx.Simple_name_LA(col)) in emptyValue:
+                        break
+                    dataset_name.append(str(ctx.Simple_name_LA(col)))
+                else:
+                    break
+        self.spectrum_name = None if len(dataset_name) == 0 else ' '.join(dataset_name)
 
     # Enter a parse tree produced by NmrViewPKParser#labels.
     def enterLabels(self, ctx: NmrViewPKParser.LabelsContext):  # pylint: disable=unused-argument:
@@ -160,6 +175,11 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     # Enter a parse tree produced by NmrViewPKParser#peak_list_2d.
     def enterPeak_list_2d(self, ctx: NmrViewPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
         self.initSpectralDim()
+        if self.num_of_dim not in self.__spectrum_names:
+            self.__spectrum_names[self.num_of_dim] = {}
+        if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
+            self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
+
         self.__jcouplings = []
         self.__jcoupling_types = []
 
@@ -280,6 +300,11 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     # Enter a parse tree produced by NmrViewPKParser#peak_list_3d.
     def enterPeak_list_3d(self, ctx: NmrViewPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
         self.initSpectralDim()
+        if self.num_of_dim not in self.__spectrum_names:
+            self.__spectrum_names[self.num_of_dim] = {}
+        if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
+            self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
+
         self.__jcouplings = []
         self.__jcoupling_types = []
 
@@ -419,6 +444,11 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
     # Enter a parse tree produced by NmrViewPKParser#peak_list_4d.
     def enterPeak_list_4d(self, ctx: NmrViewPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
         self.initSpectralDim()
+        if self.num_of_dim not in self.__spectrum_names:
+            self.__spectrum_names[self.num_of_dim] = {}
+        if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
+            self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
+
         self.__jcouplings = []
         self.__jcoupling_types = []
 

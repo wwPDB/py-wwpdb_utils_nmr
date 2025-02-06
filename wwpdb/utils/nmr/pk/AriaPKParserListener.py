@@ -94,7 +94,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by XMLParser#document.
     def exitDocument(self, ctx: XMLParser.DocumentContext):  # pylint: disable=unused-argument
-        self.exit(self.__spectrum_names)
+        self.exit(self.__spectrum_names if len(self.__spectrum_names) > 0 else None)
 
     # Enter a parse tree produced by XMLParser#prolog.
     def enterProlog(self, ctx: XMLParser.PrologContext):  # pylint: disable=unused-argument

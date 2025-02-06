@@ -162,7 +162,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.peaks2D
 
-            ass = str(ctx.Assignment_2d_ex())
+            ass = _ass_ = str(ctx.Assignment_2d_ex())
             if '?' in ass:
                 ass = None
 
@@ -246,7 +246,8 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
             self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2,
                                     f'{ass} -> ',
-                                    None if has_assignments and not has_multiple_assignments else ass)
+                                    None if (has_assignments and not has_multiple_assignments)
+                                    or _ass_ == '?-?' else _ass_)
 
         finally:
             self.numberSelection.clear()
@@ -275,7 +276,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.peaks3D
 
-            ass = str(ctx.Assignment_3d_ex())
+            ass = _ass_ = str(ctx.Assignment_3d_ex())
             if '?' in ass:
                 ass = None
 
@@ -370,7 +371,8 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
                                     f'{ass} -> ',
-                                    None if has_assignments and not has_multiple_assignments else ass)
+                                    None if (has_assignments and not has_multiple_assignments)
+                                    or _ass_ == '?-?-?' else _ass_)
 
         finally:
             self.numberSelection.clear()
@@ -399,7 +401,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.peaks4D
 
-            ass = str(ctx.Assignment_4d_ex())
+            ass = _ass_ = str(ctx.Assignment_4d_ex())
             if '?' in ass:
                 ass = None
 
@@ -505,7 +507,8 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
             self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3, asis4,
                                     f'{ass} -> ',
-                                    None if has_assignments and not has_multiple_assignments else ass)
+                                    None if (has_assignments and not has_multiple_assignments)
+                                    or _ass_ == '?-?-?-?' else _ass_)
 
         finally:
             self.numberSelection.clear()

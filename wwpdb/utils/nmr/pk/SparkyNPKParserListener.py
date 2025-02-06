@@ -128,7 +128,7 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.peaks2D
 
-            ass = str(ctx.Assignment_2d_ex())
+            ass = _ass_ = str(ctx.Assignment_2d_ex())
             if '?' in ass:
                 ass = None
 
@@ -218,7 +218,8 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2,
                                     f'{ass} -> ',
-                                    None if has_assignments and not has_multiple_assignments else ass)
+                                    None if (has_assignments and not has_multiple_assignments)
+                                    or _ass_ == '?-?' else _ass_)
 
         finally:
             self.numberSelection.clear()
@@ -243,7 +244,7 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.peaks3D
 
-            ass = str(ctx.Assignment_3d_ex())
+            ass = _ass_ = str(ctx.Assignment_3d_ex())
             if '?' in ass:
                 ass = None
 
@@ -344,7 +345,8 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
                                     f'{ass} -> ',
-                                    None if has_assignments and not has_multiple_assignments else ass)
+                                    None if (has_assignments and not has_multiple_assignments)
+                                    or _ass_ == '?-?-?' else _ass_)
 
         finally:
             self.numberSelection.clear()
@@ -369,7 +371,7 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.peaks4D
 
-            ass = str(ctx.Assignment_4d_ex())
+            ass = _ass_ = str(ctx.Assignment_4d_ex())
             if '?' in ass:
                 ass = None
 
@@ -481,7 +483,8 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3, asis4,
                                     f'{ass} -> ',
-                                    None if has_assignments and not has_multiple_assignments else ass)
+                                    None if (has_assignments and not has_multiple_assignments)
+                                    or _ass_ == '?-?-?-?' else _ass_)
 
         finally:
             self.numberSelection.clear()
@@ -503,11 +506,15 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
     def exitPeak_2d_po(self, ctx: SparkyNPKParser.Peak_2d_poContext):
         index = self.peaks2D
 
-        ass = None
+        ass = _ass_ = None
         if ctx.Assignment_2d_ex():
-            ass = str(ctx.Assignment_2d_ex())
+            ass = _ass_ = str(ctx.Assignment_2d_ex())
             if '?' in ass:
                 ass = None
+        elif ctx.Assignment_3d_ex():
+            _ass_ = str(ctx.Assignment_3d_ex())
+        elif ctx.Assignment_4d_ex():
+            _ass_ = str(ctx.Assignment_4d_ex())
 
         try:
 
@@ -550,7 +557,8 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
         self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                 asis1, asis2,
                                 f'{ass} -> ',
-                                None if has_assignments and not has_multiple_assignments else ass)
+                                None if (has_assignments and not has_multiple_assignments)
+                                or _ass_ == '?-?' else _ass_)
 
     # Enter a parse tree produced by SparkyNPKParser#peak_3d_po.
     def enterPeak_3d_po(self, ctx: SparkyNPKParser.Peak_3d_poContext):  # pylint: disable=unused-argument
@@ -567,11 +575,13 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
     def exitPeak_3d_po(self, ctx: SparkyNPKParser.Peak_3d_poContext):
         index = self.peaks3D
 
-        ass = None
+        ass = _ass_ = None
         if ctx.Assignment_3d_ex():
-            ass = str(ctx.Assignment_3d_ex())
+            ass = _ass_ = str(ctx.Assignment_3d_ex())
             if '?' in ass:
                 ass = None
+        if ctx.Assignment_4d_ex():
+            _ass_ = str(ctx.Assignment_4d_ex())
 
         try:
 
@@ -619,7 +629,8 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
         self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                 asis1, asis2, asis3,
                                 f'{ass} -> ',
-                                None if has_assignments and not has_multiple_assignments else ass)
+                                None if (has_assignments and not has_multiple_assignments)
+                                or _ass_ == '?-?-?' else _ass_)
 
     # Enter a parse tree produced by SparkyNPKParser#peak_4d_po.
     def enterPeak_4d_po(self, ctx: SparkyNPKParser.Peak_4d_poContext):  # pylint: disable=unused-argument
@@ -636,9 +647,11 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
     def exitPeak_4d_po(self, ctx: SparkyNPKParser.Peak_4d_poContext):
         index = self.peaks4D
 
-        ass = str(ctx.Assignment_4d_ex())
-        if '?' in ass:
-            ass = None
+        ass = _ass_ = None
+        if ctx.Assignment_4d_ex():
+            ass = _ass_ = str(ctx.Assignment_4d_ex())
+            if '?' in ass:
+                ass = None
 
         try:
 
@@ -688,7 +701,8 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
         self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                 asis1, asis2, asis3, asis4,
                                 f'{ass} -> ',
-                                None if has_assignments and not has_multiple_assignments else ass)
+                                None if (has_assignments and not has_multiple_assignments)
+                                or _ass_ == '?-?-?-?' else _ass_)
 
     # Enter a parse tree produced by SparkyNPKParser#number.
     def enterNumber(self, ctx: SparkyNPKParser.NumberContext):

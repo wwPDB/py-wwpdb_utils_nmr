@@ -2719,23 +2719,22 @@ class BasePKParserListener():
                                 __atomNameSpan[idx] = (___atomNameSpan[idx][0], __atomNameSpan[idx][1])
                                 break
 
-            if idx == 0 and not segIdLike[0] and not resIdLike[0] and not resNameLike[0]\
-               and atomNameLike[0] and not _atomNameLike[0] and self.hasNonPoly:
-                ligands = 0
-                for np in self.nonPoly:
-                    if 'alt_comp_id' in np and _str[0][0] == np['alt_comp_id'][0][0]:
-                        ligands += 1
-                if ligands == 1:
+            if idx == 0 and atomNameLike[0] and not _atomNameLike[0] and self.hasNonPoly:
+                if not segIdLike[0] and not resIdLike[0] and not resNameLike[0]:
+                    ligands = 0
                     for np in self.nonPoly:
                         if 'alt_comp_id' in np and _str[0][0] == np['alt_comp_id'][0][0]:
-                            _string = f"{np['auth_chain_id']} {np['auth_seq_id'][0]} {np['comp_id'][0]}{string[atomNameSpan[0][1]:]}"
-                            return self.extractPeakAssignment(numOfDim, _string, src_index, hint)
+                            ligands += 1
+                    if ligands == 1:
+                        for np in self.nonPoly:
+                            if 'alt_comp_id' in np and _str[0][0] == np['alt_comp_id'][0][0]:
+                                _string = f"{np['auth_chain_id']} {np['auth_seq_id'][0]} {np['comp_id'][0]}{string[atomNameSpan[0][1]:]}"
+                                return self.extractPeakAssignment(numOfDim, _string, src_index, hint)
 
-            if idx == 0 and _str[0][0] == 'X' and atomNameLike[0] and not _atomNameLike[0] and self.hasNonPoly\
-               and term[atomNameSpan[idx][0]] != 'X' and len(self.nonPoly) == 1:
-                np = self.nonPoly[0]
-                _string = f"{np['auth_chain_id']} {np['auth_seq_id'][0]} {np['comp_id'][0]}{string[atomNameSpan[0][0]:]}"
-                return self.extractPeakAssignment(numOfDim, _string, src_index, hint)
+                if _str[0][0] == 'X' and term[atomNameSpan[idx][0]] != 'X' and len(self.nonPoly) == 1:
+                    np = self.nonPoly[0]
+                    _string = f"{np['auth_chain_id']} {np['auth_seq_id'][0]} {np['comp_id'][0]}{string[atomNameSpan[0][0]:]}"
+                    return self.extractPeakAssignment(numOfDim, _string, src_index, hint)
 
             if self.ass_expr_debug:
                 print(f'{idx} {term!r} segid:{segIdLike[idx]} {term[segIdSpan[idx][0]:segIdSpan[idx][1]] if segIdLike[idx] else ""}, '

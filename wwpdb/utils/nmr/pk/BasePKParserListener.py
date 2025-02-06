@@ -955,7 +955,7 @@ class BasePKParserListener():
                     try:
                         if spectrum_names is not None:
                             alt_file_name = spectrum_names[d][_id].lower()
-                    except KeyError:
+                    except (KeyError, AttributeError):
                         pass
                     cur_spectral_dim_transfer = self.spectral_dim_transfer[d][_id]
 

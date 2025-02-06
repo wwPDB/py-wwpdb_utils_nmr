@@ -99,7 +99,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                     dataset_name.append(str(ctx.Simple_name_LA(col)))
                 else:
                     break
-        self.spectrum_name = None if len(dataset_name) == 0 else ' '.join(dataset_name)
+            self.spectrum_name = None if len(dataset_name) == 0 else ' '.join(dataset_name)
 
     # Enter a parse tree produced by NmrViewPKParser#labels.
     def enterLabels(self, ctx: NmrViewPKParser.LabelsContext):  # pylint: disable=unused-argument:

@@ -1071,7 +1071,7 @@ class BasePKParserListener():
                                 _region1 = _dict1['spectral_region']
                                 if _region1 == 'H-aliphatic':
                                     for _dim_id2, _dict2 in cur_spectral_dim.items():
-                                        _isotope2 = _dict2['atom_isotope']
+                                        _isotope2 = _dict2['atom_isotope_number']
                                         if _dim_id1 == _dim_id2 or _isotope2 not in (1, 13):
                                             continue
                                         if _isotope2 == 13\
@@ -1146,7 +1146,7 @@ class BasePKParserListener():
                                 _region1 = _dict1['spectral_region']
                                 if _region1 == 'H-aliphatic':
                                     for _dim_id2, _dict2 in cur_spectral_dim.items():
-                                        _isotope2 = _dict2['atom_isotope']
+                                        _isotope2 = _dict2['atom_isotope_number']
                                         if _dim_id1 == _dim_id2 or _isotope2 not in (1, 13):
                                             continue
                                         if _isotope2 == 13\

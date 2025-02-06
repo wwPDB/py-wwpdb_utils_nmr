@@ -192,7 +192,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
             height = volume = None
             if self.__has_volume and len(self.originalNumberSelection) > offset:
                 if self.__has_real_vol:
-                    volume = self.__real_vol
+                    volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
                     if volume == self.originalNumberSelection[offset]:
                         offset += 1
                 else:
@@ -313,7 +313,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
             height = volume = None
             if self.__has_volume and len(self.originalNumberSelection) > offset:
                 if self.__has_real_vol:
-                    volume = self.__real_vol
+                    volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
                     if volume == self.originalNumberSelection[offset]:
                         offset += 1
                 else:
@@ -445,7 +445,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
             height = volume = None
             if self.__has_volume and len(self.originalNumberSelection) > offset:
                 if self.__has_real_vol:
-                    volume = self.__real_vol
+                    volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
                     if volume == self.originalNumberSelection[offset]:
                         offset += 1
                 else:
@@ -571,7 +571,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                     height = volume = None
                     if self.__has_volume and len(self.originalNumberSelection) > offset:
                         if self.__has_real_vol:
-                            volume = self.__real_vol
+                            volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
                             if volume == self.originalNumberSelection[offset]:
                                 offset += 1
                         else:
@@ -664,7 +664,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                     height = volume = None
                     if self.__has_volume and len(self.originalNumberSelection) > offset:
                         if self.__has_real_vol:
-                            volume = self.__real_vol
+                            volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
                             if volume == self.originalNumberSelection[offset]:
                                 offset += 1
                         else:
@@ -768,7 +768,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                     height = volume = None
                     if self.__has_volume and len(self.originalNumberSelection) > offset:
                         if self.__has_real_vol:
-                            volume = self.__real_vol
+                            volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
                             if volume == self.originalNumberSelection[offset]:
                                 offset += 1
                         else:

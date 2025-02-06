@@ -2217,18 +2217,46 @@ class BasePKParserListener():
                             minIndex = index
 
             if not resNameLike[idx] and hasOneLetterCodeSet:
-                for compId in oneLetterCodeSet:
-                    if compId in term:
-                        resNameLike[idx] = True
-                        index = term.index(compId)
-                        if index < minIndex:
+                if not any(compId in term for compId in monDict3 if len(compId) == 3):
+                    for compId in oneLetterCodeSet:
+                        if compId in term:
+                            resNameLike[idx] = True
+                            index = term.index(compId)
+                            if index < minIndex:
+                                resNameSpan[idx] = (index, index + len(compId))
+                                minIndex = index
+                elif resIdLike[idx] and self.hasPolySeq:
+                    _compId = next(compId for compId in monDict3 if len(compId) == 3 and compId in term)
+                    resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
+                    for ps in self.polySeq:
+                        _, _, compId = self.getRealChainSeqId(ps, resId, None)
+                        if len(compId) == 3 and compId in monDict3 and _compId[0:2] == compId[0:2]:
+                            resNameLike[idx] = True
+                            index = term.index(_compId)
                             resNameSpan[idx] = (index, index + len(compId))
-                            minIndex = index
+                            term = _str[idx] = term.replace(_compId, compId)
+                            break
 
             if resNameLike[idx]:
                 compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                 if compId in self.compIdSet and compId not in monDict3:
                     ligCompId = compId
+
+                if len(compId) == 1:
+                    if resIdLike[idx] and self.hasPolySeq:
+                        resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
+                        for ps in self.polySeq:
+                            _, _, _compId = self.getRealChainSeqId(ps, resId, None)
+                            if _compId is not None and _compId not in monDict3:
+                                resNameLike[idx] = False
+                                break
+                    if resNameLike[idx]:
+                        index = resNameSpan[idx][1]
+                        if index < len(term):
+                            if term[index].isdigit() or term[index] in PEAK_HALF_SPIN_NUCLEUS or term[index] in pseProBeginCode:
+                                pass
+                            else:
+                                resNameLike[idx] = False
 
             if ligCompId is not None and ligCompId != term:
                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(ligCompId, term, leave_unmatched=True)

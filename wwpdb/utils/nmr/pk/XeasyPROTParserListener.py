@@ -38,6 +38,7 @@ try:
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            protonBeginCode,
+                                           pseProBeginCode,
                                            aminoProtonCode,
                                            letterToDigit,
                                            indexToLetter,
@@ -64,6 +65,7 @@ except ImportError:
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (monDict3,
                                protonBeginCode,
+                               pseProBeginCode,
                                aminoProtonCode,
                                letterToDigit,
                                indexToLetter,
@@ -80,6 +82,9 @@ except ImportError:
 class XeasyPROTParserListener(ParseTreeListener):
 
     __file_type = 'nm-aux-xea'
+
+    # whether to restrict to unambiguous atom mapping
+    __unambig = False
 
     # atom name mapping of public MR file between the archive coordinates and submitted ones
     __mrAtomNameMapping = None
@@ -249,7 +254,8 @@ class XeasyPROTParserListener(ParseTreeListener):
             def is_metal_elem(prev_atom_name, prev_seq_id, seq_id):
                 if len(prev_atom_name) == 0:
                     return False
-                return prev_seq_id != seq_id and prev_atom_name[0] not in NON_METAL_ELEMENTS
+                return prev_seq_id != seq_id and prev_atom_name[0] not in NON_METAL_ELEMENTS\
+                    and (self.__unambig or prev_atom_name[0] not in pseProBeginCode)
 
             hasSegCompId = False
             ancAtomName = prevAtomName = ''
@@ -315,7 +321,7 @@ class XeasyPROTParserListener(ParseTreeListener):
                 compIdList = []
                 for seqId, authCompId in zip(ps['seq_id'], ps['auth_comp_id']):
                     authAtomIds = [translateToStdAtomName(atomNum['auth_atom_id'], atomNum['auth_comp_id'],
-                                                          ccU=self.__ccU, unambig=True)
+                                                          ccU=self.__ccU, unambig=self.__unambig)
                                    for atomNum in self.__atomNumberDict.values()
                                    if atomNum['chain_id'] == chainId
                                    and atomNum['seq_id'] == seqId
@@ -325,6 +331,11 @@ class XeasyPROTParserListener(ParseTreeListener):
                         chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                         valid = True
                         for _atomId in authAtomIds:
+                            if _atomId.endswith('%'):
+                                _atomId = _atomId.replace('%', '1')
+                                if _atomId not in chemCompAtomIds:
+                                    valid = False
+                                    break
                             if _atomId not in chemCompAtomIds:
                                 valid = False
                                 break
@@ -342,7 +353,7 @@ class XeasyPROTParserListener(ParseTreeListener):
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
-                                    atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
+                                    atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.__ccU, unambig=self.__unambig)
 
                                     if atomId[0] not in protonBeginCode or atomId in chemCompAtomIds:
                                         atomNum['atom_id'] = atomId
@@ -354,7 +365,7 @@ class XeasyPROTParserListener(ParseTreeListener):
                             compId = self.__csStat.getSimilarCompIdFromAtomIds([translateToStdAtomName(atomNum['auth_atom_id'],
                                                                                                        atomNum['auth_comp_id'],
                                                                                                        ccU=self.__ccU,
-                                                                                                       unambig=True)
+                                                                                                       unambig=self.__unambig)
                                                                                 for atomNum in self.__atomNumberDict.values()
                                                                                 if atomNum['chain_id'] == chainId
                                                                                 and atomNum['seq_id'] == seqId])
@@ -397,7 +408,7 @@ class XeasyPROTParserListener(ParseTreeListener):
                                         else:
                                             atomId = atomNum['auth_atom_id']
 
-                                        atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
+                                        atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=self.__unambig)
 
                                         if chemCompAtomIds is not None and atomId in chemCompAtomIds:
                                             atomNum['atom_id'] = atomId
@@ -453,7 +464,7 @@ class XeasyPROTParserListener(ParseTreeListener):
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
-                                    atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
+                                    atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=self.__unambig)
 
                                     if chemCompAtomIds is not None and atomId in chemCompAtomIds:
                                         atomNum['atom_id'] = atomId
@@ -635,7 +646,7 @@ class XeasyPROTParserListener(ParseTreeListener):
                                 atomId = atomNum['auth_atom_id']
                                 if self.__ccU.updateChemCompDict(compId):
                                     chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-                                    atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
+                                    atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=self.__unambig)
                                     if atomId in chemCompAtomIds:
                                         atomNum['atom_id'] = atomId
                                         continue
@@ -835,7 +846,7 @@ class XeasyPROTParserListener(ParseTreeListener):
                                     atomId = atomNum['auth_atom_id']
                                     if self.__ccU.updateChemCompDict(compId):
                                         chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-                                        atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
+                                        atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=self.__unambig)
                                         if atomId in chemCompAtomIds:
                                             atomNum['atom_id'] = atomId
 
@@ -973,6 +984,9 @@ class XeasyPROTParserListener(ParseTreeListener):
     # Exit a parse tree produced by XeasyPROTParser#prot.
     def exitProt(self, ctx: XeasyPROTParser.ProtContext):
 
+        if not self.__hasPolySeqModel and not self.__hasNonPolyModel:
+            return
+
         try:
 
             nr = int(str(ctx.Integer()))
@@ -985,9 +999,6 @@ class XeasyPROTParserListener(ParseTreeListener):
 
             if assignment is None:
                 self.protStatements -= 1
-                return
-
-            if not self.__hasPolySeqModel and not self.__hasNonPolyModel:
                 return
 
             factor = assignment[0]

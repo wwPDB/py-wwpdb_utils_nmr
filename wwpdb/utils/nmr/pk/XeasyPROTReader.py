@@ -202,5 +202,10 @@ class XeasyPROTReader:
 if __name__ == "__main__":
     reader = XeasyPROTReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/7aaf/bmr34555/work/data/D_1292111069_nmr-peaks-upload_P2.dat.V1',
+                 '../../tests-nmr/mock-data-remediation/7aaf/7aaf.cif')
+
+    reader = XeasyPROTReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/7a2d/all.prot',
                  '../../tests-nmr/mock-data-remediation/7a2d/7a2d.cif')

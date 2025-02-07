@@ -205,6 +205,7 @@
 # 27-Dec-2024  M. Yokochi - extract NMRIF metadata from NMR-STAR (DAOTHER-1728, 9846)
 # 09-Jan-2025  M. Yokochi - extract NMRIF metadata from NMR-STAR (as primary source) and model (as secondary source) (DAOTHER-1728, 9846)
 # 31-Jan-2025  M. Yokochi - add 'coordinate_issue' and 'assigned_peak_atom_not_found' warnings used in NMR data remediation with peak list (DAOTHER-8509, 9785)
+# 07-Feb-2025  M. Yokochi - add support for 'ignore_error' attribute in addInput() for test processing of spectral peak list files derived from ADIT deposition system (DAOTHER-8509)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -6972,11 +6973,14 @@ class NmrDpUtility:
                     for f in value:
                         if 'original_file_name' in f:
                             self.__inputParamDict[name].append({'file_name': os.path.abspath(f['file_name']), 'file_type': f['file_type'],
-                                                                'original_file_name': f['original_file_name']})
+                                                                'original_file_name': f['original_file_name'],
+                                                                'ignore_error': False if 'ignore_error' not in f else f['ignore_error']})
                         else:
-                            self.__inputParamDict[name].append({'file_name': os.path.abspath(f['file_name']), 'file_type': f['file_type']})
+                            self.__inputParamDict[name].append({'file_name': os.path.abspath(f['file_name']), 'file_type': f['file_type'],
+                                                                'ignore_error': False if 'ignore_error' not in f else f['ignore_error']})
                 else:
-                    self.__inputParamDict[name] = [{'file_name': os.path.abspath(f['file_name']), 'file_type': f['file_type']} for f in value]
+                    self.__inputParamDict[name] = [{'file_name': os.path.abspath(f['file_name']), 'file_type': f['file_type'],
+                                                    'ignore_error': False if 'ignore_error' not in f else f['ignore_error']} for f in value]
             else:
                 raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - Unknown input type {type}.")
 
@@ -7458,6 +7462,7 @@ class NmrDpUtility:
             input_source.setItemValue('content_type', content_type)
             if srcName is not None:
                 input_source.setItemValue('original_file_name', srcName)
+            input_source.setItemValue('ignore_error', False)
 
         else:
 
@@ -7513,6 +7518,7 @@ class NmrDpUtility:
                     input_source.setItemValue('file_name', os.path.basename(cs))
                     input_source.setItemValue('file_type', file_type)
                     input_source.setItemValue('content_type', 'nmr-chemical-shifts')
+                    input_source.setItemValue('ignore_error', False)
 
                 else:
 
@@ -7558,6 +7564,7 @@ class NmrDpUtility:
                     input_source.setItemValue('content_type', 'nmr-chemical-shifts')
                     if 'original_file_name' in cs:
                         input_source.setItemValue('original_file_name', cs['original_file_name'])
+                    input_source.setItemValue('ignore_error', False)
 
             mr_file_path_list = 'restraint_file_path_list'
 
@@ -7609,6 +7616,7 @@ class NmrDpUtility:
                         input_source.setItemValue('content_type', 'nmr-restraints')
                         if 'original_file_name' in mr:
                             input_source.setItemValue('original_file_name', mr['original_file_name'])
+                        input_source.setItemValue('ignore_error', False)
 
             ar_file_path_list = 'atypical_restraint_file_path_list'
 
@@ -7758,6 +7766,7 @@ class NmrDpUtility:
                                               'nmr-restraints' if ar['file_type'].startswith('nm-res') else 'nmr-peaks')
                     if 'original_file_name' in ar:
                         input_source.setItemValue('original_file_name', ar['original_file_name'])
+                    input_source.setItemValue('ignore_error', False if 'ignore_error' not in ar else ar['ignore_error'])
 
             if self.__bmrb_only and self.__internal_mode and 'nmr_cif_file_path' in self.__inputParamDict:
 
@@ -35361,7 +35370,7 @@ class NmrDpUtility:
                         self.report.setError()
                 suspended_errors_for_lazy_eval.clear()
 
-        def deal_pea_warn_message(listener):
+        def deal_pea_warn_message(listener, ignore_error):
 
             if listener.warningMessage is not None:
 
@@ -35509,7 +35518,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
-                    else:
+                    elif not ignore_error:
                         self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ KeyError  - " + warn)
                         self.report.setError()
 
@@ -35564,6 +35573,8 @@ class NmrDpUtility:
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
+
+            ignore_error = False if 'ignore_error' not in input_source_dic else input_source_dic['ignore_error']
 
             fileListId += 1
 
@@ -35639,7 +35650,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                    deal_pea_warn_message(listener)
+                    deal_pea_warn_message(listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -35651,7 +35662,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate NMR spectral peak list file (ARIA) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
@@ -35713,7 +35724,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                    deal_pea_warn_message(listener)
+                    deal_pea_warn_message(listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -35725,7 +35736,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate NMR spectral peak list file (NMRPIPE) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
@@ -35864,7 +35875,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                    deal_pea_warn_message(listener)
+                    deal_pea_warn_message(listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -35876,7 +35887,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate NMR spectral peak list file (SPARKY) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
@@ -35934,7 +35945,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                    deal_pea_warn_message(listener)
+                    deal_pea_warn_message(listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -35946,7 +35957,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate NMR spectral peak list file (TOPSPIN) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
@@ -36008,7 +36019,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                    deal_pea_warn_message(listener)
+                    deal_pea_warn_message(listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -36020,7 +36031,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate NMR spectral peak list file (NMRVIEW) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
@@ -36082,7 +36093,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                    deal_pea_warn_message(listener)
+                    deal_pea_warn_message(listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -36094,7 +36105,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate NMR spectral peak list file (VNMR) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
@@ -36158,7 +36169,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                    deal_pea_warn_message(listener)
+                    deal_pea_warn_message(listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -36170,7 +36181,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate NMR spectral peak list file (XEASY) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
@@ -36232,7 +36243,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                    deal_pea_warn_message(listener)
+                    deal_pea_warn_message(listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -36244,7 +36255,7 @@ class NmrDpUtility:
                         self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate NMR spectral peak list file (XWINNMR) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)

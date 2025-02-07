@@ -91,6 +91,7 @@
 # 05-Dec-2024  M. Yokochi - add 'nm-aux-xea' file type for XEASY PROT (Assignment) file (NMR restraint remediation)
 # 16-Dec-2024  M. Yokochi - add 'nm-pea-vnm' file types for VNMR spectral list file (NMR restraint remediation)
 # 31-Jan-2025  M. Yokochi - add 'coordinate_issue' and 'assigned_peak_atom_not_found' warning (DAOTHER-8509, 9785, NMR data remediation, standalone NMR data conversion service)
+# 07-Fev-2025  M. Yokochi - add 'ignore_error' in NmrDpReportInputSource class (DAOTHER-8509)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1761,7 +1762,7 @@ class NmrDpReportInputSource:
         self.items = ('file_name', 'file_type', 'original_file_name', 'content_type', 'content_subtype',
                       'polymer_sequence', 'polymer_sequence_in_loop',
                       'non_standard_residue', 'disulfide_bond', 'other_bond',
-                      'stats_of_exptl_data')
+                      'stats_of_exptl_data', 'ignore_error')
         self.file_types = ('pdbx',
                            'nef', 'nmr-star',
                            'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-xea',

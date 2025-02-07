@@ -690,6 +690,10 @@
         "stats_of_exptl_data": {
           "description": "The object provides statistics of experimental data.",
           "$ref": "#/definitions/stats_of_exptl_data"
+        },
+        "ignore_error": {
+          "description": "Whether the file can be ignored when error occurred.",
+          "type": "boolean"
         }
       },
       "additionalProperties": false,

@@ -2888,7 +2888,7 @@ class BasePKParserListener():
             if _resId is None:
                 return None
 
-        _resNameDict = [{h['seq_id']: h['comp_id']} for h in hint] if hint is not None else None
+        _resNameDict = [{h['auth_seq_id']: h['comp_id']} for h in hint] if hint is not None else None
 
         resIdLater = resIdCount == numOfDim
         if resIdLater:
@@ -2912,7 +2912,7 @@ class BasePKParserListener():
 
         ret = []
 
-        segId = resId = resName = atomName = _segId_ = _resId_ = None
+        segId = resId = resName = atomName = _segId_ = _resId_ = authResId = None
         dimId = 1
         for idx, term in enumerate(_str):
             if segIdLike[idx]:
@@ -2921,7 +2921,7 @@ class BasePKParserListener():
                     resId = resName = None
                 _segId_ = segId
             if resIdLike[idx]:
-                resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
+                resId = authResId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
                 if _resId_ is not None and resId != _resId_:
                     resName = None
                 _resId_ = resId
@@ -2930,8 +2930,9 @@ class BasePKParserListener():
                 if len(resName) == 1 and hasOneLetterCodeSet:
                     resName = next(k for k, v in monDict3.items() if k in self.compIdSet and v == resName)
             elif _resNameDict is not None and resName is None and len(ret) < len(_resNameDict)\
-                    and resId is not None and resId in _resNameDict[len(ret)]:
-                resName = _resNameDict[len(ret)][resId]
+                    and _resId is not None and len(ret) < len(_resId) and _resId[len(ret)] in _resNameDict[len(ret)]\
+                    and (authResId is None or authResId == _resId[len(ret)]):
+                resName = _resNameDict[len(ret)][_resId[len(ret)]]
             if ___atomNameLike[idx]:
                 if resIdLater:
                     for _idx, _term in enumerate(_str):
@@ -2977,7 +2978,7 @@ class BasePKParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:
@@ -3033,7 +3034,7 @@ class BasePKParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:
@@ -3089,7 +3090,7 @@ class BasePKParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:
@@ -3145,7 +3146,7 @@ class BasePKParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'comp_id': resName, 'atom_id': atomName})
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:

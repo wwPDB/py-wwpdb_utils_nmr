@@ -2888,7 +2888,7 @@ class BasePKParserListener():
             if _resId is None:
                 return None
 
-        _resName = [h['comp_id'] for h in hint] if hint is not None else None
+        _resNameDict = [{h['seq_id']: h['comp_id']} for h in hint] if hint is not None else None
 
         resIdLater = resIdCount == numOfDim
         if resIdLater:
@@ -2929,8 +2929,9 @@ class BasePKParserListener():
                 resName = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
                 if len(resName) == 1 and hasOneLetterCodeSet:
                     resName = next(k for k, v in monDict3.items() if k in self.compIdSet and v == resName)
-            elif _resName is not None and resName is None and len(ret) < len(_resName):
-                resName = _resName[len(ret)]
+            elif _resNameDict is not None and resName is None and len(ret) < len(_resNameDict)\
+                    and resId is not None and resId in _resNameDict[len(ret)]:
+                resName = _resNameDict[len(ret)][resId]
             if ___atomNameLike[idx]:
                 if resIdLater:
                     for _idx, _term in enumerate(_str):

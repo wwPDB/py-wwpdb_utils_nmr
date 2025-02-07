@@ -16312,7 +16312,7 @@ class NmrDpUtility:
 
                         settled_file_type, _ = self.__getPeakListFileTypeAndContentSubtype(ign_pk_file)
 
-                        _ar.copy()
+                        _ar = ar.copy()
 
                         if settled_file_type is not None:
                             sel_pk_file = dst_file + f'-selected-as-{settled_file_type[-7:]}'

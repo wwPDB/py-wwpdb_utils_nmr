@@ -839,7 +839,7 @@ class BasePKParserListener():
                                 center = numpy.mean(__v['freq_hint'])
 
                                 if __v['atom_isotope_number'] is None:
-                                    if 125 < center < 130:
+                                    if 128 < center < 133:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C-aromatic'
@@ -893,7 +893,7 @@ class BasePKParserListener():
 
                             if __v['spectral_region'] is None and __v['freq_hint'].size > 0:
                                 atom_type = __v['atom_type']
-                                if 125 < center < 130 and atom_type == 'C':
+                                if 128 < center < 133 and atom_type == 'C':
                                     __v['spectral_region'] = 'C-aromatic'
                                 elif 115 < center < 125 and atom_type == 'N':
                                     __v['spectral_region'] = 'N'

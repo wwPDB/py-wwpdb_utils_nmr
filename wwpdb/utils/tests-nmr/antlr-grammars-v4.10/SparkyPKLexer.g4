@@ -37,6 +37,10 @@ Assignment_2d_ex:	ASS_EACH_AXIS '-' ASS_EACH_AXIS;
 Assignment_3d_ex:	ASS_EACH_AXIS '-' ASS_EACH_AXIS '-' ASS_EACH_AXIS;
 Assignment_4d_ex:	ASS_EACH_AXIS '-' ASS_EACH_AXIS '-' ASS_EACH_AXIS '-' ASS_EACH_AXIS;
 
+Note_2d_ex:		Assignment_2d_ex ('/' Assignment_2d_ex)* '(' ALPHA_NUM+ '=' Float ')';
+Note_3d_ex:		Assignment_3d_ex ('/' Assignment_3d_ex)* '(' ALPHA_NUM+ '=' Float ')';
+Note_4d_ex:		Assignment_4d_ex ('/' Assignment_4d_ex)* '(' ALPHA_NUM+ '=' Float ')';
+
 Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;
 //Residue_name:		SIMPLE_NAME;

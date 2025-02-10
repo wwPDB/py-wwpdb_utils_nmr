@@ -47,8 +47,12 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
     __has_height = False
     __has_volume = False
     __has_lw_hz = False
+    __has_note = False
+
     __has_real_vol = False
     __real_vol = None
+
+    __noteSelection = []
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
@@ -103,6 +107,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
         if ctx.Lw2_Hz_LA():
             self.__has_lw_hz = True
 
+        self.__has_note = False
+        if ctx.Note_LA():
+            self.__has_note = True
+
         self.initSpectralDim()
 
     # Exit a parse tree produced by SparkyPKParser#data_label.
@@ -138,6 +146,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
         if ctx.Lw2_Hz_LA():
             self.__has_lw_hz = True
 
+        self.__has_note = False
+        if ctx.Note_LA():
+            self.__has_note = True
+
         self.initSpectralDim()
 
     # Exit a parse tree produced by SparkyPKParser#data_label_wo_assign.
@@ -169,6 +181,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             ass = _ass_ = str(ctx.Assignment_2d_ex())
             if '?' in ass:
                 ass = None
+            if _ass_ == '?-?' and self.__has_note and len(self.__noteSelection) > 0:
+                _ass_ = ' '.join(self.__noteSelection)
 
             x_ppm = float(str(ctx.Float(0)))
             y_ppm = float(str(ctx.Float(1)))
@@ -257,6 +271,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
             self.__real_vol = None
+            self.__noteSelection.clear()
 
     # Enter a parse tree produced by SparkyPKParser#peak_3d.
     def enterPeak_3d(self, ctx: SparkyPKParser.Peak_3dContext):  # pylint: disable=unused-argument
@@ -283,6 +298,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             ass = _ass_ = str(ctx.Assignment_3d_ex())
             if '?' in ass:
                 ass = None
+            if _ass_ == '?-?-?' and self.__has_note and len(self.__noteSelection) > 0:
+                _ass_ = ' '.join(self.__noteSelection)
 
             x_ppm = float(str(ctx.Float(0)))
             y_ppm = float(str(ctx.Float(1)))
@@ -382,6 +399,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
             self.__real_vol = None
+            self.__noteSelection.clear()
 
     # Enter a parse tree produced by SparkyPKParser#peak_4d.
     def enterPeak_4d(self, ctx: SparkyPKParser.Peak_4dContext):  # pylint: disable=unused-argument
@@ -408,6 +426,8 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             ass = _ass_ = str(ctx.Assignment_4d_ex())
             if '?' in ass:
                 ass = None
+            if _ass_ == '?-?-?-?' and self.__has_note and len(self.__noteSelection) > 0:
+                _ass_ = ' '.join(self.__noteSelection)
 
             x_ppm = float(str(ctx.Float(0)))
             y_ppm = float(str(ctx.Float(1)))
@@ -518,6 +538,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
             self.__real_vol = None
+            self.__noteSelection.clear()
 
     # Enter a parse tree produced by SparkyPKParser#peak_wo_assign.
     def enterPeak_wo_assign(self, ctx: SparkyPKParser.Peak_wo_assignContext):  # pylint: disable=unused-argument
@@ -527,8 +548,6 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.peaks3D += 1
         elif self.num_of_dim == 4:
             self.peaks4D += 1
-
-        self.atomSelectionSet.clear()
 
     # Exit a parse tree produced by SparkyPKParser#peak_wo_assign.
     def exitPeak_wo_assign(self, ctx: SparkyPKParser.Peak_wo_assignContext):  # pylint: disable=unused-argument
@@ -543,6 +562,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 elif self.num_of_dim == 4:
                     self.peaks4D -= 1
                 return
+
+            note = None
+            if self.__has_note and len(self.__noteSelection) > 0:
+                note = ' '.join(self.__noteSelection)
 
             offset = self.num_of_dim
 
@@ -625,7 +648,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
                         row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
                                        sf['list_id'], self.entryId, dstFunc,
-                                       None, None, None)
+                                       None, None, None, details=note)
                         sf['loop'].add_data(row)
 
                 except IndexError:
@@ -722,7 +745,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
                         row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
                                        sf['list_id'], self.entryId, dstFunc,
-                                       None, None, None)
+                                       None, None, None, details=note)
                         sf['loop'].add_data(row)
 
                 except IndexError:
@@ -830,7 +853,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
                         row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
                                        sf['list_id'], self.entryId, dstFunc,
-                                       None, None, None)
+                                       None, None, None, details=note)
                         sf['loop'].add_data(row)
 
                 except IndexError:
@@ -841,6 +864,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
             self.__real_vol = None
+            self.__noteSelection.clear()
 
     # Enter a parse tree produced by SparkyPKParser#number.
     def enterNumber(self, ctx: SparkyPKParser.NumberContext):
@@ -875,8 +899,24 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
         pass
 
     # Enter a parse tree produced by SparkyPKParser#note.
-    def enterNote(self, ctx: SparkyPKParser.NoteContext):  # pylint: disable=unused-argument
-        pass
+    def enterNote(self, ctx: SparkyPKParser.NoteContext):
+        if ctx.Simple_name():
+            self.__noteSelection.append(str(ctx.Simple_name()))
+
+        elif ctx.Float():
+            self.__noteSelection.append(str(ctx.Float()))
+
+        elif ctx.Integer():
+            self.__noteSelection.append(str(ctx.Integer()()))
+
+        elif ctx.Note_2d_ex():
+            self.__noteSelection.append(str(ctx.Note_2d_ex()))
+
+        elif ctx.Note_3d_ex():
+            self.__noteSelection.append(str(ctx.Note_3d_ex()))
+
+        elif ctx.Note_4d_ex():
+            self.__noteSelection.append(str(ctx.Note_4d_ex()))
 
     # Exit a parse tree produced by SparkyPKParser#note.
     def exitNote(self, ctx: SparkyPKParser.NoteContext):  # pylint: disable=unused-argument

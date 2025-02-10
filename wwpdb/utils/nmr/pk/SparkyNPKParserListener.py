@@ -45,8 +45,12 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
     __has_height = False
     __has_volume = False
     __has_lw_hz = False
+    __has_note = False
+
     __has_real_vol = False
     __real_vol = None
+
+    __noteSelection = []
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
@@ -103,6 +107,10 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__has_lw_hz = False
         if ctx.Lw2_Hz_LA():
             self.__has_lw_hz = True
+
+        self.__has_note = False
+        if ctx.Note_LA():
+            self.__has_note = True
 
         self.initSpectralDim()
 
@@ -225,6 +233,7 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
             self.__real_vol = None
+            self.__noteSelection.clear()
 
     # Enter a parse tree produced by SparkyNPKParser#peak_3d.
     def enterPeak_3d(self, ctx: SparkyNPKParser.Peak_3dContext):  # pylint: disable=unused-argument
@@ -352,6 +361,7 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
             self.__real_vol = None
+            self.__noteSelection.clear()
 
     # Enter a parse tree produced by SparkyNPKParser#peak_4d.
     def enterPeak_4d(self, ctx: SparkyNPKParser.Peak_4dContext):  # pylint: disable=unused-argument
@@ -490,6 +500,7 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
             self.__real_vol = None
+            self.__noteSelection.clear()
 
     # Enter a parse tree produced by SparkyNPKParser#peak_2d_po.
     def enterPeak_2d_po(self, ctx: SparkyNPKParser.Peak_2d_poContext):  # pylint: disable=unused-argument
@@ -504,61 +515,69 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by SparkyNPKParser#peak_2d_po.
     def exitPeak_2d_po(self, ctx: SparkyNPKParser.Peak_2d_poContext):
-        index = self.peaks2D
-
-        ass = _ass_ = None
-        if ctx.Assignment_2d_ex():
-            ass = _ass_ = str(ctx.Assignment_2d_ex())
-            if '?' in ass:
-                ass = None
-        elif ctx.Assignment_3d_ex():
-            _ass_ = str(ctx.Assignment_3d_ex())
-        elif ctx.Assignment_4d_ex():
-            _ass_ = str(ctx.Assignment_4d_ex())
 
         try:
 
-            x_ppm = float(str(ctx.Float(0)))
-            y_ppm = float(str(ctx.Float(1)))
+            index = self.peaks2D
 
-        except ValueError:
-            self.peaks2D -= 1
-            return
+            ass = _ass_ = None
+            if ctx.Assignment_2d_ex():
+                ass = _ass_ = str(ctx.Assignment_2d_ex())
+                if '?' in ass:
+                    ass = None
+            elif ctx.Assignment_3d_ex():
+                _ass_ = str(ctx.Assignment_3d_ex())
+            elif ctx.Assignment_4d_ex():
+                _ass_ = str(ctx.Assignment_4d_ex())
+            if _ass_ == '?-?' and self.__has_note and len(self.__noteSelection) > 0:
+                _ass_ = ' '.join(self.__noteSelection)
 
-        if None in (x_ppm, y_ppm):
-            self.peaks2D -= 1
-            return
+            try:
 
-        dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, None, None, None, None,
-                                      None, None, None, None, None, None, None, None)
+                x_ppm = float(str(ctx.Float(0)))
+                y_ppm = float(str(ctx.Float(1)))
 
-        if dstFunc is None:
-            self.peaks2D -= 1
-            return
+            except ValueError:
+                self.peaks2D -= 1
+                return
 
-        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+            if None in (x_ppm, y_ppm):
+                self.peaks2D -= 1
+                return
 
-        cur_spectral_dim[1]['freq_hint'].append(x_ppm)
-        cur_spectral_dim[2]['freq_hint'].append(y_ppm)
+            dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, None, None, None, None,
+                                          None, None, None, None, None, None, None, None)
 
-        has_assignments = has_multiple_assignments = False
-        asis1 = asis2 = None
+            if dstFunc is None:
+                self.peaks2D -= 1
+                return
 
-        if ass is not None:
-            assignments = []
-            hint = None
-            for _ass in ass.split('-'):
-                assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
-                hint = assignments[-1] if assignments[-1] is not None else None
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-            has_assignments, has_multiple_assignments, asis1, asis2 =\
-                self.checkAssignments2D(index, assignments)
+            cur_spectral_dim[1]['freq_hint'].append(x_ppm)
+            cur_spectral_dim[2]['freq_hint'].append(y_ppm)
 
-        self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
-                                asis1, asis2,
-                                f'{ass} -> ',
-                                None if (has_assignments and not has_multiple_assignments)
-                                or _ass_ == '?-?' else _ass_)
+            has_assignments = has_multiple_assignments = False
+            asis1 = asis2 = None
+
+            if ass is not None:
+                assignments = []
+                hint = None
+                for _ass in ass.split('-'):
+                    assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                    hint = assignments[-1] if assignments[-1] is not None else None
+
+                has_assignments, has_multiple_assignments, asis1, asis2 =\
+                    self.checkAssignments2D(index, assignments)
+
+            self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                    asis1, asis2,
+                                    f'{ass} -> ',
+                                    None if (has_assignments and not has_multiple_assignments)
+                                    or _ass_ == '?-?' else _ass_)
+
+        finally:
+            self.__noteSelection.clear()
 
     # Enter a parse tree produced by SparkyNPKParser#peak_3d_po.
     def enterPeak_3d_po(self, ctx: SparkyNPKParser.Peak_3d_poContext):  # pylint: disable=unused-argument
@@ -573,64 +592,72 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by SparkyNPKParser#peak_3d_po.
     def exitPeak_3d_po(self, ctx: SparkyNPKParser.Peak_3d_poContext):
-        index = self.peaks3D
-
-        ass = _ass_ = None
-        if ctx.Assignment_3d_ex():
-            ass = _ass_ = str(ctx.Assignment_3d_ex())
-            if '?' in ass:
-                ass = None
-        if ctx.Assignment_4d_ex():
-            _ass_ = str(ctx.Assignment_4d_ex())
 
         try:
 
-            x_ppm = float(str(ctx.Float(0)))
-            y_ppm = float(str(ctx.Float(1)))
-            z_ppm = float(str(ctx.Float(2)))
+            index = self.peaks3D
 
-        except ValueError:
-            self.peaks3D -= 1
-            return
+            ass = _ass_ = None
+            if ctx.Assignment_3d_ex():
+                ass = _ass_ = str(ctx.Assignment_3d_ex())
+                if '?' in ass:
+                    ass = None
+            if ctx.Assignment_4d_ex():
+                _ass_ = str(ctx.Assignment_4d_ex())
+            if _ass_ == '?-?-?' and self.__has_note and len(self.__noteSelection) > 0:
+                _ass_ = ' '.join(self.__noteSelection)
 
-        if not self.hasPolySeq and not self.hasNonPolySeq:
-            return
+            try:
 
-        if None in (x_ppm, y_ppm, z_ppm):
-            self.peaks3D -= 1
-            return
+                x_ppm = float(str(ctx.Float(0)))
+                y_ppm = float(str(ctx.Float(1)))
+                z_ppm = float(str(ctx.Float(2)))
 
-        dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, None, None, None, None, None, None,
-                                      None, None, None, None, None, None, None, None, None, None)
+            except ValueError:
+                self.peaks3D -= 1
+                return
 
-        if dstFunc is None:
-            self.peaks3D -= 1
-            return
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
 
-        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+            if None in (x_ppm, y_ppm, z_ppm):
+                self.peaks3D -= 1
+                return
 
-        cur_spectral_dim[1]['freq_hint'].append(x_ppm)
-        cur_spectral_dim[2]['freq_hint'].append(y_ppm)
-        cur_spectral_dim[3]['freq_hint'].append(z_ppm)
+            dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, None, None, None, None, None, None,
+                                          None, None, None, None, None, None, None, None, None, None)
 
-        has_assignments = has_multiple_assignments = False
-        asis1 = asis2 = asis3 = None
+            if dstFunc is None:
+                self.peaks3D -= 1
+                return
 
-        if ass is not None:
-            assignments = []
-            hint = None
-            for _ass in ass.split('-'):
-                assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
-                hint = assignments[-1] if assignments[-1] is not None else None
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-            has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
-                self.checkAssignments3D(index, assignments)
+            cur_spectral_dim[1]['freq_hint'].append(x_ppm)
+            cur_spectral_dim[2]['freq_hint'].append(y_ppm)
+            cur_spectral_dim[3]['freq_hint'].append(z_ppm)
 
-        self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
-                                asis1, asis2, asis3,
-                                f'{ass} -> ',
-                                None if (has_assignments and not has_multiple_assignments)
-                                or _ass_ == '?-?-?' else _ass_)
+            has_assignments = has_multiple_assignments = False
+            asis1 = asis2 = asis3 = None
+
+            if ass is not None:
+                assignments = []
+                hint = None
+                for _ass in ass.split('-'):
+                    assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                    hint = assignments[-1] if assignments[-1] is not None else None
+
+                has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
+                    self.checkAssignments3D(index, assignments)
+
+            self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                    asis1, asis2, asis3,
+                                    f'{ass} -> ',
+                                    None if (has_assignments and not has_multiple_assignments)
+                                    or _ass_ == '?-?-?' else _ass_)
+
+        finally:
+            self.__noteSelection.clear()
 
     # Enter a parse tree produced by SparkyNPKParser#peak_4d_po.
     def enterPeak_4d_po(self, ctx: SparkyNPKParser.Peak_4d_poContext):  # pylint: disable=unused-argument
@@ -645,64 +672,72 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by SparkyNPKParser#peak_4d_po.
     def exitPeak_4d_po(self, ctx: SparkyNPKParser.Peak_4d_poContext):
-        index = self.peaks4D
-
-        ass = _ass_ = None
-        if ctx.Assignment_4d_ex():
-            ass = _ass_ = str(ctx.Assignment_4d_ex())
-            if '?' in ass:
-                ass = None
 
         try:
 
-            x_ppm = float(str(ctx.Float(0)))
-            y_ppm = float(str(ctx.Float(1)))
-            z_ppm = float(str(ctx.Float(2)))
-            a_ppm = float(str(ctx.Float(3)))
+            index = self.peaks4D
 
-        except ValueError:
-            self.peaks4D -= 1
-            return
+            ass = _ass_ = None
+            if ctx.Assignment_4d_ex():
+                ass = _ass_ = str(ctx.Assignment_4d_ex())
+                if '?' in ass:
+                    ass = None
+            if _ass_ == '?-?-?-?' and self.__has_note and len(self.__noteSelection) > 0:
+                _ass_ = ' '.join(self.__noteSelection)
 
-        if not self.hasPolySeq and not self.hasNonPolySeq:
-            return
+            try:
 
-        if None in (x_ppm, y_ppm, z_ppm, a_ppm):
-            self.peaks4D -= 1
-            return
+                x_ppm = float(str(ctx.Float(0)))
+                y_ppm = float(str(ctx.Float(1)))
+                z_ppm = float(str(ctx.Float(2)))
+                a_ppm = float(str(ctx.Float(3)))
 
-        dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, None, None, None, None, None, None, None, None,
-                                      None, None, None, None, None, None, None, None, None, None, None, None)
+            except ValueError:
+                self.peaks4D -= 1
+                return
 
-        if dstFunc is None:
-            self.peaks4D -= 1
-            return
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
 
-        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+            if None in (x_ppm, y_ppm, z_ppm, a_ppm):
+                self.peaks4D -= 1
+                return
 
-        cur_spectral_dim[1]['freq_hint'].append(x_ppm)
-        cur_spectral_dim[2]['freq_hint'].append(y_ppm)
-        cur_spectral_dim[3]['freq_hint'].append(z_ppm)
-        cur_spectral_dim[4]['freq_hint'].append(a_ppm)
+            dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, None, None, None, None, None, None, None, None,
+                                          None, None, None, None, None, None, None, None, None, None, None, None)
 
-        has_assignments = has_multiple_assignments = False
-        asis1 = asis2 = asis3 = asis4 = None
+            if dstFunc is None:
+                self.peaks4D -= 1
+                return
 
-        if ass is not None:
-            assignments = []
-            hint = None
-            for _ass in ass.split('-'):
-                assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
-                hint = assignments[-1] if assignments[-1] is not None else None
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-            has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
-                self.checkAssignments4D(index, assignments)
+            cur_spectral_dim[1]['freq_hint'].append(x_ppm)
+            cur_spectral_dim[2]['freq_hint'].append(y_ppm)
+            cur_spectral_dim[3]['freq_hint'].append(z_ppm)
+            cur_spectral_dim[4]['freq_hint'].append(a_ppm)
 
-        self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
-                                asis1, asis2, asis3, asis4,
-                                f'{ass} -> ',
-                                None if (has_assignments and not has_multiple_assignments)
-                                or _ass_ == '?-?-?-?' else _ass_)
+            has_assignments = has_multiple_assignments = False
+            asis1 = asis2 = asis3 = asis4 = None
+
+            if ass is not None:
+                assignments = []
+                hint = None
+                for _ass in ass.split('-'):
+                    assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                    hint = assignments[-1] if assignments[-1] is not None else None
+
+                has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
+                    self.checkAssignments4D(index, assignments)
+
+            self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                    asis1, asis2, asis3, asis4,
+                                    f'{ass} -> ',
+                                    None if (has_assignments and not has_multiple_assignments)
+                                    or _ass_ == '?-?-?-?' else _ass_)
+
+        finally:
+            self.__noteSelection.clear()
 
     # Enter a parse tree produced by SparkyNPKParser#number.
     def enterNumber(self, ctx: SparkyNPKParser.NumberContext):
@@ -737,8 +772,24 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
         pass
 
     # Enter a parse tree produced by SparkyNPKParser#note.
-    def enterNote(self, ctx: SparkyNPKParser.NoteContext):  # pylint: disable=unused-argument
-        pass
+    def enterNote(self, ctx: SparkyNPKParser.NoteContext):
+        if ctx.Simple_name():
+            self.__noteSelection.append(str(ctx.Simple_name()))
+
+        elif ctx.Float():
+            self.__noteSelection.append(str(ctx.Float()))
+
+        elif ctx.Integer():
+            self.__noteSelection.append(str(ctx.Integer()()))
+
+        elif ctx.Note_2d_ex():
+            self.__noteSelection.append(str(ctx.Note_2d_ex()))
+
+        elif ctx.Note_3d_ex():
+            self.__noteSelection.append(str(ctx.Note_3d_ex()))
+
+        elif ctx.Note_4d_ex():
+            self.__noteSelection.append(str(ctx.Note_4d_ex()))
 
     # Exit a parse tree produced by SparkyNPKParser#note.
     def exitNote(self, ctx: SparkyNPKParser.NoteContext):  # pylint: disable=unused-argument

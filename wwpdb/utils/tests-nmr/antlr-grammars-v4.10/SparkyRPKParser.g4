@@ -58,11 +58,11 @@ peak_4d:
 	Assignment_4d_ex Float Float Float Float number+ note* (RETURN | EOF);
 
 peak_wo_assign:
-	number+ Simple_name? (RETURN | EOF);
+	number+ note? (RETURN | EOF);
 
 /* number expression in peak list */
 number:	Real_vol | Real | Float | Integer;
 
 /* note expression in peak list */
-note:	Simple_name | Integer | Float;
+note:	Simple_name | Integer | Float | Note_2d_ex | Note_3d_ex | Note_4d_ex;
 

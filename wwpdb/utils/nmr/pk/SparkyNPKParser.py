@@ -10,7 +10,7 @@ else:
 
 def serializedATN():
     return [
-        4,1,46,215,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,49,215,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,1,0,3,0,22,8,0,1,0,1,0,4,0,26,8,0,11,0,
         12,0,27,1,0,4,0,31,8,0,11,0,12,0,32,1,0,4,0,36,8,0,11,0,12,0,37,
         1,0,4,0,41,8,0,11,0,12,0,42,1,0,4,0,46,8,0,11,0,12,0,47,1,0,4,0,
@@ -27,10 +27,10 @@ def serializedATN():
         4,1,4,1,4,5,4,180,8,4,10,4,12,4,183,9,4,1,4,5,4,186,8,4,10,4,12,
         4,189,9,4,1,4,1,4,1,5,1,5,1,5,1,5,1,5,1,6,1,6,1,6,1,6,1,6,1,6,1,
         7,1,7,1,7,1,7,1,7,1,7,1,7,1,8,1,8,1,9,1,9,1,9,0,0,10,0,2,4,6,8,10,
-        12,14,16,18,0,6,1,0,36,37,1,1,15,15,1,0,10,12,1,0,11,12,1,0,3,6,
-        2,0,3,4,13,13,249,0,21,1,0,0,0,2,62,1,0,0,0,4,138,1,0,0,0,6,155,
+        12,14,16,18,0,6,1,0,39,40,1,1,18,18,1,0,10,12,1,0,11,12,1,0,3,6,
+        2,0,3,4,13,16,249,0,21,1,0,0,0,2,62,1,0,0,0,4,138,1,0,0,0,6,155,
         1,0,0,0,8,173,1,0,0,0,10,192,1,0,0,0,12,197,1,0,0,0,14,203,1,0,0,
-        0,16,210,1,0,0,0,18,212,1,0,0,0,20,22,5,15,0,0,21,20,1,0,0,0,21,
+        0,16,210,1,0,0,0,18,212,1,0,0,0,20,22,5,18,0,0,21,20,1,0,0,0,21,
         22,1,0,0,0,22,57,1,0,0,0,23,56,3,2,1,0,24,26,3,10,5,0,25,24,1,0,
         0,0,26,27,1,0,0,0,27,25,1,0,0,0,27,28,1,0,0,0,28,56,1,0,0,0,29,31,
         3,12,6,0,30,29,1,0,0,0,31,32,1,0,0,0,32,30,1,0,0,0,32,33,1,0,0,0,
@@ -39,33 +39,33 @@ def serializedATN():
         42,1,0,0,0,42,40,1,0,0,0,42,43,1,0,0,0,43,56,1,0,0,0,44,46,3,6,3,
         0,45,44,1,0,0,0,46,47,1,0,0,0,47,45,1,0,0,0,47,48,1,0,0,0,48,56,
         1,0,0,0,49,51,3,8,4,0,50,49,1,0,0,0,51,52,1,0,0,0,52,50,1,0,0,0,
-        52,53,1,0,0,0,53,56,1,0,0,0,54,56,5,15,0,0,55,23,1,0,0,0,55,25,1,
+        52,53,1,0,0,0,53,56,1,0,0,0,54,56,5,18,0,0,55,23,1,0,0,0,55,25,1,
         0,0,0,55,30,1,0,0,0,55,35,1,0,0,0,55,40,1,0,0,0,55,45,1,0,0,0,55,
         50,1,0,0,0,55,54,1,0,0,0,56,59,1,0,0,0,57,55,1,0,0,0,57,58,1,0,0,
         0,58,60,1,0,0,0,59,57,1,0,0,0,60,61,5,0,0,1,61,1,1,0,0,0,62,63,5,
-        1,0,0,63,64,5,27,0,0,64,66,5,28,0,0,65,67,5,29,0,0,66,65,1,0,0,0,
-        66,67,1,0,0,0,67,69,1,0,0,0,68,70,5,30,0,0,69,68,1,0,0,0,69,70,1,
-        0,0,0,70,72,1,0,0,0,71,73,5,19,0,0,72,71,1,0,0,0,72,73,1,0,0,0,73,
-        75,1,0,0,0,74,76,5,20,0,0,75,74,1,0,0,0,75,76,1,0,0,0,76,78,1,0,
-        0,0,77,79,5,21,0,0,78,77,1,0,0,0,78,79,1,0,0,0,79,81,1,0,0,0,80,
-        82,5,22,0,0,81,80,1,0,0,0,81,82,1,0,0,0,82,84,1,0,0,0,83,85,5,31,
-        0,0,84,83,1,0,0,0,84,85,1,0,0,0,85,87,1,0,0,0,86,88,5,32,0,0,87,
-        86,1,0,0,0,87,88,1,0,0,0,88,90,1,0,0,0,89,91,5,33,0,0,90,89,1,0,
-        0,0,90,91,1,0,0,0,91,93,1,0,0,0,92,94,5,34,0,0,93,92,1,0,0,0,93,
+        1,0,0,63,64,5,30,0,0,64,66,5,31,0,0,65,67,5,32,0,0,66,65,1,0,0,0,
+        66,67,1,0,0,0,67,69,1,0,0,0,68,70,5,33,0,0,69,68,1,0,0,0,69,70,1,
+        0,0,0,70,72,1,0,0,0,71,73,5,22,0,0,72,71,1,0,0,0,72,73,1,0,0,0,73,
+        75,1,0,0,0,74,76,5,23,0,0,75,74,1,0,0,0,75,76,1,0,0,0,76,78,1,0,
+        0,0,77,79,5,24,0,0,78,77,1,0,0,0,78,79,1,0,0,0,79,81,1,0,0,0,80,
+        82,5,25,0,0,81,80,1,0,0,0,81,82,1,0,0,0,82,84,1,0,0,0,83,85,5,34,
+        0,0,84,83,1,0,0,0,84,85,1,0,0,0,85,87,1,0,0,0,86,88,5,35,0,0,87,
+        86,1,0,0,0,87,88,1,0,0,0,88,90,1,0,0,0,89,91,5,36,0,0,90,89,1,0,
+        0,0,90,91,1,0,0,0,91,93,1,0,0,0,92,94,5,37,0,0,93,92,1,0,0,0,93,
         94,1,0,0,0,94,96,1,0,0,0,95,97,7,0,0,0,96,95,1,0,0,0,96,97,1,0,0,
         0,97,99,1,0,0,0,98,100,7,0,0,0,99,98,1,0,0,0,99,100,1,0,0,0,100,
-        102,1,0,0,0,101,103,5,38,0,0,102,101,1,0,0,0,102,103,1,0,0,0,103,
-        105,1,0,0,0,104,106,5,23,0,0,105,104,1,0,0,0,105,106,1,0,0,0,106,
-        108,1,0,0,0,107,109,5,24,0,0,108,107,1,0,0,0,108,109,1,0,0,0,109,
-        111,1,0,0,0,110,112,5,25,0,0,111,110,1,0,0,0,111,112,1,0,0,0,112,
-        114,1,0,0,0,113,115,5,26,0,0,114,113,1,0,0,0,114,115,1,0,0,0,115,
-        117,1,0,0,0,116,118,5,39,0,0,117,116,1,0,0,0,117,118,1,0,0,0,118,
-        120,1,0,0,0,119,121,5,40,0,0,120,119,1,0,0,0,120,121,1,0,0,0,121,
-        123,1,0,0,0,122,124,5,41,0,0,123,122,1,0,0,0,123,124,1,0,0,0,124,
-        126,1,0,0,0,125,127,5,42,0,0,126,125,1,0,0,0,126,127,1,0,0,0,127,
-        129,1,0,0,0,128,130,5,43,0,0,129,128,1,0,0,0,129,130,1,0,0,0,130,
-        132,1,0,0,0,131,133,5,44,0,0,132,131,1,0,0,0,132,133,1,0,0,0,133,
-        134,1,0,0,0,134,136,5,46,0,0,135,137,5,15,0,0,136,135,1,0,0,0,136,
+        102,1,0,0,0,101,103,5,41,0,0,102,101,1,0,0,0,102,103,1,0,0,0,103,
+        105,1,0,0,0,104,106,5,26,0,0,105,104,1,0,0,0,105,106,1,0,0,0,106,
+        108,1,0,0,0,107,109,5,27,0,0,108,107,1,0,0,0,108,109,1,0,0,0,109,
+        111,1,0,0,0,110,112,5,28,0,0,111,110,1,0,0,0,111,112,1,0,0,0,112,
+        114,1,0,0,0,113,115,5,29,0,0,114,113,1,0,0,0,114,115,1,0,0,0,115,
+        117,1,0,0,0,116,118,5,42,0,0,117,116,1,0,0,0,117,118,1,0,0,0,118,
+        120,1,0,0,0,119,121,5,43,0,0,120,119,1,0,0,0,120,121,1,0,0,0,121,
+        123,1,0,0,0,122,124,5,44,0,0,123,122,1,0,0,0,123,124,1,0,0,0,124,
+        126,1,0,0,0,125,127,5,45,0,0,126,125,1,0,0,0,126,127,1,0,0,0,127,
+        129,1,0,0,0,128,130,5,46,0,0,129,128,1,0,0,0,129,130,1,0,0,0,130,
+        132,1,0,0,0,131,133,5,47,0,0,132,131,1,0,0,0,132,133,1,0,0,0,133,
+        134,1,0,0,0,134,136,5,49,0,0,135,137,5,18,0,0,136,135,1,0,0,0,136,
         137,1,0,0,0,137,3,1,0,0,0,138,139,5,10,0,0,139,140,5,4,0,0,140,144,
         5,4,0,0,141,143,3,16,8,0,142,141,1,0,0,0,143,146,1,0,0,0,144,142,
         1,0,0,0,144,145,1,0,0,0,145,150,1,0,0,0,146,144,1,0,0,0,147,149,
@@ -108,20 +108,22 @@ class SparkyNPKParser ( Parser ):
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                     "'w2'", "'w3'", "'w4'", "<INVALID>", "<INVALID>", "<INVALID>", 
-                     "<INVALID>", "<INVALID>", "<INVALID>", "'Volume'" ]
+                     "<INVALID>", "<INVALID>", "<INVALID>", "'w2'", "'w3'", 
+                     "'w4'", "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
+                     "<INVALID>", "<INVALID>", "'Volume'" ]
 
     symbolicNames = [ "<INVALID>", "Assignment", "W1", "Integer", "Float", 
                       "Real", "Real_vol", "SHARP_COMMENT", "EXCLM_COMMENT", 
                       "SMCLN_COMMENT", "Assignment_2d_ex", "Assignment_3d_ex", 
-                      "Assignment_4d_ex", "Simple_name", "SPACE", "RETURN", 
-                      "ENCLOSE_COMMENT", "SECTION_COMMENT", "LINE_COMMENT", 
-                      "W1_Hz_LA", "W2_Hz_LA", "W3_Hz_LA", "W4_Hz_LA", "Lw1_Hz_LA", 
-                      "Lw2_Hz_LA", "Lw3_Hz_LA", "Lw4_Hz_LA", "W1_LA", "W2_LA", 
-                      "W3_LA", "W4_LA", "Dev_w1_LA", "Dev_w2_LA", "Dev_w3_LA", 
-                      "Dev_w4_LA", "Dummy_H_LA", "Height_LA", "Volume_LA", 
-                      "S_N_LA", "Atom1_LA", "Atom2_LA", "Atom3_LA", "Atom4_LA", 
-                      "Distance_LA", "Note_LA", "SPACE_LA", "RETURN_LA" ]
+                      "Assignment_4d_ex", "Note_2d_ex", "Note_3d_ex", "Note_4d_ex", 
+                      "Simple_name", "SPACE", "RETURN", "ENCLOSE_COMMENT", 
+                      "SECTION_COMMENT", "LINE_COMMENT", "W1_Hz_LA", "W2_Hz_LA", 
+                      "W3_Hz_LA", "W4_Hz_LA", "Lw1_Hz_LA", "Lw2_Hz_LA", 
+                      "Lw3_Hz_LA", "Lw4_Hz_LA", "W1_LA", "W2_LA", "W3_LA", 
+                      "W4_LA", "Dev_w1_LA", "Dev_w2_LA", "Dev_w3_LA", "Dev_w4_LA", 
+                      "Dummy_H_LA", "Height_LA", "Volume_LA", "S_N_LA", 
+                      "Atom1_LA", "Atom2_LA", "Atom3_LA", "Atom4_LA", "Distance_LA", 
+                      "Note_LA", "SPACE_LA", "RETURN_LA" ]
 
     RULE_sparky_npk = 0
     RULE_data_label = 1
@@ -150,40 +152,43 @@ class SparkyNPKParser ( Parser ):
     Assignment_2d_ex=10
     Assignment_3d_ex=11
     Assignment_4d_ex=12
-    Simple_name=13
-    SPACE=14
-    RETURN=15
-    ENCLOSE_COMMENT=16
-    SECTION_COMMENT=17
-    LINE_COMMENT=18
-    W1_Hz_LA=19
-    W2_Hz_LA=20
-    W3_Hz_LA=21
-    W4_Hz_LA=22
-    Lw1_Hz_LA=23
-    Lw2_Hz_LA=24
-    Lw3_Hz_LA=25
-    Lw4_Hz_LA=26
-    W1_LA=27
-    W2_LA=28
-    W3_LA=29
-    W4_LA=30
-    Dev_w1_LA=31
-    Dev_w2_LA=32
-    Dev_w3_LA=33
-    Dev_w4_LA=34
-    Dummy_H_LA=35
-    Height_LA=36
-    Volume_LA=37
-    S_N_LA=38
-    Atom1_LA=39
-    Atom2_LA=40
-    Atom3_LA=41
-    Atom4_LA=42
-    Distance_LA=43
-    Note_LA=44
-    SPACE_LA=45
-    RETURN_LA=46
+    Note_2d_ex=13
+    Note_3d_ex=14
+    Note_4d_ex=15
+    Simple_name=16
+    SPACE=17
+    RETURN=18
+    ENCLOSE_COMMENT=19
+    SECTION_COMMENT=20
+    LINE_COMMENT=21
+    W1_Hz_LA=22
+    W2_Hz_LA=23
+    W3_Hz_LA=24
+    W4_Hz_LA=25
+    Lw1_Hz_LA=26
+    Lw2_Hz_LA=27
+    Lw3_Hz_LA=28
+    Lw4_Hz_LA=29
+    W1_LA=30
+    W2_LA=31
+    W3_LA=32
+    W4_LA=33
+    Dev_w1_LA=34
+    Dev_w2_LA=35
+    Dev_w3_LA=36
+    Dev_w4_LA=37
+    Dummy_H_LA=38
+    Height_LA=39
+    Volume_LA=40
+    S_N_LA=41
+    Atom1_LA=42
+    Atom2_LA=43
+    Atom3_LA=44
+    Atom4_LA=45
+    Distance_LA=46
+    Note_LA=47
+    SPACE_LA=48
+    RETURN_LA=49
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -291,7 +296,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 57
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 39938) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 269314) != 0):
                 self.state = 55
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,7,self._ctx)
@@ -550,7 +555,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 66
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==29:
+            if _la==32:
                 self.state = 65
                 self.match(SparkyNPKParser.W3_LA)
 
@@ -558,7 +563,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 69
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==30:
+            if _la==33:
                 self.state = 68
                 self.match(SparkyNPKParser.W4_LA)
 
@@ -566,7 +571,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 72
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==19:
+            if _la==22:
                 self.state = 71
                 self.match(SparkyNPKParser.W1_Hz_LA)
 
@@ -574,7 +579,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 75
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==20:
+            if _la==23:
                 self.state = 74
                 self.match(SparkyNPKParser.W2_Hz_LA)
 
@@ -582,7 +587,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 78
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==21:
+            if _la==24:
                 self.state = 77
                 self.match(SparkyNPKParser.W3_Hz_LA)
 
@@ -590,7 +595,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 81
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==22:
+            if _la==25:
                 self.state = 80
                 self.match(SparkyNPKParser.W4_Hz_LA)
 
@@ -598,7 +603,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 84
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==31:
+            if _la==34:
                 self.state = 83
                 self.match(SparkyNPKParser.Dev_w1_LA)
 
@@ -606,7 +611,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 87
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==32:
+            if _la==35:
                 self.state = 86
                 self.match(SparkyNPKParser.Dev_w2_LA)
 
@@ -614,7 +619,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 90
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==33:
+            if _la==36:
                 self.state = 89
                 self.match(SparkyNPKParser.Dev_w3_LA)
 
@@ -622,7 +627,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 93
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==34:
+            if _la==37:
                 self.state = 92
                 self.match(SparkyNPKParser.Dev_w4_LA)
 
@@ -633,7 +638,7 @@ class SparkyNPKParser ( Parser ):
             if la_ == 1:
                 self.state = 95
                 _la = self._input.LA(1)
-                if not(_la==36 or _la==37):
+                if not(_la==39 or _la==40):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -643,10 +648,10 @@ class SparkyNPKParser ( Parser ):
             self.state = 99
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==36 or _la==37:
+            if _la==39 or _la==40:
                 self.state = 98
                 _la = self._input.LA(1)
-                if not(_la==36 or _la==37):
+                if not(_la==39 or _la==40):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -656,7 +661,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 102
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==38:
+            if _la==41:
                 self.state = 101
                 self.match(SparkyNPKParser.S_N_LA)
 
@@ -664,7 +669,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 105
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==23:
+            if _la==26:
                 self.state = 104
                 self.match(SparkyNPKParser.Lw1_Hz_LA)
 
@@ -672,7 +677,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 108
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==24:
+            if _la==27:
                 self.state = 107
                 self.match(SparkyNPKParser.Lw2_Hz_LA)
 
@@ -680,7 +685,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 111
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==25:
+            if _la==28:
                 self.state = 110
                 self.match(SparkyNPKParser.Lw3_Hz_LA)
 
@@ -688,7 +693,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 114
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==26:
+            if _la==29:
                 self.state = 113
                 self.match(SparkyNPKParser.Lw4_Hz_LA)
 
@@ -696,7 +701,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 117
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==39:
+            if _la==42:
                 self.state = 116
                 self.match(SparkyNPKParser.Atom1_LA)
 
@@ -704,7 +709,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 120
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==40:
+            if _la==43:
                 self.state = 119
                 self.match(SparkyNPKParser.Atom2_LA)
 
@@ -712,7 +717,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 123
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==41:
+            if _la==44:
                 self.state = 122
                 self.match(SparkyNPKParser.Atom3_LA)
 
@@ -720,7 +725,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 126
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==42:
+            if _la==45:
                 self.state = 125
                 self.match(SparkyNPKParser.Atom4_LA)
 
@@ -728,7 +733,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 129
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==43:
+            if _la==46:
                 self.state = 128
                 self.match(SparkyNPKParser.Distance_LA)
 
@@ -736,7 +741,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 132
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==44:
+            if _la==47:
                 self.state = 131
                 self.match(SparkyNPKParser.Note_LA)
 
@@ -837,7 +842,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 150
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 8216) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 122904) != 0):
                 self.state = 147
                 self.note()
                 self.state = 152
@@ -846,7 +851,7 @@ class SparkyNPKParser ( Parser ):
 
             self.state = 153
             _la = self._input.LA(1)
-            if not(_la==-1 or _la==15):
+            if not(_la==-1 or _la==18):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -939,7 +944,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 168
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 8216) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 122904) != 0):
                 self.state = 165
                 self.note()
                 self.state = 170
@@ -948,7 +953,7 @@ class SparkyNPKParser ( Parser ):
 
             self.state = 171
             _la = self._input.LA(1)
-            if not(_la==-1 or _la==15):
+            if not(_la==-1 or _la==18):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1043,7 +1048,7 @@ class SparkyNPKParser ( Parser ):
             self.state = 187
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 8216) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 122904) != 0):
                 self.state = 184
                 self.note()
                 self.state = 189
@@ -1052,7 +1057,7 @@ class SparkyNPKParser ( Parser ):
 
             self.state = 190
             _la = self._input.LA(1)
-            if not(_la==-1 or _la==15):
+            if not(_la==-1 or _la==18):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1128,7 +1133,7 @@ class SparkyNPKParser ( Parser ):
             self.match(SparkyNPKParser.Float)
             self.state = 195
             _la = self._input.LA(1)
-            if not(_la==-1 or _la==15):
+            if not(_la==-1 or _la==18):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1203,7 +1208,7 @@ class SparkyNPKParser ( Parser ):
             self.match(SparkyNPKParser.Float)
             self.state = 201
             _la = self._input.LA(1)
-            if not(_la==-1 or _la==15):
+            if not(_la==-1 or _la==18):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1272,7 +1277,7 @@ class SparkyNPKParser ( Parser ):
             self.match(SparkyNPKParser.Float)
             self.state = 208
             _la = self._input.LA(1)
-            if not(_la==-1 or _la==15):
+            if not(_la==-1 or _la==18):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -1358,6 +1363,15 @@ class SparkyNPKParser ( Parser ):
         def Float(self):
             return self.getToken(SparkyNPKParser.Float, 0)
 
+        def Note_2d_ex(self):
+            return self.getToken(SparkyNPKParser.Note_2d_ex, 0)
+
+        def Note_3d_ex(self):
+            return self.getToken(SparkyNPKParser.Note_3d_ex, 0)
+
+        def Note_4d_ex(self):
+            return self.getToken(SparkyNPKParser.Note_4d_ex, 0)
+
         def getRuleIndex(self):
             return SparkyNPKParser.RULE_note
 
@@ -1381,7 +1395,7 @@ class SparkyNPKParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 212
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 8216) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 122904) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

@@ -843,7 +843,7 @@ class BasePKParserListener():
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C-aromatic'
-                                    elif 115 < center < 125:
+                                    elif 115 < center < 128:
                                         __v['atom_type'] = 'N'
                                         __v['atom_isotope_number'] = 15
                                         __v['axis_code'] = 'N'
@@ -895,7 +895,7 @@ class BasePKParserListener():
                                 atom_type = __v['atom_type']
                                 if 128 < center < 133 and atom_type == 'C':
                                     __v['spectral_region'] = 'C-aromatic'
-                                elif 115 < center < 125 and atom_type == 'N':
+                                elif 115 < center < 128 and atom_type == 'N':
                                     __v['spectral_region'] = 'N'
                                 elif 170 < center < 180 and atom_type == 'C':
                                     __v['spectral_region'] = 'CO'

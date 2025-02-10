@@ -200,7 +200,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            if len(self.numberSelection) == 0:
+            if len(self.numberSelection) == 0 or len(self.__enclose_data) < 4:
                 self.peaks2D -= 1
                 return
 
@@ -325,7 +325,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            if len(self.numberSelection) == 0:
+            if len(self.numberSelection) == 0 or len(self.__enclose_data) < 6:
                 self.peaks3D -= 1
                 return
 
@@ -469,7 +469,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            if len(self.numberSelection) == 0:
+            if len(self.numberSelection) == 0 or len(self.__enclose_data) < 8:
                 self.peaks4D -= 1
                 return
 

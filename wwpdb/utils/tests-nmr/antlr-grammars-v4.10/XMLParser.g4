@@ -38,7 +38,7 @@ options {
 }
 
 document
-    : prolog? misc* element misc* EOF
+    : ( prolog? misc* element misc* )+ EOF
     ;
 
 prolog

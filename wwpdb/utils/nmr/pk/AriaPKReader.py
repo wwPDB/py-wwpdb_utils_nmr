@@ -220,5 +220,10 @@ class AriaPKReader:
 if __name__ == "__main__":
     reader = AriaPKReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2nba/2nba-corrected-div_dst.mr',
+                 '../../tests-nmr/mock-data-remediation/2nba/2nba.cif')
+
+    reader = AriaPKReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/5lg9/cnoesy_xpk.xml',
                  '../../tests-nmr/mock-data-remediation/5lg9/5lg9.cif')

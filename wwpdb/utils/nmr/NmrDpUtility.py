@@ -205,7 +205,7 @@
 # 27-Dec-2024  M. Yokochi - extract NMRIF metadata from NMR-STAR (DAOTHER-1728, 9846)
 # 09-Jan-2025  M. Yokochi - extract NMRIF metadata from NMR-STAR (as primary source) and model (as secondary source) (DAOTHER-1728, 9846)
 # 31-Jan-2025  M. Yokochi - add 'coordinate_issue' and 'assigned_peak_atom_not_found' warnings used in NMR data remediation with peak list (DAOTHER-8509, 9785)
-# 07-Feb-2025  M. Yokochi - add support for 'ignore_error' attribute in addInput() for test processing of spectral peak list files derived from ADIT deposition system (DAOTHER-8509)
+# 07-Feb-2025  M. Yokochi - add support for 'ignore_error' attribute in addInput() for test processing of spectral peak list files came from legacy ADIT system (DAOTHER-8509)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -1104,129 +1104,51 @@ def concat_nmr_restraint_names(content_subtype: Optional[str]) -> str:
     return ', '.join(f)
 
 
-def is_peak_list(line: str, has_header: bool = True) -> bool:
-    """ Return whether a given input is derived from peak list in any native format.
-    """
-
-    col = None
-
-    if has_header and line.count('E') + line.count('e') >= 2:  # XEASY peak list
-        col = line.split()
-        return 'U' in col or 'T' in col
-
-    if 'w1' in line and 'w2' in line:  # Sparky peak list
-        return True
-
-    if 'label' in line and 'dataset' in line and 'sw' in line and 'sf' in line:  # NMRView peak list
-        return True
-
-    if 'VARS' in line and 'X_PPM' in line and 'Y_PPM' in line:  # NMRPipe peak list
-        return True
-
-    if '<!DOCTYPE spectrum SYSTEM' in line or '<spectrum name=' in line:  # ARIA peak list
-        return True
-
-    if '# PEAKLIST_VERSION' in line or '# PEAKLIST_DIMENSION' in line:  # XwinNMR peak list
-        return True
-
-    if '<PeakList>' in line:  # TopSpin peak list
-        return True
-
-    if 'peak id.' in line and 'Dim 0 (ppm)' in line and 'Dim 1 (ppm)' in line:  # VNMR peak list
-        return True
-
-    if '# Peak List from VNMR' in line\
-       or ('Peak_Number' in line and 'X(ppm)' in line and 'Y(ppm)' in line):  # VNMR ll2d output
-        return True
-
-    if col is None:
-        col = line.split()
-
-    if len(col) > 3 and sparky_assignment_pattern.match(col[0]):  # Sparky
-        try:
-            float(col[1])
-            float(col[2])
-            return True
-        except (ValueError, TypeError):
-            pass
-
-    if len(col) > 6 and sparky_assignment_pattern.match(col[6]):  # VNMR 2D
-        try:
-            int(col[0])
-            float(col[1])
-            float(col[3])
-            return True
-        except (ValueError, TypeError):
-            pass
-
-    if len(col) > 8 and sparky_assignment_pattern.match(col[8]):  # VNMR 3D
-        try:
-            int(col[0])
-            float(col[1])
-            float(col[3])
-            float(col[5])
-            return True
-        except (ValueError, TypeError):
-            pass
-
-    if len(col) > 10 and sparky_assignment_pattern.match(col[10]):  # VNMR 4D
-        try:
-            int(col[0])
-            float(col[1])
-            float(col[3])
-            float(col[5])
-            float(col[7])
-            return True
-        except (ValueError, TypeError):
-            pass
-
-    return False
-
-
-def get_peak_list_format(line: str, has_header: bool = True, as_code: bool = False) -> Optional[str]:
+def get_peak_list_format_from_string(string: str, header: Optional[str] = None, asCode: bool = False) -> Optional[str]:
     """ Return peak list format for a given input.
     """
 
     col = None
 
-    if has_header:  # and line.count('E') + line.count('e') >= 2:  # XEASY peak list
-        col = line.split()
+    if header is not None and header.startswith('#INAME'):  # and string.count('E') + string.count('e') >= 2:  # XEASY peak list
+        col = string.split()
         if 'U' in col or 'T' in col:
-            return 'nm-pea-xea' if as_code else 'XEASY'
+            return 'nm-pea-xea' if asCode else 'XEASY'
 
-    if 'w1' in line and 'w2' in line:  # Sparky peak list
-        return 'nm-pea-spa' if as_code else 'Sparky'
+    if 'w1' in string and 'w2' in string:  # Sparky peak list
+        return 'nm-pea-spa' if asCode else 'Sparky'
 
-    if 'label' in line and 'dataset' in line and 'sw' in line and 'sf' in line:  # NMRView peak list
-        return 'nm-pea-vie' if as_code else 'NMRView'
+    if 'label' in string and 'dataset' in string and 'sw' in string and 'sf' in string:  # NMRView peak list
+        return 'nm-pea-vie' if asCode else 'NMRView'
 
-    if 'VARS' in line and 'X_PPM' in line and 'Y_PPM' in line:  # NMRPipe peak list
-        return 'nm-pea-pip' if as_code else 'NMRPipe'
+    if 'VARS' in string and 'X_PPM' in string and 'Y_PPM' in string:  # NMRPipe peak list
+        return 'nm-pea-pip' if asCode else 'NMRPipe'
 
-    if '<!DOCTYPE spectrum SYSTEM' in line or '<spectrum name=' in line:  # ARIA peak list
-        return 'nm-pea-ari' if as_code else 'ARIA'
+    if '<!DOCTYPE spectrum SYSTEM' in string or '<spectrum name=' in string:  # ARIA peak list
+        return 'nm-pea-ari' if asCode else 'ARIA'
 
-    if '# PEAKLIST_VERSION' in line or '# PEAKLIST_DIMENSION' in line:  # XwinNMR peak list
-        return 'nm-pea-xwi' if as_code else 'XwinNMR'
+    if '# PEAKLIST_VERSION' in string or '# PEAKLIST_DIMENSION' in string:  # XwinNMR peak list
+        return 'nm-pea-xwi' if asCode else 'XwinNMR'
 
-    if '<PeakList>' in line:  # TopSpin peak list
-        return 'nm-pea-top' if as_code else 'TopSpin'
+    if '<PeakList>' in string:  # TopSpin peak list
+        return 'nm-pea-top' if asCode else 'TopSpin'
 
-    if 'peak id.' in line and 'Dim 0 (ppm)' in line and 'Dim 1 (ppm)' in line:  # VNMR peak list
-        return 'nm-pea-vnm' if as_code else 'VNMR'
+    if 'peak id.' in string and 'Dim 0 (ppm)' in string and 'Dim 1 (ppm)' in string:  # VNMR peak list
+        return 'nm-pea-vnm' if asCode else 'VNMR'
 
-    if '# Peak List from VNMR' in line\
-       or ('Peak_Number' in line and 'X(ppm)' in line and 'Y(ppm)' in line):  # VNMR ll2d output
-        return 'nm-pea-vnm' if as_code else 'VNMR'
+    if '# Peak List from VNMR' in string\
+       or ('Peak_Number' in string and 'X(ppm)' in string and 'Y(ppm)' in string):  # VNMR ll2d output
+        return 'nm-pea-vnm' if asCode else 'VNMR'
 
     if col is None:
-        col = line.split()
+        col = string.split()
 
-    if len(col) > 3 and sparky_assignment_pattern.match(col[0]):  # Sparky
+    if header is not None and 'w1' in header and 'w2' in header\
+       and len(col) > 3 and sparky_assignment_pattern.match(col[0]):  # Sparky
         try:
             float(col[1])
             float(col[2])
-            return 'nm-pea-spa' if as_code else 'Sparky'
+            return 'nm-pea-spa' if asCode else 'Sparky'
         except (ValueError, TypeError):
             pass
 
@@ -1235,7 +1157,7 @@ def get_peak_list_format(line: str, has_header: bool = True, as_code: bool = Fal
             int(col[0])
             float(col[1])
             float(col[3])
-            return 'nm-pea-vnm' if as_code else 'VNMR'
+            return 'nm-pea-vnm' if asCode else 'VNMR'
         except (ValueError, TypeError):
             pass
 
@@ -1245,7 +1167,7 @@ def get_peak_list_format(line: str, has_header: bool = True, as_code: bool = Fal
             float(col[1])
             float(col[3])
             float(col[5])
-            return 'nm-pea-vnm' if as_code else 'VNMR'
+            return 'nm-pea-vnm' if asCode else 'VNMR'
         except (ValueError, TypeError):
             pass
 
@@ -1256,9 +1178,39 @@ def get_peak_list_format(line: str, has_header: bool = True, as_code: bool = Fal
             float(col[3])
             float(col[5])
             float(col[7])
-            return 'nm-pea-vnm' if as_code else 'VNMR'
+            return 'nm-pea-vnm' if asCode else 'VNMR'
         except (ValueError, TypeError):
             pass
+
+    return None
+
+
+def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
+    """ Return peak list format for a input file.
+    """
+
+    header = None
+
+    with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh:
+
+        for idx, line in enumerate(ifh):
+
+            if line.isspace() or comment_pattern.match(line):
+
+                if line.startswith('#INAME') or ('w1' in line and 'w2' in line):
+                    header = line
+
+                else:  # XwinNMR
+                    file_type = get_peak_list_format_from_string(line, header, asCode)
+                    if file_type is not None:
+                        return file_type
+
+                continue
+
+            file_type = get_peak_list_format_from_string(line, header, asCode)
+
+            if file_type is not None or idx >= 20:  # self.mr_max_spacer_lines:
+                return file_type
 
     return None
 
@@ -7740,22 +7692,7 @@ class NmrDpUtility:
                                 convert_codec(arPath, _arPath, codec, 'utf-8')
                                 arPath = _arPath
 
-                            file_type = None
-
-                            with open(arPath, 'r', encoding='utf-8', errors='ignore') as ifh:
-                                has_header = False
-                                for idx, line in enumerate(ifh):
-                                    if line.isspace() or comment_pattern.match(line):
-                                        if line.startswith('#INAME'):
-                                            has_header = True
-                                        else:  # XwinNMR
-                                            file_type = get_peak_list_format(line, as_code=True)
-                                            if file_type is not None:
-                                                break
-                                        continue
-                                    file_type = get_peak_list_format(line, has_header, as_code=True)
-                                    if file_type is not None or idx >= self.mr_max_spacer_lines:
-                                        break
+                            file_type = get_peak_list_format(arPath, True)
 
                             if file_type is not None:
                                 ar['file_type'] = file_type
@@ -11333,19 +11270,7 @@ class NmrDpUtility:
 
                 if file_type == 'nm-res-oth':
 
-                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-                        has_header = False
-                        for idx, line in enumerate(ifh):
-                            if line.isspace() or comment_pattern.match(line):
-                                if line.startswith('#INAME'):
-                                    has_header = True
-                                elif is_peak_list(line):  # XwinNMR
-                                    has_spectral_peak = True
-                                continue
-                            if is_peak_list(line, has_header):
-                                has_spectral_peak = True
-                            if has_spectral_peak or idx >= self.mr_max_spacer_lines:
-                                break
+                    has_spectral_peak = get_peak_list_format(file_path) is not None
 
                     with open(file_path, 'r', encoding='utf-8') as ifh:
                         for pos, line in enumerate(ifh, start=1):
@@ -13335,7 +13260,7 @@ class NmrDpUtility:
                     os.remove(div_src_file)
                     os.remove(div_try_file)
 
-                    if is_peak_list(err_input):
+                    if get_peak_list_format_from_string(err_input) is not None:
 
                         if self.__mr_debug:
                             self.__lfh.write('DIV-MR-EXIT #5-1\n')
@@ -13880,12 +13805,11 @@ class NmrDpUtility:
                 has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
 
                 if not has_lexer_error:
-                    if j3 == 0 and is_peak_list(err_input):
-                        file_format = get_peak_list_format(err_input, as_code=True)
-                        if file_format is not None:
-                            shutil.copyfile(div_ext_file, div_ext_file + f'-selected-as-{file_format[-7:0]}')
-                        else:
-                            shutil.copyfile(div_ext_file, div_ext_file + '-ignored-as-pea-any')
+
+                    _file_type = get_peak_list_format_from_string(err_input, asCode=True)
+
+                    if j3 == 0 and _file_type is not None:
+                        shutil.copyfile(div_ext_file, div_ext_file + f'-selected-as-{_file_type[-7:0]}')
                         os.remove(div_try_file)
                         os.remove(file_path)
 
@@ -14777,22 +14701,7 @@ class NmrDpUtility:
             valid_types.update(_valid_types)
             possible_types.update(_possible_types)
 
-        _file_type = None
-
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-            has_header = False
-            for idx, line in enumerate(ifh):
-                if line.isspace() or comment_pattern.match(line):
-                    if line.startswith('#INAME'):
-                        has_header = True
-                    else:  # XwinNMR
-                        _file_type = get_peak_list_format(line, as_code=True)
-                        if _file_type is not None:
-                            break
-                    continue
-                _file_type = get_peak_list_format(line, has_header, as_code=True)
-                if _file_type is not None or idx >= self.mr_max_spacer_lines:
-                    break
+        _file_type = get_peak_list_format(file_path, True)
 
         if _file_type == 'nm-pea-ari' and file_type != 'nm-pea-ari':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
@@ -17090,22 +16999,7 @@ class NmrDpUtility:
         """ Return peak list file type and content subtype of a given file path.
         """
 
-        file_type = None
-
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-            has_header = False
-            for idx, line in enumerate(ifh):
-                if line.isspace() or comment_pattern.match(line):
-                    if line.startswith('#INAME'):
-                        has_header = True
-                    else:  # XwinNMR
-                        file_type = get_peak_list_format(line, as_code=True)
-                        if file_type is not None:
-                            break
-                    continue
-                file_type = get_peak_list_format(line, has_header, as_code=True)
-                if file_type is not None or idx >= self.mr_max_spacer_lines:
-                    break
+        file_type = get_peak_list_format(file_path, True)
 
         if file_type is not None:
 
@@ -33011,22 +32905,7 @@ class NmrDpUtility:
 
                     continue
 
-                file_format = None
-
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-                    has_header = False
-                    for idx, line in enumerate(ifh):
-                        if line.isspace() or comment_pattern.match(line):
-                            if line.startswith('#INAME'):
-                                has_header = True
-                            else:  # XwinNMR
-                                file_format = get_peak_list_format(line)
-                                if file_format is not None:
-                                    break
-                            continue
-                        file_format = get_peak_list_format(line, has_header)
-                        if file_format is not None or idx >= self.mr_max_spacer_lines:
-                            break
+                file_format = get_peak_list_format(file_path, False)
 
                 dimensions = None
 
@@ -33095,22 +32974,7 @@ class NmrDpUtility:
                 sf.add_tag('Experiment_class', None)
                 sf.add_tag('Experiment_type', None)
 
-                file_format = None
-
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-                    has_header = False
-                    for idx, line in enumerate(ifh):
-                        if line.isspace() or comment_pattern.match(line):
-                            if line.startswith('#INAME'):
-                                has_header = True
-                            else:  # XwinNMR
-                                file_format = get_peak_list_format(line)
-                                if file_format is not None:
-                                    break
-                            continue
-                        file_format = get_peak_list_format(line, has_header)
-                        if file_format is not None or idx >= self.mr_max_spacer_lines:
-                            break
+                file_format = get_peak_list_format(file_path, False)
 
                 dimensions = None
 

@@ -2105,7 +2105,7 @@ class BMRBChemShiftStat:
                                         len([b for b in self.__ccU.lastBonds
                                              if b[self.__ccU.ccbAtomId2] == hvy_c and b[self.__ccU.ccbAtomId1] in methyl_c_list])
 
-                                    if v == 2:
+                                    if v in (2, 3):  # M3L:NZ -> CM1, CM2, CM3 for 3
                                         for a in _list:
                                             if a['atom_id'] == methyl_c_1 or a['atom_id'] == methyl_c_2:
                                                 a['desc'] = 'methyl-geminal'

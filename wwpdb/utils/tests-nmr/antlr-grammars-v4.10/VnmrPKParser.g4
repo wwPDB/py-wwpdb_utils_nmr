@@ -37,25 +37,25 @@ comment:
 	COMMENT Any_name* (RETURN_CM | EOF);
 
 format:
-	Format Peak_number X_ppm Y_ppm Z_ppm? A_ppm? Intensity Volume?
-	(Linewidth_X | FWHM_X)? (Linewidth_Y | FWHM_Y)? (Linewidth_Z | FWHM_Z)? (Linewidth_A | FWHM_A)? Comment? RETURN_FO
+	Format Peak_number X_ppm Y_ppm Z_ppm? A_ppm? Amplitude Volume?
+	(Linewidth_X | FWHM_X)? (Linewidth_Y | FWHM_Y)? (Linewidth_Z | FWHM_Z)? (Linewidth_A | FWHM_A)? Label? Comment? RETURN_FO
 	(peak_ll2d+ | peak_ll3d+ | peak_ll4d+);
 
 peak_ll2d:
-	Integer Float Float number number? number? number? Double_quote_string? (RETURN | EOF);
+	Integer Float Float number number? number? number? Double_quote_string* (RETURN | EOF);
 
 peak_ll3d:
-	Integer Float Float Float number number? number? number? number? Double_quote_string? (RETURN | EOF);
+	Integer Float Float Float number number? number? number? number? Double_quote_string* (RETURN | EOF);
 
 peak_ll4d:
-	Integer Float Float Float Float number number? number? number? number? number? Double_quote_string? (RETURN | EOF);
+	Integer Float Float Float Float number number? number? number? number? number? Double_quote_string* (RETURN | EOF);
 
 /* VNMR: Peak list format
  See also https://sites.google.com/site/ccpnwiki/home/documentation/contributed-software/bruce-d-ray-utility-programs/readme
 */
 
 data_label:
-	Peak_id Dim_0_ppm Dev_0 Dim_1_ppm Dev_1 (Dim_2_ppm Dev_2 (Dim_3_ppm Dev_3)?)? (Amplitude | Intensity_LA) Volume_LA? Assignment? RETURN_LA;
+	Peak_id Dim_0_ppm Dev_0 Dim_1_ppm Dev_1 (Dim_2_ppm Dev_2 (Dim_3_ppm Dev_3)?)? Amplitude_LA Volume_LA? Assignment? RETURN_LA;
 
 peak_2d:
 	Integer Float Float Float Float number Assignment_2d_ex? (RETURN | EOF);

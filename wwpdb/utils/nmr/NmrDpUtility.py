@@ -1133,11 +1133,14 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
     if '<PeakList>' in string:  # TopSpin peak list
         return 'nm-pea-top' if asCode else 'TopSpin'
 
-    if 'peak id.' in string and 'Dim 0 (ppm)' in string and 'Dim 1 (ppm)' in string:  # VNMR peak list
+    if 'peak id.' in string and 'Dim 0' in string and 'Dim 1' in string\
+       and ('Amplitude' in string or 'Intensity' in string) and 'Assignment' in string:  # VNMR peak list
         return 'nm-pea-vnm' if asCode else 'VNMR'
 
     if '# Peak List from VNMR' in string\
-       or ('Peak_Number' in string and 'X(ppm)' in string and 'Y(ppm)' in string):  # VNMR ll2d output
+       or ('Peak_Number' in string
+           and (('X' in string and 'Y' in string) or ('F1' in string and 'F2' in string))
+           and ('Amplitude' in string or 'Intensity' in string)):  # VNMR ll2d output
         return 'nm-pea-vnm' if asCode else 'VNMR'
 
     if col is None:
@@ -1152,7 +1155,9 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
         except (ValueError, TypeError):
             pass
 
-    if len(col) > 6 and sparky_assignment_pattern.match(col[6]):  # VNMR 2D
+    if header is not None and ('Amplitude' in header or 'Intensity' in header)\
+       and 'Assignment' in header\
+       and len(col) > 6 and sparky_assignment_pattern.match(col[6]):  # VNMR 2D
         try:
             int(col[0])
             float(col[1])
@@ -1161,7 +1166,9 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
         except (ValueError, TypeError):
             pass
 
-    if len(col) > 8 and sparky_assignment_pattern.match(col[8]):  # VNMR 3D
+    if header is not None and ('Amplitude' in header or 'Intensity' in header)\
+       and 'Assignment' in header\
+       and len(col) > 8 and sparky_assignment_pattern.match(col[8]):  # VNMR 3D
         try:
             int(col[0])
             float(col[1])
@@ -1171,7 +1178,9 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
         except (ValueError, TypeError):
             pass
 
-    if len(col) > 10 and sparky_assignment_pattern.match(col[10]):  # VNMR 4D
+    if header is not None and ('Amplitude' in header or 'Intensity' in header)\
+       and 'Assignment' in header\
+       and len(col) > 10 and sparky_assignment_pattern.match(col[10]):  # VNMR 4D
         try:
             int(col[0])
             float(col[1])
@@ -1197,7 +1206,8 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
 
             if line.isspace() or comment_pattern.match(line):
 
-                if line.startswith('#INAME') or ('w1' in line and 'w2' in line):
+                if line.startswith('#INAME') or ('w1' in line and 'w2' in line)\
+                   or ('Amplitude' in line or 'Intensity' in line):
                     header = line
 
                 else:  # XwinNMR

@@ -52,6 +52,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
     __has_volume = False
     __has_line_width = False
     __has_assign = False
+    __has_comment = False
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
@@ -164,7 +165,8 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.__has_volume = bool(ctx.Volume())
         self.__has_line_width = bool(ctx.Linewidth_X()) or bool(ctx.FWHM_X())
-        self.__has_assign = bool(ctx.Comment())
+        self.__has_assign = bool(ctx.Label())
+        self.__has_comment = bool(ctx.Comment())
 
     # Exit a parse tree produced by VnmrPKParser#format.
     def exitFormat(self, ctx: VnmrPKParser.FormatContext):  # pylint: disable=unused-argument
@@ -188,11 +190,19 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = int(str(ctx.Integer()))
 
-            ass = None
-            if self.__has_assign and ctx.Double_quote_string():
-                ass = str(ctx.Double_quote_string())[1:-1].strip()
+            offset = 0
+
+            ass = comment = None
+            if self.__has_assign and ctx.Double_quote_string(0):
+                ass = str(ctx.Double_quote_string(0))[1:-1].strip()
                 if ass in emptyValue:
                     ass = None
+                offset += 1
+
+            if self.__has_comment and ctx.Double_quote_string(offset):
+                comment = str(ctx.Double_quote_string(0))[1:-1].strip()
+                if comment in emptyValue:
+                    comment = None
 
             x_ppm = float(str(ctx.Float(0)))
             y_ppm = float(str(ctx.Float(1)))
@@ -266,7 +276,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
             self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2,
-                                    f'{ass} -> ', None if has_assignments and not has_multiple_assignments else ass)
+                                    f'{ass} -> ', comment)
 
         finally:
             self.numberSelection.clear()
@@ -290,11 +300,19 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = int(str(ctx.Integer()))
 
-            ass = None
-            if self.__has_assign and ctx.Double_quote_string():
-                ass = str(ctx.Double_quote_string())[1:-1].strip()
+            offset = 0
+
+            ass = comment = None
+            if self.__has_assign and ctx.Double_quote_string(0):
+                ass = str(ctx.Double_quote_string(0))[1:-1].strip()
                 if ass in emptyValue:
                     ass = None
+                offset += 1
+
+            if self.__has_comment and ctx.Double_quote_string(offset):
+                comment = str(ctx.Double_quote_string(0))[1:-1].strip()
+                if comment in emptyValue:
+                    comment = None
 
             x_ppm = float(str(ctx.Float(0)))
             y_ppm = float(str(ctx.Float(1)))
@@ -368,7 +386,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
-                                    f'{ass} -> ', None if has_assignments and not has_multiple_assignments else ass)
+                                    f'{ass} -> ', comment)
 
         finally:
             self.numberSelection.clear()
@@ -392,11 +410,19 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = int(str(ctx.Integer()))
 
-            ass = None
-            if self.__has_assign and ctx.Double_quote_string():
-                ass = str(ctx.Double_quote_string())[1:-1].strip()
+            offset = 0
+
+            ass = comment = None
+            if self.__has_assign and ctx.Double_quote_string(0):
+                ass = str(ctx.Double_quote_string(0))[1:-1].strip()
                 if ass in emptyValue:
                     ass = None
+                offset += 1
+
+            if self.__has_comment and ctx.Double_quote_string(offset):
+                comment = str(ctx.Double_quote_string(0))[1:-1].strip()
+                if comment in emptyValue:
+                    comment = None
 
             x_ppm = float(str(ctx.Float(0)))
             y_ppm = float(str(ctx.Float(1)))
@@ -476,7 +502,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
             self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3, asis4,
-                                    f'{ass} -> ', None if has_assignments and not has_multiple_assignments else ass)
+                                    f'{ass} -> ', comment)
 
         finally:
             self.numberSelection.clear()

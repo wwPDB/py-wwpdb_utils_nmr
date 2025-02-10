@@ -65,16 +65,15 @@ LINE_COMMENT:		(';' | '\\' | '&' | COMMENT_STAR_CHAR '/'+ | COMMENT_STAR_CHAR '*
 
 mode LABEL_MODE;
 
-Dim_0_ppm:		'Dim 0 (ppm)';
-Dim_1_ppm:		'Dim 1 (ppm)';
-Dim_2_ppm:		'Dim 2 (ppm)';
-Dim_3_ppm:		'Dim 3 (ppm)';
+Dim_0_ppm:		'Dim 0' ' '? '(ppm)';
+Dim_1_ppm:		'Dim 1' ' '? '(ppm)';
+Dim_2_ppm:		'Dim 2' ' '? '(ppm)';
+Dim_3_ppm:		'Dim 3' ' '? '(ppm)';
 Dev_0:			'Dev. 0';
 Dev_1:			'Dev. 1';
 Dev_2:			'Dev. 2';
 Dev_3:			'Dev. 3';
-Amplitude:		'Amplitude';
-Intensity_LA:		'Intensity';
+Amplitude_LA:		('Amplitude' | 'Intensity');
 Volume_LA:		'Volume';
 Assignment:		'Assignment';
 
@@ -86,21 +85,22 @@ RETURN_LA:		[\r\n]+ -> popMode;
 mode FORMAT_MODE;
 
 Peak_number:		'Peak_Number';
-X_ppm:			'X(ppm)';
-Y_ppm:			'Y(ppm)';
-Z_ppm:			'Z(ppm)';
-A_ppm:			'A(ppm)';
-Intensity:		'Intensity';
+X_ppm:			('X' | 'F1')  ' '? '(ppm)'?;
+Y_ppm:			('Y' | 'F2')  ' '? '(ppm)'?;
+Z_ppm:			('Z' | 'F3')  ' '? '(ppm)'?;
+A_ppm:			('A' | 'F4')  ' '? '(ppm)'?;
+Amplitude:		('Amplitude' | 'Intensity');
 Volume:			'Volume';
-Linewidth_X:		'Linewidth_X(Hz)';
-Linewidth_Y:		'Linewidth_Y(Hz)';
-Linewidth_Z:		'Linewidth_Z(Hz)';
-Linewidth_A:		'Linewidth_A(Hz)';
-FWHM_X:			'FWHM_X(Hz)';
-FWHM_Y:			'FWHM_Y(Hz)';
-FWHM_Z:			'FWHM_Z(Hz)';
-FWHM_A:			'FWHM_A(Hz)';
+Linewidth_X:		'Linewidth' ('_' | ' ')? ('X' | 'F'? '1') ' '? '(Hz)'?;
+Linewidth_Y:		'Linewidth' ('_' | ' ')? ('Y' | 'F'? '2') ' '? '(Hz)'?;
+Linewidth_Z:		'Linewidth' ('_' | ' ')? ('Z' | 'F'? '3') ' '? '(Hz)'?;
+Linewidth_A:		'Linewidth' ('_' | ' ')? ('A' | 'F'? '4') ' '? '(Hz)'?;
+FWHM_X:			'FWH' ('M' | 'H') ('_' | ' ')? ('X' | 'F'? '1') ' '? '(Hz)'?;
+FWHM_Y:			'FWH' ('M' | 'H') ('_' | ' ')? ('Y' | 'F'? '2') ' '? '(Hz)'?;
+FWHM_Z:			'FWH' ('M' | 'H') ('_' | ' ')? ('Z' | 'F'? '3') ' '? '(Hz)'?;
+FWHM_A:			'FWH' ('M' | 'H') ('_' | ' ')? ('A' | 'F'? '4') ' '? '(Hz)'?;
 
+Label:			'Label';
 Comment:		'Comment';
 
 SPACE_FO:		[ \t]+ -> skip;

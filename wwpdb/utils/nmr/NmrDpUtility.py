@@ -11505,8 +11505,10 @@ class NmrDpUtility:
                                     div_test = file_type != 'nm-res-amb'  # remediate missing comma issue in AMBER MR
 
                     if has_parser_error:
-                        with open(file_path, 'r') as ifh:
-                            total_line = len(ifh.readlines())
+                        total_line = -1
+                        if os.path.exists(file_path):
+                            with open(file_path, 'r') as ifh:
+                                total_line = len(ifh.readlines())
 
                         messageList = parser_err_listener.getMessageList()
 

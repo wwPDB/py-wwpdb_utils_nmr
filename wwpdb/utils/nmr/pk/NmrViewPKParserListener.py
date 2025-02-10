@@ -217,7 +217,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             # J1 = self.__jcouplings[0]
             # if self.__jcoupling_types[0] == 'simple_name':
             #     j_simple_name_offset += 1
-            if self.__jcoupling_types[0] == 'enclose_data':
+            if len(self.__jcoupling_types) > 0 and self.__jcoupling_types[0] == 'enclose_data':
                 j_eclose_data__offset += 1
             # U1 = self.__enclose_data[1 + j_eclose_data__offset]
 
@@ -229,7 +229,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             # J2 = self.__jcouplings[1]
             # if self.__jcoupling_types[1] == 'simple_name':
             #     j_simple_name_offset += 1
-            if self.__jcoupling_types[1] == 'enclose_data':
+            if len(self.__jcoupling_types) > 1 and self.__jcoupling_types[1] == 'enclose_data':
                 j_eclose_data__offset += 1
             # U2 = self.__enclose_data[3 + j_eclose_data__offset]
 
@@ -342,7 +342,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             # J1 = self.__jcouplings[0]
             # if self.__jcoupling_types[0] == 'simple_name':
             #     j_simple_name_offset += 1
-            if self.__jcoupling_types[0] == 'enclose_data':
+            if len(self.__jcoupling_types) > 0 and self.__jcoupling_types[0] == 'enclose_data':
                 j_eclose_data__offset += 1
             # U1 = self.__enclose_data[1 + j_eclose_data__offset]
 
@@ -354,7 +354,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             # J2 = self.__jcouplings[1]
             # if self.__jcoupling_types[1] == 'simple_name':
             #     j_simple_name_offset += 1
-            if self.__jcoupling_types[1] == 'enclose_data':
+            if len(self.__jcoupling_types) > 1 and self.__jcoupling_types[1] == 'enclose_data':
                 j_eclose_data__offset += 1
             # U2 = self.__enclose_data[3 + j_eclose_data__offset]
 
@@ -366,7 +366,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             # J3 = self.__jcouplings[2]
             # if self.__jcoupling_types[2] == 'simple_name':
             #     j_simple_name_offset += 1
-            if self.__jcoupling_types[2] == 'enclose_data':
+            if len(self.__jcoupling_types) > 2 and self.__jcoupling_types[2] == 'enclose_data':
                 j_eclose_data__offset += 1
             # U3 = self.__enclose_data[5 + j_eclose_data__offset]
 
@@ -486,7 +486,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             # J1 = self.__jcouplings[0]
             # if self.__jcoupling_types[0] == 'simple_name':
             #     j_simple_name_offset += 1
-            if self.__jcoupling_types[0] == 'enclose_data':
+            if len(self.__jcoupling_types) > 0 and self.__jcoupling_types[0] == 'enclose_data':
                 j_eclose_data__offset += 1
             # U1 = self.__enclose_data[1 + j_eclose_data__offset]
 
@@ -498,7 +498,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             # J2 = self.__jcouplings[1]
             # if self.__jcoupling_types[1] == 'simple_name':
             #     j_simple_name_offset += 1
-            if self.__jcoupling_types[1] == 'enclose_data':
+            if len(self.__jcoupling_types) > 1 and self.__jcoupling_types[1] == 'enclose_data':
                 j_eclose_data__offset += 1
             # U2 = self.__enclose_data[3 + j_eclose_data__offset]
 
@@ -510,7 +510,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             # J3 = self.__jcouplings[2]
             # if self.__jcoupling_types[2] == 'simple_name':
             #     j_simple_name_offset += 1
-            if self.__jcoupling_types[2] == 'enclose_data':
+            if len(self.__jcoupling_types) > 2 and self.__jcoupling_types[2] == 'enclose_data':
                 j_eclose_data__offset += 1
             # U3 = self.__enclose_data[5 + j_eclose_data__offset]
 
@@ -522,7 +522,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
             # J4 = self.__jcouplings[3]
             # if self.__jcoupling_types[3] == 'simple_name':
             #     j_simple_name_offset += 1
-            if self.__jcoupling_types[3] == 'enclose_data':
+            if len(self.__jcoupling_types) > 3 and self.__jcoupling_types[3] == 'enclose_data':
                 j_eclose_data__offset += 1
             # U4 = self.__enclose_data[7 + j_eclose_data__offset]
 

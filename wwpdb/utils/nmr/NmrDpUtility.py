@@ -35074,10 +35074,6 @@ class NmrDpUtility:
                            and ('Height' in description['message']
                                 or 'Data' in description['message']):
                             _type = 'reverse'
-                        elif 'SPARKY' in a_pk_format_name\
-                                and mismatched_input_err_msg in description['message']\
-                                and "'\\n' expecting {Integer, Float, Real, Real_vol}" in description['message']:
-                            _type = 'reverse'
                         elif 'SPARKY' in a_pk_format_name and self.__internal_mode\
                                 and mismatched_input_err_msg in description['message']\
                                 and "'\\n' expecting {Integer, Float, Real, Real_vol}" in description['message']:

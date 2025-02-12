@@ -1112,7 +1112,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
 
     if header is not None and header.startswith('#INAME'):  # and string.count('E') + string.count('e') >= 2:  # XEASY peak list
         col = string.split()
-        if ' U ' in col or ' T ' in col:
+        if 'U' in col or 'T' in col:
             return 'nm-pea-xea' if asCode else 'XEASY'
 
     if '?-?' not in string and ' w1 ' in string and ' w2 ' in string:  # Sparky peak list

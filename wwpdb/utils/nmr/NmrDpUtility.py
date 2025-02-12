@@ -35091,6 +35091,9 @@ class NmrDpUtility:
 
                 file_path = ar['file_name']
 
+                if os.path.exists(file_path + '-corrected'):
+                    file_path = file_path + '-corrected'
+
                 input_source = self.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
 
@@ -35461,6 +35464,9 @@ class NmrDpUtility:
 
             if self.__remediation_mode and os.path.exists(file_path + '-ignored'):
                 continue
+
+            if os.path.exists(file_path + '-corrected'):
+                file_path = file_path + '-corrected'
 
             file_name = input_source_dic['file_name']
 

@@ -15942,6 +15942,38 @@ class NmrDpUtility:
 
                             continue
 
+                        settled_pk_file = False
+
+                        _ar = ar.copy()
+
+                        for settled_file_type in parsable_pk_file_types:
+
+                            sel_pk_file = dst_file + f'-selected-as-{settled_file_type[-7:]}'
+
+                            if os.path.exists(sel_pk_file):
+
+                                ign_dst_file = sel_pk_file + '-ignored'
+
+                                if os.path.exists(ign_dst_file):
+                                    continue
+
+                                __ar = _ar.copy()
+
+                                __ar['file_name'] = sel_pk_file
+                                __ar['file_type'] = settled_file_type
+
+                                if __ar in peak_file_list:
+                                    continue
+
+                                peak_file_list.append(__ar)
+
+                                pk_list_paths.append({'nmr-peaks': dst_file})
+
+                                settled_pk_file = remediated = True
+
+                        if settled_pk_file:
+                            continue
+
                     _, _, valid_types, possible_types = self.__detectOtherPossibleFormatAsErrorOfLegacyMr(dst_file, file_name, 'nm-res-mr', [], True)
 
                     len_valid_types = len(valid_types)
@@ -16265,6 +16297,38 @@ class NmrDpUtility:
 
                         remediated = True
 
+                        continue
+
+                    settled_pk_file = False
+
+                    _ar = ar.copy()
+
+                    for settled_file_type in parsable_pk_file_types:
+
+                        sel_pk_file = dst_file + f'-selected-as-{settled_file_type[-7:]}'
+
+                        if os.path.exists(sel_pk_file):
+
+                            ign_dst_file = sel_pk_file + '-ignored'
+
+                            if os.path.exists(ign_dst_file):
+                                continue
+
+                            __ar = _ar.copy()
+
+                            __ar['file_name'] = sel_pk_file
+                            __ar['file_type'] = settled_file_type
+
+                            if __ar in peak_file_list:
+                                continue
+
+                            peak_file_list.append(__ar)
+
+                            pk_list_paths.append({'nmr-peaks': dst_file})
+
+                            settled_pk_file = remediated = True
+
+                    if settled_pk_file:
                         continue
 
                     ign_ext_file = dst_file + '-ignored-as-res-oth'

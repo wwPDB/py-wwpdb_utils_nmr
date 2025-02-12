@@ -65,7 +65,7 @@ peak_2d:
 	position position
 	Integer Simple_name?
 	number number
-	Simple_name Integer
+	Simple_name? Integer
 	((RETURN | EOF) | assign assign Integer? (RETURN | comment | EOF))
 	(assign assign Integer? (RETURN | comment | EOF))*;
 
@@ -77,7 +77,7 @@ peak_3d:
 	position position position
 	Integer Simple_name?
 	number number
-	Simple_name Integer
+	Simple_name? Integer
 	((RETURN | EOF) | assign assign assign Integer? (RETURN | comment | EOF))
 	(assign assign assign Integer? (RETURN | comment | EOF))*;
 
@@ -89,7 +89,7 @@ peak_4d:
 	position position position position
 	Integer Simple_name?
 	number number
-	Simple_name Integer
+	Simple_name? Integer
 	((RETURN | EOF) | assign assign assign assign Integer? (RETURN | comment | EOF))
 	(assign assign assign assign Integer? (RETURN | comment | EOF))*;
 

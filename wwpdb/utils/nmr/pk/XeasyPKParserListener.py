@@ -209,7 +209,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             vol = self.originalNumberSelection[0]
             vol_err = self.originalNumberSelection[1]
             # integral_method = str(ctx.Simple_name(1))
-            # type = int(str(ctx.Integer(2)))
+            # type = str(ctx.type_code())
 
             if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):
                 if self.createSfDict__ and self.use_peak_row_format:
@@ -219,7 +219,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if None in (x_ppm, y_ppm):  # or type != 0:
+            if None in (x_ppm, y_ppm):
                 self.peaks2D -= 1
                 return
 
@@ -307,7 +307,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             vol = self.originalNumberSelection[0]
             vol_err = self.originalNumberSelection[1]
             # integral_method = str(ctx.Simple_name(1))
-            # type = int(str(ctx.Integer(2)))
+            # type = str(ctx.type_code())
 
             if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):
                 if self.createSfDict__ and self.use_peak_row_format:
@@ -317,7 +317,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if None in (x_ppm, y_ppm, z_ppm):  # or type != 0:
+            if None in (x_ppm, y_ppm, z_ppm):
                 self.peaks3D -= 1
                 return
 
@@ -407,7 +407,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             vol = self.originalNumberSelection[0]
             vol_err = self.originalNumberSelection[1]
             # integral_method = str(ctx.Simple_name(1))
-            # type = int(str(ctx.Integer(2)))
+            # type = str(ctx.type_code())
 
             if len(self.assignmentSelection) > self.num_of_dim or ctx.assign(self.num_of_dim):
                 if self.createSfDict__ and self.use_peak_row_format:
@@ -417,7 +417,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if None in (x_ppm, y_ppm, z_ppm, a_ppm):  # or type != 0:
+            if None in (x_ppm, y_ppm, z_ppm, a_ppm):
                 self.peaks4D -= 1
                 return
 
@@ -506,6 +506,14 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         else:
             self.numberSelection.append(None)
             self.originalNumberSelection.append(None)
+
+    # Enter a parse tree produced by XeasyPKParser#type_code.
+    def enterType_code(self, ctx: XeasyPKParser.Type_codeContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by XeasyPKParser#type_code.
+    def exitType_code(self, ctx: XeasyPKParser.Type_codeContext):  # pylint: disable=unused-argument
+        pass
 
     # Enter a parse tree produced by XeasyPKParser#assign.
     def enterAssign(self, ctx: XeasyPKParser.AssignContext):  # pylint: disable=unused-argument

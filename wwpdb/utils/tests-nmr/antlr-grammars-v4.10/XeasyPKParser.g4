@@ -65,7 +65,7 @@ peak_2d:
 	position position
 	Integer Simple_name?
 	number number
-	Simple_name? Integer
+	Simple_name? type_code
 	((RETURN | EOF) | assign assign Integer? Integer? (RETURN | comment | EOF))
 	(assign assign Integer? Integer? (RETURN | comment | EOF))*;
 
@@ -77,7 +77,7 @@ peak_3d:
 	position position position
 	Integer Simple_name?
 	number number
-	Simple_name? Integer
+	Simple_name? type_code
 	((RETURN | EOF) | assign assign assign Integer? Integer? (RETURN | comment | EOF))
 	(assign assign assign Integer? Integer? (RETURN | comment | EOF))*;
 
@@ -89,7 +89,7 @@ peak_4d:
 	position position position position
 	Integer Simple_name?
 	number number
-	Simple_name? Integer
+	Simple_name? type_code
 	((RETURN | EOF) | assign assign assign assign Integer? Integer? (RETURN | comment | EOF))
 	(assign assign assign assign Integer? Integer? (RETURN | comment | EOF))*;
 
@@ -98,6 +98,9 @@ position: Float | Integer;
 
 /* number expression in peak list */
 number:	Float | Real | Integer | Simple_name;
+
+/* type_code expression in peak list */
+type_code:	Integer | Simple_name;
 
 /* assignment expression in peak list */
 assign: Integer | (Simple_name Integer?);

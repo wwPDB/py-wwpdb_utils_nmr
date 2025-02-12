@@ -1286,11 +1286,11 @@ def get_number_of_dimensions_of_peak_list(file_format: str, line: str) -> Option
             return 4
 
     if file_format == 'VNMR':
-        if 'Dim 3 (ppm)' in line or 'A(ppm)' in line:
+        if 'Dim 3' in line or 'A(ppm)' in line or 'A (ppm)' in line or 'F4' in line:
             return 4
-        if 'Dim 2 (ppm)' in line or 'Z(ppm)' in line:
+        if 'Dim 2' in line or 'Z(ppm)' in line or 'Z (ppm)' in line or 'F3' in line:
             return 3
-        if 'Dim 1 (ppm)' in line or 'Y(ppm)' in line:
+        if 'Dim 1' in line or 'Y(ppm)' in line or 'Y (ppm)' in line or 'F2' in line:
             return 2
 
         col = line.split()

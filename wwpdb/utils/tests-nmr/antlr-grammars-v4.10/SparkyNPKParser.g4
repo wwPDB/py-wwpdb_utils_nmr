@@ -33,7 +33,7 @@ sparky_npk:
 	EOF;
 
 data_label:
-	Assignment W1_LA W2_LA W3_LA? W4_LA?
+	(Assignment | Assignment_2d_ex | Assignment_3d_ex | Assignment_4d_ex) W1_LA W2_LA W3_LA? W4_LA?
 	W1_Hz_LA? W2_Hz_LA? W3_Hz_LA? W4_Hz_LA?
 	Dev_w1_LA? Dev_w2_LA? Dev_w3_LA? Dev_w4_LA?
 	(Height_LA | Volume_LA)? (Height_LA | Volume_LA)? S_N_LA?

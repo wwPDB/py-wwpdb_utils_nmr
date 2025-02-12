@@ -1115,7 +1115,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
         if 'U' in col or 'T' in col:
             return 'nm-pea-xea' if asCode else 'XEASY'
 
-    if '?-?' not in string and ' w1 ' in string and ' w2 ' in string:  # Sparky peak list
+    if ' w1 ' in string and ' w2 ' in string:  # Sparky peak list
         return 'nm-pea-spa' if asCode else 'Sparky'
 
     if 'label' in string and 'dataset' in string and 'sw' in string and 'sf' in string:  # NMRView peak list
@@ -1146,7 +1146,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
     if col is None:
         col = string.split()
 
-    if header is not None and '?-?' not in header and ' w1 ' in header and ' w2 ' in header\
+    if header is not None and ' w1 ' in header and ' w2 ' in header\
        and len(col) > 3 and sparky_assignment_pattern.match(col[0]):  # Sparky
         try:
             float(col[1])
@@ -1206,7 +1206,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
 
             if line.isspace() or comment_pattern.match(line):
 
-                if line.startswith('#INAME') or ('?-?' not in line and ' w1 ' in line and ' w2 ' in line)\
+                if line.startswith('#INAME') or (' w1 ' in line and ' w2 ' in line)\
                    or ('Amplitude' in line or 'Intensity' in line):
                     header = line
 

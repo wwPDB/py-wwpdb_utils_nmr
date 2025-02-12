@@ -177,6 +177,8 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
             ass = _ass_ = str(ctx.Assignment_2d_ex())
             if '?' in ass:
                 ass = None
+            if _ass_ == 'A1H-H' and not self.isFirstResidueAla:
+                ass = _ass_ = None
             if _ass_ == '?-?' and self.__has_note and len(self.__noteSelection) > 0:
                 _ass_ = ' '.join(self.__noteSelection)
 
@@ -294,6 +296,8 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
             ass = _ass_ = str(ctx.Assignment_3d_ex())
             if '?' in ass:
                 ass = None
+            if _ass_ == 'A1H-H-H' and not self.isFirstResidueAla:
+                ass = _ass_ = None
             if _ass_ == '?-?-?' and self.__has_note and len(self.__noteSelection) > 0:
                 _ass_ = ' '.join(self.__noteSelection)
 
@@ -422,6 +426,8 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
             ass = _ass_ = str(ctx.Assignment_4d_ex())
             if '?' in ass:
                 ass = None
+            if _ass_ == 'A1H-H-H-H' and not self.isFirstResidueAla:
+                ass = _ass_ = None
             if _ass_ == '?-?-?-?' and self.__has_note and len(self.__noteSelection) > 0:
                 _ass_ = ' '.join(self.__noteSelection)
 

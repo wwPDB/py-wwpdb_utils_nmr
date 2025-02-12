@@ -251,6 +251,7 @@ class BasePKParserListener():
     hasNonPoly = False
     hasBranched = False
     hasNonPolySeq = False
+    isFirstResidueAla = False
     __preferAuthSeq = True
     __extendAuthSeq = False
 
@@ -417,6 +418,8 @@ class BasePKParserListener():
                         self.polyDeoxyribonucleotide = True
                     elif poly_type == 'polyribonucleotide':
                         self.polyRibonucleotide = True
+            if 'ALA' in self.compIdSet:
+                self.isFirstResidueAla = any(ps['comp_id'][0] == 'ALA' for ps in self.polySeq)
 
         # BMRB chemical shift statistics
         self.csStat = BMRBChemShiftStat(verbose, log, self.ccU) if csStat is None else csStat

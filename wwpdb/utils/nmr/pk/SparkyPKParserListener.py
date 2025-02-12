@@ -907,7 +907,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__noteSelection.append(str(ctx.Float()))
 
         elif ctx.Integer():
-            self.__noteSelection.append(str(ctx.Integer()()))
+            self.__noteSelection.append(str(ctx.Integer()))
 
         elif ctx.Note_2d_ex():
             self.__noteSelection.append(str(ctx.Note_2d_ex()))

@@ -373,6 +373,7 @@ try:
     from wwpdb.utils.nmr.pk.AriaPKReader import AriaPKReader
     from wwpdb.utils.nmr.pk.NmrPipePKReader import NmrPipePKReader
     from wwpdb.utils.nmr.pk.NmrViewPKReader import NmrViewPKReader
+    from wwpdb.utils.nmr.pk.NmrViewNPKReader import NmrViewNPKReader
     from wwpdb.utils.nmr.pk.SparkyPKReader import SparkyPKReader
     from wwpdb.utils.nmr.pk.SparkyRPKReader import SparkyRPKReader
     from wwpdb.utils.nmr.pk.SparkyNPKReader import SparkyNPKReader
@@ -517,6 +518,7 @@ except ImportError:
     from nmr.pk.AriaPKReader import AriaPKReader
     from nmr.pk.NmrPipePKReader import NmrPipePKReader
     from nmr.pk.NmrViewPKReader import NmrViewPKReader
+    from nmr.pk.NmrViewNPKReader import NmrViewNPKReader
     from nmr.pk.SparkyPKReader import SparkyPKReader
     from nmr.pk.SparkyRPKReader import SparkyRPKReader
     from nmr.pk.SparkyNPKReader import SparkyNPKReader
@@ -34976,7 +34978,7 @@ class NmrDpUtility:
             fileListId += 1
 
         def deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener):
-            spa_order = 'default'
+            _type = 'default'
             _err = ''
             if lexer_err_listener is not None:
                 messageList = lexer_err_listener.getMessageList()
@@ -35007,15 +35009,19 @@ class NmrDpUtility:
                            and "expecting {Lw1_Hz_LA, Lw2_Hz_LA, Lw3_Hz_LA, Lw4_Hz_LA, S_N_LA" in description['message']\
                            and ('Height' in description['message']
                                 or 'Data' in description['message']):
-                            spa_order = 'reverse'
-                        elif not self.__internal_mode and 'SPARKY' in a_pk_format_name\
+                            _type = 'reverse'
+                        elif 'SPARKY' in a_pk_format_name\
                                 and mismatched_input_err_msg in description['message']\
                                 and "'\\n' expecting {Integer, Float, Real, Real_vol}" in description['message']:
-                            spa_order = 'reverse'
-                        elif self.__internal_mode and 'SPARKY' in a_pk_format_name\
+                            _type = 'reverse'
+                        elif 'SPARKY' in a_pk_format_name and self.__internal_mode\
                                 and mismatched_input_err_msg in description['message']\
                                 and "'\\n' expecting {Integer, Float, Real, Real_vol}" in description['message']:
-                            spa_order = 'no'
+                            _type = 'no'
+                        elif 'NMRVIEW' in a_pk_format_name\
+                                and mismatched_input_err_msg in description['message']\
+                                and "'\\n' expecting L_brace" in description['message']:
+                            _type = 'no_brace'
                         else:
                             _err += f"[Syntax error as {a_pk_format_name} file] "\
                                     f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
@@ -35024,7 +35030,7 @@ class NmrDpUtility:
                                 _err += f"{description['marker']}\n"
 
             if len(_err) == 0:
-                return False, spa_order
+                return False, _type
 
             err = f"The NMR spectral peak list file {file_name!r} looks like {a_pk_format_name} file. "\
                 "Please re-upload the NMR spectral peak list file.\n"\
@@ -35036,7 +35042,7 @@ class NmrDpUtility:
 
             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {file_name} {err}\n")
 
-            return True, spa_order
+            return True, _type
 
         def deal_aux_warn_message(listener):
 
@@ -35660,15 +35666,15 @@ class NmrDpUtility:
                 if _content_subtype is not None and len(_content_subtype) == 0:
                     _content_subtype = None
 
-                spa_order = 'default'
+                spa_type = 'default'
                 if None not in (lexer_err_listener, parser_err_listener, listener)\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
-                    skip, spa_order = deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)
-                    if skip and spa_order == 'default':
+                    skip, spa_type = deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)
+                    if skip and spa_type == 'default':
                         continue
 
-                if spa_order == 'reverse':
+                if spa_type == 'reverse':
                     self.__list_id_counter = copy.copy(__list_id_counter)
 
                     reader = SparkyRPKReader(self.__verbose, self.__lfh,
@@ -35695,7 +35701,7 @@ class NmrDpUtility:
                         if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
                             continue
 
-                if spa_order == 'no' and self.__internal_mode:
+                if spa_type == 'no' and self.__internal_mode:
                     self.__list_id_counter = copy.copy(__list_id_counter)
 
                     reader = SparkyNPKReader(self.__verbose, self.__lfh,
@@ -35729,7 +35735,7 @@ class NmrDpUtility:
                     if reasons is not None:
                         deal_pea_warn_message_for_lazy_eval(listener)
 
-                        if spa_order == 'reverse':
+                        if spa_type == 'reverse':
                             reader = SparkyRPKReader(self.__verbose, self.__lfh,
                                                      self.__representative_model_id,
                                                      self.__representative_alt_id,
@@ -35737,7 +35743,7 @@ class NmrDpUtility:
                                                      self.__cR, self.__caC,
                                                      self.__ccU, self.__csStat, self.__nefT,
                                                      reasons)
-                        elif spa_order == 'default' or not self.__internal_mode:
+                        elif spa_type == 'default' or not self.__internal_mode:
                             reader = SparkyPKReader(self.__verbose, self.__lfh,
                                                     self.__representative_model_id,
                                                     self.__representative_alt_id,
@@ -35879,11 +35885,40 @@ class NmrDpUtility:
                 if _content_subtype is not None and len(_content_subtype) == 0:
                     _content_subtype = None
 
+                vie_type = 'default'
                 if None not in (lexer_err_listener, parser_err_listener, listener)\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
+                    skip, vie_type = deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)
+                    if skip and vie_type == 'default':
                         continue
+
+                if vie_type != 'default':
+                    self.__list_id_counter = copy.copy(__list_id_counter)
+
+                    reader = NmrViewNPKReader(self.__verbose, self.__lfh,
+                                              self.__representative_model_id,
+                                              self.__representative_alt_id,
+                                              self.__mr_atom_name_mapping,
+                                              self.__cR, self.__caC,
+                                              self.__ccU, self.__csStat, self.__nefT)
+
+                    _list_id_counter = copy.copy(self.__list_id_counter)
+
+                    listener, parser_err_listener, lexer_err_listener =\
+                        reader.parse(file_path, self.__cifPath,
+                                     createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                     listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                    _content_subtype = listener.getContentSubtype() if listener is not None else None
+                    if _content_subtype is not None and len(_content_subtype) == 0:
+                        _content_subtype = None
+
+                    if None not in (lexer_err_listener, parser_err_listener, listener)\
+                       and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                            or _content_subtype is not None):
+                        if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
+                            continue
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -35891,13 +35926,22 @@ class NmrDpUtility:
                     if reasons is not None:
                         deal_pea_warn_message_for_lazy_eval(listener)
 
-                        reader = NmrViewPKReader(self.__verbose, self.__lfh,
-                                                 self.__representative_model_id,
-                                                 self.__representative_alt_id,
-                                                 self.__mr_atom_name_mapping,
-                                                 self.__cR, self.__caC,
-                                                 self.__ccU, self.__csStat, self.__nefT,
-                                                 reasons)
+                        if vie_type == 'default':
+                            reader = NmrViewPKReader(self.__verbose, self.__lfh,
+                                                     self.__representative_model_id,
+                                                     self.__representative_alt_id,
+                                                     self.__mr_atom_name_mapping,
+                                                     self.__cR, self.__caC,
+                                                     self.__ccU, self.__csStat, self.__nefT,
+                                                     reasons)
+                        else:
+                            reader = NmrViewNPKReader(self.__verbose, self.__lfh,
+                                                      self.__representative_model_id,
+                                                      self.__representative_alt_id,
+                                                      self.__mr_atom_name_mapping,
+                                                      self.__cR, self.__caC,
+                                                      self.__ccU, self.__csStat, self.__nefT,
+                                                      reasons)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,

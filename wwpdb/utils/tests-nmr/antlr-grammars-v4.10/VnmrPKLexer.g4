@@ -53,11 +53,11 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 SPACE:			[ \t]+ -> skip;
 RETURN:			[\r\n]+;
 
-fragment COMMENT_STAR_CHAR:	('#' | '/' | '*' | '-' | '+' | '=');
+fragment COMMENT_START_CHAR:	('#' | '/' | '*' | '-' | '+' | '=');
 
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	(';' | '\\' | '&' | COMMENT_STAR_CHAR '/'+ | COMMENT_STAR_CHAR '*'+ | COMMENT_START_CHAR '-'+ | COMMENT_START_CHAR '+'+ | COMMENT_STAR_CHAR '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
-LINE_COMMENT:		(';' | '\\' | '&' | COMMENT_STAR_CHAR '/'+ | COMMENT_STAR_CHAR '*'+ | COMMENT_START_CHAR '-'+ | COMMENT_START_CHAR '+'+ | COMMENT_STAR_CHAR '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
+SECTION_COMMENT:	(';' | '\\' | '&' | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '-'+ | COMMENT_START_CHAR '+'+ | COMMENT_START_CHAR '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
+LINE_COMMENT:		(';' | '\\' | '&' | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '-'+ | COMMENT_START_CHAR '+'+ | COMMENT_START_CHAR '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
 
 /* VNMR: Peak list format
  See also https://sites.google.com/site/ccpnwiki/home/documentation/contributed-software/bruce-d-ray-utility-programs/readme
@@ -85,10 +85,10 @@ RETURN_LA:		[\r\n]+ -> popMode;
 mode FORMAT_MODE;
 
 Peak_number:		'Peak_Number';
-X_ppm:			('X' | 'F1')  ' '? '(ppm)'?;
-Y_ppm:			('Y' | 'F2')  ' '? '(ppm)'?;
-Z_ppm:			('Z' | 'F3')  ' '? '(ppm)'?;
-A_ppm:			('A' | 'F4')  ' '? '(ppm)'?;
+X_ppm:			('X' | 'F1') ' '? '(ppm)'?;
+Y_ppm:			('Y' | 'F2') ' '? '(ppm)'?;
+Z_ppm:			('Z' | 'F3') ' '? '(ppm)'?;
+A_ppm:			('A' | 'F4') ' '? '(ppm)'?;
 Amplitude:		('Amplitude' | 'Intensity');
 Volume:			'Volume';
 Linewidth_X:		'Linewidth' ('_' | ' ')? ('X' | 'F'? '1') ' '? '(Hz)'?;

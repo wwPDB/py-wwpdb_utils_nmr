@@ -2239,7 +2239,8 @@ NMR_STAR_AUX_LP_DATA_ITEMS = {'dist_restraint': {'_Gen_dist_constraint_software_
                                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}],
                                                 '_Spectral_dim_transfer': [
                                                 {'name': 'Type', 'type': 'enum', 'mandatory': True,
-                                                 'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
+                                                 'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate',
+                                                          'through-space', 'through-space?'),
                                                  'enforce-enum': True},
                                                 {'name': 'Indirect', 'type': 'bool', 'mandatory': False},
                                                 {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,

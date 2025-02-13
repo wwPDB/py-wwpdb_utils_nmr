@@ -1280,7 +1280,7 @@ class BasePKParserListener():
                                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                         transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                     'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                                    'type': 'through-space',  # optimistic inferencing?
+                                                    'type': 'through-space?',  # optimistic inferencing?
                                                     'indirect': 'yes'}
                                         if transfer in cur_spectral_dim_transfer:
                                             continue
@@ -1297,7 +1297,7 @@ class BasePKParserListener():
                                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                         transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                     'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                                    'type': 'through-space',  # optimistic inferencing?
+                                                    'type': 'through-space?',  # optimistic inferencing?
                                                     'indirect': 'yes'}
                                         if transfer in cur_spectral_dim_transfer:
                                             continue
@@ -1315,7 +1315,7 @@ class BasePKParserListener():
                                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                                        'type': 'through-space',  # optimistic inferencing?
+                                                        'type': 'through-space?',  # optimistic inferencing?
                                                         'indirect': 'yes'}
                                             if transfer in cur_spectral_dim_transfer:
                                                 continue
@@ -1331,7 +1331,7 @@ class BasePKParserListener():
                                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                         transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                     'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                                    'type': 'through-space',  # optimistic inferencing?
+                                                    'type': 'through-space?',  # optimistic inferencing?
                                                     'indirect': 'yes'}
                                         if transfer in cur_spectral_dim_transfer:
                                             continue
@@ -1355,14 +1355,17 @@ class BasePKParserListener():
                         if transfer['type'] == 'through-space':
                             primary_dim_transfer = transfer['type']
                             break
-                        if transfer['type'].startswith('relayed')\
+                        if transfer['type'] == 'through-space?'\
                                 and primary_dim_transfer != 'through-space':
                             primary_dim_transfer = transfer['type']
+                        elif transfer['type'].startswith('relayed')\
+                                and primary_dim_transfer not in ('through-space', 'through-space?'):
+                            primary_dim_transfer = transfer['type']
                         elif transfer['type'] == 'jmultibond'\
-                                and primary_dim_transfer not in ('through-space', 'relayed', 'relayed-alternate'):
+                                and primary_dim_transfer not in ('through-space', 'through-space?', 'relayed', 'relayed-alternate'):
                             primary_dim_transfer = transfer['type']
                         elif transfer['type'] == 'jcoupling'\
-                                and primary_dim_transfer not in ('through-space', 'relayed', 'relayed-alternate', 'jmultibond'):
+                                and primary_dim_transfer not in ('through-space', 'through-space?', 'relayed', 'relayed-alternate', 'jmultibond'):
                             primary_dim_transfer = transfer['type']
                         elif transfer['type'] == 'onebond'\
                                 and primary_dim_transfer == '':

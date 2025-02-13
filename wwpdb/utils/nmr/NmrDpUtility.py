@@ -206,6 +206,7 @@
 # 09-Jan-2025  M. Yokochi - extract NMRIF metadata from NMR-STAR (as primary source) and model (as secondary source) (DAOTHER-1728, 9846)
 # 31-Jan-2025  M. Yokochi - add 'coordinate_issue' and 'assigned_peak_atom_not_found' warnings used in NMR data remediation with peak list (DAOTHER-8509, 9785)
 # 07-Feb-2025  M. Yokochi - add support for 'ignore_error' attribute in addInput() for test processing of spectral peak list files came from legacy ADIT system (DAOTHER-8509)
+# 13-Feb-2025  M. Yokochi - set _Spectral_dim_transfer.Type 'through-space?' temporarily and resolve it based on related experiment type (DAOTHER-8509, 1728, 9846)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -6205,7 +6206,9 @@ class NmrDpUtility:
                                                                        {'name': 'is_acquisition', 'type': 'bool', 'mandatory': False},
                                                                        ],
                                            '_nef_spectrum_dimension_transfer': [{'name': 'transfer_type', 'type': 'enum', 'mandatory': True,
-                                                                                 'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
+                                                                                 'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate',
+                                                                                          'through-space', 'through-space?'),
+                                                                                 # 'through-space?' will be resolved based on related experiment type
                                                                                  'enforce-enum': True},
                                                                                 {'name': 'is_indirect', 'type': 'bool', 'mandatory': False}
                                                                                 ]
@@ -6292,7 +6295,9 @@ class NmrDpUtility:
                                                                   ],
                                                 '_Spectral_dim_transfer': [{'name': 'Indirect', 'type': 'bool', 'mandatory': False},
                                                                            {'name': 'Type', 'type': 'enum', 'mandatory': True,
-                                                                            'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
+                                                                            'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate',
+                                                                                     'through-space', 'through-space?'),
+                                                                            # 'through-space?' will be resolved based on related experiment type
                                                                             'enforce-enum': True},
                                                                            {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default-from': 'parent'}
                                                                            ]
@@ -6321,7 +6326,9 @@ class NmrDpUtility:
                                                                   ],
                                                 '_Spectral_dim_transfer': [{'name': 'Indirect', 'type': 'bool', 'mandatory': False},
                                                                            {'name': 'Type', 'type': 'enum', 'mandatory': True,
-                                                                            'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
+                                                                            'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate',
+                                                                                     'through-space', 'through-space?'),
+                                                                            # 'through-space?' will be resolved based on related experiment type
                                                                             'enforce-enum': True},
                                                                            {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default-from': 'parent'}
                                                                            ],
@@ -28899,13 +28906,13 @@ class NmrDpUtility:
                 if aux_data is not None:
                     for sp_dim_trans in aux_data:
                         if file_type == 'nef':
-                            if sp_dim_trans['transfer_type'].startswith('j'):
+                            if sp_dim_trans['transfer_type'] is not None and sp_dim_trans['transfer_type'].startswith('j'):
                                 dim_1 = sp_dim_trans['dimension_1']
                                 dim_2 = sp_dim_trans['dimension_2']
                                 jcoupling[dim_1 - 1][dim_2 - 1] = True
                                 jcoupling[dim_2 - 1][dim_1 - 1] = True
                         else:
-                            if sp_dim_trans['Type'].startswith('j'):
+                            if sp_dim_trans['Type'] is not None and sp_dim_trans['Type'].startswith('j'):
                                 dim_1 = sp_dim_trans['Spectral_dim_ID_1']
                                 dim_2 = sp_dim_trans['Spectral_dim_ID_2']
                                 jcoupling[dim_1 - 1][dim_2 - 1] = True
@@ -28915,13 +28922,13 @@ class NmrDpUtility:
                 if aux_data is not None:
                     for sp_dim_trans in aux_data:
                         if file_type == 'nef':
-                            if sp_dim_trans['transfer_type'].startswith('relayed'):
+                            if sp_dim_trans['transfer_type'] is not None and sp_dim_trans['transfer_type'].startswith('relayed'):
                                 dim_1 = sp_dim_trans['dimension_1']
                                 dim_2 = sp_dim_trans['dimension_2']
                                 relayed[dim_1 - 1][dim_2 - 1] = True
                                 relayed[dim_2 - 1][dim_1 - 1] = True
                         else:
-                            if sp_dim_trans['Type'].startswith('relayed'):
+                            if sp_dim_trans['Type'] is not None and sp_dim_trans['Type'].startswith('relayed'):
                                 dim_1 = sp_dim_trans['Spectral_dim_ID_1']
                                 dim_2 = sp_dim_trans['Spectral_dim_ID_2']
                                 relayed[dim_1 - 1][dim_2 - 1] = True
@@ -42898,7 +42905,7 @@ class NmrDpUtility:
                 if file_type == 'nmr-star':
                     exp_class = get_first_sf_tag(sf, 'Experiment_class')
 
-                    if exp_class.endswith('through-space'):
+                    if exp_class.endswith('through-space') or exp_class.endswith('through-space?'):
                         return True
 
                     data_file_name = get_first_sf_tag(sf, 'Data_file_name')
@@ -42913,7 +42920,7 @@ class NmrDpUtility:
                     dat = aux_loop.get_tag(['Type' if file_type == 'nmr-star' else 'transfer_type'])
 
                     for row in dat:
-                        if row == 'through-space':
+                        if row in ('through-space', 'through-space?'):
                             return True
 
                 except KeyError:
@@ -42964,7 +42971,7 @@ class NmrDpUtility:
 
                 exp_class = self.__guessPrimaryDimTransferTypeOf(data_file_name, num_dim, cur_spectral_dim)
 
-                if exp_class == 'through-space':
+                if exp_class in ('through-space', 'through-space?'):
                     return True
 
                 exp_class = f'{exp_class!r}'
@@ -42993,7 +43000,7 @@ class NmrDpUtility:
 
                     exp_class = self.__guessPrimaryDimTransferTypeOf(data_file_name, num_dim, cur_spectral_dim)
 
-                    if exp_class == 'through-space':
+                    if exp_class in ('through-space', 'through-space?'):
                         return True
 
                     exp_class = f'{exp_class!r}'
@@ -43389,7 +43396,7 @@ class NmrDpUtility:
                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                        'type': 'through-space',  # optimistic inferencing?
+                                        'type': 'through-space?',  # optimistic inferencing?
                                         'indirect': 'yes'}
                             cur_spectral_dim_transfer.append(transfer)
 
@@ -43404,7 +43411,7 @@ class NmrDpUtility:
                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                        'type': 'through-space',  # optimistic inferencing?
+                                        'type': 'through-space?',  # optimistic inferencing?
                                         'indirect': 'yes'}
                             cur_spectral_dim_transfer.append(transfer)
 
@@ -43420,7 +43427,7 @@ class NmrDpUtility:
                             if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                 transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                            'type': 'through-space',  # optimistic inferencing?
+                                            'type': 'through-space?',  # optimistic inferencing?
                                             'indirect': 'yes'}
                                 cur_spectral_dim_transfer.append(transfer)
 
@@ -43434,7 +43441,7 @@ class NmrDpUtility:
                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                        'type': 'through-space',  # optimistic inferencing?
+                                        'type': 'through-space?',  # optimistic inferencing?
                                         'indirect': 'yes'}
                             cur_spectral_dim_transfer.append(transfer)
 
@@ -43447,14 +43454,17 @@ class NmrDpUtility:
             if transfer['type'] == 'through-space':
                 primary_dim_transfer = transfer['type']
                 break
-            if transfer['type'].startswith('relayed')\
+            if transfer['type'] == 'through-space?'\
                     and primary_dim_transfer != 'through-space':
                 primary_dim_transfer = transfer['type']
+            elif transfer['type'].startswith('relayed')\
+                    and primary_dim_transfer not in ('through-space', 'through-space?'):
+                primary_dim_transfer = transfer['type']
             elif transfer['type'] == 'jmultibond'\
-                    and primary_dim_transfer not in ('through-space', 'relayed', 'relayed-alternate'):
+                    and primary_dim_transfer not in ('through-space', 'through-space?', 'relayed', 'relayed-alternate'):
                 primary_dim_transfer = transfer['type']
             elif transfer['type'] == 'jcoupling'\
-                    and primary_dim_transfer not in ('through-space', 'relayed', 'relayed-alternate', 'jmultibond'):
+                    and primary_dim_transfer not in ('through-space', 'through-space?', 'relayed', 'relayed-alternate', 'jmultibond'):
                 primary_dim_transfer = transfer['type']
             elif transfer['type'] == 'onebond'\
                     and primary_dim_transfer == '':

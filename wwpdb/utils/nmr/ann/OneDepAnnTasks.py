@@ -1740,6 +1740,52 @@ class OneDepAnnTasks:
                                         lp.data[idx][sw_name_col] = _sw_name
                                         break
 
+        # resolve through-space?
+        pk_list_sf_category = 'spectral_peak_list'
+        exp_list_sf_category = 'experiment_list'
+        if pk_list_sf_category in self.__sfCategoryList and exp_list_sf_category in self.__sfCategoryList:
+            exp_list_sf = master_entry.get_saveframes_by_category(exp_list_sf_category)[0]
+            exp_lp_category = '_Experiment'
+            try:
+                exp_lp = exp_list_sf.get_loop(exp_lp_category)
+            except KeyError:
+                exp_lp = None
+            if exp_lp is not None:
+                exp_tags = ['ID', 'Name']
+                if set(exp_tags) & set(exp_lp.tags) == set(exp_tags):
+                    exp_dict = {int(row[0]) if isinstance(row[0], str) else row[0]: row[1]
+                                for row in exp_lp.get_tag(exp_tags)}
+
+                    for sf in master_entry.get_saveframes_by_category(pk_list_sf_category):
+                        exp_id = get_first_sf_tag(sf, 'Experiment_ID')
+                        if exp_id in emptyValue:
+                            continue
+                        if isinstance(exp_id, str):
+                            exp_id = int(exp_id)
+                        if exp_id not in exp_dict:
+                            continue
+                        exp_class = _exp_class = get_first_sf_tag(sf, 'Experiment_class')
+                        if not exp_class.endswith('through-space?'):
+                            continue
+                        exp_name = exp_dict[exp_id].lower()
+                        if 'noe' in exp_name or 'roe' in exp_name\
+                           or 'rfdr' in exp_name or 'darr' in exp_name or 'redor' in exp_name:
+                            _exp_class = 'through-space'
+                        elif 'tocsy' in exp_name:
+                            _exp_class = 'relayed'
+                        elif 'copy' in exp_name:
+                            _exp_class = 'jcoupling'
+                        if exp_class != _exp_class:
+                            set_sf_tag(sf, 'Experiment_class', exp_class[:-14] + _exp_class)
+                            try:
+                                lp = sf.get_loop('_Spectral_dim_transfer')
+                                type_col = lp.tags.index('Type')
+                                for idx, row in lp:
+                                    if row[type_col] == 'through-space?':
+                                        lp.data[idx][type_col] = _exp_class
+                            except KeyError:
+                                pass
+
         allowed_sf_tags = set(self.__allowedSfTags)
 
         for page in self.__pages:

@@ -1061,7 +1061,7 @@ class CyanaMRParserListener(ParseTreeListener):
                                     break
                     if not one_letter_na:
                         self.exitDistance_wo_comp_restraint(compId1, seqId1, atomId1, compId2, seqId2, atomId2)
-                    return
+                        return
 
             target_value = None
             lower_limit = None
@@ -1299,8 +1299,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
                     atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
-                    if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
-                       or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
+                    if atom_id_1[0] not in ('H', 'C', 'N') or atom_id_2[0] not in ('H', 'C', 'N')\
                        or atom_id_1[0] == atom_id_2[0] == 'H':
                         isRdc = False
 
@@ -1316,7 +1315,6 @@ class CyanaMRParserListener(ParseTreeListener):
                                 ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
                                  or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')):
                             pass
-
                         else:
                             isRdc = False
 
@@ -1325,14 +1323,24 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                        if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
+                        bbAtoms = self.__csStat.getBackBoneAtoms(comp_id_1, excl_minor_atom=True)
+                        if atom_id_1 not in bbAtoms or atom_id_2 not in bbAtoms:
+                            isRdc = False
 
-                            if comp_id_1 in monDict3\
-                               and self.__nefT.validate_comp_atom(comp_id_1, atom_id_1)\
-                               and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        elif not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
+
+                            if (atom_id_1[0] == 'H' and atom_id_2[0] != 'H')\
+                               or (atom_id_1[0] != 'H' and atom_id_2[0] == 'H'):
+                                isRdc = False
+                            elif comp_id_1 in monDict3\
+                                    and self.__nefT.validate_comp_atom(comp_id_1, atom_id_1)\
+                                    and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                                 pass
                             else:
                                 isRdc = False
+
+                    else:
+                        isRdc = False
 
                     if not isRdc:
                         self.__cur_subtype_altered = False
@@ -1908,8 +1916,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
                     atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
-                    if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
-                       or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
+                    if atom_id_1[0] not in ('H', 'C', 'N') or atom_id_2[0] not in ('H', 'C', 'N')\
                        or atom_id_1[0] == atom_id_2[0] == 'H':
                         isRdc = False
 
@@ -1925,7 +1932,6 @@ class CyanaMRParserListener(ParseTreeListener):
                                 ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
                                  or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')):
                             pass
-
                         else:
                             isRdc = False
 
@@ -1934,14 +1940,24 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                        if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
+                        bbAtoms = self.__csStat.getBackBoneAtoms(comp_id_1, excl_minor_atom=True)
+                        if atom_id_1 not in bbAtoms or atom_id_2 not in bbAtoms:
+                            isRdc = False
 
-                            if comp_id_1 in monDict3\
-                               and self.__nefT.validate_comp_atom(comp_id_1, atom_id_1)\
-                               and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        elif not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
+
+                            if (atom_id_1[0] == 'H' and atom_id_2[0] != 'H')\
+                               or (atom_id_1[0] != 'H' and atom_id_2[0] == 'H'):
+                                isRdc = False
+                            elif comp_id_1 in monDict3\
+                                    and self.__nefT.validate_comp_atom(comp_id_1, atom_id_1)\
+                                    and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                                 pass
                             else:
                                 isRdc = False
+
+                    else:
+                        isRdc = False
 
                     if not isRdc:
                         self.__cur_subtype_altered = False
@@ -8648,8 +8664,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
                 atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
 
-                if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
-                   or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)\
+                if atom_id_1[0] not in ('H', 'C', 'N') or atom_id_2[0] not in ('H', 'C', 'N')\
                    or atom_id_1[0] == atom_id_2[0] == 'H':
                     isRdc = False
 
@@ -8665,7 +8680,6 @@ class CyanaMRParserListener(ParseTreeListener):
                             ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
                              or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')):
                         pass
-
                     else:
                         isRdc = False
 
@@ -8674,14 +8688,24 @@ class CyanaMRParserListener(ParseTreeListener):
 
                 elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
 
-                    if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
+                    bbAtoms = self.__csStat.getBackBoneAtoms(comp_id_1, excl_minor_atom=True)
+                    if atom_id_1 not in bbAtoms or atom_id_2 not in bbAtoms:
+                        isRdc = False
 
-                        if comp_id_1 in monDict3\
-                           and self.__nefT.validate_comp_atom(comp_id_1, atom_id_1)\
-                           and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                    elif not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
+
+                        if (atom_id_1[0] == 'H' and atom_id_2[0] != 'H')\
+                           or (atom_id_1[0] != 'H' and atom_id_2[0] == 'H'):
+                            isRdc = False
+                        elif comp_id_1 in monDict3\
+                                and self.__nefT.validate_comp_atom(comp_id_1, atom_id_1)\
+                                and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
                             pass
                         else:
                             isRdc = False
+
+                else:
+                    isRdc = False
 
                 if not isRdc:
                     self.__cur_subtype_altered = False

@@ -999,6 +999,8 @@ class BasePKParserListener():
                                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                             'type': 'onebond',
                                                             'indirect': 'no'}
+                                                if transfer in cur_spectral_dim_transfer:
+                                                    continue
                                                 cur_spectral_dim_transfer.append(transfer)
 
                             elif cases > 1:
@@ -1019,6 +1021,8 @@ class BasePKParserListener():
                                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                             'type': 'onebond',
                                                             'indirect': 'no'}
+                                                if transfer in cur_spectral_dim_transfer:
+                                                    continue
                                                 cur_spectral_dim_transfer.append(transfer)
 
                     for _dim_id1, _dict1 in cur_spectral_dim.items():
@@ -1039,6 +1043,8 @@ class BasePKParserListener():
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                         'type': 'onebond',
                                                         'indirect': 'no'}
+                                            if transfer in cur_spectral_dim_transfer:
+                                                continue
                                             cur_spectral_dim_transfer.append(transfer)
 
                     # jcoupling: 'Transfer via direct J coupling over one or more bonds'
@@ -1055,6 +1061,8 @@ class BasePKParserListener():
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                         'type': 'jcoupling',
                                                         'indirect': 'no'}
+                                        if transfer in cur_spectral_dim_transfer:
+                                            continue
                                         cur_spectral_dim_transfer.append(transfer)
 
                         elif d == 3:
@@ -1069,6 +1077,8 @@ class BasePKParserListener():
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                         'type': 'jcoupling',
                                                         'indirect': 'yes'}
+                                            if transfer in cur_spectral_dim_transfer:
+                                                continue
                                             cur_spectral_dim_transfer.append(transfer)
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _region1 = _dict1['spectral_region']
@@ -1086,6 +1096,8 @@ class BasePKParserListener():
                                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                             'type': 'jcoupling',
                                                             'indirect': 'yes' if _isotope2 == 1 else 'no'}
+                                                if transfer in cur_spectral_dim_transfer:
+                                                    continue
                                                 cur_spectral_dim_transfer.append(transfer)
 
                         elif d == 4:
@@ -1100,6 +1112,8 @@ class BasePKParserListener():
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                         'type': 'jcoupling',
                                                         'indirect': 'yes'}
+                                            if transfer in cur_spectral_dim_transfer:
+                                                continue
                                             cur_spectral_dim_transfer.append(transfer)
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _region1 = _dict1['spectral_region']
@@ -1112,6 +1126,8 @@ class BasePKParserListener():
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                         'type': 'jcoupling',
                                                         'indirect': 'no'}
+                                            if transfer in cur_spectral_dim_transfer:
+                                                continue
                                             cur_spectral_dim_transfer.append(transfer)
 
                     # jmultibond: 'Transfer via direct J coupling over multiple bonds'
@@ -1130,6 +1146,8 @@ class BasePKParserListener():
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                         'type': 'relayed',
                                                         'indirect': 'no'}
+                                        if transfer in cur_spectral_dim_transfer:
+                                            continue
                                         cur_spectral_dim_transfer.append(transfer)
 
                         elif d == 3:
@@ -1144,6 +1162,8 @@ class BasePKParserListener():
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                         'type': 'relayed',
                                                         'indirect': 'yes'}
+                                            if transfer in cur_spectral_dim_transfer:
+                                                continue
                                             cur_spectral_dim_transfer.append(transfer)
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _region1 = _dict1['spectral_region']
@@ -1161,6 +1181,8 @@ class BasePKParserListener():
                                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                             'type': 'relayed',
                                                             'indirect': 'yes' if _isotope2 == 1 else 'no'}
+                                                if transfer in cur_spectral_dim_transfer:
+                                                    continue
                                                 cur_spectral_dim_transfer.append(transfer)
 
                         elif d == 4:
@@ -1175,6 +1197,8 @@ class BasePKParserListener():
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                         'type': 'relayed',
                                                         'indirect': 'yes'}
+                                            if transfer in cur_spectral_dim_transfer:
+                                                continue
                                             cur_spectral_dim_transfer.append(transfer)
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _region1 = _dict1['spectral_region']
@@ -1187,6 +1211,8 @@ class BasePKParserListener():
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                         'type': 'relayed',
                                                         'indirect': 'no'}
+                                            if transfer in cur_spectral_dim_transfer:
+                                                continue
                                             cur_spectral_dim_transfer.append(transfer)
 
                     # relayed-alternate: 'Relayed transfer where peaks from an odd resp. even number of transfer steps have opposite sign'
@@ -1205,6 +1231,8 @@ class BasePKParserListener():
                                                     'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                     'type': 'through-space',
                                                     'indirect': 'yes'}
+                                        if transfer in cur_spectral_dim_transfer:
+                                            continue
                                         cur_spectral_dim_transfer.append(transfer)
 
                     if self.exptlMethod == 'SOLID-STATE NMR':
@@ -1220,6 +1248,8 @@ class BasePKParserListener():
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                         'type': 'through-space',
                                                         'indirect': 'yes'}
+                                            if transfer in cur_spectral_dim_transfer:
+                                                continue
                                             cur_spectral_dim_transfer.append(transfer)
 
                         elif 'redor' in file_name or 'redor' in alt_file_name:
@@ -1235,6 +1265,8 @@ class BasePKParserListener():
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                         'type': 'through-space',
                                                         'indirect': 'yes'}
+                                            if transfer in cur_spectral_dim_transfer:
+                                                continue
                                             cur_spectral_dim_transfer.append(transfer)
 
                     for _dim_id1, _dict1 in cur_spectral_dim.items():
@@ -1250,6 +1282,8 @@ class BasePKParserListener():
                                                     'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                     'type': 'through-space',  # optimistic inferencing?
                                                     'indirect': 'yes'}
+                                        if transfer in cur_spectral_dim_transfer:
+                                            continue
                                         cur_spectral_dim_transfer.append(transfer)
 
                     for _dim_id1, _dict1 in cur_spectral_dim.items():
@@ -1265,6 +1299,8 @@ class BasePKParserListener():
                                                     'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                     'type': 'through-space',  # optimistic inferencing?
                                                     'indirect': 'yes'}
+                                        if transfer in cur_spectral_dim_transfer:
+                                            continue
                                         cur_spectral_dim_transfer.append(transfer)
 
                     if self.exptlMethod == 'SOLID-STATE NMR' and d == 2:
@@ -1281,6 +1317,8 @@ class BasePKParserListener():
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                         'type': 'through-space',  # optimistic inferencing?
                                                         'indirect': 'yes'}
+                                            if transfer in cur_spectral_dim_transfer:
+                                                continue
                                             cur_spectral_dim_transfer.append(transfer)
 
                         for _dim_id1, _dict1 in cur_spectral_dim.items():
@@ -1295,6 +1333,8 @@ class BasePKParserListener():
                                                     'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                     'type': 'through-space',  # optimistic inferencing?
                                                     'indirect': 'yes'}
+                                        if transfer in cur_spectral_dim_transfer:
+                                            continue
                                         cur_spectral_dim_transfer.append(transfer)
 
                     for __v in cur_spectral_dim.values():

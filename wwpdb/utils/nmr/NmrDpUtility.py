@@ -6549,6 +6549,7 @@ class NmrDpUtility:
                                                    'error': 'Val_err',
                                                    'atom_type': 'Atom_type',
                                                    'isotope_number': 'Atom_isotope_number',
+                                                   'alt_chain_id': 'Auth_asym_ID',
                                                    'alt_seq_id': 'Seq_ID'
                                                    }
                                       }
@@ -33321,10 +33322,11 @@ class NmrDpUtility:
                             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
 
             elif file_type == 'nm-res-cya' and content_subtype is not None and 'dist_restraint' in content_subtype:
-                if ar['dist_type'] in ('upl', 'both'):
-                    cyanaUplDistRest += 1
-                if ar['dist_type'] in ('lol', 'both'):
-                    cyanaLolDistRest += 1
+                if 'is_valid' in ar and ar['is_valid']:
+                    if ar['dist_type'] in ('upl', 'both'):
+                        cyanaUplDistRest += 1
+                    if ar['dist_type'] in ('lol', 'both'):
+                        cyanaLolDistRest += 1
 
         fileListId = self.__file_path_list_len
 
@@ -38108,6 +38110,8 @@ class NmrDpUtility:
         value_name = item_names['value']
         atom_type = item_names['atom_type']
         iso_number = item_names['isotope_number']
+        alt_chain_id_name = item_names['alt_chain_id'] if file_type == 'nmr-star' else None
+        pref_alt_chain_id = False
 
         try:
 
@@ -38211,7 +38215,14 @@ class NmrDpUtility:
 
                                 for row in lp_data:
 
-                                    if row[chain_id_name] != _chain_id or row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
+                                    if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] != _chain_id:
+                                        if alt_chain_id_name is None:
+                                            continue
+                                        if row[alt_chain_id_name] != _chain_id:
+                                            continue
+                                        pref_alt_chain_id = True
+
+                                    if row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
                                        or row[value_name] in emptyValue:
                                         continue
 
@@ -38347,7 +38358,14 @@ class NmrDpUtility:
 
                                 for row in lp_data:
 
-                                    if row[chain_id_name] != _chain_id or row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
+                                    if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] != _chain_id:
+                                        if alt_chain_id_name is None:
+                                            continue
+                                        if row[alt_chain_id_name] != _chain_id:
+                                            continue
+                                        pref_alt_chain_id = True
+
+                                    if row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
                                        or row[value_name] in emptyValue:
                                         continue
 
@@ -38470,7 +38488,14 @@ class NmrDpUtility:
 
                                 for row in lp_data:
 
-                                    if row[chain_id_name] != _chain_id or row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
+                                    if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] != _chain_id:
+                                        if alt_chain_id_name is None:
+                                            continue
+                                        if row[alt_chain_id_name] != _chain_id:
+                                            continue
+                                        pref_alt_chain_id = True
+
+                                    if row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
                                        or row[value_name] in emptyValue:
                                         continue
 
@@ -38584,7 +38609,14 @@ class NmrDpUtility:
 
                                 for row in lp_data:
 
-                                    if row[chain_id_name] != _chain_id or row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
+                                    if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] != _chain_id:
+                                        if alt_chain_id_name is None:
+                                            continue
+                                        if row[alt_chain_id_name] != _chain_id:
+                                            continue
+                                        pref_alt_chain_id = True
+
+                                    if row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
                                        or row[value_name] in emptyValue:
                                         continue
 
@@ -38689,7 +38721,14 @@ class NmrDpUtility:
 
                                 for row in lp_data:
 
-                                    if row[chain_id_name] != _chain_id or row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
+                                    if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] != _chain_id:
+                                        if alt_chain_id_name is None:
+                                            continue
+                                        if row[alt_chain_id_name] != _chain_id:
+                                            continue
+                                        pref_alt_chain_id = True
+
+                                    if row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
                                        or row[value_name] in emptyValue:
                                         continue
 
@@ -38764,7 +38803,7 @@ class NmrDpUtility:
 
                 data_type = str(row[iso_number]) + row[atom_type].lower() + '_chemical_shifts'
 
-                chain_id = row[chain_id_name]
+                chain_id = row[alt_chain_id_name if pref_alt_chain_id else chain_id_name]
                 seq_id = row[seq_id_name]
                 comp_id = row[comp_id_name]
                 atom_id = row[atom_id_name]
@@ -38797,7 +38836,8 @@ class NmrDpUtility:
                 # non-standard residue
                 if comp_id not in monDict3:
 
-                    neighbor_comp_ids = set(_row[comp_id_name] for _row in lp_data if _row[chain_id_name] == _chain_id
+                    neighbor_comp_ids = set(_row[comp_id_name] for _row in lp_data
+                                            if _row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] == _chain_id
                                             and abs(_row[seq_id_name] - seq_id) < 4 and _row[seq_id_name] != seq_id)
 
                     polypeptide_like = False
@@ -38915,14 +38955,15 @@ class NmrDpUtility:
 
                                 atom_id = row[atom_id_name]
 
-                                if row[chain_id_name] == _chain_id and row[seq_id_name] == seq_id and row[comp_id_name] == comp_id:
+                                if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] == _chain_id\
+                                   and row[seq_id_name] == seq_id and row[comp_id_name] == comp_id:
                                     if atom_id == 'CA':
                                         ca_chem_shift = row[value_name]
                                     elif atom_id == 'CB':
                                         cb_chem_shift = row[value_name]
 
                                 if None in (ca_chem_shift, cb_chem_shift):
-                                    if row[chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
+                                    if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
                                         break
                                 else:
                                     break
@@ -38998,14 +39039,15 @@ class NmrDpUtility:
 
                                 atom_id = row[atom_id_name]
 
-                                if row[chain_id_name] == _chain_id and row[seq_id_name] == seq_id and row[comp_id_name] == comp_id:
+                                if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] == _chain_id\
+                                   and row[seq_id_name] == seq_id and row[comp_id_name] == comp_id:
                                     if atom_id == 'CB':
                                         cb_chem_shift = row[value_name]
                                     elif atom_id == 'CG':
                                         cg_chem_shift = row[value_name]
 
                                 if None in (cb_chem_shift, cg_chem_shift):
-                                    if row[chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
+                                    if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
                                         break
                                 else:
                                     break
@@ -39106,7 +39148,8 @@ class NmrDpUtility:
 
                                 atom_id = row[atom_id_name]
 
-                                if row[chain_id_name] == _chain_id and row[seq_id_name] == seq_id and row[comp_id_name] == comp_id:
+                                if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] == _chain_id\
+                                   and row[seq_id_name] == seq_id and row[comp_id_name] == comp_id:
                                     if atom_id == 'CG':
                                         cg_chem_shift = row[value_name]
                                     elif atom_id == 'CD2':
@@ -39117,7 +39160,7 @@ class NmrDpUtility:
                                         ne2_chem_shift = row[value_name]
 
                                 if None in (cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift):
-                                    if row[chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
+                                    if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
                                         break
                                 else:
                                     break
@@ -39215,7 +39258,8 @@ class NmrDpUtility:
 
                                     atom_id = row[atom_id_name]
 
-                                    if row[chain_id_name] == _chain_id and row[seq_id_name] == seq_id and row[comp_id_name] == comp_id\
+                                    if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] == _chain_id\
+                                       and row[seq_id_name] == seq_id and row[comp_id_name] == comp_id\
                                        and atom_id.startswith('CG'):
 
                                         _atom_id = atom_id
@@ -39229,7 +39273,7 @@ class NmrDpUtility:
                                             cg2_chem_shift = row[value_name]
 
                                     if None in (cg1_chem_shift, cg2_chem_shift):
-                                        if row[chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
+                                        if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
                                             break
                                     else:
                                         break
@@ -39308,7 +39352,8 @@ class NmrDpUtility:
 
                                     atom_id = row[atom_id_name]
 
-                                    if row[chain_id_name] == _chain_id and row[seq_id_name] == seq_id and row[comp_id_name] == comp_id\
+                                    if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] == _chain_id\
+                                       and row[seq_id_name] == seq_id and row[comp_id_name] == comp_id\
                                        and atom_id.startswith('CD'):
 
                                         _atom_id = atom_id
@@ -39322,7 +39367,7 @@ class NmrDpUtility:
                                             cd2_chem_shift = row[value_name]
 
                                     if None in (cd1_chem_shift, cd2_chem_shift):
-                                        if row[chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
+                                        if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
                                             break
                                     else:
                                         break
@@ -39401,12 +39446,13 @@ class NmrDpUtility:
 
                                     atom_id = row[atom_id_name]
 
-                                    if row[chain_id_name] == _chain_id and row[seq_id_name] == seq_id and row[comp_id_name] == comp_id:
+                                    if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] == _chain_id\
+                                       and row[seq_id_name] == seq_id and row[comp_id_name] == comp_id:
                                         if atom_id == 'CD1':
                                             cd1_chem_shift = row[value_name]
 
                                     if cd1_chem_shift is None:
-                                        if row[chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
+                                        if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
                                             break
                                     else:
                                         break
@@ -39520,7 +39566,8 @@ class NmrDpUtility:
 
                             for row in lp_data:
 
-                                if row[chain_id_name] != _chain_id or row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
+                                if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] != _chain_id\
+                                   or row[seq_id_name] != seq_id or row[comp_id_name] != comp_id\
                                    or row[value_name] in emptyValue:
                                     continue
 
@@ -39560,14 +39607,15 @@ class NmrDpUtility:
 
                                         atom_id = row[atom_id_name]
 
-                                        if row[chain_id_name] == _chain_id and row[seq_id_name] == seq_id and row[comp_id_name] == comp_id:
+                                        if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] == _chain_id\
+                                           and row[seq_id_name] == seq_id and row[comp_id_name] == comp_id:
                                             if atom_id == 'CA':
                                                 ca_chem_shift = row[value_name]
                                             elif atom_id == 'CB':
                                                 cb_chem_shift = row[value_name]
 
                                         if None in (ca_chem_shift, cb_chem_shift):
-                                            if row[chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
+                                            if row[alt_chain_id_name if pref_alt_chain_id else chain_id_name] == _chain_id and row[seq_id_name] > seq_id:
                                                 break
                                         else:
                                             break

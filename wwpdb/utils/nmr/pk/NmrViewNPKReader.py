@@ -215,3 +215,10 @@ class NmrViewNPKReader:
         finally:
             if isFilePath and ifh is not None:
                 ifh.close()
+
+
+if __name__ == "__main__":
+    reader = NmrViewNPKReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2lut/2lut-corrected-div_dst-div_dst.mr',
+                 '../../tests-nmr/mock-data-remediation/2lut/2lut.cif')

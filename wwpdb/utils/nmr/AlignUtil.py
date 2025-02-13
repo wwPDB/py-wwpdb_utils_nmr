@@ -653,7 +653,7 @@ def getRestraintFormatName(fileType: str, ambig: bool = False) -> str:
         return 'SPARKY spectral peak list'
     if fileType == 'nm-pea-top':
         return 'TOPSPIN spectral peak list'
-    if fileType == 'nm-pea-viw':
+    if fileType == 'nm-pea-vie':
         return 'NMRVIEW spectral peak list'
     if fileType == 'nm-pea-vnm':
         return 'VNMR spectral peak list'

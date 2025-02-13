@@ -162,16 +162,22 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
 
             for _dim_id, _spectral_width in enumerate(labels, start=1):
                 if _spectral_width not in emptyValue:
+                    if _dim_id not in self.cur_spectral_dim:
+                        self.cur_spectral_dim[_dim_id] = copy.copy(SPECTRAL_DIM_TEMPLATE)
                     self.cur_spectral_dim[_dim_id]['sweep_width'] = float(_spectral_width)
                     self.cur_spectral_dim[_dim_id]['sweep_width_units'] = 'Hz'
 
         elif self.__cur_label_type == 'sf':
 
             for _dim_id, _freq in enumerate(labels, start=1):
+                if _dim_id not in self.cur_spectral_dim:
+                    self.cur_spectral_dim[_dim_id] = copy.copy(SPECTRAL_DIM_TEMPLATE)
                 self.cur_spectral_dim[_dim_id]['spectrometer_frequency'] = float(_freq)
 
     # Enter a parse tree produced by NmrViewNPKParser#peak_list_2d.
     def enterPeak_list_2d(self, ctx: NmrViewNPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
+        if self.num_of_dim != 2:
+            self.num_of_dim = 2
         self.initSpectralDim()
         if self.num_of_dim not in self.__spectrum_names:
             self.__spectrum_names[self.num_of_dim] = {}
@@ -279,12 +285,13 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{L1} {L2} -> ', comment)
 
         finally:
-            self.__enclose_data.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
     # Enter a parse tree produced by NmrViewNPKParser#peak_list_3d.
     def enterPeak_list_3d(self, ctx: NmrViewNPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
+        if self.num_of_dim != 3:
+            self.num_of_dim = 3
         self.initSpectralDim()
         if self.num_of_dim not in self.__spectrum_names:
             self.__spectrum_names[self.num_of_dim] = {}
@@ -310,7 +317,7 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            if len(self.numberSelection) == 0 or len(self.__enclose_data) < 6:
+            if len(self.numberSelection) == 0:
                 self.peaks3D -= 1
                 return
 
@@ -407,12 +414,13 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{L1} {L2} {L3} -> ', comment)
 
         finally:
-            self.__enclose_data.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
     # Enter a parse tree produced by NmrViewNPKParser#peak_list_4d.
     def enterPeak_list_4d(self, ctx: NmrViewNPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
+        if self.num_of_dim != 4:
+            self.num_of_dim = 4
         self.initSpectralDim()
         if self.num_of_dim not in self.__spectrum_names:
             self.__spectrum_names[self.num_of_dim] = {}
@@ -438,7 +446,7 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            if len(self.numberSelection) == 0 or len(self.__enclose_data) < 8:
+            if len(self.numberSelection) == 0:
                 self.peaks4D -= 1
                 return
 
@@ -550,7 +558,6 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{L1} {L2} {L3} {L4} -> ', comment)
 
         finally:
-            self.__enclose_data.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
@@ -647,7 +654,6 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{L1} {L2} -> ', comment)
 
         finally:
-            self.__enclose_data.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
@@ -756,7 +762,6 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{L1} {L2} {L3} -> ', comment)
 
         finally:
-            self.__enclose_data.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
@@ -877,7 +882,6 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{L1} {L2} {L3} {L4} -> ', comment)
 
         finally:
-            self.__enclose_data.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 

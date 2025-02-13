@@ -1228,7 +1228,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
     return None
 
 
-def get_number_of_dimensions_of_peak_list(file_format: str, line: str) -> Optional[int]:
+def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: str) -> Optional[int]:
     """ Return number of dimensions of peak list of given format and input.
     """
 
@@ -1329,6 +1329,37 @@ def get_number_of_dimensions_of_peak_list(file_format: str, line: str) -> Option
                 return val.count(';')
             if 2 <= val.count(',') + 1 <= 4:
                 return val.count(',')
+
+    return None
+
+
+def get_number_of_dimensions_of_peak_list(fPath: str, file_format: Optional[str]) -> Optional[int]:
+    """ Return number of dimensions for a input peak list file.
+    """
+
+    if file_format is None:
+        return None
+
+    with open(fPath, 'r', encoding='utf-8') as ifh:
+
+        has_header = False
+
+        for idx, line in enumerate(ifh):
+
+            if file_format == 'NMRView' and not has_header:
+
+                if line.startswith('label'):
+                    has_header = True
+
+                continue
+
+            dimensions = get_number_of_dimensions_of_peak_list_from_string(file_format, line)
+
+            if dimensions is not None and 0 < dimensions <= MAX_DIM_NUM_OF_SPECTRA:
+                return dimensions
+
+            if idx >= 20:  # self.mr_max_spacer_lines:
+                break
 
     return None
 
@@ -32992,20 +33023,7 @@ class NmrDpUtility:
                     continue
 
                 file_format = get_peak_list_format(file_path, False)
-
-                dimensions = None
-
-                if file_format is not None:
-                    with open(file_path, 'r', encoding='utf-8') as ifh:
-                        has_header = False
-                        for line in ifh:
-                            if file_format == 'NMRView' and not has_header:
-                                if line.startswith('label'):
-                                    has_header = True
-                                continue
-                            dimensions = get_number_of_dimensions_of_peak_list(file_format, line)
-                            if dimensions is not None and 0 < dimensions <= MAX_DIM_NUM_OF_SPECTRA:
-                                break
+                dimensions = get_number_of_dimensions_of_peak_list(file_path, file_format)
 
                 set_sf_tag(sf, 'Number_of_spectral_dimensions', dimensions)
 
@@ -33061,20 +33079,7 @@ class NmrDpUtility:
                 sf.add_tag('Experiment_type', None)
 
                 file_format = get_peak_list_format(file_path, False)
-
-                dimensions = None
-
-                if file_format is not None:
-                    with open(file_path, 'r', encoding='utf-8') as ifh:
-                        has_header = False
-                        for line in ifh:
-                            if file_format == 'NMRView' and not has_header:
-                                if line.startswith('label'):
-                                    has_header = True
-                                continue
-                            dimensions = get_number_of_dimensions_of_peak_list(file_format, line)
-                            if dimensions is not None and 0 < dimensions <= MAX_DIM_NUM_OF_SPECTRA:
-                                break
+                dimensions = get_number_of_dimensions_of_peak_list(file_path, file_format)
 
                 sf.add_tag('Number_of_spectral_dimensions', dimensions)
 
@@ -35089,7 +35094,7 @@ class NmrDpUtility:
                             _type = 'no'
                         elif 'NMRVIEW' in a_pk_format_name\
                                 and mismatched_input_err_msg in description['message']\
-                                and "'\\n' expecting L_brace" in description['message']:
+                                and "' expecting L_brace" in description['message']:
                             _type = 'no_brace'
                         else:
                             _err += f"[Syntax error as {a_pk_format_name} file] "\
@@ -35936,6 +35941,8 @@ class NmrDpUtility:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-pea-vie':
+                __list_id_counter = copy.copy(self.__list_id_counter)
+
                 reader = NmrViewPKReader(self.__verbose, self.__lfh,
                                          self.__representative_model_id,
                                          self.__representative_alt_id,

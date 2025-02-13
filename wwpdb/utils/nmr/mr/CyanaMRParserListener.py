@@ -1488,6 +1488,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         if sf['constraint_subsubtype'] == 'ambi':
                             continue
 
+                        if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                            sf['constraint_subsubtype'] = 'ambi'
+
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                                 or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
@@ -2087,6 +2090,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                         if sf['constraint_subsubtype'] == 'ambi':
                             continue
+
+                        if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                            sf['constraint_subsubtype'] = 'ambi'
 
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
@@ -6508,6 +6514,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         if sf['constraint_subsubtype'] == 'ambi':
                             continue
 
+                        if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                            sf['constraint_subsubtype'] = 'ambi'
+
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                                 or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
@@ -6858,6 +6867,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         if sf['constraint_subsubtype'] == 'ambi':
                             continue
 
+                        if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                            sf['constraint_subsubtype'] = 'ambi'
+
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                                 or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
@@ -7114,6 +7126,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                         if sf['constraint_subsubtype'] == 'ambi':
                             continue
+
+                        if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                            sf['constraint_subsubtype'] = 'ambi'
 
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
@@ -7387,6 +7402,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                         if sf['constraint_subsubtype'] == 'ambi':
                             continue
+
+                        if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                            sf['constraint_subsubtype'] = 'ambi'
 
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
@@ -7738,6 +7756,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         if sf['constraint_subsubtype'] == 'ambi':
                             continue
 
+                        if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                            sf['constraint_subsubtype'] = 'ambi'
+
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                                 or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
@@ -7995,6 +8016,9 @@ class CyanaMRParserListener(ParseTreeListener):
                         if sf['constraint_subsubtype'] == 'ambi':
                             continue
 
+                        if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                            sf['constraint_subsubtype'] = 'ambi'
+
                         if memberLogicCode == 'OR'\
                            and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                                 or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
@@ -8174,6 +8198,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     if sf['constraint_subsubtype'] == 'ambi':
                         continue
+
+                    if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                        sf['constraint_subsubtype'] = 'ambi'
 
                     if memberLogicCode == 'OR'\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
@@ -8805,6 +8832,9 @@ class CyanaMRParserListener(ParseTreeListener):
 
                     if sf['constraint_subsubtype'] == 'ambi':
                         continue
+
+                    if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                        sf['constraint_subsubtype'] = 'ambi'
 
                     if memberLogicCode == 'OR'\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)

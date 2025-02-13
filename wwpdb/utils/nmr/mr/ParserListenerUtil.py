@@ -7328,7 +7328,10 @@ def getSaveframe(mrSubtype: str, sf_framecode: str,
         elif tag_item_name == 'Constraint_type' and mrSubtype.startswith('rdc'):
             sf.add_tag(tag_item_name, 'RDC')
         elif tag_item_name == 'Constraint_type' and constraintType is not None:
-            sf.add_tag(tag_item_name, constraintType)
+            if constraintType.startswith('ambiguous'):
+                sf.add_tag(tag_item_name, constraintType[10:])
+            else:
+                sf.add_tag(tag_item_name, constraintType)
         elif tag_item_name == 'Constraint_type' and mrSubtype.startswith('dist'):
             sf.add_tag(tag_item_name, 'NOE')
         elif tag_item_name == 'Potential_type':

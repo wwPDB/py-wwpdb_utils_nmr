@@ -2561,6 +2561,9 @@ class XplorMRParserListener(ParseTreeListener):
                         if sf['constraint_subsubtype'] == 'ambi':
                             continue
 
+                        if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                            sf['constraint_subsubtype'] = 'ambi'
+
                         if isinstance(combinationId, int)\
                            or (memberLogicCode == 'OR'
                                and (isAmbigAtomSelection(self.atomSelectionSet[i], self.__csStat)
@@ -8563,6 +8566,9 @@ class XplorMRParserListener(ParseTreeListener):
 
                         if sf['constraint_subsubtype'] == 'ambi':
                             continue
+
+                        if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                            sf['constraint_subsubtype'] = 'ambi'
 
                         if isinstance(combinationId, int)\
                            or (memberLogicCode == 'OR'

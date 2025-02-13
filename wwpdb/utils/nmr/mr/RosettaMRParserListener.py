@@ -351,6 +351,9 @@ class RosettaMRParserListener(ParseTreeListener):
     # dictionary of pynmrstar saveframes
     sfDict = {}
 
+    # current constraint type
+    __cur_constraint_type = None
+
     __cachedDictForStarAtom = {}
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -1156,6 +1159,9 @@ class RosettaMRParserListener(ParseTreeListener):
 
                     if sf['constraint_subsubtype'] == 'ambi':
                         continue
+
+                    if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                        sf['constraint_subsubtype'] = 'ambi'
 
                     if memberLogicCode == 'OR'\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
@@ -5086,6 +5092,9 @@ class RosettaMRParserListener(ParseTreeListener):
                     if sf['constraint_subsubtype'] == 'ambi':
                         continue
 
+                    if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                        sf['constraint_subsubtype'] = 'ambi'
+
                     if memberLogicCode == 'OR'\
                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                             or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
@@ -5220,6 +5229,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if content_subtype is None:
             return
+
+        self.__cur_constraint_type = constraintType
 
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 

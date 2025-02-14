@@ -874,7 +874,7 @@ class BasePKParserListener():
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C'  # all
-                                    elif 30 < center < 60:
+                                    elif 30 < center < 50:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C-aliphatic'
@@ -912,9 +912,9 @@ class BasePKParserListener():
                                     __v['spectral_region'] = 'H-methyl'
                                 elif 60 < center < 90 and atom_type == 'C':
                                     __v['spectral_region'] = 'C'  # all
-                                elif 30 < center < 60 and atom_type == 'C':
+                                elif 30 < center < 50 and atom_type == 'C':
                                     __v['spectral_region'] = 'C-aliphatic'
-                                elif 10 < center < 20 and atom_type == 'C':
+                                elif 10 < center < 30 and atom_type == 'C':
                                     __v['spectral_region'] = 'C-methyl'
 
                             if __v['freq_hint'].size > 0 and d > 2 and __d >= 2\

@@ -43102,11 +43102,11 @@ class NmrDpUtility:
                 if __v['freq_hint'].size > 0:
                     center = numpy.mean(__v['freq_hint'])
 
-                    if 125 < center < 130:
+                    if 128 < center < 133:
                         __v['atom_type'] = 'C'
                         __v['atom_isotope_number'] = 13
                         __v['axis_code'] = 'C-aromatic'
-                    elif 115 < center < 125:
+                    elif 115 < center < 128:
                         __v['atom_type'] = 'N'
                         __v['atom_isotope_number'] = 15
                         __v['axis_code'] = 'N'
@@ -43190,7 +43190,8 @@ class NmrDpUtility:
                                        and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                             or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
                                 cases += 1
-                                max_corr_eff = max(max_corr_eff, numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1])
+                                max_corr_eff = max(max_corr_eff, numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
+                                                   if _dict1['freq_hint'].size > 1 else 0.0)
 
                 if cases == 1:
                     for _dim_id2, _dict2 in cur_spectral_dim.items():
@@ -43222,7 +43223,7 @@ class NmrDpUtility:
                                            if _transfer['type'] == 'onebond'
                                            and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                                 or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
-                                    if numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1] < max_corr_eff:
+                                    if _dict1['freq_hint'].size > 1 and numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1] < max_corr_eff:
                                         continue
                                     transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                 'spectral_dim_id_2': max([_dim_id1, _dim_id2]),

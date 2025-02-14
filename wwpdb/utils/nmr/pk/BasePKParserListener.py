@@ -1232,7 +1232,7 @@ class BasePKParserListener():
                        or 'noe' in alt_file_name or 'roe' in alt_file_name:
                         for _dim_id1, _dict1 in cur_spectral_dim.items():
                             _region1 = _dict1['_spectral_region']
-                            if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl') and d > 2:
+                            if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl'):
                                 for _dim_id2, _dict2 in cur_spectral_dim.items():
                                     if _dim_id1 == _dim_id2 or _dict1['atom_isotope_number'] != _dict2['atom_isotope_number']:
                                         continue
@@ -1244,6 +1244,28 @@ class BasePKParserListener():
                                         if transfer in cur_spectral_dim_transfer:
                                             continue
                                         cur_spectral_dim_transfer.append(transfer)
+                                        if d == 2 and _region1 == 'H-aliphatic':
+                                            _dict1['spectral_region'] = _dict2['spectral_region'] = 'H'  # all
+                                            if _dict1['axis_code'] == _dict2['axis_code'] == 'H-aliphatic':
+                                                _dict1['axis_code'] = f'H_{_dim_id1}'
+                                                _dict2['axis_code'] = f'H_{_dim_id2}'
+                                        if d == 3:
+                                            _transfer = next((_transfer for _transfer in cur_spectral_dim_transfer if _transfer['type'] == 'onebond'), None)
+                                            if _transfer is not None:
+                                                if _dim_id1 not in (_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']):
+                                                    if _region1 == 'H-aliphatic':
+                                                        _dict1['spectral_region'] = 'H'  # all
+                                                        if _dict1['axis_code'] == 'H-aliphatic':
+                                                            _dict1['axis_code'] = 'H'
+                                                elif _region1 == 'HN':
+                                                    _dict1['spectral_region'] = _dict1['axis_code'] = 'HN'
+                                                if _dim_id2 not in (_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']):
+                                                    if _region1 == 'H-aliphatic':
+                                                        _dict2['spectral_region'] = 'H'  # all
+                                                        if _dict2['axis_code'] == 'H-aliphatic':
+                                                            _dict2['axis_code'] = 'H'
+                                                elif _dict2['_spectral_region'] == 'HN':
+                                                    _dict2['spectral_region'] = _dict2['axis_code'] = 'HN'
 
                     if self.exptlMethod == 'SOLID-STATE NMR':
                         if 'rfdr' in file_name or 'rfdr' in alt_file_name or 'darr' in file_name or 'darr' in alt_file_name:
@@ -1261,6 +1283,12 @@ class BasePKParserListener():
                                             if transfer in cur_spectral_dim_transfer:
                                                 continue
                                             cur_spectral_dim_transfer.append(transfer)
+                                            if d == 2 and _dict1['spectral_region'] == _dict2['spectral_region']:
+                                                nuc = _dict1[1]['spectral_regison'][0]
+                                                _dict1['spectral_region'] = _dict2['spectral_region'] = nuc
+                                                if _dict1['axis_code'] == _dict2['axis_code']:
+                                                    _dict1['axis_code'] = f'{nuc}_{_dim_id1}'
+                                                    _dict2['axis_code'] = f'{nuc}_{_dim_id2}'
 
                         elif 'redor' in file_name or 'redor' in alt_file_name:
                             for _dim_id1, _dict1 in cur_spectral_dim.items():

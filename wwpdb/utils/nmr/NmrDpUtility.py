@@ -43209,6 +43209,8 @@ class NmrDpUtility:
                                                 'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                 'type': 'onebond',
                                                 'indirect': 'no'}
+                                    if transfer in cur_spectral_dim_transfer:
+                                        continue
                                     cur_spectral_dim_transfer.append(transfer)
 
                 elif cases > 1:
@@ -43233,6 +43235,8 @@ class NmrDpUtility:
                                                 'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                 'type': 'onebond',
                                                 'indirect': 'no'}
+                                    if transfer in cur_spectral_dim_transfer:
+                                        continue
                                     cur_spectral_dim_transfer.append(transfer)
 
         for _dim_id1, _dict1 in cur_spectral_dim.items():
@@ -43253,6 +43257,8 @@ class NmrDpUtility:
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                             'type': 'onebond',
                                             'indirect': 'no'}
+                                if transfer in cur_spectral_dim_transfer:
+                                    continue
                                 cur_spectral_dim_transfer.append(transfer)
 
         # jcoupling: 'Transfer via direct J coupling over one or more bonds'
@@ -43269,6 +43275,8 @@ class NmrDpUtility:
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                             'type': 'jcoupling',
                                             'indirect': 'no'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
                             cur_spectral_dim_transfer.append(transfer)
 
             elif d == 3:
@@ -43283,6 +43291,8 @@ class NmrDpUtility:
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                             'type': 'jcoupling',
                                             'indirect': 'yes'}
+                                if transfer in cur_spectral_dim_transfer:
+                                    continue
                                 cur_spectral_dim_transfer.append(transfer)
                 for _dim_id1, _dict1 in cur_spectral_dim.items():
                     _region1 = _dict1['_spectral_region']
@@ -43300,6 +43310,8 @@ class NmrDpUtility:
                                                 'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                 'type': 'jcoupling',
                                                 'indirect': 'yes' if _isotope2 == 1 else 'no'}
+                                    if transfer in cur_spectral_dim_transfer:
+                                        continue
                                     cur_spectral_dim_transfer.append(transfer)
 
             elif d == 4:
@@ -43314,6 +43326,8 @@ class NmrDpUtility:
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                             'type': 'jcoupling',
                                             'indirect': 'yes'}
+                                if transfer in cur_spectral_dim_transfer:
+                                    continue
                                 cur_spectral_dim_transfer.append(transfer)
                 for _dim_id1, _dict1 in cur_spectral_dim.items():
                     _region1 = _dict1['_spectral_region']
@@ -43326,6 +43340,8 @@ class NmrDpUtility:
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                             'type': 'jcoupling',
                                             'indirect': 'no'}
+                                if transfer in cur_spectral_dim_transfer:
+                                    continue
                                 cur_spectral_dim_transfer.append(transfer)
 
         # jmultibond: 'Transfer via direct J coupling over multiple bonds'
@@ -43344,6 +43360,8 @@ class NmrDpUtility:
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                             'type': 'relayed',
                                             'indirect': 'no'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
                             cur_spectral_dim_transfer.append(transfer)
 
             elif d == 3:
@@ -43358,6 +43376,8 @@ class NmrDpUtility:
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                             'type': 'relayed',
                                             'indirect': 'yes'}
+                                if transfer in cur_spectral_dim_transfer:
+                                    continue
                                 cur_spectral_dim_transfer.append(transfer)
                 for _dim_id1, _dict1 in cur_spectral_dim.items():
                     _region1 = _dict1['_spectral_region']
@@ -43375,6 +43395,8 @@ class NmrDpUtility:
                                                 'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                                 'type': 'relayed',
                                                 'indirect': 'yes' if _isotope2 == 1 else 'no'}
+                                    if transfer in cur_spectral_dim_transfer:
+                                        continue
                                     cur_spectral_dim_transfer.append(transfer)
 
             elif d == 4:
@@ -43389,6 +43411,8 @@ class NmrDpUtility:
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                             'type': 'relayed',
                                             'indirect': 'yes'}
+                                if transfer in cur_spectral_dim_transfer:
+                                    continue
                                 cur_spectral_dim_transfer.append(transfer)
                 for _dim_id1, _dict1 in cur_spectral_dim.items():
                     _region1 = _dict1['_spectral_region']
@@ -43401,6 +43425,8 @@ class NmrDpUtility:
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                             'type': 'relayed',
                                             'indirect': 'no'}
+                                if transfer in cur_spectral_dim_transfer:
+                                    continue
                                 cur_spectral_dim_transfer.append(transfer)
 
         # relayed-alternate: 'Relayed transfer where peaks from an odd resp. even number of transfer steps have opposite sign'
@@ -43409,7 +43435,7 @@ class NmrDpUtility:
         if 'noe' in file_name or 'roe' in file_name:
             for _dim_id1, _dict1 in cur_spectral_dim.items():
                 _region1 = _dict1['_spectral_region']
-                if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl') and d > 2:
+                if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl'):
                     for _dim_id2, _dict2 in cur_spectral_dim.items():
                         if _dim_id1 == _dim_id2 or _dict1['atom_isotope_number'] != _dict2['atom_isotope_number']:
                             continue
@@ -43418,7 +43444,31 @@ class NmrDpUtility:
                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                         'type': 'through-space',
                                         'indirect': 'yes'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
                             cur_spectral_dim_transfer.append(transfer)
+                            if d == 2 and _region1 == 'H-aliphatic':
+                                _dict1['spectral_region'] = _dict2['spectral_region'] = 'H'  # all
+                                if _dict1['axis_code'] == _dict2['axis_code'] == 'H-aliphatic':
+                                    _dict1['axis_code'] = f'H_{_dim_id1}'
+                                    _dict2['axis_code'] = f'H_{_dim_id2}'
+                            if d == 3:
+                                _transfer = next((_transfer for _transfer in cur_spectral_dim_transfer if _transfer['type'] == 'onebond'), None)
+                                if _transfer is not None:
+                                    if _dim_id1 not in (_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']):
+                                        if _region1 == 'H-aliphatic':
+                                            _dict1['spectral_region'] = 'H'  # all
+                                            if _dict1['axis_code'] == 'H-aliphatic':
+                                                _dict1['axis_code'] = 'H'
+                                    elif _region1 == 'HN':
+                                        _dict1['spectral_region'] = _dict1['axis_code'] = 'HN'
+                                    if _dim_id2 not in (_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']):
+                                        if _region1 == 'H-aliphatic':
+                                            _dict2['spectral_region'] = 'H'  # all
+                                            if _dict2['axis_code'] == 'H-aliphatic':
+                                                _dict2['axis_code'] = 'H'
+                                    elif _dict2['_spectral_region'] == 'HN':
+                                        _dict2['spectral_region'] = _dict2['axis_code'] = 'HN'
 
         if self.__exptl_method == 'SOLID-STATE NMR' and d == 2:
             if 'rfdr' in file_name or 'darr' in file_name:
@@ -43433,7 +43483,15 @@ class NmrDpUtility:
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                             'type': 'through-space',
                                             'indirect': 'yes'}
+                                if transfer in cur_spectral_dim_transfer:
+                                    continue
                                 cur_spectral_dim_transfer.append(transfer)
+                                if d == 2 and _dict1['spectral_region'] == _dict2['spectral_region']:
+                                    nuc = _dict1[1]['spectral_regison'][0]
+                                    _dict1['spectral_region'] = _dict2['spectral_region'] = nuc
+                                    if _dict1['axis_code'] == _dict2['axis_code']:
+                                        _dict1['axis_code'] = f'{nuc}_{_dim_id1}'
+                                        _dict2['axis_code'] = f'{nuc}_{_dim_id2}'
 
             elif 'redor' in file_name:
                 for _dim_id1, _dict1 in cur_spectral_dim.items():
@@ -43448,6 +43506,8 @@ class NmrDpUtility:
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                             'type': 'through-space',
                                             'indirect': 'yes'}
+                                if transfer in cur_spectral_dim_transfer:
+                                    continue
                                 cur_spectral_dim_transfer.append(transfer)
 
         for _dim_id1, _dict1 in cur_spectral_dim.items():
@@ -43463,6 +43523,8 @@ class NmrDpUtility:
                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                         'type': 'through-space?',  # optimistic inferencing?
                                         'indirect': 'yes'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
                             cur_spectral_dim_transfer.append(transfer)
 
         for _dim_id1, _dict1 in cur_spectral_dim.items():
@@ -43478,6 +43540,8 @@ class NmrDpUtility:
                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                         'type': 'through-space?',  # optimistic inferencing?
                                         'indirect': 'yes'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
                             cur_spectral_dim_transfer.append(transfer)
 
         if self.__exptl_method == 'SOLID-STATE NMR' and d == 2:
@@ -43494,6 +43558,8 @@ class NmrDpUtility:
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                             'type': 'through-space?',  # optimistic inferencing?
                                             'indirect': 'yes'}
+                                if transfer in cur_spectral_dim_transfer:
+                                    continue
                                 cur_spectral_dim_transfer.append(transfer)
 
             for _dim_id1, _dict1 in cur_spectral_dim.items():
@@ -43508,6 +43574,8 @@ class NmrDpUtility:
                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                         'type': 'through-space?',  # optimistic inferencing?
                                         'indirect': 'yes'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
                             cur_spectral_dim_transfer.append(transfer)
 
         for __v in cur_spectral_dim.values():

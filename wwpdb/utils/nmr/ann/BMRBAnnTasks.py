@@ -16,6 +16,7 @@ import sys
 import re
 import copy
 import pynmrstar
+import itertools
 
 from packaging import version
 from operator import itemgetter
@@ -1943,9 +1944,228 @@ class BMRBAnnTasks:
                 except KeyError:
                     pass
 
-        # update sample and sample_condition of spectral peak list saveframe
-
         sf_category = 'spectral_peak_list'
+
+        # resolve duplication of spectral peak lists
+
+        if sf_category in self.__sfCategoryList:
+
+            tags_2d = ['Volume', 'Height', 'Position_1', 'Position_2', 'Auth_asym_ID_1']
+            tags_3d = ['Volume', 'Height', 'Position_1', 'Position_2', 'Position_3', 'Auth_asym_ID_1']
+            tags_4d = ['Volume', 'Height', 'Position_1', 'Position_2', 'Position_3', 'Position_4', 'Auth_asym_ID_1']
+
+            sp_info = {}
+
+            for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category)):
+
+                lp_category = '_Peak_row_format'
+
+                try:
+
+                    lp = sf.get_loop(lp_category)
+
+                    if len(lp) > 0:
+                        sp_info[idx] = {'sf_framecode': get_first_sf_tag(sf, 'Sf_framecode'),
+                                        'num_of_dim': get_first_sf_tag(sf, 'Number_of_spectral_dimensions'),
+                                        'class': get_first_sf_tag(sf, 'Experiment_class').replace('?', ''),
+                                        'type': get_first_sf_tag(sf, 'Experiment_type'),
+                                        'size': len(lp)}
+
+                        num_of_dim = sp_info[idx]['num_of_dim']
+                        if isinstance(num_of_dim, str):
+                            num_of_dim = sp_info[idx]['num_of_dim'] = int(num_of_dim)
+
+                        has_volume = has_height = has_assign = False
+                        signature = []
+
+                        if num_of_dim == 2:
+                            dat = lp.get_tag(tags_2d)
+
+                            for _idx, row in enumerate(dat, start=1):
+                                volume = row[0]
+                                if volume in emptyValue:
+                                    volume = None
+                                else:
+                                    volume = float(volume)
+                                    has_volume = True
+
+                                height = row[1]
+                                if height in emptyValue:
+                                    height = None
+                                else:
+                                    height = float(height)
+                                    has_height = True
+
+                                position = {float(row[2]), float(row[3])}
+
+                                signature.append({'position': position,
+                                                  'volume': volume,
+                                                  'height': height})
+
+                                if row[4] not in emptyValue:
+                                    has_assign = True
+
+                                if _idx == 10:
+                                    break
+
+                        elif num_of_dim == 3:
+                            dat = lp.get_tag(tags_3d)
+
+                            for _idx, row in enumerate(dat, start=1):
+                                volume = row[0]
+                                if volume in emptyValue:
+                                    volume = None
+                                else:
+                                    volume = float(volume)
+
+                                height = row[1]
+                                if height in emptyValue:
+                                    height = None
+                                else:
+                                    height = float(height)
+
+                                position = {float(row[2]), float(row[3]), float(row[4])}
+
+                                signature.append({'position': position,
+                                                  'volume': volume,
+                                                  'height': height})
+
+                                if row[5] not in emptyValue:
+                                    has_assign = True
+
+                                if _idx == 10:
+                                    break
+
+                        elif num_of_dim == 4:
+                            dat = lp.get_tag(tags_4d)
+
+                            for _idx, row in enumerate(dat, start=1):
+                                volume = row[0]
+                                if volume in emptyValue:
+                                    volume = None
+                                else:
+                                    volume = float(volume)
+
+                                height = row[1]
+                                if height in emptyValue:
+                                    height = None
+                                else:
+                                    height = float(height)
+
+                                position = {float(row[2]), float(row[3]), float(row[4]), float(row[5])}
+
+                                signature.append({'position': position,
+                                                  'volume': volume,
+                                                  'height': height})
+
+                                if row[6] not in emptyValue:
+                                    has_assign = True
+
+                                if _idx == 10:
+                                    break
+
+                        sp_info[idx]['has_volume'] = has_volume
+                        sp_info[idx]['has_height'] = has_height
+                        sp_info[idx]['has_assign'] = has_assign
+                        sp_info[idx]['signature'] = signature
+
+                except KeyError:
+                    pass
+
+            if len(sp_info) > 1:
+                dup_idx = set()
+
+                for idx1, idx2 in itertools.combinations(sp_info, 2):
+
+                    if sp_info[idx1]['num_of_dim'] != sp_info[idx2]['num_of_dim']\
+                       or sp_info[idx1]['size'] != sp_info[idx2]['size']:
+                        continue
+
+                    if not all(sig1['position'] == sig2['position']
+                               for sig1, sig2 in zip(sp_info[idx1]['signature'],
+                                                     sp_info[idx2]['signature'])):
+                        continue
+
+                    if not all(sig1['volume'] == sig2['volume']
+                               for sig1, sig2 in zip(sp_info[idx1]['signature'],
+                                                     sp_info[idx2]['signature']))\
+                       and not all(sig1['height'] == sig2['height']
+                                   for sig1, sig2 in zip(sp_info[idx1]['signature'],
+                                                         sp_info[idx2]['signature'])):
+                        continue
+
+                    if sp_info[idx1]['has_assign'] != sp_info[idx2]['has_assign']:
+                        if sp_info[idx1]['has_assign']:
+                            dup_idx.add(idx2)
+                        else:
+                            dup_idx.add(idx1)
+                        continue
+
+                    if sp_info[idx1]['has_volume'] != sp_info[idx2]['has_volume']:
+                        if sp_info[idx1]['has_volume']:
+                            dup_idx.add(idx2)
+                        else:
+                            dup_idx.add(idx1)
+                        continue
+
+                    if sp_info[idx1]['has_height'] != sp_info[idx2]['has_height']:
+                        if sp_info[idx1]['has_height']:
+                            dup_idx.add(idx2)
+                        else:
+                            dup_idx.add(idx1)
+                        continue
+
+                    if len(sp_info[idx1]['class']) != len(sp_info[idx2]['class']):
+                        if len(sp_info[idx1]['class']) > len(sp_info[idx2]['class']):
+                            dup_idx.add(idx2)
+                        else:
+                            dup_idx.add(idx1)
+                        continue
+
+                    if len(sp_info[idx1]['type']) != len(sp_info[idx2]['type']):
+                        if len(sp_info[idx1]['type']) > len(sp_info[idx2]['type']):
+                            dup_idx.add(idx2)
+                        else:
+                            dup_idx.add(idx1)
+                        continue
+
+                    if idx1 in dup_idx or idx2 in dup_idx:
+                        continue
+
+                    dup_idx.add(idx2)
+
+                for idx in reversed(list(dup_idx)):
+                    master_entry.remove_saveframe(sp_info[idx]['sf_framecode'])
+
+                count = 0
+                for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
+                    set_sf_tag(sf, 'ID', idx)
+                    self.__c2S.set_local_sf_id(sf, idx)
+                    count += 1
+
+                _sf_category = 'entry_information'
+
+                if _sf_category in self.__sfCategoryList:
+                    ent_sf = master_entry.get_saveframes_by_category(_sf_category)[0]
+
+                    _lp_category = '_Data_set'
+
+                    try:
+
+                        _lp = ent_sf.get_loop(_lp_category)
+
+                        type_col = _lp.tags.index('Type')
+                        count_col = _lp.tags.index('Count')
+
+                        for _idx, _row in enumerate(_lp):
+                            if _row[type_col] == 'spectral_peak_list':
+                                _row[count_col] = count
+                                break
+
+                    except (KeyError, ValueError):
+                        pass
+
+        # update sample and sample_condition of spectral peak list saveframe
 
         if sf_category in self.__sfCategoryList:
             for sf in master_entry.get_saveframes_by_category(sf_category):

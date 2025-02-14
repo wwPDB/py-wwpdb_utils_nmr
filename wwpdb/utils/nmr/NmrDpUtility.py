@@ -43165,21 +43165,24 @@ class NmrDpUtility:
         for __v in cur_spectral_dim.values():
             if __v['axis_code'] == 'HN/H-aromatic':
                 has_a = any(___v['spectral_region'] == 'C-aromatic' for ___v in cur_spectral_dim.values())
-                __v['axis_code'] = 'H-aromatic' if has_a else 'HN'
+                __v['axis_code'] = 'H-aromatic' if has_a else 'H'
             if __v['spectral_region'] == 'HN/H-aromatic':
                 has_a = any(___v['spectral_region'] == 'C-aromatic' for ___v in cur_spectral_dim.values())
-                __v['spectral_region'] = 'H-aromatic' if has_a else 'HN'
+                __v['spectral_region'] = 'H-aromatic' if has_a else 'H'
+                __v['_spectral_region'] = 'H-aromatic' if has_a else 'HN'
+            else:
+                __v['_spectral_region'] = __v['spectral_region']
 
         cur_spectral_dim_transfer = []
 
         # onebond: 'Any transfer that connects only directly bonded atoms in this experiment'
         for _dim_id1, _dict1 in cur_spectral_dim.items():
-            _region1 = _dict1['spectral_region']
+            _region1 = _dict1['_spectral_region']
             if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl'):
                 cases = 0
                 max_corr_eff = 0.0
                 for _dim_id2, _dict2 in cur_spectral_dim.items():
-                    _region2 = _dict2['spectral_region']
+                    _region2 = _dict2['_spectral_region']
                     if (_region1 == 'HN' and _region2 == 'N')\
                        or (_region1 == 'H-aliphatic' and _region2 == 'C-aliphatic')\
                        or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
@@ -43195,7 +43198,7 @@ class NmrDpUtility:
 
                 if cases == 1:
                     for _dim_id2, _dict2 in cur_spectral_dim.items():
-                        _region2 = _dict2['spectral_region']
+                        _region2 = _dict2['_spectral_region']
                         if (_region1 == 'HN' and _region2 == 'N')\
                            or (_region1 == 'H-aliphatic' and _region2 == 'C-aliphatic')\
                            or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
@@ -43213,7 +43216,7 @@ class NmrDpUtility:
 
                 elif cases > 1:
                     for _dim_id2, _dict2 in cur_spectral_dim.items():
-                        _region2 = _dict2['spectral_region']
+                        _region2 = _dict2['_spectral_region']
                         if (_region1 == 'HN' and _region2 == 'N')\
                            or (_region1 == 'H-aliphatic' and _region2 == 'C-aliphatic')\
                            or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
@@ -43232,10 +43235,10 @@ class NmrDpUtility:
                                     cur_spectral_dim_transfer.append(transfer)
 
         for _dim_id1, _dict1 in cur_spectral_dim.items():
-            _region1 = _dict1['spectral_region']
+            _region1 = _dict1['_spectral_region']
             if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl'):
                 for _dim_id2, _dict2 in cur_spectral_dim.items():
-                    _region2 = _dict2['spectral_region']
+                    _region2 = _dict2['_spectral_region']
                     if (_region1 == 'HN' and _region2 == 'N')\
                        or (_region1 == 'H-aliphatic' and _region2 == 'C-aliphatic')\
                        or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
@@ -43269,7 +43272,7 @@ class NmrDpUtility:
 
             elif d == 3:
                 for _dim_id1, _dict1 in cur_spectral_dim.items():
-                    _region1 = _dict1['spectral_region']
+                    _region1 = _dict1['_spectral_region']
                     if _region1 == 'HN':
                         for _dim_id2, _dict2 in cur_spectral_dim.items():
                             if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] not in (1, 13):
@@ -43281,7 +43284,7 @@ class NmrDpUtility:
                                             'indirect': 'yes'}
                                 cur_spectral_dim_transfer.append(transfer)
                 for _dim_id1, _dict1 in cur_spectral_dim.items():
-                    _region1 = _dict1['spectral_region']
+                    _region1 = _dict1['_spectral_region']
                     if _region1 == 'H-aliphatic':
                         for _dim_id2, _dict2 in cur_spectral_dim.items():
                             _isotope2 = _dict2['atom_isotope']
@@ -43300,7 +43303,7 @@ class NmrDpUtility:
 
             elif d == 4:
                 for _dim_id1, _dict1 in cur_spectral_dim.items():
-                    _region1 = _dict1['spectral_region']
+                    _region1 = _dict1['_spectral_region']
                     if _region1 == 'HN':
                         for _dim_id2, _dict2 in cur_spectral_dim.items():
                             if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] != 1:
@@ -43312,7 +43315,7 @@ class NmrDpUtility:
                                             'indirect': 'yes'}
                                 cur_spectral_dim_transfer.append(transfer)
                 for _dim_id1, _dict1 in cur_spectral_dim.items():
-                    _region1 = _dict1['spectral_region']
+                    _region1 = _dict1['_spectral_region']
                     if _region1 == 'H-aliphatic':
                         for _dim_id2, _dict2 in cur_spectral_dim.items():
                             if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] != 1:
@@ -43344,7 +43347,7 @@ class NmrDpUtility:
 
             elif d == 3:
                 for _dim_id1, _dict1 in cur_spectral_dim.items():
-                    _region1 = _dict1['spectral_region']
+                    _region1 = _dict1['_spectral_region']
                     if _region1 == 'HN':
                         for _dim_id2, _dict2 in cur_spectral_dim.items():
                             if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] not in (1, 13):
@@ -43356,7 +43359,7 @@ class NmrDpUtility:
                                             'indirect': 'yes'}
                                 cur_spectral_dim_transfer.append(transfer)
                 for _dim_id1, _dict1 in cur_spectral_dim.items():
-                    _region1 = _dict1['spectral_region']
+                    _region1 = _dict1['_spectral_region']
                     if _region1 == 'H-aliphatic':
                         for _dim_id2, _dict2 in cur_spectral_dim.items():
                             _isotope2 = _dict2['atom_isotope']
@@ -43375,7 +43378,7 @@ class NmrDpUtility:
 
             elif d == 4:
                 for _dim_id1, _dict1 in cur_spectral_dim.items():
-                    _region1 = _dict1['spectral_region']
+                    _region1 = _dict1['_spectral_region']
                     if _region1 == 'HN':
                         for _dim_id2, _dict2 in cur_spectral_dim.items():
                             if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] != 1:
@@ -43387,7 +43390,7 @@ class NmrDpUtility:
                                             'indirect': 'yes'}
                                 cur_spectral_dim_transfer.append(transfer)
                 for _dim_id1, _dict1 in cur_spectral_dim.items():
-                    _region1 = _dict1['spectral_region']
+                    _region1 = _dict1['_spectral_region']
                     if _region1 == 'H-aliphatic':
                         for _dim_id2, _dict2 in cur_spectral_dim.items():
                             if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] != 1:
@@ -43404,7 +43407,7 @@ class NmrDpUtility:
         # through-space: 'Any transfer that does not go through the covalent bonded skeleton
         if 'noe' in file_name or 'roe' in file_name:
             for _dim_id1, _dict1 in cur_spectral_dim.items():
-                _region1 = _dict1['spectral_region']
+                _region1 = _dict1['_spectral_region']
                 if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl') and d > 2:
                     for _dim_id2, _dict2 in cur_spectral_dim.items():
                         if _dim_id1 == _dim_id2 or _dict1['atom_isotope_number'] != _dict2['atom_isotope_number']:
@@ -43447,7 +43450,7 @@ class NmrDpUtility:
                                 cur_spectral_dim_transfer.append(transfer)
 
         for _dim_id1, _dict1 in cur_spectral_dim.items():
-            _region1 = _dict1['spectral_region']
+            _region1 = _dict1['_spectral_region']
             if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl') and d > 2:
                 for _dim_id2, _dict2 in cur_spectral_dim.items():
                     if _dim_id1 == _dim_id2 or _dict1['atom_isotope_number'] != _dict2['atom_isotope_number']:
@@ -43462,10 +43465,10 @@ class NmrDpUtility:
                             cur_spectral_dim_transfer.append(transfer)
 
         for _dim_id1, _dict1 in cur_spectral_dim.items():
-            _region1 = _dict1['spectral_region']
+            _region1 = _dict1['_spectral_region']
             if _region1 == 'H' and d == 2:  # all
                 for _dim_id2, _dict2 in cur_spectral_dim.items():
-                    if _dim_id1 == _dim_id2 or _dict1['spectral_region'] != _region1:
+                    if _dim_id1 == _dim_id2 or _dict1['_spectral_region'] != _region1:
                         continue
                     if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
@@ -43478,10 +43481,10 @@ class NmrDpUtility:
 
         if self.__exptl_method == 'SOLID-STATE NMR' and d == 2:
             for _dim_id1, _dict1 in cur_spectral_dim.items():
-                _region1 = _dict1['spectral_region']
+                _region1 = _dict1['_spectral_region']
                 if _region1 == 'C':  # all
                     for _dim_id2, _dict2 in cur_spectral_dim.items():
-                        if _dim_id1 == _dim_id2 or _dict1['spectral_region'] != _region1:
+                        if _dim_id1 == _dim_id2 or _dict1['_spectral_region'] != _region1:
                             continue
                         if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                    if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):

@@ -12110,6 +12110,9 @@ class NmrDpUtility:
                 if self.__verbose:
                     self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyPk() ++ Error  - {err}\n")
 
+                if self.__internal_mode:
+                    shutil.copyfile(file_path, file_path + '-ignored')
+
                 continue
 
             codec = detect_bom(file_path, 'utf-8')

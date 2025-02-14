@@ -436,7 +436,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             cur_spectral_dim[4]['freq_hint'].append(a_ppm)
 
             has_assignments = has_multiple_assignments = False
-            asis1 = asis2 = asis3 = None
+            asis1 = asis2 = asis3 = asis4 = None
 
             if len(self.assignmentSelection) >= self.num_of_dim:
                 assignments = [None] * self.num_of_dim

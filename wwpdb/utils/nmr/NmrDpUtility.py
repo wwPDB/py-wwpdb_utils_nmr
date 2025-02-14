@@ -38810,8 +38810,7 @@ class NmrDpUtility:
                 value = row[value_name]
 
                 _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
-                if _chain_id in chain_id_map:
-                    _chain_id = chain_id_map[_chain_id]
+                _chain_id = chain_id_map.get(_chain_id, _chain_id)
 
                 if value in emptyValue:
                     continue
@@ -38939,8 +38938,7 @@ class NmrDpUtility:
                     chain_id = sc['chain_id']
 
                     _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
-                    if _chain_id in chain_id_map:
-                        _chain_id = chain_id_map[_chain_id]
+                    _chain_id = chain_id_map.get(_chain_id, _chain_id)
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -39025,8 +39023,7 @@ class NmrDpUtility:
                     chain_id = sc['chain_id']
 
                     _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
-                    if _chain_id in chain_id_map:
-                        _chain_id = chain_id_map[_chain_id]
+                    _chain_id = chain_id_map.get(_chain_id, _chain_id)
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -39136,8 +39133,7 @@ class NmrDpUtility:
                     chain_id = sc['chain_id']
 
                     _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
-                    if _chain_id in chain_id_map:
-                        _chain_id = chain_id_map[_chain_id]
+                    _chain_id = chain_id_map.get(_chain_id, _chain_id)
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -39246,8 +39242,7 @@ class NmrDpUtility:
                     chain_id = sc['chain_id']
 
                     _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
-                    if _chain_id in chain_id_map:
-                        _chain_id = chain_id_map[_chain_id]
+                    _chain_id = chain_id_map.get(_chain_id, _chain_id)
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
@@ -39546,8 +39541,7 @@ class NmrDpUtility:
                     chain_id = sc['chain_id']
 
                     _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
-                    if _chain_id in chain_id_map:
-                        _chain_id = chain_id_map[_chain_id]
+                    _chain_id = chain_id_map.get(_chain_id, _chain_id)
 
                     s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 

@@ -43128,7 +43128,7 @@ class NmrDpUtility:
                         __v['atom_type'] = 'C'
                         __v['atom_isotope_number'] = 13
                         __v['axis_code'] = 'C'  # all
-                    elif 30 < center < 50:
+                    elif 30 < center < 60:
                         __v['atom_type'] = 'C'
                         __v['atom_isotope_number'] = 13
                         __v['axis_code'] = 'C-aliphatic'

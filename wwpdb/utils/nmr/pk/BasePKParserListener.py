@@ -983,8 +983,11 @@ class BasePKParserListener():
                                                    and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                                         or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
                                             cases += 1
-                                            max_corr_eff = max(max_corr_eff, numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
-                                                               if _dict1['freq_hint'].size > 1 else 0.0)
+                                            if _dict1['freq_hint'].size < 2\
+                                               or numpy.max(_dict1['freq_hint']) == numpy.min(_dict1['freq_hint'])\
+                                               or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
+                                                continue
+                                            max_corr_eff = max(max_corr_eff, numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1])
 
                             if cases == 1:
                                 for _dim_id2, _dict2 in cur_spectral_dim.items():
@@ -1018,7 +1021,11 @@ class BasePKParserListener():
                                                        if _transfer['type'] == 'onebond'
                                                        and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                                             or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
-                                                if _dict1['freq_hint'].size > 1 and numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1] < max_corr_eff:
+                                                if _dict1['freq_hint'].size < 2\
+                                                   or numpy.max(_dict1['freq_hint']) == numpy.min(_dict1['freq_hint'])\
+                                                   or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
+                                                    continue
+                                                if numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1] < max_corr_eff:
                                                     continue
                                                 transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),

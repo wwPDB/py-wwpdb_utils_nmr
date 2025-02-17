@@ -207,6 +207,7 @@
 # 31-Jan-2025  M. Yokochi - add 'coordinate_issue' and 'assigned_peak_atom_not_found' warnings used in NMR data remediation with peak list (DAOTHER-8509, 9785)
 # 07-Feb-2025  M. Yokochi - add support for 'ignore_error' attribute in addInput() for test processing of spectral peak list files came from legacy ADIT system (DAOTHER-8509)
 # 13-Feb-2025  M. Yokochi - set _Spectral_dim_transfer.Type 'through-space?' temporarily and resolve it based on related experiment type (DAOTHER-8509, 1728, 9846)
+# 17-Feb-2025  M. Yokochi - distcard remediated spectral peak list in OneDep enviromment (DAOTHER-8905, 9785)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -1491,8 +1492,8 @@ class NmrDpUtility:
         self.__release_mode = False
         # whether to allow to raise internal error
         self.__internal_mode = False
-        # whether to combine spectral peak list in any plain text format into single NMR-STAR file (must be trued off after Phase 2, DAOTHER-7407)
-        # self.__merge_any_pk_as_is = False
+        # whether to combine spectral peak list in any plain text format into single NMR-STAR file (must be turned off after Phase 2, DAOTHER-7407)
+        self.__merge_any_pk_as_is = False
 
         # whether to allow empty coordinate file path
         self.__bmrb_only = False
@@ -1756,6 +1757,7 @@ class NmrDpUtility:
         __mergeCsAndMrTasks.append(self.__mergeCoordAsNmrIf)  # DAOTHER-8905: NMR data remediation Phase 2 (internal remediation)
         __mergeCsAndMrTasks.append(self.__calculateStatsOfExptlData)
         __mergeCsAndMrTasks.append(self.__performBMRBAnnTasks)
+        __mergeCsAndMrTasks.append(self.__discardPeakListRemediation)  # OneDep only
 
         __annotateTasks = [self.__initializeDpReport,
                            self.__validateInputSource,
@@ -7183,11 +7185,11 @@ class NmrDpUtility:
         entity_name_item = next(item for item in self.sf_tag_items['nmr-star']['entity'] if item['name'] == 'Name')
         entity_name_item['mandatory'] = self.__bmrb_only
 
-        # if has_key_value(self.__inputParamDict, 'merge_any_pk_as_is'):
-        #     if isinstance(self.__inputParamDict['merge_any_pk_as_is'], bool):
-        #         self.__merge_any_pk_as_is = self.__inputParamDict['merge_any_pk_as_is']
-        #     else:
-        #         self.__merge_any_pk_as_is = self.__inputParamDict['merge_any_pk_as_is'] in trueValue
+        if has_key_value(self.__inputParamDict, 'merge_any_pk_as_is'):
+            if isinstance(self.__inputParamDict['merge_any_pk_as_is'], bool):
+                self.__merge_any_pk_as_is = self.__inputParamDict['merge_any_pk_as_is']
+            else:
+                self.__merge_any_pk_as_is = self.__inputParamDict['merge_any_pk_as_is'] in trueValue
 
         if has_key_value(self.__inputParamDict, 'nonblk_anomalous_cs'):
             if isinstance(self.__inputParamDict['nonblk_anomalous_cs'], bool):
@@ -33813,6 +33815,8 @@ class NmrDpUtility:
                     original_file_name = os.path.basename(input_source_dic['original_file_name'])
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
+            if original_file_name in emptyValue and self.__internal_mode:
+                original_file_name = file_name
 
             if file_type == 'nm-res-amb' and amberAtomNumberDict is None and 'has_comments' in ar and not ar['has_comments']:
 
@@ -35560,6 +35564,8 @@ class NmrDpUtility:
                     original_file_name = os.path.basename(input_source_dic['original_file_name'])
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
+            if original_file_name in emptyValue and self.__internal_mode:
+                original_file_name = file_name
 
             if file_type == 'nm-pea-xea' and not has_nm_aux_xea_file:
 
@@ -50206,7 +50212,7 @@ class NmrDpUtility:
         """ Remediate raw text data in saveframe of spectral peak list (for NMR data remediation upgrade to Phase 2).
         """
 
-        if not self.__combined_mode:
+        if not self.__combined_mode or self.__merge_any_pk_as_is or not self.__internal_mode:
             return True
 
         if len(self.__star_data) == 0:
@@ -50387,6 +50393,8 @@ class NmrDpUtility:
 
         __errors = self.report.getTotalErrors()
 
+        input_source = self.report.input_sources[0]
+
         content_subtype = 'spectral_peak'
 
         sf_framecode = get_first_sf_tag(src_sf, 'Sf_framecode')
@@ -50405,7 +50413,6 @@ class NmrDpUtility:
 
             self.__nmr_ext_poly_seq = []
 
-            input_source = self.report.input_sources[0]
             input_source_dic = input_source.get()
 
             nmr_poly_seq = input_source_dic['polymer_sequence']
@@ -60022,3 +60029,82 @@ class NmrDpUtility:
             self.__depositNmrData()
 
         return is_done
+
+    def __discardPeakListRemediation(self) -> bool:
+        """ Distcard remediated spectral peak list (NMR data remediation, Phase 2) in OneDep enviromment
+            @note: This rediculaus reverse implementation is for OneDep only
+        """
+
+        if self.__combined_mode or not self.__merge_any_pk_as_is:
+            return True
+
+        if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
+            return False
+
+        ar_file_path_list = 'atypical_restraint_file_path_list'
+
+        if ar_file_path_list not in self.__inputParamDict:
+            return True
+
+        src_id = self.report.getInputSourceIdOfCoord()
+
+        if src_id < 0:
+            return False
+
+        cif_input_source = self.report.input_sources[src_id]
+        cif_input_source_dic = cif_input_source.get()
+
+        has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
+
+        if not has_poly_seq:
+            return False
+
+        file_type = 'nmr-star'
+        content_subtype = 'spectral_peak'
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+
+        if sf_category not in self.__sf_category_list:
+            return True
+
+        modified = False
+
+        for sf in self.__star_data[0].get_saveframes_by_category(sf_category):
+
+            text_data = get_first_sf_tag(sf, 'Text_data')
+
+            if text_data not in emptyValue:
+                continue
+
+            file_name = get_first_sf_tag(sf, 'Data_file_name')
+
+            if file_name in emptyValue:
+                continue
+
+            for ar in self.__inputParamDict[ar_file_path_list]:
+
+                file_path = ar['file_name']
+                original_file_name = ar['original_file_name'] if 'original_file_name' in ar else None
+
+                if file_name in (os.path.basename(file_path), original_file_name):
+                    data_format = get_peak_list_format(file_path)
+
+                    if data_format is not None:
+
+                        for lp in sf.loops:
+                            if lp.category in ('_Peak_row_format', '_Peak_general_char', '_Peak_char', '_Assignemd_peak_chem_shift'):
+                                del sf[lp]  # What a waste!
+
+                        set_sf_tag(sf, 'Text_data_format', data_format)
+
+                        with open(file_path, 'r', encoding='ascii', errors='ignore') as ifh:
+                            set_sf_tag(sf, 'Text_data', ifh.read())
+
+                        modified = True
+
+                    break
+
+        if modified:
+            self.__depositNmrData()
+
+        return True

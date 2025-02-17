@@ -82,6 +82,11 @@ class BMRBAnnTasks:
                  sailFlag: bool, report: NmrDpReport,
                  ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
                  c2S: Optional[CifToNmrStar] = None):
+        self.__class_name__ = self.__class__.__name__
+        self.__version__ = __version__
+
+        self.__verbose = verbose
+        self.__lfh = log
 
         self.__sfCategoryList = sfCategoryList
         self.__entryId = entryId
@@ -1954,6 +1959,9 @@ class BMRBAnnTasks:
             tags_3d = ['Volume', 'Height', 'Position_1', 'Position_2', 'Position_3', 'Auth_asym_ID_1']
             tags_4d = ['Volume', 'Height', 'Position_1', 'Position_2', 'Position_3', 'Position_4', 'Auth_asym_ID_1']
 
+            tags_pk_char = ['Peak_ID', 'Spectral_dim_ID', 'Chem_shift_val']
+            tags_pk_gen_char = ['Peak_ID', 'Intensity_val', 'Measurement_method']
+
             sp_info = {}
 
             for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category)):
@@ -2070,10 +2078,73 @@ class BMRBAnnTasks:
                         sp_info[idx]['signature'] = signature
 
                 except KeyError:
-                    pass
+
+                    try:
+
+                        pk_char_category = '_Peak_char'
+                        pk_char = sf.get_loop(pk_char_category)
+
+                        pk_gen_char_category = '_Peak_general_char'
+                        pk_gen_char = sf.get_loop(pk_gen_char_category)
+
+                        if len(pk_char) > 0 and len(pk_gen_char) > 0:
+                            sp_info[idx] = {'sf_framecode': get_first_sf_tag(sf, 'Sf_framecode'),
+                                            'num_of_dim': get_first_sf_tag(sf, 'Number_of_spectral_dimensions'),
+                                            'class': get_first_sf_tag(sf, 'Experiment_class').replace('?', ''),
+                                            'type': get_first_sf_tag(sf, 'Experiment_type'),
+                                            'size': len(lp)}
+
+                            num_of_dim = sp_info[idx]['num_of_dim']
+                            if isinstance(num_of_dim, str):
+                                num_of_dim = sp_info[idx]['num_of_dim'] = int(num_of_dim)
+
+                            has_volume = has_height = has_assign = False
+                            signature = []
+
+                            dat_pk_char = pk_char.get_tag(tags_pk_char)
+                            dat_pk_gen_char = pk_gen_char.get_tag(tags_pk_gen_char)
+
+                            peak_ids = []
+                            for row_pk_char in dat_pk_char:
+                                if row_pk_char[0] not in peak_ids:
+                                    peak_ids.append(row_pk_char[0])
+                                    if len(peak_ids) == 10:
+                                        break
+
+                            position = [None] * num_of_dim
+
+                            for row_pk_char in dat_pk_char:
+                                if row_pk_char[0] in peak_ids:
+                                    sp_dim_id = int(row_pk_char[1])
+                                    position[sp_dim_id - 1] = float(row_pk_char[2])
+                                    if all(pos is not None for pos in position):
+                                        volume = next((float(row_pk_gen_char[1]) for row_pk_gen_char in dat_pk_gen_char
+                                                       if row_pk_gen_char[0] == row_pk_char[0] and row_pk_gen_char[2] == 'volume'), None)
+                                        if volume is not None:
+                                            has_volume = True
+                                        height = next((float(row_pk_gen_char[1]) for row_pk_gen_char in dat_pk_gen_char
+                                                       if row_pk_gen_char[0] == row_pk_char[0] and row_pk_gen_char[2] == 'height'), None)
+                                        if height is not None:
+                                            has_height = True
+                                        signature.append({'position': set(position),
+                                                          'volume': volume,
+                                                          'height': height})
+
+                            sp_info[idx]['has_volume'] = has_volume
+                            sp_info[idx]['has_height'] = has_height
+                            try:
+                                lp = sf.get_loop('_Assigned_peak_chem_shift')
+                                sp_info[idx]['has_assign'] = len(lp) > 0
+                            except KeyError:
+                                sp_info[idx]['has_assign'] = False
+                            sp_info[idx]['signature'] = signature
+
+                    except KeyError:
+                        pass
 
             if len(sp_info) > 1:
                 dup_idx = set()
+                res_idx = {}
 
                 for idx1, idx2 in itertools.combinations(sp_info, 2):
 
@@ -2097,45 +2168,75 @@ class BMRBAnnTasks:
                     if sp_info[idx1]['has_assign'] != sp_info[idx2]['has_assign']:
                         if sp_info[idx1]['has_assign']:
                             dup_idx.add(idx2)
+                            res_idx[idx2] = idx1
                         else:
                             dup_idx.add(idx1)
+                            res_idx[idx1] = idx2
                         continue
 
                     if sp_info[idx1]['has_volume'] != sp_info[idx2]['has_volume']:
                         if sp_info[idx1]['has_volume']:
                             dup_idx.add(idx2)
+                            res_idx[idx2] = idx1
                         else:
                             dup_idx.add(idx1)
+                            res_idx[idx1] = idx2
                         continue
 
                     if sp_info[idx1]['has_height'] != sp_info[idx2]['has_height']:
                         if sp_info[idx1]['has_height']:
                             dup_idx.add(idx2)
+                            res_idx[idx2] = idx1
                         else:
                             dup_idx.add(idx1)
+                            res_idx[idx1] = idx2
                         continue
 
                     if len(sp_info[idx1]['class']) != len(sp_info[idx2]['class']):
                         if len(sp_info[idx1]['class']) > len(sp_info[idx2]['class']):
                             dup_idx.add(idx2)
+                            res_idx[idx2] = idx1
                         else:
                             dup_idx.add(idx1)
+                            res_idx[idx1] = idx2
                         continue
 
                     if len(sp_info[idx1]['type']) != len(sp_info[idx2]['type']):
                         if len(sp_info[idx1]['type']) > len(sp_info[idx2]['type']):
                             dup_idx.add(idx2)
+                            res_idx[idx2] = idx1
                         else:
                             dup_idx.add(idx1)
+                            res_idx[idx1] = idx2
                         continue
 
                     if idx1 in dup_idx or idx2 in dup_idx:
                         continue
 
                     dup_idx.add(idx2)
+                    res_idx[idx2] = idx1
 
-                for idx in reversed(list(dup_idx)):
-                    master_entry.remove_saveframe(sp_info[idx]['sf_framecode'])
+                for idx in sorted(list(dup_idx)):
+                    sf_framecode = sp_info[idx]['sf_framecode']
+                    sf = master_entry.get_saveframe_by_name(sf_framecode)
+                    file_name = get_first_sf_tag(sf, 'Data_file_name')
+
+                    res_sf_framecode = sp_info[res_idx[idx]]['sf_framecode']
+
+                    warn = f'There are equivalent NMR spectral peak lists, {res_sf_framecode!r} vs {sf_framecode!r}. '\
+                        f'For the sake of simplicity, saveframe {sf_framecode!r} derived from {file_name!r} was ignored.'
+
+                    self.__report.warning.appendDescription('redundant_mr_data',
+                                                            {'file_name': file_name,
+                                                             'sf_framecode': sf_framecode,
+                                                             'description': warn})
+
+                    self.__report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.perform() ++ Warning  - {warn}\n")
+
+                    master_entry.remove_saveframe(sf_framecode)
 
                 count = 0
                 for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):

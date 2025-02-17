@@ -1246,7 +1246,7 @@ class BasePKParserListener():
                                         cur_spectral_dim_transfer.append(transfer)
                                         if d == 2 and _region1 == 'H-aliphatic':
                                             _dict1['spectral_region'] = _dict2['spectral_region'] = 'H'  # all
-                                            if _dict1['axis_code'] == _dict2['axis_code'] == 'H-aliphatic':
+                                            if 'H-aliphatic' in (_dict1['axis_code'], _dict2['axis_code']):
                                                 _dict1['axis_code'] = f'H_{_dim_id1}'
                                                 _dict2['axis_code'] = f'H_{_dim_id2}'
                                         if d == 3:

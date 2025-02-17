@@ -5845,7 +5845,8 @@ class NmrDpUtility:
                                                'dihed_restraint': None,
                                                'rdc_restraint': None,
                                                'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer'],
-                                               'spectral_peak_alt': ['_Spectral_dim', '_Spectral_dim_transfer', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift'],
+                                               'spectral_peak_alt': ['_Spectral_dim', '_Spectral_dim_transfer',
+                                                                     '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift'],
                                                'noepk_restraint': None,
                                                'jcoup_restraint': None,
                                                'rdc_raw_data': None,
@@ -43449,7 +43450,7 @@ class NmrDpUtility:
                             cur_spectral_dim_transfer.append(transfer)
                             if d == 2 and _region1 == 'H-aliphatic':
                                 _dict1['spectral_region'] = _dict2['spectral_region'] = 'H'  # all
-                                if _dict1['axis_code'] == _dict2['axis_code'] == 'H-aliphatic':
+                                if 'H-aliphatic' in (_dict1['axis_code'], _dict2['axis_code']):
                                     _dict1['axis_code'] = f'H_{_dim_id1}'
                                     _dict2['axis_code'] = f'H_{_dim_id2}'
                             if d == 3:

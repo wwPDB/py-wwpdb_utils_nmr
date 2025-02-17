@@ -7054,13 +7054,13 @@ class NmrDpUtility:
             else:
                 self.__remediation_mode = self.__inputParamDict['remediation'] in trueValue
 
-        if op == 'nmr-cs-mr-merge':
+        if has_key_value(self.__inputParamDict, 'internal'):
+            if isinstance(self.__inputParamDict['internal'], bool):
+                self.__internal_mode = self.__inputParamDict['internal']
+            else:
+                self.__internal_mode = self.__inputParamDict['internal'] in trueValue
 
-            if has_key_value(self.__inputParamDict, 'internal'):
-                if isinstance(self.__inputParamDict['internal'], bool):
-                    self.__internal_mode = self.__inputParamDict['internal']
-                else:
-                    self.__internal_mode = self.__inputParamDict['internal'] in trueValue
+        if op == 'nmr-cs-mr-merge':
 
             self.__remediation_mode = True
             self.__has_star_chem_shift = True

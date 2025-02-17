@@ -1492,7 +1492,7 @@ class NmrDpUtility:
         # whether to allow to raise internal error
         self.__internal_mode = False
         # whether to combine spectral peak list in any plain text format into single NMR-STAR file (must be trued off after Phase 2, DAOTHER-7407)
-        self.__merge_any_pk_as_is = False
+        # self.__merge_any_pk_as_is = False
 
         # whether to allow empty coordinate file path
         self.__bmrb_only = False
@@ -7183,11 +7183,11 @@ class NmrDpUtility:
         entity_name_item = next(item for item in self.sf_tag_items['nmr-star']['entity'] if item['name'] == 'Name')
         entity_name_item['mandatory'] = self.__bmrb_only
 
-        if has_key_value(self.__inputParamDict, 'merge_any_pk_as_is'):
-            if isinstance(self.__inputParamDict['merge_any_pk_as_is'], bool):
-                self.__merge_any_pk_as_is = self.__inputParamDict['merge_any_pk_as_is']
-            else:
-                self.__merge_any_pk_as_is = self.__inputParamDict['merge_any_pk_as_is'] in trueValue
+        # if has_key_value(self.__inputParamDict, 'merge_any_pk_as_is'):
+        #     if isinstance(self.__inputParamDict['merge_any_pk_as_is'], bool):
+        #         self.__merge_any_pk_as_is = self.__inputParamDict['merge_any_pk_as_is']
+        #     else:
+        #         self.__merge_any_pk_as_is = self.__inputParamDict['merge_any_pk_as_is'] in trueValue
 
         if has_key_value(self.__inputParamDict, 'nonblk_anomalous_cs'):
             if isinstance(self.__inputParamDict['nonblk_anomalous_cs'], bool):
@@ -57833,8 +57833,8 @@ class NmrDpUtility:
 
         self.__mergeStrPk()
 
-        if self.__merge_any_pk_as_is:  # DAOTHER-7407 enabled until Phase 2 release
-            self.__mergeAnyPkAsIs()
+        # if self.__merge_any_pk_as_is:  # DAOTHER-7407 enabled until Phase 2 release
+        self.__mergeAnyPkAsIs()
 
         if self.__bmrb_only and self.__internal_mode:
             self.__performBMRBjAnnTasks()

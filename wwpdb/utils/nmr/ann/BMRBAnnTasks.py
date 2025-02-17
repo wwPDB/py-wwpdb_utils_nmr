@@ -1990,87 +1990,84 @@ class BMRBAnnTasks:
                             dat = lp.get_tag(tags_2d)
 
                             for _idx, row in enumerate(dat, start=1):
-                                volume = row[0]
-                                if volume in emptyValue:
-                                    volume = None
-                                else:
-                                    volume = float(volume)
-                                    has_volume = True
 
-                                height = row[1]
-                                if height in emptyValue:
-                                    height = None
-                                else:
-                                    height = float(height)
-                                    has_height = True
+                                if _idx <= 10:
+                                    volume = row[0]
+                                    if volume in emptyValue:
+                                        volume = None
+                                    else:
+                                        volume = float(volume)
+                                        has_volume = True
 
-                                position = {float(row[2]), float(row[3])}
+                                    height = row[1]
+                                    if height in emptyValue:
+                                        height = None
+                                    else:
+                                        height = float(height)
+                                        has_height = True
 
-                                signature.append({'position': position,
-                                                  'volume': volume,
-                                                  'height': height})
+                                    position = {float(row[2]), float(row[3])}
+
+                                    signature.append({'position': position,
+                                                      'volume': volume,
+                                                      'height': height})
 
                                 if row[4] not in emptyValue:
                                     has_assign = True
-
-                                if _idx == 10:
-                                    break
 
                         elif num_of_dim == 3:
                             dat = lp.get_tag(tags_3d)
 
                             for _idx, row in enumerate(dat, start=1):
-                                volume = row[0]
-                                if volume in emptyValue:
-                                    volume = None
-                                else:
-                                    volume = float(volume)
 
-                                height = row[1]
-                                if height in emptyValue:
-                                    height = None
-                                else:
-                                    height = float(height)
+                                if _idx <= 10:
+                                    volume = row[0]
+                                    if volume in emptyValue:
+                                        volume = None
+                                    else:
+                                        volume = float(volume)
 
-                                position = {float(row[2]), float(row[3]), float(row[4])}
+                                    height = row[1]
+                                    if height in emptyValue:
+                                        height = None
+                                    else:
+                                        height = float(height)
 
-                                signature.append({'position': position,
-                                                  'volume': volume,
-                                                  'height': height})
+                                    position = {float(row[2]), float(row[3]), float(row[4])}
+
+                                    signature.append({'position': position,
+                                                      'volume': volume,
+                                                      'height': height})
 
                                 if row[5] not in emptyValue:
                                     has_assign = True
-
-                                if _idx == 10:
-                                    break
 
                         elif num_of_dim == 4:
                             dat = lp.get_tag(tags_4d)
 
                             for _idx, row in enumerate(dat, start=1):
-                                volume = row[0]
-                                if volume in emptyValue:
-                                    volume = None
-                                else:
-                                    volume = float(volume)
 
-                                height = row[1]
-                                if height in emptyValue:
-                                    height = None
-                                else:
-                                    height = float(height)
+                                if _idx <= 10:
+                                    volume = row[0]
+                                    if volume in emptyValue:
+                                        volume = None
+                                    else:
+                                        volume = float(volume)
 
-                                position = {float(row[2]), float(row[3]), float(row[4]), float(row[5])}
+                                    height = row[1]
+                                    if height in emptyValue:
+                                        height = None
+                                    else:
+                                        height = float(height)
 
-                                signature.append({'position': position,
-                                                  'volume': volume,
-                                                  'height': height})
+                                    position = {float(row[2]), float(row[3]), float(row[4]), float(row[5])}
+
+                                    signature.append({'position': position,
+                                                      'volume': volume,
+                                                      'height': height})
 
                                 if row[6] not in emptyValue:
                                     has_assign = True
-
-                                if _idx == 10:
-                                    break
 
                         sp_info[idx]['has_volume'] = has_volume
                         sp_info[idx]['has_height'] = has_height
@@ -2132,11 +2129,16 @@ class BMRBAnnTasks:
 
                             sp_info[idx]['has_volume'] = has_volume
                             sp_info[idx]['has_height'] = has_height
+                            sp_info[idx]['has_assign'] = False
                             try:
-                                lp = sf.get_loop('_Assigned_peak_chem_shift')
-                                sp_info[idx]['has_assign'] = len(lp) > 0
+                                pk_cs = sf.get_loop('_Assigned_peak_chem_shift')
+                                dat_pk_cs = pk_cs.get_tag('Auth_entity_ID')
+                                for row_pk_cs in dat_pk_cs:
+                                    if row_pk_cs not in emptyValue:
+                                        sp_info[idx]['has_assign'] = True
+                                        break
                             except KeyError:
-                                sp_info[idx]['has_assign'] = False
+                                pass
                             sp_info[idx]['signature'] = signature
 
                     except KeyError:

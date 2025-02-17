@@ -2041,6 +2041,8 @@ class BMRBAnnTasks:
 
                                 if row[5] not in emptyValue:
                                     has_assign = True
+                                    if _idx > 10:
+                                        break
 
                         elif num_of_dim == 4:
                             dat = lp.get_tag(tags_4d)
@@ -2068,6 +2070,8 @@ class BMRBAnnTasks:
 
                                 if row[6] not in emptyValue:
                                     has_assign = True
+                                    if _idx > 10:
+                                        break
 
                         sp_info[idx]['has_volume'] = has_volume
                         sp_info[idx]['has_height'] = has_height
@@ -2126,6 +2130,11 @@ class BMRBAnnTasks:
                                         signature.append({'position': set(position),
                                                           'volume': volume,
                                                           'height': height})
+
+                                        for _idx in range(num_of_dim):
+                                            position[_idx] = None
+                                else:
+                                    break
 
                             sp_info[idx]['has_volume'] = has_volume
                             sp_info[idx]['has_height'] = has_height

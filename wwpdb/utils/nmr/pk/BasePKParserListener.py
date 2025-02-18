@@ -1281,7 +1281,7 @@ class BasePKParserListener():
                        or 'noe' in alt_file_name or 'roe' in alt_file_name:
                         for _dim_id1, _dict1 in cur_spectral_dim.items():
                             _region1 = _dict1['_spectral_region']
-                            if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl'):
+                            if _region1 in ('H', 'HN', 'H-aliphatic', 'H-aromatic', 'H-methyl'):
                                 for _dim_id2, _dict2 in cur_spectral_dim.items():
                                     if _dim_id1 == _dim_id2 or _dict1['atom_isotope_number'] != _dict2['atom_isotope_number']:
                                         continue
@@ -1358,7 +1358,7 @@ class BasePKParserListener():
 
                     for _dim_id1, _dict1 in cur_spectral_dim.items():
                         _region1 = _dict1['_spectral_region']
-                        if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl') and d > 2:
+                        if _region1 in ('H', 'HN', 'H-aliphatic', 'H-aromatic', 'H-methyl') and d > 2:
                             for _dim_id2, _dict2 in cur_spectral_dim.items():
                                 if _dim_id1 == _dim_id2 or _dict1['atom_isotope_number'] != _dict2['atom_isotope_number']:
                                     continue

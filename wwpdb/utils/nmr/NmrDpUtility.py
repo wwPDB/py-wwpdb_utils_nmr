@@ -204,10 +204,12 @@
 # 19-Dec-2024  M. Yokochi - add 'nmr-if-merge-deposit' workflow operation (DAOTHER-8905, NMR data remediation Phase 2)
 # 27-Dec-2024  M. Yokochi - extract NMRIF metadata from NMR-STAR (DAOTHER-1728, 9846)
 # 09-Jan-2025  M. Yokochi - extract NMRIF metadata from NMR-STAR (as primary source) and model (as secondary source) (DAOTHER-1728, 9846)
-# 31-Jan-2025  M. Yokochi - add 'coordinate_issue' and 'assigned_peak_atom_not_found' warnings used in NMR data remediation with peak list (DAOTHER-8509, 9785)
-# 07-Feb-2025  M. Yokochi - add support for 'ignore_error' attribute in addInput() for test processing of spectral peak list files came from legacy ADIT system (DAOTHER-8509)
-# 13-Feb-2025  M. Yokochi - set _Spectral_dim_transfer.Type 'through-space?' temporarily and resolve it based on related experiment type (DAOTHER-8509, 1728, 9846)
+# 31-Jan-2025  M. Yokochi - add 'coordinate_issue' and 'assigned_peak_atom_not_found' warnings used in NMR data remediation with peak list (DAOTHER-8905, 9785)
+# 07-Feb-2025  M. Yokochi - add support for 'ignore_error' attribute in addInput() for test processing of spectral peak list files came from legacy ADIT system (DAOTHER-8905)
+# 13-Feb-2025  M. Yokochi - set _Spectral_dim_transfer.Type 'through-space?' temporarily and resolve it based on related experiment type (DAOTHER-8905, 1728, 9846)
 # 17-Feb-2025  M. Yokochi - distcard remediated spectral peak list in OneDep enviromment (DAOTHER-8905, 9785)
+# 18-Feb-2025  M. Yokochi - add support for PONDEROSA speactral peak list (DAOTHER-8905, 9785)
+
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -374,6 +376,7 @@ try:
     from wwpdb.utils.nmr.mr.XplorMRReader import XplorMRReader
     from wwpdb.utils.nmr.pk.AriaPKReader import AriaPKReader
     from wwpdb.utils.nmr.pk.NmrPipePKReader import NmrPipePKReader
+    from wwpdb.utils.nmr.pk.PonderosaPKReader import PonderosaPKReader
     from wwpdb.utils.nmr.pk.NmrViewPKReader import NmrViewPKReader
     from wwpdb.utils.nmr.pk.NmrViewNPKReader import NmrViewNPKReader
     from wwpdb.utils.nmr.pk.SparkyPKReader import SparkyPKReader
@@ -520,6 +523,7 @@ except ImportError:
     from nmr.mr.XplorMRReader import XplorMRReader
     from nmr.pk.AriaPKReader import AriaPKReader
     from nmr.pk.NmrPipePKReader import NmrPipePKReader
+    from nmr.pk.PonderosaPKReader import PonderosaPKReader
     from nmr.pk.NmrViewPKReader import NmrViewPKReader
     from nmr.pk.NmrViewNPKReader import NmrViewNPKReader
     from nmr.pk.SparkyPKReader import SparkyPKReader
@@ -659,8 +663,9 @@ archival_mr_file_types = ('nmr-star',
                           'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
 
 parsable_pk_file_types = ('nm-aux-xea',
-                          'nm-pea-ari', 'nm-pea-pip', 'nm-pea-spa', 'nm-pea-top',
-                          'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi')
+                          'nm-pea-ari', 'nm-pea-pip', 'nm-pea-pon', 'nm-pea-spa',
+                          'nm-pea-top', 'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea',
+                          'nm-pea-xwi')
 
 
 def detect_bom(fPath: str, default: str = 'utf-8') -> str:
@@ -1130,6 +1135,9 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
     if 'VARS' in string and 'X_PPM' in string and 'Y_PPM' in string:  # NMRPipe peak list
         return 'nm-pea-pip' if asCode else 'NMRPipe'
 
+    if 'NOESYTYPE' in string:  # PONDEROSA peak list
+        return 'nm-pea-pon' if asCode else 'PONDEROSA'
+
     if '<!DOCTYPE spectrum SYSTEM' in string or '<spectrum name=' in string:  # ARIA peak list
         return 'nm-pea-ari' if asCode else 'ARIA'
 
@@ -1297,6 +1305,11 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
                 return 3
             if 'Y_PPM' in col:
                 return 2
+
+    if file_format == 'PONDEROSA':
+        if 'AXISORDER' in line:
+            col = line.split()
+            return len(col[2])
 
     if file_format == 'XwinNMR':
         if '# PEAKLIST_DIMENSION' in line:
@@ -12628,6 +12641,11 @@ class NmrDpUtility:
                                      self.__ccU, self.__csStat, self.__nefT,
                                      reasons)
             return reader
+        if file_type == 'nm-pea-pon':
+            reader = PonderosaPKReader(verbose, self.__lfh, None, None, None, None, None,
+                                       self.__ccU, self.__csStat, self.__nefT,
+                                       reasons)
+            return reader
         if file_type == 'nm-pea-spa':
             reader = SparkyPKReader(verbose, self.__lfh, None, None, None, None, None,
                                     self.__ccU, self.__csStat, self.__nefT,
@@ -14811,6 +14829,17 @@ class NmrDpUtility:
         if _file_type == 'nm-pea-pip' and file_type != 'nm-pea-pip':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-pip')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if _file_type == 'nm-pea-pon' and file_type != 'nm-pea-pon':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-pon')
 
             is_valid |= _is_valid
             err += _err
@@ -35764,6 +35793,80 @@ class NmrDpUtility:
                                     if sf not in pk_sf_dict_holder[content_subtype]:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
+            elif file_type == 'nm-pea-pon':
+                reader = PonderosaPKReader(self.__verbose, self.__lfh,
+                                           self.__representative_model_id,
+                                           self.__representative_alt_id,
+                                           self.__mr_atom_name_mapping,
+                                           self.__cR, self.__caC,
+                                           self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, parser_err_listener, lexer_err_listener =\
+                    reader.parse(file_path, self.__cifPath,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+
+                if None not in (lexer_err_listener, parser_err_listener, listener)\
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                        or _content_subtype is not None):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_pea_warn_message_for_lazy_eval(listener)
+
+                        reader = PonderosaPKReader(self.__verbose, self.__lfh,
+                                                   self.__representative_model_id,
+                                                   self.__representative_alt_id,
+                                                   self.__mr_atom_name_mapping,
+                                                   self.__cR, self.__caC,
+                                                   self.__ccU, self.__csStat, self.__nefT,
+                                                   reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                    deal_pea_warn_message(listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate NMR spectral peak list file (PONDEROSA) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in pk_sf_dict_holder:
+                                    pk_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in pk_sf_dict_holder[content_subtype]:
+                                        pk_sf_dict_holder[content_subtype].append(sf)
+
             elif file_type == 'nm-pea-spa':
                 __list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -50326,6 +50429,8 @@ class NmrDpUtility:
                 file_type = 'nm-pea-ari'
             elif data_format == 'NMRPipe':
                 file_type = 'nm-pea-pip'
+            elif data_format == 'PONDEROSA':
+                file_type = 'nm-pea-pon'
             elif data_format == 'Sparky':
                 file_type = 'nm-pea-spa'
             elif data_format == 'TopSpin':
@@ -50405,6 +50510,8 @@ class NmrDpUtility:
                     file_type = 'nm-pea-ari'
                 elif data_format == 'NMRPipe':
                     file_type = 'nm-pea-pip'
+                elif data_format == 'PONDEROSA':
+                    file_type = 'nm-pea-pon'
                 elif data_format == 'Sparky':
                     file_type = 'nm-pea-spa'
                 elif data_format == 'TopSpin':
@@ -50874,6 +50981,68 @@ class NmrDpUtility:
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate NMR spectral peak list file (NMRPIPE) {data_file_name!r}."
+
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {err}\n")
+
+                self.__list_id_counter, sf_dict = listener.getSfDict()
+                if sf_dict is not None:
+                    for k, v in sf_dict.items():
+                        content_subtype = contentSubtypeOf(k[0])
+                        if content_subtype not in pk_sf_dict_holder:
+                            pk_sf_dict_holder[content_subtype] = []
+                        for sf in v:
+                            if sf not in pk_sf_dict_holder[content_subtype]:
+                                pk_sf_dict_holder[content_subtype].append(sf)
+
+        elif file_type == 'nm-pea-pon':
+            reader = PonderosaPKReader(self.__verbose, self.__lfh,
+                                       self.__representative_model_id,
+                                       self.__representative_alt_id,
+                                       self.__mr_atom_name_mapping,
+                                       self.__cR, self.__caC,
+                                       self.__ccU, self.__csStat, self.__nefT)
+
+            _list_id_counter = copy.copy(self.__list_id_counter)
+
+            listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
+                                          createSfDict=True, originalFileName=data_file_name,
+                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+            if listener is not None:
+                reasons = listener.getReasonsForReparsing()
+
+                if reasons is not None:
+                    deal_pea_warn_message_for_lazy_eval(listener)
+
+                    reader = PonderosaPKReader(self.__verbose, self.__lfh,
+                                               self.__representative_model_id,
+                                               self.__representative_alt_id,
+                                               self.__mr_atom_name_mapping,
+                                               self.__cR, self.__caC,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               reasons)
+
+                    listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
+                                                  createSfDict=True, originalFileName=data_file_name,
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                deal_pea_warn_message(listener)
+
+                poly_seq = listener.getPolymerSequence()
+                if poly_seq is not None:
+                    input_source.setItemValue('polymer_sequence', poly_seq)
+                    poly_seq_set.append(poly_seq)
+
+                seq_align = listener.getSequenceAlignment()
+                if seq_align is not None:
+                    self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+
+                if len(listener.getContentSubtype()) == 0:
+                    err = f"Failed to validate NMR spectral peak list file (PONDEROSA) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()

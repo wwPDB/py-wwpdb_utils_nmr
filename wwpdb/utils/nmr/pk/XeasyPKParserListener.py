@@ -48,6 +48,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
     __index = None
     __labels = None
+    __axis_order = None
     __atomNumberDict = None
     __last_comment = None
     __comment_offset = None
@@ -84,6 +85,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.acq_dim_id = 1
         self.__index = None
         self.__labels = {}
+        self.__axis_order = {}
 
     # Exit a parse tree produced by XeasyPKParser#dimension.
     def exitDimension(self, ctx: XeasyPKParser.DimensionContext):  # pylint: disable=unused-argument
@@ -138,6 +140,9 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 if _dim_id not in self.__labels:
                     if _axis_code not in emptyValue:
                         self.__labels[_dim_id] = _axis_code
+                if _dim_id not in self.__axis_order:
+                    if _axis_code not in emptyValue:
+                        self.__axis_order[_dim_id] = _axis_code
 
     # Exit a parse tree produced by XeasyPKParser#cyana_format.
     def exitCyana_format(self, ctx: XeasyPKParser.Cyana_formatContext):  # pylint: disable=unused-argument
@@ -589,6 +594,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
     def fillSpectralDimWithLabels(self):
         if self.__labels is None or len(self.__labels) == 0:
             return
+
         for _dim_id, _axis_code in self.__labels.items():
 
             try:
@@ -623,6 +629,18 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.acq_dim_id = self.num_of_dim
 
             cur_spectral_dim['under_sampling_type'] = 'not observed' if cur_spectral_dim['acquisition'] == 'yes' else 'aliased'
+
+        if self.__axis_order is None or len(self.__axis_order) == 0:
+            return
+
+        for _dim_id, _axis_order in self.__axis_order.items():
+
+            try:
+                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
+            except KeyError:
+                continue
+
+            cur_spectral_dim['axis_order'] = _axis_order
 
 
 # del XeasyPKParser

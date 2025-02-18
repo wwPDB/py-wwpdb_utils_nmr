@@ -92,6 +92,8 @@ try:
                                            retrieveRemappedNonPoly,
                                            splitPolySeqRstForBranched,
                                            retrieveOriginalSeqIdFromMRMap)
+    from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
+                                              set_sf_tag)
 except ImportError:
     from nmr.io.CifReader import (CifReader,
                                   SYMBOLS_ELEMENT)
@@ -161,6 +163,8 @@ except ImportError:
                                retrieveRemappedNonPoly,
                                splitPolySeqRstForBranched,
                                retrieveOriginalSeqIdFromMRMap)
+    from nmr.CifToNmrStar import (get_first_sf_tag,
+                                  set_sf_tag)
 
 
 CS_RANGE_MIN = CS_RESTRAINT_RANGE['min_inclusive']
@@ -471,6 +475,7 @@ class BasePKParserListener():
     def enter(self):
         self.num_of_dim = -1
         self.acq_dim_id = 1
+        self.cur_spectral_dim = {}
         self.spectral_dim = {}
         self.spectral_dim_transfer = {}
         self.listIdInternal = {}
@@ -971,6 +976,28 @@ class BasePKParserListener():
                     cur_spectral_dim_transfer = self.spectral_dim_transfer[d][_id]
 
                     is_noesy = 'noe' in file_name or 'roe' in file_name or 'noe' in alt_file_name or 'roe' in alt_file_name
+
+                    if 'axis_order' in cur_spectral_dim[1]:
+                        upper_count = lower_count = 0
+                        for _dict in cur_spectral_dim.values():
+                            if _dict['axis_order'].isupper():
+                                upper_count += 1
+                            else:
+                                lower_count += 1
+                        if 0 not in (upper_count, lower_count) and 2 in (upper_count, lower_count):
+                            for _dim_id1, _dict1 in cur_spectral_dim.items():
+                                for _dim_id2, _dict2 in cur_spectral_dim.items():
+                                    if _dim_id1 >= _dim_id2:
+                                        continue
+                                    if (upper_count == 2 and _dict1['axis_order'].isupper() and _dict2['axis_order'].isupper())\
+                                       or (lower_count == 2 and _dict1['axis_order'].islower() and _dict2['axis_order'].islower()):
+                                        transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                                    'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                                    'type': 'onebond',
+                                                    'indirect': 'no'}
+                                        if transfer in cur_spectral_dim_transfer:
+                                            continue
+                                        cur_spectral_dim_transfer.append(transfer)
 
                     # onebond: 'Any transfer that connects only directly bonded atoms in this experiment'
                     for _dim_id1, _dict1 in cur_spectral_dim.items():
@@ -1521,6 +1548,16 @@ class BasePKParserListener():
                             tags = [t[0] for t in sf['saveframe'].tags]
                             if 'Experiment_class' in tags:
                                 sf['saveframe'].tags[tags.index('Experiment_class')][1] = exp_class
+
+                        if spectrum_names is not None:
+                            try:
+                                alt_file_name = spectrum_names[d][_id]
+                                if alt_file_name not in emptyValue:
+                                    exp_type = get_first_sf_tag(sf['saveframe'], 'Experiment_type')
+                                    if exp_type in emptyValue:
+                                        set_sf_tag(sf['saveframe'], 'Experiment_type', alt_file_name)
+                            except (KeyError, AttributeError):
+                                pass
 
     def validatePeak2D(self, index: int, pos_1: float, pos_2: float,
                        pos_unc_1: Optional[float], pos_unc_2: Optional[float],

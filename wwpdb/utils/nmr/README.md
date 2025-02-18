@@ -329,6 +329,7 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-res-sax`|**internal use**|`nmr-restraints` / `any`|SAX CSV file
 `nm-pea-ari`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in ARIA format
 `nm-pea-pip`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in NMRPIPE format
+`nm-pea-pon`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in PONDEROSA format
 `nm-pea-spa`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in SPARKY format
 `nm-pea-top`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in TOPSPIN format
 `nm-pea-vie`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in NMRVIEW format

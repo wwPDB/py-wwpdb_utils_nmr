@@ -3963,12 +3963,15 @@ class NEFTranslator:
                 if row[3] not in emptyValue:
 
                     if row[2] in emptyValue or row[2] not in ('4', '5', '6', '9'):
-                        if idx < len_data:
-                            r = {}
-                            for j, t in enumerate(loop.tags):
-                                r[t] = loop.data[idx][j]
-                            f.append(f"[Invalid data] {ambig_set_id} must be empty for {ambig_code} {row[2]}. "
-                                     f"#_of_row {idx + 1}, data_of_row {r}.")
+                        if self.__remediation_mode:
+                            loop.data[idx][loop.tags.index(ambig_set_id)] = '.'
+                        else:
+                            if idx < len_data:
+                                r = {}
+                                for j, t in enumerate(loop.tags):
+                                    r[t] = loop.data[idx][j]
+                                f.append(f"[Invalid data] {ambig_set_id} must be empty for {ambig_code} {row[2]}. "
+                                         f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(f) > 0:
                 raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))

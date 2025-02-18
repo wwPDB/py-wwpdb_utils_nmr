@@ -843,6 +843,7 @@ class BasePKParserListener():
                             __v['freq_hint'] = numpy.array(__v['freq_hint'], dtype=float)  # list -> numpy array
                             if __v['freq_hint'].size > 0:
                                 center = numpy.mean(__v['freq_hint'])
+                                max_ppm = __v['freq_hint'].max()
 
                                 if __v['atom_isotope_number'] is None:
                                     if 128 < center < 133:
@@ -868,11 +869,11 @@ class BasePKParserListener():
                                     elif 2 < center < 4:
                                         __v['atom_type'] = 'H'
                                         __v['atom_isotope_number'] = 1
-                                        __v['axis_code'] = 'H-aliphatic'
+                                        __v['axis_code'] = 'H-aliphatic' if max_ppm < 7 else 'H'
                                     elif 0 < center < 2:
                                         __v['atom_type'] = 'H'
                                         __v['atom_isotope_number'] = 1
-                                        __v['axis_code'] = 'H-methyl'
+                                        __v['axis_code'] = 'H-methyl' if max_ppm < 3 else 'H-aliphatic'
                                     elif 60 < center < 90:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
@@ -910,9 +911,9 @@ class BasePKParserListener():
                                 elif 4 < center < 6 and atom_type == 'H':
                                     __v['spectral_region'] = 'H'  # all
                                 elif 2 < center < 4 and atom_type == 'H':
-                                    __v['spectral_region'] = 'H-aliphatic'
+                                    __v['spectral_region'] = 'H-aliphatic' if max_ppm < 7 else 'H'
                                 elif 0 < center < 2 and atom_type == 'H':
-                                    __v['spectral_region'] = 'H-methyl'
+                                    __v['spectral_region'] = 'H-methyl' if max_ppm < 3 else 'H-aliphatic'
                                 elif 60 < center < 90 and atom_type == 'C':
                                     __v['spectral_region'] = 'C'  # all
                                 elif 30 < center < 60 and atom_type == 'C':
@@ -922,7 +923,6 @@ class BasePKParserListener():
 
                             if __v['freq_hint'].size > 0 and d > 2 and __d >= 2\
                                and self.exptlMethod != 'SOLID-STATE NMR' and __v['atom_isotope_number'] == 13:
-                                max_ppm = __v['freq_hint'].max()
                                 min_ppm = __v['freq_hint'].min()
                                 width = max_ppm - min_ppm
                                 if center < 100.0 and width < 50.0:

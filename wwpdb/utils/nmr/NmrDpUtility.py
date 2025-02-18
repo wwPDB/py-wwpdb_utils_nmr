@@ -384,6 +384,7 @@ try:
     from wwpdb.utils.nmr.pk.XeasyPKReader import XeasyPKReader
     from wwpdb.utils.nmr.pk.XeasyPROTReader import XeasyPROTReader
     from wwpdb.utils.nmr.pk.XwinNmrPKReader import XwinNmrPKReader
+    from wwpdb.utils.nmr.pk.BasePKParserListener import MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER
     from wwpdb.utils.nmr.ann.OneDepAnnTasks import OneDepAnnTasks
     from wwpdb.utils.nmr.ann.BMRBAnnTasks import BMRBAnnTasks
 
@@ -529,6 +530,7 @@ except ImportError:
     from nmr.pk.XeasyPKReader import XeasyPKReader
     from nmr.pk.XeasyPROTReader import XeasyPROTReader
     from nmr.pk.XwinNmrPKReader import XwinNmrPKReader
+    from nmr.pk.BasePKParserListener import MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER
     from nmr.ann.OneDepAnnTasks import OneDepAnnTasks
     from nmr.ann.BMRBAnnTasks import BMRBAnnTasks
 
@@ -43102,6 +43104,7 @@ class NmrDpUtility:
                 __v['freq_hint'] = numpy.array(__v['freq_hint'], dtype=float)  # list -> numpy array
                 if __v['freq_hint'].size > 0:
                     center = numpy.mean(__v['freq_hint'])
+                    max_ppm = __v['freq_hint'].max()
 
                     if 128 < center < 133:
                         __v['atom_type'] = 'C'
@@ -43126,11 +43129,11 @@ class NmrDpUtility:
                     elif 2 < center < 4:
                         __v['atom_type'] = 'H'
                         __v['atom_isotope_number'] = 1
-                        __v['axis_code'] = 'H-aliphatic'
+                        __v['axis_code'] = 'H-aliphatic' if max_ppm < 7 else 'H'
                     elif 0 < center < 2:
                         __v['atom_type'] = 'H'
                         __v['atom_isotope_number'] = 1
-                        __v['axis_code'] = 'H-methyl'
+                        __v['axis_code'] = 'H-methyl' if max_ppm < 3 else 'H-aliphatic'
                     elif 60 < center < 90:
                         __v['atom_type'] = 'C'
                         __v['atom_isotope_number'] = 13
@@ -43157,7 +43160,6 @@ class NmrDpUtility:
 
                 if __v['freq_hint'].size > 0 and d > 2 and __d >= 2\
                    and self.__exptl_method != 'SOLID-STATE NMR' and __v['atom_isotope_number'] == 13:
-                    max_ppm = __v['freq_hint'].max()
                     min_ppm = __v['freq_hint'].min()
                     width = max_ppm - min_ppm
                     if center < 100.0 and width < 50.0:
@@ -43176,6 +43178,10 @@ class NmrDpUtility:
 
         cur_spectral_dim_transfer = []
 
+        dim_to_code = {1: 'x', 2: 'y', 3: 'z', 4: 'a'}
+
+        is_noesy = 'noe' in file_name or 'roe' in file_name
+
         # onebond: 'Any transfer that connects only directly bonded atoms in this experiment'
         for _dim_id1, _dict1 in cur_spectral_dim.items():
             _region1 = _dict1['_spectral_region']
@@ -43185,7 +43191,8 @@ class NmrDpUtility:
                 for _dim_id2, _dict2 in cur_spectral_dim.items():
                     _region2 = _dict2['_spectral_region']
                     if (_region1 == 'HN' and _region2 == 'N')\
-                       or (_region1 == 'H-aliphatic' and _region2 == 'C-aliphatic')\
+                       or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                           and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
                        or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                        or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
@@ -43198,13 +43205,17 @@ class NmrDpUtility:
                                    or numpy.max(_dict1['freq_hint']) == numpy.min(_dict1['freq_hint'])\
                                    or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                     continue
-                                max_corr_eff = max(max_corr_eff, numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1])
+                                _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
+                                if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER:
+                                    continue
+                                max_corr_eff = max(max_corr_eff, _corrcoef)
 
                 if cases == 1:
                     for _dim_id2, _dict2 in cur_spectral_dim.items():
                         _region2 = _dict2['_spectral_region']
                         if (_region1 == 'HN' and _region2 == 'N')\
-                           or (_region1 == 'H-aliphatic' and _region2 == 'C-aliphatic')\
+                           or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                               and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
                            or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                            or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                             if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
@@ -43224,7 +43235,8 @@ class NmrDpUtility:
                     for _dim_id2, _dict2 in cur_spectral_dim.items():
                         _region2 = _dict2['_spectral_region']
                         if (_region1 == 'HN' and _region2 == 'N')\
-                           or (_region1 == 'H-aliphatic' and _region2 == 'C-aliphatic')\
+                           or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                               and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
                            or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                            or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                             if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
@@ -43236,7 +43248,8 @@ class NmrDpUtility:
                                        or numpy.max(_dict1['freq_hint']) == numpy.min(_dict1['freq_hint'])\
                                        or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                         continue
-                                    if numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1] < max_corr_eff:
+                                    _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
+                                    if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER or _corrcoef < max_corr_eff:
                                         continue
                                     transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                 'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
@@ -43252,7 +43265,8 @@ class NmrDpUtility:
                 for _dim_id2, _dict2 in cur_spectral_dim.items():
                     _region2 = _dict2['_spectral_region']
                     if (_region1 == 'HN' and _region2 == 'N')\
-                       or (_region1 == 'H-aliphatic' and _region2 == 'C-aliphatic')\
+                       or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                           and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
                        or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                        or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
                         if _dict1['acquisition'] == 'no' and _dict2['acquisition'] == 'no':
@@ -43260,6 +43274,13 @@ class NmrDpUtility:
                                        if _transfer['type'] == 'onebond'
                                        and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                             or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
+                                if _dict1['freq_hint'].size < 2\
+                                   or numpy.max(_dict1['freq_hint']) == numpy.min(_dict1['freq_hint'])\
+                                   or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
+                                    continue
+                                _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
+                                if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER:
+                                    continue
                                 transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
                                             'type': 'onebond',
@@ -43457,8 +43478,8 @@ class NmrDpUtility:
                             if d == 2 and _region1 == 'H-aliphatic':
                                 _dict1['spectral_region'] = _dict2['spectral_region'] = 'H'  # all
                                 if 'H-aliphatic' in (_dict1['axis_code'], _dict2['axis_code']):
-                                    _dict1['axis_code'] = f'H_{_dim_id1}'
-                                    _dict2['axis_code'] = f'H_{_dim_id2}'
+                                    _dict1['axis_code'] = f'H{dim_to_code[_dim_id1]}'
+                                    _dict2['axis_code'] = f'H{dim_to_code[_dim_id2]}'
                             if d == 3:
                                 _transfer = next((_transfer for _transfer in cur_spectral_dim_transfer if _transfer['type'] == 'onebond'), None)
                                 if _transfer is not None:
@@ -43497,8 +43518,8 @@ class NmrDpUtility:
                                     nuc = _dict1[1]['spectral_regison'][0]
                                     _dict1['spectral_region'] = _dict2['spectral_region'] = nuc
                                     if _dict1['axis_code'] == _dict2['axis_code']:
-                                        _dict1['axis_code'] = f'{nuc}_{_dim_id1}'
-                                        _dict2['axis_code'] = f'{nuc}_{_dim_id2}'
+                                        _dict1['axis_code'] = f'{nuc}{dim_to_code[_dim_id1]}'
+                                        _dict2['axis_code'] = f'{nuc}{dim_to_code[_dim_id2]}'
 
             elif 'redor' in file_name:
                 for _dim_id1, _dict1 in cur_spectral_dim.items():

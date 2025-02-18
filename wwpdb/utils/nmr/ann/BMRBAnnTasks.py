@@ -65,6 +65,10 @@ __python_3_7__ = version.parse(sys.version.split()[0]) >= version.parse("3.7.0")
 
 CS_UNCERT_MAX = CS_UNCERTAINTY_RANGE['max_inclusive']
 
+
+MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY = 10
+
+
 protein_related_words = ['protein', 'peptide', 'amino', 'n-term', 'c-term', 'domain', 'enzyme', 'ase']
 dna_related_words = ['dna', 'deoxyribonucleotide', 'nucleotide', "5'-", "3'-"]
 rna_related_words = ['rna', 'ribonucleotide', 'nucleotide', "5'-", "3'-"]
@@ -1991,7 +1995,7 @@ class BMRBAnnTasks:
 
                             for _idx, row in enumerate(dat, start=1):
 
-                                if _idx <= 10:
+                                if _idx <= MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY:
                                     volume = row[0]
                                     if volume in emptyValue:
                                         volume = None
@@ -2020,7 +2024,7 @@ class BMRBAnnTasks:
 
                             for _idx, row in enumerate(dat, start=1):
 
-                                if _idx <= 10:
+                                if _idx <= MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY:
                                     volume = row[0]
                                     if volume in emptyValue:
                                         volume = None
@@ -2041,7 +2045,7 @@ class BMRBAnnTasks:
 
                                 if row[5] not in emptyValue:
                                     has_assign = True
-                                    if _idx > 10:
+                                    if _idx > MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY:
                                         break
 
                         elif num_of_dim == 4:
@@ -2049,7 +2053,7 @@ class BMRBAnnTasks:
 
                             for _idx, row in enumerate(dat, start=1):
 
-                                if _idx <= 10:
+                                if _idx <= MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY:
                                     volume = row[0]
                                     if volume in emptyValue:
                                         volume = None
@@ -2070,7 +2074,7 @@ class BMRBAnnTasks:
 
                                 if row[6] not in emptyValue:
                                     has_assign = True
-                                    if _idx > 10:
+                                    if _idx > MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY:
                                         break
 
                         sp_info[idx]['has_volume'] = has_volume
@@ -2109,7 +2113,7 @@ class BMRBAnnTasks:
                             for row_pk_char in dat_pk_char:
                                 if row_pk_char[0] not in peak_ids:
                                     peak_ids.append(row_pk_char[0])
-                                    if len(peak_ids) == 10:
+                                    if len(peak_ids) == MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY:
                                         break
 
                             position = [None] * num_of_dim

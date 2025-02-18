@@ -1149,10 +1149,13 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
            and ('Amplitude' in string or 'Intensity' in string)):  # VNMR ll2d output
         return 'nm-pea-vnm' if asCode else 'VNMR'
 
+    if header is None:
+        return None
+
     if col is None:
         col = string.split()
 
-    if header is not None and ' w1 ' in header and ' w2 ' in header\
+    if ' w1 ' in header and ' w2 ' in header\
        and len(col) > 3 and sparky_assignment_pattern.match(col[0]):  # Sparky
         try:
             float(col[1])
@@ -1161,41 +1164,41 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
         except (ValueError, TypeError):
             pass
 
-    if header is not None and ('Amplitude' in header or 'Intensity' in header)\
-       and 'Assignment' in header\
-       and len(col) > 6 and sparky_assignment_pattern.match(col[6]):  # VNMR 2D
-        try:
-            int(col[0])
-            float(col[1])
-            float(col[3])
-            return 'nm-pea-vnm' if asCode else 'VNMR'
-        except (ValueError, TypeError):
-            pass
+    if ('Amplitude' in header or 'Intensity' in header)\
+       and 'Assignment' in header:
+        if len(col) > 6 and sparky_assignment_pattern.match(col[6]):  # VNMR 2D
+            try:
+                int(col[0])
+                float(col[1])
+                float(col[3])
+                return 'nm-pea-vnm' if asCode else 'VNMR'
+            except (ValueError, TypeError):
+                pass
 
-    if header is not None and ('Amplitude' in header or 'Intensity' in header)\
-       and 'Assignment' in header\
-       and len(col) > 8 and sparky_assignment_pattern.match(col[8]):  # VNMR 3D
-        try:
-            int(col[0])
-            float(col[1])
-            float(col[3])
-            float(col[5])
-            return 'nm-pea-vnm' if asCode else 'VNMR'
-        except (ValueError, TypeError):
-            pass
+        elif len(col) > 8 and sparky_assignment_pattern.match(col[8]):  # VNMR 3D
+            try:
+                int(col[0])
+                float(col[1])
+                float(col[3])
+                float(col[5])
+                return 'nm-pea-vnm' if asCode else 'VNMR'
+            except (ValueError, TypeError):
+                pass
 
-    if header is not None and ('Amplitude' in header or 'Intensity' in header)\
-       and 'Assignment' in header\
-       and len(col) > 10 and sparky_assignment_pattern.match(col[10]):  # VNMR 4D
-        try:
-            int(col[0])
-            float(col[1])
-            float(col[3])
-            float(col[5])
-            float(col[7])
-            return 'nm-pea-vnm' if asCode else 'VNMR'
-        except (ValueError, TypeError):
-            pass
+        elif len(col) > 10 and sparky_assignment_pattern.match(col[10]):  # VNMR 4D
+            try:
+                int(col[0])
+                float(col[1])
+                float(col[3])
+                float(col[5])
+                float(col[7])
+                return 'nm-pea-vnm' if asCode else 'VNMR'
+            except (ValueError, TypeError):
+                pass
+
+    if 'label' in header and 'data' in header and 'dataset' not in header\
+       and 'sw' in col and 'sf' in col:
+        return 'nm-pea-vie' if asCode else 'NMRView'  # header broken NMRVIEW
 
     return None
 
@@ -1223,9 +1226,39 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
 
                 continue
 
+            if 'label' in line and 'data' in line and 'dataset' not in line:
+                header = line
+                continue
+
             file_type = get_peak_list_format_from_string(line, header, asCode)
 
             if file_type is not None or idx >= 20:  # self.mr_max_spacer_lines:
+
+                # fix partially broken NMRVIEW header
+                if file_type in ('NMRView', 'nm-pea-vie') and header is not None\
+                   and 'label' in header and 'data' in header and 'dataset' not in header\
+                   and 'sw' in line and 'sf' in line:
+
+                    try:
+
+                        i = 0
+
+                        with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
+                                open(fPath + '~', 'w', encoding='utf-8') as ofh:
+                            for line in ifh:
+                                if i == idx - 1:
+                                    ofh.write('label dataset sw sf\n')
+                                elif i == idx:
+                                    pass
+                                else:
+                                    ofh.write(line)
+                                i += 1
+
+                        os.replace(fPath + '~', fPath)
+
+                    except OSError:
+                        pass
+
                 return file_type
 
     return None
@@ -1351,7 +1384,7 @@ def get_number_of_dimensions_of_peak_list(fPath: str, file_format: Optional[str]
 
             if file_format == 'NMRView' and not has_header:
 
-                if line.startswith('label'):
+                if 'sw' in line and 'sf' in line:
                     has_header = True
 
                 continue

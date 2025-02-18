@@ -60175,7 +60175,7 @@ class NmrDpUtility:
 
         self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
 
-        if self.__cR.hasCategory('entry'):
+        if not self.__bmrb_only and self.__cR.hasCategory('entry'):
             entry = self.__cR.getDictList('entry')
 
             if len(entry) > 0 and 'id' in entry[0]:
@@ -60205,7 +60205,7 @@ class NmrDpUtility:
 
         self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
 
-        if self.__nmrIfR.hasCategory('entry'):
+        if not self.__bmrb_only and self.__nmrIfR.hasCategory('entry'):
             entry = self.__nmrIfR.getDictList('entry')
 
             if len(entry) > 0 and 'id' in entry[0]:
@@ -60235,7 +60235,7 @@ class NmrDpUtility:
 
         self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
 
-        if self.__nmrIfR is not None and self.__nmrIfR.hasCategory('entry'):
+        if not self.__bmrb_only and self.__nmrIfR is not None and self.__nmrIfR.hasCategory('entry'):
             entry = self.__nmrIfR.getDictList('entry')
 
             if len(entry) > 0 and 'id' in entry[0]:

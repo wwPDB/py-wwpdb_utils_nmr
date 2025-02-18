@@ -110,9 +110,17 @@ def load_from_pickle(file_name: str, default: Any = None) -> Any:
 
     if os.path.exists(file_name):
 
-        with open(file_name, 'rb') as ifh:
-            obj = pickle.load(ifh)
-            return obj if obj is not None else default
+        try:
+
+            with open(file_name, 'rb') as ifh:
+                obj = pickle.load(ifh)
+                return obj if obj is not None else default
+
+        except Exception:
+            try:
+                os.remove(file_name)
+            except OSError:
+                pass
 
     return default
 
@@ -1173,6 +1181,7 @@ class NmrVrptUtility:
             cache_path = None
             if self.__cifHashCode is not None:
                 cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_asm_chk.pkl")
+
                 self.__caC = load_from_pickle(cache_path)
 
                 if self.__caC is not None:
@@ -1212,10 +1221,10 @@ class NmrVrptUtility:
 
         if self.__cifHashCode is not None:
             vrpt_atom_id_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_vrpt_atom_id.pkl")
-            self.__atomIdList = load_from_pickle(vrpt_atom_id_cache_path, None)
+            self.__atomIdList = load_from_pickle(vrpt_atom_id_cache_path)
 
             vrpt_atom_site_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_vrpt_atom_site.pkl")
-            self.__coordinates = load_from_pickle(vrpt_atom_site_cache_path, None)
+            self.__coordinates = load_from_pickle(vrpt_atom_site_cache_path)
 
             if None not in (self.__atomIdList, self.__coordinates):
                 return True

@@ -2078,8 +2078,10 @@ class IsdMRParserListener(ParseTreeListener):
                                             "Please update the sequence in the Macromolecules page.")
                             asis = True
                         else:
-                            if atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
-                               and atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                            if seqKey in self.__coordUnobsAtom\
+                               and (atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
+                                    or (atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, atomId, exclProton=True)[0]
+                                        in self.__coordUnobsAtom[seqKey]['atom_ids'])):
                                 self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                 f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                                 return atomId, asis

@@ -4299,8 +4299,10 @@ class CharmmMRParserListener(ParseTreeListener):
                                                             warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                                 and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
                                                                 else 'Atom not found'
-                                                            if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom\
-                                                               and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                                            if seqKey in self.__coordUnobsAtom\
+                                                               and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
+                                                                    or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
+                                                                        in self.__coordUnobsAtom[seqKey]['atom_ids'])):
                                                                 warn_title = 'Coordinate issue'
                                                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates.")
@@ -4430,7 +4432,10 @@ class CharmmMRParserListener(ParseTreeListener):
                                                     warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                         and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
                                                         else 'Atom not found'
-                                                    if _atomId not in protonBeginCode and seqKey in self.__coordUnobsAtom and _atomId in self.__coordUnobsAtom[seqKey]['atom_ids']:
+                                                    if seqKey in self.__coordUnobsAtom\
+                                                       and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
+                                                            or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
+                                                                in self.__coordUnobsAtom[seqKey]['atom_ids'])):
                                                         warn_title = 'Coordinate issue'
                                                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates.")

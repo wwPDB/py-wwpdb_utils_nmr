@@ -982,7 +982,7 @@ class BasePKParserListener():
                         for _dict in cur_spectral_dim.values():
                             if _dict['axis_order'].isupper():
                                 upper_count += 1
-                            else:
+                            if _dict['axis_order'].islower():
                                 lower_count += 1
                         if 0 not in (upper_count, lower_count) and 2 in (upper_count, lower_count):
                             for _dim_id1, _dict1 in cur_spectral_dim.items():

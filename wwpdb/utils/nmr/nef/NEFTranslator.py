@@ -2367,8 +2367,8 @@ class NEFTranslator:
                 if set(tags) & set(loop.tags) == set(tags):
                     pre_seq_data = loop.get_tag(tags)
                     if not isinstance(pre_seq_data[0][0], int):
-                        if all(not row[0].isdigit() and row[1].isdigit() for row in pre_seq_data
-                               if row[0] not in emptyValue and row[1] not in emptyValue):
+                        if all(row[0] not in emptyValue and not row[0].isdigit()
+                               and row[1] not in emptyValue and row[1].isdigit() for row in pre_seq_data):
                             col0 = loop.tags.index(tags[0])
                             col1 = loop.tags.index(tags[1])
                             for row in loop:

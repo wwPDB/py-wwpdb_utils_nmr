@@ -1127,7 +1127,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
     col = string.split()
     len_col = len(col)
 
-    if header is not None and (header.startswith('#INAME') or header.startswith('# Number of dimensions')):  # and string.count('E') + string.count('e') >= 2:  # XEASY peak list
+    if header is not None and ('Number of dimensions' in header or header.startswith('#INAME') or header.startswith('#CYANAFORMAT')):  # XEASY peak list
         if 'U' in col or 'T' in col:
             return 'nm-pea-xea' if asCode else 'XEASY'
 
@@ -1242,7 +1242,8 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
 
             if line.isspace() or comment_pattern.match(line):
 
-                if line.startswith('#INAME') or line.startswith('# Number of dimensions') or (' w1 ' in line and ' w2 ' in line)\
+                if 'Number of dimensions' in line or line.startswith('#INAME' or line.startswith('#CYANAFORMAT'))\
+                   or (' w1 ' in line and ' w2 ' in line)\
                    or ('Amplitude' in line or 'Intensity' in line):
                     header = line
 
@@ -1260,6 +1261,9 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
             file_type = get_peak_list_format_from_string(line, header, asCode)
 
             if file_type is not None or idx >= 20:  # self.mr_max_spacer_lines:
+
+                if file_type is None or idx < 20:
+                    return file_type
 
                 # fix partially broken NMRVIEW header
                 if file_type in ('NMRView', 'nm-pea-vie') and header is not None\
@@ -1300,11 +1304,11 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
                         d = len_col - 2
 
                         if d == 2:
-                            header = 'Assignment w1 w2 Data Height\n'
+                            header = ' Assignment  w1  w2  Data Height\n'
                         elif d == 3:
-                            header = 'Assignment w1 w2 w3 Data Height\n'
+                            header = ' Assignment  w1  w2  w3  Data Height\n'
                         elif d == 4:
-                            header = 'Assignment w1 w2 w3 w4 Data Height\n'
+                            header = ' Assignment  w1  w2  w3  w4  Data Height\n'
                         else:
                             return None
 
@@ -1313,11 +1317,11 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
                         d = len_col - 1
 
                         if d == 2:
-                            header = 'w1 w2 Data Height\n'
+                            header = ' w1  w2  Data Height\n'
                         elif d == 3:
-                            header = 'w1 w2 w3 Data Height\n'
+                            header = ' w1  w2  w3  Data Height\n'
                         elif d == 4:
-                            header = 'w1 w2 w3 w4 Data Height\n'
+                            header = ' w1  w2  w3  w4  Data Height\n'
                         else:
                             return None
 
@@ -1347,12 +1351,14 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
     len_col = len(col)
 
     if file_format == 'XEASY':
-        if 'dimensions' in line:
+        if 'Number of dimensions' in line:
             if col[-1].isdigit():
                 return int(col[-1])
+        if line.startswith('#CYANAFORMAT'):
+            if all(a.isalpha() for a in col[1]):
+                return len(col[1])
 
     if file_format == 'Sparky':
-        col = line.split()
         if ' w1 ' in line:
             dim = [int(w[1:]) for w in col if w.startswith('w') and w[1:].isdigit()]
             if len(dim) > 0:
@@ -1362,12 +1368,10 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
             return col[0].count('-') + 1
 
     if file_format == 'NMRView':
-        col = line.split()
         return len_col
 
     if file_format == 'NMRPipe':
         if 'VARS' in line:
-            col = line.split()
             if 'A_PPM' in col:
                 return 4
             if 'Z_PPM' in col:
@@ -1377,12 +1381,11 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
 
     if file_format == 'PONDEROSA':
         if 'AXISORDER' in line:
-            col = line.split()
-            return len(col[2])
+            if all(a.isalpha() for a in col[1]):
+                return len(col[1])
 
     if file_format == 'XwinNMR':
         if '# PEAKLIST_DIMENSION' in line:
-            col = line.split()
             if '2' in col:
                 return 2
             if '3' in col:
@@ -1390,7 +1393,6 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
             if '4' in col:
                 return 4
         if 'F2[ppm]' in line:
-            col = line.split()
             if 'F4[ppm]' in col:
                 return 4
             if 'F3[ppm]' in col:

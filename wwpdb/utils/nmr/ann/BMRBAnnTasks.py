@@ -343,7 +343,7 @@ class BMRBAnnTasks:
                     else:
                         cs_ref_id = int(cs_ref_id)
                 if cs_ref_id in cs_ref_sf_framecode:
-                    pass
+                    set_sf_tag(sf, 'Chem_shift_reference_label', f'${cs_ref_sf_framecode[cs_ref_id]}')
                 else:
                     isotope_nums[cs_ref_id] = set()
                     cs_ref_sf_framecode[cs_ref_id] = f'chem_shift_reference_{cs_ref_id}'
@@ -356,7 +356,7 @@ class BMRBAnnTasks:
                     else:
                         smpl_cond_list_id = int(smpl_cond_list_id)
                 if smpl_cond_list_id in smpl_cond_sf_framecode:
-                    pass
+                    set_sf_tag(sf, 'Sample_condition_list_label', f'${smpl_cond_sf_framecode[smpl_cond_list_id]}')
                 else:
                     set_sf_tag(sf, 'Sample_condition_list_ID', 1)
 

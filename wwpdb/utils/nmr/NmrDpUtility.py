@@ -218,7 +218,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "4.1.1"
+__version__ = "4.2.0"
 
 import sys
 import os

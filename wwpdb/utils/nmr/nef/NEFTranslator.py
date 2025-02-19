@@ -103,6 +103,7 @@
 #                           preserve the original NMR-STAR frame codes provided by author through bidirectional conversion (v4.0.0, DAOTHER-9623)
 # 28-Nov-2024  M. Yokochi - drop support for old pynmrstar versions less than 3.2 (v4.1.0)
 # 27-Dec-2024  M. Yokochi - change class path and visibility of class method (v4.1.1)
+# 19-Feb-2025  M. Yokochi - try to extract sequence using Seq_ID_# tags if necessary (v4.2.0)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -111,7 +112,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "4.1.1"
+__version__ = "4.2.0"
 
 import sys
 import os
@@ -3178,6 +3179,11 @@ class NEFTranslator:
                     _tags = [seq_id + '_' + str(j), comp_id + '_' + str(j), chain_id + '_' + str(j)]
                     _tags_ = [seq_id + '_' + str(j), comp_id + '_' + str(j)]
                     _tags__ = [seq_id + '_' + str(j), comp_id + '_' + str(j), alt_chain_id + '_' + str(j)]  # DAOTHER-7421
+
+                    _alt_tags = [alt_seq_id + '_' + str(j), comp_id + '_' + str(j), chain_id + '_' + str(j)]
+                    _alt_tags_ = [alt_seq_id + '_' + str(j), comp_id + '_' + str(j)]
+                    _alt_tags__ = [alt_seq_id + '_' + str(j), comp_id + '_' + str(j), alt_chain_id + '_' + str(j)]  # DAOTHER-7421
+
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
                         seq_data_ = loop.get_tag(_tags)
@@ -3196,6 +3202,28 @@ class NEFTranslator:
                     elif set(_tags_) & set(loop.tags) == set(_tags_):
                         _tags_exist = True
                         seq_data_ = loop.get_tag(_tags_)
+                        for row_ in seq_data_:
+                            row_.append(def_chain_id)
+                        seq_data += seq_data_
+
+                    elif set(_alt_tags) & set(loop.tags) == set(_alt_tags):
+                        _tags_exist = True
+                        seq_data_ = loop.get_tag(_alt_tags)
+                        for row_ in seq_data_:
+                            if alt_seq_id_offset != 0:
+                                row_[0] += alt_seq_id_offset
+                            if row_[2] in emptyValue:
+                                row_[2] = def_chain_id
+                        seq_data += seq_data_
+                    elif set(_alt_tags__) & set(loop.tags) == set(_alt_tags__):  # DAOTHER-7421
+                        _tags_exist = True
+                        seq_data_ = loop.get_tag(_alt_tags__)
+                        for row_ in seq_data_:
+                            row_[2] = def_chain_id if row_[2] in emptyValue else str(row_[2] if self.__remediation_mode else letterToDigit(row_[2], 1))
+                        seq_data += seq_data_
+                    elif set(_alt_tags_) & set(loop.tags) == set(_alt_tags_):
+                        _tags_exist = True
+                        seq_data_ = loop.get_tag(_alt_tags_)
                         for row_ in seq_data_:
                             row_.append(def_chain_id)
                         seq_data += seq_data_

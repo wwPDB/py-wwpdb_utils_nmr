@@ -12747,7 +12747,8 @@ class NmrDpUtility:
         concat_xplor_set = (xplor_file_type
                             and (err_message.startswith(mismatched_input_err_msg)
                                  or err_message.startswith(extraneous_input_err_msg))
-                            and bool(xplor_set_pattern.search(err_input)))
+                            and bool(xplor_set_pattern.search(err_input))
+                            and get_peak_list_format_from_string(err_input) is None)
         concat_amber_rst = (amber_file_type
                             and (err_message.startswith(mismatched_input_err_msg)
                                  or err_message.startswith(extraneous_input_err_msg))
@@ -14059,7 +14060,8 @@ class NmrDpUtility:
         concat_xplor_set = (xplor_file_type
                             and (err_message.startswith(mismatched_input_err_msg)
                                  or err_message.startswith(extraneous_input_err_msg))
-                            and bool(xplor_set_pattern.search(err_input)))
+                            and bool(xplor_set_pattern.search(err_input))
+                            and get_peak_list_format_from_string(err_input) is None)
         concat_amber_rst = (amber_file_type
                             and (err_message.startswith(mismatched_input_err_msg)
                                  or err_message.startswith(extraneous_input_err_msg))

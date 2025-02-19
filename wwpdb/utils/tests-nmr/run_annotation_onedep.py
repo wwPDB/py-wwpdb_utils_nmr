@@ -984,7 +984,7 @@ class gen_auth_view_onedep:
         utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         utility.addInput(name='resolve_conflict', value=True, type='param')
         utility.addInput(name='check_mandatory_tag', value=True, type='param')
-        utility.addInput(name='merge_any_pk_as_is', value=True, type='param')
+        # utility.addInput(name='merge_any_pk_as_is', value=True, type='param')
         utility.addInput(name='bmrb_only', value=True, type='param')
         utility.addInput(name='internal', value=True, type='param')
         utility.addInput(name='bmrb_id', value=self.__bmrb_id, type='param')
@@ -1031,7 +1031,9 @@ class gen_auth_view_onedep:
         if self.__has_peak and os.path.exists(self.__annotated_star_file_path):
             star_data = pynmrstar.Entry.from_file(self.__annotated_star_file_path)
             for sf in star_data.get_saveframes_by_category('spectral_peak_list'):
-                set_sf_tag(sf, 'Text_data', '.')
+                text_data = get_first_sf_tag(sf, 'Text_data')
+                if len(text_data) > 0:
+                    set_sf_tag(sf, 'Text_data', '.')
             star_data.write_to_file(self.__ann_wo_raw_pk_star_file_path, show_comments=True, skip_empty_loops=True, skip_empty_tags=False)
 
 

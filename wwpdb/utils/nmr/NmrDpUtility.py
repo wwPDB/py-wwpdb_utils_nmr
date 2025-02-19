@@ -332,6 +332,7 @@ try:
                                                        ALLOWED_AMBIGUITY_CODES,
                                                        ALLOWED_ISOTOPE_NUMBERS,
                                                        KNOWN_ANGLE_NAMES,
+                                                       CS_RESTRAINT_ERROR,
                                                        CS_RESTRAINT_RANGE,
                                                        DIST_RESTRAINT_RANGE,
                                                        ANGLE_RESTRAINT_RANGE,
@@ -479,6 +480,7 @@ except ImportError:
                                            ALLOWED_AMBIGUITY_CODES,
                                            ALLOWED_ISOTOPE_NUMBERS,
                                            KNOWN_ANGLE_NAMES,
+                                           CS_RESTRAINT_ERROR,
                                            CS_RESTRAINT_RANGE,
                                            DIST_RESTRAINT_RANGE,
                                            ANGLE_RESTRAINT_RANGE,
@@ -541,6 +543,9 @@ except ImportError:
 
 __pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
 
+
+CS_ERROR_MIN = CS_RESTRAINT_ERROR['min_exclusive']
+CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_exclusive']
 
 CS_RANGE_MIN = CS_RESTRAINT_RANGE['min_inclusive']
 CS_RANGE_MAX = CS_RESTRAINT_RANGE['max_inclusive']
@@ -1119,10 +1124,10 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
     """ Return peak list format for a given input.
     """
 
-    col = None
+    col = string.split()
+    len_col = len(col)
 
-    if header is not None and header.startswith('#INAME'):  # and string.count('E') + string.count('e') >= 2:  # XEASY peak list
-        col = string.split()
+    if header is not None and (header.startswith('#INAME') or header.startswith('# Number of dimensions')):  # and string.count('E') + string.count('e') >= 2:  # XEASY peak list
         if 'U' in col or 'T' in col:
             return 'nm-pea-xea' if asCode else 'XEASY'
 
@@ -1158,13 +1163,27 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
         return 'nm-pea-vnm' if asCode else 'VNMR'
 
     if header is None:
+
+        if 2 <= len_col - 1 <= 4:
+            try:
+                if all('.' in col[idx] and CS_ERROR_MIN < float(col[idx]) < CS_ERROR_MAX for idx in range(len_col - 1)):
+                    if abs(float(col[-1])) >= CS_ERROR_MAX:
+                        return 'nm-pea-spa' if asCode else 'Sparky'  # header broken SPARKY
+            except (ValueError, TypeError):
+                pass
+
+        if 2 <= len_col - 2 <= 4 and sparky_assignment_pattern.match(col[0]):
+            try:
+                if all('.' in col[idx + 1] and CS_ERROR_MIN < float(col[idx + 1]) < CS_ERROR_MAX for idx in range(len_col - 2)):
+                    if abs(float(col[-1])) >= CS_ERROR_MAX:
+                        return 'nm-pea-spa' if asCode else 'Sparky'  # header broken SPARKY
+            except (ValueError, TypeError):
+                pass
+
         return None
 
-    if col is None:
-        col = string.split()
-
     if ' w1 ' in header and ' w2 ' in header\
-       and len(col) > 3 and sparky_assignment_pattern.match(col[0]):  # Sparky
+       and len_col > 3 and sparky_assignment_pattern.match(col[0]):  # Sparky
         try:
             float(col[1])
             float(col[2])
@@ -1174,7 +1193,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
 
     if ('Amplitude' in header or 'Intensity' in header)\
        and 'Assignment' in header:
-        if len(col) > 6 and sparky_assignment_pattern.match(col[6]):  # VNMR 2D
+        if len_col > 6 and sparky_assignment_pattern.match(col[6]):  # VNMR 2D
             try:
                 int(col[0])
                 float(col[1])
@@ -1183,7 +1202,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
             except (ValueError, TypeError):
                 pass
 
-        elif len(col) > 8 and sparky_assignment_pattern.match(col[8]):  # VNMR 3D
+        elif len_col > 8 and sparky_assignment_pattern.match(col[8]):  # VNMR 3D
             try:
                 int(col[0])
                 float(col[1])
@@ -1193,7 +1212,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
             except (ValueError, TypeError):
                 pass
 
-        elif len(col) > 10 and sparky_assignment_pattern.match(col[10]):  # VNMR 4D
+        elif len_col > 10 and sparky_assignment_pattern.match(col[10]):  # VNMR 4D
             try:
                 int(col[0])
                 float(col[1])
@@ -1223,7 +1242,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
 
             if line.isspace() or comment_pattern.match(line):
 
-                if line.startswith('#INAME') or (' w1 ' in line and ' w2 ' in line)\
+                if line.startswith('#INAME') or line.startswith('# Number of dimensions') or (' w1 ' in line and ' w2 ' in line)\
                    or ('Amplitude' in line or 'Intensity' in line):
                     header = line
 
@@ -1267,7 +1286,55 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
                     except OSError:
                         pass
 
-                return file_type
+                    return file_type
+
+                # fix partially broken SPARKY header
+                if file_type in ('Sparky', 'nm-pea-spa') and header is None\
+                   and ' w1 ' not in line and ' w2 ' not in line:
+
+                    col = line.split()
+                    len_col = len(col)
+
+                    if sparky_assignment_pattern.match(col[0]):
+
+                        d = len_col - 2
+
+                        if d == 2:
+                            header = 'Assignment w1 w2 Data Height\n'
+                        elif d == 3:
+                            header = 'Assignment w1 w2 w3 Data Height\n'
+                        elif d == 4:
+                            header = 'Assignment w1 w2 w3 w4 Data Height\n'
+                        else:
+                            return None
+
+                    else:
+
+                        d = len_col - 1
+
+                        if d == 2:
+                            header = 'w1 w2 Data Height\n'
+                        elif d == 3:
+                            header = 'w1 w2 w3 Data Height\n'
+                        elif d == 4:
+                            header = 'w1 w2 w3 w4 Data Height\n'
+                        else:
+                            return None
+
+                    try:
+
+                        with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
+                                open(fPath + '~', 'w', encoding='utf-8') as ofh:
+                            ofh.write(header)
+                            for line in ifh:
+                                ofh.write(line)
+
+                        os.replace(fPath + '~', fPath)
+
+                    except OSError:
+                        pass
+
+                    return file_type
 
     return None
 
@@ -1276,9 +1343,11 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
     """ Return number of dimensions of peak list of given format and input.
     """
 
+    col = line.split()
+    len_col = len(col)
+
     if file_format == 'XEASY':
         if 'dimensions' in line:
-            col = line.split()
             if col[-1].isdigit():
                 return int(col[-1])
 
@@ -1289,12 +1358,12 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
             if len(dim) > 0:
                 return max(dim)
 
-        if len(col) > 3 and sparky_assignment_pattern.match(col[0]):
+        if len_col > 3 and sparky_assignment_pattern.match(col[0]):
             return col[0].count('-') + 1
 
     if file_format == 'NMRView':
         col = line.split()
-        return len(col)
+        return len_col
 
     if file_format == 'NMRPipe':
         if 'VARS' in line:
@@ -1345,8 +1414,7 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
         if 'Dim 1' in line or 'Y(ppm)' in line or 'Y (ppm)' in line or 'F2' in line:
             return 2
 
-        col = line.split()
-        if len(col) > 6 and sparky_assignment_pattern.match(col[6]):
+        if len_col > 6 and sparky_assignment_pattern.match(col[6]):
             val = col[6]
             if 2 <= val.count('-') + 1 <= 4:
                 return val.count('-')
@@ -1357,7 +1425,7 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
             if 2 <= val.count(',') + 1 <= 4:
                 return val.count(',')
 
-        if len(col) > 8 and sparky_assignment_pattern.match(col[8]):
+        if len_col > 8 and sparky_assignment_pattern.match(col[8]):
             val = col[8]
             if 2 <= val.count('-') + 1 <= 4:
                 return val.count('-')
@@ -1368,7 +1436,7 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
             if 2 <= val.count(',') + 1 <= 4:
                 return val.count(',')
 
-        if len(col) > 10 and sparky_assignment_pattern.match(col[10]):
+        if len_col > 10 and sparky_assignment_pattern.match(col[10]):
             val = col[10]
             if 2 <= val.count('-') + 1 <= 4:
                 return val.count('-')

@@ -1876,7 +1876,9 @@ class NmrDpUtility:
         __str2nefTasks.append(self.__dumpDpReport)
         __str2nefTasks.extend(__depositTasks)
 
-        __mergeCsAndMrTasks = copy.copy(__checkTasks)
+        __mergeCsAndMrTasks = __checkTasks
+        __mergeCsAndMrTasks.remove(self.__detectSimpleDistanceRestraint)
+        __mergeCsAndMrTasks.remove(self.__calculateStatsOfExptlData)
         __mergeCsAndMrTasks.remove(self.__detectDimTransferTypeViaThroughSpace)
         __mergeCsAndMrTasks.append(self.__updatePolymerSequence)
         __mergeCsAndMrTasks.append(self.__mergeLegacyCsAndMr)

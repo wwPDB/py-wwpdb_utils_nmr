@@ -145,8 +145,8 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            height = None
-            volume = self.originalNumberSelection[0]
+            volume = None
+            height = self.originalNumberSelection[0]
 
             L1 = str(ctx.Simple_name(0))
             L2 = str(ctx.Simple_name(1))
@@ -274,8 +274,8 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            height = None
-            volume = self.originalNumberSelection[0]
+            volume = None
+            height = self.originalNumberSelection[0]
 
             L1 = str(ctx.Simple_name(0))
             L2 = str(ctx.Simple_name(1))
@@ -412,8 +412,8 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            height = None
-            volume = self.originalNumberSelection[0]
+            volume = None
+            height = self.originalNumberSelection[0]
 
             L1 = str(ctx.Simple_name(0))
             L2 = str(ctx.Simple_name(1))

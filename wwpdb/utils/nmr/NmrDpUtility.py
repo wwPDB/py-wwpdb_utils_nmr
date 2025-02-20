@@ -10178,6 +10178,14 @@ class NmrDpUtility:
                     except ValueError:
                         pass
 
+                # _Spectral_dim.Encoded_source_dimension_ID should be _Spectral_dim.Encoded_reduced_dimension_ID
+                if 'Encoded_source_dimension_ID' in loop.tags:
+                    if 'Encoded_reduced_dimension_ID' in loop.tags:
+                        loop.remove_tag('Encoded_source_dimension_ID')
+                    else:
+                        col = loop.tags.index('Encoded_source_dimension_ID')
+                        loop.tags[col] = 'Encoded_reduced_dimension_ID'
+
         except KeyError:
             pass
 

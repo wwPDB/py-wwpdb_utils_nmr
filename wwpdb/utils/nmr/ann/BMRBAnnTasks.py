@@ -83,7 +83,7 @@ class BMRBAnnTasks:
 
     def __init__(self, verbose: bool, log: IO,
                  sfCategoryList: List[str], entryId: str,
-                 sailFlag: bool, report: NmrDpReport,
+                 internalMode: bool, sailFlag: bool, report: NmrDpReport,
                  ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
                  c2S: Optional[CifToNmrStar] = None):
         self.__class_name__ = self.__class__.__name__
@@ -94,6 +94,8 @@ class BMRBAnnTasks:
 
         self.__sfCategoryList = sfCategoryList
         self.__entryId = entryId
+
+        self.__internalMode = internalMode
         self.__sailFlag = sailFlag
         self.__report = report
 
@@ -1957,7 +1959,7 @@ class BMRBAnnTasks:
 
         # resolve duplication of spectral peak lists
 
-        if sf_category in self.__sfCategoryList:
+        if sf_category in self.__sfCategoryList and self.__internalMode:
 
             tags_2d = ['Volume', 'Height', 'Position_1', 'Position_2', 'Auth_asym_ID_1']
             tags_3d = ['Volume', 'Height', 'Position_1', 'Position_2', 'Position_3', 'Auth_asym_ID_1']

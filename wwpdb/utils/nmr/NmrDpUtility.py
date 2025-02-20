@@ -25295,7 +25295,7 @@ class NmrDpUtility:
 
         ann = BMRBAnnTasks(self.__verbose, self.__lfh,
                            self.__sf_category_list, self.__entry_id,
-                           self.__sail_flag, self.report,
+                           self.__internal_mode, self.__sail_flag, self.report,
                            ccU=self.__ccU, csStat=self.__csStat, c2S=self.__c2S)
 
         ann.perform(master_entry)
@@ -59804,7 +59804,7 @@ class NmrDpUtility:
 
         ann = BMRBAnnTasks(self.__verbose, self.__lfh,
                            self.__sf_category_list, self.__entry_id,
-                           self.__sail_flag, self.report,
+                           self.__internal_mode, self.__sail_flag, self.report,
                            ccU=self.__ccU, csStat=self.__csStat, c2S=self.__c2S)
 
         is_done = ann.perform(master_entry)

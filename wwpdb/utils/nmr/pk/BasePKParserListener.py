@@ -1434,11 +1434,12 @@ class BasePKParserListener():
         cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
         if cur_spectral_dim['atom_type'] is not None:
             if cur_spectral_dim['atom_type'] == atom_type:
+                cur_spectral_dim['fixed'] = True  # be robust against interference of unreliable assignments (bmr36675)
                 return True
-            if 'reset' in cur_spectral_dim:  # XEASY INNAME label is not reliable (2kj5)
+            if 'fixed' in cur_spectral_dim:  # XEASY INNAME label is not reliable (2kj5)
                 return False
             if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                cur_spectral_dim['reset'] = True
+                cur_spectral_dim['fixed'] = True
                 cur_spectral_dim['atom_type'] = None
                 cur_spectral_dim['axis_code'] = None
                 cur_spectral_dim['atom_isotope_number'] = None

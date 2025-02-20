@@ -49930,10 +49930,7 @@ class NmrDpUtility:
         """ Remediate raw text data in saveframe of spectral peak list (for NMR data remediation upgrade to Phase 2).
         """
 
-        if self.__combined_mode or self.__merge_any_pk_as_is:
-            return True
-
-        if not self.__internal_mode:  # This rediculaus reverse implementation is for OneDep only
+        if self.__merge_any_pk_as_is or not self.__internal_mode:  # This rediculaus reverse implementation is for OneDep only
             return True
 
         if len(self.__star_data) == 0:

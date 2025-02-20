@@ -173,6 +173,36 @@ CS_RANGE_MAX = CS_RESTRAINT_RANGE['max_inclusive']
 CS_ERROR_MIN = CS_RESTRAINT_ERROR['min_exclusive']
 CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_exclusive']
 
+C_CARBONYL_CENTER_MAX = 180
+C_CARBONYL_CENTER_MIN = 170
+
+C_AROMATIC_CENTER_MAX = 133
+C_AROMATIC_CENTER_MIN = 128
+
+N_AMIDE_CENTER_MAX = C_AROMATIC_CENTER_MIN
+N_AMIDE_CENTER_MIN = 115
+
+C_ALL_CENTER_MAX = 90
+C_ALL_CENTER_MIN = 60
+
+C_ALIPHATIC_CENTER_MAX = C_ALL_CENTER_MIN
+C_ALIPHATIC_CENTER_MIN = 30
+
+C_METHYL_CENTER_MAX = C_ALIPHATIC_CENTER_MIN
+C_METHYL_CENTER_MIN = 10
+
+HN_AROMATIC_CENTER_MAX = 9
+HN_AROMATIC_CENTER_MIN = 6
+
+H_ALL_CENTER_MAX = HN_AROMATIC_CENTER_MIN
+H_ALL_CENTER_MIN = 4
+
+H_ALIPHATIC_CENTER_MAX = H_ALL_CENTER_MIN
+H_ALIPHATIC_CENTER_MIN = 2
+
+H_METHYL_CENTER_MAX = H_ALIPHATIC_CENTER_MIN
+H_METHYL_CENTER_MIN = 0
+
 
 PEAK_ASSIGNMENT_SEPARATOR_PAT = re.compile('[^0-9A-Za-z\'\"]+')
 PEAK_ASSIGNMENT_RESID_PAT = re.compile('[0-9]+')
@@ -180,6 +210,587 @@ PEAK_HALF_SPIN_NUCLEUS = ('H', 'Q', 'M', 'C', 'N', 'P', 'F')
 
 
 MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER = 0.2
+
+
+def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, d: int, cur_spectral_dim: dict) -> str:
+    """ Return expected primary dimensional transfer type from a given frequencies.
+    """
+
+    file_name = data_file_name.lower()
+
+    acq_dim_id = 1
+
+    for __d, __v in cur_spectral_dim.items():
+        if 'freq_hint' in __v:
+            __v['freq_hint'] = numpy.array(__v['freq_hint'], dtype=float)  # list -> numpy array
+            if __v['freq_hint'].size > 0:
+                center = numpy.mean(__v['freq_hint'])
+                max_ppm = __v['freq_hint'].max()
+
+                if __v['atom_isotope_number'] is None:
+                    if C_AROMATIC_CENTER_MIN < center < C_AROMATIC_CENTER_MAX:
+                        __v['atom_type'] = 'C'
+                        __v['atom_isotope_number'] = 13
+                        __v['axis_code'] = 'C-aromatic'
+                    elif N_AMIDE_CENTER_MIN < center < N_AMIDE_CENTER_MAX:
+                        __v['atom_type'] = 'N'
+                        __v['atom_isotope_number'] = 15
+                        __v['axis_code'] = 'N'
+                    elif C_CARBONYL_CENTER_MIN < center < C_CARBONYL_CENTER_MAX:
+                        __v['atom_type'] = 'C'
+                        __v['atom_isotope_number'] = 13
+                        __v['axis_code'] = 'CO'
+                    elif HN_AROMATIC_CENTER_MIN < center < HN_AROMATIC_CENTER_MAX:
+                        __v['atom_type'] = 'H'
+                        __v['atom_isotope_number'] = 1
+                        __v['axis_code'] = 'HN/H-aromatic'
+                    elif H_ALL_CENTER_MIN < center < H_ALL_CENTER_MAX:
+                        __v['atom_type'] = 'H'
+                        __v['atom_isotope_number'] = 1
+                        __v['axis_code'] = 'H'  # all
+                    elif H_ALIPHATIC_CENTER_MIN < center < H_ALIPHATIC_CENTER_MAX:
+                        __v['atom_type'] = 'H'
+                        __v['atom_isotope_number'] = 1
+                        __v['axis_code'] = 'H-aliphatic' if max_ppm < 7 else 'H'
+                    elif H_METHYL_CENTER_MIN < center < H_METHYL_CENTER_MAX:
+                        __v['atom_type'] = 'H'
+                        __v['atom_isotope_number'] = 1
+                        __v['axis_code'] = 'H-methyl' if max_ppm < 3 else 'H-aliphatic'
+                    elif C_ALL_CENTER_MIN < center < C_ALL_CENTER_MAX:
+                        __v['atom_type'] = 'C'
+                        __v['atom_isotope_number'] = 13
+                        __v['axis_code'] = 'C'  # all
+                    elif C_ALIPHATIC_CENTER_MIN < center < C_ALIPHATIC_CENTER_MAX:
+                        __v['atom_type'] = 'C'
+                        __v['atom_isotope_number'] = 13
+                        __v['axis_code'] = 'C-aliphatic'
+                    elif C_METHYL_CENTER_MIN < center < C_METHYL_CENTER_MAX:
+                        __v['atom_type'] = 'C'
+                        __v['atom_isotope_number'] = 13
+                        __v['axis_code'] = 'C-methyl'
+
+                isotope_number = __v['atom_isotope_number']
+
+                if isotope_number is not None:
+                    __v['acquisition'] = 'yes' if __d == acq_dim_id\
+                        and (isotope_number == 1 or (isotope_number == 13 and solid_state_nmr)) else 'no'
+
+                    if __d == 1 and __v['acquisition'] == 'no':
+                        acq_dim_id = d
+
+                    __v['under_sampling_type'] = 'not observed' if __v['acquisition'] == 'yes' else 'aliased'
+
+            if __v['spectral_region'] is None and __v['freq_hint'].size > 0:
+                atom_type = __v['atom_type']
+                if C_AROMATIC_CENTER_MIN < center < C_AROMATIC_CENTER_MAX and atom_type == 'C':
+                    __v['spectral_region'] = 'C-aromatic'
+                elif N_AMIDE_CENTER_MIN < center < N_AMIDE_CENTER_MAX and atom_type == 'N':
+                    __v['spectral_region'] = 'N'
+                elif C_CARBONYL_CENTER_MIN < center < C_CARBONYL_CENTER_MAX and atom_type == 'C':
+                    __v['spectral_region'] = 'CO'
+                elif HN_AROMATIC_CENTER_MIN < center < HN_AROMATIC_CENTER_MAX and atom_type == 'H':
+                    __v['spectral_region'] = 'HN/H-aromatic'
+                elif H_ALL_CENTER_MIN < center < H_ALL_CENTER_MAX and atom_type == 'H':
+                    __v['spectral_region'] = 'H'  # all
+                elif H_ALIPHATIC_CENTER_MIN < center < H_ALIPHATIC_CENTER_MAX and atom_type == 'H':
+                    __v['spectral_region'] = 'H-aliphatic' if max_ppm < 7 else 'H'
+                elif H_METHYL_CENTER_MIN < center < H_METHYL_CENTER_MAX and atom_type == 'H':
+                    __v['spectral_region'] = 'H-methyl' if max_ppm < 3 else 'H-aliphatic'
+                elif C_ALL_CENTER_MIN < center < C_ALL_CENTER_MAX and atom_type == 'C':
+                    __v['spectral_region'] = 'C'  # all
+                elif C_ALIPHATIC_CENTER_MIN < center < C_ALIPHATIC_CENTER_MAX and atom_type == 'C':
+                    __v['spectral_region'] = 'C-aliphatic'
+                elif C_METHYL_CENTER_MIN < center < C_METHYL_CENTER_MAX and atom_type == 'C':
+                    __v['spectral_region'] = 'C-methyl'
+
+            if __v['freq_hint'].size > 0 and d > 2 and __d >= 2\
+               and not solid_state_nmr and __v['atom_isotope_number'] == 13:
+                min_ppm = __v['freq_hint'].min()
+                width = max_ppm - min_ppm
+                if center < 100.0 and width < 50.0:
+                    __v['under_sampling_type'] = 'fold'
+
+            if __v['spectrometer_frequency'] is None and 'obs_freq_hint' in __v and len(__v['obs_freq_hint']) > 0:
+                __v['spectrometer_frequency'] = collections.Counter(__v['obs_freq_hint']).most_common()[0][0]
+
+            if 'obs_freq_hint' in __v:
+                del __v['obs_freq_hint']
+
+            if __v['spectrometer_frequency'] is not None and __v['sweep_width_units'] == 'ppm':
+                row = [str(__v['sweep_width']), str(__v['spectrometer_frequency'])]
+                max_eff_digits = getMaxEffDigits(row)
+
+                __v['sweep_width'] = float(roundString(str(__v['sweep_width'] * __v['spectrometer_frequency']),
+                                                       max_eff_digits))
+                __v['sweep_width_units'] = 'Hz'
+
+    for __v in cur_spectral_dim.values():
+        if __v['axis_code'] == 'HN/H-aromatic':
+            has_a = any(___v['spectral_region'] == 'C-aromatic' for ___v in cur_spectral_dim.values())
+            __v['axis_code'] = 'H-aromatic' if has_a else 'H'
+        if __v['spectral_region'] == 'HN/H-aromatic':
+            has_a = any(___v['spectral_region'] == 'C-aromatic' for ___v in cur_spectral_dim.values())
+            __v['spectral_region'] = 'H-aromatic' if has_a else 'H'
+            __v['_spectral_region'] = 'H-aromatic' if has_a else 'HN'
+        else:
+            __v['_spectral_region'] = __v['spectral_region']
+
+    cur_spectral_dim_transfer = []
+
+    dim_to_code = {1: 'x', 2: 'y', 3: 'z', 4: 'a'}
+
+    is_noesy = 'noe' in file_name or 'roe' in file_name
+
+    # onebond: 'Any transfer that connects only directly bonded atoms in this experiment'
+    for _dim_id1, _dict1 in cur_spectral_dim.items():
+        _region1 = _dict1['_spectral_region']
+        if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl'):
+            cases = 0
+            max_corr_eff = 0.0
+            for _dim_id2, _dict2 in cur_spectral_dim.items():
+                _region2 = _dict2['_spectral_region']
+                if (_region1 == 'HN' and _region2 == 'N')\
+                   or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                       and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
+                   or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
+                   or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
+                    if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                        if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                   if _transfer['type'] == 'onebond'
+                                   and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
+                                        or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
+                            cases += 1
+                            if _dict1['freq_hint'].size < 2\
+                               or numpy.max(_dict1['freq_hint']) == numpy.min(_dict1['freq_hint'])\
+                               or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
+                                continue
+                            _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
+                            if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER:
+                                continue
+                            max_corr_eff = max(max_corr_eff, _corrcoef)
+
+            if cases == 1:
+                for _dim_id2, _dict2 in cur_spectral_dim.items():
+                    _region2 = _dict2['_spectral_region']
+                    if (_region1 == 'HN' and _region2 == 'N')\
+                       or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                           and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
+                       or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
+                       or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
+                        if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                            if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                       if _transfer['type'] == 'onebond'
+                                       and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
+                                            or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
+                                transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                            'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                            'type': 'onebond',
+                                            'indirect': 'no'}
+                                if transfer in cur_spectral_dim_transfer:
+                                    continue
+                                cur_spectral_dim_transfer.append(transfer)
+
+            elif cases > 1:
+                for _dim_id2, _dict2 in cur_spectral_dim.items():
+                    _region2 = _dict2['_spectral_region']
+                    if (_region1 == 'HN' and _region2 == 'N')\
+                       or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                           and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
+                       or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
+                       or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
+                        if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                            if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                       if _transfer['type'] == 'onebond'
+                                       and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
+                                            or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
+                                if _dict1['freq_hint'].size < 2\
+                                   or numpy.max(_dict1['freq_hint']) == numpy.min(_dict1['freq_hint'])\
+                                   or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
+                                    continue
+                                _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
+                                if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER or _corrcoef < max_corr_eff:
+                                    continue
+                                transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                            'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                            'type': 'onebond',
+                                            'indirect': 'no'}
+                                if transfer in cur_spectral_dim_transfer:
+                                    continue
+                                cur_spectral_dim_transfer.append(transfer)
+
+    for _dim_id1, _dict1 in cur_spectral_dim.items():
+        _region1 = _dict1['_spectral_region']
+        if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl'):
+            for _dim_id2, _dict2 in cur_spectral_dim.items():
+                _region2 = _dict2['_spectral_region']
+                if (_region1 == 'HN' and _region2 == 'N')\
+                   or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                       and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
+                   or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
+                   or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
+                    if _dict1['acquisition'] == 'no' and _dict2['acquisition'] == 'no':
+                        if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                   if _transfer['type'] == 'onebond'
+                                   and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
+                                        or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
+                            if _dict1['freq_hint'].size < 2\
+                               or numpy.max(_dict1['freq_hint']) == numpy.min(_dict1['freq_hint'])\
+                               or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
+                                continue
+                            _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
+                            if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER:
+                                continue
+                            transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                        'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                        'type': 'onebond',
+                                        'indirect': 'no'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
+                            cur_spectral_dim_transfer.append(transfer)
+
+    # jcoupling: 'Transfer via direct J coupling over one or more bonds'
+    if 'cosy' in file_name:
+        if d == 2:
+            for _dim_id1, _dict1 in cur_spectral_dim.items():
+                _iso_num1 = _dict1['atom_isotope_number']
+                if _iso_num1 == 1:
+                    for _dim_id2, _dict2 in cur_spectral_dim.items():
+                        if _dim_id1 == _dim_id2 or _iso_num1 != _dict2['atom_isotope_number']:
+                            continue
+                        if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                            transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                        'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                        'type': 'jcoupling',
+                                        'indirect': 'no'}
+                        if transfer in cur_spectral_dim_transfer:
+                            continue
+                        cur_spectral_dim_transfer.append(transfer)
+
+        elif d == 3:
+            for _dim_id1, _dict1 in cur_spectral_dim.items():
+                _region1 = _dict1['_spectral_region']
+                if _region1 == 'HN':
+                    for _dim_id2, _dict2 in cur_spectral_dim.items():
+                        if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] not in (1, 13):
+                            continue
+                        if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                            transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                        'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                        'type': 'jcoupling',
+                                        'indirect': 'yes'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
+                            cur_spectral_dim_transfer.append(transfer)
+            for _dim_id1, _dict1 in cur_spectral_dim.items():
+                _region1 = _dict1['_spectral_region']
+                if _region1 == 'H-aliphatic':
+                    for _dim_id2, _dict2 in cur_spectral_dim.items():
+                        _isotope2 = _dict2['atom_isotope']
+                        if _dim_id1 == _dim_id2 or _isotope2 not in (1, 13):
+                            continue
+                        if _isotope2 == 13\
+                           and not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                       if _transfer['type'] == 'onebond'
+                                       and {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
+                            if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                                transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                            'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                            'type': 'jcoupling',
+                                            'indirect': 'yes' if _isotope2 == 1 else 'no'}
+                                if transfer in cur_spectral_dim_transfer:
+                                    continue
+                                cur_spectral_dim_transfer.append(transfer)
+
+        elif d == 4:
+            for _dim_id1, _dict1 in cur_spectral_dim.items():
+                _region1 = _dict1['_spectral_region']
+                if _region1 == 'HN':
+                    for _dim_id2, _dict2 in cur_spectral_dim.items():
+                        if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] != 1:
+                            continue
+                        if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                            transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                        'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                        'type': 'jcoupling',
+                                        'indirect': 'yes'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
+                            cur_spectral_dim_transfer.append(transfer)
+            for _dim_id1, _dict1 in cur_spectral_dim.items():
+                _region1 = _dict1['_spectral_region']
+                if _region1 == 'H-aliphatic':
+                    for _dim_id2, _dict2 in cur_spectral_dim.items():
+                        if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] != 1:
+                            continue
+                        if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                            transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                        'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                        'type': 'jcoupling',
+                                        'indirect': 'no'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
+                            cur_spectral_dim_transfer.append(transfer)
+
+    # jmultibond: 'Transfer via direct J coupling over multiple bonds'
+
+    # relayed: 'Transfer via multiple successive J coupling steps (TOCSY relay)'
+    if 'tocsy' in file_name:
+        if d == 2:
+            for _dim_id1, _dict1 in cur_spectral_dim.items():
+                _iso_num1 = _dict1['atom_isotope_number']
+                if _iso_num1 == 1:
+                    for _dim_id2, _dict2 in cur_spectral_dim.items():
+                        if _dim_id1 == _dim_id2 or _iso_num1 != _dict2['atom_isotope_number']:
+                            continue
+                        if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                            transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                        'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                        'type': 'relayed',
+                                        'indirect': 'no'}
+                        if transfer in cur_spectral_dim_transfer:
+                            continue
+                        cur_spectral_dim_transfer.append(transfer)
+
+        elif d == 3:
+            for _dim_id1, _dict1 in cur_spectral_dim.items():
+                _region1 = _dict1['_spectral_region']
+                if _region1 == 'HN':
+                    for _dim_id2, _dict2 in cur_spectral_dim.items():
+                        if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] not in (1, 13):
+                            continue
+                        if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                            transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                        'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                        'type': 'relayed',
+                                        'indirect': 'yes'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
+                            cur_spectral_dim_transfer.append(transfer)
+            for _dim_id1, _dict1 in cur_spectral_dim.items():
+                _region1 = _dict1['_spectral_region']
+                if _region1 == 'H-aliphatic':
+                    for _dim_id2, _dict2 in cur_spectral_dim.items():
+                        _isotope2 = _dict2['atom_isotope']
+                        if _dim_id1 == _dim_id2 or _isotope2 not in (1, 13):
+                            continue
+                        if _isotope2 == 13\
+                           and not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                       if _transfer['type'] == 'onebond'
+                                       and {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
+                            if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                                transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                            'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                            'type': 'relayed',
+                                            'indirect': 'yes' if _isotope2 == 1 else 'no'}
+                                if transfer in cur_spectral_dim_transfer:
+                                    continue
+                                cur_spectral_dim_transfer.append(transfer)
+
+        elif d == 4:
+            for _dim_id1, _dict1 in cur_spectral_dim.items():
+                _region1 = _dict1['_spectral_region']
+                if _region1 == 'HN':
+                    for _dim_id2, _dict2 in cur_spectral_dim.items():
+                        if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] != 1:
+                            continue
+                        if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                            transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                        'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                        'type': 'relayed',
+                                        'indirect': 'yes'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
+                            cur_spectral_dim_transfer.append(transfer)
+            for _dim_id1, _dict1 in cur_spectral_dim.items():
+                _region1 = _dict1['_spectral_region']
+                if _region1 == 'H-aliphatic':
+                    for _dim_id2, _dict2 in cur_spectral_dim.items():
+                        if _dim_id1 == _dim_id2 or _dict2['atom_isotope_number'] != 1:
+                            continue
+                        if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                            transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                        'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                        'type': 'relayed',
+                                        'indirect': 'no'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
+                            cur_spectral_dim_transfer.append(transfer)
+
+    # relayed-alternate: 'Relayed transfer where peaks from an odd resp. even number of transfer steps have opposite sign'
+
+    # through-space: 'Any transfer that does not go through the covalent bonded skeleton
+    if 'noe' in file_name or 'roe' in file_name:
+        for _dim_id1, _dict1 in cur_spectral_dim.items():
+            _region1 = _dict1['_spectral_region']
+            if _region1 in ('H', 'HN', 'H-aliphatic', 'H-aromatic', 'H-methyl'):
+                for _dim_id2, _dict2 in cur_spectral_dim.items():
+                    if _dim_id1 == _dim_id2 or _dict1['atom_isotope_number'] != _dict2['atom_isotope_number']:
+                        continue
+                    if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                        transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                    'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                    'type': 'through-space',
+                                    'indirect': 'yes'}
+                        if transfer in cur_spectral_dim_transfer:
+                            continue
+                        cur_spectral_dim_transfer.append(transfer)
+                        if d == 2 and _region1 == 'H-aliphatic':
+                            _dict1['spectral_region'] = _dict2['spectral_region'] = 'H'  # all
+                            if 'H-aliphatic' in (_dict1['axis_code'], _dict2['axis_code']):
+                                _dict1['axis_code'] = f'H{dim_to_code[_dim_id1]}'
+                                _dict2['axis_code'] = f'H{dim_to_code[_dim_id2]}'
+                        if d == 3:
+                            _transfer = next((_transfer for _transfer in cur_spectral_dim_transfer if _transfer['type'] == 'onebond'), None)
+                            if _transfer is not None:
+                                if _dim_id1 not in (_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']):
+                                    if _region1 == 'H-aliphatic':
+                                        _dict1['spectral_region'] = 'H'  # all
+                                        if _dict1['axis_code'] == 'H-aliphatic':
+                                            _dict1['axis_code'] = 'H'
+                                elif _region1 == 'HN':
+                                    _dict1['spectral_region'] = _dict1['axis_code'] = 'HN'
+                                if _dim_id2 not in (_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']):
+                                    if _region1 == 'H-aliphatic':
+                                        _dict2['spectral_region'] = 'H'  # all
+                                        if _dict2['axis_code'] == 'H-aliphatic':
+                                            _dict2['axis_code'] = 'H'
+                                elif _dict2['_spectral_region'] == 'HN':
+                                    _dict2['spectral_region'] = _dict2['axis_code'] = 'HN'
+
+    if solid_state_nmr and d == 2:
+        if 'rfdr' in file_name or 'darr' in file_name:
+            for _dim_id1, _dict1 in cur_spectral_dim.items():
+                _iso_num1 = _dict1['atom_isotope_number']
+                if _iso_num1 in (1, 13):
+                    for _dim_id2, _dict2 in cur_spectral_dim.items():
+                        if _dim_id1 == _dim_id2 or _iso_num1 != _dict2['atom_isotope_number']:
+                            continue
+                        if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                            transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                        'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                        'type': 'through-space',
+                                        'indirect': 'yes'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
+                            cur_spectral_dim_transfer.append(transfer)
+                            if d == 2 and _dict1['spectral_region'] == _dict2['spectral_region']:
+                                nuc = _dict1[1]['spectral_regison'][0]
+                                _dict1['spectral_region'] = _dict2['spectral_region'] = nuc
+                                if _dict1['axis_code'] == _dict2['axis_code']:
+                                    _dict1['axis_code'] = f'{nuc}{dim_to_code[_dim_id1]}'
+                                    _dict2['axis_code'] = f'{nuc}{dim_to_code[_dim_id2]}'
+
+        elif 'redor' in file_name:
+            for _dim_id1, _dict1 in cur_spectral_dim.items():
+                _iso_num1 = _dict1['atom_isotope_number']
+                if _iso_num1 in (13, 15, 19, 31):
+                    for _dim_id2, _dict2 in cur_spectral_dim.items():
+                        _iso_num2 = _dict2['atom_isotope_number']
+                        if _dim_id1 == _dim_id2 or _iso_num2 not in (13, 15, 19, 31) or _iso_num1 == _iso_num2:
+                            continue
+                        if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                            transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                        'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                        'type': 'through-space',
+                                        'indirect': 'yes'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
+                            cur_spectral_dim_transfer.append(transfer)
+
+    for _dim_id1, _dict1 in cur_spectral_dim.items():
+        _region1 = _dict1['_spectral_region']
+        if _region1 in ('H', 'HN', 'H-aliphatic', 'H-aromatic', 'H-methyl') and d > 2:
+            for _dim_id2, _dict2 in cur_spectral_dim.items():
+                if _dim_id1 == _dim_id2 or _dict1['atom_isotope_number'] != _dict2['atom_isotope_number']:
+                    continue
+                if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                           if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
+                    if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                        transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                    'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                    'type': 'through-space?',  # optimistic inferencing?
+                                    'indirect': 'yes'}
+                        if transfer in cur_spectral_dim_transfer:
+                            continue
+                        cur_spectral_dim_transfer.append(transfer)
+
+    for _dim_id1, _dict1 in cur_spectral_dim.items():
+        _region1 = _dict1['_spectral_region']
+        if _region1 == 'H' and d == 2:  # all
+            for _dim_id2, _dict2 in cur_spectral_dim.items():
+                if _dim_id1 == _dim_id2 or _dict1['_spectral_region'] != _region1:
+                    continue
+                if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                           if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
+                    if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                        transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                    'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                    'type': 'through-space?',  # optimistic inferencing?
+                                    'indirect': 'yes'}
+                        if transfer in cur_spectral_dim_transfer:
+                            continue
+                        cur_spectral_dim_transfer.append(transfer)
+
+    if solid_state_nmr and d == 2:
+        for _dim_id1, _dict1 in cur_spectral_dim.items():
+            _region1 = _dict1['_spectral_region']
+            if _region1 == 'C':  # all
+                for _dim_id2, _dict2 in cur_spectral_dim.items():
+                    if _dim_id1 == _dim_id2 or _dict1['_spectral_region'] != _region1:
+                        continue
+                    if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                               if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
+                        if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                            transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                        'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                        'type': 'through-space?',  # optimistic inferencing?
+                                        'indirect': 'yes'}
+                            if transfer in cur_spectral_dim_transfer:
+                                continue
+                            cur_spectral_dim_transfer.append(transfer)
+
+        for _dim_id1, _dict1 in cur_spectral_dim.items():
+            _iso_num1 = _dict1['atom_isotope_number']
+            if _iso_num1 in (13, 15, 19, 31):
+                for _dim_id2, _dict2 in cur_spectral_dim.items():
+                    _iso_num2 = _dict2['atom_isotope_number']
+                    if _dim_id1 == _dim_id2 or _iso_num2 not in (13, 15, 19, 31) or _iso_num1 == _iso_num2:
+                        continue
+                    if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
+                        transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                    'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                    'type': 'through-space?',  # optimistic inferencing?
+                                    'indirect': 'yes'}
+                        if transfer in cur_spectral_dim_transfer:
+                            continue
+                        cur_spectral_dim_transfer.append(transfer)
+
+    for __v in cur_spectral_dim.values():
+        if 'freq_hint' in __v:
+            del __v['freq_hint']
+
+    primary_dim_transfer = ''
+    for transfer in cur_spectral_dim_transfer:
+        if transfer['type'] == 'through-space':
+            primary_dim_transfer = transfer['type']
+            break
+        if transfer['type'] == 'through-space?'\
+                and primary_dim_transfer != 'through-space':
+            primary_dim_transfer = transfer['type']
+        elif transfer['type'].startswith('relayed')\
+                and primary_dim_transfer not in ('through-space', 'through-space?'):
+            primary_dim_transfer = transfer['type']
+        elif transfer['type'] == 'jmultibond'\
+                and primary_dim_transfer not in ('through-space', 'through-space?', 'relayed', 'relayed-alternate'):
+            primary_dim_transfer = transfer['type']
+        elif transfer['type'] == 'jcoupling'\
+                and primary_dim_transfer not in ('through-space', 'through-space?', 'relayed', 'relayed-alternate', 'jmultibond'):
+            primary_dim_transfer = transfer['type']
+        elif transfer['type'] == 'onebond'\
+                and primary_dim_transfer == '':
+            primary_dim_transfer = transfer['type']
+
+    return primary_dim_transfer
 
 
 class BasePKParserListener():
@@ -851,43 +1462,43 @@ class BasePKParserListener():
                                 max_ppm = __v['freq_hint'].max()
 
                                 if __v['atom_isotope_number'] is None:
-                                    if 128 < center < 133:
+                                    if C_AROMATIC_CENTER_MIN < center < C_AROMATIC_CENTER_MAX:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C-aromatic'
-                                    elif 115 < center < 128:
+                                    elif N_AMIDE_CENTER_MIN < center < N_AMIDE_CENTER_MAX:
                                         __v['atom_type'] = 'N'
                                         __v['atom_isotope_number'] = 15
                                         __v['axis_code'] = 'N'
-                                    elif 170 < center < 180:
+                                    elif C_CARBONYL_CENTER_MIN < center < C_CARBONYL_CENTER_MAX:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'CO'
-                                    elif 6 < center < 9:
+                                    elif HN_AROMATIC_CENTER_MIN < center < HN_AROMATIC_CENTER_MAX:
                                         __v['atom_type'] = 'H'
                                         __v['atom_isotope_number'] = 1
                                         __v['axis_code'] = 'HN/H-aromatic'
-                                    elif 4 < center < 6:
+                                    elif H_ALL_CENTER_MIN < center < H_ALL_CENTER_MAX:
                                         __v['atom_type'] = 'H'
                                         __v['atom_isotope_number'] = 1
                                         __v['axis_code'] = 'H'  # all
-                                    elif 2 < center < 4:
+                                    elif H_ALIPHATIC_CENTER_MIN < center < H_ALIPHATIC_CENTER_MAX:
                                         __v['atom_type'] = 'H'
                                         __v['atom_isotope_number'] = 1
                                         __v['axis_code'] = 'H-aliphatic' if max_ppm < 7 else 'H'
-                                    elif 0 < center < 2:
+                                    elif H_METHYL_CENTER_MIN < center < H_METHYL_CENTER_MAX:
                                         __v['atom_type'] = 'H'
                                         __v['atom_isotope_number'] = 1
                                         __v['axis_code'] = 'H-methyl' if max_ppm < 3 else 'H-aliphatic'
-                                    elif 60 < center < 90:
+                                    elif C_ALL_CENTER_MIN < center < C_ALL_CENTER_MAX:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C'  # all
-                                    elif 30 < center < 60:
+                                    elif C_ALIPHATIC_CENTER_MIN < center < C_ALIPHATIC_CENTER_MAX:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C-aliphatic'
-                                    elif 10 < center < 30:
+                                    elif C_METHYL_CENTER_MIN < center < C_METHYL_CENTER_MAX:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C-methyl'
@@ -899,31 +1510,31 @@ class BasePKParserListener():
                                         and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
 
                                     if __d == 1 and __v['acquisition'] == 'no':
-                                        self.acq_dim_id = self.num_of_dim
+                                        self.acq_dim_id = d
 
                                     __v['under_sampling_type'] = 'not observed' if __v['acquisition'] == 'yes' else 'aliased'
 
                             if __v['spectral_region'] is None and __v['freq_hint'].size > 0:
                                 atom_type = __v['atom_type']
-                                if 128 < center < 133 and atom_type == 'C':
+                                if C_AROMATIC_CENTER_MIN < center < C_AROMATIC_CENTER_MAX and atom_type == 'C':
                                     __v['spectral_region'] = 'C-aromatic'
-                                elif 115 < center < 128 and atom_type == 'N':
+                                elif N_AMIDE_CENTER_MIN < center < N_AMIDE_CENTER_MAX and atom_type == 'N':
                                     __v['spectral_region'] = 'N'
-                                elif 170 < center < 180 and atom_type == 'C':
+                                elif C_CARBONYL_CENTER_MIN < center < C_CARBONYL_CENTER_MAX and atom_type == 'C':
                                     __v['spectral_region'] = 'CO'
-                                elif 6 < center < 9 and atom_type == 'H':
+                                elif HN_AROMATIC_CENTER_MIN < center < HN_AROMATIC_CENTER_MAX and atom_type == 'H':
                                     __v['spectral_region'] = 'HN/H-aromatic'
-                                elif 4 < center < 6 and atom_type == 'H':
+                                elif H_ALL_CENTER_MIN < center < H_ALL_CENTER_MAX and atom_type == 'H':
                                     __v['spectral_region'] = 'H'  # all
-                                elif 2 < center < 4 and atom_type == 'H':
+                                elif H_ALIPHATIC_CENTER_MIN < center < H_ALIPHATIC_CENTER_MAX and atom_type == 'H':
                                     __v['spectral_region'] = 'H-aliphatic' if max_ppm < 7 else 'H'
-                                elif 0 < center < 2 and atom_type == 'H':
+                                elif H_METHYL_CENTER_MIN < center < H_METHYL_CENTER_MAX and atom_type == 'H':
                                     __v['spectral_region'] = 'H-methyl' if max_ppm < 3 else 'H-aliphatic'
-                                elif 60 < center < 90 and atom_type == 'C':
+                                elif C_ALL_CENTER_MIN < center < C_ALL_CENTER_MAX and atom_type == 'C':
                                     __v['spectral_region'] = 'C'  # all
-                                elif 30 < center < 60 and atom_type == 'C':
+                                elif C_ALIPHATIC_CENTER_MIN < center < C_ALIPHATIC_CENTER_MAX and atom_type == 'C':
                                     __v['spectral_region'] = 'C-aliphatic'
-                                elif 10 < center < 30 and atom_type == 'C':
+                                elif C_METHYL_CENTER_MIN < center < C_METHYL_CENTER_MAX and atom_type == 'C':
                                     __v['spectral_region'] = 'C-methyl'
 
                             if __v['freq_hint'].size > 0 and d > 2 and __d >= 2\

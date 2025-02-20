@@ -1967,8 +1967,12 @@ class BMRBAnnTasks:
             tags_pk_gen_char = ['Peak_ID', 'Intensity_val', 'Measurement_method']
 
             sp_info = {}
+            empty_sf_framecodes = []
+
+            truncated = False
 
             for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category)):
+                sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
                 lp_category = '_Peak_row_format'
 
@@ -1977,7 +1981,7 @@ class BMRBAnnTasks:
                     lp = sf.get_loop(lp_category)
 
                     if len(lp) > 0:
-                        sp_info[idx] = {'sf_framecode': get_first_sf_tag(sf, 'Sf_framecode'),
+                        sp_info[idx] = {'sf_framecode': sf_framecode,
                                         'num_of_dim': get_first_sf_tag(sf, 'Number_of_spectral_dimensions'),
                                         'class': get_first_sf_tag(sf, 'Experiment_class').replace('?', ''),
                                         'type': get_first_sf_tag(sf, 'Experiment_type'),
@@ -2093,7 +2097,7 @@ class BMRBAnnTasks:
                         pk_gen_char = sf.get_loop(pk_gen_char_category)
 
                         if len(pk_char) > 0 and len(pk_gen_char) > 0:
-                            sp_info[idx] = {'sf_framecode': get_first_sf_tag(sf, 'Sf_framecode'),
+                            sp_info[idx] = {'sf_framecode': sf_framecode,
                                             'num_of_dim': get_first_sf_tag(sf, 'Number_of_spectral_dimensions'),
                                             'class': get_first_sf_tag(sf, 'Experiment_class').replace('?', ''),
                                             'type': get_first_sf_tag(sf, 'Experiment_type'),
@@ -2155,7 +2159,8 @@ class BMRBAnnTasks:
                             sp_info[idx]['signature'] = signature
 
                     except KeyError:
-                        pass
+                        if get_first_sf_tag(sf, 'Text_data') in emptyValue:
+                            empty_sf_framecodes.append(sf_framecode)
 
             if len(sp_info) > 1:
                 dup_idx = set()
@@ -2253,6 +2258,16 @@ class BMRBAnnTasks:
 
                     master_entry.remove_saveframe(sf_framecode)
 
+                    truncated = True
+
+            if len(empty_sf_framecodes) > 0:
+                for sf_framecode in empty_sf_framecodes:
+                    master_entry.remove_saveframe(sf_framecode)
+
+                truncated = True
+
+            if truncated:
+
                 count = 0
                 for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
                     set_sf_tag(sf, 'ID', idx)
@@ -2275,7 +2290,7 @@ class BMRBAnnTasks:
 
                         for _idx, _row in enumerate(_lp):
                             if _row[type_col] == 'spectral_peak_list':
-                                _row[count_col] = count
+                                _lp.data[_idx][count_col] = count
                                 break
 
                     except (KeyError, ValueError):

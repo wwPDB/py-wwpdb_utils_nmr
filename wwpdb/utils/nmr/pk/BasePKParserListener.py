@@ -228,43 +228,43 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                 max_ppm = __v['freq_hint'].max()
 
                 if __v['atom_isotope_number'] is None:
-                    if C_AROMATIC_CENTER_MIN < center < C_AROMATIC_CENTER_MAX:
+                    if C_AROMATIC_CENTER_MIN < center <= C_AROMATIC_CENTER_MAX:
                         __v['atom_type'] = 'C'
                         __v['atom_isotope_number'] = 13
                         __v['axis_code'] = 'C-aromatic'
-                    elif N_AMIDE_CENTER_MIN < center < N_AMIDE_CENTER_MAX:
+                    elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX:
                         __v['atom_type'] = 'N'
                         __v['atom_isotope_number'] = 15
                         __v['axis_code'] = 'N'
-                    elif C_CARBONYL_CENTER_MIN < center < C_CARBONYL_CENTER_MAX:
+                    elif C_CARBONYL_CENTER_MIN <= center <= C_CARBONYL_CENTER_MAX:
                         __v['atom_type'] = 'C'
                         __v['atom_isotope_number'] = 13
                         __v['axis_code'] = 'CO'
-                    elif HN_AROMATIC_CENTER_MIN < center < HN_AROMATIC_CENTER_MAX:
+                    elif HN_AROMATIC_CENTER_MIN < center <= HN_AROMATIC_CENTER_MAX:
                         __v['atom_type'] = 'H'
                         __v['atom_isotope_number'] = 1
                         __v['axis_code'] = 'HN/H-aromatic'
-                    elif H_ALL_CENTER_MIN < center < H_ALL_CENTER_MAX:
+                    elif H_ALL_CENTER_MIN < center <= H_ALL_CENTER_MAX:
                         __v['atom_type'] = 'H'
                         __v['atom_isotope_number'] = 1
                         __v['axis_code'] = 'H'  # all
-                    elif H_ALIPHATIC_CENTER_MIN < center < H_ALIPHATIC_CENTER_MAX:
+                    elif H_ALIPHATIC_CENTER_MIN < center <= H_ALIPHATIC_CENTER_MAX:
                         __v['atom_type'] = 'H'
                         __v['atom_isotope_number'] = 1
                         __v['axis_code'] = 'H-aliphatic' if max_ppm < 7 else 'H'
-                    elif H_METHYL_CENTER_MIN < center < H_METHYL_CENTER_MAX:
+                    elif H_METHYL_CENTER_MIN < center <= H_METHYL_CENTER_MAX:
                         __v['atom_type'] = 'H'
                         __v['atom_isotope_number'] = 1
                         __v['axis_code'] = 'H-methyl' if max_ppm < 3 else 'H-aliphatic'
-                    elif C_ALL_CENTER_MIN < center < C_ALL_CENTER_MAX:
+                    elif C_ALL_CENTER_MIN < center <= C_ALL_CENTER_MAX:
                         __v['atom_type'] = 'C'
                         __v['atom_isotope_number'] = 13
                         __v['axis_code'] = 'C'  # all
-                    elif C_ALIPHATIC_CENTER_MIN < center < C_ALIPHATIC_CENTER_MAX:
+                    elif C_ALIPHATIC_CENTER_MIN < center <= C_ALIPHATIC_CENTER_MAX:
                         __v['atom_type'] = 'C'
                         __v['atom_isotope_number'] = 13
                         __v['axis_code'] = 'C-aliphatic'
-                    elif C_METHYL_CENTER_MIN < center < C_METHYL_CENTER_MAX:
+                    elif C_METHYL_CENTER_MIN < center <= C_METHYL_CENTER_MAX:
                         __v['atom_type'] = 'C'
                         __v['atom_isotope_number'] = 13
                         __v['axis_code'] = 'C-methyl'
@@ -282,25 +282,25 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
 
             if __v['spectral_region'] is None and __v['freq_hint'].size > 0:
                 atom_type = __v['atom_type']
-                if C_AROMATIC_CENTER_MIN < center < C_AROMATIC_CENTER_MAX and atom_type == 'C':
+                if C_AROMATIC_CENTER_MIN < center <= C_AROMATIC_CENTER_MAX and atom_type == 'C':
                     __v['spectral_region'] = 'C-aromatic'
-                elif N_AMIDE_CENTER_MIN < center < N_AMIDE_CENTER_MAX and atom_type == 'N':
+                elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX and atom_type == 'N':
                     __v['spectral_region'] = 'N'
-                elif C_CARBONYL_CENTER_MIN < center < C_CARBONYL_CENTER_MAX and atom_type == 'C':
+                elif C_CARBONYL_CENTER_MIN <= center <= C_CARBONYL_CENTER_MAX and atom_type == 'C':
                     __v['spectral_region'] = 'CO'
-                elif HN_AROMATIC_CENTER_MIN < center < HN_AROMATIC_CENTER_MAX and atom_type == 'H':
+                elif HN_AROMATIC_CENTER_MIN < center <= HN_AROMATIC_CENTER_MAX and atom_type == 'H':
                     __v['spectral_region'] = 'HN/H-aromatic'
-                elif H_ALL_CENTER_MIN < center < H_ALL_CENTER_MAX and atom_type == 'H':
+                elif H_ALL_CENTER_MIN < center <= H_ALL_CENTER_MAX and atom_type == 'H':
                     __v['spectral_region'] = 'H'  # all
-                elif H_ALIPHATIC_CENTER_MIN < center < H_ALIPHATIC_CENTER_MAX and atom_type == 'H':
+                elif H_ALIPHATIC_CENTER_MIN < center <= H_ALIPHATIC_CENTER_MAX and atom_type == 'H':
                     __v['spectral_region'] = 'H-aliphatic' if max_ppm < 7 else 'H'
-                elif H_METHYL_CENTER_MIN < center < H_METHYL_CENTER_MAX and atom_type == 'H':
+                elif H_METHYL_CENTER_MIN < center <= H_METHYL_CENTER_MAX and atom_type == 'H':
                     __v['spectral_region'] = 'H-methyl' if max_ppm < 3 else 'H-aliphatic'
-                elif C_ALL_CENTER_MIN < center < C_ALL_CENTER_MAX and atom_type == 'C':
+                elif C_ALL_CENTER_MIN < center <= C_ALL_CENTER_MAX and atom_type == 'C':
                     __v['spectral_region'] = 'C'  # all
-                elif C_ALIPHATIC_CENTER_MIN < center < C_ALIPHATIC_CENTER_MAX and atom_type == 'C':
+                elif C_ALIPHATIC_CENTER_MIN < center <= C_ALIPHATIC_CENTER_MAX and atom_type == 'C':
                     __v['spectral_region'] = 'C-aliphatic'
-                elif C_METHYL_CENTER_MIN < center < C_METHYL_CENTER_MAX and atom_type == 'C':
+                elif C_METHYL_CENTER_MIN < center <= C_METHYL_CENTER_MAX and atom_type == 'C':
                     __v['spectral_region'] = 'C-methyl'
 
             if __v['freq_hint'].size > 0 and d > 2 and __d >= 2\
@@ -1444,8 +1444,8 @@ class BasePKParserListener():
                 cur_spectral_dim['axis_code'] = None
                 cur_spectral_dim['atom_isotope_number'] = None
         if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-            cur_spectral_dim['axis_code'] = atom_type
             cur_spectral_dim['atom_type'] = atom_type
+            cur_spectral_dim['axis_code'] = atom_type
             cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]
             return True
         return False
@@ -1463,43 +1463,43 @@ class BasePKParserListener():
                                 max_ppm = __v['freq_hint'].max()
 
                                 if __v['atom_isotope_number'] is None:
-                                    if C_AROMATIC_CENTER_MIN < center < C_AROMATIC_CENTER_MAX:
+                                    if C_AROMATIC_CENTER_MIN < center <= C_AROMATIC_CENTER_MAX:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C-aromatic'
-                                    elif N_AMIDE_CENTER_MIN < center < N_AMIDE_CENTER_MAX:
+                                    elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX:
                                         __v['atom_type'] = 'N'
                                         __v['atom_isotope_number'] = 15
                                         __v['axis_code'] = 'N'
-                                    elif C_CARBONYL_CENTER_MIN < center < C_CARBONYL_CENTER_MAX:
+                                    elif C_CARBONYL_CENTER_MIN <= center <= C_CARBONYL_CENTER_MAX:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'CO'
-                                    elif HN_AROMATIC_CENTER_MIN < center < HN_AROMATIC_CENTER_MAX:
+                                    elif HN_AROMATIC_CENTER_MIN < center <= HN_AROMATIC_CENTER_MAX:
                                         __v['atom_type'] = 'H'
                                         __v['atom_isotope_number'] = 1
                                         __v['axis_code'] = 'HN/H-aromatic'
-                                    elif H_ALL_CENTER_MIN < center < H_ALL_CENTER_MAX:
+                                    elif H_ALL_CENTER_MIN < center <= H_ALL_CENTER_MAX:
                                         __v['atom_type'] = 'H'
                                         __v['atom_isotope_number'] = 1
                                         __v['axis_code'] = 'H'  # all
-                                    elif H_ALIPHATIC_CENTER_MIN < center < H_ALIPHATIC_CENTER_MAX:
+                                    elif H_ALIPHATIC_CENTER_MIN < center <= H_ALIPHATIC_CENTER_MAX:
                                         __v['atom_type'] = 'H'
                                         __v['atom_isotope_number'] = 1
                                         __v['axis_code'] = 'H-aliphatic' if max_ppm < 7 else 'H'
-                                    elif H_METHYL_CENTER_MIN < center < H_METHYL_CENTER_MAX:
+                                    elif H_METHYL_CENTER_MIN < center <= H_METHYL_CENTER_MAX:
                                         __v['atom_type'] = 'H'
                                         __v['atom_isotope_number'] = 1
                                         __v['axis_code'] = 'H-methyl' if max_ppm < 3 else 'H-aliphatic'
-                                    elif C_ALL_CENTER_MIN < center < C_ALL_CENTER_MAX:
+                                    elif C_ALL_CENTER_MIN < center <= C_ALL_CENTER_MAX:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C'  # all
-                                    elif C_ALIPHATIC_CENTER_MIN < center < C_ALIPHATIC_CENTER_MAX:
+                                    elif C_ALIPHATIC_CENTER_MIN < center <= C_ALIPHATIC_CENTER_MAX:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C-aliphatic'
-                                    elif C_METHYL_CENTER_MIN < center < C_METHYL_CENTER_MAX:
+                                    elif C_METHYL_CENTER_MIN < center <= C_METHYL_CENTER_MAX:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C-methyl'
@@ -1517,25 +1517,25 @@ class BasePKParserListener():
 
                             if __v['spectral_region'] is None and __v['freq_hint'].size > 0:
                                 atom_type = __v['atom_type']
-                                if C_AROMATIC_CENTER_MIN < center < C_AROMATIC_CENTER_MAX and atom_type == 'C':
+                                if C_AROMATIC_CENTER_MIN < center <= C_AROMATIC_CENTER_MAX and atom_type == 'C':
                                     __v['spectral_region'] = 'C-aromatic'
-                                elif N_AMIDE_CENTER_MIN < center < N_AMIDE_CENTER_MAX and atom_type == 'N':
+                                elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX and atom_type == 'N':
                                     __v['spectral_region'] = 'N'
-                                elif C_CARBONYL_CENTER_MIN < center < C_CARBONYL_CENTER_MAX and atom_type == 'C':
+                                elif C_CARBONYL_CENTER_MIN <= center <= C_CARBONYL_CENTER_MAX and atom_type == 'C':
                                     __v['spectral_region'] = 'CO'
-                                elif HN_AROMATIC_CENTER_MIN < center < HN_AROMATIC_CENTER_MAX and atom_type == 'H':
+                                elif HN_AROMATIC_CENTER_MIN < center <= HN_AROMATIC_CENTER_MAX and atom_type == 'H':
                                     __v['spectral_region'] = 'HN/H-aromatic'
-                                elif H_ALL_CENTER_MIN < center < H_ALL_CENTER_MAX and atom_type == 'H':
+                                elif H_ALL_CENTER_MIN < center <= H_ALL_CENTER_MAX and atom_type == 'H':
                                     __v['spectral_region'] = 'H'  # all
-                                elif H_ALIPHATIC_CENTER_MIN < center < H_ALIPHATIC_CENTER_MAX and atom_type == 'H':
+                                elif H_ALIPHATIC_CENTER_MIN < center <= H_ALIPHATIC_CENTER_MAX and atom_type == 'H':
                                     __v['spectral_region'] = 'H-aliphatic' if max_ppm < 7 else 'H'
-                                elif H_METHYL_CENTER_MIN < center < H_METHYL_CENTER_MAX and atom_type == 'H':
+                                elif H_METHYL_CENTER_MIN < center <= H_METHYL_CENTER_MAX and atom_type == 'H':
                                     __v['spectral_region'] = 'H-methyl' if max_ppm < 3 else 'H-aliphatic'
-                                elif C_ALL_CENTER_MIN < center < C_ALL_CENTER_MAX and atom_type == 'C':
+                                elif C_ALL_CENTER_MIN < center <= C_ALL_CENTER_MAX and atom_type == 'C':
                                     __v['spectral_region'] = 'C'  # all
-                                elif C_ALIPHATIC_CENTER_MIN < center < C_ALIPHATIC_CENTER_MAX and atom_type == 'C':
+                                elif C_ALIPHATIC_CENTER_MIN < center <= C_ALIPHATIC_CENTER_MAX and atom_type == 'C':
                                     __v['spectral_region'] = 'C-aliphatic'
-                                elif C_METHYL_CENTER_MIN < center < C_METHYL_CENTER_MAX and atom_type == 'C':
+                                elif C_METHYL_CENTER_MIN < center <= C_METHYL_CENTER_MAX and atom_type == 'C':
                                     __v['spectral_region'] = 'C-methyl'
 
                             if __v['freq_hint'].size > 0 and d > 2 and __d >= 2\

@@ -42826,11 +42826,11 @@ class NmrDpUtility:
 
                                         if None in (_center_point, _last_point):
                                             spectral_region = 'H'
-                                        elif C_AROMATIC_CENTER_MIN < _center_point < C_AROMATIC_CENTER_MAX and _sp_width < 60.0:
+                                        elif C_AROMATIC_CENTER_MIN < _center_point <= C_AROMATIC_CENTER_MAX and _sp_width < 60.0:
                                             spectral_region = 'H-aromatic'
-                                        elif C_METHYL_CENTER_MIN < _center_point < C_METHYL_CENTER_MAX and _sp_width < 30.0:
+                                        elif C_METHYL_CENTER_MIN < _center_point <= C_METHYL_CENTER_MAX and _sp_width < 30.0:
                                             spectral_region = 'H-methyl'
-                                        elif C_ALIPHATIC_CENTER_MIN < _center_point < C_ALIPHATIC_CENTER_MAX and _sp_width < 90.0:
+                                        elif C_ALIPHATIC_CENTER_MIN < _center_point <= C_ALIPHATIC_CENTER_MAX and _sp_width < 90.0:
                                             spectral_region = 'H-aliphatic'
                                         else:
                                             spectral_region = 'H'
@@ -42841,13 +42841,13 @@ class NmrDpUtility:
                                         spectral_region = 'H'
                                     break
                         elif atom_type == 'C':
-                            if mag_link_id is None and C_CARBONYL_CENTER_MIN < center_point < C_CARBONYL_CENTER_MAX:
+                            if mag_link_id is None and C_CARBONYL_CENTER_MIN <= center_point <= C_CARBONYL_CENTER_MAX:
                                 spectral_region = 'CO'
-                            elif C_AROMATIC_CENTER_MIN < center_point < C_AROMATIC_CENTER_MAX and sp_width < 60.0:
+                            elif C_AROMATIC_CENTER_MIN < center_point <= C_AROMATIC_CENTER_MAX and sp_width < 60.0:
                                 spectral_region = 'C-aromatic'
-                            elif C_METHYL_CENTER_MIN < center_point < C_METHYL_CENTER_MAX and sp_width < 30.0:
+                            elif C_METHYL_CENTER_MIN < center_point <= C_METHYL_CENTER_MAX and sp_width < 30.0:
                                 spectral_region = 'C-methyl'
-                            elif C_ALIPHATIC_CENTER_MIN < center_point < C_ALIPHATIC_CENTER_MAX and sp_width < 90.0:
+                            elif C_ALIPHATIC_CENTER_MIN < center_point <= C_ALIPHATIC_CENTER_MAX and sp_width < 90.0:
                                 spectral_region = 'C-aliphatic'
                             else:
                                 spectral_region = 'C'
@@ -43070,11 +43070,11 @@ class NmrDpUtility:
 
                                         if None in (_center_point, _last_point):
                                             spectral_region = 'H'
-                                        elif C_AROMATIC_CENTER_MIN < _center_point < C_AROMATIC_CENTER_MAX and _sp_width < 60.0:
+                                        elif C_AROMATIC_CENTER_MIN < _center_point <= C_AROMATIC_CENTER_MAX and _sp_width < 60.0:
                                             spectral_region = 'H-aromatic'
-                                        elif C_METHYL_CENTER_MIN < _center_point < C_METHYL_CENTER_MAX and _sp_width < 30.0:
+                                        elif C_METHYL_CENTER_MIN < _center_point <= C_METHYL_CENTER_MAX and _sp_width < 30.0:
                                             spectral_region = 'H-methyl'
-                                        elif C_ALIPHATIC_CENTER_MIN < _center_point < C_ALIPHATIC_CENTER_MAX and _sp_width < 90.0:
+                                        elif C_ALIPHATIC_CENTER_MIN < _center_point <= C_ALIPHATIC_CENTER_MAX and _sp_width < 90.0:
                                             spectral_region = 'H-aliphatic'
                                         else:
                                             spectral_region = 'H'
@@ -43085,13 +43085,13 @@ class NmrDpUtility:
                                         spectral_region = 'H'
                                     break
                         elif atom_type == 'C':
-                            if mag_link_id is None and C_CARBONYL_CENTER_MIN < center_point < C_CARBONYL_CENTER_MAX:
+                            if mag_link_id is None and C_CARBONYL_CENTER_MIN <= center_point <= C_CARBONYL_CENTER_MAX:
                                 spectral_region = 'CO'
-                            elif C_AROMATIC_CENTER_MIN < center_point < C_AROMATIC_CENTER_MAX and sp_width < 60.0:
+                            elif C_AROMATIC_CENTER_MIN < center_point <= C_AROMATIC_CENTER_MAX and sp_width < 60.0:
                                 spectral_region = 'C-aromatic'
-                            elif C_METHYL_CENTER_MIN < center_point < C_METHYL_CENTER_MAX and sp_width < 30.0:
+                            elif C_METHYL_CENTER_MIN < center_point <= C_METHYL_CENTER_MAX and sp_width < 30.0:
                                 spectral_region = 'C-methyl'
-                            elif C_ALIPHATIC_CENTER_MIN < center_point < C_ALIPHATIC_CENTER_MAX and sp_width < 90.0:
+                            elif C_ALIPHATIC_CENTER_MIN < center_point <= C_ALIPHATIC_CENTER_MAX and sp_width < 90.0:
                                 spectral_region = 'C-aliphatic'
                             else:
                                 spectral_region = 'C'

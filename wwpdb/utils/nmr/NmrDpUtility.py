@@ -29332,6 +29332,8 @@ class NmrDpUtility:
                 except Exception:
                     continue
 
+                cs_data = None
+
                 try:
 
                     cs_data = next(lp['data'] for lp in self.__lp_data['chem_shift']
@@ -29501,7 +29503,7 @@ class NmrDpUtility:
                     lp_data = next((lp['data'] for lp in self.__lp_data[content_subtype]
                                     if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode), None)
 
-                    if lp_data is not None:
+                    if lp_data is not None and cs_data is not None:
 
                         for row in lp_data:
                             for d in range(num_dim):

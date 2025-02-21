@@ -1451,7 +1451,8 @@ class OneDepAnnTasks:
                     if sf_category == 'spectral_peak_list':
                         data_file_name = get_first_sf_tag(sf, 'Data_file_name')
                         if data_file_name not in emptyValue and len(master_entry.get_saveframes_by_tag_and_value('Data_file_name', data_file_name)) > 0:
-                            continue
+                            sf = master_entry.get_saveframes_by_tag_and_value('Data_file_name', data_file_name)[0]
+                            has_uniq_sf_tag = False
 
                     if page not in self.__lpCategory or sf_tag_prefix not in self.__lpCategory[page]:
                         if reset and has_uniq_sf_tag:

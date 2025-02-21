@@ -563,6 +563,9 @@ def letterToDigit(code: str, minDigit: int = 0) -> int:
     unit = 1
     digit = 0
 
+    if code is None:
+        return minDigit
+
     for char in ''.join(reversed(code.lower())):
 
         if char.isdigit():

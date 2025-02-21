@@ -178,6 +178,7 @@ C_CARBONYL_CENTER_MIN = 170
 
 C_AROMATIC_CENTER_MAX = 133
 C_AROMATIC_CENTER_MIN = 128
+C_AROMATIC_CENTER_MIN_TOR = 123
 
 N_AMIDE_CENTER_MAX = C_AROMATIC_CENTER_MIN
 N_AMIDE_CENTER_MIN = 115
@@ -218,6 +219,9 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
 
     file_name = data_file_name.lower()
 
+    is_noesy = 'noe' in file_name or 'roe' in file_name
+    no_aromatic = not any(_dict['spectral_region'] != 'C-aromatic' for _dict in cur_spectral_dim.values())
+
     acq_dim_id = 1
 
     for __d, __v in cur_spectral_dim.items():
@@ -228,9 +232,9 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                 max_ppm = __v['freq_hint'].max()
 
                 if __v['atom_isotope_number'] is None:
-                    if C_AROMATIC_CENTER_MIN < center <= C_AROMATIC_CENTER_MAX:
+                    if (C_AROMATIC_CENTER_MIN_TOR if 'aro' in file_name or 'anoe' in file_name else C_AROMATIC_CENTER_MIN)\
+                       < center <= C_AROMATIC_CENTER_MAX:
                         __v['atom_type'] = 'C'
-                        __v['atom_isotope_number'] = 13
                         __v['axis_code'] = 'C-aromatic'
                     elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX:
                         __v['atom_type'] = 'N'
@@ -282,7 +286,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
 
             if __v['spectral_region'] is None and __v['freq_hint'].size > 0:
                 atom_type = __v['atom_type']
-                if C_AROMATIC_CENTER_MIN < center <= C_AROMATIC_CENTER_MAX and atom_type == 'C':
+                if C_AROMATIC_CENTER_MIN_TOR < center <= C_AROMATIC_CENTER_MAX and atom_type == 'C':
                     __v['spectral_region'] = 'C-aromatic'
                 elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX and atom_type == 'N':
                     __v['spectral_region'] = 'N'
@@ -339,8 +343,6 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
 
     dim_to_code = {1: 'x', 2: 'y', 3: 'z', 4: 'a'}
 
-    is_noesy = 'noe' in file_name or 'roe' in file_name
-
     # onebond: 'Any transfer that connects only directly bonded atoms in this experiment'
     for _dim_id1, _dict1 in cur_spectral_dim.items():
         _region1 = _dict1['_spectral_region']
@@ -350,7 +352,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
             for _dim_id2, _dict2 in cur_spectral_dim.items():
                 _region2 = _dict2['_spectral_region']
                 if (_region1 == 'HN' and _region2 == 'N')\
-                   or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                   or ((_region1 == 'H-aliphatic' or (is_noesy and no_aromatic and _region1 == 'H'))
                        and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
                    or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                    or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
@@ -365,7 +367,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                                or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                 continue
                             _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
-                            if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER:
+                            if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic:
                                 continue
                             max_corr_eff = max(max_corr_eff, _corrcoef)
 
@@ -373,7 +375,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                 for _dim_id2, _dict2 in cur_spectral_dim.items():
                     _region2 = _dict2['_spectral_region']
                     if (_region1 == 'HN' and _region2 == 'N')\
-                       or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                       or ((_region1 == 'H-aliphatic' or (is_noesy and no_aromatic and _region1 == 'H'))
                            and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
                        or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                        or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
@@ -394,7 +396,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                 for _dim_id2, _dict2 in cur_spectral_dim.items():
                     _region2 = _dict2['_spectral_region']
                     if (_region1 == 'HN' and _region2 == 'N')\
-                       or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                       or ((_region1 == 'H-aliphatic' or (is_noesy and no_aromatic and _region1 == 'H'))
                            and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
                        or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                        or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
@@ -424,7 +426,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
             for _dim_id2, _dict2 in cur_spectral_dim.items():
                 _region2 = _dict2['_spectral_region']
                 if (_region1 == 'HN' and _region2 == 'N')\
-                   or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                   or ((_region1 == 'H-aliphatic' or (is_noesy and no_aromatic and _region1 == 'H'))
                        and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
                    or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                    or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
@@ -438,7 +440,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                                or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                 continue
                             _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
-                            if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER:
+                            if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic:
                                 continue
                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
@@ -1454,7 +1456,19 @@ class BasePKParserListener():
         if len(self.spectral_dim) > 0:
             for d, v in self.spectral_dim.items():
                 for _id, _v in v.items():
+
+                    file_name = self.__originalFileName.lower()
+                    alt_file_name = ''
+                    try:
+                        if spectrum_names is not None:
+                            alt_file_name = spectrum_names[d][_id].lower()
+                    except (KeyError, AttributeError):
+                        pass
+
+                    _file_names = (file_name, alt_file_name)
+
                     self.acq_dim_id = 1
+
                     for __d, __v in _v.items():
                         if 'freq_hint' in __v:
                             __v['freq_hint'] = numpy.array(__v['freq_hint'], dtype=float)  # list -> numpy array
@@ -1463,7 +1477,8 @@ class BasePKParserListener():
                                 max_ppm = __v['freq_hint'].max()
 
                                 if __v['atom_isotope_number'] is None:
-                                    if C_AROMATIC_CENTER_MIN < center <= C_AROMATIC_CENTER_MAX:
+                                    if (C_AROMATIC_CENTER_MIN_TOR if any('aro' in n for n in _file_names) or any('anoe' in n for n in _file_names) else C_AROMATIC_CENTER_MIN)\
+                                       < center <= C_AROMATIC_CENTER_MAX:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C-aromatic'
@@ -1517,7 +1532,7 @@ class BasePKParserListener():
 
                             if __v['spectral_region'] is None and __v['freq_hint'].size > 0:
                                 atom_type = __v['atom_type']
-                                if C_AROMATIC_CENTER_MIN < center <= C_AROMATIC_CENTER_MAX and atom_type == 'C':
+                                if C_AROMATIC_CENTER_MIN_TOR < center <= C_AROMATIC_CENTER_MAX and atom_type == 'C':
                                     __v['spectral_region'] = 'C-aromatic'
                                 elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX and atom_type == 'N':
                                     __v['spectral_region'] = 'N'
@@ -1585,9 +1600,13 @@ class BasePKParserListener():
                             alt_file_name = spectrum_names[d][_id].lower()
                     except (KeyError, AttributeError):
                         pass
+
+                    _file_names = (file_name, alt_file_name)
+
                     cur_spectral_dim_transfer = self.spectral_dim_transfer[d][_id]
 
-                    is_noesy = 'noe' in file_name or 'roe' in file_name or 'noe' in alt_file_name or 'roe' in alt_file_name
+                    is_noesy = any('noe' in n for n in _file_names) or any('roe' in n for n in _file_names)
+                    no_aromatic = not any(_dict['_spectral_region'] != 'C-aromatic' for _dict in cur_spectral_dim.values())
 
                     if 'axis_order' in cur_spectral_dim[1]:
                         upper_count = lower_count = 0
@@ -1620,7 +1639,7 @@ class BasePKParserListener():
                             for _dim_id2, _dict2 in cur_spectral_dim.items():
                                 _region2 = _dict2['_spectral_region']
                                 if (_region1 == 'HN' and _region2 == 'N')\
-                                   or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                                   or ((_region1 == 'H-aliphatic' or (is_noesy and no_aromatic and _region1 == 'H'))
                                        and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
                                    or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                                    or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
@@ -1634,7 +1653,7 @@ class BasePKParserListener():
                                                or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                                 continue
                                             _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
-                                            if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER:
+                                            if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic:
                                                 continue
                                             cases += 1
                                             max_corr_eff = max(max_corr_eff, _corrcoef)
@@ -1643,7 +1662,7 @@ class BasePKParserListener():
                                 for _dim_id2, _dict2 in cur_spectral_dim.items():
                                     _region2 = _dict2['_spectral_region']
                                     if (_region1 == 'HN' and _region2 == 'N')\
-                                       or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                                       or ((_region1 == 'H-aliphatic' or (is_noesy and no_aromatic and _region1 == 'H'))
                                        and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
                                        or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                                        or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
@@ -1664,7 +1683,7 @@ class BasePKParserListener():
                                 for _dim_id2, _dict2 in cur_spectral_dim.items():
                                     _region2 = _dict2['_spectral_region']
                                     if (_region1 == 'HN' and _region2 == 'N')\
-                                       or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                                       or ((_region1 == 'H-aliphatic' or (is_noesy and no_aromatic and _region1 == 'H'))
                                        and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
                                        or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                                        or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
@@ -1694,7 +1713,7 @@ class BasePKParserListener():
                             for _dim_id2, _dict2 in cur_spectral_dim.items():
                                 _region2 = _dict2['_spectral_region']
                                 if (_region1 == 'HN' and _region2 == 'N')\
-                                   or ((_region1 == 'H-aliphatic' or (is_noesy and _region1 == 'H'))
+                                   or ((_region1 == 'H-aliphatic' or (is_noesy and no_aromatic and _region1 == 'H'))
                                        and (_region2 == 'C-aliphatic' or (is_noesy and _region2 == 'C')))\
                                    or (_region1 == 'H-aromatic' and _region2 == 'C-aromatic')\
                                    or (_region1 == 'H-methyl' and _region2 == 'C-methyl'):
@@ -1708,7 +1727,7 @@ class BasePKParserListener():
                                                or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                                 continue
                                             _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
-                                            if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER:
+                                            if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic:
                                                 continue
                                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
@@ -1719,7 +1738,7 @@ class BasePKParserListener():
                                             cur_spectral_dim_transfer.append(transfer)
 
                     # jcoupling: 'Transfer via direct J coupling over one or more bonds'
-                    if 'cosy' in file_name or 'cosy' in alt_file_name:
+                    if any('cosy' in n for n in _file_names):
                         if d == 2:
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _iso_num1 = _dict1['atom_isotope_number']
@@ -1804,7 +1823,7 @@ class BasePKParserListener():
                     # jmultibond: 'Transfer via direct J coupling over multiple bonds'
 
                     # relayed: 'Transfer via multiple successive J coupling steps (TOCSY relay)'
-                    if 'tocsy' in file_name or 'tocsy' in alt_file_name:
+                    if any('tocsy' in n for n in _file_names):
                         if d == 2:
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _iso_num1 = _dict1['atom_isotope_number']
@@ -1889,8 +1908,7 @@ class BasePKParserListener():
                     # relayed-alternate: 'Relayed transfer where peaks from an odd resp. even number of transfer steps have opposite sign'
 
                     # through-space: 'Any transfer that does not go through the covalent bonded skeleton
-                    if 'noe' in file_name or 'roe' in file_name\
-                       or 'noe' in alt_file_name or 'roe' in alt_file_name:
+                    if any('noe' in n for n in _file_names) or any('roe' in n for n in _file_names):
                         for _dim_id1, _dict1 in cur_spectral_dim.items():
                             _region1 = _dict1['_spectral_region']
                             if _region1 in ('H', 'HN', 'H-aliphatic', 'H-aromatic', 'H-methyl'):
@@ -1929,7 +1947,7 @@ class BasePKParserListener():
                                                     _dict2['spectral_region'] = _dict2['axis_code'] = 'HN'
 
                     if self.exptlMethod == 'SOLID-STATE NMR':
-                        if 'rfdr' in file_name or 'rfdr' in alt_file_name or 'darr' in file_name or 'darr' in alt_file_name:
+                        if any('rfdr' in n for n in _file_names) or any('darr' in n for n in _file_names):
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _iso_num1 = _dict1['atom_isotope_number']
                                 if _iso_num1 in (1, 13):
@@ -1951,7 +1969,7 @@ class BasePKParserListener():
                                                     _dict1['axis_code'] = f'{nuc}{dim_to_code[_dim_id1]}'
                                                     _dict2['axis_code'] = f'{nuc}{dim_to_code[_dim_id2]}'
 
-                        elif 'redor' in file_name or 'redor' in alt_file_name:
+                        elif any('redor' in n for n in _file_names):
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _iso_num1 = _dict1['atom_isotope_number']
                                 if _iso_num1 in (13, 15, 19, 31):

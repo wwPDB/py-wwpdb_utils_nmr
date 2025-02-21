@@ -388,7 +388,7 @@ try:
     from wwpdb.utils.nmr.pk.XeasyPROTReader import XeasyPROTReader
     from wwpdb.utils.nmr.pk.XwinNmrPKReader import XwinNmrPKReader
     from wwpdb.utils.nmr.pk.BasePKParserListener import (C_CARBONYL_CENTER_MAX, C_CARBONYL_CENTER_MIN,
-                                                         C_AROMATIC_CENTER_MAX, C_AROMATIC_CENTER_MIN,
+                                                         C_AROMATIC_CENTER_MAX, C_AROMATIC_CENTER_MIN_TOR,
                                                          C_ALIPHATIC_CENTER_MAX, C_ALIPHATIC_CENTER_MIN,
                                                          C_METHYL_CENTER_MAX, C_METHYL_CENTER_MIN,
                                                          guess_primary_dim_transfer_type)
@@ -540,7 +540,7 @@ except ImportError:
     from nmr.pk.XeasyPROTReader import XeasyPROTReader
     from nmr.pk.XwinNmrPKReader import XwinNmrPKReader
     from nmr.pk.BasePKParserListener import (C_CARBONYL_CENTER_MAX, C_CARBONYL_CENTER_MIN,
-                                             C_AROMATIC_CENTER_MAX, C_AROMATIC_CENTER_MIN,
+                                             C_AROMATIC_CENTER_MAX, C_AROMATIC_CENTER_MIN_TOR,
                                              C_ALIPHATIC_CENTER_MAX, C_ALIPHATIC_CENTER_MIN,
                                              C_METHYL_CENTER_MAX, C_METHYL_CENTER_MIN,
                                              guess_primary_dim_transfer_type)
@@ -43176,7 +43176,7 @@ class NmrDpUtility:
 
                                         if None in (_center_point, _last_point):
                                             spectral_region = 'H'
-                                        elif C_AROMATIC_CENTER_MIN < _center_point <= C_AROMATIC_CENTER_MAX and _sp_width < 60.0:
+                                        elif C_AROMATIC_CENTER_MIN_TOR < _center_point <= C_AROMATIC_CENTER_MAX and _sp_width < 60.0:
                                             spectral_region = 'H-aromatic'
                                         elif C_METHYL_CENTER_MIN < _center_point <= C_METHYL_CENTER_MAX and _sp_width < 30.0:
                                             spectral_region = 'H-methyl'
@@ -43193,7 +43193,7 @@ class NmrDpUtility:
                         elif atom_type == 'C':
                             if mag_link_id is None and C_CARBONYL_CENTER_MIN <= center_point <= C_CARBONYL_CENTER_MAX:
                                 spectral_region = 'CO'
-                            elif C_AROMATIC_CENTER_MIN < center_point <= C_AROMATIC_CENTER_MAX and sp_width < 60.0:
+                            elif C_AROMATIC_CENTER_MIN_TOR < center_point <= C_AROMATIC_CENTER_MAX and sp_width < 60.0:
                                 spectral_region = 'C-aromatic'
                             elif C_METHYL_CENTER_MIN < center_point <= C_METHYL_CENTER_MAX and sp_width < 30.0:
                                 spectral_region = 'C-methyl'
@@ -43420,7 +43420,7 @@ class NmrDpUtility:
 
                                         if None in (_center_point, _last_point):
                                             spectral_region = 'H'
-                                        elif C_AROMATIC_CENTER_MIN < _center_point <= C_AROMATIC_CENTER_MAX and _sp_width < 60.0:
+                                        elif C_AROMATIC_CENTER_MIN_TOR < _center_point <= C_AROMATIC_CENTER_MAX and _sp_width < 60.0:
                                             spectral_region = 'H-aromatic'
                                         elif C_METHYL_CENTER_MIN < _center_point <= C_METHYL_CENTER_MAX and _sp_width < 30.0:
                                             spectral_region = 'H-methyl'
@@ -43437,7 +43437,7 @@ class NmrDpUtility:
                         elif atom_type == 'C':
                             if mag_link_id is None and C_CARBONYL_CENTER_MIN <= center_point <= C_CARBONYL_CENTER_MAX:
                                 spectral_region = 'CO'
-                            elif C_AROMATIC_CENTER_MIN < center_point <= C_AROMATIC_CENTER_MAX and sp_width < 60.0:
+                            elif C_AROMATIC_CENTER_MIN_TOR < center_point <= C_AROMATIC_CENTER_MAX and sp_width < 60.0:
                                 spectral_region = 'C-aromatic'
                             elif C_METHYL_CENTER_MIN < center_point <= C_METHYL_CENTER_MAX and sp_width < 30.0:
                                 spectral_region = 'C-methyl'

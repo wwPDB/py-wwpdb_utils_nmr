@@ -209,7 +209,6 @@
 # 13-Feb-2025  M. Yokochi - set _Spectral_dim_transfer.Type 'through-space?' temporarily and resolve it based on related experiment type (DAOTHER-8905, 1728, 9846)
 # 17-Feb-2025  M. Yokochi - distcard remediated spectral peak list in OneDep enviromment (DAOTHER-8905, 9785)
 # 18-Feb-2025  M. Yokochi - add support for PONDEROSA speactral peak list (DAOTHER-8905, 9785)
-
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -1885,8 +1884,10 @@ class NmrDpUtility:
         __mergeCsAndMrTasks.append(self.__detectSimpleDistanceRestraint)
         __mergeCsAndMrTasks.append(self.__remediateRawTextPk)
         __mergeCsAndMrTasks.append(self.__mergeCoordAsNmrIf)  # DAOTHER-8905: NMR data remediation Phase 2 (internal remediation)
-        __mergeCsAndMrTasks.append(self.__calculateStatsOfExptlData)
         __mergeCsAndMrTasks.append(self.__performBMRBAnnTasks)
+        __mergeCsAndMrTasks.append(self.__testDataConsistencyInPkLoop)  # refresh statistics of spectral peak list
+        __mergeCsAndMrTasks.append(self.__testDataConsistencyInPkAuxLoop)  # refresh statistics of spectral peak list
+        __mergeCsAndMrTasks.append(self.__calculateStatsOfExptlData)
         __mergeCsAndMrTasks.append(self.__detectDimTransferTypeViaThroughSpace)
         __mergeCsAndMrTasks.append(self.__discardPeakListRemediation)  # OneDep only
 
@@ -21701,6 +21702,55 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
+    def __testDataConsistencyInPkLoop(self) -> bool:
+        """ Perform consistency test on data of interesting loops.
+        """
+
+        if not self.__internal_mode:
+            return True
+
+        fileListId = 0
+
+        input_source = self.report.input_sources[fileListId]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        if file_type != 'nmr-star':
+            return True
+
+        if input_source_dic['content_subtype'] is None:
+            return False
+
+        content_subtype = 'spectral_peak'
+
+        if content_subtype not in input_source_dic['content_subtype']:
+            return False
+
+        __errors = self.report.getTotalErrors()
+
+        self.__lp_data[content_subtype] = []
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        if self.__star_data_type[fileListId] != 'Entry':
+            return False
+
+        parent_pointer = 0
+
+        for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+            parent_pointer += 1
+
+            if not any(loop for loop in sf.loops if loop.category == lp_category):
+                continue
+
+            self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf, sf_framecode, lp_category, parent_pointer)
+
+        return self.report.getTotalErrors() == __errors
+
     def __testDataConsistencyInLoop__(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
                                       sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
                                       sf_framecode: str, lp_category: str, parent_pointer: int):
@@ -23004,6 +23054,299 @@ class NmrDpUtility:
 
                                 if self.__verbose:
                                     self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() ++ Warning  - {warn}\n")
+
+        return self.report.getTotalErrors() == __errors
+
+    def __testDataConsistencyInPkAuxLoop(self) -> bool:
+        """ Perform consistency test on data of auxiliary loops.
+        """
+
+        if not self.__internal_mode:
+            return True
+
+        fileListId = 0
+
+        input_source = self.report.input_sources[fileListId]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        if file_type != 'nmr-star':
+            return True
+
+        if input_source_dic['content_subtype'] is None:
+            return False
+
+        content_subtype = 'spectral_peak'
+
+        if content_subtype not in input_source_dic['content_subtype']:
+            return False
+
+        self.__aux_data[content_subtype] = []
+
+        __errors = self.report.getTotalErrors()
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        parent_pointer = 0
+
+        for sf in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+            sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
+            parent_pointer += 1
+
+            if content_subtype.startswith('spectral_peak'):
+
+                try:
+
+                    _num_dim = get_first_sf_tag(sf, self.num_dim_items[file_type])
+                    num_dim = int(_num_dim)
+
+                    if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
+                        raise ValueError()
+
+                except ValueError:
+
+                    err = f"{self.num_dim_items[file_type]} {str(_num_dim)!r} must be in {set(range(1, MAX_DIM_NUM_OF_SPECTRA))}."
+
+                    self.report.error.appendDescription('invalid_data',
+                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                         'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() ++ ValueError  - {err}\n")
+
+                    continue
+
+            for loop in sf.loops:
+
+                lp_category = loop.category
+
+                if lp_category is None:
+                    continue
+
+                # main content of loop has been processed in __testDataConsistencyInLoop()
+                if lp_category in self.lp_categories[file_type][content_subtype]:
+                    continue
+
+                if self.aux_lp_categories[file_type][content_subtype] is None:
+                    continue
+
+                if lp_category in self.aux_lp_categories[file_type][content_subtype]:
+
+                    key_items = self.aux_key_items[file_type][content_subtype][lp_category]
+                    data_items = self.aux_data_items[file_type][content_subtype][lp_category]
+                    allowed_tags = self.aux_allowed_tags[file_type][content_subtype][lp_category]
+
+                    try:
+
+                        aux_data = self.__nefT.check_data(sf, lp_category, key_items, data_items,
+                                                          allowed_tags, None, parent_pointer=parent_pointer,
+                                                          test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True,
+                                                          enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                          excl_missing_data=self.__excl_missing_data)[0]
+
+                        self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
+
+                        if content_subtype == 'spectral_peak':
+                            self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
+                        if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
+                            self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category,
+                                                                                 aux_data, sf, parent_pointer)
+
+                    except KeyError as e:
+
+                        self.report.error.appendDescription('multiple_data',
+                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                             'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() ++ KeyError  - {str(e)}\n")
+
+                    except LookupError as e:
+
+                        item = 'format_issue' if 'Unauthorized' in str(e) else 'missing_mandatory_item'
+
+                        self.report.error.appendDescription(item,
+                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                             'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() ++ LookupError  - "
+                                         f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
+
+                    except ValueError as e:
+
+                        self.report.error.appendDescription('invalid_data',
+                                                            {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                             'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() ++ ValueError  - {str(e)}\n")
+
+                    except UserWarning as e:
+
+                        warns = str(e).strip("'").split('\n')
+
+                        has_multiple_data = has_bad_pattern = False
+
+                        for warn in warns:
+
+                            if len(warn) == 0:
+                                continue
+
+                            zero = warn.startswith('[Zero value error]')
+                            nega = warn.startswith('[Negative value error]')
+                            rang = warn.startswith('[Range value error]')
+                            enum = warn.startswith('[Enumeration error]')
+                            mult = warn.startswith('[Multiple data]')
+                            remo = warn.startswith('[Remove bad pattern]')
+                            clea = warn.startswith('[Clear bad pattern]')
+
+                            if zero or nega or rang or enum or mult or remo or clea:
+
+                                p = warn.index(']') + 2
+                                warn = warn[p:]
+
+                                if zero or nega or rang:
+                                    item = 'unusual_data'
+                                elif enum:
+                                    item = 'enum_mismatch'
+                                elif remo:
+                                    if content_subtype == 'chem_shift':
+                                        warn += ' Your unassigned chemical shifts have been removed.'
+                                        item = 'incompletely_assigned_chemical_shift'
+                                    else:
+                                        item = 'insufficient_data'
+                                    has_bad_pattern = True
+                                elif clea:
+                                    if content_subtype.startswith('spectral_peak'):
+                                        warn += ' Unassigned spectral peaks can be included in your peak list(s).'
+                                        item = 'incompletely_assigned_spectral_peak'
+                                    else:
+                                        item = 'insufficient_data'
+                                elif self.__resolve_conflict:
+                                    item = 'redundant_data'
+                                    has_multiple_data = True
+                                else:
+                                    item = 'multiple_data'
+
+                                if zero or nega or rang or enum or remo or clea or self.__resolve_conflict:
+
+                                    self.report.warning.appendDescription(item,
+                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                           'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() ++ Warning  - {warn}\n")
+
+                                else:
+
+                                    self.report.error.appendDescription(item,
+                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                                         'description': warn})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() ++ KeyError  - {warn}\n")
+
+                            else:
+
+                                self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() ++ Error  - " + warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() ++ Error  - {warn}\n")
+
+                        # try to parse data without constraints
+                        if has_multiple_data:
+                            conflict_id = self.__nefT.get_conflict_id(sf, lp_category, key_items)[0]
+
+                            if len(conflict_id) > 0:
+                                _loop = sf.get_loop(lp_category)
+
+                                for lcid in conflict_id:
+                                    del _loop.data[lcid]
+
+                                index_tag = self.index_tags[file_type][content_subtype]
+                                if index_tag is not None:
+                                    index_col = loop.tags.index(index_tag) if index_tag in loop.tags else -1
+                                    if index_col != -1:
+                                        for idx, row in enumerate(loop, start=1):
+                                            row[index_col] = idx
+
+                        # try to parse data without bad patterns
+                        if has_bad_pattern:
+                            conflict_id = self.__nefT.get_bad_pattern_id(sf, lp_category, key_items, data_items)[0]
+
+                            if len(conflict_id) > 0:
+                                _loop = sf.get_loop(lp_category)
+
+                                for lcid in conflict_id:
+                                    del _loop.data[lcid]
+
+                        try:
+
+                            aux_data = self.__nefT.check_data(sf, lp_category, key_items, data_items,
+                                                              allowed_tags, None, parent_pointer=parent_pointer,
+                                                              enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                              excl_missing_data=self.__excl_missing_data)[0]
+
+                            self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                     'category': lp_category, 'data': aux_data})
+
+                            if content_subtype == 'spectral_peak':
+                                self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
+                            if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
+                                self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category,
+                                                                                     aux_data, sf, parent_pointer)
+
+                        except Exception:
+                            pass
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() ++ Error  - " + str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() ++ Error  - {str(e)}\n")
+
+                elif lp_category in self.linked_lp_categories[file_type][content_subtype]:
+
+                    if not self.__bmrb_only:
+
+                        warn = f"Ignored {lp_category!r} loop in {sf_framecode!r} saveframe."
+
+                        self.report.warning.appendDescription('skipped_loop_category',
+                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                               'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() ++ Warning  - {warn}\n")
+
+                else:
+
+                    if not self.__bmrb_only:
+
+                        if file_type == 'nef':
+                            warn = f"Ignored third party software's loop {lp_category!r} in {sf_framecode!r} saveframe."
+                        else:
+                            warn = f"Ignored {lp_category!r} loop in {sf_framecode!r} saveframe."
+
+                        self.report.warning.appendDescription('skipped_loop_category',
+                                                              {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                               'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() ++ Warning  - {warn}\n")
 
         return self.report.getTotalErrors() == __errors
 
@@ -36536,6 +36879,11 @@ class NmrDpUtility:
                     cs_sf_list = master_entry.get_saveframes_by_category(sf_category)
                     if len(cs_sf_list) == 1:
                         set_sf_tag(sf['saveframe'], 'Chemical_shift_list', get_first_sf_tag(cs_sf_list[0], 'Sf_framecode'))
+
+                # prevent duplication of spectral peak list
+                data_file_name = get_first_sf_tag(sf['saveframe'], 'Data_file_name')
+                if data_file_name not in emptyValue and len(master_entry.get_saveframes_by_tag_and_value('Data_file_name', data_file_name)) > 0:
+                    continue
 
                 master_entry.add_saveframe(sf['saveframe'])
 

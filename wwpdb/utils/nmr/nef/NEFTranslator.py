@@ -4805,7 +4805,7 @@ class NEFTranslator:
                             elif type == 'int':
                                 try:
                                     ent[name] = int(val)
-                                except ValueError:
+                                except (ValueError, TypeError):
                                     if 'default-from' in k and k['default-from'] == 'self':
                                         row[j] = ent[name] = letterToDigit(val)
                                     elif 'default-from' in k and k['default-from'] in tags:
@@ -4831,7 +4831,7 @@ class NEFTranslator:
                             elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
                                 try:
                                     ent[name] = int(val)
-                                except ValueError:
+                                except (ValueError, TypeError):
                                     if 'default-from' in k and k['default-from'] == 'self':
                                         row[j] = ent[name] = letterToDigit(val, 1)
                                     elif 'default-from' in k and k['default-from'] in tags and row[tags.index(k['default-from'])] not in emptyValue:
@@ -4877,7 +4877,7 @@ class NEFTranslator:
                             elif type == 'pointer-index':
                                 try:
                                     ent[name] = int(val)
-                                except ValueError:
+                                except (ValueError, TypeError):
                                     if 'default-from' in k and k['default-from'] == 'self':
                                         row[j] = ent[name] = letterToDigit(val, 1)
                                     elif 'default-from' in k and k['default-from'] in tags:
@@ -4913,7 +4913,7 @@ class NEFTranslator:
                             elif type == 'float':
                                 try:
                                     ent[name] = float(val)
-                                except ValueError:
+                                except (ValueError, TypeError):
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
@@ -4932,7 +4932,7 @@ class NEFTranslator:
                             elif type == 'positive-float':
                                 try:
                                     ent[name] = float(val)
-                                except ValueError:
+                                except (ValueError, TypeError):
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
@@ -4967,7 +4967,7 @@ class NEFTranslator:
                                     ent[name] = float(val)
                                 except KeyError:
                                     raise ValueError(f"Range of key item {name} is not defined")
-                                except ValueError:
+                                except (ValueError, TypeError):
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
@@ -5083,7 +5083,7 @@ class NEFTranslator:
                                     ent[name] = int(val)
                                 except KeyError:
                                     raise ValueError(f"Enumeration of key item {name} is not defined")
-                                except ValueError:
+                                except (ValueError, TypeError):
                                     if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
                                         remove_bad_pattern = True
                                         continue
@@ -5170,7 +5170,7 @@ class NEFTranslator:
                                     elif type == 'int':
                                         try:
                                             ent[name] = int(val)
-                                        except ValueError:
+                                        except (ValueError, TypeError):
                                             if 'default-from' in d and d['default-from'] == 'self':
                                                 row[j] = ent[name] = letterToDigit(val)
                                             elif 'default-from' in d and d['default-from'] in tags:
@@ -5202,7 +5202,7 @@ class NEFTranslator:
                                     elif type in ('index-int', 'positive-int', 'positive-int-as-str'):
                                         try:
                                             ent[name] = int(val)
-                                        except ValueError:
+                                        except (ValueError, TypeError):
                                             if 'default-from' in d and d['default-from'] == 'self':
                                                 row[j] = ent[name] = letterToDigit(val, 1)
                                             elif 'default-from' in d and d['default-from'] in tags and row[tags.index(d['default-from'])] not in emptyValue:
@@ -5254,7 +5254,7 @@ class NEFTranslator:
                                     elif type == 'pointer-index':
                                         try:
                                             ent[name] = int(val)
-                                        except ValueError:
+                                        except (ValueError, TypeError):
                                             if 'default-from' in d and d['default-from'] == 'self':
                                                 row[j] = ent[name] = letterToDigit(val, 1)
                                             elif 'default-from' in d and d['default-from'] in tags:
@@ -5297,7 +5297,7 @@ class NEFTranslator:
                                     elif type == 'float':
                                         try:
                                             ent[name] = float(val)
-                                        except ValueError:
+                                        except (ValueError, TypeError):
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 if val in emptyValue:
                                                     ent[name] = None
@@ -5322,7 +5322,7 @@ class NEFTranslator:
                                     elif type == 'positive-float':
                                         try:
                                             ent[name] = float(val)
-                                        except ValueError:
+                                        except (ValueError, TypeError):
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 if val in emptyValue:
                                                     ent[name] = None
@@ -5362,7 +5362,7 @@ class NEFTranslator:
                                             ent[name] = float(val)
                                         except KeyError:
                                             raise ValueError(f"Range of data item {name} is not defined")
-                                        except ValueError:
+                                        except (ValueError, TypeError):
                                             if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                                 if val in emptyValue:
                                                     ent[name] = None
@@ -5537,7 +5537,7 @@ class NEFTranslator:
                                             ent[name] = int(val)
                                         except KeyError:
                                             raise ValueError(f"Enumeration of data item {name} is not defined")
-                                        except ValueError:
+                                        except (ValueError, TypeError):
                                             if excl_missing_data:
                                                 ent[name] = None
                                                 continue
@@ -6043,7 +6043,7 @@ class NEFTranslator:
                     elif type == 'int':
                         try:
                             ent[name] = int(val)
-                        except ValueError:
+                        except (ValueError, TypeError):
                             if 'default-from' in t and t['default-from'] == 'self':
                                 ent[name] = letterToDigit(val)
                             elif 'default-from' in t and t['default-from'] in sf_tags.keys():
@@ -6056,7 +6056,7 @@ class NEFTranslator:
                     elif type in ('positive-int', 'positive-int-as-str'):
                         try:
                             ent[name] = int(val)
-                        except ValueError:
+                        except (ValueError, TypeError):
                             if 'default-from' in t and t['default-from'] == 'self':
                                 ent[name] = letterToDigit(val, 1)
                             elif 'default-from' in t and t['default-from'] in sf_tags.keys() and sf_tags[t['default-from']] not in emptyValue:
@@ -6085,13 +6085,13 @@ class NEFTranslator:
                     elif type == 'float':
                         try:
                             ent[name] = float(val)
-                        except ValueError:
+                        except (ValueError, TypeError):
                             raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
 
                     elif type == 'positive-float':
                         try:
                             ent[name] = float(val)
-                        except ValueError:
+                        except (ValueError, TypeError):
                             raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
                         if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
                             raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
@@ -6110,7 +6110,7 @@ class NEFTranslator:
                             ent[name] = float(val)
                         except KeyError:
                             raise ValueError(f"Range of tag item {name} is not defined.")
-                        except ValueError:
+                        except (ValueError, TypeError):
                             if not enforce_range:
                                 ent[name] = None
                                 continue
@@ -6197,7 +6197,7 @@ class NEFTranslator:
                             ent[name] = int(val)
                         except KeyError:
                             raise ValueError(f"Enumeration of tag item {name} is not defined.")
-                        except ValueError:
+                        except (ValueError, TypeError):
                             raise ValueError(f"{name} {val!r} must be {self.readableItemType[type]}.")
                     else:
                         ent[name] = val

@@ -8257,7 +8257,7 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         if star_atom1 is not None:
             row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8], row[_key_size + 9] =\
                 star_atom1['chain_id'], star_atom1['entity_id'], star_atom1['seq_id'], star_atom1['comp_id'], star_atom1['atom_id']
-        row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
+        row[_key_size + 12], row[_key_size + 13], row[_key_size + 14], row[_key_size + 15] =\
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
         if ambig_code1 is not None:
             row[_key_size + 10] = row[_key_size + 16] = ambig_code1
@@ -8275,7 +8275,7 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         if star_atom2 is not None:
             row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8], row[_key_size + 9] =\
                 star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['atom_id']
-        row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
+        row[_key_size + 12], row[_key_size + 13], row[_key_size + 14], row[_key_size + 15] =\
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
         if ambig_code2 is not None:
             row[_key_size + 10] = row[_key_size + 16] = ambig_code2
@@ -8295,7 +8295,7 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
             if star_atom3 is not None:
                 row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8], row[_key_size + 9] =\
                     star_atom3['chain_id'], star_atom3['entity_id'], star_atom3['seq_id'], star_atom3['comp_id'], star_atom3['atom_id']
-            row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
+            row[_key_size + 12], row[_key_size + 13], row[_key_size + 14], row[_key_size + 15] =\
                 atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id']
             if ambig_code3 is not None:
                 row[_key_size + 10] = row[_key_size + 16] = ambig_code3
@@ -8315,7 +8315,7 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
             if star_atom4 is not None:
                 row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8], row[_key_size + 9] =\
                     star_atom4['chain_id'], star_atom4['entity_id'], star_atom4['seq_id'], star_atom4['comp_id'], star_atom4['atom_id']
-            row[_key_size + 5], row[_key_size + 6], row[_key_size + 7], row[_key_size + 8] =\
+            row[_key_size + 12], row[_key_size + 13], row[_key_size + 14], row[_key_size + 15] =\
                 atom4['chain_id'], atom4['seq_id'], atom4['comp_id'], atom4['atom_id']
             if ambig_code4 is not None:
                 row[_key_size + 10] = row[_key_size + 16] = ambig_code4

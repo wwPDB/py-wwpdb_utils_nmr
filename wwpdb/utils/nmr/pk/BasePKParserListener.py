@@ -18,6 +18,7 @@ import copy
 import collections
 import numpy
 import itertools
+import pynmrstar
 
 from typing import IO, List, Tuple, Optional
 
@@ -2188,6 +2189,128 @@ class BasePKParserListener():
                                         set_sf_tag(sf['saveframe'], 'Experiment_type', alt_file_name)
                             except (KeyError, AttributeError):
                                 pass
+
+                        if any(transfer['type'] == 'onebond' for transfer in cur_spectral_dim_transfer):
+                            has_assign = False
+                            if sf['peak_row_format']:
+                                lp = sf['loop']
+                                for row in lp.get_tag('Auth_asym_ID_1'):
+                                    if row not in emptyValue:
+                                        has_assign = True
+                                        break
+                            else:
+                                lp = next((aux_lp for aux_lp in sf['aux_loops'] if aux_lp.category == '_Assigned_peak_chem_shift'), None)
+                                if lp is None or len(lp) == 0:
+                                    continue
+                                for row in lp.get_tag('Auth_entity_ID'):
+                                    if row not in emptyValue:
+                                        has_assign = True
+                                        break
+                            if not has_assign:
+                                continue
+                            onebond_dim_transfers = [[transfer['spectral_dim_id_1'], transfer['spectral_dim_id_2']]
+                                                     for transfer in cur_spectral_dim_transfer
+                                                     if transfer['type'] == 'onebond']
+                            self.__remediatePeakAssignmentForOneBondTransfer(d, onebond_dim_transfers, sf['peak_row_format'], lp)
+
+    def __remediatePeakAssignmentForOneBondTransfer(self, num_of_dim: int, onebond_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
+
+        for dim_id_1, dim_id_2 in onebond_transfers:
+
+            if use_peak_row_format:
+
+                tags = [f'Entity_assembly_ID_{dim_id_1}', f'Comp_index_ID_{dim_id_1}', f'Comp_ID_{dim_id_1}', f'Atom_ID_{dim_id_1}',
+                        f'Entity_assembly_ID_{dim_id_2}', f'Comp_index_ID_{dim_id_2}', f'Comp_ID_{dim_id_2}', f'Atom_ID_{dim_id_2}']
+
+                dat = loop.get_tag(tags)
+
+                for idx, row in enumerate(dat):
+
+                    if any(row[col] in emptyValue for col in range(8)):
+                        continue
+
+                    comp_id, atom_id, comp_id2, atom_id2 = row[2], row[3], row[6], row[7]
+
+                    if row[0] == row[4] and row[1] == row[5] and comp_id == comp_id2 and atom_id != atom_id2\
+                       and self.ccU.updateChemCompDict(comp_id):
+                        _atom_id = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                        _atom_id2 = self.nefT.get_valid_star_atom(comp_id, atom_id2, leave_unmatched=False)[0]
+                        if any(b for b in self.ccU.lastBonds
+                           if ((b[self.ccU.ccbAtomId1] in _atom_id and b[self.ccU.ccbAtomId2] in _atom_id2)
+                               or (b[self.ccU.ccbAtomId1] in _atom_id2 and b[self.ccU.ccbAtomId2] in _atom_id))):
+                            continue
+
+                        _atom_id2_ = self.ccU.getBondedAtoms(comp_id, _atom_id[0], exclProton=_atom_id[0][0] in protonBeginCode, onlyProton=_atom_id[0][0] not in protonBeginCode)
+                        _atom_id_ = self.ccU.getBondedAtoms(comp_id, _atom_id2[0], exclProton=_atom_id2[0][0] in protonBeginCode, onlyProton=_atom_id2[0][0] not in protonBeginCode)
+
+                        if 0 < len(_atom_id2_) < len(_atom_id_):
+                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = _atom_id2_[0]
+                        elif 0 < len(_atom_id_) < len(_atom_id2_):
+                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = _atom_id_[0]
+                        elif len(atom_id2) < len(atom_id):
+                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = _atom_id2_[0]
+                        elif len(atom_id) < len(atom_id2):
+                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = _atom_id_[0]
+
+            else:
+
+                tags = ['Peak_ID', 'Spectral_dim_ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID']
+
+                atom_id_col = loop.tags.index('Atom_ID')
+
+                dat = loop.get_tag(tags)
+
+                peak_id = None
+
+                for idx, row in enumerate(dat):
+                    dim_id = row[1]
+
+                    if any(row[col] in emptyValue for col in range(6)):
+                        continue
+
+                    if dim_id == 1:
+                        peak_id = row[0]
+                        chain_ids, seq_ids, comp_ids, atom_ids = [], [], [], []
+                    else:
+                        if peak_id != row[0]:
+                            continue
+
+                    chain_ids.append(row[2])
+                    seq_ids.append(row[3])
+                    comp_ids.append(row[4])
+                    atom_ids.append(row[5])
+
+                    if dim_id < num_of_dim:
+                        continue
+
+                    if len(atom_ids) < num_of_dim:
+                        continue
+
+                    _dim_id_1 = dim_id_1 - 1
+                    _dim_id_2 = dim_id_2 - 1
+
+                    comp_id, atom_id, comp_id2, atom_id2 = comp_ids[_dim_id_1], atom_ids[_dim_id_1], comp_ids[_dim_id_2], atom_ids[_dim_id_2]
+
+                    if chain_ids[_dim_id_1] == chain_ids[_dim_id_2] and seq_ids[_dim_id_1] == seq_ids[_dim_id_2] and comp_id == comp_id2 and atom_id != atom_id2\
+                       and self.ccU.updateChemCompDict(comp_id):
+                        _atom_id = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                        _atom_id2 = self.nefT.get_valid_star_atom(comp_id, atom_id2, leave_unmatched=False)[0]
+                        if any(b for b in self.ccU.lastBonds
+                           if ((b[self.ccU.ccbAtomId1] in _atom_id and b[self.ccU.ccbAtomId2] in _atom_id2)
+                               or (b[self.ccU.ccbAtomId1] in _atom_id2 and b[self.ccU.ccbAtomId2] in _atom_id))):
+                            continue
+
+                        _atom_id2_ = self.ccU.getBondedAtoms(comp_id, _atom_id[0], exclProton=_atom_id[0][0] in protonBeginCode, onlyProton=_atom_id[0][0] not in protonBeginCode)
+                        _atom_id_ = self.ccU.getBondedAtoms(comp_id, _atom_id2[0], exclProton=_atom_id2[0][0] in protonBeginCode, onlyProton=_atom_id2[0][0] not in protonBeginCode)
+
+                        if 0 < len(_atom_id2_) < len(_atom_id_):
+                            loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = _atom_id2_[0]
+                        elif 0 < len(_atom_id_) < len(_atom_id2_):
+                            loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = _atom_id_[0]
+                        elif len(atom_id2) < len(atom_id):
+                            loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = _atom_id2_[0]
+                        elif len(atom_id) < len(atom_id2):
+                            loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = _atom_id_[0]
 
     def validatePeak2D(self, index: int, pos_1: float, pos_2: float,
                        pos_unc_1: Optional[float], pos_unc_2: Optional[float],

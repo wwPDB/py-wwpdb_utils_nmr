@@ -7639,10 +7639,10 @@ class NmrDpUtility:
 
                         cs = _cs
 
-                    if not os.path.basename(cs).startswith('bmr') and\
-                            (self.__op == 'nmr-cs-mr-merge'
-                             or get_type_of_star_file(cs) == 'cif'
-                             or self.__nefT.read_input_file(cs)[1] == 'Saveframe'):
+                    if not os.path.basename(cs).startswith('bmr')\
+                       and (self.__op == 'nmr-cs-mr-merge'
+                            or get_type_of_star_file(cs) == 'cif'
+                            or self.__nefT.read_input_file(cs)[1] == 'Saveframe'):
 
                         input_source.setItemValue('original_file_name', os.path.basename(cs))
 
@@ -7682,10 +7682,10 @@ class NmrDpUtility:
 
                         cs['file_name'] = _cs
 
-                    if not os.path.basename(cs['file_name']).startswith('bmr') and\
-                            (self.__op == 'nmr-cs-mr-merge'
-                             or get_type_of_star_file(cs['file_name']) == 'cif'
-                             or self.__nefT.read_input_file(cs['file_name'])[1] == 'Saveframe'):
+                    if not os.path.basename(cs['file_name']).startswith('bmr')\
+                       and (self.__op == 'nmr-cs-mr-merge'
+                            or get_type_of_star_file(cs['file_name']) == 'cif'
+                            or self.__nefT.read_input_file(cs['file_name'])[1] == 'Saveframe'):
 
                         if 'original_file_name' not in cs:
                             input_source.setItemValue('original_file_name', os.path.basename(cs['file_name']))
@@ -11499,8 +11499,8 @@ class NmrDpUtility:
 
                 if is_aux_amb:
 
-                    if has_atom_name and has_residue_label and has_residue_pointer and has_amb_atom_type and\
-                       atom_names > 0 and residue_labels > 0 and residue_pointers > 0 and amb_atom_types > 0:
+                    if has_atom_name and has_residue_label and has_residue_pointer and has_amb_atom_type\
+                       and atom_names > 0 and residue_labels > 0 and residue_pointers > 0 and amb_atom_types > 0:
                         has_topology = True
 
                     if has_amb_coord and (not has_first_atom or has_ens_coord):
@@ -11508,8 +11508,8 @@ class NmrDpUtility:
 
                 elif is_aux_gro:
 
-                    if has_system and has_molecules and has_atoms and\
-                       system_names > 0 and molecule_names > 0 and atom_names > 0:
+                    if has_system and has_molecules and has_atoms\
+                       and system_names > 0 and molecule_names > 0 and atom_names > 0:
                         has_topology = True
 
                 elif is_aux_cha:
@@ -19229,9 +19229,9 @@ class NmrDpUtility:
 
                                         break
 
-                                if not alt_chain or\
-                                   (sf_framecode2 in dst_chain_ids and __chain_id in dst_chain_ids[sf_framecode2]) or\
-                                   (sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2]):
+                                if not alt_chain\
+                                   or (sf_framecode2 in dst_chain_ids and __chain_id in dst_chain_ids[sf_framecode2])\
+                                   or (sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2]):
                                     continue
 
                                 if sf_framecode2 not in dst_chain_ids:
@@ -19256,11 +19256,11 @@ class NmrDpUtility:
 
                                 update_poly_seq = True
 
-                            if conflict == 0 and self.__alt_chain and not alt_chain and chain_id != s2['chain_id'] and\
-                               (sf_framecode2 not in dst_chain_ids or chain_id not in dst_chain_ids[sf_framecode2]) and\
-                               (sf_framecode2 not in map_chain_ids or s2['chain_id'] not in map_chain_ids[sf_framecode2]) and\
-                               unmapped != offset_1 + 1 and unmapped != offset_2 + 1 and\
-                               unmapped <= _matched + offset_1 and unmapped <= _matched + offset_2:
+                            if conflict == 0 and self.__alt_chain and not alt_chain and chain_id != s2['chain_id']\
+                               and (sf_framecode2 not in dst_chain_ids or chain_id not in dst_chain_ids[sf_framecode2])\
+                               and (sf_framecode2 not in map_chain_ids or s2['chain_id'] not in map_chain_ids[sf_framecode2])\
+                               and unmapped != offset_1 + 1 and unmapped != offset_2 + 1\
+                               and unmapped <= _matched + offset_1 and unmapped <= _matched + offset_2:
 
                                 if sf_framecode2 not in dst_chain_ids:
                                     dst_chain_ids[sf_framecode2] = set()
@@ -19533,9 +19533,9 @@ class NmrDpUtility:
 
                                         break
 
-                                if not alt_chain or\
-                                   (sf_framecode2 in dst_chain_ids and __chain_id in dst_chain_ids[sf_framecode2]) or\
-                                   (sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2]):
+                                if not alt_chain\
+                                   or (sf_framecode2 in dst_chain_ids and __chain_id in dst_chain_ids[sf_framecode2])\
+                                   or (sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2]):
                                     continue
 
                                 if sf_framecode2 not in dst_chain_ids:
@@ -20448,8 +20448,8 @@ class NmrDpUtility:
 
                         if not self.__nefT.validate_comp_atom(comp_id, atom_id_):
 
-                            if self.__csStat.peptideLike(comp_id) and atom_id_.startswith('H') and atom_id_.endswith('1') and\
-                               self.__nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '2') and self.__nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '3'):
+                            if self.__csStat.peptideLike(comp_id) and atom_id_.startswith('H') and atom_id_.endswith('1')\
+                               and self.__nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '2') and self.__nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '3'):
 
                                 _atom_id_ = atom_id_[:-1]
                                 _atom_id_1 = _atom_id_ + '1'
@@ -29664,12 +29664,12 @@ class NmrDpUtility:
                                                 _atom_id = '_' + (atom_id[1:-1] if atom_id.startswith('H') and diff else atom_id[1:])
                                                 _atom_id2 = '_' + (atom_id2[1:-1] if atom_id2.startswith('H') and diff else atom_id2[1:])
 
-                                            if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue or\
-                                               (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
+                                            if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue\
+                                               or (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
 
                                                 # DAOTHER-7681, issue #2
-                                                if d < d2 and chain_id2 == chain_id and seq_id2 == seq_id and comp_id2 == comp_id and _atom_id2 != _atom_id and\
-                                                   self.__ccU.updateChemCompDict(comp_id):
+                                                if d < d2 and chain_id2 == chain_id and seq_id2 == seq_id and comp_id2 == comp_id and _atom_id2 != _atom_id\
+                                                   and self.__ccU.updateChemCompDict(comp_id):
                                                     _atom_id = self.__getAtomIdList(comp_id, atom_id)
                                                     _atom_id2 = self.__getAtomIdList(comp_id, atom_id2)
                                                     if any(b for b in self.__ccU.lastBonds
@@ -29702,8 +29702,8 @@ class NmrDpUtility:
                                             comp_id2 = row[comp_id_names[d2]]
                                             atom_id2 = row[atom_id_names[d2]]
 
-                                            if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue or\
-                                               (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)):  # DAOTHER-7389, issue #2
+                                            if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue\
+                                               or (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)):  # DAOTHER-7389, issue #2
 
                                                 err = f"[Check row of {index_tag} {row[index_tag]}] Coherence transfer type is jcoupling. "\
                                                     "However, assignment of spectral peak is inconsistent with the type, ("\
@@ -29730,8 +29730,8 @@ class NmrDpUtility:
                                             comp_id2 = row[comp_id_names[d2]]
                                             atom_id2 = row[atom_id_names[d2]]
 
-                                            if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue or\
-                                               (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):  # DAOTHER-7389, issue #2
+                                            if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue\
+                                               or (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):  # DAOTHER-7389, issue #2
 
                                                 err = f"[Check row of {index_tag} {row[index_tag]}] Coherence transfer type is relayed. "\
                                                     "However, assignment of spectral peak is inconsistent with the type, ("\
@@ -30165,12 +30165,12 @@ class NmrDpUtility:
                                             _atom_id = '_' + (atom_id[1:-1] if atom_id.startswith('H') and diff else atom_id[1:])
                                             _atom_id2 = '_' + (atom_id2[1:-1] if atom_id2.startswith('H') and diff else atom_id2[1:])
 
-                                        if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue or\
-                                           (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
+                                        if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue\
+                                           or (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
 
                                             # DAOTHER-7681, issue #2
-                                            if d < d2 and chain_id2 == chain_id and seq_id2 == seq_id and comp_id2 == comp_id and _atom_id2 != _atom_id and\
-                                               self.__ccU.updateChemCompDict(comp_id):
+                                            if d < d2 and chain_id2 == chain_id and seq_id2 == seq_id and comp_id2 == comp_id and _atom_id2 != _atom_id\
+                                               and self.__ccU.updateChemCompDict(comp_id):
                                                 _atom_id = self.__getAtomIdList(comp_id, atom_id)
                                                 _atom_id2 = self.__getAtomIdList(comp_id, atom_id2)
                                                 if any(b for b in self.__ccU.lastBonds
@@ -30212,8 +30212,8 @@ class NmrDpUtility:
                                         comp_id2 = _row[cs_comp_id_name]
                                         atom_id2 = _row[cs_atom_id_name]
 
-                                        if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue or\
-                                           (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)):  # DAOTHER-7389, issue #2
+                                        if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue\
+                                           or (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)):  # DAOTHER-7389, issue #2
 
                                             err = f"[Check row of {pk_id_name} {row[pk_id_name]}] Coherence transfer type is jcoupling. "\
                                                 "However, assignment of spectral peak is inconsistent with the type, ("\
@@ -30249,8 +30249,8 @@ class NmrDpUtility:
                                         comp_id2 = _row[cs_comp_id_name]
                                         atom_id2 = _row[cs_atom_id_name]
 
-                                        if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue or\
-                                           (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):  # DAOTHER-7389, issue #2
+                                        if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue\
+                                           or (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):  # DAOTHER-7389, issue #2
 
                                             err = f"[Check row of {pk_id_name} {row[pk_id_name]}] Coherence transfer type is relayed. "\
                                                 "However, assignment of spectral peak is inconsistent with the type, ("\
@@ -30451,11 +30451,11 @@ class NmrDpUtility:
 
                     elif abs(seq_id_1 - seq_id_2) == 1:
 
-                        if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
-                                ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
-                                 or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
-                                 or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
-                                 or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
+                        if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2)\
+                           and ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
+                                or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                                or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                                or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
                             pass
 
                         else:
@@ -39683,8 +39683,8 @@ class NmrDpUtility:
                                        or (not in_cis_peptide_bond and pro['cis_trans_pred'] != 'trans'):
                                         item = None
                                         if ',' in pro['cis_trans_pred']:
-                                            if (in_cis_peptide_bond and cis > trs) or\
-                                               (not in_cis_peptide_bond and trs > cis):
+                                            if (in_cis_peptide_bond and cis > trs)\
+                                               or (not in_cis_peptide_bond and trs > cis):
                                                 pass
                                             else:
                                                 item = 'unusual_chemical_shift'
@@ -39786,9 +39786,9 @@ class NmrDpUtility:
                                 item = None
                                 if his['tautomeric_state_pred'] != his['tautomeric_state'] and his['tautomeric_state'] != 'unknown':
                                     if ',' in his['tautomeric_state_pred']:
-                                        if (his['tautomeric_state'] == 'biprotonated' and bip > tau and bip > pi) or\
-                                           (his['tautomeric_state'] == 'tau-tautomer' and tau > bip and tau > pi) or\
-                                           (his['tautomeric_state'] == 'pi-tautomer' and pi > bip and pi > tau):
+                                        if (his['tautomeric_state'] == 'biprotonated' and bip > tau and bip > pi)\
+                                           or (his['tautomeric_state'] == 'tau-tautomer' and tau > bip and tau > pi)\
+                                           or (his['tautomeric_state'] == 'pi-tautomer' and pi > bip and pi > tau):
                                             pass
                                         else:
                                             item = 'unusual_chemical_shift'
@@ -39913,9 +39913,9 @@ class NmrDpUtility:
                                     item = None
                                     if _rotameric_state not in (ilv['rotameric_state_pred'], 'unknown'):
                                         if ',' in ilv['rotameric_state_pred']:
-                                            if (_rotameric_state == 'gauche+' and gp > t and gp > gm) or\
-                                               (_rotameric_state == 'trans' and t > gm and t > gp) or\
-                                               (_rotameric_state == 'gauche-' and gm > gp and gm > t):
+                                            if (_rotameric_state == 'gauche+' and gp > t and gp > gm)\
+                                               or (_rotameric_state == 'trans' and t > gm and t > gp)\
+                                               or (_rotameric_state == 'gauche-' and gm > gp and gm > t):
                                                 pass
                                             else:
                                                 item = 'unusual_chemical_shift'
@@ -40007,9 +40007,9 @@ class NmrDpUtility:
                                     item = None
                                     if _rotameric_state not in (ilv['rotameric_state_pred'], 'unknown'):
                                         if ',' in ilv['rotameric_state_pred']:
-                                            if (_rotameric_state == 'gauche+' and gp > t and gp > gm) or\
-                                               (_rotameric_state == 'trans' and t > gm and t > gp) or\
-                                               (_rotameric_state == 'gauche-' and gm > gp and gm > t):
+                                            if (_rotameric_state == 'gauche+' and gp > t and gp > gm)\
+                                               or (_rotameric_state == 'trans' and t > gm and t > gp)\
+                                               or (_rotameric_state == 'gauche-' and gm > gp and gm > t):
                                                 pass
                                             else:
                                                 item = 'unusual_chemical_shift'
@@ -40091,9 +40091,9 @@ class NmrDpUtility:
                                     item = None
                                     if _rotameric_state not in (ilv['rotameric_state_pred'], 'unknown'):
                                         if ',' in ilv['rotameric_state_pred']:
-                                            if (_rotameric_state == 'gauche+' and gp > t and gp > gm) or\
-                                               (_rotameric_state == 'trans' and t > gm and t > gp) or\
-                                               (_rotameric_state == 'gauche-' and gm > gp and gm > t):
+                                            if (_rotameric_state == 'gauche+' and gp > t and gp > gm)\
+                                               or (_rotameric_state == 'trans' and t > gm and t > gp)\
+                                               or (_rotameric_state == 'gauche-' and gm > gp and gm > t):
                                                 pass
                                             else:
                                                 item = 'unusual_chemical_shift'
@@ -41373,8 +41373,8 @@ class NmrDpUtility:
                         other_bond_type = 'P...' + metal + ' (too far!)'
                         other_bond = True
 
-                elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2)) or\
-                     (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
+                elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2))\
+                        or (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
 
                     metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                     metal = metal.title()
@@ -41389,8 +41389,8 @@ class NmrDpUtility:
                         other_bond_type = 'S...' + metal + ' (too far!)'
                         other_bond = True
 
-                elif (atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2)) or\
-                     (atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
+                elif (atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2))\
+                        or (atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
 
                     metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                     metal = metal.title()
@@ -41417,13 +41417,13 @@ class NmrDpUtility:
 
                         if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
 
-                            if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1 and\
-                               seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
+                            if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1\
+                               and seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
                                 symmetry = True
                                 break
 
-                            if seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2 and\
-                               seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
+                            if seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2\
+                               and seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
                                 symmetry = True
                                 break
 
@@ -41708,8 +41708,8 @@ class NmrDpUtility:
                     other_bond_type = 'P...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2)) or\
-                 (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
+            elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2))\
+                    or (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
 
                 metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                 metal = metal.title()
@@ -41724,8 +41724,8 @@ class NmrDpUtility:
                     other_bond_type = 'S...' + metal + ' (too far!)'
                     other_bond = True
 
-            elif (atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2)) or\
-                 (atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
+            elif (atom_id_1.startswith('SE') and not is_non_metal_element(comp_id_2, atom_id_2))\
+                    or (atom_id_2.startswith('SE') and not is_non_metal_element(comp_id_1, atom_id_1)):
 
                 metal = atom_id_2 if is_non_metal_element(comp_id_1, atom_id_1) else atom_id_1
                 metal = metal.title()
@@ -41752,13 +41752,13 @@ class NmrDpUtility:
 
                     if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
 
-                        if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1 and\
-                           seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
+                        if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1\
+                           and seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
                             symmetry = True
                             break
 
-                        if seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2 and\
-                           seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
+                        if seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2\
+                           and seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
                             symmetry = True
                             break
 
@@ -45350,9 +45350,9 @@ class NmrDpUtility:
                     _result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
-                    if result['matched'] == 0 or\
-                            (result['conflict'] > 0
-                             and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
+                    if result['matched'] == 0\
+                       or (result['conflict'] > 0
+                           and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
                         continue
 
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
@@ -45613,9 +45613,9 @@ class NmrDpUtility:
                     _result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
-                    if result['matched'] == 0 or\
-                            (result['conflict'] > 0
-                             and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
+                    if result['matched'] == 0\
+                       or (result['conflict'] > 0
+                           and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
                         continue
 
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
@@ -46141,9 +46141,9 @@ class NmrDpUtility:
                     _result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                     if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
-                    if result['matched'] == 0 or\
-                            (result['conflict'] > 0
-                             and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
+                    if result['matched'] == 0\
+                       or (result['conflict'] > 0
+                           and result['sequence_coverage'] < LOW_SEQ_COVERAGE < float(result['conflict']) / float(result['matched'])):
                         continue
 
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
@@ -54682,8 +54682,8 @@ class NmrDpUtility:
                                 undefined_enums = ('undefined', 'unknown')
 
                                 # assumes 'undefined', 'unknown' enum values at the end of the array
-                                if (len(itEnum) == 2 and itEnum[1] in undefined_enums) or\
-                                   (len(itEnum) == 3 and itEnum[1] in undefined_enums and itEnum[2] in undefined_enums):
+                                if (len(itEnum) == 2 and itEnum[1] in undefined_enums)\
+                                   or (len(itEnum) == 3 and itEnum[1] in undefined_enums and itEnum[2] in undefined_enums):
                                     sf.tags[itCol][1] = itEnum[0]
 
                                 # specific remediation follows
@@ -55189,13 +55189,13 @@ class NmrDpUtility:
 
                     if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
 
-                        if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1 and\
-                           seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
+                        if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1\
+                           and seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
                             has_symmetry = True
                             break
 
-                        if seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2 and\
-                           seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
+                        if seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2\
+                           and seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
                             has_symmetry = True
                             break
 
@@ -55402,10 +55402,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for row in lp_data:
-                if has_key_value(row, lower_limit_name) and\
-                   has_key_value(row, upper_limit_name) and\
-                   (not has_key_value(row, lower_linear_limit_name)) and\
-                   (not has_key_value(row, upper_linear_limit_name)):
+                if has_key_value(row, lower_limit_name)\
+                   and has_key_value(row, upper_limit_name)\
+                   and not has_key_value(row, lower_linear_limit_name)\
+                   and not has_key_value(row, upper_linear_limit_name):
                     continue
 
                 return False
@@ -55446,10 +55446,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for row in lp_data:
-                if has_key_value(row, lower_limit_name) and\
-                   has_key_value(row, upper_limit_name) and\
-                   has_key_value(row, lower_linear_limit_name) and\
-                   has_key_value(row, upper_linear_limit_name):
+                if has_key_value(row, lower_limit_name)\
+                   and has_key_value(row, upper_limit_name)\
+                   and has_key_value(row, lower_linear_limit_name)\
+                   and has_key_value(row, upper_linear_limit_name):
                     continue
 
                 return False
@@ -55490,10 +55490,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for row in lp_data:
-                if (not has_key_value(row, lower_limit_name)) and\
-                   has_key_value(row, upper_limit_name) and\
-                   (not has_key_value(row, lower_linear_limit_name)) and\
-                   (not has_key_value(row, upper_linear_limit_name)):
+                if not has_key_value(row, lower_limit_name)\
+                   and has_key_value(row, upper_limit_name)\
+                   and not has_key_value(row, lower_linear_limit_name)\
+                   and not has_key_value(row, upper_linear_limit_name):
                     continue
 
                 return False
@@ -55534,10 +55534,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for row in lp_data:
-                if has_key_value(row, lower_limit_name) and\
-                   (not has_key_value(row, upper_limit_name)) and\
-                   (not has_key_value(row, lower_linear_limit_name)) and\
-                   (not has_key_value(row, upper_linear_limit_name)):
+                if has_key_value(row, lower_limit_name)\
+                   and not has_key_value(row, upper_limit_name)\
+                   and not has_key_value(row, lower_linear_limit_name)\
+                   and not has_key_value(row, upper_linear_limit_name):
                     continue
 
                 return False
@@ -55578,10 +55578,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for row in lp_data:
-                if (not has_key_value(row, lower_limit_name)) and\
-                   has_key_value(row, upper_limit_name) and\
-                   (not has_key_value(row, lower_linear_limit_name)) and\
-                   has_key_value(row, upper_linear_limit_name):
+                if not has_key_value(row, lower_limit_name)\
+                   and has_key_value(row, upper_limit_name)\
+                   and not has_key_value(row, lower_linear_limit_name)\
+                   and has_key_value(row, upper_linear_limit_name):
                     continue
 
                 return False
@@ -55622,10 +55622,10 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for row in lp_data:
-                if has_key_value(row, lower_limit_name) and\
-                   (not has_key_value(row, upper_limit_name)) and\
-                   has_key_value(row, lower_linear_limit_name) and\
-                   (not has_key_value(row, upper_linear_limit_name)):
+                if has_key_value(row, lower_limit_name)\
+                   and not has_key_value(row, upper_limit_name)\
+                   and has_key_value(row, lower_linear_limit_name)\
+                   and not has_key_value(row, upper_linear_limit_name):
                     continue
 
                 return False
@@ -55669,11 +55669,11 @@ class NmrDpUtility:
             upper_linear_limit_name = item_names['upper_linear_limit']
 
             for row in lp_data:
-                if has_key_value(row, target_value_name) and\
-                   (not has_key_value(row, lower_limit_name)) and\
-                   (not has_key_value(row, upper_limit_name)) and\
-                   (not has_key_value(row, lower_linear_limit_name)) and\
-                   (not has_key_value(row, upper_linear_limit_name)):
+                if has_key_value(row, target_value_name)\
+                   and not has_key_value(row, lower_limit_name)\
+                   and not has_key_value(row, upper_limit_name)\
+                   and not has_key_value(row, lower_linear_limit_name)\
+                   and not has_key_value(row, upper_linear_limit_name):
                     continue
 
                 return False

@@ -221,7 +221,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
     file_name = data_file_name.lower()
 
     is_noesy = 'noe' in file_name or 'roe' in file_name
-    no_aromatic = not any(_dict['spectral_region'] != 'C-aromatic' for _dict in cur_spectral_dim.values())
+    no_aromatic = all(_dict['spectral_region'] != 'C-aromatic' for _dict in cur_spectral_dim.values())
 
     acq_dim_id = 1
 
@@ -368,7 +368,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                                or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                 continue
                             _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
-                            if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic:
+                            if _corrcoef < 0.0 or (_corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic):
                                 continue
                             max_corr_eff = max(max_corr_eff, _corrcoef)
 
@@ -411,7 +411,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                                    or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                     continue
                                 _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
-                                if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER or _corrcoef < max_corr_eff:
+                                if _corrcoef < 0.0 or (_corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic):
                                     continue
                                 transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
@@ -441,7 +441,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                                or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                 continue
                             _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
-                            if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic:
+                            if _corrcoef < 0.0 or (_corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic):
                                 continue
                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
@@ -1607,7 +1607,7 @@ class BasePKParserListener():
                     cur_spectral_dim_transfer = self.spectral_dim_transfer[d][_id]
 
                     is_noesy = any('noe' in n for n in _file_names) or any('roe' in n for n in _file_names)
-                    no_aromatic = not any(_dict['_spectral_region'] != 'C-aromatic' for _dict in cur_spectral_dim.values())
+                    no_aromatic = all(_dict['_spectral_region'] != 'C-aromatic' for _dict in cur_spectral_dim.values())
 
                     if 'axis_order' in cur_spectral_dim[1]:
                         upper_count = lower_count = 0
@@ -1654,7 +1654,7 @@ class BasePKParserListener():
                                                or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                                 continue
                                             _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
-                                            if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic:
+                                            if _corrcoef < 0.0 or (_corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic):
                                                 continue
                                             cases += 1
                                             max_corr_eff = max(max_corr_eff, _corrcoef)
@@ -1698,7 +1698,7 @@ class BasePKParserListener():
                                                    or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                                     continue
                                                 _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
-                                                if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER or _corrcoef < max_corr_eff:
+                                                if _corrcoef < 0.0 or (_corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic):
                                                     continue
                                                 transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
@@ -1728,7 +1728,7 @@ class BasePKParserListener():
                                                or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                                 continue
                                             _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
-                                            if _corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic:
+                                            if _corrcoef < 0.0 or (_corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic):
                                                 continue
                                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),

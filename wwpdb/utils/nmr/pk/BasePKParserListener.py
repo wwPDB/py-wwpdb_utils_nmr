@@ -799,6 +799,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
 class BasePKParserListener():
 
     file_type = None
+    file_subtype = None
     software_name = None
 
     debug = False
@@ -1455,6 +1456,8 @@ class BasePKParserListener():
 
     def fillPkAuxLoops(self, spectrum_names: Optional[dict]):
         if len(self.spectral_dim) > 0:
+            dim_to_code = {1: 'x', 2: 'y', 3: 'z', 4: 'a'}
+
             for d, v in self.spectral_dim.items():
                 for _id, _v in v.items():
 
@@ -1585,8 +1588,6 @@ class BasePKParserListener():
                             __v['_spectral_region'] = 'H-aromatic' if has_a else 'HN'
                         else:
                             __v['_spectral_region'] = __v['spectral_region']
-
-            dim_to_code = {1: 'x', 2: 'y', 3: 'z', 4: 'a'}
 
             for d, v in self.spectral_dim.items():
                 for _id, cur_spectral_dim in v.items():
@@ -2138,6 +2139,32 @@ class BasePKParserListener():
                     if self.debug:
                         print(f'experiment class: {exp_class}')
 
+                    if self.file_subtype == 'PIPP' and any(transfer['type'] == 'onebond' for transfer in cur_spectral_dim_transfer):
+                        if d == 3:
+                            transfer = next(transfer for transfer in cur_spectral_dim_transfer if transfer['type'] == 'onebond')
+                            pro_axis = hvy_axis = -1
+                            for _dim_id, _dict in cur_spectral_dim.items():
+                                if _dim_id in (transfer['spectral_dim_id_1'], transfer['spectral_dim_id_2']):
+                                    if _dict['atom_isotope_number'] == 1:
+                                        pro_axis = _dim_id
+                                    else:
+                                        hvy_axis = _dim_id
+                            if pro_axis != -1 and hvy_axis != -1:
+                                self.reasonsForReParsing['onebond_resolved'] = {0: 5 - hvy_axis - pro_axis, 1: hvy_axis - 1, 2: pro_axis - 1}
+                        elif d == 4 and len([transfer for transfer in cur_spectral_dim_transfer if transfer['type'] == 'onebond']) == 2:
+                            self.reasonsForReParsing['onebond_resolved'] = {}
+                            for offset, transfer in enumerate([transfer for transfer in cur_spectral_dim_transfer if transfer['type'] == 'onebond']):
+                                pro_axis = hvy_axis = -1
+                                for _dim_id, _dict in cur_spectral_dim.items():
+                                    if _dim_id in (transfer['spectral_dim_id_1'], transfer['spectral_dim_id_2']):
+                                        if _dict['atom_isotope_number'] == 1:
+                                            pro_axis = _dim_id
+                                        else:
+                                            hvy_axis = _dim_id
+                                if pro_axis != -1 and hvy_axis != -1:
+                                    self.reasonsForReParsing['onebond_resolved'][offset * 2] = hvy_axis - 1
+                                    self.reasonsForReParsing['onebond_resolved'][offset * 2 + 1] = pro_axis - 1
+
                     if self.createSfDict__:
                         self.cur_subtype = f'peak{d}d'
                         self.cur_list_id = _id
@@ -2191,6 +2218,7 @@ class BasePKParserListener():
                                 pass
 
                         if any(transfer['type'] == 'onebond' for transfer in cur_spectral_dim_transfer):
+
                             has_assign = False
 
                             if sf['peak_row_format']:
@@ -2719,6 +2747,12 @@ class BasePKParserListener():
 
         if all(assignment is not None for assignment in assignments):
 
+            if self.reasons is not None and 'onebond_resolved' in self.reasons:
+                _assignments = [None] * 3
+                for k, v in self.reasons['onebond_resolved'].items():
+                    _assignments[v] = assignments[k]
+                assignments = _assignments
+
             self.retrieveLocalSeqScheme()
 
             try:
@@ -2791,6 +2825,12 @@ class BasePKParserListener():
         asis1 = asis2 = asis3 = asis4 = None
 
         if all(assignment is not None for assignment in assignments):
+
+            if self.reasons is not None and 'onebond_resolved' in self.reasons:
+                _assignments = [None] * 4
+                for k, v in self.reasons['onebond_resolved'].items():
+                    _assignments[v] = assignments[k]
+                assignments = _assignments
 
             self.retrieveLocalSeqScheme()
 

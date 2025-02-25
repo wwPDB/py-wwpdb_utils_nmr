@@ -55,11 +55,11 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 SPACE:			[ \t]+ -> skip;
 RETURN:			[\r\n]+;
 
-fragment COMMENT_START_CHAR:	('#' | '!' | '\\' | '&' | '/' | '*' | '=');
+fragment COMMENT_START_CHAR:	('#' | '!' | '\\' | '&' | '/' | '=');
 
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
-LINE_COMMENT:		(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
+SECTION_COMMENT:	(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
+LINE_COMMENT:		(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
 
 mode DATA_MODE;
 
@@ -69,6 +69,11 @@ Z_axis_DA:		'Z_AXIS';
 A_axis_DA:		'A_AXIS';
 
 Ppm_value_DA:		Float 'ppm';
+
+/* pipp */
+Dim_count_DA:		'DIMCOUNT';
+Ppm_DA:			'PPM';
+Hz_DA:			'Hz';
 
 Integer_DA:		('+' | '-')? DECIMAL;
 Float_DA:		('+' | '-')? (DECIMAL | DEC_DOT_DEC);
@@ -134,6 +139,17 @@ ClustId:		'CLUSTID';
 Memcnt:			'MEMCNT';
 Trouble:		'TROUBLE';
 
+/* pipp */
+PkID:			'PkID';
+Sl_Z:			'Sl.Z';
+X:			'X';
+Y:			'Y';
+Z:			'Z';
+A:			'A';
+Intensity:		'Intensity';
+Assign1:		'Assign1';
+Assign2:		'Assign2';
+
 Integer_VA:		('+' | '-')? DECIMAL;
 Float_VA:		('+' | '-')? (DECIMAL | DEC_DOT_DEC);
 Real_VA:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ([Ee] ('+' | '-')? DECIMAL)?;
@@ -148,7 +164,7 @@ LINE_COMMENT_VA:	('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' 
 
 mode FORMAT_MODE;
 
-Format_code:		'%' DECIMAL? ('s' | 'd' | '.' DECIMAL 'f' | '+'? 'e');
+Format_code:		'%' '+'? DECIMAL? ('s' | 'd' | '.' DECIMAL ('f' | 'e') | '+'? 'e');
 
 SPACE_FO:		[ \t]+ -> skip;
 RETURN_FO:		[\r\n]+ -> popMode;

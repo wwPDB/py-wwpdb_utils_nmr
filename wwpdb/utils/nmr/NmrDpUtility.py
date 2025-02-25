@@ -1147,6 +1147,9 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
     if 'VARS' in string and 'X_PPM' in string and 'Y_PPM' in string:  # NMRPipe peak list
         return 'nm-pea-pip' if asCode else 'NMRPipe'
 
+    if 'VARS' in string and 'PkID' in string and 'X' in string and 'Y' in string and 'Intensity' in string and 'Assign' in string:  # PIPP peak list
+        return 'nm-pea-pip' if asCode else 'NMRPipe'
+
     if 'NOESYTYPE' in string:  # PONDEROSA peak list
         return 'nm-pea-pon' if asCode else 'PONDEROSA'
 
@@ -36078,7 +36081,7 @@ class NmrDpUtility:
                     original_file_name = os.path.basename(input_source_dic['original_file_name'])
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
-            if original_file_name in emptyValue and self.__internal_mode:
+            if original_file_name in emptyValue:
                 original_file_name = file_name
 
             if file_type == 'nm-pea-xea' and not has_nm_aux_xea_file:
@@ -60185,7 +60188,7 @@ class NmrDpUtility:
             @note: This rediculaus reverse implementation is for OneDep only
         """
 
-        if self.__combined_mode or not self.__merge_any_pk_as_is:
+        if self.__native_combined or not self.__merge_any_pk_as_is:
             return True
 
         if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
@@ -60255,6 +60258,10 @@ class NmrDpUtility:
                     break
 
         if modified:
-            self.__depositNmrData()
+            master_entry = self.__star_data[0]
+
+            master_entry = self.__c2S.normalize(master_entry)
+
+            master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
         return True

@@ -25,6 +25,10 @@ nmrpipe_pk:
 	peak_list_2d |
 	peak_list_3d |
 	peak_list_4d |
+	pipp_label |
+	pipp_peak_list_2d |
+	pipp_peak_list_3d |
+	pipp_peak_list_4d |
 	RETURN
 	)*
 	EOF;
@@ -39,8 +43,7 @@ data_label:
 	Ppm_value_DA Ppm_value_DA RETURN_DA;
 
 peak_list_2d:
-	Vars
-		Index
+	Vars Index
 		X_axis Y_axis
 		Dx Dy
 		X_ppm Y_ppm
@@ -80,8 +83,7 @@ peak_2d:
 	Integer Integer Integer? (RETURN | EOF);
 
 peak_list_3d:
-	Vars
-		Index
+	Vars Index
 		X_axis Y_axis Z_axis
 		Dx Dy Dz
 		X_ppm Y_ppm Z_ppm
@@ -121,8 +123,7 @@ peak_3d:
 	Integer Integer Integer? (RETURN | EOF);
 
 peak_list_4d:
-	Vars
-		Index
+	Vars Index
 		X_axis Y_axis Z_axis A_axis
 		Dx Dy Dz Dz
 		X_ppm Y_ppm Z_ppm A_ppm
@@ -161,6 +162,39 @@ peak_4d:
 	number Integer Any_name?
 	Integer Integer Integer? (RETURN | EOF);
 
+/* pipp */
+
+pipp_label:
+	Data Dim_count_DA Integer_DA RETURN_DA
+	pipp_axis+;
+
+pipp_axis:
+	Data (X_axis_DA | Y_axis_DA | Z_axis_DA | A_axis_DA) Integer_DA Float_DA Float_DA Float_DA (Ppm_DA | Hz_DA) Float_DA RETURN_DA;
+
+pipp_peak_list_2d:
+	Format Format_code Format_code Format_code Format_code Format_code Format_code? Format_code? RETURN_FO
+	Vars PkID Sl_Z X Y Intensity Assign1? Assign2? RETURN_VA
+	pipp_peak_2d+;
+
+pipp_peak_2d:
+	Integer Integer number number number+ (RETURN | EOF);
+
+pipp_peak_list_3d:
+	Format Format_code Format_code Format_code Format_code Format_code Format_code Format_code? Format_code? RETURN_FO
+	Vars PkID Sl_Z X Y Z Intensity Assign1? Assign2? RETURN_VA
+	pipp_peak_3d+;
+
+pipp_peak_3d:
+	Integer Integer number number number number+ (RETURN | EOF);
+
+pipp_peak_list_4d:
+	Format Format_code Format_code Format_code Format_code Format_code Format_code Format_code Format_code? Format_code? RETURN_FO
+	Vars PkID Sl_Z X Y Z A Intensity Assign1? Assign2? RETURN_VA
+	pipp_peak_4d+;
+
+pipp_peak_4d:
+	Integer Integer number number number number number+ (RETURN | EOF);
+
 /* number expression in peak list */
-number:	Float | Real | Any_name;
+number:	Integer | Float | Real | Any_name;
 

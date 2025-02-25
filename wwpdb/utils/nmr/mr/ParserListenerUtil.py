@@ -727,7 +727,7 @@ NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int
                                            {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                            {'name': 'Atom_ID_2', 'type': 'str'}
                                            ],
-                         'noepk_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                         'noepk_restraint': [{'name': 'ID', 'type': 'int', 'auto-increment': True},  # allows to have software-native id starting from zero
                                              {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
                                              {'name': 'Entity_ID_1', 'type': 'positive-int'},
                                              {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
@@ -2197,7 +2197,7 @@ NMR_STAR_AUX_LP_KEY_ITEMS = {'dist_restraint': {'_Gen_dist_constraint_software_p
                                                 {'name': 'Type', 'type': 'str'}]
                                                 },
                              'spectral_peak': {'_Spectral_dim': [
-                                               {'name': 'ID', 'type': 'positive-int', 'auto-increment': True}
+                                               {'name': 'ID', 'type': 'int', 'auto-increment': True}  # allows to have software-native id starting from zero
                                                ],
                                                '_Spectral_dim_transfer': [
                                                {'name': 'Spectral_dim_ID_1', 'type': 'positive-int'},

@@ -2583,10 +2583,10 @@ class NmrDpUtility:
                                                          {'name': 'Atom_ID_2', 'type': 'str'}
                                                          ],
                                        'spectral_peak': None,
-                                       'spectral_peak_alt': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                       'spectral_peak_alt': [{'name': 'ID', 'type': 'int', 'auto-increment': True},  # allows to have software-native id starting from zero
                                                              {'name': 'Spectral_peak_list_ID', 'type': 'positive-int', 'default': '1', 'default-from': 'self'}
                                                              ],
-                                       'noepk_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                       'noepk_restraint': [{'name': 'ID', 'type': 'int', 'auto-increment': True},  # allows to have software-native id starting from zero
                                                            {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
                                                            {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
                                                            {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
@@ -29670,11 +29670,11 @@ class NmrDpUtility:
                                                 # DAOTHER-7681, issue #2
                                                 if d < d2 and chain_id2 == chain_id and seq_id2 == seq_id and comp_id2 == comp_id and _atom_id2 != _atom_id\
                                                    and self.__ccU.updateChemCompDict(comp_id):
-                                                    _atom_id = self.__getAtomIdList(comp_id, atom_id)
-                                                    _atom_id2 = self.__getAtomIdList(comp_id, atom_id2)
+                                                    _atom_ids = self.__getAtomIdList(comp_id, atom_id)
+                                                    _atom_ids2 = self.__getAtomIdList(comp_id, atom_id2)
                                                     if any(b for b in self.__ccU.lastBonds
-                                                           if ((b[self.__ccU.ccbAtomId1] in _atom_id and b[self.__ccU.ccbAtomId2] in _atom_id2)
-                                                               or (b[self.__ccU.ccbAtomId1] in _atom_id2 and b[self.__ccU.ccbAtomId2] in _atom_id))):
+                                                           if ((b[self.__ccU.ccbAtomId1] in _atom_ids and b[self.__ccU.ccbAtomId2] in _atom_ids2)
+                                                               or (b[self.__ccU.ccbAtomId1] in _atom_ids2 and b[self.__ccU.ccbAtomId2] in _atom_ids))):
                                                         continue
 
                                                 err = f"[Check row of {index_tag} {row[index_tag]}] Coherence transfer type is onebond. "\
@@ -30171,11 +30171,11 @@ class NmrDpUtility:
                                             # DAOTHER-7681, issue #2
                                             if d < d2 and chain_id2 == chain_id and seq_id2 == seq_id and comp_id2 == comp_id and _atom_id2 != _atom_id\
                                                and self.__ccU.updateChemCompDict(comp_id):
-                                                _atom_id = self.__getAtomIdList(comp_id, atom_id)
-                                                _atom_id2 = self.__getAtomIdList(comp_id, atom_id2)
+                                                _atom_ids = self.__getAtomIdList(comp_id, atom_id)
+                                                _atom_ids2 = self.__getAtomIdList(comp_id, atom_id2)
                                                 if any(b for b in self.__ccU.lastBonds
-                                                       if ((b[self.__ccU.ccbAtomId1] in _atom_id and b[self.__ccU.ccbAtomId2] in _atom_id2)
-                                                           or (b[self.__ccU.ccbAtomId1] in _atom_id2 and b[self.__ccU.ccbAtomId2] in _atom_id))):
+                                                       if ((b[self.__ccU.ccbAtomId1] in _atom_ids and b[self.__ccU.ccbAtomId2] in _atom_ids2)
+                                                           or (b[self.__ccU.ccbAtomId1] in _atom_ids2 and b[self.__ccU.ccbAtomId2] in _atom_ids))):
                                                     continue
 
                                             err = f"[Check row of {pk_id_name} {row[pk_id_name]}] Coherence transfer type is onebond. "\
@@ -35966,6 +35966,14 @@ class NmrDpUtility:
                                  'auth_comp_id': g[1]}
                             if d not in self.__nmr_ext_poly_seq:
                                 self.__nmr_ext_poly_seq.append(d)
+
+                    elif warn.startswith('[Inconsistent assigned peak]'):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
+                                                              {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Missing data]'):
                         self.report.warning.appendDescription('missing_data',
@@ -50703,6 +50711,14 @@ class NmrDpUtility:
                                  'auth_comp_id': g[1]}
                             if d not in self.__nmr_ext_poly_seq:
                                 self.__nmr_ext_poly_seq.append(d)
+
+                    elif warn.startswith('[Inconsistent assigned peak]'):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
+                                                              {'file_name': data_file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Missing data]'):
                         self.report.warning.appendDescription('missing_data',

@@ -414,7 +414,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                              {'name': 'Homonuclear_NOE_val_type', 'type': 'enum', 'mandatory': True,
                                               'enum': ('peak volume', 'peak height', 'contour count', 'na')},
                                              {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
-                                             {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                             {'name': 'ID', 'type': 'int', 'mandatory': True},  # allows to have software-native id starting from zero
                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                              ],
                          'jcoup_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
@@ -649,7 +649,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                            {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
                                            {'name': 'Chemical_shift_list', 'type': 'str', 'mandatory': True},
                                            {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
-                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                           {'name': 'ID', 'type': 'int', 'mandatory': True},  # allows to have software-native id starting from zero
                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                            ]
                          }
@@ -961,7 +961,7 @@ NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int
                                              {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID', 'type': 'str'}
                                              ],
-                         'spectral_peak': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True}]
+                         'spectral_peak': [{'name': 'ID', 'type': 'int', 'auto-increment': True}]  # allows to have software-native id starting from zero
                          }
 
 NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},

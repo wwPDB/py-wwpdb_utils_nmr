@@ -3194,7 +3194,7 @@ class NmrDpUtility:
                                      {'name': 'peak_id', 'type': 'positive-int'}
                                      ],
                              'nmr-star': [{'name': 'Position_%s', 'type': 'float'},
-                                          {'name': 'ID', 'type': 'positive-int'}
+                                          {'name': 'ID', 'type': 'int'}  # allows to have software-native id starting from zero
                                           ]
                              }
 
@@ -50288,7 +50288,7 @@ class NmrDpUtility:
         """ Remediate raw text data in saveframe of spectral peak list (for NMR data remediation upgrade to Phase 2).
         """
 
-        if self.__merge_any_pk_as_is or not self.__internal_mode:  # This rediculaus reverse implementation is for OneDep only
+        if self.__op != 'nmr-cs-mr-merge' and not self.__internal_mode:  # This rediculaus reverse implementation is for OneDep only
             return True
 
         if len(self.__star_data) == 0:

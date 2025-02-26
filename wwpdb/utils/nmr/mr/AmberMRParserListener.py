@@ -5443,8 +5443,9 @@ class AmberMRParserListener(ParseTreeListener):
                                             if enableWarning:
                                                 if seqKey in self.__coordUnobsAtom\
                                                    and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                        or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
-                                                            in self.__coordUnobsAtom[seqKey]['atom_ids'])):
+                                                        or (_atomId[0] in protonBeginCode
+                                                            and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                    if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                     self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                     return factor
@@ -5458,8 +5459,9 @@ class AmberMRParserListener(ParseTreeListener):
                                 if enableWarning:
                                     if seqKey in self.__coordUnobsAtom\
                                        and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                            or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
-                                                in self.__coordUnobsAtom[seqKey]['atom_ids'])):
+                                            or (_atomId[0] in protonBeginCode
+                                                and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                        if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                         return factor
@@ -5643,8 +5645,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if enableWarning:
                                                         if seqKey in self.__coordUnobsAtom\
                                                            and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                                or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
-                                                                    in self.__coordUnobsAtom[seqKey]['atom_ids'])):
+                                                                or (_atomId[0] in protonBeginCode
+                                                                    and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                            if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                             return factor
@@ -5658,8 +5661,9 @@ class AmberMRParserListener(ParseTreeListener):
                                         if enableWarning:
                                             if seqKey in self.__coordUnobsAtom\
                                                and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                    or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
-                                                        in self.__coordUnobsAtom[seqKey]['atom_ids'])):
+                                                    or (_atomId[0] in protonBeginCode
+                                                        and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                 self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                 return factor
@@ -5998,8 +6002,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if chainId in LARGE_ASYM_ID:
                                                     if seqKey in self.__coordUnobsAtom\
                                                        and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                            or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
-                                                                in self.__coordUnobsAtom[seqKey]['atom_ids'])):
+                                                            or (_atomId[0] in protonBeginCode
+                                                                and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                        if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                     else:
@@ -6140,8 +6145,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if chainId in LARGE_ASYM_ID:
                                                     if seqKey in self.__coordUnobsAtom\
                                                        and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                            or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
-                                                                in self.__coordUnobsAtom[seqKey]['atom_ids'])):
+                                                            or (_atomId[0] in protonBeginCode
+                                                                and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                        if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                     else:
@@ -6372,8 +6378,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if chainId in LARGE_ASYM_ID:
                                                     if seqKey in self.__coordUnobsAtom\
                                                        and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                            or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
-                                                                in self.__coordUnobsAtom[seqKey]['atom_ids'])):
+                                                            or (_atomId[0] in protonBeginCode
+                                                                and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                        if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                     else:
@@ -6507,8 +6514,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                 if chainId in LARGE_ASYM_ID:
                                                     if seqKey in self.__coordUnobsAtom\
                                                        and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                            or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
-                                                                in self.__coordUnobsAtom[seqKey]['atom_ids'])):
+                                                            or (_atomId[0] in protonBeginCode
+                                                                and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                        if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                     else:
@@ -6826,8 +6834,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if chainId in LARGE_ASYM_ID:
                                                         if seqKey in self.__coordUnobsAtom\
                                                            and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                                or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
-                                                                    in self.__coordUnobsAtom[seqKey]['atom_ids'])):
+                                                                or (_atomId[0] in protonBeginCode
+                                                                    and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                            if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                         else:
@@ -6960,8 +6969,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if chainId in LARGE_ASYM_ID:
                                                         if seqKey in self.__coordUnobsAtom\
                                                            and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                                or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
-                                                                    in self.__coordUnobsAtom[seqKey]['atom_ids'])):
+                                                                or (_atomId[0] in protonBeginCode
+                                                                    and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                            if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                         else:
@@ -7115,8 +7125,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if chainId in LARGE_ASYM_ID:
                                                         if seqKey in self.__coordUnobsAtom\
                                                            and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                                or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
-                                                                    in self.__coordUnobsAtom[seqKey]['atom_ids'])):
+                                                                or (_atomId[0] in protonBeginCode
+                                                                    and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                            if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                         else:
@@ -7250,8 +7261,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                     if chainId in LARGE_ASYM_ID:
                                                         if seqKey in self.__coordUnobsAtom\
                                                            and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                                or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
-                                                                    in self.__coordUnobsAtom[seqKey]['atom_ids'])):
+                                                                or (_atomId[0] in protonBeginCode
+                                                                    and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                            if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                         else:

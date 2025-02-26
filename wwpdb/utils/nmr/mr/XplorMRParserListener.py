@@ -10781,8 +10781,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 else 'Atom not found'
                                                             if seqKey in self.__coordUnobsAtom\
                                                                and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                                    or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
-                                                                        in self.__coordUnobsAtom[seqKey]['atom_ids'])):
+                                                                    or (_atomId[0] in protonBeginCode
+                                                                        and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                                if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                                 warn_title = 'Coordinate issue'
                                                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates.")
@@ -10920,8 +10921,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                         else 'Atom not found'
                                                     if seqKey in self.__coordUnobsAtom\
                                                        and (_atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                                            or (_atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)[0]
-                                                                in self.__coordUnobsAtom[seqKey]['atom_ids'])):
+                                                            or (_atomId[0] in protonBeginCode
+                                                                and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
+                                                                        if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         warn_title = 'Coordinate issue'
                                                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates.")

@@ -192,6 +192,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.null_value = str(ctx.Null_value()) if ctx.Null_value() else None
         self.null_string = str(ctx.Null_string()) if ctx.Null_string() else None
+        self.software_name = 'NMRPIPE'
 
     # Exit a parse tree produced by NmrPipePKParser#peak_list_2d.
     def exitPeak_list_2d(self, ctx: NmrPipePKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
@@ -332,6 +333,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.null_value = str(ctx.Null_value()) if ctx.Null_value() else None
         self.null_string = str(ctx.Null_string()) if ctx.Null_string() else None
+        self.software_name = 'NMRPIPE'
 
     # Exit a parse tree produced by NmrPipePKParser#peak_list_3d.
     def exitPeak_list_3d(self, ctx: NmrPipePKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
@@ -485,6 +487,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.null_value = str(ctx.Null_value()) if ctx.Null_value() else None
         self.null_string = str(ctx.Null_string()) if ctx.Null_string() else None
+        self.software_name = 'NMRPIPE'
 
     # Exit a parse tree produced by NmrPipePKParser#peak_list_4d.
     def exitPeak_list_4d(self, ctx: NmrPipePKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
@@ -701,6 +704,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
         if self.num_of_dim != 2:
             self.num_of_dim = 2
         self.initSpectralDim()
+        self.software_name = 'PIPP'
 
     # Exit a parse tree produced by NmrPipePKParser#pipp_peak_list_2d.
     def exitPipp_peak_list_2d(self, ctx: NmrPipePKParser.Pipp_peak_list_2dContext):  # pylint: disable=unused-argument
@@ -826,7 +830,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
         if self.num_of_dim != 3:
             self.num_of_dim = 3
         self.initSpectralDim()
-        self.software_subname = 'PIPP'
+        self.software_name = 'PIPP'
 
     # Exit a parse tree produced by NmrPipePKParser#pipp_peak_list_3d.
     def exitPipp_peak_list_3d(self, ctx: NmrPipePKParser.Pipp_peak_list_3dContext):  # pylint: disable=unused-argument
@@ -954,7 +958,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
         if self.num_of_dim != 4:
             self.num_of_dim = 4
         self.initSpectralDim()
-        self.software_subname = 'PIPP'
+        self.software_name = 'PIPP'
 
     # Exit a parse tree produced by NmrPipePKParser#pipp_peak_list_4d.
     def exitPipp_peak_list_4d(self, ctx: NmrPipePKParser.Pipp_peak_list_4dContext):  # pylint: disable=unused-argument

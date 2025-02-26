@@ -8272,7 +8272,6 @@ class NmrDpUtility:
                 if ar_file_path_list in self.__inputParamDict:
 
                     for ar in self.__inputParamDict[ar_file_path_list]:
-
                         arPath = ar['file_name']
 
                         if os.path.exists(arPath):
@@ -8386,7 +8385,6 @@ class NmrDpUtility:
             if ar_file_path_list in self.__inputParamDict:
 
                 for ar in self.__inputParamDict[ar_file_path_list]:
-
                     arPath = ar['file_name']
 
                     if arPath.endswith('.gz'):
@@ -15190,7 +15188,6 @@ class NmrDpUtility:
         settled_file_types.append('nm-res-sax')
 
         for ar in self.__inputParamDict[ar_file_path_list]:
-
             src_file = ar['file_name']
 
             input_source = self.report.input_sources[fileListId]
@@ -33710,7 +33707,6 @@ class NmrDpUtility:
         fileListId = self.__file_path_list_len
 
         for ar in self.__inputParamDict[ar_file_path_list]:
-
             file_path = ar['file_name']
 
             input_source = self.report.input_sources[fileListId]
@@ -33858,7 +33854,6 @@ class NmrDpUtility:
         hint_for_any_dist = ['bond', 'disul', 'not', 'seen', 'pre', 'paramag', 'cidnp', 'csp', 'perturb', 'mutat', 'protect', 'symm']
 
         for ar in self.__inputParamDict[ar_file_path_list]:
-
             file_path = ar['file_name']
             file_size = os.path.getsize(file_path)
 
@@ -34300,7 +34295,6 @@ class NmrDpUtility:
                     #                                            {'file_name': file_name, 'description': warn}})
 
         for input_source, ar, _ in ar_file_order:
-
             file_path = ar['file_name']
 
             input_source_dic = input_source.get()
@@ -35558,7 +35552,6 @@ class NmrDpUtility:
         fileListId = self.__file_path_list_len
 
         for ar in self.__inputParamDict[ar_file_path_list]:
-
             file_path = ar['file_name']
 
             input_source = self.report.input_sources[fileListId]
@@ -35685,7 +35678,6 @@ class NmrDpUtility:
             fileListId = self.__file_path_list_len
 
             for ar in self.__inputParamDict[ar_file_path_list]:
-
                 file_path = ar['file_name']
 
                 if os.path.exists(file_path + '-corrected'):
@@ -36052,7 +36044,6 @@ class NmrDpUtility:
         fileListId = self.__file_path_list_len
 
         for ar in self.__inputParamDict[ar_file_path_list]:
-
             file_path = ar['file_name']
 
             input_source = self.report.input_sources[fileListId]
@@ -37011,7 +37002,6 @@ class NmrDpUtility:
         fileListId = self.__file_path_list_len
 
         for ar in self.__inputParamDict[ar_file_path_list]:
-
             file_path = ar['file_name']
 
             input_source = self.report.input_sources[fileListId]
@@ -57817,7 +57807,6 @@ class NmrDpUtility:
             fileListId = self.__file_path_list_len
 
             for ar in self.__inputParamDict[ar_file_path_list]:
-
                 file_path = ar['file_name']
 
                 input_source = self.report.input_sources[fileListId]
@@ -60235,7 +60224,11 @@ class NmrDpUtility:
                 continue
 
             for ar in self.__inputParamDict[ar_file_path_list]:
-
+                file_type = ar['file_type']
+                
+                if not file_type.startswith('nm-pea'):
+                    continue
+                
                 file_path = ar['file_name']
                 original_file_name = ar['original_file_name'] if 'original_file_name' in ar else None
 

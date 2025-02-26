@@ -799,8 +799,8 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
 class BasePKParserListener():
 
     file_type = None
-    file_subtype = None
     software_name = None
+    software_subname = None
 
     debug = False
     ass_expr_debug = False
@@ -2139,7 +2139,7 @@ class BasePKParserListener():
                     if self.debug:
                         print(f'experiment class: {exp_class}')
 
-                    if self.file_subtype == 'PIPP' and any(transfer['type'] == 'onebond' for transfer in cur_spectral_dim_transfer):
+                    if self.software_subname == 'PIPP' and any(transfer['type'] == 'onebond' for transfer in cur_spectral_dim_transfer):
                         if d == 3:
                             transfer = next(transfer for transfer in cur_spectral_dim_transfer if transfer['type'] == 'onebond')
                             pro_axis = hvy_axis = -1

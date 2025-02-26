@@ -160,7 +160,9 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
 
             self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2,
-                                    f'{L1} {L2} -> ', details)
+                                    f'{L1} {L2} -> ',
+                                    details if details is not None or (has_assignments and not has_multiple_assignments)
+                                    else f'{L1} {L2}')
 
         finally:
             self.numberSelection.clear()
@@ -273,7 +275,9 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
 
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
-                                    f'{L1} {L2} {L3} -> ', details)
+                                    f'{L1} {L2} {L3} -> ',
+                                    details if details is not None or (has_assignments and not has_multiple_assignments)
+                                    else f'{L1} {L2} {L3}')
 
         finally:
             self.numberSelection.clear()
@@ -396,7 +400,9 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
 
             self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3, asis4,
-                                    f'{L1} {L2} {L3} {L4} -> ', details)
+                                    f'{L1} {L2} {L3} {L4} -> ',
+                                    details if details is not None or (has_assignments and not has_multiple_assignments)
+                                    else f'{L1} {L2} {L3} {L4}')
 
         finally:
             self.numberSelection.clear()

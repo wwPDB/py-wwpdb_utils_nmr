@@ -276,7 +276,9 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
             self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2,
-                                    f'{ass} -> ', comment)
+                                    f'{ass} -> ',
+                                    comment if comment is not None or (has_assignments and not has_multiple_assignments)
+                                    else ass)
 
         finally:
             self.numberSelection.clear()
@@ -386,7 +388,9 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
-                                    f'{ass} -> ', comment)
+                                    f'{ass} -> ',
+                                    comment if comment is not None or (has_assignments and not has_multiple_assignments)
+                                    else ass)
 
         finally:
             self.numberSelection.clear()
@@ -502,7 +506,9 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
             self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3, asis4,
-                                    f'{ass} -> ', comment)
+                                    f'{ass} -> ',
+                                    comment if comment is not None or (has_assignments and not has_multiple_assignments)
+                                    else ass)
 
         finally:
             self.numberSelection.clear()
@@ -621,7 +627,8 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
             self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2,
-                                    f'{ass} -> ', None if has_assignments and not has_multiple_assignments else ass)
+                                    f'{ass} -> ',
+                                    None if has_assignments and not has_multiple_assignments else ass)
 
         finally:
             self.numberSelection.clear()
@@ -725,7 +732,8 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
-                                    f'{ass} -> ', None if has_assignments and not has_multiple_assignments else ass)
+                                    f'{ass} -> ',
+                                    None if has_assignments and not has_multiple_assignments else ass)
 
         finally:
             self.numberSelection.clear()
@@ -832,7 +840,8 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
             self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3, asis4,
-                                    f'{ass} -> ', None if has_assignments and not has_multiple_assignments else ass)
+                                    f'{ass} -> ',
+                                    None if has_assignments and not has_multiple_assignments else ass)
 
         finally:
             self.numberSelection.clear()

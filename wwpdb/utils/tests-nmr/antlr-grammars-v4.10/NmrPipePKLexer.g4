@@ -147,6 +147,7 @@ Y:			'Y';
 Z:			'Z';
 A:			'A';
 Intensity:		'Intensity';
+Assign:			'Assign';
 Assign1:		'Assign1';
 Assign2:		'Assign2';
 

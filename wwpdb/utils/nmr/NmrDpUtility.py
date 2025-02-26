@@ -1147,7 +1147,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
     if 'VARS' in string and 'X_PPM' in string and 'Y_PPM' in string:  # NMRPipe peak list
         return 'nm-pea-pip' if asCode else 'NMRPipe'
 
-    if 'VARS' in string and 'PkID' in string and 'X' in string and 'Y' in string and 'Intensity' in string and 'Assign' in string:  # PIPP peak list
+    if 'VARS' in string and 'PkID' in string and 'Sl.Z' in string and 'X' in string and 'Y' in string and 'Intensity' in string:  # PIPP peak list
         return 'nm-pea-pip' if asCode else 'NMRPipe'
 
     if 'NOESYTYPE' in string:  # PONDEROSA peak list
@@ -60225,10 +60225,10 @@ class NmrDpUtility:
 
             for ar in self.__inputParamDict[ar_file_path_list]:
                 file_type = ar['file_type']
-                
+
                 if not file_type.startswith('nm-pea'):
                     continue
-                
+
                 file_path = ar['file_name']
                 original_file_name = ar['original_file_name'] if 'original_file_name' in ar else None
 

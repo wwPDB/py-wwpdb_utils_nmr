@@ -31,6 +31,7 @@ try:
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        translateToLigandName,
+                                                       isLongRangeRestraint,
                                                        isCyclicPolymer,
                                                        isStructConn,
                                                        guessCompIdFromAtomId,
@@ -102,6 +103,7 @@ except ImportError:
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            translateToLigandName,
+                                           isLongRangeRestraint,
                                            isCyclicPolymer,
                                            isStructConn,
                                            guessCompIdFromAtomId,
@@ -711,7 +713,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                         transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                     'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                    'type': 'through-space?',  # optimistic inferencing?
+                                    'type': 'through-space' if 'long_range' in cur_spectral_dim[1] else 'through-space?',  # optimistic inferencing?
                                     'indirect': 'yes'}
                         if transfer in cur_spectral_dim_transfer:
                             continue
@@ -728,7 +730,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                         transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                     'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                    'type': 'through-space?',  # optimistic inferencing?
+                                    'type': 'through-space' if 'long_range' in cur_spectral_dim[1] else 'through-space?',  # optimistic inferencing?
                                     'indirect': 'yes'}
                         if transfer in cur_spectral_dim_transfer:
                             continue
@@ -746,7 +748,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                        'type': 'through-space?',  # optimistic inferencing?
+                                        'type': 'through-space' if 'long_range' in cur_spectral_dim[1] else 'through-space?',  # optimistic inferencing?
                                         'indirect': 'yes'}
                             if transfer in cur_spectral_dim_transfer:
                                 continue
@@ -762,7 +764,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                         transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                     'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                    'type': 'through-space?',  # optimistic inferencing?
+                                    'type': 'through-space' if 'long_range' in cur_spectral_dim[1] else 'through-space?',  # optimistic inferencing?
                                     'indirect': 'yes'}
                         if transfer in cur_spectral_dim_transfer:
                             continue
@@ -1998,7 +2000,7 @@ class BasePKParserListener():
                                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                         transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                     'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                                    'type': 'through-space?',  # optimistic inferencing?
+                                                    'type': 'through-space' if 'long_range' in cur_spectral_dim[1] else 'through-space?',  # optimistic inferencing?
                                                     'indirect': 'yes'}
                                         if transfer in cur_spectral_dim_transfer:
                                             continue
@@ -2015,7 +2017,7 @@ class BasePKParserListener():
                                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                         transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                     'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                                    'type': 'through-space?',  # optimistic inferencing?
+                                                    'type': 'through-space' if 'long_range' in cur_spectral_dim[1] else 'through-space?',  # optimistic inferencing?
                                                     'indirect': 'yes'}
                                         if transfer in cur_spectral_dim_transfer:
                                             continue
@@ -2033,7 +2035,7 @@ class BasePKParserListener():
                                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                                        'type': 'through-space?',  # optimistic inferencing?
+                                                        'type': 'through-space' if 'long_range' in cur_spectral_dim[1] else 'through-space?',  # optimistic inferencing?
                                                         'indirect': 'yes'}
                                             if transfer in cur_spectral_dim_transfer:
                                                 continue
@@ -2049,7 +2051,7 @@ class BasePKParserListener():
                                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
                                         transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                     'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
-                                                    'type': 'through-space?',  # optimistic inferencing?
+                                                    'type': 'through-space' if 'long_range' in cur_spectral_dim[1] else 'through-space?',  # optimistic inferencing?
                                                     'indirect': 'yes'}
                                         if transfer in cur_spectral_dim_transfer:
                                             continue
@@ -2678,6 +2680,8 @@ class BasePKParserListener():
         has_assignments = has_multiple_assignments = False
         asis1 = asis2 = None
 
+        has_long_range = 'long_range' in self.spectral_dim[self.num_of_dim][self.cur_list_id][1]
+
         if all(assignment is not None for assignment in assignments):
 
             self.retrieveLocalSeqScheme()
@@ -2728,6 +2732,14 @@ class BasePKParserListener():
                             if has_assignments:
                                 self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2])
+                                if not has_long_range:
+                                    for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                                          self.atomSelectionSet[1]):
+                                        has_long_range |= isLongRangeRestraint([atom1, atom2], self.polySeq)
+                                        if has_long_range:
+                                            if 'long_range' not in self.spectral_dim[self.num_of_dim][self.cur_list_id][1]:
+                                                self.spectral_dim[self.num_of_dim][self.cur_list_id][1]['long_range'] = True
+                                            break
                             else:
                                 break
                         else:
@@ -2743,6 +2755,8 @@ class BasePKParserListener():
                            ) -> Tuple[bool, bool, Optional[bool], Optional[bool], Optional[bool]]:
         has_assignments = has_multiple_assignments = False
         asis1 = asis2 = asis3 = None
+
+        has_long_range = 'long_range' in self.spectral_dim[self.num_of_dim][self.cur_list_id][1]
 
         if all(assignment is not None for assignment in assignments):
 
@@ -2807,6 +2821,15 @@ class BasePKParserListener():
                             if has_assignments:
                                 self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3])
+                                if not has_long_range:
+                                    for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
+                                                                                 self.atomSelectionSet[1],
+                                                                                 self.atomSelectionSet[2]):
+                                        has_long_range |= isLongRangeRestraint([atom1, atom2, atom3], self.polySeq)
+                                        if has_long_range:
+                                            if 'long_range' not in self.spectral_dim[self.num_of_dim][self.cur_list_id][1]:
+                                                self.spectral_dim[self.num_of_dim][self.cur_list_id][1]['long_range'] = True
+                                            break
                             else:
                                 break
                         else:
@@ -2822,6 +2845,8 @@ class BasePKParserListener():
                            ) -> Tuple[bool, bool, Optional[bool], Optional[bool], Optional[bool], Optional[bool]]:
         has_assignments = has_multiple_assignments = False
         asis1 = asis2 = asis3 = asis4 = None
+
+        has_long_range = 'long_range' in self.spectral_dim[self.num_of_dim][self.cur_list_id][1]
 
         if all(assignment is not None for assignment in assignments):
 
@@ -2892,6 +2917,16 @@ class BasePKParserListener():
                             if has_assignments:
                                 self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3, asis4])
+                                if not has_long_range:
+                                    for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                                        self.atomSelectionSet[1],
+                                                                                        self.atomSelectionSet[2],
+                                                                                        self.atomSelectionSet[3]):
+                                        has_long_range |= isLongRangeRestraint([atom1, atom2, atom3, atom4], self.polySeq)
+                                        if has_long_range:
+                                            if 'long_range' not in self.spectral_dim[self.num_of_dim][self.cur_list_id][1]:
+                                                self.spectral_dim[self.num_of_dim][self.cur_list_id][1]['long_range'] = True
+                                            break
                             else:
                                 break
                         else:

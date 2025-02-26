@@ -31,6 +31,7 @@ try:
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        translateToLigandName,
+                                                       hasInterChainRestraint,
                                                        isLongRangeRestraint,
                                                        isCyclicPolymer,
                                                        isStructConn,
@@ -103,6 +104,7 @@ except ImportError:
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            translateToLigandName,
+                                           hasInterChainRestraint,
                                            isLongRangeRestraint,
                                            isCyclicPolymer,
                                            isStructConn,
@@ -2680,7 +2682,16 @@ class BasePKParserListener():
         has_assignments = has_multiple_assignments = False
         asis1 = asis2 = None
 
-        has_long_range = 'long_range' in self.spectral_dim[self.num_of_dim][self.cur_list_id][1]
+        primary_specral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][1]
+        has_long_range = 'long_range' in primary_specral_dim
+
+        if 'is_noesy' not in primary_specral_dim:
+            file_name = self.__originalFileName.lower()
+            alt_file_name = '' if self.spectrum_name is None else self.spectrum_name.lower()
+            _file_names = (file_name, alt_file_name)
+            primary_specral_dim['is_noesy'] = any('noe' in n for n in _file_names) or any('roe' in n for n in _file_names)
+            if primary_specral_dim['is_noesy']:
+                primary_specral_dim['long_range'] = True
 
         if all(assignment is not None for assignment in assignments):
 
@@ -2733,13 +2744,18 @@ class BasePKParserListener():
                                 self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2])
                                 if not has_long_range:
-                                    for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
-                                                                          self.atomSelectionSet[1]):
-                                        has_long_range |= isLongRangeRestraint([atom1, atom2], self.polySeq)
-                                        if has_long_range:
-                                            if 'long_range' not in self.spectral_dim[self.num_of_dim][self.cur_list_id][1]:
-                                                self.spectral_dim[self.num_of_dim][self.cur_list_id][1]['long_range'] = True
-                                            break
+                                    if hasInterChainRestraint(self.atomSelectionSet):
+                                        has_long_range = True
+                                        if 'long_range' not in primary_specral_dim:
+                                            primary_specral_dim['long_range'] = True
+                                    else:
+                                        for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                                              self.atomSelectionSet[1]):
+                                            has_long_range |= isLongRangeRestraint([atom1, atom2], self.polySeq)
+                                            if has_long_range:
+                                                if 'long_range' not in primary_specral_dim:
+                                                    primary_specral_dim['long_range'] = True
+                                                break
                             else:
                                 break
                         else:
@@ -2756,7 +2772,16 @@ class BasePKParserListener():
         has_assignments = has_multiple_assignments = False
         asis1 = asis2 = asis3 = None
 
-        has_long_range = 'long_range' in self.spectral_dim[self.num_of_dim][self.cur_list_id][1]
+        primary_specral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][1]
+        has_long_range = 'long_range' in primary_specral_dim
+
+        if 'is_noesy' not in primary_specral_dim:
+            file_name = self.__originalFileName.lower()
+            alt_file_name = '' if self.spectrum_name is None else self.spectrum_name.lower()
+            _file_names = (file_name, alt_file_name)
+            primary_specral_dim['is_noesy'] = any('noe' in n for n in _file_names) or any('roe' in n for n in _file_names)
+            if primary_specral_dim['is_noesy']:
+                primary_specral_dim['long_range'] = True
 
         if all(assignment is not None for assignment in assignments):
 
@@ -2822,14 +2847,19 @@ class BasePKParserListener():
                                 self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3])
                                 if not has_long_range:
-                                    for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
-                                                                                 self.atomSelectionSet[1],
-                                                                                 self.atomSelectionSet[2]):
-                                        has_long_range |= isLongRangeRestraint([atom1, atom2, atom3], self.polySeq)
-                                        if has_long_range:
-                                            if 'long_range' not in self.spectral_dim[self.num_of_dim][self.cur_list_id][1]:
-                                                self.spectral_dim[self.num_of_dim][self.cur_list_id][1]['long_range'] = True
-                                            break
+                                    if hasInterChainRestraint(self.atomSelectionSet):
+                                        has_long_range = True
+                                        if 'long_range' not in primary_specral_dim:
+                                            primary_specral_dim['long_range'] = True
+                                    else:
+                                        for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
+                                                                                     self.atomSelectionSet[1],
+                                                                                     self.atomSelectionSet[2]):
+                                            has_long_range |= isLongRangeRestraint([atom1, atom2, atom3], self.polySeq)
+                                            if has_long_range:
+                                                if 'long_range' not in primary_specral_dim:
+                                                    primary_specral_dim['long_range'] = True
+                                                break
                             else:
                                 break
                         else:
@@ -2846,7 +2876,16 @@ class BasePKParserListener():
         has_assignments = has_multiple_assignments = False
         asis1 = asis2 = asis3 = asis4 = None
 
-        has_long_range = 'long_range' in self.spectral_dim[self.num_of_dim][self.cur_list_id][1]
+        primary_specral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][1]
+        has_long_range = 'long_range' in primary_specral_dim
+
+        if 'is_noesy' not in primary_specral_dim:
+            file_name = self.__originalFileName.lower()
+            alt_file_name = '' if self.spectrum_name is None else self.spectrum_name.lower()
+            _file_names = (file_name, alt_file_name)
+            primary_specral_dim['is_noesy'] = any('noe' in n for n in _file_names) or any('roe' in n for n in _file_names)
+            if primary_specral_dim['is_noesy']:
+                primary_specral_dim['long_range'] = True
 
         if all(assignment is not None for assignment in assignments):
 
@@ -2918,15 +2957,20 @@ class BasePKParserListener():
                                 self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3, asis4])
                                 if not has_long_range:
-                                    for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
-                                                                                        self.atomSelectionSet[1],
-                                                                                        self.atomSelectionSet[2],
-                                                                                        self.atomSelectionSet[3]):
-                                        has_long_range |= isLongRangeRestraint([atom1, atom2, atom3, atom4], self.polySeq)
-                                        if has_long_range:
-                                            if 'long_range' not in self.spectral_dim[self.num_of_dim][self.cur_list_id][1]:
-                                                self.spectral_dim[self.num_of_dim][self.cur_list_id][1]['long_range'] = True
-                                            break
+                                    if hasInterChainRestraint(self.atomSelectionSet):
+                                        has_long_range = True
+                                        if 'long_range' not in primary_specral_dim:
+                                            primary_specral_dim['long_range'] = True
+                                    else:
+                                        for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                                            self.atomSelectionSet[1],
+                                                                                            self.atomSelectionSet[2],
+                                                                                            self.atomSelectionSet[3]):
+                                            has_long_range |= isLongRangeRestraint([atom1, atom2, atom3, atom4], self.polySeq)
+                                            if has_long_range:
+                                                if 'long_range' not in primary_specral_dim:
+                                                    primary_specral_dim['long_range'] = True
+                                                break
                             else:
                                 break
                         else:

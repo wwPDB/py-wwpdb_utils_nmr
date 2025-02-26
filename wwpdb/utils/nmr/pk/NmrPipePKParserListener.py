@@ -1087,40 +1087,47 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             self.originalNumberSelection.clear()
 
     def enterNumber(self, ctx: NmrPipePKParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+
+        try:
+
+            if ctx.Integer():
+                value = str(ctx.Integer())
+                if self.null_value is not None and value == self.null_value:
+                    self.numberSelection.append(None)
+                    self.originalNumberSelection.append(None)
+                else:
+                    self.numberSelection.append(int(value))
+                    self.originalNumberSelection.append(value)
+
+            elif ctx.Float():
+                value = str(ctx.Float())
+                if self.null_value is not None and value == self.null_value:
+                    self.numberSelection.append(None)
+                    self.originalNumberSelection.append(None)
+                else:
+                    self.numberSelection.append(float(value))
+                    self.originalNumberSelection.append(value)
+
+            elif ctx.Real():
+                value = str(ctx.Real())
+                if self.null_value is not None and value == self.null_value:
+                    self.numberSelection.append(None)
+                    self.originalNumberSelection.append(None)
+                else:
+                    self.numberSelection.append(float(value))
+                    self.originalNumberSelection.append(value)
+
+            else:
+                self.numberSelection.append(None)
+                self.originalNumberSelection.append(str(ctx.Any_name()))
+
+        except ValueError:
+            self.numberSelection.append(None)
+            self.originalNumberSelection.append(None)
 
     # Exit a parse tree produced by NmrPipePKParser#number.
-    def exitNumber(self, ctx: NmrPipePKParser.NumberContext):
-        if ctx.Integer():
-            value = str(ctx.Integer())
-            if self.null_value is not None and value == self.null_value:
-                self.numberSelection.append(None)
-                self.originalNumberSelection.append(None)
-            else:
-                self.numberSelection.append(int(value))
-                self.originalNumberSelection.append(value)
-
-        elif ctx.Float():
-            value = str(ctx.Float())
-            if self.null_value is not None and value == self.null_value:
-                self.numberSelection.append(None)
-                self.originalNumberSelection.append(None)
-            else:
-                self.numberSelection.append(float(value))
-                self.originalNumberSelection.append(value)
-
-        elif ctx.Real():
-            value = str(ctx.Real())
-            if self.null_value is not None and value == self.null_value:
-                self.numberSelection.append(None)
-                self.originalNumberSelection.append(None)
-            else:
-                self.numberSelection.append(float(value))
-                self.originalNumberSelection.append(value)
-
-        else:
-            self.numberSelection.append(None)
-            self.originalNumberSelection.append(str(ctx.Any_name()))
+    def exitNumber(self, ctx: NmrPipePKParser.NumberContext):  # pylint: disable=unused-argument
+        pass
 
 
 # del NmrPipePKParser

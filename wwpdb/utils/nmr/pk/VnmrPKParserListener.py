@@ -840,20 +840,27 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by VnmrPKParser#number.
     def enterNumber(self, ctx: VnmrPKParser.NumberContext):
-        if ctx.Float():
-            value = str(ctx.Float())
-            self.numberSelection.append(float(value))
-            self.originalNumberSelection.append(value)
 
-        elif ctx.Real():
-            value = str(ctx.Real())
-            self.numberSelection.append(float(value))
-            self.originalNumberSelection.append(value)
+        try:
 
-        else:
-            value = str(ctx.Integer())
-            self.numberSelection.append(int(value))
-            self.originalNumberSelection.append(value)
+            if ctx.Float():
+                value = str(ctx.Float())
+                self.numberSelection.append(float(value))
+                self.originalNumberSelection.append(value)
+
+            elif ctx.Real():
+                value = str(ctx.Real())
+                self.numberSelection.append(float(value))
+                self.originalNumberSelection.append(value)
+
+            else:
+                value = str(ctx.Integer())
+                self.numberSelection.append(int(value))
+                self.originalNumberSelection.append(value)
+
+        except ValueError:
+            self.numberSelection.append(None)
+            self.originalNumberSelection.append(None)
 
     # Exit a parse tree produced by VnmrPKParser#number.
     def exitNumber(self, ctx: VnmrPKParser.NumberContext):  # pylint: disable=unused-argument

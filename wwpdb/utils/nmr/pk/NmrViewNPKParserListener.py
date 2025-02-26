@@ -908,30 +908,43 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by NmrViewNPKParser#jcoupling.
     def exitJcoupling(self, ctx: NmrViewNPKParser.JcouplingContext):  # pylint: disable=unused-argument
-        if ctx.Float():
-            self.__jcouplings.append(float(str(ctx.Float())))
-        else:
-            self.__jcouplings.append(str(ctx.Simple_name()))
+
+        try:
+
+            if ctx.Float():
+                self.__jcouplings.append(float(str(ctx.Float())))
+            else:
+                self.__jcouplings.append(str(ctx.Simple_name()))
+
+        except ValueError:
+            self.__jcouplings.append(None)
 
     # Enter a parse tree produced by NmrViewNPKParser#number.
-    def enterNumber(self, ctx: NmrViewNPKParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+    def enterNumber(self, ctx: NmrViewNPKParser.NumberContext):
 
-    # Exit a parse tree produced by NmrViewNPKParser#number.
-    def exitNumber(self, ctx: NmrViewNPKParser.NumberContext):
-        if ctx.Float():
-            value = str(ctx.Float())
-            self.numberSelection.append(float(value))
-            self.originalNumberSelection.append(value)
+        try:
 
-        elif ctx.Integer():
-            value = str(ctx.Integer())
-            self.numberSelection.append(float(value))
-            self.originalNumberSelection.append(value)
+            if ctx.Float():
+                value = str(ctx.Float())
+                self.numberSelection.append(float(value))
+                self.originalNumberSelection.append(value)
 
-        else:
+            elif ctx.Integer():
+                value = str(ctx.Integer())
+                self.numberSelection.append(float(value))
+                self.originalNumberSelection.append(value)
+
+            else:
+                self.numberSelection.append(None)
+                self.originalNumberSelection.append(None)
+
+        except ValueError:
             self.numberSelection.append(None)
             self.originalNumberSelection.append(None)
+
+    # Exit a parse tree produced by NmrViewNPKParser#number.
+    def exitNumber(self, ctx: NmrViewNPKParser.NumberContext):  # pylint: disable=unused-argument
+        pass
 
 
 # del NmrViewNPKParser

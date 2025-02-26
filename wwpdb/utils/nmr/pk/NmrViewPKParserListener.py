@@ -964,47 +964,57 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by NmrViewPKParser#jcoupling.
     def exitJcoupling(self, ctx: NmrViewPKParser.JcouplingContext):  # pylint: disable=unused-argument
-        if ctx.Float():
-            self.__jcouplings.append(float(str(ctx.Float())))
+
+        try:
+
+            if ctx.Float():
+                self.__jcouplings.append(float(str(ctx.Float())))
+                self.__jcoupling_types.append('float')
+            elif ctx.Simple_name():
+                self.__jcouplings.append(str(ctx.Simple_name()))
+                self.__jcoupling_types.append('simple_name')
+            else:
+                value = self.__enclose_data[-1].strip()
+                try:
+                    _value = float(value)
+                    self.__jcouplings.append(_value)
+                except ValueError:
+                    self.__jcouplings.append(value)
+                self.__jcoupling_types.append('enclose_data')
+
+        except ValueError:
+            self.__jcouplings.append(None)
             self.__jcoupling_types.append('float')
-        elif ctx.Simple_name():
-            self.__jcouplings.append(str(ctx.Simple_name()))
-            self.__jcoupling_types.append('simple_name')
-        else:
-            value = self.__enclose_data[-1].strip()
-            try:
-                _value = float(value)
-                self.__jcouplings.append(_value)
-            except ValueError:
-                self.__jcouplings.append(value)
-            self.__jcoupling_types.append('enclose_data')
 
     # Enter a parse tree produced by NmrViewPKParser#number.
-    def enterNumber(self, ctx: NmrViewPKParser.NumberContext):  # pylint: disable=unused-argument
-        pass
+    def enterNumber(self, ctx: NmrViewPKParser.NumberContext):
 
-    # Exit a parse tree produced by NmrViewPKParser#number.
-    def exitNumber(self, ctx: NmrViewPKParser.NumberContext):
-        if ctx.Float():
-            value = str(ctx.Float())
-            self.numberSelection.append(float(value))
-            self.originalNumberSelection.append(value)
+        try:
 
-        elif ctx.Integer():
-            value = str(ctx.Integer())
-            self.numberSelection.append(float(value))
-            self.originalNumberSelection.append(value)
+            if ctx.Float():
+                value = str(ctx.Float())
+                self.numberSelection.append(float(value))
+                self.originalNumberSelection.append(value)
 
-        else:
+            elif ctx.Integer():
+                value = str(ctx.Integer())
+                self.numberSelection.append(float(value))
+                self.originalNumberSelection.append(value)
+
+            else:
+                self.numberSelection.append(None)
+                self.originalNumberSelection.append(None)
+
+        except ValueError:
             self.numberSelection.append(None)
             self.originalNumberSelection.append(None)
 
-    # Enter a parse tree produced by NmrViewPKParser#enclose_data.
-    def enterEnclose_data(self, ctx: NmrViewPKParser.Enclose_dataContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by NmrViewPKParser#number.
+    def exitNumber(self, ctx: NmrViewPKParser.NumberContext):  # pylint: disable=unused-argument
         pass
 
-    # Exit a parse tree produced by NmrViewPKParser#enclose_data.
-    def exitEnclose_data(self, ctx: NmrViewPKParser.Enclose_dataContext):
+    # Enter a parse tree produced by NmrViewPKParser#enclose_data.
+    def enterEnclose_data(self, ctx: NmrViewPKParser.Enclose_dataContext):
         comment = []
         for col in range(20):
             if ctx.Any_name(col):
@@ -1013,6 +1023,10 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                 break
         last_comment = None if len(comment) == 0 else ' '.join(comment)
         self.__enclose_data.append(last_comment)
+
+    # Exit a parse tree produced by NmrViewPKParser#enclose_data.
+    def exitEnclose_data(self, ctx: NmrViewPKParser.Enclose_dataContext):  # pylint: disable=unused-argument
+        pass
 
 
 # del NmrViewPKParser

@@ -1592,7 +1592,7 @@ class BasePKParserListener():
                 for _id, cur_spectral_dim in v.items():
 
                     if self.debug:
-                        print(f'original file name: {self.__originalFileName}{", spectrum name: " + spectrum_names[d][_id] if spectrum_names is not None else ""}')
+                        print(f'original file name: {self.__originalFileName}{", spectrum name: " + str(spectrum_names[d][_id]) if spectrum_names is not None else ""}')
 
                     file_name = self.__originalFileName.lower()
                     alt_file_name = ''

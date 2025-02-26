@@ -485,15 +485,22 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by PonderosaPKParser#number.
     def enterNumber(self, ctx: PonderosaPKParser.NumberContext):
-        if ctx.Float():
-            value = str(ctx.Float())
-            self.numberSelection.append(float(value))
-            self.originalNumberSelection.append(value)
 
-        else:
-            value = str(ctx.Real())
-            self.numberSelection.append(float(value))
-            self.originalNumberSelection.append(value)
+        try:
+
+            if ctx.Float():
+                value = str(ctx.Float())
+                self.numberSelection.append(float(value))
+                self.originalNumberSelection.append(value)
+
+            else:
+                value = str(ctx.Real())
+                self.numberSelection.append(float(value))
+                self.originalNumberSelection.append(value)
+
+        except ValueError:
+            self.numberSelection.append(None)
+            self.originalNumberSelection.append(None)
 
     # Exit a parse tree produced by PonderosaPKParser#number.
     def exitNumber(self, ctx: PonderosaPKParser.NumberContext):  # pylint: disable=unused-argument

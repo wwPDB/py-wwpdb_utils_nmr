@@ -874,31 +874,38 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by SparkyPKParser#number.
     def enterNumber(self, ctx: SparkyPKParser.NumberContext):
-        if ctx.Float():
-            value = str(ctx.Float())
-            self.numberSelection.append(float(value))
-            self.originalNumberSelection.append(value)
 
-        elif ctx.Real():
-            value = str(ctx.Real())
-            self.numberSelection.append(float(value))
-            self.originalNumberSelection.append(value)
+        try:
 
-        elif ctx.Real_vol():
-            self.__has_real_vol = True
-            if self.reasons is None and 'has_real_vol' not in self.reasonsForReParsing:
-                self.reasonsForReParsing['has_real_vol'] = True
-            value = str(ctx.Real_vol())
-            if ' ' in value:
-                value = value.split()[0]
-                self.__real_vol = value
-            self.numberSelection.append(float(value))
-            self.originalNumberSelection.append(value)
+            if ctx.Float():
+                value = str(ctx.Float())
+                self.numberSelection.append(float(value))
+                self.originalNumberSelection.append(value)
 
-        else:
-            value = str(ctx.Integer())
-            self.numberSelection.append(int(value))
-            self.originalNumberSelection.append(value)
+            elif ctx.Real():
+                value = str(ctx.Real())
+                self.numberSelection.append(float(value))
+                self.originalNumberSelection.append(value)
+
+            elif ctx.Real_vol():
+                self.__has_real_vol = True
+                if self.reasons is None and 'has_real_vol' not in self.reasonsForReParsing:
+                    self.reasonsForReParsing['has_real_vol'] = True
+                value = str(ctx.Real_vol())
+                if ' ' in value:
+                    value = value.split()[0]
+                    self.__real_vol = value
+                self.numberSelection.append(float(value))
+                self.originalNumberSelection.append(value)
+
+            else:
+                value = str(ctx.Integer())
+                self.numberSelection.append(int(value))
+                self.originalNumberSelection.append(value)
+
+        except ValueError:
+            self.numberSelection.append(None)
+            self.originalNumberSelection.append(None)
 
     # Exit a parse tree produced by SparkyPKParser#number.
     def exitNumber(self, ctx: SparkyPKParser.NumberContext):  # pylint: disable=unused-argument

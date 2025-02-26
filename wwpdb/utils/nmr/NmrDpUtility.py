@@ -36130,7 +36130,8 @@ class NmrDpUtility:
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path, self.__cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                 csLoops=self.__lp_data['chem_shift'])
 
                 if None not in (parser_err_listener, listener)\
                    and (parser_err_listener.getMessageList() is None or _content_subtype is not None):
@@ -36153,7 +36154,8 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                      csLoops=self.__lp_data['chem_shift'])
 
                     deal_pea_warn_message(listener, ignore_error)
 
@@ -36199,7 +36201,8 @@ class NmrDpUtility:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                 csLoops=self.__lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -36227,7 +36230,8 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                      csLoops=self.__lp_data['chem_shift'])
 
                     deal_pea_warn_message(listener, ignore_error)
 
@@ -36273,7 +36277,8 @@ class NmrDpUtility:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                 csLoops=self.__lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -36301,7 +36306,8 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                      csLoops=self.__lp_data['chem_shift'])
 
                     deal_pea_warn_message(listener, ignore_error)
 
@@ -36347,7 +36353,8 @@ class NmrDpUtility:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                 csLoops=self.__lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -36375,7 +36382,8 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                      csLoops=self.__lp_data['chem_shift'])
 
                     deal_pea_warn_message(listener, ignore_error)
 
@@ -36423,7 +36431,8 @@ class NmrDpUtility:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                 csLoops=self.__lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -36452,7 +36461,8 @@ class NmrDpUtility:
                     listener, parser_err_listener, lexer_err_listener =\
                         reader.parse(file_path, self.__cifPath,
                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                     listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                     listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                     csLoops=self.__lp_data['chem_shift'])
 
                     _content_subtype = listener.getContentSubtype() if listener is not None else None
                     if _content_subtype is not None and len(_content_subtype) == 0:
@@ -36480,7 +36490,8 @@ class NmrDpUtility:
                     listener, parser_err_listener, lexer_err_listener =\
                         reader.parse(file_path, self.__cifPath,
                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                     listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                     listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                     csLoops=self.__lp_data['chem_shift'])
 
                     _content_subtype = listener.getContentSubtype() if listener is not None else None
                     if _content_subtype is not None and len(_content_subtype) == 0:
@@ -36526,7 +36537,8 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                      csLoops=self.__lp_data['chem_shift'])
 
                     deal_pea_warn_message(listener, ignore_error)
 
@@ -36644,7 +36656,8 @@ class NmrDpUtility:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                 csLoops=self.__lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -36673,7 +36686,8 @@ class NmrDpUtility:
                     listener, parser_err_listener, lexer_err_listener =\
                         reader.parse(file_path, self.__cifPath,
                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                     listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                     listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                     csLoops=self.__lp_data['chem_shift'])
 
                     _content_subtype = listener.getContentSubtype() if listener is not None else None
                     if _content_subtype is not None and len(_content_subtype) == 0:
@@ -36710,7 +36724,8 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                      csLoops=self.__lp_data['chem_shift'])
 
                     deal_pea_warn_message(listener, ignore_error)
 
@@ -36756,7 +36771,8 @@ class NmrDpUtility:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                 csLoops=self.__lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -36784,7 +36800,8 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                      csLoops=self.__lp_data['chem_shift'])
 
                     deal_pea_warn_message(listener, ignore_error)
 
@@ -36831,7 +36848,8 @@ class NmrDpUtility:
                 listener, parser_err_listener, lexer_err_listener =\
                     reader.parse(file_path, self.__cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                 csLoops=self.__lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -36860,7 +36878,8 @@ class NmrDpUtility:
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                      csLoops=self.__lp_data['chem_shift'])
 
                     deal_pea_warn_message(listener, ignore_error)
 
@@ -50907,7 +50926,8 @@ class NmrDpUtility:
 
             listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                          csLoops=self.__lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -50925,7 +50945,8 @@ class NmrDpUtility:
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                  csLoops=self.__lp_data['chem_shift'])
 
                 deal_pea_warn_message(listener)
 
@@ -50969,7 +50990,8 @@ class NmrDpUtility:
 
             listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                          csLoops=self.__lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -50987,7 +51009,8 @@ class NmrDpUtility:
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                  csLoops=self.__lp_data['chem_shift'])
 
                 deal_pea_warn_message(listener)
 
@@ -51031,7 +51054,8 @@ class NmrDpUtility:
 
             listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                          csLoops=self.__lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -51049,7 +51073,8 @@ class NmrDpUtility:
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                  csLoops=self.__lp_data['chem_shift'])
 
                 deal_pea_warn_message(listener)
 
@@ -51093,7 +51118,8 @@ class NmrDpUtility:
 
             listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                          csLoops=self.__lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -51111,7 +51137,8 @@ class NmrDpUtility:
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                  csLoops=self.__lp_data['chem_shift'])
 
                 deal_pea_warn_message(listener)
 
@@ -51155,7 +51182,8 @@ class NmrDpUtility:
 
             listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                          csLoops=self.__lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -51173,7 +51201,8 @@ class NmrDpUtility:
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                                  listIdCounter=_list_id_counter, entryId=self.__entry_id,
+                                                  csLoops=self.__lp_data['chem_shift'])
 
                 deal_pea_warn_message(listener)
 
@@ -51279,7 +51308,8 @@ class NmrDpUtility:
 
             listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                          csLoops=self.__lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -51297,7 +51327,8 @@ class NmrDpUtility:
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                  csLoops=self.__lp_data['chem_shift'])
 
                 deal_pea_warn_message(listener)
 
@@ -51341,7 +51372,8 @@ class NmrDpUtility:
 
             listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                          csLoops=self.__lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -51359,7 +51391,8 @@ class NmrDpUtility:
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, entryId=self.__entry_id)
+                                                  listIdCounter=_list_id_counter, entryId=self.__entry_id,
+                                                  csLoops=self.__lp_data['chem_shift'])
 
                 deal_pea_warn_message(listener)
 
@@ -51404,7 +51437,8 @@ class NmrDpUtility:
 
             listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                          csLoops=self.__lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -51423,7 +51457,8 @@ class NmrDpUtility:
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
-                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                  csLoops=self.__lp_data['chem_shift'])
 
                 deal_pea_warn_message(listener)
 

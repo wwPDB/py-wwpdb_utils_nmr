@@ -958,6 +958,9 @@ class BasePKParserListener():
     # dictionary of pynmrstar saveframes
     sfDict = {}
 
+    # list of assigned chemical shift loops
+    __csLoops = None
+
     __cachedDictForStarAtom = {}
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -1089,6 +1092,9 @@ class BasePKParserListener():
 
     def setEntryId(self, entryId: str):
         self.entryId = entryId
+
+    def setCsLoops(self, csLoops: List[dict]):
+        self.__csLoops = csLoops
 
     def enter(self):
         self.num_of_dim = -1
@@ -2220,34 +2226,48 @@ class BasePKParserListener():
                             except (KeyError, AttributeError):
                                 pass
 
-                        if any(transfer['type'] == 'onebond' for transfer in cur_spectral_dim_transfer):
+                        has_assign = False
 
-                            has_assign = False
+                        if sf['peak_row_format']:
+                            lp = sf['loop']
+                            for row in lp.get_tag('Auth_asym_ID_1'):
+                                if row not in emptyValue:
+                                    has_assign = True
+                                    break
 
-                            if sf['peak_row_format']:
-                                lp = sf['loop']
-                                for row in lp.get_tag('Auth_asym_ID_1'):
-                                    if row not in emptyValue:
-                                        has_assign = True
-                                        break
-
-                            else:
-                                lp = next((aux_lp for aux_lp in sf['aux_loops'] if aux_lp.category == '_Assigned_peak_chem_shift'), None)
-                                if lp is None or len(lp) == 0:
-                                    continue
-                                for row in lp.get_tag('Auth_entity_ID'):
-                                    if row not in emptyValue:
-                                        has_assign = True
-                                        break
-
-                            if not has_assign:
+                        else:
+                            lp = next((aux_lp for aux_lp in sf['aux_loops'] if aux_lp.category == '_Assigned_peak_chem_shift'), None)
+                            if lp is None or len(lp) == 0:
                                 continue
+                            for row in lp.get_tag('Auth_entity_ID'):
+                                if row not in emptyValue:
+                                    has_assign = True
+                                    break
 
+                        if not has_assign:
+                            continue
+
+                        if any(transfer['type'] == 'onebond' for transfer in cur_spectral_dim_transfer):
                             onebond_dim_transfers = [[transfer['spectral_dim_id_1'], transfer['spectral_dim_id_2']]
                                                      for transfer in cur_spectral_dim_transfer
                                                      if transfer['type'] == 'onebond']
 
                             self.__remediatePeakAssignmentForOneBondTransfer(d, onebond_dim_transfers, sf['peak_row_format'], lp)
+
+                        if any(transfer['type'] == 'jcoupling' for transfer in cur_spectral_dim_transfer):
+                            jcoupling_dim_transfers = [[transfer['spectral_dim_id_1'], transfer['spectral_dim_id_2']]
+                                                       for transfer in cur_spectral_dim_transfer
+                                                       if transfer['type'] == 'jcoupling']
+
+                            self.__remediatePeakAssignmentForJcouplingTransfer(d, jcoupling_dim_transfers, sf['peak_row_format'], lp)
+
+                        if any(transfer['type'] == 'relayed' for transfer in cur_spectral_dim_transfer)\
+                           and self.__csLoops is not None and len(self.__csLoops) > 0:
+                            relayed_dim_transfers = [[transfer['spectral_dim_id_1'], transfer['spectral_dim_id_2']]
+                                                     for transfer in cur_spectral_dim_transfer
+                                                     if transfer['type'] == 'relayed']
+
+                            self.__remediatePeakAssignmentForRelayedTransfer(d, relayed_dim_transfers, sf['peak_row_format'], lp)
 
     def __remediatePeakAssignmentForOneBondTransfer(self, num_of_dim: int, onebond_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
 
@@ -2409,6 +2429,326 @@ class BasePKParserListener():
 
                             loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] =\
                                 loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = None
+
+    def __remediatePeakAssignmentForJcouplingTransfer(self, num_of_dim: int, jcoupling_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
+
+        details_col = loop.tags.index('Details')
+
+        for dim_id_1, dim_id_2 in jcoupling_transfers:
+
+            if use_peak_row_format:
+
+                tags = [f'Entity_assembly_ID_{dim_id_1}', f'Comp_index_ID_{dim_id_1}', f'Comp_ID_{dim_id_1}', f'Atom_ID_{dim_id_1}', f'Position_{dim_id_1}',
+                        f'Entity_assembly_ID_{dim_id_2}', f'Comp_index_ID_{dim_id_2}', f'Comp_ID_{dim_id_2}', f'Atom_ID_{dim_id_2}', f'Position_{dim_id_2}']
+
+                dat = loop.get_tag(tags)
+
+                for idx, row in enumerate(dat):
+
+                    if any(row[col] in emptyValue for col in range(10)):
+                        continue
+
+                    seq_id, comp_id, atom_id, seq_id2, comp_id2, atom_id2 = row[1], row[2], row[3], row[6], row[7], row[8]
+
+                    if row[0] != row[5] or (seq_id == seq_id2 and comp_id == comp_id2):
+                        continue
+
+                    chain_id = row[0]
+
+                    if isinstance(seq_id, str):
+                        seq_id = int(seq_id)
+
+                    if isinstance(seq_id2, str):
+                        seq_id2 = int(seq_id2)
+
+                    if seq_id != seq_id2:
+                        position, position2 = row[4], row[9]
+
+                        if isinstance(chain_id, int):
+                            chain_id = str(chain_id)
+
+                        if isinstance(position, str):
+                            position = float(position)
+
+                        if isinstance(position2, str):
+                            position2 = float(position2)
+
+                        shift = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
+
+                        if None in (shift, shift2):
+                            continue
+
+                        diff = abs(position - shift)
+                        diff2 = abs(position2 - shift2)
+
+                        if diff < diff2:
+                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2) is not None:
+                                if loop.data[idx][details_col] in emptyValue:
+                                    loop.data[idx][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
+                                loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')]
+
+                        elif diff > diff2:
+                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id) is not None:
+                                if loop.data[idx][details_col] in emptyValue:
+                                    loop.data[idx][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
+                                loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')]
+
+            else:
+
+                tags = ['Peak_ID', 'Spectral_dim_ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID', 'Val']
+
+                seq_id_col = loop.tags.index('Comp_index_ID')
+                comp_id_col = loop.tags.index('Comp_ID')
+                auth_seq_id_col = loop.tags.index('Auth_seq_ID')
+                auth_comp_id_col = loop.tags.index('Auth_comp_ID')
+
+                dat = loop.get_tag(tags)
+
+                peak_id = None
+
+                for idx, row in enumerate(dat):
+                    dim_id = row[1]
+
+                    if any(row[col] in emptyValue for col in range(7)):
+                        continue
+
+                    if dim_id == 1:
+                        peak_id = row[0]
+                        chain_ids, seq_ids, comp_ids, atom_ids, positions = [], [], [], [], []
+                    else:
+                        if peak_id != row[0]:
+                            continue
+
+                    chain_ids.append(row[2])
+                    seq_ids.append(int(row[3]) if isinstance(row[3], str) else row[3])
+                    comp_ids.append(row[4])
+                    atom_ids.append(row[5])
+                    positions.append(float(row[6]) if isinstance(row[6], str) else row[6])
+
+                    if dim_id < num_of_dim:
+                        continue
+
+                    if len(atom_ids) < num_of_dim:
+                        continue
+
+                    _dim_id_1 = dim_id_1 - 1
+                    _dim_id_2 = dim_id_2 - 1
+
+                    seq_id, comp_id, atom_id, seq_id2, comp_id2, atom_id2 =\
+                        seq_id[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], \
+                        seq_id[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2]
+
+                    if chain_ids[_dim_id_1] != chain_ids[_dim_id_2] or (seq_id == seq_id2 and comp_id == comp_id2):
+                        continue
+
+                    if seq_id != seq_id2:
+                        chain_id = chain_ids[_dim_id_1]
+
+                        if isinstance(chain_id, int):
+                            chain_id = str(chain_id)
+
+                        shift = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
+
+                        if None in (shift, shift2):
+                            continue
+
+                        diff = abs(position - shift)
+                        diff2 = abs(position2 - shift2)
+
+                        if diff < diff2:
+                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2) is not None:
+                                if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
+                                    loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
+                                loop.data[idx - num_of_dim + dim_id_2][seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][comp_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
+
+                        elif diff > diff2:
+                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id) is not None:
+                                if loop.data[idx][details_col] in emptyValue:
+                                    loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
+                                loop.data[idx - num_of_dim + dim_id_1][seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][comp_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col]
+
+    def __remediatePeakAssignmentForRelayedTransfer(self, num_of_dim: int, relayed_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
+
+        details_col = loop.tags.index('Details')
+
+        for dim_id_1, dim_id_2 in relayed_transfers:
+
+            if use_peak_row_format:
+
+                tags = [f'Entity_assembly_ID_{dim_id_1}', f'Comp_index_ID_{dim_id_1}', f'Comp_ID_{dim_id_1}', f'Atom_ID_{dim_id_1}', f'Position_{dim_id_1}',
+                        f'Entity_assembly_ID_{dim_id_2}', f'Comp_index_ID_{dim_id_2}', f'Comp_ID_{dim_id_2}', f'Atom_ID_{dim_id_2}', f'Position_{dim_id_2}']
+
+                dat = loop.get_tag(tags)
+
+                for idx, row in enumerate(dat):
+
+                    if any(row[col] in emptyValue for col in range(10)):
+                        continue
+
+                    seq_id, comp_id, atom_id, seq_id2, comp_id2, atom_id2 = row[1], row[2], row[3], row[6], row[7], row[8]
+
+                    if row[0] != row[5] or (seq_id == seq_id2 and comp_id == comp_id2):
+                        continue
+
+                    chain_id = row[0]
+
+                    if isinstance(seq_id, str):
+                        seq_id = int(seq_id)
+
+                    if isinstance(seq_id2, str):
+                        seq_id2 = int(seq_id2)
+
+                    if abs(seq_id - seq_id2) > 1:
+                        position, position2 = row[4], row[9]
+
+                        if isinstance(chain_id, int):
+                            chain_id = str(chain_id)
+
+                        if isinstance(position, str):
+                            position = float(position)
+
+                        if isinstance(position2, str):
+                            position2 = float(position2)
+
+                        shift = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
+
+                        if None in (shift, shift2):
+                            continue
+
+                        diff = abs(position - shift)
+                        diff2 = abs(position2 - shift2)
+
+                        if diff < diff2:
+                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2) is not None:
+                                if loop.data[idx][details_col] in emptyValue:
+                                    loop.data[idx][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
+                                loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')]
+
+                        elif diff > diff2:
+                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id) is not None:
+                                if loop.data[idx][details_col] in emptyValue:
+                                    loop.data[idx][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
+                                loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')]
+
+            else:
+
+                tags = ['Peak_ID', 'Spectral_dim_ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID', 'Val']
+
+                seq_id_col = loop.tags.index('Comp_index_ID')
+                comp_id_col = loop.tags.index('Comp_ID')
+                auth_seq_id_col = loop.tags.index('Auth_seq_ID')
+                auth_comp_id_col = loop.tags.index('Auth_comp_ID')
+
+                dat = loop.get_tag(tags)
+
+                peak_id = None
+
+                for idx, row in enumerate(dat):
+                    dim_id = row[1]
+
+                    if any(row[col] in emptyValue for col in range(7)):
+                        continue
+
+                    if dim_id == 1:
+                        peak_id = row[0]
+                        chain_ids, seq_ids, comp_ids, atom_ids, positions = [], [], [], [], []
+                    else:
+                        if peak_id != row[0]:
+                            continue
+
+                    chain_ids.append(row[2])
+                    seq_ids.append(int(row[3]) if isinstance(row[3], str) else row[3])
+                    comp_ids.append(row[4])
+                    atom_ids.append(row[5])
+                    positions.append(float(row[6]) if isinstance(row[6], str) else row[6])
+
+                    if dim_id < num_of_dim:
+                        continue
+
+                    if len(atom_ids) < num_of_dim:
+                        continue
+
+                    _dim_id_1 = dim_id_1 - 1
+                    _dim_id_2 = dim_id_2 - 1
+
+                    seq_id, comp_id, atom_id, seq_id2, comp_id2, atom_id2 =\
+                        seq_id[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], \
+                        seq_id[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2]
+
+                    if chain_ids[_dim_id_1] != chain_ids[_dim_id_2] or (seq_id == seq_id2 and comp_id == comp_id2):
+                        continue
+
+                    if abs(seq_id - seq_id2) > 1:
+                        chain_id = chain_ids[_dim_id_1]
+
+                        if isinstance(chain_id, int):
+                            chain_id = str(chain_id)
+
+                        shift = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
+
+                        if None in (shift, shift2):
+                            continue
+
+                        diff = abs(position - shift)
+                        diff2 = abs(position2 - shift2)
+
+                        if diff < diff2:
+                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2) is not None:
+                                if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
+                                    loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
+                                loop.data[idx - num_of_dim + dim_id_2][seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][comp_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
+
+                        elif diff > diff2:
+                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id) is not None:
+                                if loop.data[idx][details_col] in emptyValue:
+                                    loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
+                                loop.data[idx - num_of_dim + dim_id_1][seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][comp_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col]
+
+    def __getCsValue(self, chain_id: str, seq_id: int, comp_id: str, atom_id: str) -> Optional[float]:
+
+        if self.__csLoops is None or len(self.__csLoops) == 0:
+            return None
+
+        _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+
+        for lp in self.__csLoops:
+            val = next((row['Val'] for row in lp['data']
+                        if row['Entity_assembly_ID'] == chain_id and row['Comp_index_ID'] == seq_id
+                        and (row['Comp_ID'] == comp_id or comp_id is None)
+                        and row['Atom_ID'] in _atom_ids), None)
+
+            if val is not None:
+                return val
+
+        return None
 
     def validatePeak2D(self, index: int, pos_1: float, pos_2: float,
                        pos_unc_1: Optional[float], pos_unc_2: Optional[float],

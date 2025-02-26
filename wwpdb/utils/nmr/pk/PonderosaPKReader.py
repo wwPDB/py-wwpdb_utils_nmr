@@ -104,7 +104,7 @@ class PonderosaPKReader:
 
     def parse(self, pkFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True,
               createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None,
-              reservedListIds: Optional[dict] = None, entryId: Optional[str] = None
+              reservedListIds: Optional[dict] = None, entryId: Optional[str] = None, csLoops: Optional[List[dict]] = None
               ) -> Tuple[Optional[PonderosaPKParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
         """ Parse PONDEROSA PK file.
             @return: PonderosaPKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
@@ -189,6 +189,8 @@ class PonderosaPKReader:
                     listener.setReservedListIds(reservedListIds)
                 if entryId is not None:
                     listener.setEntryId(entryId)
+                if csLoops is not None:
+                    listener.setCsLoops(csLoops)
             walker.walk(listener, tree)
 
             messageList = parser_error_listener.getMessageList()

@@ -92,7 +92,8 @@
 # 16-Dec-2024  M. Yokochi - add 'nm-pea-vnm' file types for VNMR spectral peak list file (NMR restraint remediation)
 # 31-Jan-2025  M. Yokochi - add 'coordinate_issue' and 'assigned_peak_atom_not_found' warning (DAOTHER-8905, 9785, NMR data remediation, standalone NMR data conversion service)
 # 07-Feb-2025  M. Yokochi - add 'ignore_error' in NmrDpReportInputSource class (DAOTHER-8905)
-# 18-Feb-2025  M. Yokochi - add 'nm-pea-pon' file types for PONDEROSA spectral peak list file (DAOTHER-8905, 9785, NMR restraint remediation)
+# 18-Feb-2025  M. Yokochi - add 'nm-pea-pon' file type for PONDEROSA spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
+# 26-Feb-2025  M. Yokochi - add 'nm-pea-ccp' file type for CCPN tabular spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1771,8 +1772,9 @@ class NmrDpReportInputSource:
                            'nm-res-cya', 'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-mr',
                            'nm-res-noa', 'nm-res-oth', 'nm-res-ros', 'nm-res-sax', 'nm-res-syb',
                            'nm-res-xpl',
-                           'nm-pea-any', 'nm-pea-ari', 'nm-pea-pip', 'nm-pea-pon', 'nm-pea-spa',
-                           'nm-pea-top', 'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi')
+                           'nm-pea-any', 'nm-pea-ari', 'nm-pea-ccp', 'nm-pea-pip', 'nm-pea-pon',
+                           'nm-pea-spa', 'nm-pea-top', 'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea',
+                           'nm-pea-xwi')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',
                               'nmr-chemical-shifts', 'nmr-restraints', 'nmr-peaks')

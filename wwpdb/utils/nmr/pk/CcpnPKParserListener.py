@@ -1,9 +1,9 @@
 ##
-# File: PonderosaPKParserListener.py
-# Date: 18-Feb-2025
+# File: CcpnPKParserListener.py
+# Date: 26-Feb-2025
 #
 # Updates:
-""" ParserLister class for PONDEROSA PK files.
+""" ParserLister class for CCPN PK files.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"
@@ -13,41 +13,34 @@ __license__ = "Apache License 2.0"
 __version__ = "1.0.0"
 
 import sys
-import copy
 
 from antlr4 import ParseTreeListener
 from typing import IO, List, Optional
 
 try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
-    from wwpdb.utils.nmr.pk.PonderosaPKParser import PonderosaPKParser
+    from wwpdb.utils.nmr.pk.CcpnPKParser import CcpnPKParser
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
-                                                       REPRESENTATIVE_ALT_ID,
-                                                       SPECTRAL_DIM_TEMPLATE,
-                                                       ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
+                                                       REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import emptyValue
 except ImportError:
     from nmr.io.CifReader import CifReader
-    from nmr.pk.PonderosaPKParser import PonderosaPKParser
+    from nmr.pk.CcpnPKParser import CcpnPKParser
     from nmr.pk.BasePKParserListener import BasePKParserListener
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
-                                           REPRESENTATIVE_ALT_ID,
-                                           SPECTRAL_DIM_TEMPLATE,
-                                           ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
+                                           REPRESENTATIVE_ALT_ID)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import emptyValue
 
 
-# This class defines a complete listener for a parse tree produced by PonderosaPKParser.
-class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
-
-    __spectrum_names = None
+# This class defines a complete listener for a parse tree produced by CcpnPKParser.
+class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
@@ -59,74 +52,35 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
         super().__init__(verbose, log, representativeModelId, representativeAltId,
                          mrAtomNameMapping, cR, caC, ccU, csStat, nefT, reasons)
 
-        self.file_type = 'nm-pea-pon'
-        self.software_name = 'PONDEROSA'
+        self.file_type = 'nm-pea-ccp'
+        self.software_name = 'CCPN'
 
-    # Enter a parse tree produced by PonderosaPKParser#ponderosa_pk.
-    def enterPonderosa_pk(self, ctx: PonderosaPKParser.Ponderosa_pkContext):  # pylint: disable=unused-argument
-        self.__spectrum_names = {}
-
+    # Enter a parse tree produced by CcpnPKParser#ccpn_pk.
+    def enterCcpn_pk(self, ctx: CcpnPKParser.Ccpn_pkContext):  # pylint: disable=unused-argument
         self.enter()
 
-    # Exit a parse tree produced by PonderosaPKParser#ponderosa_pk.
-    def exitPonderosa_pk(self, ctx: PonderosaPKParser.Ponderosa_pkContext):  # pylint: disable=unused-argument
-        self.exit(self.__spectrum_names if len(self.__spectrum_names) > 0 else None)
+    # Exit a parse tree produced by CcpnPKParser#ccpn_pk.
+    def exitCcpn_pk(self, ctx: CcpnPKParser.Ccpn_pkContext):  # pylint: disable=unused-argument
+        self.exit()
 
-    # Enter a parse tree produced by PonderosaPKParser#peak_list_2d.
-    def enterPeak_list_2d(self, ctx: PonderosaPKParser.Peak_list_2dContext):
+    # Enter a parse tree produced by CcpnPKParser#peak_list_2d.
+    def enterPeak_list_2d(self, ctx: CcpnPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
         self.num_of_dim = 2
-
-        axis_order = str(ctx.Simple_name_AO())
-
-        if len(axis_order) == self.num_of_dim:
-
-            for _dim_id, _axis_code in enumerate(axis_order, start=1):
-                if _dim_id not in self.cur_spectral_dim:
-                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
-                else:
-                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
-
-                cur_spectral_dim['axis_code'] = cur_spectral_dim['axis_order'] = _axis_code
-
-                for a in _axis_code:
-                    a = a.upper()
-                    if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                        cur_spectral_dim['atom_type'] = a
-                        cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
-                        break
-
-                isotope_number = cur_spectral_dim['atom_isotope_number']
-
-                cur_spectral_dim['acquisition'] = 'yes' if _dim_id == self.acq_dim_id\
-                    and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
-
-                if _dim_id == 1 and cur_spectral_dim['acquisition'] == 'no':
-                    self.acq_dim_id = self.num_of_dim
-
-                cur_spectral_dim['under_sampling_type'] = 'not observed' if cur_spectral_dim['acquisition'] == 'yes' else 'aliased'
-
-                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
-
         self.initSpectralDim()
 
-        if self.num_of_dim not in self.__spectrum_names:
-            self.__spectrum_names[self.num_of_dim] = {}
-        if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
-            self.__spectrum_names[self.num_of_dim][self.cur_list_id] = str(ctx.Simple_name_NT())
-
-    # Exit a parse tree produced by PonderosaPKParser#peak_list_2d.
-    def exitPeak_list_2d(self, ctx: PonderosaPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by CcpnPKParser#peak_list_2d.
+    def exitPeak_list_2d(self, ctx: CcpnPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by PonderosaPKParser#peak_2d.
-    def enterPeak_2d(self, ctx: PonderosaPKParser.Peak_2dContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by CcpnPKParser#peak_2d.
+    def enterPeak_2d(self, ctx: CcpnPKParser.Peak_2dContext):  # pylint: disable=unused-argument
         self.peaks2D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by PonderosaPKParser#peak_2d.
-    def exitPeak_2d(self, ctx: PonderosaPKParser.Peak_2dContext):
+    # Exit a parse tree produced by CcpnPKParser#peak_2d.
+    def exitPeak_2d(self, ctx: CcpnPKParser.Peak_2dContext):
 
         try:
 
@@ -134,19 +88,19 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            index = self.peaks2D
+            index = str(ctx.Integer(1))
 
             try:
 
                 P1 = float(str(ctx.Float(0)))
                 P2 = float(str(ctx.Float(1)))
+                W1 = float(str(ctx.Float(2)))
+                W2 = float(str(ctx.Float(3)))
+                # merit = float(str(ctx.Float(4)))
 
             except ValueError:
                 self.peaks2D -= 1
                 return
-
-            volume = None
-            height = self.originalNumberSelection[0]
 
             L1 = str(ctx.Simple_name(0))
             L2 = str(ctx.Simple_name(1))
@@ -156,6 +110,18 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
             if L2 in emptyValue:
                 L2 = None
 
+            height = self.originalNumberSelection[0]
+            volume = self.originalNumberSelection[1]
+
+            details = str(ctx.Simple_name(0))
+            if details in emptyValue:
+                details = None
+
+            # fit_method = str(ctx.Simple_name(1))
+            # vol_method = str(ctx.Simple_name(2))
+            # if ctx.Simple_name(3):
+            #     vol_method += ' ' + str(ctx.Simple_name(3))
+
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
@@ -164,7 +130,7 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             dstFunc = self.validatePeak2D(index, P1, P2, None, None, None, None,
-                                          None, None, None, None, height, None, volume, None)
+                                          None, None, W1, W2, height, None, volume, None)
 
             if dstFunc is None:
                 self.peaks2D -= 1
@@ -194,67 +160,30 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
 
             self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2,
-                                    f'{L1} {L2} -> ', None)
+                                    f'{L1} {L2} -> ', details)
 
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by PonderosaPKParser#peak_list_3d.
-    def enterPeak_list_3d(self, ctx: PonderosaPKParser.Peak_list_3dContext):
+    # Enter a parse tree produced by CcpnPKParser#peak_list_3d.
+    def enterPeak_list_3d(self, ctx: CcpnPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
         self.num_of_dim = 3
-
-        axis_order = str(ctx.Simple_name_AO())
-
-        if len(axis_order) == self.num_of_dim:
-
-            for _dim_id, _axis_code in enumerate(axis_order, start=1):
-                if _dim_id not in self.cur_spectral_dim:
-                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
-                else:
-                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
-
-                cur_spectral_dim['axis_code'] = cur_spectral_dim['axis_order'] = _axis_code
-
-                for a in _axis_code:
-                    a = a.upper()
-                    if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                        cur_spectral_dim['atom_type'] = a
-                        cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
-                        break
-
-                isotope_number = cur_spectral_dim['atom_isotope_number']
-
-                cur_spectral_dim['acquisition'] = 'yes' if _dim_id == self.acq_dim_id\
-                    and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
-
-                if _dim_id == 1 and cur_spectral_dim['acquisition'] == 'no':
-                    self.acq_dim_id = self.num_of_dim
-
-                cur_spectral_dim['under_sampling_type'] = 'not observed' if cur_spectral_dim['acquisition'] == 'yes' else 'aliased'
-
-                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
-
         self.initSpectralDim()
 
-        if self.num_of_dim not in self.__spectrum_names:
-            self.__spectrum_names[self.num_of_dim] = {}
-        if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
-            self.__spectrum_names[self.num_of_dim][self.cur_list_id] = str(ctx.Simple_name_NT())
-
-    # Exit a parse tree produced by PonderosaPKParser#peak_list_3d.
-    def exitPeak_list_3d(self, ctx: PonderosaPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by CcpnPKParser#peak_list_3d.
+    def exitPeak_list_3d(self, ctx: CcpnPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by PonderosaPKParser#peak_3d.
-    def enterPeak_3d(self, ctx: PonderosaPKParser.Peak_3dContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by CcpnPKParser#peak_3d.
+    def enterPeak_3d(self, ctx: CcpnPKParser.Peak_3dContext):  # pylint: disable=unused-argument
         self.peaks3D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by PonderosaPKParser#peak_3d.
-    def exitPeak_3d(self, ctx: PonderosaPKParser.Peak_3dContext):
+    # Exit a parse tree produced by CcpnPKParser#peak_3d.
+    def exitPeak_3d(self, ctx: CcpnPKParser.Peak_3dContext):
 
         try:
 
@@ -262,20 +191,21 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            index = self.peaks3D
+            index = str(ctx.Integer(1))
 
             try:
 
                 P1 = float(str(ctx.Float(0)))
                 P2 = float(str(ctx.Float(1)))
                 P3 = float(str(ctx.Float(2)))
+                W1 = float(str(ctx.Float(3)))
+                W2 = float(str(ctx.Float(4)))
+                W3 = float(str(ctx.Float(5)))
+                # merit = float(str(ctx.Float(6)))
 
             except ValueError:
                 self.peaks3D -= 1
                 return
-
-            volume = None
-            height = self.originalNumberSelection[0]
 
             L1 = str(ctx.Simple_name(0))
             L2 = str(ctx.Simple_name(1))
@@ -288,6 +218,18 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
             if L3 in emptyValue:
                 L3 = None
 
+            height = self.originalNumberSelection[0]
+            volume = self.originalNumberSelection[1]
+
+            details = str(ctx.Simple_name(0))
+            if details in emptyValue:
+                details = None
+
+            # fit_method = str(ctx.Simple_name(1))
+            # vol_method = str(ctx.Simple_name(2))
+            # if ctx.Simple_name(3):
+            #     vol_method += ' ' + str(ctx.Simple_name(3))
+
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
@@ -296,7 +238,7 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             dstFunc = self.validatePeak3D(index, P1, P2, P3, None, None, None, None, None, None,
-                                          None, None, None, None, None, None, height, None, volume, None)
+                                          None, None, None, W1, W2, W3, height, None, volume, None)
 
             if dstFunc is None:
                 self.peaks3D -= 1
@@ -322,7 +264,7 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                     if ext is not None:
                         assignments[1] = ext
                 if L3 is not None:
-                    ext = self.extractPeakAssignment(1, L3, index)
+                    ext = self.extractPeakAssignment(2, L3, index)
                     if ext is not None:
                         assignments[2] = ext
 
@@ -331,67 +273,30 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
 
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
-                                    f'{L1} {L2} {L3} -> ', None)
+                                    f'{L1} {L2} {L3} -> ', details)
 
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by PonderosaPKParser#peak_list_4d.
-    def enterPeak_list_4d(self, ctx: PonderosaPKParser.Peak_list_4dContext):
+    # Enter a parse tree produced by CcpnPKParser#peak_list_4d.
+    def enterPeak_list_4d(self, ctx: CcpnPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
         self.num_of_dim = 4
-
-        axis_order = str(ctx.Simple_name_AO())
-
-        if len(axis_order) == self.num_of_dim:
-
-            for _dim_id, _axis_code in enumerate(axis_order, start=1):
-                if _dim_id not in self.cur_spectral_dim:
-                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
-                else:
-                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
-
-                cur_spectral_dim['axis_code'] = cur_spectral_dim['axis_order'] = _axis_code
-
-                for a in _axis_code:
-                    a = a.upper()
-                    if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                        cur_spectral_dim['atom_type'] = a
-                        cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
-                        break
-
-                isotope_number = cur_spectral_dim['atom_isotope_number']
-
-                cur_spectral_dim['acquisition'] = 'yes' if _dim_id == self.acq_dim_id\
-                    and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
-
-                if _dim_id == 1 and cur_spectral_dim['acquisition'] == 'no':
-                    self.acq_dim_id = self.num_of_dim
-
-                cur_spectral_dim['under_sampling_type'] = 'not observed' if cur_spectral_dim['acquisition'] == 'yes' else 'aliased'
-
-                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
-
         self.initSpectralDim()
 
-        if self.num_of_dim not in self.__spectrum_names:
-            self.__spectrum_names[self.num_of_dim] = {}
-        if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
-            self.__spectrum_names[self.num_of_dim][self.cur_list_id] = str(ctx.Simple_name_NT())
-
-    # Exit a parse tree produced by PonderosaPKParser#peak_list_4d.
-    def exitPeak_list_4d(self, ctx: PonderosaPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by CcpnPKParser#peak_list_4d.
+    def exitPeak_list_4d(self, ctx: CcpnPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by PonderosaPKParser#peak_4d.
-    def enterPeak_4d(self, ctx: PonderosaPKParser.Peak_4dContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by CcpnPKParser#peak_4d.
+    def enterPeak_4d(self, ctx: CcpnPKParser.Peak_4dContext):  # pylint: disable=unused-argument
         self.peaks4D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by PonderosaPKParser#peak_4d.
-    def exitPeak_4d(self, ctx: PonderosaPKParser.Peak_4dContext):
+    # Exit a parse tree produced by CcpnPKParser#peak_4d.
+    def exitPeak_4d(self, ctx: CcpnPKParser.Peak_4dContext):
 
         try:
 
@@ -399,7 +304,7 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            index = self.peaks4D
+            index = str(ctx.Integer(1))
 
             try:
 
@@ -407,13 +312,15 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                 P2 = float(str(ctx.Float(1)))
                 P3 = float(str(ctx.Float(2)))
                 P4 = float(str(ctx.Float(3)))
+                W1 = float(str(ctx.Float(4)))
+                W2 = float(str(ctx.Float(5)))
+                W3 = float(str(ctx.Float(6)))
+                W4 = float(str(ctx.Float(7)))
+                # merit = float(str(ctx.Float(8)))
 
             except ValueError:
                 self.peaks4D -= 1
                 return
-
-            volume = None
-            height = self.originalNumberSelection[0]
 
             L1 = str(ctx.Simple_name(0))
             L2 = str(ctx.Simple_name(1))
@@ -429,6 +336,18 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
             if L4 in emptyValue:
                 L4 = None
 
+            height = self.originalNumberSelection[0]
+            volume = self.originalNumberSelection[1]
+
+            details = str(ctx.Simple_name(0))
+            if details in emptyValue:
+                details = None
+
+            # fit_method = str(ctx.Simple_name(1))
+            # vol_method = str(ctx.Simple_name(2))
+            # if ctx.Simple_name(3):
+            #     vol_method += ' ' + str(ctx.Simple_name(3))
+
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
@@ -437,7 +356,7 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             dstFunc = self.validatePeak4D(index, P1, P2, P3, P4, None, None, None, None, None, None, None, None,
-                                          None, None, None, None, None, None, None, None, height, None, volume, None)
+                                          None, None, None, None, W1, W2, W3, W4, height, None, volume, None)
 
             if dstFunc is None:
                 self.peaks4D -= 1
@@ -464,11 +383,11 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                     if ext is not None:
                         assignments[1] = ext
                 if L3 is not None:
-                    ext = self.extractPeakAssignment(1, L3, index)
+                    ext = self.extractPeakAssignment(2, L3, index)
                     if ext is not None:
                         assignments[2] = ext
                 if L4 is not None:
-                    ext = self.extractPeakAssignment(1, L4, index)
+                    ext = self.extractPeakAssignment(3, L4, index)
                     if ext is not None:
                         assignments[3] = ext
 
@@ -477,14 +396,14 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
 
             self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3, asis4,
-                                    f'{L1} {L2} {L3} {L4} -> ', None)
+                                    f'{L1} {L2} {L3} {L4} -> ', details)
 
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by PonderosaPKParser#number.
-    def enterNumber(self, ctx: PonderosaPKParser.NumberContext):
+    # Enter a parse tree produced by CcpnPKParser#number.
+    def enterNumber(self, ctx: CcpnPKParser.NumberContext):
         if ctx.Float():
             value = str(ctx.Float())
             self.numberSelection.append(float(value))
@@ -495,9 +414,9 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.append(float(value))
             self.originalNumberSelection.append(value)
 
-    # Exit a parse tree produced by PonderosaPKParser#number.
-    def exitNumber(self, ctx: PonderosaPKParser.NumberContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by CcpnPKParser#number.
+    def exitNumber(self, ctx: CcpnPKParser.NumberContext):  # pylint: disable=unused-argument
         pass
 
 
-# del PonderosaPKParser
+# del CcpnPKParser

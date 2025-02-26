@@ -10406,4 +10406,6 @@ def getPdbxNmrSoftwareName(name: str) -> str:
         return 'TopSpin'
     if name == 'XWINNMR':
         return 'XwinNMR'
+    if name == 'CCPN':
+        return 'CcpNmr Analysis'
     return name  # 'ARIA', 'CHARMM', 'CNS', 'CYANA', 'DYNAMO', 'PALES', 'TALOS', 'GROMACS', 'SYBYL', 'VNMR', 'XEASY'

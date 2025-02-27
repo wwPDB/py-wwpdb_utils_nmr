@@ -10,7 +10,7 @@ else:
 
 def serializedATN():
     return [
-        4,1,52,249,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,51,249,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,1,0,3,0,24,8,0,1,0,1,0,1,0,1,
         0,4,0,30,8,0,11,0,12,0,31,1,0,4,0,35,8,0,11,0,12,0,36,1,0,4,0,40,
         8,0,11,0,12,0,41,1,0,5,0,45,8,0,10,0,12,0,48,9,0,1,0,1,0,1,1,1,1,
@@ -29,8 +29,8 @@ def serializedATN():
         1,6,1,7,1,7,1,7,1,7,1,7,1,7,1,7,3,7,215,8,7,1,7,1,7,1,8,1,8,1,8,
         1,8,1,8,1,8,1,8,1,8,1,8,3,8,228,8,8,1,8,1,8,1,9,1,9,1,9,1,9,1,9,
         1,9,1,9,1,9,1,9,1,9,1,9,3,9,243,8,9,1,9,1,9,1,10,1,10,1,10,0,0,11,
-        0,2,4,6,8,10,12,14,16,18,20,0,7,1,1,52,52,2,0,38,38,42,42,2,0,39,
-        39,43,43,2,0,40,40,44,44,2,0,41,41,45,45,1,1,14,14,1,0,3,5,285,0,
+        0,2,4,6,8,10,12,14,16,18,20,0,7,1,1,51,51,2,0,37,37,41,41,2,0,38,
+        38,42,42,2,0,39,39,43,43,2,0,40,40,44,44,1,1,14,14,1,0,3,5,285,0,
         23,1,0,0,0,2,51,1,0,0,0,4,60,1,0,0,0,6,110,1,0,0,0,8,131,1,0,0,0,
         10,156,1,0,0,0,12,185,1,0,0,0,14,207,1,0,0,0,16,218,1,0,0,0,18,231,
         1,0,0,0,20,246,1,0,0,0,22,24,5,14,0,0,23,22,1,0,0,0,23,24,1,0,0,
@@ -42,18 +42,18 @@ def serializedATN():
         0,0,44,25,1,0,0,0,44,26,1,0,0,0,44,27,1,0,0,0,44,29,1,0,0,0,44,34,
         1,0,0,0,44,39,1,0,0,0,44,43,1,0,0,0,45,48,1,0,0,0,46,44,1,0,0,0,
         46,47,1,0,0,0,47,49,1,0,0,0,48,46,1,0,0,0,49,50,5,0,0,1,50,1,1,0,
-        0,0,51,55,5,6,0,0,52,54,5,50,0,0,53,52,1,0,0,0,54,57,1,0,0,0,55,
+        0,0,51,55,5,6,0,0,52,54,5,49,0,0,53,52,1,0,0,0,54,57,1,0,0,0,55,
         53,1,0,0,0,55,56,1,0,0,0,56,58,1,0,0,0,57,55,1,0,0,0,58,59,7,0,0,
-        0,59,3,1,0,0,0,60,61,5,2,0,0,61,62,5,31,0,0,62,63,5,32,0,0,63,65,
-        5,33,0,0,64,66,5,34,0,0,65,64,1,0,0,0,65,66,1,0,0,0,66,68,1,0,0,
-        0,67,69,5,35,0,0,68,67,1,0,0,0,68,69,1,0,0,0,69,70,1,0,0,0,70,72,
-        5,36,0,0,71,73,5,37,0,0,72,71,1,0,0,0,72,73,1,0,0,0,73,75,1,0,0,
+        0,59,3,1,0,0,0,60,61,5,2,0,0,61,62,5,30,0,0,62,63,5,31,0,0,63,65,
+        5,32,0,0,64,66,5,33,0,0,65,64,1,0,0,0,65,66,1,0,0,0,66,68,1,0,0,
+        0,67,69,5,34,0,0,68,67,1,0,0,0,68,69,1,0,0,0,69,70,1,0,0,0,70,72,
+        5,35,0,0,71,73,5,36,0,0,72,71,1,0,0,0,72,73,1,0,0,0,73,75,1,0,0,
         0,74,76,7,1,0,0,75,74,1,0,0,0,75,76,1,0,0,0,76,78,1,0,0,0,77,79,
         7,2,0,0,78,77,1,0,0,0,78,79,1,0,0,0,79,81,1,0,0,0,80,82,7,3,0,0,
         81,80,1,0,0,0,81,82,1,0,0,0,82,84,1,0,0,0,83,85,7,4,0,0,84,83,1,
-        0,0,0,84,85,1,0,0,0,85,87,1,0,0,0,86,88,5,46,0,0,87,86,1,0,0,0,87,
-        88,1,0,0,0,88,90,1,0,0,0,89,91,5,47,0,0,90,89,1,0,0,0,90,91,1,0,
-        0,0,91,92,1,0,0,0,92,108,5,49,0,0,93,95,3,6,3,0,94,93,1,0,0,0,95,
+        0,0,0,84,85,1,0,0,0,85,87,1,0,0,0,86,88,5,45,0,0,87,86,1,0,0,0,87,
+        88,1,0,0,0,88,90,1,0,0,0,89,91,5,46,0,0,90,89,1,0,0,0,90,91,1,0,
+        0,0,91,92,1,0,0,0,92,108,5,48,0,0,93,95,3,6,3,0,94,93,1,0,0,0,95,
         96,1,0,0,0,96,94,1,0,0,0,96,97,1,0,0,0,97,109,1,0,0,0,98,100,3,8,
         4,0,99,98,1,0,0,0,100,101,1,0,0,0,101,99,1,0,0,0,101,102,1,0,0,0,
         102,109,1,0,0,0,103,105,3,10,5,0,104,103,1,0,0,0,105,106,1,0,0,0,
@@ -81,13 +81,13 @@ def serializedATN():
         3,20,10,0,175,174,1,0,0,0,175,176,1,0,0,0,176,180,1,0,0,0,177,179,
         5,7,0,0,178,177,1,0,0,0,179,182,1,0,0,0,180,178,1,0,0,0,180,181,
         1,0,0,0,181,183,1,0,0,0,182,180,1,0,0,0,183,184,7,5,0,0,184,11,1,
-        0,0,0,185,186,5,1,0,0,186,187,5,18,0,0,187,188,5,22,0,0,188,189,
-        5,19,0,0,189,196,5,23,0,0,190,191,5,20,0,0,191,194,5,24,0,0,192,
-        193,5,21,0,0,193,195,5,25,0,0,194,192,1,0,0,0,194,195,1,0,0,0,195,
+        0,0,0,185,186,5,1,0,0,186,187,5,17,0,0,187,188,5,21,0,0,188,189,
+        5,18,0,0,189,196,5,22,0,0,190,191,5,19,0,0,191,194,5,23,0,0,192,
+        193,5,20,0,0,193,195,5,24,0,0,194,192,1,0,0,0,194,195,1,0,0,0,195,
         197,1,0,0,0,196,190,1,0,0,0,196,197,1,0,0,0,197,198,1,0,0,0,198,
-        200,5,26,0,0,199,201,5,27,0,0,200,199,1,0,0,0,200,201,1,0,0,0,201,
-        203,1,0,0,0,202,204,5,28,0,0,203,202,1,0,0,0,203,204,1,0,0,0,204,
-        205,1,0,0,0,205,206,5,30,0,0,206,13,1,0,0,0,207,208,5,3,0,0,208,
+        200,5,25,0,0,199,201,5,26,0,0,200,199,1,0,0,0,200,201,1,0,0,0,201,
+        203,1,0,0,0,202,204,5,27,0,0,203,202,1,0,0,0,203,204,1,0,0,0,204,
+        205,1,0,0,0,205,206,5,29,0,0,206,13,1,0,0,0,207,208,5,3,0,0,208,
         209,5,4,0,0,209,210,5,4,0,0,210,211,5,4,0,0,211,212,5,4,0,0,212,
         214,3,20,10,0,213,215,5,10,0,0,214,213,1,0,0,0,214,215,1,0,0,0,215,
         216,1,0,0,0,216,217,7,5,0,0,217,15,1,0,0,0,218,219,5,3,0,0,219,220,
@@ -118,26 +118,26 @@ class VnmrPKParser ( Parser ):
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                     "<INVALID>", "<INVALID>", "'Dev. 0'", "'Dev. 1'", "'Dev. 2'", 
-                     "'Dev. 3'", "<INVALID>", "<INVALID>", "'Assignment'", 
-                     "<INVALID>", "<INVALID>", "'Peak_Number'", "<INVALID>", 
+                     "<INVALID>", "'Dev. 0'", "'Dev. 1'", "'Dev. 2'", "'Dev. 3'", 
+                     "<INVALID>", "<INVALID>", "'Assignment'", "<INVALID>", 
+                     "<INVALID>", "'Peak_Number'", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                     "<INVALID>", "'Label'", "'Comment'" ]
+                     "'Label'", "'Comment'" ]
 
     symbolicNames = [ "<INVALID>", "Peak_id", "Format", "Integer", "Float", 
                       "Real", "COMMENT", "Double_quote_string", "EXCLM_COMMENT", 
                       "SMCLN_COMMENT", "Assignment_2d_ex", "Assignment_3d_ex", 
-                      "Assignment_4d_ex", "SPACE", "RETURN", "ENCLOSE_COMMENT", 
-                      "SECTION_COMMENT", "LINE_COMMENT", "Dim_0_ppm", "Dim_1_ppm", 
-                      "Dim_2_ppm", "Dim_3_ppm", "Dev_0", "Dev_1", "Dev_2", 
-                      "Dev_3", "Amplitude_LA", "Volume_LA", "Assignment", 
-                      "SPACE_LA", "RETURN_LA", "Peak_number", "X_ppm", "Y_ppm", 
-                      "Z_ppm", "A_ppm", "Amplitude", "Volume", "Linewidth_X", 
-                      "Linewidth_Y", "Linewidth_Z", "Linewidth_A", "FWHM_X", 
-                      "FWHM_Y", "FWHM_Z", "FWHM_A", "Label", "Comment", 
-                      "SPACE_FO", "RETURN_FO", "Any_name", "SPACE_CM", "RETURN_CM" ]
+                      "Assignment_4d_ex", "SPACE", "RETURN", "SECTION_COMMENT", 
+                      "LINE_COMMENT", "Dim_0_ppm", "Dim_1_ppm", "Dim_2_ppm", 
+                      "Dim_3_ppm", "Dev_0", "Dev_1", "Dev_2", "Dev_3", "Amplitude_LA", 
+                      "Volume_LA", "Assignment", "SPACE_LA", "RETURN_LA", 
+                      "Peak_number", "X_ppm", "Y_ppm", "Z_ppm", "A_ppm", 
+                      "Amplitude", "Volume", "Linewidth_X", "Linewidth_Y", 
+                      "Linewidth_Z", "Linewidth_A", "FWHM_X", "FWHM_Y", 
+                      "FWHM_Z", "FWHM_A", "Label", "Comment", "SPACE_FO", 
+                      "RETURN_FO", "Any_name", "SPACE_CM", "RETURN_CM" ]
 
     RULE_vnmr_pk = 0
     RULE_comment = 1
@@ -170,44 +170,43 @@ class VnmrPKParser ( Parser ):
     Assignment_4d_ex=12
     SPACE=13
     RETURN=14
-    ENCLOSE_COMMENT=15
-    SECTION_COMMENT=16
-    LINE_COMMENT=17
-    Dim_0_ppm=18
-    Dim_1_ppm=19
-    Dim_2_ppm=20
-    Dim_3_ppm=21
-    Dev_0=22
-    Dev_1=23
-    Dev_2=24
-    Dev_3=25
-    Amplitude_LA=26
-    Volume_LA=27
-    Assignment=28
-    SPACE_LA=29
-    RETURN_LA=30
-    Peak_number=31
-    X_ppm=32
-    Y_ppm=33
-    Z_ppm=34
-    A_ppm=35
-    Amplitude=36
-    Volume=37
-    Linewidth_X=38
-    Linewidth_Y=39
-    Linewidth_Z=40
-    Linewidth_A=41
-    FWHM_X=42
-    FWHM_Y=43
-    FWHM_Z=44
-    FWHM_A=45
-    Label=46
-    Comment=47
-    SPACE_FO=48
-    RETURN_FO=49
-    Any_name=50
-    SPACE_CM=51
-    RETURN_CM=52
+    SECTION_COMMENT=15
+    LINE_COMMENT=16
+    Dim_0_ppm=17
+    Dim_1_ppm=18
+    Dim_2_ppm=19
+    Dim_3_ppm=20
+    Dev_0=21
+    Dev_1=22
+    Dev_2=23
+    Dev_3=24
+    Amplitude_LA=25
+    Volume_LA=26
+    Assignment=27
+    SPACE_LA=28
+    RETURN_LA=29
+    Peak_number=30
+    X_ppm=31
+    Y_ppm=32
+    Z_ppm=33
+    A_ppm=34
+    Amplitude=35
+    Volume=36
+    Linewidth_X=37
+    Linewidth_Y=38
+    Linewidth_Z=39
+    Linewidth_A=40
+    FWHM_X=41
+    FWHM_Y=42
+    FWHM_Z=43
+    FWHM_A=44
+    Label=45
+    Comment=46
+    SPACE_FO=47
+    RETURN_FO=48
+    Any_name=49
+    SPACE_CM=50
+    RETURN_CM=51
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -447,7 +446,7 @@ class VnmrPKParser ( Parser ):
             self.state = 55
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==50:
+            while _la==49:
                 self.state = 52
                 self.match(VnmrPKParser.Any_name)
                 self.state = 57
@@ -456,7 +455,7 @@ class VnmrPKParser ( Parser ):
 
             self.state = 58
             _la = self._input.LA(1)
-            if not(_la==-1 or _la==52):
+            if not(_la==-1 or _la==51):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -587,7 +586,7 @@ class VnmrPKParser ( Parser ):
             self.state = 65
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==34:
+            if _la==33:
                 self.state = 64
                 self.match(VnmrPKParser.Z_ppm)
 
@@ -595,7 +594,7 @@ class VnmrPKParser ( Parser ):
             self.state = 68
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==35:
+            if _la==34:
                 self.state = 67
                 self.match(VnmrPKParser.A_ppm)
 
@@ -605,7 +604,7 @@ class VnmrPKParser ( Parser ):
             self.state = 72
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==37:
+            if _la==36:
                 self.state = 71
                 self.match(VnmrPKParser.Volume)
 
@@ -613,10 +612,10 @@ class VnmrPKParser ( Parser ):
             self.state = 75
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==38 or _la==42:
+            if _la==37 or _la==41:
                 self.state = 74
                 _la = self._input.LA(1)
-                if not(_la==38 or _la==42):
+                if not(_la==37 or _la==41):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -626,10 +625,10 @@ class VnmrPKParser ( Parser ):
             self.state = 78
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==39 or _la==43:
+            if _la==38 or _la==42:
                 self.state = 77
                 _la = self._input.LA(1)
-                if not(_la==39 or _la==43):
+                if not(_la==38 or _la==42):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -639,10 +638,10 @@ class VnmrPKParser ( Parser ):
             self.state = 81
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==40 or _la==44:
+            if _la==39 or _la==43:
                 self.state = 80
                 _la = self._input.LA(1)
-                if not(_la==40 or _la==44):
+                if not(_la==39 or _la==43):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -652,10 +651,10 @@ class VnmrPKParser ( Parser ):
             self.state = 84
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==41 or _la==45:
+            if _la==40 or _la==44:
                 self.state = 83
                 _la = self._input.LA(1)
-                if not(_la==41 or _la==45):
+                if not(_la==40 or _la==44):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -665,7 +664,7 @@ class VnmrPKParser ( Parser ):
             self.state = 87
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==46:
+            if _la==45:
                 self.state = 86
                 self.match(VnmrPKParser.Label)
 
@@ -673,7 +672,7 @@ class VnmrPKParser ( Parser ):
             self.state = 90
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==47:
+            if _la==46:
                 self.state = 89
                 self.match(VnmrPKParser.Comment)
 
@@ -1196,7 +1195,7 @@ class VnmrPKParser ( Parser ):
             self.state = 196
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==20:
+            if _la==19:
                 self.state = 190
                 self.match(VnmrPKParser.Dim_2_ppm)
                 self.state = 191
@@ -1204,7 +1203,7 @@ class VnmrPKParser ( Parser ):
                 self.state = 194
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==21:
+                if _la==20:
                     self.state = 192
                     self.match(VnmrPKParser.Dim_3_ppm)
                     self.state = 193
@@ -1218,7 +1217,7 @@ class VnmrPKParser ( Parser ):
             self.state = 200
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==27:
+            if _la==26:
                 self.state = 199
                 self.match(VnmrPKParser.Volume_LA)
 
@@ -1226,7 +1225,7 @@ class VnmrPKParser ( Parser ):
             self.state = 203
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==28:
+            if _la==27:
                 self.state = 202
                 self.match(VnmrPKParser.Assignment)
 

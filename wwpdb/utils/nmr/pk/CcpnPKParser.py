@@ -10,7 +10,7 @@ else:
 
 def serializedATN():
     return [
-        4,1,38,171,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,37,171,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,1,0,3,0,18,8,0,1,0,1,0,1,0,1,0,5,0,24,8,0,10,0,12,0,27,
         9,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
         1,1,1,1,1,1,4,1,47,8,1,11,1,12,1,48,1,2,1,2,1,2,1,2,1,2,1,2,1,2,
@@ -22,27 +22,27 @@ def serializedATN():
         5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,4,5,139,8,5,11,5,12,5,140,1,6,1,6,
         1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,
         1,6,1,6,4,6,163,8,6,11,6,12,6,164,1,6,1,6,1,7,1,7,1,7,0,0,8,0,2,
-        4,6,8,10,12,14,0,6,2,0,15,15,19,19,2,0,16,16,20,20,1,1,10,10,2,0,
-        17,17,21,21,2,0,18,18,22,22,1,0,3,4,173,0,17,1,0,0,0,2,30,1,0,0,
+        4,6,8,10,12,14,0,6,2,0,14,14,18,18,2,0,15,15,19,19,1,1,10,10,2,0,
+        16,16,20,20,2,0,17,17,21,21,1,0,3,4,173,0,17,1,0,0,0,2,30,1,0,0,
         0,4,50,1,0,0,0,6,70,1,0,0,0,8,93,1,0,0,0,10,116,1,0,0,0,12,142,1,
         0,0,0,14,168,1,0,0,0,16,18,5,10,0,0,17,16,1,0,0,0,17,18,1,0,0,0,
         18,25,1,0,0,0,19,24,3,2,1,0,20,24,3,6,3,0,21,24,3,10,5,0,22,24,5,
         10,0,0,23,19,1,0,0,0,23,20,1,0,0,0,23,21,1,0,0,0,23,22,1,0,0,0,24,
         27,1,0,0,0,25,23,1,0,0,0,25,26,1,0,0,0,26,28,1,0,0,0,27,25,1,0,0,
-        0,28,29,5,0,0,1,29,1,1,0,0,0,30,31,5,1,0,0,31,32,5,14,0,0,32,33,
-        7,0,0,0,33,34,7,1,0,0,34,35,5,23,0,0,35,36,5,24,0,0,36,37,5,27,0,
-        0,37,38,5,28,0,0,38,39,5,29,0,0,39,40,5,30,0,0,40,41,5,33,0,0,41,
-        42,5,34,0,0,42,43,5,35,0,0,43,44,5,36,0,0,44,46,5,38,0,0,45,47,3,
+        0,28,29,5,0,0,1,29,1,1,0,0,0,30,31,5,1,0,0,31,32,5,13,0,0,32,33,
+        7,0,0,0,33,34,7,1,0,0,34,35,5,22,0,0,35,36,5,23,0,0,36,37,5,26,0,
+        0,37,38,5,27,0,0,38,39,5,28,0,0,39,40,5,29,0,0,40,41,5,32,0,0,41,
+        42,5,33,0,0,42,43,5,34,0,0,43,44,5,35,0,0,44,46,5,37,0,0,45,47,3,
         4,2,0,46,45,1,0,0,0,47,48,1,0,0,0,48,46,1,0,0,0,48,49,1,0,0,0,49,
         3,1,0,0,0,50,51,5,2,0,0,51,52,5,2,0,0,52,53,5,3,0,0,53,54,5,3,0,
         0,54,55,5,8,0,0,55,56,5,8,0,0,56,57,3,14,7,0,57,58,3,14,7,0,58,59,
         5,3,0,0,59,60,5,3,0,0,60,61,5,3,0,0,61,62,5,8,0,0,62,64,5,8,0,0,
         63,65,5,8,0,0,64,63,1,0,0,0,65,66,1,0,0,0,66,64,1,0,0,0,66,67,1,
         0,0,0,67,68,1,0,0,0,68,69,7,2,0,0,69,5,1,0,0,0,70,71,5,1,0,0,71,
-        72,5,14,0,0,72,73,7,0,0,0,73,74,7,1,0,0,74,75,7,3,0,0,75,76,5,23,
-        0,0,76,77,5,24,0,0,77,78,5,25,0,0,78,79,5,27,0,0,79,80,5,28,0,0,
-        80,81,5,29,0,0,81,82,5,30,0,0,82,83,5,31,0,0,83,84,5,33,0,0,84,85,
-        5,34,0,0,85,86,5,35,0,0,86,87,5,36,0,0,87,89,5,38,0,0,88,90,3,8,
+        72,5,13,0,0,72,73,7,0,0,0,73,74,7,1,0,0,74,75,7,3,0,0,75,76,5,22,
+        0,0,76,77,5,23,0,0,77,78,5,24,0,0,78,79,5,26,0,0,79,80,5,27,0,0,
+        80,81,5,28,0,0,81,82,5,29,0,0,82,83,5,30,0,0,83,84,5,32,0,0,84,85,
+        5,33,0,0,85,86,5,34,0,0,86,87,5,35,0,0,87,89,5,37,0,0,88,90,3,8,
         4,0,89,88,1,0,0,0,90,91,1,0,0,0,91,89,1,0,0,0,91,92,1,0,0,0,92,7,
         1,0,0,0,93,94,5,2,0,0,94,95,5,2,0,0,95,96,5,3,0,0,96,97,5,3,0,0,
         97,98,5,3,0,0,98,99,5,8,0,0,99,100,5,8,0,0,100,101,5,8,0,0,101,102,
@@ -50,12 +50,12 @@ def serializedATN():
         5,3,0,0,106,107,5,3,0,0,107,108,5,8,0,0,108,110,5,8,0,0,109,111,
         5,8,0,0,110,109,1,0,0,0,111,112,1,0,0,0,112,110,1,0,0,0,112,113,
         1,0,0,0,113,114,1,0,0,0,114,115,7,2,0,0,115,9,1,0,0,0,116,117,5,
-        1,0,0,117,118,5,14,0,0,118,119,7,0,0,0,119,120,7,1,0,0,120,121,7,
-        3,0,0,121,122,7,4,0,0,122,123,5,23,0,0,123,124,5,24,0,0,124,125,
-        5,25,0,0,125,126,5,26,0,0,126,127,5,27,0,0,127,128,5,28,0,0,128,
-        129,5,29,0,0,129,130,5,30,0,0,130,131,5,31,0,0,131,132,5,32,0,0,
-        132,133,5,33,0,0,133,134,5,34,0,0,134,135,5,35,0,0,135,136,5,36,
-        0,0,136,138,5,38,0,0,137,139,3,12,6,0,138,137,1,0,0,0,139,140,1,
+        1,0,0,117,118,5,13,0,0,118,119,7,0,0,0,119,120,7,1,0,0,120,121,7,
+        3,0,0,121,122,7,4,0,0,122,123,5,22,0,0,123,124,5,23,0,0,124,125,
+        5,24,0,0,125,126,5,25,0,0,126,127,5,26,0,0,127,128,5,27,0,0,128,
+        129,5,28,0,0,129,130,5,29,0,0,130,131,5,30,0,0,131,132,5,31,0,0,
+        132,133,5,32,0,0,133,134,5,33,0,0,134,135,5,34,0,0,135,136,5,35,
+        0,0,136,138,5,37,0,0,137,139,3,12,6,0,138,137,1,0,0,0,139,140,1,
         0,0,0,140,138,1,0,0,0,140,141,1,0,0,0,141,11,1,0,0,0,142,143,5,2,
         0,0,143,144,5,2,0,0,144,145,5,3,0,0,145,146,5,3,0,0,146,147,5,3,
         0,0,147,148,5,3,0,0,148,149,5,8,0,0,149,150,5,8,0,0,150,151,5,8,
@@ -80,7 +80,7 @@ class CcpnPKParser ( Parser ):
     literalNames = [ "<INVALID>", "'Number'", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                     "<INVALID>", "<INVALID>", "'#'", "'Position F1'", "'Position F2'", 
+                     "<INVALID>", "'#'", "'Position F1'", "'Position F2'", 
                      "'Position F3'", "'Position F4'", "'Shift F1'", "'Shift F2'", 
                      "'Shift F3'", "'Shift F4'", "'Assign F1'", "'Assign F2'", 
                      "'Assign F3'", "'Assign F4'", "'Height'", "'Volume'", 
@@ -90,10 +90,10 @@ class CcpnPKParser ( Parser ):
 
     symbolicNames = [ "<INVALID>", "Number", "Integer", "Float", "Real", 
                       "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
-                      "Simple_name", "SPACE", "RETURN", "ENCLOSE_COMMENT", 
-                      "SECTION_COMMENT", "LINE_COMMENT", "Id", "Position_F1", 
-                      "Position_F2", "Position_F3", "Position_F4", "Shift_F1", 
-                      "Shift_F2", "Shift_F3", "Shift_F4", "Assign_F1", "Assign_F2", 
+                      "Simple_name", "SPACE", "RETURN", "SECTION_COMMENT", 
+                      "LINE_COMMENT", "Id", "Position_F1", "Position_F2", 
+                      "Position_F3", "Position_F4", "Shift_F1", "Shift_F2", 
+                      "Shift_F3", "Shift_F4", "Assign_F1", "Assign_F2", 
                       "Assign_F3", "Assign_F4", "Height", "Volume", "Line_width_F1", 
                       "Line_width_F2", "Line_width_F3", "Line_width_F4", 
                       "Merit", "Details", "Fit_method", "Vol_method", "SPACE_VARS", 
@@ -122,34 +122,33 @@ class CcpnPKParser ( Parser ):
     Simple_name=8
     SPACE=9
     RETURN=10
-    ENCLOSE_COMMENT=11
-    SECTION_COMMENT=12
-    LINE_COMMENT=13
-    Id=14
-    Position_F1=15
-    Position_F2=16
-    Position_F3=17
-    Position_F4=18
-    Shift_F1=19
-    Shift_F2=20
-    Shift_F3=21
-    Shift_F4=22
-    Assign_F1=23
-    Assign_F2=24
-    Assign_F3=25
-    Assign_F4=26
-    Height=27
-    Volume=28
-    Line_width_F1=29
-    Line_width_F2=30
-    Line_width_F3=31
-    Line_width_F4=32
-    Merit=33
-    Details=34
-    Fit_method=35
-    Vol_method=36
-    SPACE_VARS=37
-    RETURN_VARS=38
+    SECTION_COMMENT=11
+    LINE_COMMENT=12
+    Id=13
+    Position_F1=14
+    Position_F2=15
+    Position_F3=16
+    Position_F4=17
+    Shift_F1=18
+    Shift_F2=19
+    Shift_F3=20
+    Shift_F4=21
+    Assign_F1=22
+    Assign_F2=23
+    Assign_F3=24
+    Assign_F4=25
+    Height=26
+    Volume=27
+    Line_width_F1=28
+    Line_width_F2=29
+    Line_width_F3=30
+    Line_width_F4=31
+    Merit=32
+    Details=33
+    Fit_method=34
+    Vol_method=35
+    SPACE_VARS=36
+    RETURN_VARS=37
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -361,14 +360,14 @@ class CcpnPKParser ( Parser ):
             self.match(CcpnPKParser.Id)
             self.state = 32
             _la = self._input.LA(1)
-            if not(_la==15 or _la==19):
+            if not(_la==14 or _la==18):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
                 self.consume()
             self.state = 33
             _la = self._input.LA(1)
-            if not(_la==16 or _la==20):
+            if not(_la==15 or _la==19):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -633,21 +632,21 @@ class CcpnPKParser ( Parser ):
             self.match(CcpnPKParser.Id)
             self.state = 72
             _la = self._input.LA(1)
-            if not(_la==15 or _la==19):
+            if not(_la==14 or _la==18):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
                 self.consume()
             self.state = 73
             _la = self._input.LA(1)
-            if not(_la==16 or _la==20):
+            if not(_la==15 or _la==19):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
                 self.consume()
             self.state = 74
             _la = self._input.LA(1)
-            if not(_la==17 or _la==21):
+            if not(_la==16 or _la==20):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -934,28 +933,28 @@ class CcpnPKParser ( Parser ):
             self.match(CcpnPKParser.Id)
             self.state = 118
             _la = self._input.LA(1)
-            if not(_la==15 or _la==19):
+            if not(_la==14 or _la==18):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
                 self.consume()
             self.state = 119
             _la = self._input.LA(1)
-            if not(_la==16 or _la==20):
+            if not(_la==15 or _la==19):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
                 self.consume()
             self.state = 120
             _la = self._input.LA(1)
-            if not(_la==17 or _la==21):
+            if not(_la==16 or _la==20):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
                 self.consume()
             self.state = 121
             _la = self._input.LA(1)
-            if not(_la==18 or _la==22):
+            if not(_la==17 or _la==21):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

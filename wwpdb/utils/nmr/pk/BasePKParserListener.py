@@ -380,7 +380,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                                 for _dim_id3, _dict3 in cur_spectral_dim.items():
                                     if _dim_id3 in (_dim_id1, _dim_id2):
                                         continue
-                                    if _dict3['spectral_region'] != _dict1['spectral_region']:
+                                    if _dict3['atom_type'] != _dict1['atom_type']:
                                         continue
                                     if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                        if _transfer['type'] == 'onebond'
@@ -1708,7 +1708,7 @@ class BasePKParserListener():
                                                 for _dim_id3, _dict3 in cur_spectral_dim.items():
                                                     if _dim_id3 in (_dim_id1, _dim_id2):
                                                         continue
-                                                    if _dict3['spectral_region'] != _dict1['spectral_region']:
+                                                    if _dict3['atom_type'] != _dict1['atom_type']:
                                                         continue
                                                     if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                                        if _transfer['type'] == 'onebond'
@@ -2342,7 +2342,14 @@ class BasePKParserListener():
                     if any(row[col] in emptyValue for col in range(10)):
                         continue
 
-                    seq_id, comp_id, atom_id, seq_id2, comp_id2, atom_id2 = row[1], row[2], row[3], row[6], row[7], row[8]
+                    chain_id, seq_id, comp_id, atom_id, chain_id2, seq_id2, comp_id2, atom_id2 =\
+                        row[0], row[1], row[2], row[3], row[5], row[6], row[7], row[8]
+
+                    if isinstance(chain_id, int):
+                        chain_id = str(chain_id)
+
+                    if isinstance(chain_id2, int):
+                        chain_id2 = str(chain_id2)
 
                     if isinstance(seq_id, str):
                         seq_id = int(seq_id)
@@ -2350,7 +2357,7 @@ class BasePKParserListener():
                     if isinstance(seq_id2, str):
                         seq_id2 = int(seq_id2)
 
-                    if row[0] == row[5] and seq_id == seq_id2 and comp_id == comp_id2 and atom_id != atom_id2\
+                    if chain_id == chain_id2 and seq_id == seq_id2 and comp_id == comp_id2 and atom_id != atom_id2\
                        and self.ccU.updateChemCompDict(comp_id):
                         _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                         _atom_ids2 = self.nefT.get_valid_star_atom(comp_id, atom_id2, leave_unmatched=False)[0]
@@ -2396,8 +2403,6 @@ class BasePKParserListener():
                         elif _atom_id[0] in protonBeginCode and len_atom_id_ > 0:
                             swap_atom_1()
                         else:
-                            chain_id = row[0]
-
                             self.f.append(f"[Inconsistent assigned peak] [Check row of Index_ID {loop.data[idx][loop.tags.index('Index_ID')]}] "
                                           f"Inconsistent assignments of spectral peak with onebond coherence transfer type, ({chain_id}:{seq_id}:{comp_id}:{atom_id}) vs "
                                           f"({chain_id}:{seq_id}:{comp_id}:{atom_id2}) have been cleared.")
@@ -2408,12 +2413,7 @@ class BasePKParserListener():
                             loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_1}')] =\
                                 loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = None
 
-                    elif row[0] == row[5] and seq_id != seq_id2:
-                        chain_id = row[0]
-
-                        if isinstance(chain_id, int):
-                            chain_id = str(chain_id)
-
+                    elif chain_id == chain_id2 and seq_id != seq_id2:
                         position, position2 = row[4], row[9]
 
                         if isinstance(position, str):
@@ -2422,22 +2422,11 @@ class BasePKParserListener():
                         if isinstance(position2, str):
                             position2 = float(position2)
 
-                        shift = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
-                        shift2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
+                        shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2, weight2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
 
-                        if None in (shift, shift2):
-                            continue
-
-                        diff = abs(position - shift) + abs(position2 - shift2)
-
-                        shift_ = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)
-                        shift2_ = self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)
-
-                        diff_ = diff2_ = None
-                        if shift_ is not None:
-                            diff_ = abs(position - shift_) + abs(position2 - shift2)
-                        if shift2_ is not None:
-                            diff2_ = abs(position - shift) + abs(position2 - shift2_)
+                        shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)
+                        shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)
 
                         # pylint: disable=cell-var-from-loop
                         def swap_seq_id_1():
@@ -2457,6 +2446,28 @@ class BasePKParserListener():
                             loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')]
                             loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')]
 
+                        if None in (shift, shift2):
+
+                            if shift is None and shift2 is None:
+                                continue
+
+                            if shift is None and shift_ is not None:
+                                swap_seq_id_1()
+
+                            elif shift2 is None and shift2_ is not None:
+                                swap_seq_id_2()
+
+                            continue
+
+                        diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        diff *= 2.0
+
+                        diff_ = diff2_ = None
+                        if shift_ is not None:
+                            diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        if shift2_ is not None:
+                            diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+
                         if diff_ is not None and diff2_ is not None:
                             if diff_ < diff and diff2_ < diff:
                                 if diff_ < diff2_:
@@ -2474,15 +2485,96 @@ class BasePKParserListener():
                         elif diff2_ is not None and diff2_ < diff:
                             swap_seq_id_2()
 
+                    elif chain_id != chain_id2:
+                        position, position2 = row[4], row[9]
+
+                        if isinstance(position, str):
+                            position = float(position)
+
+                        if isinstance(position2, str):
+                            position2 = float(position2)
+
+                        shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2, weight2 = self.__getCsValue(chain_id2, seq_id2, comp_id2, atom_id2)
+
+                        shift_, _ = self.__getCsValue(chain_id2, seq_id2, comp_id2, atom_id)
+                        shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)
+
+                        # pylint: disable=cell-var-from-loop
+                        def swap_chain_seq_id_1():
+                            if loop.data[idx][details_col] in emptyValue:
+                                loop.data[idx][details_col] = f'{chain_id}:{seq_id}:{comp_id} -> {chain_id2}:{seq_id2}:{comp_id2}'
+                            loop.data[idx][loop.tags.index(f'Entity_assembly_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Entity_assembly_ID_{dim_id_2}')]
+                            loop.data[idx][loop.tags.index(f'Entity_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Entity_ID_{dim_id_2}')]
+                            loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')]
+                            loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')]
+                            loop.data[idx][loop.tags.index(f'Auth_asym_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_asym_ID_{dim_id_2}')]
+                            loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')]
+                            loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')]
+
+                        # pylint: disable=cell-var-from-loop
+                        def swap_chain_seq_id_2():
+                            if loop.data[idx][details_col] in emptyValue:
+                                loop.data[idx][details_col] = f'{chain_id2}:{seq_id2}:{comp_id2} -> {chain_id}:{seq_id}:{comp_id}'
+                            loop.data[idx][loop.tags.index(f'Entity_assembly_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Entity_assembly_ID_{dim_id_1}')]
+                            loop.data[idx][loop.tags.index(f'Entity_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Entity_ID_{dim_id_1}')]
+                            loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')]
+                            loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')]
+                            loop.data[idx][loop.tags.index(f'Auth_asym_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_asym_ID_{dim_id_1}')]
+                            loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')]
+                            loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')]
+
+                        if None in (shift, shift2):
+
+                            if shift is None and shift2 is None:
+                                continue
+
+                            if shift is None and shift_ is not None:
+                                swap_chain_seq_id_1()
+
+                            elif shift2 is None and shift2_ is not None:
+                                swap_chain_seq_id_2()
+
+                            continue
+
+                        diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        diff *= 2.0
+
+                        diff_ = diff2_ = None
+                        if shift_ is not None:
+                            diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        if shift2_ is not None:
+                            diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+
+                        if diff_ is not None and diff2_ is not None:
+                            if diff_ < diff and diff2_ < diff:
+                                if diff_ < diff2_:
+                                    swap_chain_seq_id_1()
+                                elif diff_ > diff2_:
+                                    swap_chain_seq_id_2()
+                            elif diff_ < diff:
+                                swap_chain_seq_id_1()
+                            elif diff2_ < diff:
+                                swap_chain_seq_id_2()
+
+                        elif diff_ is not None and diff_ < diff:
+                            swap_chain_seq_id_1()
+
+                        elif diff2_ is not None and diff2_ < diff:
+                            swap_chain_seq_id_2()
+
             else:
 
                 tags = ['Peak_ID', 'Spectral_dim_ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID', 'Val']
 
+                chain_id_col = loop.tags.index('Entity_assembly_ID')
+                entity_id_col = loop.tags.index('Entity_ID')
                 seq_id_col = loop.tags.index('Comp_index_ID')
                 comp_id_col = loop.tags.index('Comp_ID')
+                atom_id_col = loop.tags.index('Atom_ID')
+                auth_chain_id_col = loop.tags.index('Auth_asym_ID')
                 auth_seq_id_col = loop.tags.index('Auth_seq_ID')
                 auth_comp_id_col = loop.tags.index('Auth_comp_ID')
-                atom_id_col = loop.tags.index('Atom_ID')
                 auth_atom_id_col = loop.tags.index('Auth_atom_ID')
 
                 dat = loop.get_tag(tags)
@@ -2502,7 +2594,7 @@ class BasePKParserListener():
                         if peak_id != row[0]:
                             continue
 
-                    chain_ids.append(row[2])
+                    chain_ids.append(row[2] if isinstance(row[2], str) else str(row[2]))
                     seq_ids.append(int(row[3]) if isinstance(row[3], str) else row[3])
                     comp_ids.append(row[4])
                     atom_ids.append(row[5])
@@ -2517,11 +2609,11 @@ class BasePKParserListener():
                     _dim_id_1 = dim_id_1 - 1
                     _dim_id_2 = dim_id_2 - 1
 
-                    seq_id, comp_id, atom_id, seq_id2, comp_id2, atom_id2 =\
-                        seq_ids[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], \
-                        seq_ids[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2]
+                    chain_id, seq_id, comp_id, atom_id, chain_id2, seq_id2, comp_id2, atom_id2 =\
+                        chain_ids[_dim_id_1], seq_ids[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], \
+                        chain_ids[_dim_id_2], seq_ids[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2]
 
-                    if chain_ids[_dim_id_1] == chain_ids[_dim_id_2] and seq_id == seq_id2 and comp_id == comp_id2 and atom_id != atom_id2\
+                    if chain_id == chain_id2 and seq_id == seq_id2 and comp_id == comp_id2 and atom_id != atom_id2\
                        and self.ccU.updateChemCompDict(comp_id):
                         _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                         _atom_ids2 = self.nefT.get_valid_star_atom(comp_id, atom_id2, leave_unmatched=False)[0]
@@ -2567,7 +2659,6 @@ class BasePKParserListener():
                         elif _atom_id[0] in protonBeginCode and len_atom_id_ > 0:
                             alt_swap_atom_1()
                         else:
-                            chain_id = chain_ids[_dim_id_1]
                             self.f.append(f"[Inconsistent assigned peak] [Check row of Peak_ID {loop.data[idx][loop.tags.index('Peak_ID')]}] "
                                           f"Inconsistent assignments of spectral peak with onebond coherence transfer type, ({chain_id}:{seq_id}:{comp_id}:{atom_id}) vs "
                                           f"({chain_id}:{seq_id}:{comp_id}:{atom_id2}) have been cleared.")
@@ -2580,30 +2671,14 @@ class BasePKParserListener():
                             loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] =\
                                 loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = None
 
-                    elif chain_ids[_dim_id_1] == chain_ids[_dim_id_2] and seq_id != seq_id2:
-                        chain_id = chain_ids[_dim_id_1]
-
-                        if isinstance(chain_id, int):
-                            chain_id = str(chain_id)
-
+                    elif chain_id == chain_id2 and seq_id != seq_id2:
                         position, position2 = positions[_dim_id_1], positions[_dim_id_2]
 
-                        shift = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
-                        shift2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
+                        shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2, weight2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
 
-                        if None in (shift, shift2):
-                            continue
-
-                        diff = abs(position - shift) + abs(position2 - shift2)
-
-                        shift_ = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)
-                        shift2_ = self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)
-
-                        diff_ = diff2_ = None
-                        if shift_ is not None:
-                            diff_ = abs(position - shift_) + abs(position2 - shift2)
-                        if shift2_ is not None:
-                            diff2_ = abs(position - shift) + abs(position2 - shift2_)
+                        shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)
+                        shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)
 
                         # pylint: disable=cell-var-from-loop
                         def alt_swap_seq_id_1():
@@ -2623,6 +2698,28 @@ class BasePKParserListener():
                             loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col]
                             loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
 
+                        if None in (shift, shift2):
+
+                            if shift is None and shift2 is None:
+                                continue
+
+                            if shift is None and shift_ is not None:
+                                alt_swap_seq_id_1()
+
+                            elif shift2 is None and shift2_ is not None:
+                                alt_swap_seq_id_2()
+
+                            continue
+
+                        diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        diff *= 2.0
+
+                        diff_ = diff2_ = None
+                        if shift_ is not None:
+                            diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        if shift2_ is not None:
+                            diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+
                         if diff_ is not None and diff2_ is not None:
                             if diff_ < diff and diff2_ < diff:
                                 if diff_ < diff2_:
@@ -2639,6 +2736,78 @@ class BasePKParserListener():
 
                         elif diff2_ is not None and diff2_ < diff:
                             alt_swap_seq_id_2()
+
+                    elif chain_id != chain_id2:
+                        position, position2 = positions[_dim_id_1], positions[_dim_id_2]
+
+                        shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2, weight2 = self.__getCsValue(chain_id2, seq_id2, comp_id2, atom_id2)
+
+                        shift_, _ = self.__getCsValue(chain_id2, seq_id2, comp_id2, atom_id)
+                        shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)
+
+                        # pylint: disable=cell-var-from-loop
+                        def alt_swap_chain_seq_id_1():
+                            if loop.data[idx][details_col] in emptyValue:
+                                loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{chain_id}:{seq_id}:{comp_id} -> {chain_id2}:{seq_id2}:{comp_id2}'
+                            loop.data[idx - num_of_dim + dim_id_1][chain_id_col] = loop.data[idx - num_of_dim + dim_id_2][chain_id_col]
+                            loop.data[idx - num_of_dim + dim_id_1][entity_id_col] = loop.data[idx - num_of_dim + dim_id_2][entity_id_col]
+                            loop.data[idx - num_of_dim + dim_id_1][seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_1][comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][comp_id_col]
+                            loop.data[idx - num_of_dim + dim_id_1][auth_chain_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_chain_id_col]
+                            loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col]
+
+                        # pylint: disable=cell-var-from-loop
+                        def alt_swap_chain_seq_id_2():
+                            if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
+                                loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{chain_id2}:{seq_id2}:{comp_id2} -> {chain_id}:{seq_id}:{comp_id}'
+                            loop.data[idx - num_of_dim + dim_id_2][chain_id_col] = loop.data[idx - num_of_dim + dim_id_1][chain_id_col]
+                            loop.data[idx - num_of_dim + dim_id_2][entity_id_col] = loop.data[idx - num_of_dim + dim_id_1][entity_id_col]
+                            loop.data[idx - num_of_dim + dim_id_2][seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_2][comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][comp_id_col]
+                            loop.data[idx - num_of_dim + dim_id_2][auth_chain_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_chain_id_col]
+                            loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
+
+                        if None in (shift, shift2):
+
+                            if shift is None and shift2 is None:
+                                continue
+
+                            if shift is None and shift_ is not None:
+                                alt_swap_chain_seq_id_1()
+
+                            elif shift2 is None and shift2_ is not None:
+                                alt_swap_chain_seq_id_2()
+
+                            continue
+
+                        diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        diff *= 2.0
+
+                        diff_ = diff2_ = None
+                        if shift_ is not None:
+                            diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        if shift2_ is not None:
+                            diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+
+                        if diff_ is not None and diff2_ is not None:
+                            if diff_ < diff and diff2_ < diff:
+                                if diff_ < diff2_:
+                                    alt_swap_chain_seq_id_1()
+                                elif diff_ > diff2_:
+                                    alt_swap_chain_seq_id_2()
+                            elif diff_ < diff:
+                                alt_swap_chain_seq_id_1()
+                            elif diff2_ < diff:
+                                alt_swap_chain_seq_id_2()
+
+                        elif diff_ is not None and diff_ < diff:
+                            alt_swap_chain_seq_id_1()
+
+                        elif diff2_ is not None and diff2_ < diff:
+                            alt_swap_chain_seq_id_2()
 
     def __remediatePeakAssignmentForJcouplingTransfer(self, num_of_dim: int, jcoupling_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
 
@@ -2658,12 +2827,14 @@ class BasePKParserListener():
                     if any(row[col] in emptyValue for col in range(10)):
                         continue
 
-                    seq_id, comp_id, atom_id, seq_id2, comp_id2, atom_id2 = row[1], row[2], row[3], row[6], row[7], row[8]
+                    chain_id, seq_id, comp_id, atom_id, chain_id2, seq_id2, comp_id2, atom_id2 =\
+                        row[0], row[1], row[2], row[3], row[5], row[6], row[7], row[8]
 
-                    if row[0] != row[5] or (seq_id == seq_id2 and comp_id == comp_id2):
-                        continue
+                    if isinstance(chain_id, int):
+                        chain_id = str(chain_id)
 
-                    chain_id = row[0]
+                    if isinstance(chain_id2, int):
+                        chain_id2 = str(chain_id2)
 
                     if isinstance(seq_id, str):
                         seq_id = int(seq_id)
@@ -2671,11 +2842,11 @@ class BasePKParserListener():
                     if isinstance(seq_id2, str):
                         seq_id2 = int(seq_id2)
 
-                    if seq_id != seq_id2:
-                        position, position2 = row[4], row[9]
+                    if chain_id == chain_id2 and seq_id == seq_id2 and comp_id == comp_id2:
+                        continue
 
-                        if isinstance(chain_id, int):
-                            chain_id = str(chain_id)
+                    if chain_id == chain_id2 and seq_id != seq_id2:
+                        position, position2 = row[4], row[9]
 
                         if isinstance(position, str):
                             position = float(position)
@@ -2683,17 +2854,17 @@ class BasePKParserListener():
                         if isinstance(position2, str):
                             position2 = float(position2)
 
-                        shift = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
-                        shift2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
+                        shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2, weight2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
 
                         if None in (shift, shift2):
                             continue
 
-                        diff = abs(position - shift)
-                        diff2 = abs(position2 - shift2)
+                        diff = abs(position - shift) * weight
+                        diff2 = abs(position2 - shift2) * weight2
 
                         if diff < diff2:
-                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2) is not None:
+                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)[0] is not None:
                                 if loop.data[idx][details_col] in emptyValue:
                                     loop.data[idx][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
                                 loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')]
@@ -2702,7 +2873,7 @@ class BasePKParserListener():
                                 loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')]
 
                         elif diff > diff2:
-                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id) is not None:
+                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)[0] is not None:
                                 if loop.data[idx][details_col] in emptyValue:
                                     loop.data[idx][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
                                 loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')]
@@ -2710,12 +2881,57 @@ class BasePKParserListener():
                                 loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')]
                                 loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')]
 
+                    elif chain_id != chain_id2:
+                        position, position2 = row[4], row[9]
+
+                        if isinstance(position, str):
+                            position = float(position)
+
+                        if isinstance(position2, str):
+                            position2 = float(position2)
+
+                        shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2, weight2 = self.__getCsValue(chain_id2, seq_id2, comp_id2, atom_id2)
+
+                        if None in (shift, shift2):
+                            continue
+
+                        diff = abs(position - shift) * weight
+                        diff2 = abs(position2 - shift2) * weight2
+
+                        if diff < diff2:
+                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)[0] is not None:
+                                if loop.data[idx][details_col] in emptyValue:
+                                    loop.data[idx][details_col] = f'{chain_id2}:{seq_id2}:{comp_id2} -> {chain_id}:{seq_id}:{comp_id}'
+                                loop.data[idx][loop.tags.index(f'Entity_assembly_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Entity_assembly_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Entity_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Entity_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Auth_asym_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_asym_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')]
+
+                        elif diff > diff2:
+                            if self.__getCsValue(chain_id2, seq_id2, comp_id2, atom_id)[0] is not None:
+                                if loop.data[idx][details_col] in emptyValue:
+                                    loop.data[idx][details_col] = f'{chain_id}:{seq_id}:{comp_id} -> {chain_id2}:{seq_id2}:{comp_id2}'
+                                loop.data[idx][loop.tags.index(f'Entity_assembly_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Entity_assembly_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Entity_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Entity_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Auth_asym_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_asym_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')]
+
             else:
 
                 tags = ['Peak_ID', 'Spectral_dim_ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID', 'Val']
 
+                chain_id_col = loop.tags.index('Entity_assembly_ID')
+                entity_id_col = loop.tags.index('Entity_ID')
                 seq_id_col = loop.tags.index('Comp_index_ID')
                 comp_id_col = loop.tags.index('Comp_ID')
+                auth_chain_id_col = loop.tags.index('Auth_asym_ID')
                 auth_seq_id_col = loop.tags.index('Auth_seq_ID')
                 auth_comp_id_col = loop.tags.index('Auth_comp_ID')
 
@@ -2736,7 +2952,7 @@ class BasePKParserListener():
                         if peak_id != row[0]:
                             continue
 
-                    chain_ids.append(row[2])
+                    chain_ids.append(row[2] if isinstance(row[2], str) else str(row[2]))
                     seq_ids.append(int(row[3]) if isinstance(row[3], str) else row[3])
                     comp_ids.append(row[4])
                     atom_ids.append(row[5])
@@ -2751,30 +2967,25 @@ class BasePKParserListener():
                     _dim_id_1 = dim_id_1 - 1
                     _dim_id_2 = dim_id_2 - 1
 
-                    seq_id, comp_id, atom_id, position, seq_id2, comp_id2, atom_id2, position2 =\
-                        seq_ids[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], positions[_dim_id_1], \
-                        seq_ids[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2], positions[_dim_id_2]
+                    chain_id, seq_id, comp_id, atom_id, position, chain_id2, seq_id2, comp_id2, atom_id2, position2 =\
+                        chain_ids[_dim_id_1], seq_ids[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], positions[_dim_id_1], \
+                        chain_ids[_dim_id_2], seq_ids[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2], positions[_dim_id_2]
 
-                    if chain_ids[_dim_id_1] != chain_ids[_dim_id_2] or (seq_id == seq_id2 and comp_id == comp_id2):
+                    if chain_id == chain_id2 and seq_id == seq_id2 and comp_id == comp_id2:
                         continue
 
-                    if seq_id != seq_id2:
-                        chain_id = chain_ids[_dim_id_1]
-
-                        if isinstance(chain_id, int):
-                            chain_id = str(chain_id)
-
-                        shift = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
-                        shift2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
+                    if chain_id == chain_id2 and seq_id != seq_id2:
+                        shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2, weight2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
 
                         if None in (shift, shift2):
                             continue
 
-                        diff = abs(position - shift)
-                        diff2 = abs(position2 - shift2)
+                        diff = abs(position - shift) * weight
+                        diff2 = abs(position2 - shift2) * weight2
 
                         if diff < diff2:
-                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2) is not None:
+                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)[0] is not None:
                                 if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
                                     loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
                                 loop.data[idx - num_of_dim + dim_id_2][seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][seq_id_col]
@@ -2783,11 +2994,45 @@ class BasePKParserListener():
                                 loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
 
                         elif diff > diff2:
-                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id) is not None:
+                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)[0] is not None:
                                 if loop.data[idx][details_col] in emptyValue:
                                     loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
                                 loop.data[idx - num_of_dim + dim_id_1][seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][seq_id_col]
                                 loop.data[idx - num_of_dim + dim_id_1][comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][comp_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col]
+
+                    elif chain_id != chain_id2:
+                        shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2, weight2 = self.__getCsValue(chain_id2, seq_id2, comp_id2, atom_id2)
+
+                        if None in (shift, shift2):
+                            continue
+
+                        diff = abs(position - shift) * weight
+                        diff2 = abs(position2 - shift2) * weight2
+
+                        if diff < diff2:
+                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)[0] is not None:
+                                if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
+                                    loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{chain_id2}:{seq_id2}:{comp_id2} -> {chain_id}:{seq_id}:{comp_id}'
+                                loop.data[idx - num_of_dim + dim_id_2][chain_id_col] = loop.data[idx - num_of_dim + dim_id_1][chain_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][entity_id_col] = loop.data[idx - num_of_dim + dim_id_1][entity_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][comp_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][auth_chain_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_chain_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
+
+                        elif diff > diff2:
+                            if self.__getCsValue(chain_id2, seq_id2, comp_id2, atom_id)[0] is not None:
+                                if loop.data[idx][details_col] in emptyValue:
+                                    loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{chain_id}:{seq_id}:{comp_id} -> {chain_id2}:{seq_id2}:{comp_id2}'
+                                loop.data[idx - num_of_dim + dim_id_1][chain_id_col] = loop.data[idx - num_of_dim + dim_id_2][chain_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][entity_id_col] = loop.data[idx - num_of_dim + dim_id_2][entity_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][comp_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][auth_chain_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_chain_id_col]
                                 loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col]
                                 loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col]
 
@@ -2809,18 +3054,23 @@ class BasePKParserListener():
                     if any(row[col] in emptyValue for col in range(10)):
                         continue
 
-                    seq_id, comp_id, atom_id, seq_id2, comp_id2, atom_id2 = row[1], row[2], row[3], row[6], row[7], row[8]
+                    chain_id, seq_id, comp_id, atom_id, chain_id2, seq_id2, comp_id2, atom_id2 =\
+                        row[0], row[1], row[2], row[3], row[5], row[6], row[7], row[8]
 
-                    if row[0] != row[5] or (seq_id == seq_id2 and comp_id == comp_id2):
-                        continue
+                    if isinstance(chain_id, int):
+                        chain_id = str(chain_id)
 
-                    chain_id = row[0]
+                    if isinstance(chain_id2, int):
+                        chain_id2 = str(chain_id2)
 
                     if isinstance(seq_id, str):
                         seq_id = int(seq_id)
 
                     if isinstance(seq_id2, str):
                         seq_id2 = int(seq_id2)
+
+                    if chain_id != chain_id2 or (seq_id == seq_id2 and comp_id == comp_id2):
+                        continue
 
                     if abs(seq_id - seq_id2) > 1:
                         position, position2 = row[4], row[9]
@@ -2834,17 +3084,17 @@ class BasePKParserListener():
                         if isinstance(position2, str):
                             position2 = float(position2)
 
-                        shift = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
-                        shift2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
+                        shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2, weight2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
 
                         if None in (shift, shift2):
                             continue
 
-                        diff = abs(position - shift)
-                        diff2 = abs(position2 - shift2)
+                        diff = abs(position - shift) * weight
+                        diff2 = abs(position2 - shift2) * weight2
 
                         if diff < diff2:
-                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2) is not None:
+                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)[0] is not None:
                                 if loop.data[idx][details_col] in emptyValue:
                                     loop.data[idx][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
                                 loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')]
@@ -2853,7 +3103,7 @@ class BasePKParserListener():
                                 loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')]
 
                         elif diff > diff2:
-                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id) is not None:
+                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)[0] is not None:
                                 if loop.data[idx][details_col] in emptyValue:
                                     loop.data[idx][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
                                 loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')]
@@ -2887,7 +3137,7 @@ class BasePKParserListener():
                         if peak_id != row[0]:
                             continue
 
-                    chain_ids.append(row[2])
+                    chain_ids.append(row[2] if isinstance(row[2], str) else str(row[2]))
                     seq_ids.append(int(row[3]) if isinstance(row[3], str) else row[3])
                     comp_ids.append(row[4])
                     atom_ids.append(row[5])
@@ -2902,11 +3152,11 @@ class BasePKParserListener():
                     _dim_id_1 = dim_id_1 - 1
                     _dim_id_2 = dim_id_2 - 1
 
-                    seq_id, comp_id, atom_id, position, seq_id2, comp_id2, atom_id2, position2 =\
-                        seq_ids[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], positions[_dim_id_1], \
-                        seq_ids[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2], positions[_dim_id_2]
+                    chain_id, seq_id, comp_id, atom_id, position, chain_id2, seq_id2, comp_id2, atom_id2, position2 =\
+                        chain_ids[_dim_id_1], seq_ids[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], positions[_dim_id_1], \
+                        chain_ids[_dim_id_2], seq_ids[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2], positions[_dim_id_2]
 
-                    if chain_ids[_dim_id_1] != chain_ids[_dim_id_2] or (seq_id == seq_id2 and comp_id == comp_id2):
+                    if chain_id != chain_id2 or (seq_id == seq_id2 and comp_id == comp_id2):
                         continue
 
                     if abs(seq_id - seq_id2) > 1:
@@ -2915,17 +3165,17 @@ class BasePKParserListener():
                         if isinstance(chain_id, int):
                             chain_id = str(chain_id)
 
-                        shift = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
-                        shift2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
+                        shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2, weight2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
 
                         if None in (shift, shift2):
                             continue
 
-                        diff = abs(position - shift)
-                        diff2 = abs(position2 - shift2)
+                        diff = abs(position - shift) * weight
+                        diff2 = abs(position2 - shift2) * weight2
 
                         if diff < diff2:
-                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2) is not None:
+                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)[0] is not None:
                                 if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
                                     loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
                                 loop.data[idx - num_of_dim + dim_id_2][seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][seq_id_col]
@@ -2934,7 +3184,7 @@ class BasePKParserListener():
                                 loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
 
                         elif diff > diff2:
-                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id) is not None:
+                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)[0] is not None:
                                 if loop.data[idx][details_col] in emptyValue:
                                     loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
                                 loop.data[idx - num_of_dim + dim_id_1][seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][seq_id_col]
@@ -2942,22 +3192,30 @@ class BasePKParserListener():
                                 loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col]
                                 loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col]
 
-    def __getCsValue(self, chain_id: str, seq_id: int, comp_id: str, atom_id: str) -> Optional[float]:
+    def __getCsValue(self, chain_id: str, seq_id: int, comp_id: str, atom_id: str) -> Tuple[Optional[float], Optional[float]]:
 
         if self.__csLoops is None or len(self.__csLoops) == 0:
-            return None
+            return None, None
 
         _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
         for lp in self.__csLoops:
-            val = next((row['Val'] for row in lp['data']
+            row = next((row for row in lp['data']
                         if row['Entity_assembly_ID'] == chain_id and row['Comp_index_ID'] == seq_id
                         and row['Comp_ID'] == comp_id and row['Atom_ID'] in _atom_ids), None)
 
-            if val is not None:
-                return val
+            if row is not None:
+                isotope_num = row['Atom_isotope_number']
+                weight = 1.0
+                if isotope_num == 13:
+                    weight = 0.251449530
+                elif isotope_num == 15:
+                    weight = 0.101329118
+                elif isotope_num == 2:
+                    weight = 0.153506088
+                return row['Val'], weight
 
-        return None
+        return None, None
 
     def validatePeak2D(self, index: int, pos_1: float, pos_2: float,
                        pos_unc_1: Optional[float], pos_unc_2: Optional[float],

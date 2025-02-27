@@ -149,11 +149,27 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 if L1 is not None:
                     ext = self.extractPeakAssignment(1, L1, index)
                     if ext is not None:
-                        assignments[0] = ext
+                        status, _L1 = self.testAssignment(1, ext, L1)
+                        if status:
+                            assignments[0] = ext
+                        elif _L1 is not None:
+                            if details is None:
+                                details = f'Assign 1:{L1} -> {_L1}'
+                            ext = self.extractPeakAssignment(1, _L1, index)
+                            if ext is not None:
+                                assignments[0] = ext
                 if L2 is not None:
                     ext = self.extractPeakAssignment(1, L2, index)
                     if ext is not None:
-                        assignments[1] = ext
+                        status, _L2 = self.testAssignment(2, ext, L2)
+                        if status:
+                            assignments[1] = ext
+                        elif _L2 is not None:
+                            if details is None:
+                                details = f'Assign 2:{L2} -> {_L2}'
+                            ext = self.extractPeakAssignment(1, _L2, index)
+                            if ext is not None:
+                                assignments[1] = ext
 
                 has_assignments, has_multiple_assignments, asis1, asis2 =\
                     self.checkAssignments2D(index, assignments)
@@ -260,15 +276,39 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 if L1 is not None:
                     ext = self.extractPeakAssignment(1, L1, index)
                     if ext is not None:
-                        assignments[0] = ext
+                        status, _L1 = self.testAssignment(1, ext, L1)
+                        if status:
+                            assignments[0] = ext
+                        elif _L1 is not None:
+                            if details is None:
+                                details = f'Assign 1:{L1} -> {_L1}'
+                            ext = self.extractPeakAssignment(1, _L1, index)
+                            if ext is not None:
+                                assignments[0] = ext
                 if L2 is not None:
                     ext = self.extractPeakAssignment(1, L2, index)
                     if ext is not None:
-                        assignments[1] = ext
+                        status, _L2 = self.testAssignment(2, ext, L2)
+                        if status:
+                            assignments[1] = ext
+                        elif _L2 is not None:
+                            if details is None:
+                                details = f'Assign 2:{L2} -> {_L2}'
+                            ext = self.extractPeakAssignment(1, _L2, index)
+                            if ext is not None:
+                                assignments[1] = ext
                 if L3 is not None:
-                    ext = self.extractPeakAssignment(2, L3, index)
+                    ext = self.extractPeakAssignment(1, L3, index)
                     if ext is not None:
-                        assignments[2] = ext
+                        status, _L3 = self.testAssignment(3, ext, L3)
+                        if status:
+                            assignments[2] = ext
+                        elif _L3 is not None:
+                            if details is None:
+                                details = f'Assign 3:{L3} -> {_L3}'
+                            ext = self.extractPeakAssignment(1, _L3, index)
+                            if ext is not None:
+                                assignments[2] = ext
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
                     self.checkAssignments3D(index, assignments)
@@ -381,19 +421,51 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 if L1 is not None:
                     ext = self.extractPeakAssignment(1, L1, index)
                     if ext is not None:
-                        assignments[0] = ext
+                        status, _L1 = self.testAssignment(1, ext, L1)
+                        if status:
+                            assignments[0] = ext
+                        elif _L1 is not None:
+                            if details is None:
+                                details = f'Assign 1:{L1} -> {_L1}'
+                            ext = self.extractPeakAssignment(1, _L1, index)
+                            if ext is not None:
+                                assignments[0] = ext
                 if L2 is not None:
                     ext = self.extractPeakAssignment(1, L2, index)
                     if ext is not None:
-                        assignments[1] = ext
+                        status, _L2 = self.testAssignment(2, ext, L2)
+                        if status:
+                            assignments[1] = ext
+                        elif _L2 is not None:
+                            if details is None:
+                                details = f'Assign 2:{L2} -> {_L2}'
+                            ext = self.extractPeakAssignment(1, _L2, index)
+                            if ext is not None:
+                                assignments[1] = ext
                 if L3 is not None:
-                    ext = self.extractPeakAssignment(2, L3, index)
+                    ext = self.extractPeakAssignment(1, L3, index)
                     if ext is not None:
-                        assignments[2] = ext
+                        status, _L3 = self.testAssignment(3, ext, L3)
+                        if status:
+                            assignments[2] = ext
+                        elif _L3 is not None:
+                            if details is None:
+                                details = f'Assign 3:{L3} -> {_L3}'
+                            ext = self.extractPeakAssignment(1, _L3, index)
+                            if ext is not None:
+                                assignments[2] = ext
                 if L4 is not None:
-                    ext = self.extractPeakAssignment(3, L4, index)
+                    ext = self.extractPeakAssignment(1, L4, index)
                     if ext is not None:
-                        assignments[3] = ext
+                        status, _L4 = self.testAssignment(4, ext, L4)
+                        if status:
+                            assignments[3] = ext
+                        elif _L4 is not None:
+                            if details is None:
+                                details = f'Assign 4:{L4} -> {_L4}'
+                            ext = self.extractPeakAssignment(1, _L4, index)
+                            if ext is not None:
+                                assignments[3] = ext
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
                     self.checkAssignments4D(index, assignments)

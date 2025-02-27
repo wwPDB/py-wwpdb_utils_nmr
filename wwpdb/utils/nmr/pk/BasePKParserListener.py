@@ -1443,7 +1443,22 @@ class BasePKParserListener():
             self.peaks4D = 0
         self.use_peak_row_format = True
 
-    def fillAtomTypeInCase(self, _dim_id: int, atom_type: str) -> bool:
+    def testAssignment(self, _dim_id: int, _assign: List[dict], _label: str) -> Tuple[bool, Optional[str]]:
+        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
+        if cur_spectral_dim['atom_type'] is not None:
+            if len(_assign) > 0 and 'atom_id' in _assign[0]:
+                atom_type = cur_spectral_dim['atom_type']
+                _atom_type = _assign[0]['atom_id'][0]
+                if atom_type == _atom_type:
+                    return True, None
+                concat_type = _atom_type + atom_type
+                if concat_type in _label:
+                    _label = _label.replace(concat_type, atom_type)
+                    return False, _label
+                return False, None
+        return True, None
+
+    def validateAtomType(self, _dim_id: int, atom_type: str) -> bool:
         cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
         if cur_spectral_dim['atom_type'] is not None:
             if cur_spectral_dim['atom_type'] == atom_type:
@@ -2302,7 +2317,15 @@ class BasePKParserListener():
                         _atom_id2_ = self.ccU.getBondedAtoms(comp_id, _atom_id, exclProton=_atom_id[0] in protonBeginCode, onlyProton=_atom_id[0] not in protonBeginCode)
                         _atom_id_ = self.ccU.getBondedAtoms(comp_id, _atom_id2, exclProton=_atom_id2[0] in protonBeginCode, onlyProton=_atom_id2[0] not in protonBeginCode)
 
-                        if 0 < len(_atom_id2_) < len(_atom_id_):
+                        if atom_id[0] != _atom_id_[0][0] and atom_id2[0] == _atom_id2_[0][0]:
+                            if loop.data[idx][details_col] in emptyValue:
+                                loop.data[idx][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
+                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = _atom_id2_[0]
+                        elif atom_id[0] == _atom_id_[0][0] and atom_id2[0] != _atom_id2_[0][0]:
+                            if loop.data[idx][details_col] in emptyValue:
+                                loop.data[idx][details_col] = f'{atom_id} -> {_atom_id_[0]}'
+                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_1}')] = _atom_id_[0]
+                        elif 0 < len(_atom_id2_) < len(_atom_id_):
                             if loop.data[idx][details_col] in emptyValue:
                                 loop.data[idx][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
                             loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = _atom_id2_[0]
@@ -2392,7 +2415,15 @@ class BasePKParserListener():
                         _atom_id2_ = self.ccU.getBondedAtoms(comp_id, _atom_id, exclProton=_atom_id[0] in protonBeginCode, onlyProton=_atom_id[0] not in protonBeginCode)
                         _atom_id_ = self.ccU.getBondedAtoms(comp_id, _atom_id2, exclProton=_atom_id2[0] in protonBeginCode, onlyProton=_atom_id2[0] not in protonBeginCode)
 
-                        if 0 < len(_atom_id2_) < len(_atom_id_):
+                        if atom_id[0] != _atom_id_[0][0] and atom_id2[0] == _atom_id2_[0][0]:
+                            if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
+                                loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
+                            loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = _atom_id2_[0]
+                        elif atom_id[0] == _atom_id_[0][0] and atom_id2[0] != _atom_id2_[0][0]:
+                            if loop.data[idx - num_of_dim + dim_id_1][details_col] in emptyValue:
+                                loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{atom_id} -> {_atom_id_[0]}'
+                            loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] = _atom_id_[0]
+                        elif 0 < len(_atom_id2_) < len(_atom_id_):
                             if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
                                 loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
                             loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = _atom_id2_[0]
@@ -2742,8 +2773,7 @@ class BasePKParserListener():
         for lp in self.__csLoops:
             val = next((row['Val'] for row in lp['data']
                         if row['Entity_assembly_ID'] == chain_id and row['Comp_index_ID'] == seq_id
-                        and (row['Comp_ID'] == comp_id or comp_id is None)
-                        and row['Atom_ID'] in _atom_ids), None)
+                        and row['Comp_ID'] == comp_id and row['Atom_ID'] in _atom_ids), None)
 
             if val is not None:
                 return val
@@ -3078,8 +3108,8 @@ class BasePKParserListener():
                         self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
-                            has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                            has_assignments &= self.validateAtomType(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                            has_assignments &= self.validateAtomType(2, self.atomSelectionSet[1][0]['atom_id'][0])
                             if has_assignments:
                                 self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2])
@@ -3180,9 +3210,9 @@ class BasePKParserListener():
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
-                            has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
+                            has_assignments &= self.validateAtomType(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                            has_assignments &= self.validateAtomType(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                            has_assignments &= self.validateAtomType(3, self.atomSelectionSet[2][0]['atom_id'][0])
                             if has_assignments:
                                 self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3])
@@ -3289,10 +3319,10 @@ class BasePKParserListener():
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
-                            has_assignments &= self.fillAtomTypeInCase(1, self.atomSelectionSet[0][0]['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(2, self.atomSelectionSet[1][0]['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(3, self.atomSelectionSet[2][0]['atom_id'][0])
-                            has_assignments &= self.fillAtomTypeInCase(4, self.atomSelectionSet[3][0]['atom_id'][0])
+                            has_assignments &= self.validateAtomType(1, self.atomSelectionSet[0][0]['atom_id'][0])
+                            has_assignments &= self.validateAtomType(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                            has_assignments &= self.validateAtomType(3, self.atomSelectionSet[2][0]['atom_id'][0])
+                            has_assignments &= self.validateAtomType(4, self.atomSelectionSet[3][0]['atom_id'][0])
                             if has_assignments:
                                 self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3, asis4])

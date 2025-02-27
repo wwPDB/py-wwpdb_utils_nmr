@@ -353,7 +353,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
         _region1 = _dict1['_spectral_region']
         if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl'):
             cases = 0
-            max_corr_eff = 0.0
+            max_corrcoef = 0.0
             for _dim_id2, _dict2 in cur_spectral_dim.items():
                 _region2 = _dict2['_spectral_region']
                 if (_region1 == 'HN' and _region2 == 'N')\
@@ -366,7 +366,6 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                                    if _transfer['type'] == 'onebond'
                                    and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
                                         or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
-                            cases += 1
                             if _dict1['freq_hint'].size < 2\
                                or numpy.max(_dict1['freq_hint']) == numpy.min(_dict1['freq_hint'])\
                                or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
@@ -374,7 +373,28 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                             _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
                             if _corrcoef < 0.0 or (_corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic):
                                 continue
-                            max_corr_eff = max(max_corr_eff, _corrcoef)
+                            cases += 1
+                            max_corrcoef = max(max_corrcoef, _corrcoef)
+
+                            if d == 3:
+                                for _dim_id3, _dict3 in cur_spectral_dim.items():
+                                    if _dim_id3 in (_dim_id1, _dim_id2):
+                                        continue
+                                    if _dict3['spectral_region'] != _dict1['spectral_region']:
+                                        continue
+                                    if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                       if _transfer['type'] == 'onebond'
+                                       and (_dim_id3 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
+                                            or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
+                                        if _dict3['freq_hint'].size < 2\
+                                           or numpy.max(_dict3['freq_hint']) == numpy.min(_dict3['freq_hint'])\
+                                           or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
+                                            continue
+                                        _corrcoef = numpy.corrcoef(_dict3['freq_hint'], _dict2['freq_hint'])[0][1]
+                                        if _corrcoef < 0.0 or (_corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic):
+                                            continue
+                                        cases += 1
+                                        max_corrcoef = max(max_corrcoef, _corrcoef)
 
             if cases == 1:
                 for _dim_id2, _dict2 in cur_spectral_dim.items():
@@ -415,7 +435,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                                    or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                     continue
                                 _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
-                                if _corrcoef < 0.0 or (_corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic):
+                                if _corrcoef < 0.0 or (_corrcoef < max_corrcoef and no_aromatic):
                                     continue
                                 transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
@@ -445,7 +465,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                                or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                 continue
                             _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
-                            if _corrcoef < 0.0 or (_corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic):
+                            if _corrcoef < 0.0 or (_corrcoef < max_corrcoef and no_aromatic):
                                 continue
                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
@@ -1661,7 +1681,7 @@ class BasePKParserListener():
                         _region1 = _dict1['_spectral_region']
                         if _region1 in ('HN', 'H-aliphatic', 'H-aromatic', 'H-methyl'):
                             cases = 0
-                            max_corr_eff = 0.0
+                            max_corrcoef = 0.0
                             for _dim_id2, _dict2 in cur_spectral_dim.items():
                                 _region2 = _dict2['_spectral_region']
                                 if (_region1 == 'HN' and _region2 == 'N')\
@@ -1682,7 +1702,27 @@ class BasePKParserListener():
                                             if _corrcoef < 0.0 or (_corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic):
                                                 continue
                                             cases += 1
-                                            max_corr_eff = max(max_corr_eff, _corrcoef)
+                                            max_corrcoef = max(max_corrcoef, _corrcoef)
+
+                                            if d == 3:
+                                                for _dim_id3, _dict3 in cur_spectral_dim.items():
+                                                    if _dim_id3 in (_dim_id1, _dim_id2):
+                                                        continue
+                                                    if _dict3['spectral_region'] != _dict1['spectral_region']:
+                                                        continue
+                                                    if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                                       if _transfer['type'] == 'onebond'
+                                                       and (_dim_id3 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
+                                                            or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
+                                                        if _dict3['freq_hint'].size < 2\
+                                                           or numpy.max(_dict3['freq_hint']) == numpy.min(_dict3['freq_hint'])\
+                                                           or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
+                                                            continue
+                                                        _corrcoef = numpy.corrcoef(_dict3['freq_hint'], _dict2['freq_hint'])[0][1]
+                                                        if _corrcoef < 0.0 or (_corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic):
+                                                            continue
+                                                        cases += 1
+                                                        max_corrcoef = max(max_corrcoef, _corrcoef)
 
                             if cases == 1:
                                 for _dim_id2, _dict2 in cur_spectral_dim.items():
@@ -1723,7 +1763,7 @@ class BasePKParserListener():
                                                    or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                                     continue
                                                 _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
-                                                if _corrcoef < 0.0 or (_corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic):
+                                                if _corrcoef < 0.0 or (_corrcoef < max_corrcoef and no_aromatic):
                                                     continue
                                                 transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                             'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
@@ -1753,7 +1793,7 @@ class BasePKParserListener():
                                                or numpy.max(_dict2['freq_hint']) == numpy.min(_dict2['freq_hint']):
                                                 continue
                                             _corrcoef = numpy.corrcoef(_dict1['freq_hint'], _dict2['freq_hint'])[0][1]
-                                            if _corrcoef < 0.0 or (_corrcoef < MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER and no_aromatic):
+                                            if _corrcoef < 0.0 or (_corrcoef < max_corrcoef and no_aromatic):
                                                 continue
                                             transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
                                                         'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
@@ -2292,19 +2332,25 @@ class BasePKParserListener():
 
             if use_peak_row_format:
 
-                tags = [f'Entity_assembly_ID_{dim_id_1}', f'Comp_index_ID_{dim_id_1}', f'Comp_ID_{dim_id_1}', f'Atom_ID_{dim_id_1}',
-                        f'Entity_assembly_ID_{dim_id_2}', f'Comp_index_ID_{dim_id_2}', f'Comp_ID_{dim_id_2}', f'Atom_ID_{dim_id_2}']
+                tags = [f'Entity_assembly_ID_{dim_id_1}', f'Comp_index_ID_{dim_id_1}', f'Comp_ID_{dim_id_1}', f'Atom_ID_{dim_id_1}', f'Position_{dim_id_1}',
+                        f'Entity_assembly_ID_{dim_id_2}', f'Comp_index_ID_{dim_id_2}', f'Comp_ID_{dim_id_2}', f'Atom_ID_{dim_id_2}', f'Position_{dim_id_2}']
 
                 dat = loop.get_tag(tags)
 
                 for idx, row in enumerate(dat):
 
-                    if any(row[col] in emptyValue for col in range(8)):
+                    if any(row[col] in emptyValue for col in range(10)):
                         continue
 
-                    comp_id, atom_id, comp_id2, atom_id2 = row[2], row[3], row[6], row[7]
+                    seq_id, comp_id, atom_id, seq_id2, comp_id2, atom_id2 = row[1], row[2], row[3], row[6], row[7], row[8]
 
-                    if row[0] == row[4] and row[1] == row[5] and comp_id == comp_id2 and atom_id != atom_id2\
+                    if isinstance(seq_id, str):
+                        seq_id = int(seq_id)
+
+                    if isinstance(seq_id2, str):
+                        seq_id2 = int(seq_id2)
+
+                    if row[0] == row[5] and seq_id == seq_id2 and comp_id == comp_id2 and atom_id != atom_id2\
                        and self.ccU.updateChemCompDict(comp_id):
                         _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                         _atom_ids2 = self.nefT.get_valid_star_atom(comp_id, atom_id2, leave_unmatched=False)[0]
@@ -2314,43 +2360,44 @@ class BasePKParserListener():
                             continue
 
                         _atom_id, _atom_id2 = _atom_ids[0], _atom_ids2[0]
+
                         _atom_id2_ = self.ccU.getBondedAtoms(comp_id, _atom_id, exclProton=_atom_id[0] in protonBeginCode, onlyProton=_atom_id[0] not in protonBeginCode)
                         _atom_id_ = self.ccU.getBondedAtoms(comp_id, _atom_id2, exclProton=_atom_id2[0] in protonBeginCode, onlyProton=_atom_id2[0] not in protonBeginCode)
 
-                        if atom_id[0] != _atom_id_[0][0] and atom_id2[0] == _atom_id2_[0][0]:
-                            if loop.data[idx][details_col] in emptyValue:
-                                loop.data[idx][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
-                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = _atom_id2_[0]
-                        elif atom_id[0] == _atom_id_[0][0] and atom_id2[0] != _atom_id2_[0][0]:
-                            if loop.data[idx][details_col] in emptyValue:
-                                loop.data[idx][details_col] = f'{atom_id} -> {_atom_id_[0]}'
-                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_1}')] = _atom_id_[0]
-                        elif 0 < len(_atom_id2_) < len(_atom_id_):
-                            if loop.data[idx][details_col] in emptyValue:
-                                loop.data[idx][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
-                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = _atom_id2_[0]
-                        elif 0 < len(_atom_id_) < len(_atom_id2_):
+                        len_atom_id_ = len(_atom_id_)
+                        len_atom_id2_ = len(_atom_id2_)
+
+                        # pylint: disable=cell-var-from-loop
+                        def swap_atom_1():
                             if loop.data[idx][details_col] in emptyValue:
                                 loop.data[idx][details_col] = f'{atom_id} -> {_atom_id_[0]}'
                             loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_1}')] = _atom_id_[0]
+
+                        # pylint: disable=cell-var-from-loop
+                        def swap_atom_2():
+                            if loop.data[idx][details_col] in emptyValue:
+                                loop.data[idx][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
+                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = _atom_id2_[0]
+
+                        if len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] != _atom_id_[0][0] and atom_id2[0] == _atom_id2_[0][0]:
+                            swap_atom_2()
+                        elif len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] == _atom_id_[0][0] and atom_id2[0] != _atom_id2_[0][0]:
+                            swap_atom_1()
+                        elif 0 < len_atom_id2_ < len_atom_id_:
+                            swap_atom_2()
+                        elif 0 < len_atom_id_ < len_atom_id2_:
+                            swap_atom_1()
                         elif len(atom_id2) < len(atom_id):
-                            if loop.data[idx][details_col] in emptyValue:
-                                loop.data[idx][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
-                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = _atom_id2_[0]
+                            swap_atom_2()
                         elif len(atom_id) < len(atom_id2):
-                            if loop.data[idx][details_col] in emptyValue:
-                                loop.data[idx][details_col] = f'{atom_id} -> {_atom_id_[0]}'
-                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_1}')] = _atom_id_[0]
-                        elif _atom_id2[0] in protonBeginCode and len(_atom_id2_) > 0:
-                            if loop.data[idx][details_col] in emptyValue:
-                                loop.data[idx][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
-                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = _atom_id2_[0]
-                        elif _atom_id[0] in protonBeginCode and len(_atom_id_) > 0:
-                            if loop.data[idx][details_col] in emptyValue:
-                                loop.data[idx][details_col] = f'{atom_id} -> {_atom_id_[0]}'
-                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_1}')] = _atom_id_[0]
+                            swap_atom_1()
+                        elif _atom_id2[0] in protonBeginCode and len_atom_id2_ > 0:
+                            swap_atom_2()
+                        elif _atom_id[0] in protonBeginCode and len_atom_id_ > 0:
+                            swap_atom_1()
                         else:
-                            chain_id, seq_id = row[0], int(row[1])
+                            chain_id = row[0]
+
                             self.f.append(f"[Inconsistent assigned peak] [Check row of Index_ID {loop.data[idx][loop.tags.index('Index_ID')]}] "
                                           f"Inconsistent assignments of spectral peak with onebond coherence transfer type, ({chain_id}:{seq_id}:{comp_id}:{atom_id}) vs "
                                           f"({chain_id}:{seq_id}:{comp_id}:{atom_id2}) have been cleared.")
@@ -2361,10 +2408,80 @@ class BasePKParserListener():
                             loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_1}')] =\
                                 loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = None
 
+                    elif row[0] == row[5] and seq_id != seq_id2:
+                        chain_id = row[0]
+
+                        if isinstance(chain_id, int):
+                            chain_id = str(chain_id)
+
+                        position, position2 = row[4], row[9]
+
+                        if isinstance(position, str):
+                            position = float(position)
+
+                        if isinstance(position2, str):
+                            position2 = float(position2)
+
+                        shift = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
+
+                        if None in (shift, shift2):
+                            continue
+
+                        diff = abs(position - shift) + abs(position2 - shift2)
+
+                        shift_ = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)
+                        shift2_ = self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)
+
+                        diff_ = diff2_ = None
+                        if shift_ is not None:
+                            diff_ = abs(position - shift_) + abs(position2 - shift2)
+                        if shift2_ is not None:
+                            diff2_ = abs(position - shift) + abs(position2 - shift2_)
+
+                        # pylint: disable=cell-var-from-loop
+                        def swap_seq_id_1():
+                            if loop.data[idx][details_col] in emptyValue:
+                                loop.data[idx][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
+                            loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')]
+                            loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')]
+                            loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')]
+                            loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')]
+
+                        # pylint: disable=cell-var-from-loop
+                        def swap_seq_id_2():
+                            if loop.data[idx][details_col] in emptyValue:
+                                loop.data[idx][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
+                            loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')]
+                            loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')]
+                            loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')]
+                            loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')]
+
+                        if diff_ is not None and diff2_ is not None:
+                            if diff_ < diff and diff2_ < diff:
+                                if diff_ < diff2_:
+                                    swap_seq_id_1()
+                                elif diff_ > diff2_:
+                                    swap_seq_id_2()
+                            elif diff_ < diff:
+                                swap_seq_id_1()
+                            elif diff2_ < diff:
+                                swap_seq_id_2()
+
+                        elif diff_ is not None and diff_ < diff:
+                            swap_seq_id_1()
+
+                        elif diff2_ is not None and diff2_ < diff:
+                            swap_seq_id_2()
+
             else:
 
-                tags = ['Peak_ID', 'Spectral_dim_ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID']
+                tags = ['Peak_ID', 'Spectral_dim_ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID', 'Val']
 
+                seq_id_col = loop.tags.index('Comp_index_ID')
+                comp_id_col = loop.tags.index('Comp_ID')
+                auth_seq_id_col = loop.tags.index('Auth_seq_ID')
+                auth_comp_id_col = loop.tags.index('Auth_comp_ID')
                 atom_id_col = loop.tags.index('Atom_ID')
                 auth_atom_id_col = loop.tags.index('Auth_atom_ID')
 
@@ -2375,20 +2492,21 @@ class BasePKParserListener():
                 for idx, row in enumerate(dat):
                     dim_id = row[1]
 
-                    if any(row[col] in emptyValue for col in range(6)):
+                    if any(row[col] in emptyValue for col in range(7)):
                         continue
 
                     if dim_id == 1:
                         peak_id = row[0]
-                        chain_ids, seq_ids, comp_ids, atom_ids = [], [], [], []
+                        chain_ids, seq_ids, comp_ids, atom_ids, positions = [], [], [], [], []
                     else:
                         if peak_id != row[0]:
                             continue
 
                     chain_ids.append(row[2])
-                    seq_ids.append(row[3])
+                    seq_ids.append(int(row[3]) if isinstance(row[3], str) else row[3])
                     comp_ids.append(row[4])
                     atom_ids.append(row[5])
+                    positions.append(float(row[6]) if isinstance(row[6], str) else row[6])
 
                     if dim_id < num_of_dim:
                         continue
@@ -2399,9 +2517,11 @@ class BasePKParserListener():
                     _dim_id_1 = dim_id_1 - 1
                     _dim_id_2 = dim_id_2 - 1
 
-                    comp_id, atom_id, comp_id2, atom_id2 = comp_ids[_dim_id_1], atom_ids[_dim_id_1], comp_ids[_dim_id_2], atom_ids[_dim_id_2]
+                    seq_id, comp_id, atom_id, seq_id2, comp_id2, atom_id2 =\
+                        seq_ids[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], \
+                        seq_ids[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2]
 
-                    if chain_ids[_dim_id_1] == chain_ids[_dim_id_2] and seq_ids[_dim_id_1] == seq_ids[_dim_id_2] and comp_id == comp_id2 and atom_id != atom_id2\
+                    if chain_ids[_dim_id_1] == chain_ids[_dim_id_2] and seq_id == seq_id2 and comp_id == comp_id2 and atom_id != atom_id2\
                        and self.ccU.updateChemCompDict(comp_id):
                         _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                         _atom_ids2 = self.nefT.get_valid_star_atom(comp_id, atom_id2, leave_unmatched=False)[0]
@@ -2415,40 +2535,39 @@ class BasePKParserListener():
                         _atom_id2_ = self.ccU.getBondedAtoms(comp_id, _atom_id, exclProton=_atom_id[0] in protonBeginCode, onlyProton=_atom_id[0] not in protonBeginCode)
                         _atom_id_ = self.ccU.getBondedAtoms(comp_id, _atom_id2, exclProton=_atom_id2[0] in protonBeginCode, onlyProton=_atom_id2[0] not in protonBeginCode)
 
-                        if atom_id[0] != _atom_id_[0][0] and atom_id2[0] == _atom_id2_[0][0]:
-                            if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
-                                loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
-                            loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = _atom_id2_[0]
-                        elif atom_id[0] == _atom_id_[0][0] and atom_id2[0] != _atom_id2_[0][0]:
+                        len_atom_id_ = len(_atom_id_)
+                        len_atom_id2_ = len(_atom_id2_)
+
+                        # pylint: disable=cell-var-from-loop
+                        def alt_swap_atom_1():
                             if loop.data[idx - num_of_dim + dim_id_1][details_col] in emptyValue:
                                 loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{atom_id} -> {_atom_id_[0]}'
                             loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] = _atom_id_[0]
-                        elif 0 < len(_atom_id2_) < len(_atom_id_):
+
+                        # pylint: disable=cell-var-from-loop
+                        def alt_swap_atom_2():
                             if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
                                 loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
                             loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = _atom_id2_[0]
-                        elif 0 < len(_atom_id_) < len(_atom_id2_):
-                            if loop.data[idx - num_of_dim + dim_id_1][details_col] in emptyValue:
-                                loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{atom_id} -> {_atom_id_[0]}'
-                            loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] = _atom_id_[0]
+
+                        if len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] != _atom_id_[0][0] and atom_id2[0] == _atom_id2_[0][0]:
+                            alt_swap_atom_2()
+                        elif len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] == _atom_id_[0][0] and atom_id2[0] != _atom_id2_[0][0]:
+                            alt_swap_atom_1()
+                        elif 0 < len_atom_id2_ < len_atom_id_:
+                            alt_swap_atom_2()
+                        elif 0 < len_atom_id_ < len_atom_id2_:
+                            alt_swap_atom_1()
                         elif len(atom_id2) < len(atom_id):
-                            if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
-                                loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
-                            loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = _atom_id2_[0]
+                            alt_swap_atom_2()
                         elif len(atom_id) < len(atom_id2):
-                            if loop.data[idx - num_of_dim + dim_id_1][details_col] in emptyValue:
-                                loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{atom_id} -> {_atom_id_[0]}'
-                            loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] = _atom_id_[0]
-                        elif _atom_id2[0] in protonBeginCode and len(_atom_id2_) > 0:
-                            if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
-                                loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
-                            loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = _atom_id2_[0]
-                        elif _atom_id[0] in protonBeginCode and len(_atom_id_) > 0:
-                            if loop.data[idx - num_of_dim + dim_id_1][details_col] in emptyValue:
-                                loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{atom_id} -> {_atom_id_[0]}'
-                            loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] = _atom_id_[0]
+                            alt_swap_atom_1()
+                        elif _atom_id2[0] in protonBeginCode and len_atom_id2_ > 0:
+                            alt_swap_atom_2()
+                        elif _atom_id[0] in protonBeginCode and len_atom_id_ > 0:
+                            alt_swap_atom_1()
                         else:
-                            chain_id, seq_id = chain_ids[_dim_id_1], int(seq_ids[_dim_id_1])
+                            chain_id = chain_ids[_dim_id_1]
                             self.f.append(f"[Inconsistent assigned peak] [Check row of Peak_ID {loop.data[idx][loop.tags.index('Peak_ID')]}] "
                                           f"Inconsistent assignments of spectral peak with onebond coherence transfer type, ({chain_id}:{seq_id}:{comp_id}:{atom_id}) vs "
                                           f"({chain_id}:{seq_id}:{comp_id}:{atom_id2}) have been cleared.")
@@ -2460,6 +2579,66 @@ class BasePKParserListener():
 
                             loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] =\
                                 loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = None
+
+                    elif chain_ids[_dim_id_1] == chain_ids[_dim_id_2] and seq_id != seq_id2:
+                        chain_id = chain_ids[_dim_id_1]
+
+                        if isinstance(chain_id, int):
+                            chain_id = str(chain_id)
+
+                        position, position2 = positions[_dim_id_1], positions[_dim_id_2]
+
+                        shift = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+                        shift2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
+
+                        if None in (shift, shift2):
+                            continue
+
+                        diff = abs(position - shift) + abs(position2 - shift2)
+
+                        shift_ = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)
+                        shift2_ = self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)
+
+                        diff_ = diff2_ = None
+                        if shift_ is not None:
+                            diff_ = abs(position - shift_) + abs(position2 - shift2)
+                        if shift2_ is not None:
+                            diff2_ = abs(position - shift) + abs(position2 - shift2_)
+
+                        # pylint: disable=cell-var-from-loop
+                        def alt_swap_seq_id_1():
+                            if loop.data[idx][details_col] in emptyValue:
+                                loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
+                            loop.data[idx - num_of_dim + dim_id_1][seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_1][comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][comp_id_col]
+                            loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col]
+
+                        # pylint: disable=cell-var-from-loop
+                        def alt_swap_seq_id_2():
+                            if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
+                                loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
+                            loop.data[idx - num_of_dim + dim_id_2][seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_2][comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][comp_id_col]
+                            loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
+
+                        if diff_ is not None and diff2_ is not None:
+                            if diff_ < diff and diff2_ < diff:
+                                if diff_ < diff2_:
+                                    alt_swap_seq_id_1()
+                                elif diff_ > diff2_:
+                                    alt_swap_seq_id_2()
+                            elif diff_ < diff:
+                                alt_swap_seq_id_1()
+                            elif diff2_ < diff:
+                                alt_swap_seq_id_2()
+
+                        elif diff_ is not None and diff_ < diff:
+                            alt_swap_seq_id_1()
+
+                        elif diff2_ is not None and diff2_ < diff:
+                            alt_swap_seq_id_2()
 
     def __remediatePeakAssignmentForJcouplingTransfer(self, num_of_dim: int, jcoupling_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
 
@@ -2572,9 +2751,9 @@ class BasePKParserListener():
                     _dim_id_1 = dim_id_1 - 1
                     _dim_id_2 = dim_id_2 - 1
 
-                    seq_id, comp_id, atom_id, seq_id2, comp_id2, atom_id2 =\
-                        seq_id[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], \
-                        seq_id[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2]
+                    seq_id, comp_id, atom_id, position, seq_id2, comp_id2, atom_id2, position2 =\
+                        seq_ids[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], positions[_dim_id_1], \
+                        seq_ids[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2], positions[_dim_id_2]
 
                     if chain_ids[_dim_id_1] != chain_ids[_dim_id_2] or (seq_id == seq_id2 and comp_id == comp_id2):
                         continue
@@ -2723,9 +2902,9 @@ class BasePKParserListener():
                     _dim_id_1 = dim_id_1 - 1
                     _dim_id_2 = dim_id_2 - 1
 
-                    seq_id, comp_id, atom_id, seq_id2, comp_id2, atom_id2 =\
-                        seq_id[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], \
-                        seq_id[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2]
+                    seq_id, comp_id, atom_id, position, seq_id2, comp_id2, atom_id2, position2 =\
+                        seq_ids[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], positions[_dim_id_1], \
+                        seq_ids[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2], positions[_dim_id_2]
 
                     if chain_ids[_dim_id_1] != chain_ids[_dim_id_2] or (seq_id == seq_id2 and comp_id == comp_id2):
                         continue

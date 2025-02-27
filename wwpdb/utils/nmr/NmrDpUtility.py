@@ -22358,11 +22358,12 @@ class NmrDpUtility:
             auth_atom_id_1_name = 'Auth_atom_ID_1'
             auth_atom_id_2_name = 'Auth_atom_ID_2'
 
+            # pylint: disable=cell-var-from-loop
             def ext_atom_names(row):
-                return (row[chain_id_1_name], row[chain_id_2_name],  # pylint: disable=cell-var-from-loop
-                        row[seq_id_1_name], row[seq_id_2_name],  # pylint: disable=cell-var-from-loop
-                        row[comp_id_1_name], row[comp_id_2_name],  # pylint: disable=cell-var-from-loop
-                        row[atom_id_1_name], row[atom_id_2_name])  # pylint: disable=cell-var-from-loop
+                return (row[chain_id_1_name], row[chain_id_2_name],
+                        row[seq_id_1_name], row[seq_id_2_name],
+                        row[comp_id_1_name], row[comp_id_2_name],
+                        row[atom_id_1_name], row[atom_id_2_name])
 
             content_subtype = 'chem_shift'
 
@@ -54345,15 +54346,16 @@ class NmrDpUtility:
             lower_limit_name = item_names['lower_limit']
             upper_limit_name = item_names['upper_limit']
 
+            # pylint: disable=cell-var-from-loop
             def ext_atoms(row):
-                return ({'chain_id': row[chain_id_1_name], 'seq_id': row[seq_id_1_name],  # pylint: disable=cell-var-from-loop
-                         'comp_id': row[comp_id_1_name], 'atom_id': row[atom_id_1_name]},  # pylint: disable=cell-var-from-loop
-                        {'chain_id': row[chain_id_2_name], 'seq_id': row[seq_id_2_name],  # pylint: disable=cell-var-from-loop
-                         'comp_id': row[comp_id_2_name], 'atom_id': row[atom_id_2_name]},  # pylint: disable=cell-var-from-loop
-                        {'chain_id': row[chain_id_3_name], 'seq_id': row[seq_id_3_name],  # pylint: disable=cell-var-from-loop
-                         'comp_id': row[comp_id_3_name], 'atom_id': row[atom_id_3_name]},  # pylint: disable=cell-var-from-loop
-                        {'chain_id': row[chain_id_4_name], 'seq_id': row[seq_id_4_name],  # pylint: disable=cell-var-from-loop
-                         'comp_id': row[comp_id_4_name], 'atom_id': row[atom_id_4_name]})  # pylint: disable=cell-var-from-loop
+                return ({'chain_id': row[chain_id_1_name], 'seq_id': row[seq_id_1_name],
+                         'comp_id': row[comp_id_1_name], 'atom_id': row[atom_id_1_name]},
+                        {'chain_id': row[chain_id_2_name], 'seq_id': row[seq_id_2_name],
+                         'comp_id': row[comp_id_2_name], 'atom_id': row[atom_id_2_name]},
+                        {'chain_id': row[chain_id_3_name], 'seq_id': row[seq_id_3_name],
+                         'comp_id': row[comp_id_3_name], 'atom_id': row[atom_id_3_name]},
+                        {'chain_id': row[chain_id_4_name], 'seq_id': row[seq_id_4_name],
+                         'comp_id': row[comp_id_4_name], 'atom_id': row[atom_id_4_name]})
 
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]

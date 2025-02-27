@@ -173,27 +173,27 @@ pipp_axis:
 
 pipp_peak_list_2d:
 	Format Format_code Format_code Format_code Format_code Format_code Format_code? Format_code? RETURN_FO
-	Vars PkID Sl_Z X Y Intensity (Assign | Assign1 Assign2)? RETURN_VA
+	Vars PkID Sl_Z? X Y Intensity (Assign | Assign1 Assign2)? RETURN_VA
 	pipp_peak_2d+;
 
 pipp_peak_2d:
-	Integer Integer number number number+ (RETURN | EOF);
+	Integer Integer? number number number+ (RETURN | EOF);
 
 pipp_peak_list_3d:
 	Format Format_code Format_code Format_code Format_code Format_code Format_code Format_code? Format_code? RETURN_FO
-	Vars PkID Sl_Z X Y Z Intensity (Assign | Assign1 Assign2)? RETURN_VA
+	Vars PkID Sl_Z? X Y Z Intensity (Assign | Assign1 Assign2)? RETURN_VA
 	pipp_peak_3d+;
 
 pipp_peak_3d:
-	Integer Integer number number number number+ (RETURN | EOF);
+	Integer Integer? number number number number+ (RETURN | EOF);
 
 pipp_peak_list_4d:
 	Format Format_code Format_code Format_code Format_code Format_code Format_code Format_code Format_code? Format_code? RETURN_FO
-	Vars PkID Sl_Z X Y Z A Intensity (Assign | Assign1 Assign2)? RETURN_VA
+	Vars PkID Sl_Z? X Y Z A Intensity (Assign | Assign1 Assign2)? RETURN_VA
 	pipp_peak_4d+;
 
 pipp_peak_4d:
-	Integer Integer number number number number number+ (RETURN | EOF);
+	Integer Integer? number number number number number+ (RETURN | EOF);
 
 /* number expression in peak list */
 number:	Integer | Float | Real | Any_name;

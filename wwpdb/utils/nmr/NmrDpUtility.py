@@ -1150,7 +1150,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
     if 'VARS' in string and 'X_PPM' in string and 'Y_PPM' in string:  # NMRPipe peak list
         return 'nm-pea-pip' if asCode else 'NMRPipe'
 
-    if 'VARS' in string and 'PkID' in string and 'Sl.Z' in string and 'X' in string and 'Y' in string and 'Intensity' in string:  # PIPP peak list
+    if 'VARS' in string and 'PkID' in string and 'X' in string and 'Y' in string and 'Intensity' in string:  # PIPP peak list
         return 'nm-pea-pip' if asCode else 'NMRPipe'
 
     if '<!DOCTYPE spectrum SYSTEM' in string or '<spectrum name=' in string:  # ARIA peak list

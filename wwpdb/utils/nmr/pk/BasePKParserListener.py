@@ -7046,8 +7046,9 @@ class BasePKParserListener():
                         else:
                             if seqKey in self.__coordUnobsAtom\
                                and (atomId in self.__coordUnobsAtom[seqKey]['atom_ids']
-                                    or (atomId[0] in protonBeginCode and self.ccU.getBondedAtoms(compId, atomId, exclProton=True)[0]
-                                        in self.__coordUnobsAtom[seqKey]['atom_ids'])):
+                                    or (atomId[0] in protonBeginCode
+                                        and any(bondedTo for bondedTo in self.ccU.getBondedAtoms(compId, atomId, exclProton=True)
+                                                if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                 if self.no_extra_comment:
                                     self.f.append(f"[Coordinate issue] {self.getCurrentRestraint(n=index)}"
                                                   f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")

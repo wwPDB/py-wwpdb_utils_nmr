@@ -48,8 +48,8 @@ Simple_name:		SIMPLE_NAME;
 
 fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
-fragment START_CHAR:	ALPHA_NUM | '_' | '-' | '+' | '.' | '*' | '?' | '(' | '{';
-fragment NAME_CHAR:	START_CHAR | '\'' | '"' | ',' | ';' | '#' | '%' | '|' | '/' | ')' | '}';
+fragment START_CHAR:	ALPHA_NUM | '_' | '+' | '.' | '*' | '?';
+fragment NAME_CHAR:	START_CHAR | '\'' | '"' | ',' | ';' | '#' | '%' | '|';
 //fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
@@ -58,7 +58,7 @@ RETURN:			[\r\n]+;
 
 fragment COMMENT_START_CHAR:	('!' | ';' | '\\' | '&' | '/' | '*' | '=');
 
-//ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
+ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
 SECTION_COMMENT:	(COMMENT_START_CHAR | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
 LINE_COMMENT:		(COMMENT_START_CHAR | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
 

@@ -7881,6 +7881,11 @@ class NmrDpUtility:
 
                         if not is_binary_file(arPath):
 
+                            for test_file_type in parsable_mr_file_types:
+                                if os.path.exists(arPath + f'-selected-as-{test_file_type[-7:]}'):
+                                    ar['file_type'] = test_file_type
+                                    break
+
                             codec = detect_bom(arPath, 'utf-8')
 
                             if codec != 'utf-8':
@@ -7888,10 +7893,11 @@ class NmrDpUtility:
                                 convert_codec(arPath, _arPath, codec, 'utf-8')
                                 arPath = _arPath
 
-                            file_type = get_peak_list_format(arPath, True)
+                            if ar['file_type'] == 'nm-pea-any':
+                                file_type = get_peak_list_format(arPath, True)
 
-                            if file_type is not None:
-                                ar['file_type'] = file_type
+                                if file_type is not None:
+                                    ar['file_type'] = file_type
 
                     input_source.setItemValue('file_name', os.path.basename(arPath))
                     input_source.setItemValue('file_type', ar['file_type'])
@@ -14027,7 +14033,7 @@ class NmrDpUtility:
                     _file_type = get_peak_list_format_from_string(err_input, asCode=True)
 
                     if j3 == 0 and _file_type is not None:
-                        shutil.copyfile(div_ext_file, div_ext_file + f'-selected-as-{_file_type[-7:0]}')
+                        shutil.copyfile(div_ext_file, div_ext_file + f'-selected-as-{_file_type[-7:]}')
                         os.remove(div_try_file)
                         os.remove(file_path)
 

@@ -50427,7 +50427,7 @@ class NmrDpUtility:
         if self.__op != 'nmr-cs-mr-merge' and not self.__internal_mode:  # This rediculaus reverse implementation is for OneDep only
             return True
 
-        if len(self.__star_data) == 0:
+        if len(self.__star_data) == 0 or self.__star_data_type[0] != 'Entry':
             return False
 
         input_source = self.report.input_sources[0]

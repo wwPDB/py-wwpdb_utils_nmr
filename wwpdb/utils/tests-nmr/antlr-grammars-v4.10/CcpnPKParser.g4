@@ -48,7 +48,7 @@ peak_2d:
 	Simple_name Simple_name
 	number number
 	Float Float
-	Float
+	(Float | Integer)
 	Simple_name Simple_name Simple_name+ (RETURN | EOF);
 
 peak_list_3d:
@@ -67,7 +67,7 @@ peak_3d:
 	Simple_name Simple_name Simple_name
 	number number
 	Float Float Float
-	Float
+	(Float | Integer)
 	Simple_name Simple_name Simple_name+ (RETURN | EOF);
 
 peak_list_4d:
@@ -86,7 +86,7 @@ peak_4d:
 	Simple_name Simple_name Simple_name Simple_name
 	number number
 	Float Float Float Float
-	Float
+	(Float | Integer)
 	Simple_name Simple_name Simple_name+ (RETURN | EOF);
 
 /* number expression in peak list */

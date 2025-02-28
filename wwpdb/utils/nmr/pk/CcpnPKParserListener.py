@@ -96,7 +96,10 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 P2 = float(str(ctx.Float(1)))
                 W1 = float(str(ctx.Float(2)))
                 W2 = float(str(ctx.Float(3)))
-                # merit = float(str(ctx.Float(4)))
+                # if ctx.Float(4):
+                #     merit = float(str(ctx.Float(4)))
+                # else:
+                #     merit = int(str(ctx.Integer(2))
 
             except ValueError:
                 self.peaks2D -= 1
@@ -219,7 +222,10 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 W1 = float(str(ctx.Float(3)))
                 W2 = float(str(ctx.Float(4)))
                 W3 = float(str(ctx.Float(5)))
-                # merit = float(str(ctx.Float(6)))
+                # if ctx.Float(6):
+                #     merit = float(str(ctx.Float(6)))
+                # else:
+                #     merit = int(str(ctx.Integer(2))
 
             except ValueError:
                 self.peaks3D -= 1
@@ -360,7 +366,10 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 W2 = float(str(ctx.Float(5)))
                 W3 = float(str(ctx.Float(6)))
                 W4 = float(str(ctx.Float(7)))
-                # merit = float(str(ctx.Float(8)))
+                # if ctx.Float(8):
+                #     merit = float(str(ctx.Float(8)))
+                # else:
+                #     merit = int(str(ctx.Integer(2))
 
             except ValueError:
                 self.peaks4D -= 1

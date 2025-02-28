@@ -250,7 +250,7 @@ class NmrPipePKParser ( Parser ):
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                     "'DIMCOUNT'", "'PPM'", "'Hz'", "<INVALID>", "<INVALID>", 
+                     "'DIMCOUNT'", "'PPM'", "'HZ'", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "'INDEX'", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "'DX'", "'DY'", "'DZ'", "'DA'", "'X_PPM'", 

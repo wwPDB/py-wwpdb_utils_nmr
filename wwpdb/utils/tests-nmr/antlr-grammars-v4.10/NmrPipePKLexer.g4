@@ -73,7 +73,7 @@ Ppm_value_DA:		Float 'ppm';
 /* pipp */
 Dim_count_DA:		'DIMCOUNT';
 Ppm_DA:			'PPM';
-Hz_DA:			'Hz';
+Hz_DA:			'HZ';
 
 Integer_DA:		('+' | '-')? DECIMAL;
 Float_DA:		('+' | '-')? (DECIMAL | DEC_DOT_DEC);

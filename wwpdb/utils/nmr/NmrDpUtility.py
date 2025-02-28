@@ -8386,8 +8386,19 @@ class NmrDpUtility:
                             if not _is_done:
                                 is_done = False
 
-                    elif not self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message):
-                        is_done = False
+                    else:
+
+                        if self.__op == 'nmr-cs-mr-merge':
+
+                            _mrPath = mrPath + '.cif2str'
+
+                            if not self.__c2S.convert(mrPath, _mrPath):
+                                _mrPath = mrPath
+
+                            mrPath = _mrPath
+
+                        if not self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message):
+                            is_done = False
 
                     file_path_list_len += 1
 

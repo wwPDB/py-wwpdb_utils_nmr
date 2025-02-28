@@ -1940,6 +1940,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                      {'name': 'Volume_uncertainty', 'type': 'float', 'mandatory': False},
                                      {'name': 'Height', 'type': 'float', 'mandatory': False},
                                      {'name': 'Height_uncertainty', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
+                                      'range': WEIGHT_RANGE},
                                      {'name': 'Details', 'type': 'str', 'mandatory': False},
                                      {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
                                       'default': '1', 'default-from': 'parent'},
@@ -2007,6 +2009,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                      {'name': 'Volume_uncertainty', 'type': 'float', 'mandatory': False},
                                      {'name': 'Height', 'type': 'float', 'mandatory': False},
                                      {'name': 'Height_uncertainty', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
+                                      'range': WEIGHT_RANGE},
                                      {'name': 'Details', 'type': 'str', 'mandatory': False},
                                      {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
                                       'default': '1', 'default-from': 'parent'},
@@ -2093,6 +2097,8 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                      {'name': 'Volume_uncertainty', 'type': 'float', 'mandatory': False},
                                      {'name': 'Height', 'type': 'float', 'mandatory': False},
                                      {'name': 'Height_uncertainty', 'type': 'float', 'mandatory': False},
+                                     {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
+                                      'range': WEIGHT_RANGE},
                                      {'name': 'Details', 'type': 'str', 'mandatory': False},
                                      {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
                                       'default': '1', 'default-from': 'parent'},
@@ -2127,21 +2133,31 @@ NMR_STAR_LP_DATA_ITEMS_INS_CODE['rdc_restraint'].extend([{'name': 'PDB_ins_code_
                                                          {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                          ])
 
-NMR_STAR_ALT_LP_CATEGORIES = {'spectral_peak': ['_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift']
+NMR_STAR_ALT_LP_CATEGORIES = {'spectral_peak': ['_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift']
                               }
 
-NMR_STAR_ALT_LP_KEY_ITEMS = {'spectral_peak': {'_Peak_general_char': [
-                                               {'name': 'Peak_ID', 'type': 'positive-int'}],
+NMR_STAR_ALT_LP_KEY_ITEMS = {'spectral_peak': {'_Peak': [
+                                               {'name': 'ID', 'type': 'int'}],
+                                               '_Peak_general_char': [
+                                               {'name': 'Peak_ID', 'type': 'int'}],
                                                '_Peak_char': [
-                                               {'name': 'Peak_ID', 'type': 'positive-int'},
+                                               {'name': 'Peak_ID', 'type': 'int'},
                                                {'name': 'Spectral_dim_ID', 'type': 'positive-int'}],
                                                '_Assigned_peak_chem_shift': [
-                                               {'name': 'Peak_ID', 'type': 'positive-int'},
+                                               {'name': 'Peak_ID', 'type': 'int'},
                                                {'name': 'Spectral_dim_ID', 'type': 'positive-int'}]
                                                }
                              }
 
-NMR_STAR_ALT_LP_DATA_ITEMS = {'spectral_peak': {'_Peak_general_char': [
+NMR_STAR_ALT_LP_DATA_ITEMS = {'spectral_peak': {'_Peak': [
+                                                {'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                                {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
+                                                 'range': WEIGHT_RANGE},
+                                                {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                 'default': '1', 'default-from': 'parent'},
+                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}],
+                                                '_Peak_general_char': [
                                                 {'name': 'Intensity_val', 'type': 'float', 'mandatory': True},
                                                 {'name': 'Intensity_val_err', 'type': 'float', 'mandatory': False},
                                                 {'name': 'Measurement_method', 'type': 'enum', 'mandatory': False,
@@ -8321,15 +8337,50 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
                 row[_key_size + 10] = row[_key_size + 16] = ambig_code4
 
     if has_key_value(dstFunc, 'volume'):
-        row[-7] = dstFunc['volume']
+        row[-8] = dstFunc['volume']
     if has_key_value(dstFunc, 'volume_uncertainty'):
-        row[-6] = dstFunc['volume_uncertainty']
+        row[-7] = dstFunc['volume_uncertainty']
     if has_key_value(dstFunc, 'height'):
-        row[-5] = dstFunc['height']
+        row[-6] = dstFunc['height']
     if has_key_value(dstFunc, 'height_uncertainty'):
-        row[-4] = dstFunc['height_uncertainty']
+        row[-5] = dstFunc['height_uncertainty']
+    if has_key_value(dstFunc, 'figure_of_merit'):
+        row[-4] = dstFunc['figure_of_merit']
     if details is not None:
         row[-3] = details
+    row[-2] = listId
+    row[-1] = entryId
+
+    return row
+
+
+def getAltPkRow(pkSubtype: str, _indexId: int, indexId: int, listId: int, entryId: str, dstFunc: dict, details: Optional[str] = None) -> Optional[List[Any]]:
+    """ Return row data for a _Peak_general_char loop.
+        @return: data array
+    """
+
+    contentSubtype = contentSubtypeOf(pkSubtype)
+
+    if contentSubtype is None:
+        return None
+
+    catName = '_Peak'
+
+    key_size = len(NMR_STAR_ALT_LP_KEY_ITEMS[contentSubtype][catName])
+    data_size = len(NMR_STAR_ALT_LP_DATA_ITEMS[contentSubtype][catName])
+
+    row = [None] * (key_size + data_size)
+
+    row[0] = indexId
+
+    row[1] = _indexId
+
+    if has_key_value(dstFunc, 'figure_of_merit'):
+        row[2] = dstFunc['figure_of_merit']
+
+    if details is not None:
+        row[3] = details
+
     row[-2] = listId
     row[-1] = entryId
 
@@ -8432,7 +8483,10 @@ def getPkChemShiftRow(pkSubtype: str, indexId: int, listId: int, entryId: str, d
         row[4] = dstFunc[f'position_{dimId}']
 
     # row[5]: Contribution_fractional_val
-    # row[6]: Figure_of_merit
+
+    if has_key_value(dstFunc, 'figure_of_merit'):
+        row[6] = dstFunc['figure_of_merit']
+
     # row[7]: Assigned_chem_shift_list_ID
 
     star_atom = None

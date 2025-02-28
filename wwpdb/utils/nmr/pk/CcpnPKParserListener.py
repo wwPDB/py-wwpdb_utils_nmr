@@ -96,10 +96,12 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 P2 = float(str(ctx.Float(1)))
                 W1 = float(str(ctx.Float(2)))
                 W2 = float(str(ctx.Float(3)))
-                # if ctx.Float(4):
-                #     merit = float(str(ctx.Float(4)))
-                # else:
-                #     merit = int(str(ctx.Integer(2))
+                if ctx.Float(4):
+                    merit = float(str(ctx.Float(4)))
+                elif ctx.Integer(2):
+                    merit = int(str(ctx.Integer(2)))
+                else:
+                    merit = None
 
             except ValueError:
                 self.peaks2D -= 1
@@ -133,7 +135,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             dstFunc = self.validatePeak2D(index, P1, P2, None, None, None, None,
-                                          None, None, W1, W2, height, None, volume, None)
+                                          None, None, W1, W2, height, None, volume, None, merit)
 
             if dstFunc is None:
                 self.peaks2D -= 1
@@ -222,10 +224,12 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 W1 = float(str(ctx.Float(3)))
                 W2 = float(str(ctx.Float(4)))
                 W3 = float(str(ctx.Float(5)))
-                # if ctx.Float(6):
-                #     merit = float(str(ctx.Float(6)))
-                # else:
-                #     merit = int(str(ctx.Integer(2))
+                if ctx.Float(6):
+                    merit = float(str(ctx.Float(6)))
+                elif ctx.Integer(2):
+                    merit = int(str(ctx.Integer(2)))
+                else:
+                    merit = None
 
             except ValueError:
                 self.peaks3D -= 1
@@ -262,7 +266,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             dstFunc = self.validatePeak3D(index, P1, P2, P3, None, None, None, None, None, None,
-                                          None, None, None, W1, W2, W3, height, None, volume, None)
+                                          None, None, None, W1, W2, W3, height, None, volume, None, merit)
 
             if dstFunc is None:
                 self.peaks3D -= 1
@@ -366,10 +370,12 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 W2 = float(str(ctx.Float(5)))
                 W3 = float(str(ctx.Float(6)))
                 W4 = float(str(ctx.Float(7)))
-                # if ctx.Float(8):
-                #     merit = float(str(ctx.Float(8)))
-                # else:
-                #     merit = int(str(ctx.Integer(2))
+                if ctx.Float(8):
+                    merit = float(str(ctx.Float(8)))
+                elif ctx.Integer(2):
+                    merit = int(str(ctx.Integer(2)))
+                else:
+                    merit = None
 
             except ValueError:
                 self.peaks4D -= 1
@@ -409,7 +415,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             dstFunc = self.validatePeak4D(index, P1, P2, P3, P4, None, None, None, None, None, None, None, None,
-                                          None, None, None, None, W1, W2, W3, W4, height, None, volume, None)
+                                          None, None, None, None, W1, W2, W3, W4, height, None, volume, None, merit)
 
             if dstFunc is None:
                 self.peaks4D -= 1

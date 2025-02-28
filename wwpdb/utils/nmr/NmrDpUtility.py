@@ -5990,7 +5990,7 @@ class NmrDpUtility:
                                                'rdc_restraint': None,
                                                'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer'],
                                                'spectral_peak_alt': ['_Spectral_dim', '_Spectral_dim_transfer',
-                                                                     '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift'],
+                                                                     '_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift'],
                                                'noepk_restraint': None,
                                                'jcoup_restraint': None,
                                                'rdc_raw_data': None,
@@ -6321,6 +6321,7 @@ class NmrDpUtility:
                                                '_Spectral_dim_transfer': [{'name': 'Spectral_dim_ID_1', 'type': 'positive-int'},
                                                                           {'name': 'Spectral_dim_ID_2', 'type': 'positive-int'},
                                                                           ],
+                                               '_Peak': [{'name': 'ID', 'type': 'int'}],
                                                '_Peak_general_char': [],
                                                '_Peak_char': [],
                                                '_Assigned_peak_chem_shift': []
@@ -6508,14 +6509,18 @@ class NmrDpUtility:
                                                                             'enforce-enum': True},
                                                                            {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default-from': 'parent'}
                                                                            ],
-                                                '_Peak_general_char': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
+                                                '_Peak': [{'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
+                                                           'range': WEIGHT_RANGE},
+                                                          {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default-from': 'parent'}
+                                                          ],
+                                                '_Peak_general_char': [{'name': 'Peak_ID', 'type': 'int', 'mandatory': True},
                                                                        {'name': 'Intensity_val', 'type': 'float', 'mandatory': True},
                                                                        {'name': 'Intensity_val_err', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
                                                                        {'name': 'Measurement_method', 'type': 'enum', 'mandatory': False,
                                                                         'enum': ('absolute height', 'height', 'relative height', 'volume', 'number of contours', 'integration')},
                                                                        {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default-from': 'parent'}
                                                                        ],
-                                                '_Peak_char': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
+                                                '_Peak_char': [{'name': 'Peak_ID', 'type': 'int', 'mandatory': True},
                                                                {'name': 'Spectral_dim_ID', 'type': 'enum-int', 'mandatory': True,
                                                                 'enum': set(range(1, MAX_DIM_NUM_OF_SPECTRA)),
                                                                 'enforce-enum': True},
@@ -6529,7 +6534,7 @@ class NmrDpUtility:
                                                                 'enum': ('d', 'dd', 'ddd', 'dm', 'dt', 'hxt', 'hpt', 'm', 'q', 'qd', 'qn', 's', 'sxt', 't', 'td', 'LR', '1JCH')},
                                                                {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default-from': 'parent'}
                                                                ],
-                                                '_Assigned_peak_chem_shift': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
+                                                '_Assigned_peak_chem_shift': [{'name': 'Peak_ID', 'type': 'int', 'mandatory': True},
                                                                               {'name': 'Spectral_dim_ID', 'type': 'enum-int', 'mandatory': True,
                                                                                'enum': set(range(1, MAX_DIM_NUM_OF_SPECTRA)),
                                                                                'enforce-enum': True},
@@ -6669,6 +6674,8 @@ class NmrDpUtility:
                                                                     'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
                                                   '_Spectral_dim_transfer': ['Spectral_dim_ID_1', 'Spectral_dim_ID_2', 'Indirect',
                                                                              'Type', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
+                                                  '_Peak': ['Index_ID', 'ID', 'Figure_of_merit', 'Restraint', 'Details',
+                                                            'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
                                                   '_Peak_general_char': ['Peak_ID', 'Intensity_val', 'Intensity_val_err', 'Measurement_method',
                                                                          'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
                                                   '_Peak_char': ['Peak_ID', 'Spectral_dim_ID', 'Chem_shift_val', 'Chem_shift_val_err', 'Line_width_val',
@@ -33570,7 +33577,7 @@ class NmrDpUtility:
                 sf = master_entry.get_saveframe_by_name(sf_framecode)
                 text_data = get_first_sf_tag(sf, 'Text_data')
 
-                if any(loop for loop in sf.loops if loop.category in ('_Peak_row_format', '_Peak'))\
+                if any(loop for loop in sf.loops if loop.category in ('_Peak_row_format', '_Peak_general_char'))\
                         or text_data not in emptyValue:
 
                     list_id += 1
@@ -60457,7 +60464,7 @@ class NmrDpUtility:
                     if data_format is not None:
 
                         for lp in sf.loops:
-                            if lp.category in ('_Peak_row_format', '_Peak_general_char', '_Peak_char', '_Assignemd_peak_chem_shift'):
+                            if lp.category in ('_Peak_row_format', '_Peak', '_Peak_general_char', '_Peak_char', '_Assignemd_peak_chem_shift'):
                                 del sf[lp]  # What a waste!
 
                         set_sf_tag(sf, 'Text_data_format', data_format)

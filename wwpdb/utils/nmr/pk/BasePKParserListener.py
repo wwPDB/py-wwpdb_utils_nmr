@@ -20,7 +20,7 @@ import numpy
 import itertools
 import pynmrstar
 
-from typing import IO, List, Tuple, Optional
+from typing import IO, List, Tuple, Union, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
@@ -46,6 +46,7 @@ try:
                                                        getAltLoops,
                                                        getAuxLoops,
                                                        getPkRow,
+                                                       getAltPkRow,
                                                        getPkGenCharRow,
                                                        getPkCharRow,
                                                        getPkChemShiftRow,
@@ -61,6 +62,7 @@ try:
                                                        UNREAL_AUTH_SEQ_NUM,
                                                        CS_RESTRAINT_RANGE,
                                                        CS_RESTRAINT_ERROR,
+                                                       WEIGHT_RANGE,
                                                        HEME_LIKE_RES_NAMES,
                                                        SPECTRAL_DIM_TEMPLATE)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -119,6 +121,7 @@ except ImportError:
                                            getAltLoops,
                                            getAuxLoops,
                                            getPkRow,
+                                           getAltPkRow,
                                            getPkGenCharRow,
                                            getPkCharRow,
                                            getPkChemShiftRow,
@@ -134,6 +137,7 @@ except ImportError:
                                            UNREAL_AUTH_SEQ_NUM,
                                            CS_RESTRAINT_RANGE,
                                            CS_RESTRAINT_ERROR,
+                                           WEIGHT_RANGE,
                                            HEME_LIKE_RES_NAMES,
                                            SPECTRAL_DIM_TEMPLATE)
     from nmr.ChemCompUtil import ChemCompUtil
@@ -177,6 +181,9 @@ CS_RANGE_MAX = CS_RESTRAINT_RANGE['max_inclusive']
 
 CS_ERROR_MIN = CS_RESTRAINT_ERROR['min_exclusive']
 CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_exclusive']
+
+WEIGHT_RANGE_MIN = WEIGHT_RANGE['min_inclusive']
+WEIGHT_RANGE_MAX = WEIGHT_RANGE['max_inclusive']
 
 C_CARBONYL_CENTER_MAX = 180
 C_CARBONYL_CENTER_MIN = 170
@@ -3223,7 +3230,8 @@ class BasePKParserListener():
                        pos_hz_1: Optional[float], pos_hz_2: Optional[float],  # pylint: disable=unused-argument
                        lw_hz_1: Optional[float], lw_hz_2: Optional[float],
                        height: Optional[str], height_uncertainty: Optional[str],
-                       volume: Optional[str], volume_uncertainty: Optional[str]) -> Optional[dict]:
+                       volume: Optional[str], volume_uncertainty: Optional[str],
+                       figure_of_merit: Optional[Union[float, int]] = None) -> Optional[dict]:
 
         validRange = True
         dstFunc = {}
@@ -3285,6 +3293,13 @@ class BasePKParserListener():
         elif lw_2 is not None and lw_2 != 0.0:
             dstFunc['line_width_2'] = str(lw_2)
 
+        if figure_of_merit is not None:
+            if WEIGHT_RANGE_MIN <= figure_of_merit <= WEIGHT_RANGE_MAX:
+                dstFunc['figure_of_merit'] = str(figure_of_merit)
+            else:
+                self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
+                              f"The figure_of_merit='{figure_of_merit}' should be within range {WEIGHT_RANGE}.")
+
         return dstFunc
 
     def validatePeak3D(self, index: int, pos_1: float, pos_2: float, pos_3: float,
@@ -3293,7 +3308,8 @@ class BasePKParserListener():
                        pos_hz_1: Optional[float], pos_hz_2: Optional[float], pos_hz_3: Optional[float],  # pylint: disable=unused-argument
                        lw_hz_1: Optional[float], lw_hz_2: Optional[float], lw_hz_3: Optional[float],
                        height: Optional[str], height_uncertainty: Optional[str],
-                       volume: Optional[str], volume_uncertainty: Optional[str]) -> Optional[dict]:
+                       volume: Optional[str], volume_uncertainty: Optional[str],
+                       figure_of_merit: Optional[Union[float, int]] = None) -> Optional[dict]:
 
         validRange = True
         dstFunc = {}
@@ -3374,6 +3390,13 @@ class BasePKParserListener():
         elif lw_3 is not None and lw_3 != 0.0:
             dstFunc['line_width_3'] = str(lw_3)
 
+        if figure_of_merit is not None:
+            if WEIGHT_RANGE_MIN <= figure_of_merit <= WEIGHT_RANGE_MAX:
+                dstFunc['figure_of_merit'] = str(figure_of_merit)
+            else:
+                self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
+                              f"The figure_of_merit='{figure_of_merit}' should be within range {WEIGHT_RANGE}.")
+
         return dstFunc
 
     def validatePeak4D(self, index: int, pos_1: float, pos_2: float, pos_3: float, pos_4: float,
@@ -3382,7 +3405,8 @@ class BasePKParserListener():
                        pos_hz_1: Optional[float], pos_hz_2: Optional[float], pos_hz_3: Optional[float], pos_hz_4: Optional[float],  # pylint: disable=unused-argument
                        lw_hz_1: Optional[float], lw_hz_2: Optional[float], lw_hz_3: Optional[float], lw_hz_4: Optional[float],
                        height: Optional[str], height_uncertainty: Optional[str],
-                       volume: Optional[str], volume_uncertainty: Optional[str]) -> Optional[dict]:
+                       volume: Optional[str], volume_uncertainty: Optional[str],
+                       figure_of_merit: Optional[Union[float, int]] = None) -> Optional[dict]:
 
         validRange = True
         dstFunc = {}
@@ -3481,6 +3505,13 @@ class BasePKParserListener():
             dstFunc['line_width_4'] = str(lw_hz_4)
         elif lw_4 is not None and lw_4 != 0.0:
             dstFunc['line_width_4'] = str(lw_4)
+
+        if figure_of_merit is not None:
+            if WEIGHT_RANGE_MIN <= figure_of_merit <= WEIGHT_RANGE_MAX:
+                dstFunc['figure_of_merit'] = str(figure_of_merit)
+            else:
+                self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
+                              f"The figure_of_merit='{figure_of_merit}' should be within range {WEIGHT_RANGE}.")
 
         return dstFunc
 
@@ -3836,16 +3867,20 @@ class BasePKParserListener():
                                details=details)
                 sf['loop'].add_data(row)
 
-                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'volume')
-                if row is not None:
-                    sf['alt_loops'][0].add_data(row)
-                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'height')
+                row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.entryId, dstFunc)
                 if row is not None:
                     sf['alt_loops'][0].add_data(row)
 
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'volume')
+                if row is not None:
+                    sf['alt_loops'][1].add_data(row)
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'height')
+                if row is not None:
+                    sf['alt_loops'][1].add_data(row)
+
                 for idx in range(self.num_of_dim):
                     row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
-                    sf['alt_loops'][1].add_data(row)
+                    sf['alt_loops'][2].add_data(row)
                 if has_assignments:
                     for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
                         uniqAtoms = []
@@ -3862,7 +3897,7 @@ class BasePKParserListener():
                                 row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1,
                                                         self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                         atom0, asis, ambig_code)
-                                sf['alt_loops'][2].add_data(row)
+                                sf['alt_loops'][3].add_data(row)
                                 uniqAtoms.append(atom0)
 
     def addAssignedPkRow3D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
@@ -3920,16 +3955,20 @@ class BasePKParserListener():
                                details=details)
                 sf['loop'].add_data(row)
 
-                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'volume')
-                if row is not None:
-                    sf['alt_loops'][0].add_data(row)
-                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'height')
+                row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.entryId, dstFunc)
                 if row is not None:
                     sf['alt_loops'][0].add_data(row)
 
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'volume')
+                if row is not None:
+                    sf['alt_loops'][1].add_data(row)
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'height')
+                if row is not None:
+                    sf['alt_loops'][1].add_data(row)
+
                 for idx in range(self.num_of_dim):
                     row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
-                    sf['alt_loops'][1].add_data(row)
+                    sf['alt_loops'][2].add_data(row)
                 if has_assignments:
                     for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
                         uniqAtoms = []
@@ -3946,7 +3985,7 @@ class BasePKParserListener():
                                 row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1,
                                                         self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                         atom0, asis, ambig_code)
-                                sf['alt_loops'][2].add_data(row)
+                                sf['alt_loops'][3].add_data(row)
                                 uniqAtoms.append(atom0)
 
     def addAssignedPkRow4D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
@@ -4012,16 +4051,20 @@ class BasePKParserListener():
                                details=details)
                 sf['loop'].add_data(row)
 
-                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'volume')
-                if row is not None:
-                    sf['alt_loops'][0].add_data(row)
-                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'height')
+                row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.entryId, dstFunc)
                 if row is not None:
                     sf['alt_loops'][0].add_data(row)
 
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'volume')
+                if row is not None:
+                    sf['alt_loops'][1].add_data(row)
+                row = getPkGenCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, 'height')
+                if row is not None:
+                    sf['alt_loops'][1].add_data(row)
+
                 for idx in range(self.num_of_dim):
                     row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
-                    sf['alt_loops'][1].add_data(row)
+                    sf['alt_loops'][2].add_data(row)
                 if has_assignments:
                     for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
                         uniqAtoms = []
@@ -4038,7 +4081,7 @@ class BasePKParserListener():
                                 row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1,
                                                         self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                         atom0, asis, ambig_code)
-                                sf['alt_loops'][2].add_data(row)
+                                sf['alt_loops'][3].add_data(row)
                                 uniqAtoms.append(atom0)
 
     def extractPeakAssignment(self, numOfDim: int, string: str, src_index: int, hint: Optional[List[dict]] = None) -> Optional[List[dict]]:

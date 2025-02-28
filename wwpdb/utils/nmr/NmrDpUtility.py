@@ -8111,7 +8111,6 @@ class NmrDpUtility:
                     csPath = _csPath
 
                 if self.__op == 'nmr-cs-mr-merge' and not os.path.basename(csPath).startswith('bmr'):
-
                     _csPath = csPath + '.cif2str'
 
                     if not self.__c2S.convert(csPath, _csPath):
@@ -8655,6 +8654,11 @@ class NmrDpUtility:
                     i += 1
 
                 _srcPath = ofh.name
+                tmpPaths.append(_srcPath)
+
+            # fix single loop file without datablock (D_1300055931)
+            if self.__c2S.convert(_srcPath, _srcPath + '~'):
+                _srcPath = _srcPath + '~'
                 tmpPaths.append(_srcPath)
 
         msg_template = "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'."

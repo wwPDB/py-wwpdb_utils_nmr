@@ -7269,6 +7269,7 @@ class NmrDpUtility:
         self.__sll_pred_holder = {}
 
         self.__nefT.set_remediation_mode(self.__remediation_mode)
+        self.__nefT.set_internal_mode(self.__internal_mode)
 
         if not self.__allow_missing_legacy_dist_restraint and self.__remediation_mode:
             self.__nefT.allow_missing_dist_restraint(True)
@@ -7743,6 +7744,7 @@ class NmrDpUtility:
                         input_source.setItemValue('file_name', os.path.basename(mr))
                         input_source.setItemValue('file_type', file_type)
                         input_source.setItemValue('content_type', 'nmr-restraints')
+                        input_source.setItemValue('ignore_error', False)
 
                     else:
 

@@ -616,6 +616,8 @@ class NEFTranslator:
 
         # whether to enable remediation routine
         self.__remediation_mode = False
+        # whether to allow to raise internal error
+        self.__internal_mode = False
         # whether the initial sequence number starts from '1' in NEF file, otherwise preserves author sequence scheme of the coordinates
         self.__bmrb_only = False
         # whether allow missing distance restraints
@@ -1533,6 +1535,12 @@ class NEFTranslator:
 
         self.__remediation_mode = flag
 
+    def set_internal_mode(self, flag: bool):
+        """ Set internal mode.
+        """
+
+        self.__internal_mode = flag
+
     def set_bmrb_only_mode(self, flag: bool):
         """ Set BMRB-only mode.
         """
@@ -1747,6 +1755,8 @@ class NEFTranslator:
                                               '_Heteronucl_NOE', '_T1', '_T2', '_T1rho', '_Order_param', '_PH_titr_result',
                                               '_Cross_correlation_D_CSA', '_Cross_correlation_DD',
                                               '_Other_data']
+                if self.__internal_mode:
+                    allowed_lp_category_star_o.extend(['_Peak_row_format', '_Peak_char'])
 
                 minimal_sf_category_nef_a = ['nef_chemical_shift_list', 'nef_distance_restraint_list']
                 minimal_sf_category_nef_s = ['nef_chemical_shift_list']
@@ -1764,6 +1774,8 @@ class NEFTranslator:
                                               'heteronucl_T1rho_relaxation', 'order_parameters', 'pH_titration',
                                               'dipole_CSA_cross_correlations', 'dipole_dipole_cross_correlations',
                                               'other_data_types']
+                if self.__internal_mode:
+                    allowed_sf_category_star_o.append('spectral_peak_list')
 
                 if self.__allow_missing_dist_restraint:
                     minimal_lp_category_nef_a = ['_nef_chemical_shift']

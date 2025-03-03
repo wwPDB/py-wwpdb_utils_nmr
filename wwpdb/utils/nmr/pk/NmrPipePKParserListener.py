@@ -740,15 +740,15 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            if len(self.originalNumberSelection) > 4:
-                ass1 = self.originalNumberSelection[4]
+            if len(self.originalNumberSelection) > 3:
+                ass1 = self.originalNumberSelection[3]
                 if ass1 in emptyValue:
                     ass1 = None
             else:
                 ass1 = None
 
-            if len(self.originalNumberSelection) > 5:
-                ass2 = self.originalNumberSelection[5]
+            if len(self.originalNumberSelection) > 4:
+                ass2 = self.originalNumberSelection[4]
                 if ass2 in emptyValue:
                     ass2 = None
             else:
@@ -998,15 +998,15 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            if len(self.originalNumberSelection) > 4:
-                ass1 = self.originalNumberSelection[4]
+            if len(self.originalNumberSelection) > 5:
+                ass1 = self.originalNumberSelection[5]
                 if ass1 in emptyValue:
                     ass1 = None
             else:
                 ass1 = None
 
-            if len(self.originalNumberSelection) > 5:
-                ass2 = self.originalNumberSelection[5]
+            if len(self.originalNumberSelection) > 6:
+                ass2 = self.originalNumberSelection[6]
                 if ass2 in emptyValue:
                     ass2 = None
             else:

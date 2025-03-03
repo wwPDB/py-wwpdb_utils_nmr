@@ -36,7 +36,7 @@ fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
-SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
+//SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 //SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
@@ -55,11 +55,11 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 SPACE:			[ \t]+ -> skip;
 RETURN:			[\r\n]+;
 
-fragment COMMENT_START_CHAR:	('#' | '!' | '\\' | '&' | '/' | '=');
+fragment COMMENT_START_CHAR:	('!' | '\\' | '&' | '/' | '=');
 
 //ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
-LINE_COMMENT:		(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
+SECTION_COMMENT:	('#' | COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
+LINE_COMMENT:		(('#' ' ') | COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
 
 mode DATA_MODE;
 
@@ -142,6 +142,7 @@ Trouble:		'TROUBLE';
 /* pipp */
 PkID:			'PkID';
 Sl_Z:			'Sl.Z';
+Sl_A:			'Sl.A';
 X:			'X';
 Y:			'Y';
 Z:			'Z';

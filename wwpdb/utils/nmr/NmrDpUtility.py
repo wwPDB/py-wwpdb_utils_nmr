@@ -1546,6 +1546,35 @@ def get_number_of_dimensions_of_peak_list(fPath: str, file_format: Optional[str]
     return None
 
 
+def get_chem_shift_format_from_string(string: str) -> Optional[str]:
+    """ Return chemical shift format for a given input.
+    """
+
+    if '<!DOCTYPE chemical_shift_list SYSTEM' in string or '<chemical_shift_list>' in string:
+        return 'nm-shi-ari'
+
+    return None
+
+
+def get_chem_shift_format(fPath: str) -> Optional[str]:
+    """ Return chemical shift format for a input file.
+    """
+
+    with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh:
+
+        for idx, line in enumerate(ifh):
+
+            if line.isspace() or comment_pattern.match(line):
+                continue
+
+            file_type = get_chem_shift_format_from_string(line)
+
+            if file_type is not None or idx >= 20:  # self.mr_max_spacer_lines:
+                return file_type
+
+    return None
+
+
 def get_prompt_file_format(line: str) -> Optional[str]:
     """ Return prompt file type for a given input.
     """
@@ -33632,6 +33661,19 @@ class NmrDpUtility:
             except UnicodeDecodeError:  # catch exception due to binary format (DAOTHER-9425)
                 continue
 
+            if get_chem_shift_format(file_path) is not None:
+
+                err = "NMR spectral peak list file includes assigned chemical shifts."
+
+                self.report.error.appendDescription('content_mismatch',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+{self.__class_name__}.__mergeAnyPkAsIs() ++ Error  - {err}\n")
+
+                continue
+
             content_subtype = 'spectral_peak'
 
             sf_category = self.sf_categories['nmr-star'][content_subtype]
@@ -50538,6 +50580,10 @@ class NmrDpUtility:
             text_data = get_first_sf_tag(sf, 'Text_data')
 
             if text_data in emptyValue:
+                continue
+
+            if get_chem_shift_format_from_string(text_data) is not None:
+                self.__star_data[0].remove_saveframe(sf.name)
                 continue
 
             data_format = get_first_sf_tag(sf, 'Text_data_format')

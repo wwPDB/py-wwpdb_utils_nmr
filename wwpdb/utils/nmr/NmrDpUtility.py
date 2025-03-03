@@ -8373,6 +8373,9 @@ class NmrDpUtility:
                     else:
                         mrPath = mr['file_name']
 
+                    if os.path.exists(mrPath + '-corrected'):
+                        mrPath = mrPath + '-corrected'
+
                     codec = detect_bom(mrPath, 'utf-8')
 
                     _mrPath = None

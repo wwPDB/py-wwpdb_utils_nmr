@@ -4309,7 +4309,7 @@ class NEFTranslator:
                                             else:
                                                 row.append(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[ref[0]][0])
                                         loop.add_tag(d['name'])
-                                    elif 'Entity_assembly_ID' in d['name']:
+                                    elif 'Entity_assembly_ID' in d['name'] or d['name'] == 'Axis_code':
                                         for row in loop:
                                             ref = row[from_col]
                                             row.append(ref)
@@ -5557,6 +5557,25 @@ class NEFTranslator:
                                                              + f"{name} {val!r} must be {self.readableItemType[type]}.")
 
                                     else:
+                                        if val in emptyValue:
+                                            if 'default-from' in d and d['default-from'] == 'self':
+                                                val = indexToLetter(letterToDigit(val, 1) - 1)
+                                            elif 'default-from' in d and d['default-from'] in tags and row[tags.index(d['default-from'])] not in emptyValue:
+                                                val = row[tags.index(k['default-from'])]
+                                            elif 'default-from' in d and d['default-from'].startswith('Auth_asym_ID'):
+                                                val = indexToLetter(letterToDigit(val, 1) - 1)
+                                            elif 'default' in d:
+                                                val = d['default']
+                                            elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                remove_bad_pattern = True
+                                            elif excl_missing_data:
+                                                missing_mandatory_data = True
+                                                continue
+                                            elif skip_empty_value_error(loop, idx):
+                                                continue
+                                            if 'uppercase' in d and d['uppercase']:
+                                                val = val.upper()
+                                            row[j] = ent[name] = val
                                         if ('remove-bad-pattern' in d and d['remove-bad-pattern']) or ('clear-bad-pattern' in d and d['clear-bad-pattern']):
                                             if isinstance(val, str) and badPattern.match(val):
                                                 if 'remove-bad-pattern' in d and d['remove-bad-pattern']:

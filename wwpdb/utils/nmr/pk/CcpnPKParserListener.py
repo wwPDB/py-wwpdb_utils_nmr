@@ -42,6 +42,10 @@ except ImportError:
 # This class defines a complete listener for a parse tree produced by CcpnPKParser.
 class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
 
+    __has_lw_hz = False
+    __has_merit = False
+    __has_details = False
+
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
@@ -64,9 +68,21 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
         self.exit()
 
     # Enter a parse tree produced by CcpnPKParser#peak_list_2d.
-    def enterPeak_list_2d(self, ctx: CcpnPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
+    def enterPeak_list_2d(self, ctx: CcpnPKParser.Peak_list_2dContext):
         self.num_of_dim = 2
         self.initSpectralDim()
+
+        self.__has_lw_hz = False
+        if ctx.Line_width_F1():
+            self.__has_lw_hz = True
+
+        self.__has_merit = False
+        if ctx.Merit():
+            self.__has_merit = True
+
+        self.__has_details = False
+        if ctx.Details():
+            self.__has_details = True
 
     # Exit a parse tree produced by CcpnPKParser#peak_list_2d.
     def exitPeak_list_2d(self, ctx: CcpnPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
@@ -94,14 +110,23 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
 
                 P1 = float(str(ctx.Float(0)))
                 P2 = float(str(ctx.Float(1)))
-                W1 = float(str(ctx.Float(2)))
-                W2 = float(str(ctx.Float(3)))
-                if ctx.Float(4):
-                    merit = float(str(ctx.Float(4)))
-                elif ctx.Integer(2):
-                    merit = int(str(ctx.Integer(2)))
-                else:
-                    merit = None
+
+                W1 = W2 = merit = None
+
+                if self.__has_lw_hz:
+                    W1 = float(str(ctx.Float(2)))
+                    W2 = float(str(ctx.Float(3)))
+                    if self.__has_merit:
+                        if ctx.Float(4):
+                            merit = float(str(ctx.Float(4)))
+                        elif ctx.Integer(2):
+                            merit = int(str(ctx.Integer(2)))
+
+                elif self.__has_merit:
+                    if ctx.Float(2):
+                        merit = float(str(ctx.Float(2)))
+                    elif ctx.Integer(2):
+                        merit = int(str(ctx.Integer(2)))
 
             except ValueError:
                 self.peaks2D -= 1
@@ -118,9 +143,11 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             height = self.originalNumberSelection[0]
             volume = self.originalNumberSelection[1]
 
-            details = str(ctx.Simple_name(0))
-            if details in emptyValue:
-                details = None
+            details = None
+            if self.__has_details:
+                details = str(ctx.Simple_name(0))
+                if details in emptyValue:
+                    details = None
 
             # fit_method = str(ctx.Simple_name(1))
             # vol_method = str(ctx.Simple_name(2))
@@ -190,9 +217,21 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             self.originalNumberSelection.clear()
 
     # Enter a parse tree produced by CcpnPKParser#peak_list_3d.
-    def enterPeak_list_3d(self, ctx: CcpnPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
+    def enterPeak_list_3d(self, ctx: CcpnPKParser.Peak_list_3dContext):
         self.num_of_dim = 3
         self.initSpectralDim()
+
+        self.__has_lw_hz = False
+        if ctx.Line_width_F1():
+            self.__has_lw_hz = True
+
+        self.__has_merit = False
+        if ctx.Merit():
+            self.__has_merit = True
+
+        self.__has_details = False
+        if ctx.Details():
+            self.__has_details = True
 
     # Exit a parse tree produced by CcpnPKParser#peak_list_3d.
     def exitPeak_list_3d(self, ctx: CcpnPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
@@ -221,15 +260,24 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 P1 = float(str(ctx.Float(0)))
                 P2 = float(str(ctx.Float(1)))
                 P3 = float(str(ctx.Float(2)))
-                W1 = float(str(ctx.Float(3)))
-                W2 = float(str(ctx.Float(4)))
-                W3 = float(str(ctx.Float(5)))
-                if ctx.Float(6):
-                    merit = float(str(ctx.Float(6)))
-                elif ctx.Integer(2):
-                    merit = int(str(ctx.Integer(2)))
-                else:
-                    merit = None
+
+                W1 = W2 = W3 = merit = None
+
+                if self.__has_lw_hz:
+                    W1 = float(str(ctx.Float(3)))
+                    W2 = float(str(ctx.Float(4)))
+                    W3 = float(str(ctx.Float(5)))
+                    if self.__has_merit:
+                        if ctx.Float(6):
+                            merit = float(str(ctx.Float(6)))
+                        elif ctx.Integer(2):
+                            merit = int(str(ctx.Integer(2)))
+
+                elif self.__has_merit:
+                    if ctx.Float(3):
+                        merit = float(str(ctx.Float(3)))
+                    elif ctx.Integer(2):
+                        merit = int(str(ctx.Integer(2)))
 
             except ValueError:
                 self.peaks3D -= 1
@@ -249,9 +297,11 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             height = self.originalNumberSelection[0]
             volume = self.originalNumberSelection[1]
 
-            details = str(ctx.Simple_name(0))
-            if details in emptyValue:
-                details = None
+            details = None
+            if self.__has_details:
+                details = str(ctx.Simple_name(0))
+                if details in emptyValue:
+                    details = None
 
             # fit_method = str(ctx.Simple_name(1))
             # vol_method = str(ctx.Simple_name(2))
@@ -334,9 +384,21 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             self.originalNumberSelection.clear()
 
     # Enter a parse tree produced by CcpnPKParser#peak_list_4d.
-    def enterPeak_list_4d(self, ctx: CcpnPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
+    def enterPeak_list_4d(self, ctx: CcpnPKParser.Peak_list_4dContext):
         self.num_of_dim = 4
         self.initSpectralDim()
+
+        self.__has_lw_hz = False
+        if ctx.Line_width_F1():
+            self.__has_lw_hz = True
+
+        self.__has_merit = False
+        if ctx.Merit():
+            self.__has_merit = True
+
+        self.__has_details = False
+        if ctx.Details():
+            self.__has_details = True
 
     # Exit a parse tree produced by CcpnPKParser#peak_list_4d.
     def exitPeak_list_4d(self, ctx: CcpnPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
@@ -366,16 +428,25 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 P2 = float(str(ctx.Float(1)))
                 P3 = float(str(ctx.Float(2)))
                 P4 = float(str(ctx.Float(3)))
-                W1 = float(str(ctx.Float(4)))
-                W2 = float(str(ctx.Float(5)))
-                W3 = float(str(ctx.Float(6)))
-                W4 = float(str(ctx.Float(7)))
-                if ctx.Float(8):
-                    merit = float(str(ctx.Float(8)))
-                elif ctx.Integer(2):
-                    merit = int(str(ctx.Integer(2)))
-                else:
-                    merit = None
+
+                W1 = W2 = W3 = W4 = merit = None
+
+                if self.__has_lw_hz:
+                    W1 = float(str(ctx.Float(4)))
+                    W2 = float(str(ctx.Float(5)))
+                    W3 = float(str(ctx.Float(6)))
+                    W4 = float(str(ctx.Float(7)))
+                    if self.__has_merit:
+                        if ctx.Float(8):
+                            merit = float(str(ctx.Float(8)))
+                        elif ctx.Integer(2):
+                            merit = int(str(ctx.Integer(2)))
+
+                elif self.__has_merit:
+                    if ctx.Float(4):
+                        merit = float(str(ctx.Float(4)))
+                    elif ctx.Integer(2):
+                        merit = int(str(ctx.Integer(2)))
 
             except ValueError:
                 self.peaks4D -= 1
@@ -398,9 +469,11 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             height = self.originalNumberSelection[0]
             volume = self.originalNumberSelection[1]
 
-            details = str(ctx.Simple_name(0))
-            if details in emptyValue:
-                details = None
+            details = None
+            if self.__has_details:
+                details = str(ctx.Simple_name(0))
+                if details in emptyValue:
+                    details = None
 
             # fit_method = str(ctx.Simple_name(1))
             # vol_method = str(ctx.Simple_name(2))
@@ -505,10 +578,14 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.numberSelection.append(float(value))
                 self.originalNumberSelection.append(value)
 
-            else:
+            elif ctx.Real():
                 value = str(ctx.Real())
                 self.numberSelection.append(float(value))
                 self.originalNumberSelection.append(value)
+
+            else:
+                self.numberSelection.append(None)
+                self.originalNumberSelection.append(None)
 
         except ValueError:
             self.numberSelection.append(None)

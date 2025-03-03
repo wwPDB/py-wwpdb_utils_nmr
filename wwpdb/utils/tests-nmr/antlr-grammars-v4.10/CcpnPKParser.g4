@@ -33,7 +33,7 @@ ccpn_pk:
 	EOF;
 
 peak_list_2d:
-	Number Id
+	Number? Id
 	(Position_F1 | Shift_F1) (Position_F2 | Shift_F2)
 	Assign_F1 Assign_F2
 	Height Volume
@@ -43,7 +43,7 @@ peak_list_2d:
 	peak_2d+;
 
 peak_2d:
-	Integer Integer
+	Integer? Integer
 	Float Float
 	Simple_name Simple_name
 	number number
@@ -52,7 +52,7 @@ peak_2d:
 	Simple_name* (RETURN | EOF);
 
 peak_list_3d:
-	Number Id
+	Number? Id
 	(Position_F1 | Shift_F1) (Position_F2 | Shift_F2) (Position_F3 | Shift_F3)
 	Assign_F1 Assign_F2 Assign_F3
 	Height Volume
@@ -62,7 +62,7 @@ peak_list_3d:
 	peak_3d+;
 
 peak_3d:
-	Integer Integer
+	Integer? Integer
 	Float Float Float
 	Simple_name Simple_name Simple_name
 	number number
@@ -71,7 +71,7 @@ peak_3d:
 	Simple_name* (RETURN | EOF);
 
 peak_list_4d:
-	Number Id
+	Number? Id
 	(Position_F1 | Shift_F1) (Position_F2 | Shift_F2) (Position_F3 | Shift_F3) (Position_F4 | Shift_F4)
 	Assign_F1 Assign_F2 Assign_F3 Assign_F4
 	Height Volume
@@ -81,7 +81,7 @@ peak_list_4d:
 	peak_4d+;
 
 peak_4d:
-	Integer Integer
+	Integer? Integer
 	Float Float Float Float
 	Simple_name Simple_name Simple_name Simple_name
 	number number

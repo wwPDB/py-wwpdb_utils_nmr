@@ -471,46 +471,59 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.assignmentSelection.clear()
 
     # Enter a parse tree produced by XeasyPKParser#position.
-    def enterPosition(self, ctx: XeasyPKParser.PositionContext):  # pylint: disable=unused-argument
-        pass
+    def enterPosition(self, ctx: XeasyPKParser.PositionContext):
+
+        try:
+
+            if ctx.Float():
+                value = str(ctx.Float())
+                self.positionSelection.append(float(value))
+
+            elif ctx.Integer():
+                value = str(ctx.Integer())
+                self.positionSelection.append(float(value))
+
+            else:
+                self.positionSelection.append(None)
+
+        except ValueError:
+            self.positionSelection.append(None)
 
     # Exit a parse tree produced by XeasyPKParser#position.
-    def exitPosition(self, ctx: XeasyPKParser.PositionContext):
-        if ctx.Float():
-            value = str(ctx.Float())
-            self.positionSelection.append(float(value))
-
-        elif ctx.Integer():
-            value = str(ctx.Integer())
-            self.positionSelection.append(float(value))
-
-        else:
-            self.positionSelection.append(None)
+    def exitPosition(self, ctx: XeasyPKParser.PositionContext):  # pylint: disable=unused-argument
+        pass
 
     # Enter a parse tree produced by XeasyPKParser#number.
     def enterNumber(self, ctx: XeasyPKParser.NumberContext):  # pylint: disable=unused-argument
-        pass
 
-    # Exit a parse tree produced by XeasyPKParser#number.
-    def exitNumber(self, ctx: XeasyPKParser.NumberContext):
-        if ctx.Float():
-            value = str(ctx.Float())
-            self.numberSelection.append(float(value))
-            self.originalNumberSelection.append(value)
+        try:
 
-        elif ctx.Real():
-            value = str(ctx.Real())
-            self.numberSelection.append(float(value))
-            self.originalNumberSelection.append(value)
+            if ctx.Float():
+                value = str(ctx.Float())
+                self.numberSelection.append(float(value))
+                self.originalNumberSelection.append(value)
 
-        elif ctx.Integer():
-            value = str(ctx.Integer())
-            self.numberSelection.append(int(value))
-            self.originalNumberSelection.append(value)
+            elif ctx.Real():
+                value = str(ctx.Real())
+                self.numberSelection.append(float(value))
+                self.originalNumberSelection.append(value)
 
-        else:
+            elif ctx.Integer():
+                value = str(ctx.Integer())
+                self.numberSelection.append(int(value))
+                self.originalNumberSelection.append(value)
+
+            else:
+                self.numberSelection.append(None)
+                self.originalNumberSelection.append(None)
+
+        except ValueError:
             self.numberSelection.append(None)
             self.originalNumberSelection.append(None)
+
+    # Exit a parse tree produced by XeasyPKParser#number.
+    def exitNumber(self, ctx: XeasyPKParser.NumberContext):  # pylint: disable=unused-argument
+        pass
 
     # Enter a parse tree produced by XeasyPKParser#type_code.
     def enterType_code(self, ctx: XeasyPKParser.Type_codeContext):  # pylint: disable=unused-argument

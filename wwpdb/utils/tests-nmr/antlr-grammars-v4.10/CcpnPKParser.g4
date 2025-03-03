@@ -44,11 +44,11 @@ peak_list_2d:
 
 peak_2d:
 	Integer? Integer
-	Float Float
+	position position
 	Simple_name Simple_name
 	number number
-	Float? Float?
-	(Float | Integer)?
+	position? position?
+	position?
 	Simple_name* (RETURN | EOF);
 
 peak_list_3d:
@@ -63,11 +63,11 @@ peak_list_3d:
 
 peak_3d:
 	Integer? Integer
-	Float Float Float
+	position position position
 	Simple_name Simple_name Simple_name
 	number number
-	Float? Float? Float?
-	(Float | Integer)?
+	position? position? position?
+	position?
 	Simple_name* (RETURN | EOF);
 
 peak_list_4d:
@@ -82,12 +82,15 @@ peak_list_4d:
 
 peak_4d:
 	Integer? Integer
-	Float Float Float Float
+	position position position position
 	Simple_name Simple_name Simple_name Simple_name
 	number number
-	Float? Float? Float? Float?
-	(Float | Integer)?
+	position? position? position? position?
+	position?
 	Simple_name* (RETURN | EOF);
+
+/* position expression in peak list */
+position: Real | Float | Integer;
 
 /* number expression in peak list */
 number:	Float | Real | Simple_name;

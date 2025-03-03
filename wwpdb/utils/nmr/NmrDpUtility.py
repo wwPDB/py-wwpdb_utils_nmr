@@ -1200,7 +1200,16 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
         return None
 
     if ' w1 ' in header and ' w2' in header\
-       and len_col > 3 and sparky_assignment_pattern.match(col[0]):  # Sparky
+       and len_col > 2 and sparky_assignment_pattern.match(col[0]):  # Sparky
+        try:
+            float(col[1])
+            float(col[2])
+            return 'nm-pea-spa' if asCode else 'Sparky'
+        except (ValueError, TypeError):
+            pass
+
+    if 'Assignment' in header and 'Shift (ppm)' in header\
+       and len_col > 2 and sparky_assignment_pattern.match(col[0]):  # Sparky
         try:
             float(col[1])
             float(col[2])
@@ -1259,8 +1268,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
 
             if line.isspace() or comment_pattern.match(line):
 
-                if 'Number of dimensions' in line or line.startswith('#INAME' or line.startswith('#CYANAFORMAT'))\
-                   or (' w1 ' in line and ' w2' in line)\
+                if 'Number of dimensions' in line or line.startswith('#INAME') or line.startswith('#CYANAFORMAT')\
                    or ('Amplitude' in line or 'Intensity' in line):
                     header = line
 
@@ -1275,9 +1283,47 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
                 header = line
                 continue
 
+            if (' w1 ' in line and ' w2' in line) or ('Assignment' in line and 'Shift (ppm)' in line):
+                header = line
+                continue
+
             file_type = get_peak_list_format_from_string(line, header, asCode)
 
             if file_type is not None or idx >= 20:  # self.mr_max_spacer_lines:
+
+                if file_type in ('Sparky', 'nm-pea-spa') and idx < 20 and header is not None\
+                   and 'Assignment' in header and 'Shift (ppm)' in header:
+
+                    col = line.split()
+                    len_col = len(col)
+
+                    if sparky_assignment_pattern.match(col[0]):
+
+                        d = len_col - 1
+
+                        if d == 2:
+                            header = ' Assignment  w1  w2\n'
+                        elif d == 3:
+                            header = ' Assignment  w1  w2  w3\n'
+                        elif d == 4:
+                            header = ' Assignment  w1  w2  w3  w4\n'
+                        else:
+                            return None
+
+                        try:
+
+                            with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
+                                    open(fPath + '~', 'w', encoding='utf-8') as ofh:
+                                ofh.write(header)
+                                for _line in ifh:
+                                    if 'peaks' in _line or 'Shift (ppm)' in _line:
+                                        continue
+                                    ofh.write(_line)
+
+                            os.replace(fPath + '~', fPath)
+
+                        except OSError:
+                            pass
 
                 if file_type is None or idx < 20:
                     return file_type
@@ -1293,13 +1339,13 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
 
                         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
                                 open(fPath + '~', 'w', encoding='utf-8') as ofh:
-                            for line in ifh:
+                            for _line in ifh:
                                 if i == idx - 1:
                                     ofh.write('label dataset sw sf\n')
                                 elif i == idx:
                                     pass
                                 else:
-                                    ofh.write(line)
+                                    ofh.write(_line)
                                 i += 1
 
                         os.replace(fPath + '~', fPath)
@@ -1347,8 +1393,8 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
                         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
                                 open(fPath + '~', 'w', encoding='utf-8') as ofh:
                             ofh.write(header)
-                            for line in ifh:
-                                ofh.write(line)
+                            for _line in ifh:
+                                ofh.write(_line)
 
                         os.replace(fPath + '~', fPath)
 
@@ -7562,6 +7608,21 @@ class NmrDpUtility:
         except OSError:
             pass
 
+        self.__inputParamDict = {}
+        self.__inputParamDictCopy = None
+        self.__outputParamDict = {}
+
+        self.__star_data_type = []
+        self.__star_data = []
+        self.__sf_name_corr = []
+
+        self.__original_error_message = []
+        self.__divide_mr_error_message = []
+        self.__peel_mr_error_message = []
+
+        self.__sf_category_list = []
+        self.__lp_category_list = []
+
         return not self.report.isError()
 
     def __dumpDpReport(self) -> bool:
@@ -8111,6 +8172,7 @@ class NmrDpUtility:
                     csPath = _csPath
 
                 if self.__op == 'nmr-cs-mr-merge' and not os.path.basename(csPath).startswith('bmr'):
+
                     _csPath = csPath + '.cif2str'
 
                     if not self.__c2S.convert(csPath, _csPath):

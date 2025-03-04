@@ -377,6 +377,7 @@ try:
     from wwpdb.utils.nmr.mr.XplorMRReader import XplorMRReader
     from wwpdb.utils.nmr.pk.AriaPKReader import AriaPKReader
     from wwpdb.utils.nmr.pk.CcpnPKReader import CcpnPKReader
+    from wwpdb.utils.nmr.pk.CcpnNPKReader import CcpnNPKReader
     from wwpdb.utils.nmr.pk.NmrPipePKReader import NmrPipePKReader
     from wwpdb.utils.nmr.pk.PonderosaPKReader import PonderosaPKReader
     from wwpdb.utils.nmr.pk.NmrViewPKReader import NmrViewPKReader
@@ -530,6 +531,7 @@ except ImportError:
     from nmr.mr.XplorMRReader import XplorMRReader
     from nmr.pk.AriaPKReader import AriaPKReader
     from nmr.pk.CcpnPKReader import CcpnPKReader
+    from nmr.pk.CcpnNPKReader import CcpnNPKReader
     from nmr.pk.NmrPipePKReader import NmrPipePKReader
     from nmr.pk.PonderosaPKReader import PonderosaPKReader
     from nmr.pk.NmrViewPKReader import NmrViewPKReader
@@ -1217,6 +1219,11 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
         except (ValueError, TypeError):
             pass
 
+    if ('Position F1' in header or 'Shift F1' in header) and ('Position F2' in header or 'Shift F2' in header)\
+       and 'Assign F1' in header and 'Assign F2' in header and 'Height' in header:
+        if len_col > 4 and not col[0].isdigit():
+            return 'nm-pea-ccp' if asCode else 'CCPN'  # header broken CCPN
+
     if ('Amplitude' in header or 'Intensity' in header)\
        and 'Assignment' in header:
         if len_col > 6 and sparky_assignment_pattern.match(col[6]):  # VNMR 2D
@@ -1272,9 +1279,16 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
                    or ('Amplitude' in line or 'Intensity' in line):
                     header = line
 
-                else:  # XwinNMR
+                else:  # XwinNMR, but not CCPN
+
                     file_type = get_peak_list_format_from_string(line, header, asCode)
+
                     if file_type is not None:
+
+                        if file_type in ('CCPN', 'nm-pea-ccp'):
+                            header = line
+                            continue
+
                         return file_type
 
                 continue
@@ -1324,6 +1338,26 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
 
                         except OSError:
                             pass
+
+                if file_type in ('CCPN', 'nm-pea-ccp') and idx < 20 and header is not None\
+                   and ('Position F1' in header or 'Shift F1' in header) and ('Position F2' in header or 'Shift F2' in header)\
+                   and 'Assign F1' in header and 'Assign F2' in header and 'Height' in header:
+
+                    header = header.replace('#', '')
+
+                    try:
+
+                        with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
+                                open(fPath + '~', 'w', encoding='utf-8') as ofh:
+                            ofh.write(header)
+                            for _line in ifh:
+                                if not _line.startswith('#'):
+                                    ofh.write(_line)
+
+                        os.replace(fPath + '~', fPath)
+
+                    except OSError:
+                        pass
 
                 if file_type is None or idx < 20:
                     return file_type
@@ -35783,6 +35817,10 @@ class NmrDpUtility:
                                 and mismatched_input_err_msg in description['message']\
                                 and "' expecting L_brace" in description['message']:
                             _type = 'no_brace'
+                        elif 'CCPN' in a_pk_format_name\
+                                and mismatched_input_err_msg in description['message']\
+                                and "Assign' expecting {" in description['message']:
+                            _type = 'no_number'
                         else:
                             _err += f"[Syntax error as {a_pk_format_name} file] "\
                                     f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
@@ -36343,6 +36381,8 @@ class NmrDpUtility:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-pea-ccp':
+                __list_id_counter = copy.copy(self.__list_id_counter)
+
                 reader = CcpnPKReader(self.__verbose, self.__lfh,
                                       self.__representative_model_id,
                                       self.__representative_alt_id,
@@ -36362,11 +36402,41 @@ class NmrDpUtility:
                 if _content_subtype is not None and len(_content_subtype) == 0:
                     _content_subtype = None
 
+                ccp_type = 'default'
                 if None not in (lexer_err_listener, parser_err_listener, listener)\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                   and (lexer_err_listener.getMessageList() is None
                         or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
+                    skip, ccp_type = deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)
+                    if skip and ccp_type == 'default':
                         continue
+
+                if ccp_type != 'default':
+                    self.__list_id_counter = copy.copy(__list_id_counter)
+
+                    reader = CcpnNPKReader(self.__verbose, self.__lfh,
+                                           self.__representative_model_id,
+                                           self.__representative_alt_id,
+                                           self.__mr_atom_name_mapping,
+                                           self.__cR, self.__caC,
+                                           self.__ccU, self.__csStat, self.__nefT)
+
+                    _list_id_counter = copy.copy(self.__list_id_counter)
+
+                    listener, parser_err_listener, lexer_err_listener =\
+                        reader.parse(file_path, self.__cifPath,
+                                     createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                     listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                     csLoops=self.__lp_data['chem_shift'])
+
+                    _content_subtype = listener.getContentSubtype() if listener is not None else None
+                    if _content_subtype is not None and len(_content_subtype) == 0:
+                        _content_subtype = None
+
+                    if None not in (lexer_err_listener, parser_err_listener, listener)\
+                       and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                            or _content_subtype is not None):
+                        if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
+                            continue
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -36374,13 +36444,22 @@ class NmrDpUtility:
                     if reasons is not None:
                         deal_pea_warn_message_for_lazy_eval(listener)
 
-                        reader = CcpnPKReader(self.__verbose, self.__lfh,
-                                              self.__representative_model_id,
-                                              self.__representative_alt_id,
-                                              self.__mr_atom_name_mapping,
-                                              self.__cR, self.__caC,
-                                              self.__ccU, self.__csStat, self.__nefT,
-                                              reasons)
+                        if ccp_type == 'default':
+                            reader = CcpnPKReader(self.__verbose, self.__lfh,
+                                                  self.__representative_model_id,
+                                                  self.__representative_alt_id,
+                                                  self.__mr_atom_name_mapping,
+                                                  self.__cR, self.__caC,
+                                                  self.__ccU, self.__csStat, self.__nefT,
+                                                  reasons)
+                        else:
+                            reader = CcpnNPKReader(self.__verbose, self.__lfh,
+                                                   self.__representative_model_id,
+                                                   self.__representative_alt_id,
+                                                   self.__mr_atom_name_mapping,
+                                                   self.__cR, self.__caC,
+                                                   self.__ccU, self.__csStat, self.__nefT,
+                                                   reasons)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,

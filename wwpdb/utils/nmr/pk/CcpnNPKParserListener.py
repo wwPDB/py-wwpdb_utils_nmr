@@ -1,9 +1,9 @@
 ##
-# File: CcpnPKParserListener.py
+# File: CcpnNPKParserListener.py
 # Date: 26-Feb-2025
 #
 # Updates:
-""" ParserLister class for CCPN PK files.
+""" ParserLister class for CCPN NPK files.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"
@@ -19,7 +19,7 @@ from typing import IO, List, Optional
 
 try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
-    from wwpdb.utils.nmr.pk.CcpnPKParser import CcpnPKParser
+    from wwpdb.utils.nmr.pk.CcpnNPKParser import CcpnNPKParser
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
@@ -29,7 +29,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import emptyValue
 except ImportError:
     from nmr.io.CifReader import CifReader
-    from nmr.pk.CcpnPKParser import CcpnPKParser
+    from nmr.pk.CcpnNPKParser import CcpnNPKParser
     from nmr.pk.BasePKParserListener import BasePKParserListener
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
@@ -39,10 +39,9 @@ except ImportError:
     from nmr.AlignUtil import emptyValue
 
 
-# This class defines a complete listener for a parse tree produced by CcpnPKParser.
-class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
+# This class defines a complete listener for a parse tree produced by CcpnNPKParser.
+class CcpnNPKParserListener(ParseTreeListener, BasePKParserListener):
 
-    __has_number = False
     __has_volume = False
     __has_lw_hz = False
     __has_merit = False
@@ -61,22 +60,18 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
         self.file_type = 'nm-pea-ccp'
         self.software_name = 'CCPN'
 
-    # Enter a parse tree produced by CcpnPKParser#ccpn_pk.
-    def enterCcpn_pk(self, ctx: CcpnPKParser.Ccpn_pkContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by CcpnNPKParser#ccpn_pk.
+    def enterCcpn_npk(self, ctx: CcpnNPKParser.Ccpn_npkContext):  # pylint: disable=unused-argument
         self.enter()
 
-    # Exit a parse tree produced by CcpnPKParser#ccpn_pk.
-    def exitCcpn_pk(self, ctx: CcpnPKParser.Ccpn_pkContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by CcpnNPKParser#ccpn_pk.
+    def exitCcpn_npk(self, ctx: CcpnNPKParser.Ccpn_npkContext):  # pylint: disable=unused-argument
         self.exit()
 
-    # Enter a parse tree produced by CcpnPKParser#peak_list_2d.
-    def enterPeak_list_2d(self, ctx: CcpnPKParser.Peak_list_2dContext):
+    # Enter a parse tree produced by CcpnNPKParser#peak_list_2d.
+    def enterPeak_list_2d(self, ctx: CcpnNPKParser.Peak_list_2dContext):
         self.num_of_dim = 2
         self.initSpectralDim()
-
-        self.__has_number = False
-        if ctx.Number():
-            self.__has_number = True
 
         self.__has_volume = False
         if ctx.Volume():
@@ -94,19 +89,19 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
         if ctx.Details():
             self.__has_details = True
 
-    # Exit a parse tree produced by CcpnPKParser#peak_list_2d.
-    def exitPeak_list_2d(self, ctx: CcpnPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by CcpnNPKParser#peak_list_2d.
+    def exitPeak_list_2d(self, ctx: CcpnNPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by CcpnPKParser#peak_2d.
-    def enterPeak_2d(self, ctx: CcpnPKParser.Peak_2dContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by CcpnNPKParser#peak_2d.
+    def enterPeak_2d(self, ctx: CcpnNPKParser.Peak_2dContext):  # pylint: disable=unused-argument
         self.peaks2D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by CcpnPKParser#peak_2d.
-    def exitPeak_2d(self, ctx: CcpnPKParser.Peak_2dContext):
+    # Exit a parse tree produced by CcpnNPKParser#peak_2d.
+    def exitPeak_2d(self, ctx: CcpnNPKParser.Peak_2dContext):
 
         try:
 
@@ -114,9 +109,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            int_offset = 1 if self.__has_number else 0
-            index = int(ctx.Integer(int_offset))
-            int_offset += 1
+            index = self.peaks2D
             float_offset = 0
 
             try:
@@ -224,14 +217,10 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by CcpnPKParser#peak_list_3d.
-    def enterPeak_list_3d(self, ctx: CcpnPKParser.Peak_list_3dContext):
+    # Enter a parse tree produced by CcpnNPKParser#peak_list_3d.
+    def enterPeak_list_3d(self, ctx: CcpnNPKParser.Peak_list_3dContext):
         self.num_of_dim = 3
         self.initSpectralDim()
-
-        self.__has_number = False
-        if ctx.Number():
-            self.__has_number = True
 
         self.__has_volume = False
         if ctx.Volume():
@@ -249,19 +238,19 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
         if ctx.Details():
             self.__has_details = True
 
-    # Exit a parse tree produced by CcpnPKParser#peak_list_3d.
-    def exitPeak_list_3d(self, ctx: CcpnPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by CcpnNPKParser#peak_list_3d.
+    def exitPeak_list_3d(self, ctx: CcpnNPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by CcpnPKParser#peak_3d.
-    def enterPeak_3d(self, ctx: CcpnPKParser.Peak_3dContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by CcpnNPKParser#peak_3d.
+    def enterPeak_3d(self, ctx: CcpnNPKParser.Peak_3dContext):  # pylint: disable=unused-argument
         self.peaks3D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by CcpnPKParser#peak_3d.
-    def exitPeak_3d(self, ctx: CcpnPKParser.Peak_3dContext):
+    # Exit a parse tree produced by CcpnNPKParser#peak_3d.
+    def exitPeak_3d(self, ctx: CcpnNPKParser.Peak_3dContext):
 
         try:
 
@@ -269,9 +258,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            int_offset = 1 if self.__has_number else 0
-            index = int(ctx.Integer(int_offset))
-            int_offset += 1
+            index = self.peaks3D
             float_offset = 0
 
             try:
@@ -397,14 +384,10 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by CcpnPKParser#peak_list_4d.
-    def enterPeak_list_4d(self, ctx: CcpnPKParser.Peak_list_4dContext):
+    # Enter a parse tree produced by CcpnNPKParser#peak_list_4d.
+    def enterPeak_list_4d(self, ctx: CcpnNPKParser.Peak_list_4dContext):
         self.num_of_dim = 4
         self.initSpectralDim()
-
-        self.__has_number = False
-        if ctx.Number():
-            self.__has_number = True
 
         self.__has_volume = False
         if ctx.Volume():
@@ -422,19 +405,19 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
         if ctx.Details():
             self.__has_details = True
 
-    # Exit a parse tree produced by CcpnPKParser#peak_list_4d.
-    def exitPeak_list_4d(self, ctx: CcpnPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by CcpnNPKParser#peak_list_4d.
+    def exitPeak_list_4d(self, ctx: CcpnNPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by CcpnPKParser#peak_4d.
-    def enterPeak_4d(self, ctx: CcpnPKParser.Peak_4dContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by CcpnNPKParser#peak_4d.
+    def enterPeak_4d(self, ctx: CcpnNPKParser.Peak_4dContext):  # pylint: disable=unused-argument
         self.peaks4D += 1
 
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-    # Exit a parse tree produced by CcpnPKParser#peak_4d.
-    def exitPeak_4d(self, ctx: CcpnPKParser.Peak_4dContext):
+    # Exit a parse tree produced by CcpnNPKParser#peak_4d.
+    def exitPeak_4d(self, ctx: CcpnNPKParser.Peak_4dContext):
 
         try:
 
@@ -442,9 +425,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            int_offset = 1 if self.__has_number else 0
-            index = int(ctx.Integer(int_offset))
-            int_offset += 1
+            index = self.peaks4D
             float_offset = 0
 
             try:
@@ -588,8 +569,8 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
-    # Enter a parse tree produced by CcpnPKParser#position.
-    def enterPosition(self, ctx: CcpnPKParser.PositionContext):
+    # Enter a parse tree produced by CcpnNPKParser#position.
+    def enterPosition(self, ctx: CcpnNPKParser.PositionContext):
 
         try:
 
@@ -611,12 +592,12 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
         except ValueError:
             self.positionSelection.append(None)
 
-    # Exit a parse tree produced by CcpnPKParser#position.
-    def exitPosition(self, ctx: CcpnPKParser.PositionContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by CcpnNPKParser#position.
+    def exitPosition(self, ctx: CcpnNPKParser.PositionContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by CcpnPKParser#number.
-    def enterNumber(self, ctx: CcpnPKParser.NumberContext):
+    # Enter a parse tree produced by CcpnNPKParser#number.
+    def enterNumber(self, ctx: CcpnNPKParser.NumberContext):
 
         try:
 
@@ -643,9 +624,9 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             self.numberSelection.append(None)
             self.originalNumberSelection.append(None)
 
-    # Exit a parse tree produced by CcpnPKParser#number.
-    def exitNumber(self, ctx: CcpnPKParser.NumberContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by CcpnNPKParser#number.
+    def exitNumber(self, ctx: CcpnNPKParser.NumberContext):  # pylint: disable=unused-argument
         pass
 
 
-# del CcpnPKParser
+# del CcpnNPKParser

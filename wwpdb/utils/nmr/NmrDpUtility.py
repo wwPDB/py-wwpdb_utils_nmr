@@ -1156,8 +1156,8 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
     if '<!DOCTYPE spectrum SYSTEM' in string or '<spectrum name=' in string:  # ARIA peak list
         return 'nm-pea-ari' if asCode else 'ARIA'
 
-    if 'Number' in string and ' # ' in string and ('Position F1' in string or 'Shift F1' in string) and ('Position F2' in string or 'Shift F2' in string)\
-       and 'Assign F1' in string and 'Assign F2' in string and 'Height' in string and 'Volume' in string and 'Merit' in string:
+    if ('Position F1' in string or 'Shift F1' in string) and ('Position F2' in string or 'Shift F2' in string)\
+       and 'Assign F1' in string and 'Assign F2' in string and 'Height' in string:
         return 'nm-pea-ccp' if asCode else 'CCPN'
 
     if 'NOESYTYPE' in string:  # PONDEROSA peak list

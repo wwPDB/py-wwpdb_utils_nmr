@@ -651,7 +651,7 @@ expecting_l_paren = "expecting L_paren"  # NOTICE: depends on ANTLR v4 and (Xplo
 
 possible_typo_for_comment_out_pattern = re.compile(r'\s*([13])$')
 
-sparky_assignment_pattern = re.compile(r'[\w\+\*\?\'\"]+-[\w\+\*\?\'\"]+\S*')
+sparky_assignment_pattern = re.compile(r'[\w\+\*\?\'\"\/]+-[\w\+\*\?\'\"\/]+\S*')
 
 comment_code_mixed_set = {'#', '!'}
 
@@ -1200,7 +1200,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
         return None
 
     if ' w1 ' in header and ' w2' in header\
-       and len_col > 2 and sparky_assignment_pattern.match(col[0]):  # Sparky
+       and len_col > 2 and ('Assignment' not in header or sparky_assignment_pattern.match(col[0])):  # Sparky
         try:
             float(col[1])
             float(col[2])

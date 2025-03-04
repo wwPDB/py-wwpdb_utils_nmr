@@ -228,5 +228,11 @@ if __name__ == "__main__":
     reader = SparkyNPKReader(True)
     reader.setDebugMode(True)
     reader.setInternalMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/5z80/bmr36159/work/data/D_1300006579_nmr-peaks-upload_P2.dat.V5',
+                 '../../tests-nmr/mock-data-remediation/5z80/5z80.cif')
+
+    reader = SparkyNPKReader(True)
+    reader.setDebugMode(True)
+    reader.setInternalMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/5uzf/bmr30254/work/data/D_1000226668_nmr-peaks-upload_P1.dat.V1',
                  '../../tests-nmr/mock-data-remediation/5uzf/5uzf.cif')

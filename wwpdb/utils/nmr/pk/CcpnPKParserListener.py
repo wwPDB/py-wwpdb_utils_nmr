@@ -115,7 +115,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             int_offset = 1 if self.__has_number else 0
-            index = int(ctx.Integer(int_offset))
+            index = int(str(ctx.Integer(int_offset)))
             int_offset += 1
             float_offset = 0
 
@@ -270,7 +270,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             int_offset = 1 if self.__has_number else 0
-            index = int(ctx.Integer(int_offset))
+            index = int(str(ctx.Integer(int_offset)))
             int_offset += 1
             float_offset = 0
 
@@ -443,7 +443,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             int_offset = 1 if self.__has_number else 0
-            index = int(ctx.Integer(int_offset))
+            index = int(str(ctx.Integer(int_offset)))
             int_offset += 1
             float_offset = 0
 

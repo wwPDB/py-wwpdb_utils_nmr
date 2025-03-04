@@ -90,7 +90,7 @@ peak_4d:
 	Simple_name* (RETURN | EOF);
 
 /* position expression in peak list */
-position: Real | Float | Integer;
+position: Real | Float | Integer | Simple_name;
 
 /* number expression in peak list */
 number:	Float | Real | Simple_name;

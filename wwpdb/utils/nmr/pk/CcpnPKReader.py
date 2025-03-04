@@ -222,6 +222,11 @@ class CcpnPKReader:
 if __name__ == "__main__":
     reader = CcpnPKReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6h0q/bmr34301/work/data/D_1200010858_nmr-peaks-upload_P1.dat.V1',
+                 '../../tests-nmr/mock-data-remediation/6h0q/6h0q.cif')
+
+    reader = CcpnPKReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/8aou/bmr34748/work/data/D_1292124790_nmr-peaks-upload_P1.dat.V1',
                  '../../tests-nmr/mock-data-remediation/8aou/8aou.cif')
 

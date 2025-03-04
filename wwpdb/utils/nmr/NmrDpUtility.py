@@ -7634,25 +7634,41 @@ class NmrDpUtility:
                 os.remove(self.__tmpPath)
                 self.__tmpPath = None
 
+            return not self.report.isError()
+
         except OSError:
-            pass
+            return False
 
-        self.__inputParamDict = {}
-        self.__inputParamDictCopy = None
-        self.__outputParamDict = {}
+        finally:
+            self.report = None
+            self.report_prev = None
 
-        self.__star_data_type = []
-        self.__star_data = []
-        self.__sf_name_corr = []
+            self.__inputParamDict = {}
+            self.__inputParamDictCopy = None
+            self.__outputParamDict = {}
 
-        self.__original_error_message = []
-        self.__divide_mr_error_message = []
-        self.__peel_mr_error_message = []
+            self.__star_data_type = []
+            self.__star_data = []
+            self.__sf_name_corr = []
 
-        self.__sf_category_list = []
-        self.__lp_category_list = []
+            self.__original_error_message = []
+            self.__divide_mr_error_message = []
+            self.__peel_mr_error_message = []
 
-        return not self.report.isError()
+            self.__sf_category_list = []
+            self.__lp_category_list = []
+
+            self.__suspended_errors_for_lazy_eval.clear()
+            self.__suspended_warnings_for_lazy_eval.clear()
+
+            for v in self.__lp_data.values():
+                v.clear()
+
+            for v in self.__aux_data.values():
+                v.clear()
+
+            for v in self.__sf_tag_data.values():
+                v.clear()
 
     def __dumpDpReport(self) -> bool:
         """ Dump current NMR data processing report.

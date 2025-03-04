@@ -896,6 +896,7 @@ class BasePKParserListener():
     offsetHolder = None
     __shiftNonPosSeq = None
     __defaultSegId = None
+    __defaultSegId__ = None
 
     representativeModelId = REPRESENTATIVE_MODEL_ID
     representativeAltId = REPRESENTATIVE_ALT_ID
@@ -1122,6 +1123,20 @@ class BasePKParserListener():
 
     def setCsLoops(self, csLoops: List[dict]):
         self.__csLoops = csLoops
+
+        if self.__csLoops is None or len(self.__csLoops) == 0:
+            return
+
+        segIds = []
+        for lp in self.__csLoops:
+            for row in lp['data']:
+                if 'Auth_asym_ID' in row:
+                    seg_id = row['Auth_asym_ID']
+                    if seg_id in emptyValue:
+                        continue
+                    segIds.append(seg_id)
+        if len(segIds) > 0:
+            self.__defaultSegId__ = collections.Counter(segIds).most_common()[0][0]
 
     def enter(self):
         self.num_of_dim = -1
@@ -3300,6 +3315,9 @@ class BasePKParserListener():
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
                               f"The figure_of_merit='{figure_of_merit}' should be within range {WEIGHT_RANGE}.")
 
+        if self.__defaultSegId__ is not None:
+            self.__defaultSegId = self.__defaultSegId__
+
         return dstFunc
 
     def validatePeak3D(self, index: int, pos_1: float, pos_2: float, pos_3: float,
@@ -3396,6 +3414,9 @@ class BasePKParserListener():
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
                               f"The figure_of_merit='{figure_of_merit}' should be within range {WEIGHT_RANGE}.")
+
+        if self.__defaultSegId__ is not None:
+            self.__defaultSegId = self.__defaultSegId__
 
         return dstFunc
 
@@ -3512,6 +3533,9 @@ class BasePKParserListener():
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
                               f"The figure_of_merit='{figure_of_merit}' should be within range {WEIGHT_RANGE}.")
+
+        if self.__defaultSegId__ is not None:
+            self.__defaultSegId = self.__defaultSegId__
 
         return dstFunc
 
@@ -4884,9 +4908,11 @@ class BasePKParserListener():
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
                             else:
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[0] == self.__defaultSegId and a[1] == resId), -1)
+                                if idx == -1:
+                                    idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
                             if idx != -1:
-                                if self.__defaultSegId is None:
-                                    self.__defaultSegId = chainAssign[idx][0]
+                                # if self.__defaultSegId is None:
+                                self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0
                             segId, _, resName, _ = chainAssign[idx]
@@ -4896,8 +4922,8 @@ class BasePKParserListener():
                         if len(chainAssign) > 0:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:
-                                if self.__defaultSegId is None:
-                                    self.__defaultSegId = chainAssign[idx][0]
+                                # if self.__defaultSegId is None:
+                                self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0
                             segId = chainAssign[idx][0]
@@ -4940,9 +4966,11 @@ class BasePKParserListener():
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
                             else:
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[0] == self.__defaultSegId and a[1] == resId), -1)
+                                if idx == -1:
+                                    idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
                             if idx != -1:
-                                if self.__defaultSegId is None:
-                                    self.__defaultSegId = chainAssign[idx][0]
+                                # if self.__defaultSegId is None:
+                                self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0
                             segId, _, resName, _ = chainAssign[idx]
@@ -4952,8 +4980,8 @@ class BasePKParserListener():
                         if len(chainAssign) > 0:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:
-                                if self.__defaultSegId is None:
-                                    self.__defaultSegId = chainAssign[idx][0]
+                                # if self.__defaultSegId is None:
+                                self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0
                             segId = chainAssign[idx][0]
@@ -4996,9 +5024,11 @@ class BasePKParserListener():
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
                             else:
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[0] == self.__defaultSegId and a[1] == resId), -1)
+                                if idx == -1:
+                                    idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
                             if idx != -1:
-                                if self.__defaultSegId is None:
-                                    self.__defaultSegId = chainAssign[idx][0]
+                                # if self.__defaultSegId is None:
+                                self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0
                             segId, _, resName, _ = chainAssign[idx]
@@ -5008,8 +5038,8 @@ class BasePKParserListener():
                         if len(chainAssign) > 0:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:
-                                if self.__defaultSegId is None:
-                                    self.__defaultSegId = chainAssign[idx][0]
+                                # if self.__defaultSegId is None:
+                                self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0
                             segId = chainAssign[idx][0]
@@ -5052,9 +5082,11 @@ class BasePKParserListener():
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
                             else:
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[0] == self.__defaultSegId and a[1] == resId), -1)
+                                if idx == -1:
+                                    idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
                             if idx != -1:
-                                if self.__defaultSegId is None:
-                                    self.__defaultSegId = chainAssign[idx][0]
+                                # if self.__defaultSegId is None:
+                                self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0
                             segId, _, resName, _ = chainAssign[idx]
@@ -5064,8 +5096,8 @@ class BasePKParserListener():
                         if len(chainAssign) > 0:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:
-                                if self.__defaultSegId is None:
-                                    self.__defaultSegId = chainAssign[idx][0]
+                                # if self.__defaultSegId is None:
+                                self.__defaultSegId = chainAssign[idx][0]
                             else:
                                 idx = 0
                             segId = chainAssign[idx][0]

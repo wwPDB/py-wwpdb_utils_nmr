@@ -3315,8 +3315,13 @@ class BasePKParserListener():
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
                               f"The figure_of_merit='{figure_of_merit}' should be within range {WEIGHT_RANGE}.")
 
-        if self.__defaultSegId__ is not None:
+        if self.peaks2D == 1 and self.__defaultSegId__ is not None:
             self.__defaultSegId = self.__defaultSegId__
+            if self.reasons is not None and 'default_seg_id' in self.reasons:
+                try:
+                    self.__defaultSegId = self.reasons['default_seg_id'][2][self.cur_list_id]
+                except KeyError:
+                    pass
 
         return dstFunc
 
@@ -3415,8 +3420,13 @@ class BasePKParserListener():
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
                               f"The figure_of_merit='{figure_of_merit}' should be within range {WEIGHT_RANGE}.")
 
-        if self.__defaultSegId__ is not None:
+        if self.peaks3D == 1 and self.__defaultSegId__ is not None:
             self.__defaultSegId = self.__defaultSegId__
+            if self.reasons is not None and 'default_seg_id' in self.reasons:
+                try:
+                    self.__defaultSegId = self.reasons['default_seg_id'][3][self.cur_list_id]
+                except KeyError:
+                    pass
 
         return dstFunc
 
@@ -3534,8 +3544,13 @@ class BasePKParserListener():
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index)}"
                               f"The figure_of_merit='{figure_of_merit}' should be within range {WEIGHT_RANGE}.")
 
-        if self.__defaultSegId__ is not None:
+        if self.peaks4D == 1 and self.__defaultSegId__ is not None:
             self.__defaultSegId = self.__defaultSegId__
+            if self.reasons is not None and 'default_seg_id' in self.reasons:
+                try:
+                    self.__defaultSegId = self.reasons['default_seg_id'][4][self.cur_list_id]
+                except KeyError:
+                    pass
 
         return dstFunc
 
@@ -4927,6 +4942,24 @@ class BasePKParserListener():
                             else:
                                 idx = 0
                             segId = chainAssign[idx][0]
+                        else:
+                            chainAssign, _ = self.assignCoordPolymerSequence(None,
+                                                                             resId, resName, atomName, src_index)
+                            if len(chainAssign) > 0:
+                                idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
+                                if idx != -1:
+                                    # if self.__defaultSegId is None:
+                                    self.__defaultSegId = chainAssign[idx][0]
+                                    if self.reasons is None:
+                                        if 'default_seg_id' not in self.reasonsForReParsing:
+                                            self.reasonsForReParsing['default_seg_id'] = {}
+                                        if self.num_of_dim not in self.reasonsForReParsing['default_seg_id']:
+                                            self.reasonsForReParsing['default_seg_id'][self.num_of_dim] = {}
+                                        if self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
+                                            self.reasonsForReParsing['default_seg_id'][self.num_of_dim][self.cur_list_id] = self.__defaultSegId
+                                else:
+                                    idx = 0
+                                segId = chainAssign[idx][0]
                     elif resName is None:
                         chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
                         if len(chainAssign) > 0:
@@ -4985,6 +5018,24 @@ class BasePKParserListener():
                             else:
                                 idx = 0
                             segId = chainAssign[idx][0]
+                        else:
+                            chainAssign, _ = self.assignCoordPolymerSequence(None,
+                                                                             resId, resName, atomName, src_index)
+                            if len(chainAssign) > 0:
+                                idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
+                                if idx != -1:
+                                    # if self.__defaultSegId is None:
+                                    self.__defaultSegId = chainAssign[idx][0]
+                                    if self.reasons is None:
+                                        if 'default_seg_id' not in self.reasonsForReParsing:
+                                            self.reasonsForReParsing['default_seg_id'] = {}
+                                        if self.num_of_dim not in self.reasonsForReParsing['default_seg_id']:
+                                            self.reasonsForReParsing['default_seg_id'][self.num_of_dim] = {}
+                                        if self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
+                                            self.reasonsForReParsing['default_seg_id'][self.num_of_dim][self.cur_list_id] = self.__defaultSegId
+                                else:
+                                    idx = 0
+                                segId = chainAssign[idx][0]
                     elif resName is None:
                         chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
                         if len(chainAssign) > 0:
@@ -5043,6 +5094,24 @@ class BasePKParserListener():
                             else:
                                 idx = 0
                             segId = chainAssign[idx][0]
+                        else:
+                            chainAssign, _ = self.assignCoordPolymerSequence(None,
+                                                                             resId, resName, atomName, src_index)
+                            if len(chainAssign) > 0:
+                                idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
+                                if idx != -1:
+                                    # if self.__defaultSegId is None:
+                                    self.__defaultSegId = chainAssign[idx][0]
+                                    if self.reasons is None:
+                                        if 'default_seg_id' not in self.reasonsForReParsing:
+                                            self.reasonsForReParsing['default_seg_id'] = {}
+                                        if self.num_of_dim not in self.reasonsForReParsing['default_seg_id']:
+                                            self.reasonsForReParsing['default_seg_id'][self.num_of_dim] = {}
+                                        if self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
+                                            self.reasonsForReParsing['default_seg_id'][self.num_of_dim][self.cur_list_id] = self.__defaultSegId
+                                else:
+                                    idx = 0
+                                segId = chainAssign[idx][0]
                     elif resName is None:
                         chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
                         if len(chainAssign) > 0:
@@ -5101,6 +5170,24 @@ class BasePKParserListener():
                             else:
                                 idx = 0
                             segId = chainAssign[idx][0]
+                        else:
+                            chainAssign, _ = self.assignCoordPolymerSequence(None,
+                                                                             resId, resName, atomName, src_index)
+                            if len(chainAssign) > 0:
+                                idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
+                                if idx != -1:
+                                    # if self.__defaultSegId is None:
+                                    self.__defaultSegId = chainAssign[idx][0]
+                                    if self.reasons is None:
+                                        if 'default_seg_id' not in self.reasonsForReParsing:
+                                            self.reasonsForReParsing['default_seg_id'] = {}
+                                        if self.num_of_dim not in self.reasonsForReParsing['default_seg_id']:
+                                            self.reasonsForReParsing['default_seg_id'][self.num_of_dim] = {}
+                                        if self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
+                                            self.reasonsForReParsing['default_seg_id'][self.num_of_dim][self.cur_list_id] = self.__defaultSegId
+                                else:
+                                    idx = 0
+                                segId = chainAssign[idx][0]
                     elif resName is None:
                         chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
                         if len(chainAssign) > 0:

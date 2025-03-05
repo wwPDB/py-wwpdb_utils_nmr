@@ -35819,7 +35819,9 @@ class NmrDpUtility:
                             _type = 'no_brace'
                         elif 'CCPN' in a_pk_format_name\
                                 and mismatched_input_err_msg in description['message']\
-                                and "Assign' expecting {" in description['message']:
+                                and ("'Assign' expecting {" in description['message']
+                                     or "'Position' expecting {" in description['message']
+                                     or "'Shift' expecting {" in description['message']):
                             _type = 'no_number'
                         else:
                             _err += f"[Syntax error as {a_pk_format_name} file] "\

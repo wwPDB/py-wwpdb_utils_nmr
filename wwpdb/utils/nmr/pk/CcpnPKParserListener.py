@@ -43,6 +43,7 @@ except ImportError:
 class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
 
     __has_number = False
+    __has_id = False
     __has_volume = False
     __has_lw_hz = False
     __has_merit = False
@@ -80,6 +81,10 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
         if ctx.Number():
             self.__has_number = True
 
+        self.__has_id = False
+        if ctx.Id() or ctx.Id_():
+            self.__has_id = True
+
         self.__has_volume = False
         if ctx.Volume():
             self.__has_volume = True
@@ -116,9 +121,11 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            int_offset = 1 if self.__has_number else 0
-            index = int(str(ctx.Integer(int_offset)))
-            int_offset += 1
+            if self.__has_id:
+                index = int(str(ctx.Integer(1 if self.__has_number else 0)))
+            else:
+                index = self.peaks2D
+
             float_offset = 0
 
             try:
@@ -236,6 +243,10 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
         if ctx.Number():
             self.__has_number = True
 
+        self.__has_id = False
+        if ctx.Id() or ctx.Id_():
+            self.__has_id = True
+
         self.__has_volume = False
         if ctx.Volume():
             self.__has_volume = True
@@ -272,9 +283,11 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            int_offset = 1 if self.__has_number else 0
-            index = int(str(ctx.Integer(int_offset)))
-            int_offset += 1
+            if self.__has_id:
+                index = int(str(ctx.Integer(1 if self.__has_number else 0)))
+            else:
+                index = self.peaks3D
+
             float_offset = 0
 
             try:
@@ -410,6 +423,10 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
         if ctx.Number():
             self.__has_number = True
 
+        self.__has_id = False
+        if ctx.Id() or ctx.Id_():
+            self.__has_id = True
+
         self.__has_volume = False
         if ctx.Volume():
             self.__has_volume = True
@@ -446,9 +463,11 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            int_offset = 1 if self.__has_number else 0
-            index = int(str(ctx.Integer(int_offset)))
-            int_offset += 1
+            if self.__has_id:
+                index = int(str(ctx.Integer(1 if self.__has_number else 0)))
+            else:
+                index = self.peaks4D
+
             float_offset = 0
 
             try:

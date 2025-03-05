@@ -22,6 +22,9 @@ lexer grammar CcpnPKLexer;
 
 Number:			'Number' -> pushMode(VARS_MODE);
 Id:			'#' -> pushMode(VARS_MODE);
+Assign_F1:		'Assign F1' -> pushMode(VARS_MODE);
+Position_F1:		'Position F1' -> pushMode(VARS_MODE);
+Shift_F1:		'Shift F1' -> pushMode(VARS_MODE);
 
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
@@ -61,17 +64,17 @@ mode VARS_MODE;
 
 Id_:			'#';
 
-Position_F1:		'Position F1';
+Position_F1_:		'Position F1';
 Position_F2:		'Position F2';
 Position_F3:		'Position F3';
 Position_F4:		'Position F4';
 
-Shift_F1:		'Shift F1';
+Shift_F1_:		'Shift F1';
 Shift_F2:		'Shift F2';
 Shift_F3:		'Shift F3';
 Shift_F4:		'Shift F4';
 
-Assign_F1:		'Assign F1';
+Assign_F1_:		'Assign F1';
 Assign_F2:		'Assign F2';
 Assign_F3:		'Assign F3';
 Assign_F4:		'Assign F4';

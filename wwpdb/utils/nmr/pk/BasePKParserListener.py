@@ -4880,6 +4880,9 @@ class BasePKParserListener():
         if self.ass_expr_debug:
             print(f'num_of_dim: {numOfDim}, resid_count: {resIdCount}, resid_later:{resIdLater}')
 
+        def is_valid_chain_assign(chain_assign, res_name):
+            return len(chain_assign) > 0 and ((res_name in monDict3 and any(a for a in chain_assign if a[2] == res_name)) or res_name not in monDict3)
+
         ret = []
 
         segId = resId = resName = atomName = _segId_ = _resId_ = authResId = None
@@ -4934,7 +4937,16 @@ class BasePKParserListener():
                     elif segId is None:
                         chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId,
                                                                          resId, resName, atomName, src_index)
-                        if len(chainAssign) > 0:
+                        is_valid = is_valid_chain_assign(chainAssign, resName)
+                        if not is_valid:
+                            if self.__defaultSegId != self.__defaultSegId__:
+                                __preferAuthSeq = self.__preferAuthSeq
+                                self.__preferAuthSeq = not __preferAuthSeq
+                                chainAssign, _ = self.assignCoordPolymerSequenceWithChainId(self.__defaultSegId__,
+                                                                                            resId, resName, atomName, src_index)
+                                is_valid = is_valid_chain_assign(chainAssign, resName)
+                                self.__preferAuthSeq = __preferAuthSeq
+                        if is_valid:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:
                                 # if self.__defaultSegId is None:
@@ -4945,7 +4957,7 @@ class BasePKParserListener():
                         else:
                             chainAssign, _ = self.assignCoordPolymerSequence(None,
                                                                              resId, resName, atomName, src_index)
-                            if len(chainAssign) > 0:
+                            if is_valid_chain_assign(chainAssign, resName):
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                                 if idx != -1:
                                     # if self.__defaultSegId is None:
@@ -5010,7 +5022,16 @@ class BasePKParserListener():
                     elif segId is None:
                         chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId,
                                                                          resId, resName, atomName, src_index)
-                        if len(chainAssign) > 0:
+                        is_valid = is_valid_chain_assign(chainAssign, resName)
+                        if not is_valid:
+                            if self.__defaultSegId != self.__defaultSegId__:
+                                __preferAuthSeq = self.__preferAuthSeq
+                                self.__preferAuthSeq = not __preferAuthSeq
+                                chainAssign, _ = self.assignCoordPolymerSequenceWithChainId(self.__defaultSegId__,
+                                                                                            resId, resName, atomName, src_index)
+                                is_valid = is_valid_chain_assign(chainAssign, resName)
+                                self.__preferAuthSeq = __preferAuthSeq
+                        if is_valid:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:
                                 # if self.__defaultSegId is None:
@@ -5021,7 +5042,7 @@ class BasePKParserListener():
                         else:
                             chainAssign, _ = self.assignCoordPolymerSequence(None,
                                                                              resId, resName, atomName, src_index)
-                            if len(chainAssign) > 0:
+                            if is_valid_chain_assign(chainAssign, resName):
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                                 if idx != -1:
                                     # if self.__defaultSegId is None:
@@ -5086,7 +5107,16 @@ class BasePKParserListener():
                     elif segId is None:
                         chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId,
                                                                          resId, resName, atomName, src_index)
-                        if len(chainAssign) > 0:
+                        is_valid = is_valid_chain_assign(chainAssign, resName)
+                        if not is_valid:
+                            if self.__defaultSegId != self.__defaultSegId__:
+                                __preferAuthSeq = self.__preferAuthSeq
+                                self.__preferAuthSeq = not __preferAuthSeq
+                                chainAssign, _ = self.assignCoordPolymerSequenceWithChainId(self.__defaultSegId__,
+                                                                                            resId, resName, atomName, src_index)
+                                is_valid = is_valid_chain_assign(chainAssign, resName)
+                                self.__preferAuthSeq = __preferAuthSeq
+                        if is_valid:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:
                                 # if self.__defaultSegId is None:
@@ -5097,7 +5127,7 @@ class BasePKParserListener():
                         else:
                             chainAssign, _ = self.assignCoordPolymerSequence(None,
                                                                              resId, resName, atomName, src_index)
-                            if len(chainAssign) > 0:
+                            if is_valid_chain_assign(chainAssign, resName):
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                                 if idx != -1:
                                     # if self.__defaultSegId is None:
@@ -5162,7 +5192,16 @@ class BasePKParserListener():
                     elif segId is None:
                         chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId,
                                                                          resId, resName, atomName, src_index)
-                        if len(chainAssign) > 0:
+                        is_valid = is_valid_chain_assign(chainAssign, resName)
+                        if not is_valid:
+                            if self.__defaultSegId != self.__defaultSegId__:
+                                __preferAuthSeq = self.__preferAuthSeq
+                                self.__preferAuthSeq = not __preferAuthSeq
+                                chainAssign, _ = self.assignCoordPolymerSequenceWithChainId(self.__defaultSegId__,
+                                                                                            resId, resName, atomName, src_index)
+                                is_valid = is_valid_chain_assign(chainAssign, resName)
+                                self.__preferAuthSeq = __preferAuthSeq
+                        if is_valid:
                             idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                             if idx != -1:
                                 # if self.__defaultSegId is None:
@@ -5173,7 +5212,7 @@ class BasePKParserListener():
                         else:
                             chainAssign, _ = self.assignCoordPolymerSequence(None,
                                                                              resId, resName, atomName, src_index)
-                            if len(chainAssign) > 0:
+                            if is_valid_chain_assign(chainAssign, resName):
                                 idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
                                 if idx != -1:
                                     # if self.__defaultSegId is None:

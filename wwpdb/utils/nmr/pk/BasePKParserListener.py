@@ -7623,7 +7623,7 @@ class BasePKParserListener():
 
         restraint_name = getRestraintName(self.cur_subtype)
 
-        sf_framecode = f'{self.software_name}_' + restraint_name.replace(' ', '_') + f'_{list_id}'
+        sf_framecode = (f'{self.software_name}_' if self.software_name is not None else '') + restraint_name.replace(' ', '_') + f'_{list_id}'
 
         sf = getSaveframe(self.cur_subtype, sf_framecode, list_id, self.entryId, self.__originalFileName,
                           numOfDim=self.num_of_dim, spectrumName=self.spectrum_name)

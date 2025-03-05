@@ -208,8 +208,9 @@
 # 07-Feb-2025  M. Yokochi - add support for 'ignore_error' attribute in addInput() for test processing of spectral peak list files came from legacy ADIT system (DAOTHER-8905)
 # 13-Feb-2025  M. Yokochi - set _Spectral_dim_transfer.Type 'through-space?' temporarily and resolve it based on related experiment type (DAOTHER-8905, 1728, 9846)
 # 17-Feb-2025  M. Yokochi - distcard remediated spectral peak list in OneDep enviromment (DAOTHER-8905, 9785)
-# 18-Feb-2025  M. Yokochi - add support for PONDEROSA speactral peak list (DAOTHER-8905, 9785)
-# 26-Feb-2025  M. Yokochi - add support for CCPN tabular speactral peak list (DAOTHER-8905, 9785)
+# 18-Feb-2025  M. Yokochi - add support for PONDEROSA spectral peak list (DAOTHER-8905, 9785)
+# 26-Feb-2025  M. Yokochi - add support for CCPN tabular spectral peak list (DAOTHER-8905, 9785)
+# 05-Mar-2025  M. Yokochi - add support for bare spectral peak list (DAOTHER-8905, 9785)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -376,6 +377,7 @@ try:
     from wwpdb.utils.nmr.mr.SybylMRReader import SybylMRReader
     from wwpdb.utils.nmr.mr.XplorMRReader import XplorMRReader
     from wwpdb.utils.nmr.pk.AriaPKReader import AriaPKReader
+    from wwpdb.utils.nmr.pk.BarePKReader import BarePKReader
     from wwpdb.utils.nmr.pk.CcpnPKReader import CcpnPKReader
     from wwpdb.utils.nmr.pk.NmrPipePKReader import NmrPipePKReader
     from wwpdb.utils.nmr.pk.PonderosaPKReader import PonderosaPKReader
@@ -529,6 +531,7 @@ except ImportError:
     from nmr.mr.SybylMRReader import SybylMRReader
     from nmr.mr.XplorMRReader import XplorMRReader
     from nmr.pk.AriaPKReader import AriaPKReader
+    from nmr.pk.BarePKReader import BarePKReader
     from nmr.pk.CcpnPKReader import CcpnPKReader
     from nmr.pk.NmrPipePKReader import NmrPipePKReader
     from nmr.pk.PonderosaPKReader import PonderosaPKReader
@@ -678,9 +681,9 @@ archival_mr_file_types = ('nmr-star',
                           'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
 
 parsable_pk_file_types = ('nm-aux-xea',
-                          'nm-pea-ari', 'nm-pea-ccp', 'nm-pea-pip', 'nm-pea-pon',
-                          'nm-pea-spa', 'nm-pea-top', 'nm-pea-vie', 'nm-pea-vnm',
-                          'nm-pea-xea', 'nm-pea-xwi')
+                          'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-pip',
+                          'nm-pea-pon', 'nm-pea-spa', 'nm-pea-top', 'nm-pea-vie',
+                          'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi')
 
 
 def detect_bom(fPath: str, default: str = 'utf-8') -> str:
@@ -12908,6 +12911,11 @@ class NmrDpUtility:
                                   self.__ccU, self.__csStat, self.__nefT,
                                   reasons)
             return reader
+        if file_type == 'nm-pea-bar':
+            reader = BarePKReader(verbose, self.__lfh, None, None, None, None, None,
+                                  self.__ccU, self.__csStat, self.__nefT,
+                                  reasons)
+            return reader
         if file_type == 'nm-pea-ccp':
             reader = CcpnPKReader(verbose, self.__lfh, None, None, None, None, None,
                                   self.__ccU, self.__csStat, self.__nefT,
@@ -15207,6 +15215,17 @@ class NmrDpUtility:
         if not is_valid and _file_type is None and file_type != 'nm-aux-xea':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-xea')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if not is_valid and _file_type is None and file_type != 'nm-pea-bar':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-bar')
 
             is_valid |= _is_valid
             err += _err
@@ -36374,6 +36393,81 @@ class NmrDpUtility:
                                     if sf not in pk_sf_dict_holder[content_subtype]:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
+            elif file_type == 'nm-pea-bar':
+                reader = BarePKReader(self.__verbose, self.__lfh,
+                                      self.__representative_model_id,
+                                      self.__representative_alt_id,
+                                      self.__mr_atom_name_mapping,
+                                      self.__cR, self.__caC,
+                                      self.__ccU, self.__csStat, self.__nefT)
+                reader.setInternalMode(self.__internal_mode)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                # ignore lexer error beacuse of imcomplete XML file format
+                listener, parser_err_listener, lexer_err_listener =\
+                    reader.parse(file_path, self.__cifPath,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                 csLoops=self.__lp_data['chem_shift'])
+
+                if None not in (parser_err_listener, listener)\
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                        or _content_subtype is not None):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, None, parser_err_listener)[0]:
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_pea_warn_message_for_lazy_eval(listener)
+
+                        reader = BarePKReader(self.__verbose, self.__lfh,
+                                              self.__representative_model_id,
+                                              self.__representative_alt_id,
+                                              self.__mr_atom_name_mapping,
+                                              self.__cR, self.__caC,
+                                              self.__ccU, self.__csStat, self.__nefT,
+                                              reasons)
+                        reader.setInternalMode(self.__internal_mode)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                      csLoops=self.__lp_data['chem_shift'])
+
+                    deal_pea_warn_message(listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate NMR spectral peak list file {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in pk_sf_dict_holder:
+                                    pk_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in pk_sf_dict_holder[content_subtype]:
+                                        pk_sf_dict_holder[content_subtype].append(sf)
+
             elif file_type == 'nm-pea-ccp':
                 reader = CcpnPKReader(self.__verbose, self.__lfh,
                                       self.__representative_model_id,
@@ -51151,6 +51245,72 @@ class NmrDpUtility:
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate NMR spectral peak list file (ARIA) {data_file_name!r}."
+
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {err}\n")
+
+                self.__list_id_counter, sf_dict = listener.getSfDict()
+                if sf_dict is not None:
+                    for k, v in sf_dict.items():
+                        content_subtype = contentSubtypeOf(k[0])
+                        if content_subtype not in pk_sf_dict_holder:
+                            pk_sf_dict_holder[content_subtype] = []
+                        for sf in v:
+                            if sf not in pk_sf_dict_holder[content_subtype]:
+                                pk_sf_dict_holder[content_subtype].append(sf)
+
+        elif file_type == 'nm-pea-bar':
+            reader = BarePKReader(self.__verbose, self.__lfh,
+                                  self.__representative_model_id,
+                                  self.__representative_alt_id,
+                                  self.__mr_atom_name_mapping,
+                                  self.__cR, self.__caC,
+                                  self.__ccU, self.__csStat, self.__nefT)
+            reader.setInternalMode(self.__internal_mode)
+
+            _list_id_counter = copy.copy(self.__list_id_counter)
+
+            listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
+                                          createSfDict=True, originalFileName=data_file_name,
+                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                          csLoops=self.__lp_data['chem_shift'])
+
+            if listener is not None:
+                reasons = listener.getReasonsForReparsing()
+
+                if reasons is not None:
+                    deal_pea_warn_message_for_lazy_eval(listener)
+
+                    reader = BarePKReader(self.__verbose, self.__lfh,
+                                          self.__representative_model_id,
+                                          self.__representative_alt_id,
+                                          self.__mr_atom_name_mapping,
+                                          self.__cR, self.__caC,
+                                          self.__ccU, self.__csStat, self.__nefT,
+                                          reasons)
+                    reader.setInternalMode(self.__internal_mode)
+
+                    listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
+                                                  createSfDict=True, originalFileName=data_file_name,
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                  csLoops=self.__lp_data['chem_shift'])
+
+                deal_pea_warn_message(listener)
+
+                poly_seq = listener.getPolymerSequence()
+                if poly_seq is not None:
+                    input_source.setItemValue('polymer_sequence', poly_seq)
+                    poly_seq_set.append(poly_seq)
+
+                seq_align = listener.getSequenceAlignment()
+                if seq_align is not None:
+                    self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+
+                if len(listener.getContentSubtype()) == 0:
+                    err = f"Failed to validate NMR spectral peak list file {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()

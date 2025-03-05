@@ -49,7 +49,7 @@ peak_2d:
 	number number?
 	position? position?
 	position?
-	Simple_name* (RETURN | EOF);
+	note* (RETURN | EOF);
 
 peak_list_3d:
 	Number? (Id | Id_)
@@ -68,7 +68,7 @@ peak_3d:
 	number number?
 	position? position? position?
 	position?
-	Simple_name* (RETURN | EOF);
+	note* (RETURN | EOF);
 
 peak_list_4d:
 	Number? (Id | Id_)
@@ -87,11 +87,14 @@ peak_4d:
 	number number?
 	position? position? position? position?
 	position?
-	Simple_name* (RETURN | EOF);
+	note* (RETURN | EOF);
 
 /* position expression in peak list */
 position: Float | Real | Integer | Simple_name;
 
 /* number expression in peak list */
 number:	Float | Real | Integer | Simple_name;
+
+/* note expression in peak list */
+note:	Float | Real | Integer | Simple_name | Any_name;
 

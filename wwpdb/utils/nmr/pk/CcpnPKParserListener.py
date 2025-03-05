@@ -48,6 +48,8 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
     __has_merit = False
     __has_details = False
 
+    __noteSelection = []
+
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
@@ -152,14 +154,14 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
 
             details = None
             if self.__has_details:
-                details = str(ctx.Simple_name(0))
+                details = self.__noteSelection[0]
                 if details in emptyValue:
                     details = None
 
-            # fit_method = str(ctx.Simple_name(1))
-            # vol_method = str(ctx.Simple_name(2))
-            # if ctx.Simple_name(3):
-            #     vol_method += ' ' + str(ctx.Simple_name(3))
+            # fit_method = self.__noteSelection[1]
+            # vol_method = self.__noteSelection[2]
+            # if len(self.__noteSelection) > 3:
+            #     vol_method += ' ' + self.__noteSelection[3]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -223,6 +225,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             self.positionSelection.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
+            self.__noteSelection.clear()
 
     # Enter a parse tree produced by CcpnPKParser#peak_list_3d.
     def enterPeak_list_3d(self, ctx: CcpnPKParser.Peak_list_3dContext):
@@ -312,14 +315,14 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
 
             details = None
             if self.__has_details:
-                details = str(ctx.Simple_name(0))
+                details = self.__noteSelection[0]
                 if details in emptyValue:
                     details = None
 
-            # fit_method = str(ctx.Simple_name(1))
-            # vol_method = str(ctx.Simple_name(2))
-            # if ctx.Simple_name(3):
-            #     vol_method += ' ' + str(ctx.Simple_name(3))
+            # fit_method = self.__noteSelection[1]
+            # vol_method = self.__noteSelection[2]
+            # if len(self.__noteSelection) > 3:
+            #     vol_method += ' ' + self.__noteSelection[3]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -396,6 +399,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             self.positionSelection.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
+            self.__noteSelection.clear()
 
     # Enter a parse tree produced by CcpnPKParser#peak_list_4d.
     def enterPeak_list_4d(self, ctx: CcpnPKParser.Peak_list_4dContext):
@@ -490,14 +494,14 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
 
             details = None
             if self.__has_details:
-                details = str(ctx.Simple_name(0))
+                details = self.__noteSelection[0]
                 if details in emptyValue:
                     details = None
 
-            # fit_method = str(ctx.Simple_name(1))
-            # vol_method = str(ctx.Simple_name(2))
-            # if ctx.Simple_name(3):
-            #     vol_method += ' ' + str(ctx.Simple_name(3))
+            # fit_method = self.__noteSelection[1]
+            # vol_method = self.__noteSelection[2]
+            # if len(self.__noteSelection) > 3:
+            #     vol_method += ' ' + self.__noteSelection[3]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -587,6 +591,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             self.positionSelection.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
+            self.__noteSelection.clear()
 
     # Enter a parse tree produced by CcpnPKParser#position.
     def enterPosition(self, ctx: CcpnPKParser.PositionContext):
@@ -645,6 +650,27 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by CcpnPKParser#number.
     def exitNumber(self, ctx: CcpnPKParser.NumberContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CcpnPKParser#note.
+    def enterNote(self, ctx: CcpnPKParser.NoteContext):
+        if ctx.Float():
+            self.__noteSelection.append(str(ctx.Float()))
+
+        elif ctx.Real():
+            self.__noteSelection.append(str(ctx.Real()))
+
+        elif ctx.Integer():
+            self.__noteSelection.append(str(ctx.Integer()))
+
+        elif ctx.Simple_name():
+            self.__noteSelection.append(str(ctx.Simple_name()))
+
+        else:
+            self.__noteSelection.append(str(ctx.Any_name()))
+
+    # Exit a parse tree produced by CcpnPKParser#note.
+    def exitNote(self, ctx: CcpnPKParser.NoteContext):  # pylint: disable=unused-argument
         pass
 
 

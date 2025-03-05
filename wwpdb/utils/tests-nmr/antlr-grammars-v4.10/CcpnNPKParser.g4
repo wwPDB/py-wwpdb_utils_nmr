@@ -47,7 +47,7 @@ peak_2d:
 	number number?
 	position? position?
 	position?
-	Simple_name* (RETURN | EOF);
+	note* (RETURN | EOF);
 
 peak_list_3d:
 	(((Position_F1 | Shift_F1) (Position_F2 | Shift_F2) (Position_F3 | Shift_F3) Assign_F1_ Assign_F2 Assign_F3) |
@@ -64,7 +64,7 @@ peak_3d:
 	number number?
 	position? position? position?
 	position?
-	Simple_name* (RETURN | EOF);
+	note* (RETURN | EOF);
 
 peak_list_4d:
 	(((Position_F1 | Shift_F1) (Position_F2 | Shift_F2) (Position_F3 | Shift_F3) (Position_F4 | Shift_F4) Assign_F1_ Assign_F2 Assign_F3 Assign_F4) |
@@ -81,11 +81,14 @@ peak_4d:
 	number number?
 	position? position? position? position?
 	position?
-	Simple_name* (RETURN | EOF);
+	note* (RETURN | EOF);
 
 /* position expression in peak list */
 position: Float | Real | Integer | Simple_name;
 
 /* number expression in peak list */
 number:	Float | Real | Integer | Simple_name;
+
+/* note expression in peak list */
+note:	Float | Real | Integer | Simple_name | Any_name;
 

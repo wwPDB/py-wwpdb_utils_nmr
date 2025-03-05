@@ -39,6 +39,8 @@ Simple_name:		SIMPLE_NAME;
 //Residue_name:		SIMPLE_NAME;
 //Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
 
+Any_name:		~[ \t\r\n]+;
+
 fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_' | '-' | '+' | '.' | '*' | '?' | '(' | '{';

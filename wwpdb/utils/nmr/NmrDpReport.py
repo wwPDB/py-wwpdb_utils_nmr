@@ -95,6 +95,7 @@
 # 18-Feb-2025  M. Yokochi - add 'nm-pea-pon' file type for PONDEROSA spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
 # 26-Feb-2025  M. Yokochi - add 'nm-pea-ccp' file type for CCPN tabular spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
 # 05-Mar-2025  M. Yokochi - add 'nm-pea-bar' file type for bare spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
+# 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR restraint remediation Phase 2)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1791,6 +1792,7 @@ class NmrDpReportInputSource:
                                  'heteronucl_noe_data', 'heteronucl_t1_data',
                                  'heteronucl_t2_data', 'heteronucl_t1r_data',
                                  'order_param_data', 'ph_titr_data', 'ph_param_data',
+                                 'coupling_const_data',
                                  'ccr_d_csa_restraint', 'ccr_dd_restraint',
                                  'fchiral_restraint', 'saxs_restraint', 'other_restraint',
                                  'spectral_peak', 'spectral_peak_alt', 'topology')
@@ -1897,6 +1899,7 @@ class NmrDpReportSequenceAlignment:
                       'nmr_poly_seq_vs_heteronucl_noe_data', 'nmr_poly_seq_vs_heteronucl_t1_data',
                       'nmr_poly_seq_vs_heteronucl_t2_data', 'nmr_poly_seq_vs_heteronucl_t1r_data',
                       'nmr_poly_seq_vs_order_param_data',
+                      'nmr_poly_seq_vs_coupling_const_data',
                       'nmr_poly_seq_vs_ccr_d_csa_restraint', 'nmr_poly_seq_vs_ccr_dd_restraint',
                       'nmr_poly_seq_vs_fchiral_restraint', 'nmr_poly_seq_vs_other_restraint')
 

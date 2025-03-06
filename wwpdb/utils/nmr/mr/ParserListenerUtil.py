@@ -10,6 +10,7 @@
 # 20-Aug-2024  M. Yokochi - support truncated loop sequence in the model (DAOTHER-9644)
 # 10-Sep-2024  M. Yokochi - ignore identical polymer sequence extensions within polynucleotide multiplexes (DAOTHER-9674)
 # 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
+# 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR restraint remediation Phase 2)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -328,6 +329,7 @@ NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
                             'order_param_data': '_Order_parameter_list',
                             'ph_titr_data': '_PH_titration_list',
                             'ph_param_data': '_PH_param_list',
+                            'coupling_const_data': '_Coupling_constant_list',
                             'ccr_d_csa_restraint': '_Cross_correlation_D_CSA_list',
                             'ccr_dd_restraint': '_Cross_correlation_DD_list',
                             'fchiral_restraint': '_Floating_chirality_assign',
@@ -355,6 +357,7 @@ NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
                           'order_param_data': 'order_parameters',
                           'ph_titr_data': 'pH_titration',
                           'ph_param_data': 'pH_param_list',
+                          'coupling_const_data': 'coupling_constants',
                           'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
                           'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
                           'fchiral_restraint': 'floating_chiral_stereo_assign',
@@ -599,6 +602,14 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                            {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                            ],
+                         'coupling_const_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                 {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                 {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                                  'enforce-non-zero': True},
+                                                 {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                                 {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                 ],
                          'ccr_d_csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                  {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
@@ -673,6 +684,7 @@ NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
                           'order_param_data': '_Order_param',
                           'ph_titr_data': '_PH_titr_result',
                           'ph_param_data': '_PH_param',
+                          'coupling_const_data': '_Coupling_constant',
                           'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
                           'ccr_dd_restraint': '_Cross_correlation_DD',
                           'fchiral_restraint': '_Floating_chirality',
@@ -894,6 +906,18 @@ NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int
                                           ],
                          'ph_param_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True}
                                            ],
+                         'coupling_const_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                 {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                                 {'name': 'Entity_ID_1', 'type': 'positive-int'},
+                                                 {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                                 {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                 {'name': 'Atom_ID_1', 'type': 'str'},
+                                                 {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                                 {'name': 'Entity_ID_2', 'type': 'positive-int'},
+                                                 {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                                 {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                 {'name': 'Atom_ID_2', 'type': 'str'}
+                                                 ],
                          'ccr_d_csa_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                  {'name': 'Dipole_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
                                                  {'name': 'Dipole_entity_ID_1', 'type': 'positive-int'},
@@ -1387,6 +1411,7 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                              'enforce-enum': True},
                                             {'name': 'Val', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                              'clear-bad-pattern': True,
+                                             'range': RDC_RESTRAINT_RANGE,
                                              'group': {'member-with': ['Val_min', 'Val_max'],
                                                        'coexist-with': None,
                                                        'smaller-than': None,
@@ -1396,12 +1421,14 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                              'range': {'min_inclusive': 0.0}},
                                             {'name': 'Val_min', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                              'clear-bad-pattern': True,
+                                             'range': RDC_RESTRAINT_RANGE,
                                              'group': {'member-with': ['Val_max'],
                                                        'coexist-with': None,
                                                        'smaller-than': None,
                                                        'larger-than': ['Val_max']}},
                                             {'name': 'Val_max', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                              'clear-bad-pattern': True,
+                                             'range': RDC_RESTRAINT_RANGE,
                                              'group': {'member-with': ['Val_min'],
                                                        'coexist-with': None,
                                                        'smaller-than': ['Val_min'],
@@ -1755,6 +1782,57 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                              'default': '1', 'default-from': 'parent'},
                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                             ],
+                          'coupling_const_data': [{'name': 'Code', 'type': 'str', 'mandatory': True},
+                                                  {'name': 'Atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                                   'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                                   'enum': ALLOWED_AMBIGUITY_CODES,
+                                                   'enforce-enum': True},
+                                                  {'name': 'Atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                                   'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                                   'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                   'enforce-enum': True},
+                                                  {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                                   'enum': ALLOWED_AMBIGUITY_CODES,
+                                                   'enforce-enum': True},
+                                                  {'name': 'Val', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                   'clear-bad-pattern': True,
+                                                   'group': {'member-with': ['Val_min', 'Val_max'],
+                                                             'coexist-with': None,
+                                                             'smaller-than': None,
+                                                             'larger-than': None}},
+                                                  {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                   'clear-bad-pattern': True,
+                                                   'range': {'min_inclusive': 0.0}},
+                                                  {'name': 'Val_min', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                   'clear-bad-pattern': True,
+                                                   'group': {'member-with': ['Val', 'Val_max'],
+                                                             'coexist-with': None,
+                                                             'smaller-than': None,
+                                                             'larger-than': ['Val_max']}},
+                                                  {'name': 'Val_max', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                   'clear-bad-pattern': True,
+                                                   'group': {'member-with': ['Val', 'Val_min'],
+                                                             'coexist-with': None,
+                                                             'smaller-than': ['Val_min'],
+                                                             'larger-than': None}},
+                                                  {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                  {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                  {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                  {'name': 'Coupling_constant_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'},
+                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                                  ],
                           'ccr_d_csa_restraint': [{'name': 'Dipole_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_atom_ID_1',
                                                    'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                    'enforce-enum': True},
@@ -7145,6 +7223,8 @@ def getRestraintName(mrSubtype: str, title: bool = False) -> str:
         return "pKa value data"
     if mrSubtype == 'ph_param_data':
         return "pH titration data"
+    if mrSubtype == 'coupling_const_data':
+        return "Coupling constant data"
     if mrSubtype == 'peak2d':
         return "2D spectral peak list"
     if mrSubtype == 'peak3d':
@@ -7215,6 +7295,7 @@ def incListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True,
                          'order_param_data': 0,
                          'ph_titr_data': 0,
                          'ph_param_data': 0,
+                         'coupling_const_data': 0,
                          'ccr_d_csa_restraint': 0,
                          'ccr_dd_restraint': 0,
                          'fchiral_restraint': 0,
@@ -7264,6 +7345,7 @@ def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True,
                          'order_param_data': 0,
                          'ph_titr_data': 0,
                          'ph_param_data': 0,
+                         'coupling_const_data': 0,
                          'ccr_d_csa_restraint': 0,
                          'ccr_dd_restraint': 0,
                          'fchiral_restraint': 0,
@@ -9599,6 +9681,46 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
         if val is not None:
             row[key_size + 4] = val
             float_row_idx.append(key_size + 4)
+
+    elif contentSubtype == 'coupling_const_data':
+        val = get_row_value('Code')
+        if val is not None:
+            row[key_size] = val
+        if atom1 is not None:
+            row[key_size + 1] = atomType = atom1['atom_id'][0]
+            row[key_size + 2] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        val = get_row_value('Ambiguity_code_1')
+        if val is not None and val in ('1', '2', '3'):
+            row[key_size + 3] = val
+        if atom2 is not None:
+            row[key_size + 4] = atomType = atom2['atom_id'][0]
+            row[key_size + 5] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+        val = get_row_value('Ambiguity_code_2')
+        if val is not None and val in ('1', '2', '3'):
+            row[key_size + 6] = val
+        val = get_row_value('Val')
+        if val is not None:
+            row[key_size + 7] = str(abs(float(val)))
+            float_row_idx.append(key_size + 7)
+        val = get_row_value('Val_err')
+        if val is not None:
+            row[key_size + 8] = val
+            float_row_idx.append(key_size + 8)
+        val = get_row_value('Val_min')
+        if val is not None:
+            row[key_size + 9] = val
+            float_row_idx.append(key_size + 9)
+        val = get_row_value('Val_max')
+        if val is not None:
+            row[key_size + 10] = val
+            float_row_idx.append(key_size + 10)
+
+        if atom1 is not None:
+            row[key_size + 11], row[key_size + 12], row[key_size + 13], row[key_size + 14] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if atom2 is not None:
+            row[key_size + 15], row[key_size + 16], row[key_size + 17], row[key_size + 18] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
     elif contentSubtype.startswith('ccr'):
         if star_atom3 is not None:

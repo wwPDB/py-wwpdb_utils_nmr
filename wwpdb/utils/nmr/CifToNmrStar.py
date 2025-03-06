@@ -305,7 +305,17 @@ class CifToNmrStar:
             block_name_list = cifObj.getDataBlockNameList()
 
             if len(block_name_list) == 0:  # single loop
-                return False
+
+                if maxRepeat != 1:
+                    return False
+
+                with open(cifPath, 'r', encoding='utf-8') as ifh, \
+                        open(cifPath + '~', 'w', encoding='utf-8') as ofh:
+                    ofh.write('data_' + os.path.basename(cifPath) + '\n\n')
+                    for line in ifh:
+                        ofh.write(line)
+
+                return self.convert(cifPath + '~', strPath, datablockName, maxRepeat + 1)
 
             dup_block_name_list = []
             if len(block_name_list) > 1:
@@ -581,6 +591,9 @@ class CifToNmrStar:
 
                     if sf is not None:
                         sf.add_loop(lp)
+
+                    if list_id_idx == -1:
+                        set_lp_tag(lp, sf_tag_prefix + '_ID', _cur_list_id)
 
             if sf is not None:
                 strData.add_saveframe(sf)

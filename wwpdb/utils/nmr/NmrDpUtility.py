@@ -211,6 +211,7 @@
 # 18-Feb-2025  M. Yokochi - add support for PONDEROSA spectral peak list (DAOTHER-8905, 9785)
 # 26-Feb-2025  M. Yokochi - add support for CCPN tabular spectral peak list (DAOTHER-8905, 9785)
 # 05-Mar-2025  M. Yokochi - add support for bare spectral peak list (DAOTHER-8905, 9785)
+# 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR restraint remediation Phase 2)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -2111,6 +2112,7 @@ class NmrDpUtility:
                                      'heteronucl_noe_data', 'heteronucl_t1_data',
                                      'heteronucl_t2_data', 'heteronucl_t1r_data',
                                      'order_param_data', 'ph_titr_data', 'ph_param_data',
+                                     'coupling_const_data',
                                      'ccr_d_csa_restraint', 'ccr_dd_restraint',
                                      'fchiral_restraint', 'saxs_restraint', 'other_restraint')
 
@@ -2122,6 +2124,7 @@ class NmrDpUtility:
                                     'heteronucl_noe_data', 'heteronucl_t1_data',
                                     'heteronucl_t2_data', 'heteronucl_t1r_data',
                                     'order_param_data', 'ph_titr_data', 'ph_param_data',
+                                    'coupling_const_data',
                                     'ccr_d_csa_restraint', 'ccr_dd_restraint',
                                     'fchiral_restraint', 'saxs_restraint', 'other_restraint']
 
@@ -2178,6 +2181,7 @@ class NmrDpUtility:
                                       'order_param_data': None,
                                       'ph_titr_data': None,
                                       'ph_param_data': None,
+                                      'coupling_const_data': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'fchiral_restraint': None,
@@ -2210,6 +2214,7 @@ class NmrDpUtility:
                                            'order_param_data': 'order_parameters',
                                            'ph_titr_data': 'pH_titration',
                                            'ph_param_data': 'pH_param_list',
+                                           'coupling_const_data': 'coupling_constants',
                                            'ccr_d_csa_restraint': 'dipole_CSA_cross_correlations',
                                            'ccr_dd_restraint': 'dipole_dipole_cross_correlations',
                                            'fchiral_restraint': 'floating_chiral_stereo_assign',
@@ -2245,6 +2250,7 @@ class NmrDpUtility:
                                       'order_param_data': None,
                                       'ph_titr_data': None,
                                       'ph_param_data': None,
+                                      'coupling_const_data': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'fchiral_restraint': None,
@@ -2277,6 +2283,7 @@ class NmrDpUtility:
                                            'order_param_data': '_Order_param',
                                            'ph_titr_data': '_PH_titr_result',
                                            'ph_param_data': '_PH_param',
+                                           'coupling_const_data': '_Coupling_constant',
                                            'ccr_d_csa_restraint': '_Cross_correlation_D_CSA',
                                            'ccr_dd_restraint': '_Cross_correlation_DD',
                                            'fchiral_restraint': '_Floating_chirality',
@@ -2361,6 +2368,7 @@ class NmrDpUtility:
                                    'order_param_data': None,
                                    'ph_titr_data': None,
                                    'ph_param_data': None,
+                                   'coupling_const_data': None,
                                    'ccr_d_csa_restraint': None,
                                    'ccr_dd_restraint': None,
                                    'fchiral_restraint': None,
@@ -2393,6 +2401,7 @@ class NmrDpUtility:
                                         'order_param_data': None,
                                         'ph_titr_data': None,
                                         'ph_param_data': None,
+                                        'coupling_const_data': None,
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
                                         'fchiral_restraint': None,
@@ -2433,6 +2442,7 @@ class NmrDpUtility:
                                     'order_param_data': None,
                                     'ph_titr_data': None,
                                     'ph_param_data': None,
+                                    'coupling_const_data': None,
                                     'ccr_d_csa_restraint': None,
                                     'ccr_dd_restraint': None,
                                     'fchiral_restraint': None,
@@ -2465,6 +2475,7 @@ class NmrDpUtility:
                                          'order_param_data': None,
                                          'ph_titr_data': None,
                                          'ph_param_data': None,
+                                         'coupling_const_data': None,
                                          'ccr_d_csa_restraint': None,
                                          'ccr_dd_restraint': None,
                                          'fchiral_restraint': None,
@@ -2505,6 +2516,7 @@ class NmrDpUtility:
                                         'order_param_data': None,
                                         'ph_titr_data': None,
                                         'ph_param_data': None,
+                                        'coupling_const_data': None,
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
                                         'fchiral_restraint': None,
@@ -2532,6 +2544,7 @@ class NmrDpUtility:
                                              'order_param_data': 'ID',
                                              'ph_titr_data': 'ID',
                                              'ph_param_data': 'ID',
+                                             'coupling_const_data': 'ID',
                                              'ccr_d_csa_restraint': 'ID',
                                              'ccr_dd_restraint': 'ID',
                                              'fchiral_restraint': 'ID',
@@ -2638,6 +2651,7 @@ class NmrDpUtility:
                                   'order_param_data': None,
                                   'ph_titr_data': None,
                                   'ph_param_data': None,
+                                  'coupling_const_data': None,
                                   'ccr_d_csa_restraint': None,
                                   'ccr_dd_restraint': None,
                                   'fchiral_restraint': None,
@@ -2846,6 +2860,16 @@ class NmrDpUtility:
                                                         ],
                                        'ph_param_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True}
                                                          ],
+                                       'coupling_const_data': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                                               {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
+                                                               {'name': 'Comp_index_ID_1', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                                               {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                               {'name': 'Atom_ID_1', 'type': 'str'},
+                                                               {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
+                                                               {'name': 'Comp_index_ID_2', 'type': 'int', 'default-from': 'Seq_ID_2'},
+                                                               {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                               {'name': 'Atom_ID_2', 'type': 'str'}
+                                                               ],
                                        'ccr_d_csa_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
                                                                {'name': 'Dipole_entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1'},
                                                                {'name': 'Dipole_comp_index_ID_1', 'type': 'int', 'default-from': 'Dipole_seq_ID_1'},
@@ -3010,6 +3034,7 @@ class NmrDpUtility:
                                           'order_param_data': None,
                                           'ph_titr_data': None,
                                           'ph_param_data': None,
+                                          'coupling_const_data': None,
                                           'ccr_d_csa_restraint': None,
                                           'ccr_dd_restraint': None,
                                           'fchiral_restraint': None,
@@ -3235,6 +3260,19 @@ class NmrDpUtility:
                                                                 {'name': 'Atm_titr_atom_ID', 'type': 'str'}
                                                                 ],
                                                'ph_param_data': None,
+                                               'coupling_const_data': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str',
+                                                                        'default': '1'},
+                                                                       {'name': 'Comp_index_ID_1', 'type': 'int',
+                                                                        'default-from': 'Seq_ID_1'},
+                                                                       {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                                       {'name': 'Atom_ID_1', 'type': 'str'},
+                                                                       {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str',
+                                                                        'default': '1'},
+                                                                       {'name': 'Comp_index_ID_2', 'type': 'int',
+                                                                        'default-from': 'Seq_ID_2'},
+                                                                       {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                                       {'name': 'Atom_ID_2', 'type': 'str'}
+                                                                       ],
                                                'ccr_d_csa_restraint': [{'name': 'Dipole_entity_assembly_ID_1', 'type': 'positive-int-as-str',
                                                                         'default': '1'},
                                                                        {'name': 'Dipole_comp_index_ID_1', 'type': 'int',
@@ -3521,6 +3559,7 @@ class NmrDpUtility:
                                    'order_param_data': None,
                                    'ph_titr_data': None,
                                    'ph_param_data': None,
+                                   'coupling_const_data': None,
                                    'ccr_d_csa_restraint': None,
                                    'ccr_dd_restraint': None,
                                    'fchiral_restraint': None,
@@ -4383,6 +4422,60 @@ class NmrDpUtility:
                                                           {'name': 'Observed_NMR_param_val', 'type': 'positive-float', 'mandatory': True},
                                                           {'name': 'Observed_NMR_param_val_err', 'type': 'positive-float', 'mandatory': False}
                                                           ],
+                                        'coupling_const_data': [{'name': 'Code', 'type': 'str', 'mandatory': True},
+                                                                {'name': 'Atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                                                 'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                                 'enforce-enum': True},
+                                                                {'name': 'Atom_isotope_number_1', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_1',
+                                                                 'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                                 'enforce-enum': True},
+                                                                {'name': 'Ambiguity_code_1', 'type': 'enum-int', 'mandatory': False,
+                                                                 'enum': ALLOWED_AMBIGUITY_CODES,
+                                                                 'enforce-enum': True},
+                                                                {'name': 'Atom_type_2', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                                                 'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                                                 'enforce-enum': True},
+                                                                {'name': 'Atom_isotope_number_2', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID_2',
+                                                                 'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                                                 'enforce-enum': True},
+                                                                {'name': 'Ambiguity_code_2', 'type': 'enum-int', 'mandatory': False,
+                                                                 'enum': ALLOWED_AMBIGUITY_CODES,
+                                                                 'enforce-enum': True},
+                                                                {'name': 'Val', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                                 'clear-bad-pattern': True,
+                                                                 'range': RDC_RESTRAINT_RANGE,
+                                                                 'group': {'member-with': ['Val_min', 'Val_max'],
+                                                                           'coexist-with': None,
+                                                                           'smaller-than': None,
+                                                                           'larger-than': None}},
+                                                                {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                 'clear-bad-pattern': True,
+                                                                 'range': {'min_inclusive': 0.0}},
+                                                                {'name': 'Val_min', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                                 'clear-bad-pattern': True,
+                                                                 'range': RDC_RESTRAINT_RANGE,
+                                                                 'group': {'member-with': ['Val_max'],
+                                                                           'coexist-with': None,
+                                                                           'smaller-than': None,
+                                                                           'larger-than': ['Val_max']}},
+                                                                {'name': 'Val_max', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
+                                                                 'clear-bad-pattern': True,
+                                                                 'range': RDC_RESTRAINT_RANGE,
+                                                                 'group': {'member-with': ['Val_min'],
+                                                                           'coexist-with': None,
+                                                                           'smaller-than': ['Val_min'],
+                                                                           'larger-than': None}},
+                                                                {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                                {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'Auth_entity_assembly_ID_2', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                                {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'Coupling_constant_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                                                 'default': '1', 'default-from': 'parent'}
+                                                                ],
                                         'ccr_d_csa_restraint': [{'name': 'Dipole_atom_type_1', 'type': 'enum', 'mandatory': True, 'default-from': 'Dipole_atom_ID_1',
                                                                  'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
                                                                  'enforce-enum': True},
@@ -4655,6 +4748,7 @@ class NmrDpUtility:
                                            'order_param_data': None,
                                            'ph_titr_data': None,
                                            'ph_param_data': None,
+                                           'coupling_const_data': None,
                                            'ccr_d_csa_restraint': None,
                                            'ccr_dd_restraint': None,
                                            'fchiral_restraint': None,
@@ -4847,6 +4941,7 @@ class NmrDpUtility:
                                                 'order_param_data': None,
                                                 'ph_titr_data': None,
                                                 'ph_param_data': None,
+                                                'coupling_const_data': None,
                                                 'ccr_d_csa_restraint': None,
                                                 'ccr_dd_restraint': None,
                                                 'fchiral_restraint': None,
@@ -5002,6 +5097,7 @@ class NmrDpUtility:
                                      'order_param_data': None,
                                      'ph_titr_data': None,
                                      'ph_param_data': None,
+                                     'coupling_const_data': None,
                                      'ccr_d_csa_restraint': None,
                                      'ccr_dd_restraint': None,
                                      'fchiral_restraint': None,
@@ -5295,6 +5391,14 @@ class NmrDpUtility:
                                                            'Sf_ID', 'Entry_ID', 'PH_titration_list_ID'],
                                           'ph_param_data': ['ID', 'PH_titr_result_ID', 'PH_val', 'PH_val_err', 'Observed_NMR_param_val', 'Observed_NMR_param_val_err',
                                                             'Sf_ID', 'Entry_ID', 'PH_param_list_ID'],
+                                          'coupling_const_data': ['ID', 'Code', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1',
+                                                                  'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1', 'Ambiguity_code_1',
+                                                                  'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2',
+                                                                  'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Atom_isotope_number_2', 'Ambiguity_code_2',
+                                                                  'Val', 'Val_min', 'Val_max', 'Val_err', 'Resonance_ID_1', 'Resonance_ID_2',
+                                                                  'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1',
+                                                                  'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2',
+                                                                  'Details', 'Sf_ID', 'Entry_ID', 'Coupling_constant_list_ID'],
                                           'ccr_d_csa_restraint': ['ID', 'Dipole_assembly_atom_ID_1', 'Dipole_entity_assembly_ID_1', 'Dipole_entity_ID_1', 'Dipole_comp_index_ID_1',
                                                                   'Dipole_seq_ID_1', 'Dipole_comp_ID_1', 'Dipole_atom_ID_1', 'Dipole_atom_type_1', 'Dipole_atom_isotope_number_1',
                                                                   'Dipole_assembly_atom_ID_2', 'Dipole_entity_assembly_ID_2', 'Dipole_entity_ID_2', 'Dipole_comp_index_ID_2',
@@ -5391,6 +5495,7 @@ class NmrDpUtility:
                                         'order_param_data': None,
                                         'ph_titr_data': None,
                                         'ph_param_data': None,
+                                        'coupling_const_data': None,
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
                                         'fchiral_restraint': None,
@@ -5423,6 +5528,7 @@ class NmrDpUtility:
                                              'order_param_data': '_Order_parameter_list',
                                              'ph_titr_data': '_PH_titration_list',
                                              'ph_param_data': '_PH_param_list',
+                                             'coupling_const_data': '_Coupling_constant_list',
                                              'ccr_d_csa_restraint': '_Cross_correlation_D_CSA_list',
                                              'ccr_dd_restraint': '_Cross_correlation_DD_list',
                                              'fchiral_restraint': '_Floating_chirality_assign',
@@ -5526,6 +5632,7 @@ class NmrDpUtility:
                                      'order_param_data': None,
                                      'ph_titr_data': None,
                                      'ph_param_data': None,
+                                     'coupling_const_data': None,
                                      'ccr_d_csa_restraint': None,
                                      'ccr_dd_restraint': None,
                                      'fchiral_restraint': None,
@@ -5777,6 +5884,11 @@ class NmrDpUtility:
                                                             {'name': 'PH_titration_list_ID', 'type': 'positive-int', 'mandatory': True,
                                                              'default': '1'}
                                                             ],
+                                          'coupling_const_data': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                                  {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
+                                                                   'enforce-non-zero': True},
+                                                                  ],
                                           'ccr_d_csa_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                                   {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                                   {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
@@ -5833,6 +5945,7 @@ class NmrDpUtility:
                                       'order_param_data': None,
                                       'ph_titr_data': None,
                                       'ph_param_data': None,
+                                      'coupling_const_data': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'fchiral_restraint': None,
@@ -5865,6 +5978,7 @@ class NmrDpUtility:
                                            'order_param_data': None,
                                            'ph_titr_data': None,
                                            'ph_param_data': None,
+                                           'coupling_const_data': None,
                                            'ccr_d_csa_restraint': None,
                                            'ccr_dd_restraint': None,
                                            'fchiral_restraint': None,
@@ -5904,6 +6018,7 @@ class NmrDpUtility:
                                         'order_param_data': None,
                                         'ph_titr_data': None,
                                         'ph_param_data': None,
+                                        'coupling_const_data': None,
                                         'ccr_d_csa_restraint': None,
                                         'ccr_dd_restraint': None,
                                         'fchiral_restraint': None,
@@ -6039,6 +6154,9 @@ class NmrDpUtility:
                                                               'Text_data_format', 'Text_data'],
                                              'ph_param_data': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'PH_titration_list_ID', 'PH_titration_list_label',
                                                                'Observed_NMR_param', 'Data_file_name', 'Details', 'Text_data_format', 'Text_data'],
+                                             'coupling_const_data': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
+                                                                     'Sample_condition_list_ID', 'Sample_condition_list_label', 'Spectrometer_frequency_1H', 'Details',
+                                                                     'Text_data_format', 'Text_data'],
                                              'ccr_d_csa_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name',
                                                                      'Sample_condition_list_ID', 'Sample_condition_list_label', 'Spectrometer_frequency_1H',
                                                                      'Val_units', 'Details', 'Text_data_format', 'Text_data'],
@@ -6084,6 +6202,7 @@ class NmrDpUtility:
                                           'order_param_data': None,
                                           'ph_titr_data': None,
                                           'ph_param_data': None,
+                                          'coupling_const_data': None,
                                           'ccr_d_csa_restraint': None,
                                           'ccr_dd_restraint': None,
                                           'fchiral_restraint': None,
@@ -6117,6 +6236,7 @@ class NmrDpUtility:
                                                'order_param_data': None,
                                                'ph_titr_data': None,
                                                'ph_param_data': None,
+                                               'coupling_const_data': None,
                                                'ccr_d_csa_restraint': None,
                                                'ccr_dd_restraint': None,
                                                'fchiral_restraint': None,
@@ -6152,6 +6272,7 @@ class NmrDpUtility:
                                              'order_param_data': [],
                                              'ph_titr_data': [],
                                              'ph_param_data': [],
+                                             'coupling_const_data': [],
                                              'ccr_d_csa_restraint': [],
                                              'ccr_dd_restraint': [],
                                              'fchiral_restraint': [],
@@ -6315,6 +6436,7 @@ class NmrDpUtility:
                                                   'order_param_data': ['Order_parameter_experiment', 'Order_parameter_software', 'Order_param'],
                                                   'ph_titr_data': ['PH_titration_experiment', 'PH_titration_software', 'PH_titr_result'],
                                                   'ph_param_data': ['PH_param_list'],
+                                                  'coupling_const_data': ['Coupling_constant'],
                                                   'ccr_d_csa_restraint': ['Cross_correlation_D_CSA_experiment', 'Cross_correlation_D_CSA_software',
                                                                           'Cross_correlation_D_CSA'],
                                                   'ccr_dd_restraint': ['Cross_correlation_DD_experiment', 'Cross_correlation_DD_software', 'Cross_correlation_DD'],
@@ -6371,6 +6493,7 @@ class NmrDpUtility:
                                       'order_param_data': None,
                                       'ph_titr_data': None,
                                       'ph_param_data': None,
+                                      'coupling_const_data': None,
                                       'ccr_d_csa_restraint': None,
                                       'ccr_dd_restraint': None,
                                       'fchiral_restraint': None,
@@ -6452,6 +6575,7 @@ class NmrDpUtility:
                                            'order_param_data': None,
                                            'ph_titr_data': None,
                                            'ph_param_data': None,
+                                           'coupling_const_data': None,
                                            'ccr_d_csa_restraint': None,
                                            'ccr_dd_restraint': None,
                                            'fchiral_restraint': None,
@@ -6517,6 +6641,7 @@ class NmrDpUtility:
                                        'order_param_data': None,
                                        'ph_titr_data': None,
                                        'ph_param_data': None,
+                                       'coupling_const_data': None,
                                        'ccr_d_csa_restraint': None,
                                        'ccr_dd_restraint': None,
                                        'fchiral_restraint': None,
@@ -6688,6 +6813,7 @@ class NmrDpUtility:
                                             'order_param_data': None,
                                             'ph_titr_data': None,
                                             'ph_param_data': None,
+                                            'coupling_const_data': None,
                                             'ccr_d_csa_restraint': None,
                                             'ccr_dd_restraint': None,
                                             'fchiral_restraint': None,
@@ -6733,6 +6859,7 @@ class NmrDpUtility:
                                          'order_param_data': None,
                                          'ph_titr_data': None,
                                          'ph_param_data': None,
+                                         'coupling_const_data': None,
                                          'ccr_d_csa_restraint': None,
                                          'ccr_dd_restraint': None,
                                          'fchiral_restraint': None,
@@ -6816,6 +6943,7 @@ class NmrDpUtility:
                                               'order_param_data': None,
                                               'ph_titr_data': None,
                                               'ph_param_data': None,
+                                              'coupling_const_data': None,
                                               'ccr_d_csa_restraint': None,
                                               'ccr_dd_restraint': None,
                                               'fchiral_restraint': None,
@@ -7032,6 +7160,7 @@ class NmrDpUtility:
                           'order_param_data': [],
                           'ph_titr_data': [],
                           'ph_param_data': [],
+                          'coupling_const_data': [],
                           'ccr_d_csa_restraint': [],
                           'ccr_dd_restraint': [],
                           'fchiral_restraint': [],
@@ -7066,6 +7195,7 @@ class NmrDpUtility:
                            'order_param_data': [],
                            'ph_titr_data': [],
                            'ph_param_data': [],
+                           'coupling_const_data': [],
                            'ccr_d_csa_restraint': [],
                            'ccr_dd_restraint': [],
                            'fchiral_restraint': [],
@@ -7100,6 +7230,7 @@ class NmrDpUtility:
                               'order_param_data': [],
                               'ph_titr_data': [],
                               'ph_param_data': [],
+                              'coupling_const_data': [],
                               'ccr_d_csa_restraint': [],
                               'ccr_dd_restraint': [],
                               'fchiral_restraint': [],
@@ -8472,6 +8603,11 @@ class NmrDpUtility:
                         convert_rtf_to_ascii(mrPath, _mrPath)
                         mrPath = _mrPath
 
+                    if self.__op == 'nmr-cs-mr-merge':
+                        _mrPath_ = mrPath + '.cif2str'
+                        if self.__c2S.convert(mrPath, _mrPath_):
+                            os.replace(_mrPath_, mrPath)
+
                     is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
 
                     self.__original_error_message.append(message)
@@ -8539,19 +8675,8 @@ class NmrDpUtility:
                             if not _is_done:
                                 is_done = False
 
-                    else:
-
-                        if self.__op == 'nmr-cs-mr-merge':
-
-                            _mrPath = mrPath + '.cif2str'
-
-                            if not self.__c2S.convert(mrPath, _mrPath):
-                                _mrPath = mrPath
-
-                            mrPath = _mrPath
-
-                        if not self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message):
-                            is_done = False
+                    elif not self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, file_subtype, message):
+                        is_done = False
 
                     file_path_list_len += 1
 
@@ -17525,7 +17650,7 @@ class NmrDpUtility:
 
         return None, None
 
-    def __getPolymerSequence(self, file_list_id: int, sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], content_subtype: str
+    def __getPolymerSequence(self, file_list_id: int, sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], content_subtype: str
                              ) -> List[List[dict]]:
         """ Wrapper function to retrieve polymer sequence from loop of a specified saveframe and content subtype via NEFTranslator.
         """
@@ -17845,7 +17970,7 @@ class NmrDpUtility:
         return is_done
 
     def __extractPolymerSequenceInLoop__(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
-                                         sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                         sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                          list_id: int, sf_framecode: str, lp_category: str, poly_seq_list_set: dict) -> bool:
         """ Extract polymer sequence in interesting loops.
         """
@@ -18536,7 +18661,7 @@ class NmrDpUtility:
                 self.__fixCompIdInLoop__(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
 
     def __fixCompIdInLoop__(self, file_list_id: int, file_type: str, content_subtype: str,
-                            sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
+                            sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
                             chain_id: str, seq_id: int, comp_id_conv_dict: dict) -> bool:
         """ Fix sequence ID of interesting loop.
         """
@@ -20239,7 +20364,7 @@ class NmrDpUtility:
                 self.__fixChainIdInLoop__(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, _chain_id)
 
     def __fixChainIdInLoop__(self, file_list_id: int, file_type: str, content_subtype: str,
-                             sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                             sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                              lp_category: str, chain_id: str, _chain_id: str):
         """ Fix sequence ID of interesting loop.
         """
@@ -20356,7 +20481,7 @@ class NmrDpUtility:
                 self.__fixSeqIdInLoop__(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id_conv_dict)
 
     def __fixSeqIdInLoop__(self, file_list_id: int, file_type: str, content_subtype: str,
-                           sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                           sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                            lp_category: str, chain_id: str, seq_id_conv_dict: dict):
         """ Fix sequence ID of interesting loop.
         """
@@ -20558,7 +20683,7 @@ class NmrDpUtility:
         return self.__nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=leave_unmatched)
 
     def __validateAtomNomenclature__(self, file_name: str, file_type: str, content_subtype: str,
-                                     sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                     sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                      sf_framecode: str, lp_category: str):  # , first_comp_ids):
         """ Validate atom nomenclature using NEFTranslator and CCD.
         """
@@ -21156,7 +21281,7 @@ class NmrDpUtility:
                         self.__fixAtomNomenclature__(fileListId, file_type, content_subtype, sf, lp_category, comp_id, atom_id_conv_dict)
 
     def __fixAtomNomenclature__(self, file_list_id: int, file_type: str, content_subtype: str,
-                                sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                 lp_category: str, comp_id: str, atom_id_conv_dict: dict):
         """ Fix atom nomenclature.
         """
@@ -21282,7 +21407,7 @@ class NmrDpUtility:
         return not self.report.isError()
 
     def __validateAtomTypeOfCsLoop__(self, file_name: str, file_type: str,
-                                     sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                     sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                      sf_framecode: str, lp_category: str):
         """ Validate atom type, isotope number on assigned chemical shifts.
         """
@@ -21466,7 +21591,7 @@ class NmrDpUtility:
         return not self.report.isError()
 
     def __validateAmbigCodeOfCsLoop__(self, file_name: str,
-                                      sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                      sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                       sf_framecode: str, lp_category: str) -> bool:
         """ Validate ambiguity code on assigned chemical shifts.
         """
@@ -21772,7 +21897,7 @@ class NmrDpUtility:
         return not self.report.isError()
 
     def __testIndexConsistency__(self, file_name: str,
-                                 sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                 sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                  sf_framecode: str, lp_category: str, index_tag: str):
         """ Perform consistency test on index of interesting loops.
         """
@@ -21968,7 +22093,7 @@ class NmrDpUtility:
         return self.report.getTotalErrors() == __errors
 
     def __testDataConsistencyInLoop__(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
-                                      sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                      sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                       sf_framecode: str, lp_category: str, parent_pointer: int):
         """ Perform consistency test on data of interesting loops.
         """
@@ -22263,7 +22388,7 @@ class NmrDpUtility:
         return self.report.getTotalErrors() == __errors
 
     def __detectConflictDataInLoop__(self, file_name: str, file_type: str, content_subtype: str,
-                                     sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                     sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                      sf_framecode: str, lp_category: str):
         """ Detect redundant/inconsistent data of interesting loops.
         """
@@ -23744,7 +23869,7 @@ class NmrDpUtility:
 
     def __testDataConsistencyInAuxLoopOfSpectralPeakAlt(self, file_name: str, file_type: str, sf_framecode: str,
                                                         num_dim: int, lp_category: str, aux_data: List[List[dict]],
-                                                        sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                                        sf: pynmrstar.Saveframe,
                                                         parent_pointer: int):
         """ Perform consistency test on data of spectral peak loops.
         """
@@ -24263,7 +24388,7 @@ class NmrDpUtility:
         return self.report.getTotalErrors() == __errors
 
     def __validateCsValue__(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
-                            sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                            sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                             sf_framecode: str, lp_category: str) -> bool:
         """ Validate assigned chemical shift value based on BMRB chemical shift statistics.
         """
@@ -25931,7 +26056,7 @@ class NmrDpUtility:
         return self.report.getTotalErrors() == __errors
 
     def __cleanUpSfTag__(self, file_type: str, content_subtype: str,
-                         sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]):
+                         sf: Union[pynmrstar.Saveframe, pynmrstar.Loop]):
         """ Remediate assigned chemical shift loop based on coordinates.
         """
 
@@ -26056,7 +26181,7 @@ class NmrDpUtility:
         return self.report.getTotalErrors() == __errors
 
     def __remediateCsLoop__(self, file_list_id: int, file_type: str, content_subtype: str,
-                            sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                            sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                             list_id: int, sf_framecode: str, lp_category: str) -> bool:
         """ Remediate assigned chemical shift loop based on coordinates.
         """
@@ -28910,7 +29035,7 @@ class NmrDpUtility:
         return self.report.getTotalErrors() == __errors
 
     def __removeUnusedPdbInsCode__(self, file_list_id: int, content_subtype: str,
-                                   sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                   sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                    lp_category: str) -> bool:
         """ Remove unused PDB_ind_code tags from loops.
         """
@@ -29008,7 +29133,7 @@ class NmrDpUtility:
             return self.report.getTotalErrors() == __errors
 
     def __syncMrLoop__(self, file_list_id: int, file_type: str, content_subtype: str,
-                       sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                       sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                        lp_category: str):
         """ Synchronize sequence scheme of restraint loop based on coordinates.
         """
@@ -31090,7 +31215,7 @@ class NmrDpUtility:
         return self.report.getTotalErrors() == __errors
 
     def __testResidueVariant__(self, file_name: str, file_type: str, content_subtype: str,
-                               sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                               sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                sf_framecode: str, lp_category: str, cif_polymer_sequence: List[dict], nmr2ca: dict):
         """ Perform consistency test on residue variants.
         """
@@ -31636,7 +31761,7 @@ class NmrDpUtility:
         return True
 
     def __validateStrMr__(self, file_list_id: int, file_type: str, original_file_name: str, content_subtype: str,
-                          _sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                          _sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                           sf_framecode: str, lp_category: str) -> bool:
         """ Validate data content of NMR-STAR restraint files.
         """
@@ -32668,8 +32793,10 @@ class NmrDpUtility:
 
                 else:  # nothing to do because of insufficient sequence tags
 
+                    del sf[lp]
                     lp = loop
 
+                    sf.add_loop(lp)
                     sf_item['loop'] = lp
 
             elif content_subtype == 'ph_param_data':
@@ -37698,7 +37825,7 @@ class NmrDpUtility:
         return True
 
     def __validateStrPk__(self, file_list_id: int, file_type: str, content_subtype: str, list_id: int,
-                          sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                          sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                           sf_framecode: str, lp_category: str) -> bool:
         """ Validate spectral peak lists in NMR-STAR restraint files.
         """
@@ -38774,7 +38901,7 @@ class NmrDpUtility:
         return self.report.getTotalErrors() == __errors
 
     def __calculateStatsOfExptlData__(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
-                                      sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                      sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                       list_id: int, sf_framecode: str, lp_category: str, seq_align_dic: dict, asm: list):
         """ Calculate statistics of experimental data.
         """
@@ -47106,7 +47233,7 @@ class NmrDpUtility:
         return modified
 
     def __updateCompIdInCsLoop__(self, file_list_id: int,
-                                 sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                 sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                  lp_category: str, cif_ps: List[dict], nmr_ps: List[dict], allow_chain_id_mismatch: bool) -> bool:
         """ Update residue name in CS loop to follow CCD replacement.
         """
@@ -47236,7 +47363,7 @@ class NmrDpUtility:
         return modified
 
     def __resolveUnmappedAuthSequenceInCsLoop__(self, file_list_id: int,
-                                                sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                                sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                                 lp_category: str, cif_ps: List[dict], nmr_ps: List[dict], allow_chain_id_mismatch: bool) -> bool:
         """ Resolve unmapped author sequence in CS loop based on sequence alignment.
         """
@@ -47448,7 +47575,7 @@ class NmrDpUtility:
         return self.report.getTotalErrors() == __errors
 
     def __testCoordAtomIdConsistency__(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
-                                       sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                       sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                        list_id: int, sf_framecode: str, lp_category: str, cif_polymer_sequence: List[dict],
                                        seq_align_dic: dict, nmr2ca: dict, ref_chain_id: str) -> bool:
         """ Perform consistency test on atom names of coordinate file.
@@ -53337,7 +53464,7 @@ class NmrDpUtility:
         return is_done
 
     def __mapCoordDisulfideBond2Nmr__(self, file_name: str, file_type: str, content_subtype: str,
-                                      sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                      sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                       sf_framecode: str, lp_category: str,
                                       nmr_chain_id_1: str, nmr_seq_id_1: int, nmr_comp_id_1: str,
                                       nmr_chain_id_2: str, nmr_seq_id_2: int, nmr_comp_id_2: str
@@ -53733,7 +53860,7 @@ class NmrDpUtility:
         return is_done
 
     def __mapCoordOtherBond2Nmr__(self, file_name: str, file_type: str, content_subtype: str,
-                                  sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
+                                  sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                   sf_framecode: str, lp_category: str,
                                   nmr_chain_id_1: str, nmr_seq_id_1: int, nmr_comp_id_1: str,
                                   nmr_chain_id_2: str, nmr_seq_id_2: int, nmr_comp_id_2: str
@@ -58849,6 +58976,8 @@ class NmrDpUtility:
                 datum_counter['pKa values'] += get_loop_size(content_subtype)
             elif content_subtype == 'ph_param_data':
                 datum_counter['pH NMR parameter values'] += get_loop_size(content_subtype)
+            elif content_subtype == 'coupling_const_data':
+                datum_counter['coupling constants'] += get_loop_size(content_subtype)
             elif content_subtype == 'ccrd_dd_restraint':
                 datum_counter['dipole-dipole cross correlation relaxation values'] += get_loop_size(content_subtype)
 

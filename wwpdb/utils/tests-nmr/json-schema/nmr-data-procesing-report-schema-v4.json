@@ -217,6 +217,11 @@
               "type": "integer",
               "minimum": 1
             },
+            "coupling_constant_data": {
+              "description": "The number of lists associated with coupling consntat data.",
+              "type": "integer",
+              "minimum": 1
+            },
             "ccr_d_csa_restraint": {
               "description": "The number of lists associated with dipolar-CSA cross-correlation experimental data.",
               "type": "integer",
@@ -462,6 +467,13 @@
             },
             "order_param_data": {
               "description": "The array provides the polymer sequences in data loops for order parameters.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/polymer_sequence_in_loop"
+              }
+            },
+            "coupling_const_data": {
+              "description": "The array provides the polymer sequences in data loops for coupling constant data.",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/polymer_sequence_in_loop"
@@ -1462,6 +1474,22 @@
           }
         },
         "order_param_data": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/info_of_exptl_data"
+              },
+              {
+                "$ref": "#/definitions/common_stats_of_restraint"
+              },
+              {
+                "$ref": "#/definitions/stats_of_rdc_restraint"
+              }
+            ]
+          }
+        },
+        "coupling_const_data": {
           "type": "array",
           "items": {
             "allOf": [
@@ -5011,6 +5039,23 @@
             },
             "nmr_poly_seq_vs_order_param_data": {
               "description": "The object provides sequence alignment between the representative sequence of the NMR data and sequence in data loops for order parameters.",
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/sequence_alignment_in_nmr"
+                  },
+                  {
+                    "$ref": "#/definitions/common_sequence_alignment"
+                  }
+                ]
+              }
+            },
+            "nmr_poly_seq_vs_coupling_const_data": {
+              "description": "The object provides sequence alignment between the representative sequence of the NMR data and sequence in data loops for coupling constant data.",
               "type": [
                 "array",
                 "null"

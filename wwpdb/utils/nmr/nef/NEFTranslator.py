@@ -1753,6 +1753,7 @@ class NEFTranslator:
                                               '_CA_CB_constraint', '_H_chem_shift_constraint',
                                               '_Chem_shift_perturbation', '_Auto_relaxation',
                                               '_Heteronucl_NOE', '_T1', '_T2', '_T1rho', '_Order_param', '_PH_titr_result',
+                                              '_Coupling_constant',
                                               '_Cross_correlation_D_CSA', '_Cross_correlation_DD',
                                               '_Other_data']
                 if self.__internal_mode:
@@ -1772,6 +1773,7 @@ class NEFTranslator:
                                               'chem_shift_perturbation', 'auto_relaxation',
                                               'heteronucl_NOEs', 'heteronucl_T1_relaxation', 'heteronucl_T2_relaxation',
                                               'heteronucl_T1rho_relaxation', 'order_parameters', 'pH_titration',
+                                              'coupling_constants',
                                               'dipole_CSA_cross_correlations', 'dipole_dipole_cross_correlations',
                                               'other_data_types']
                 if self.__internal_mode:

@@ -4241,11 +4241,16 @@ class BasePKParserListener():
                         index = term.rindex(elem)
                         atomId = term[index:len(term)]
                         if index - 1 >= 0 and term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
-                            continue
+                            if resNameLike[idx] and compId[-1] in PEAK_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
+                                pass
+                            else:
+                                continue
                         if atomId[0] in ('Q', 'M') and index + 1 < len(term) and term[index + 1].isdigit():
                             continue
                         if atomId.startswith('MET') and ((index + 3 < len(term) and term[index + 3].isdigit()
                                                          or (index + 4 < len(term) and term[index + 4].isdigit()))):
+                            continue
+                        if resNameLike[idx] and compId[-1] == elem and index + 1 == resNameSpan[idx][1]:
                             continue
                         if resNameLike[idx]:
                             compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
@@ -4289,11 +4294,16 @@ class BasePKParserListener():
                             index = _term.rindex(elem)
                             atomId = _term[index:len(_term)]
                             if index - 1 >= 0 and _term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
-                                continue
+                                if resNameLike[idx] and compId[-1] in PEAK_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
+                                    pass
+                                else:
+                                    continue
                             if atomId[0] in ('Q', 'M') and index + 1 < len(_term) and _term[index + 1].isdigit():
                                 continue
                             if atomId.startswith('MET') and ((index + 3 < len(_term) and _term[index + 3].isdigit()
                                                               or (index + 4 < len(_term) and _term[index + 4].isdigit()))):
+                                continue
+                            if resNameLike[idx] and compId[-1] == elem and index + 1 == resNameSpan[idx][1]:
                                 continue
                             if len(_term) == atomNameSpan[idx][0]:
                                 continue
@@ -4339,11 +4349,16 @@ class BasePKParserListener():
                             index = __term.rindex(elem)
                             atomId = __term[index:len(__term)]
                             if index - 1 >= 0 and __term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
-                                continue
+                                if resNameLike[idx] and compId[-1] in PEAK_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
+                                    pass
+                                else:
+                                    continue
                             if atomId[0] in ('Q', 'M') and index + 1 < len(__term) and __term[index + 1].isdigit():
                                 continue
                             if atomId.startswith('MET') and ((index + 3 < len(__term) and __term[index + 3].isdigit()
                                                               or (index + 4 < len(__term) and __term[index + 4].isdigit()))):
+                                continue
+                            if resNameLike[idx] and compId[-1] == elem and index + 1 == resNameSpan[idx][1]:
                                 continue
                             if len(__term) == _atomNameSpan[idx][0]:
                                 continue
@@ -4389,11 +4404,16 @@ class BasePKParserListener():
                             index = ___term.rindex(elem)
                             atomId = ___term[index:len(___term)]
                             if index - 1 >= 0 and ___term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
-                                continue
+                                if resNameLike[idx] and compId[-1] in PEAK_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
+                                    pass
+                                else:
+                                    continue
                             if atomId[0] in ('Q', 'M') and index + 1 < len(___term) and ___term[index + 1].isdigit():
                                 continue
                             if atomId.startswith('MET') and ((index + 3 < len(___term) and ___term[index + 3].isdigit()
                                                               or (index + 4 < len(___term) and ___term[index + 4].isdigit()))):
+                                continue
+                            if resNameLike[idx] and compId[-1] == elem and index + 1 == resNameSpan[idx][1]:
                                 continue
                             if len(___term) == __atomNameSpan[idx][0]:
                                 continue

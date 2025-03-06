@@ -8031,7 +8031,9 @@ class NmrDpUtility:
 
                         if not is_binary_file(arPath):
 
-                            for test_file_type in parsable_mr_file_types:
+                            for test_file_type in archival_mr_file_types:
+                                if test_file_type == 'nmr-star':
+                                    continue
                                 if os.path.exists(arPath + f'-selected-as-{test_file_type[-7:]}'):
                                     ar['file_type'] = test_file_type
                                     break

@@ -33,10 +33,10 @@ ccpn_pk:
 	EOF;
 
 peak_list_2d:
-	Number? (Id | Id_)?
+	Num? (Id | Id_)?
 	(((Position_F1 | Shift_F1 | Position_F1_ | Shift_F1_) (Position_F2 | Shift_F2) Assign_F1_ Assign_F2) |
 	 ((Assign_F1 | Assign_F1_) Assign_F2 (Position_F1_ | Shift_F1_) (Position_F2 | Shift_F2)))
-	Height Volume?
+	Height? Volume?
 	Line_width_F1? Line_width_F2?
 	Merit?
 	Details? Fit_method? Vol_method? RETURN_VARS
@@ -46,16 +46,16 @@ peak_2d:
 	Integer? Integer?
 	((position position Simple_name Simple_name) |
 	 (Simple_name Simple_name position position))
-	number number?
+	number? number?
 	position? position?
 	position?
 	note* (RETURN | EOF);
 
 peak_list_3d:
-	Number? (Id | Id_)?
+	Num? (Id | Id_)?
 	(((Position_F1 | Shift_F1 | Position_F1_ | Shift_F1_) (Position_F2 | Shift_F2) (Position_F3 | Shift_F3) Assign_F1_ Assign_F2 Assign_F3) |
 	 ((Assign_F1 | Assign_F1_) Assign_F2 Assign_F3 (Position_F1_ | Shift_F1) (Position_F2 | Shift_F2) (Position_F3 | Shift_F3)))
-	Height Volume?
+	Height? Volume?
 	Line_width_F1? Line_width_F2? Line_width_F3?
 	Merit?
 	Details? Fit_method? Vol_method? RETURN_VARS
@@ -65,16 +65,16 @@ peak_3d:
 	Integer? Integer?
 	((position position position Simple_name Simple_name Simple_name) |
 	 (Simple_name Simple_name Simple_name position position position))
-	number number?
+	number? number?
 	position? position? position?
 	position?
 	note* (RETURN | EOF);
 
 peak_list_4d:
-	Number? (Id | Id_)?
+	Num? (Id | Id_)?
 	(((Position_F1 | Shift_F1 | Position_F1_ | Shift_F1_) (Position_F2 | Shift_F2) (Position_F3 | Shift_F3) (Position_F4 | Shift_F4) Assign_F1_ Assign_F2 Assign_F3 Assign_F4) |
 	 ((Assign_F1 | Assign_F1_) Assign_F2 Assign_F3 Assign_F4 (Position_F1_ | Shift_F1) (Position_F2 | Shift_F2) (Position_F3 | Shift_F3) (Position_F4 | Shift_F4)))
-	Height Volume?
+	Height? Volume?
 	Line_width_F1? Line_width_F2? Line_width_F3? Line_width_F4?
 	Merit?
 	Details? Fit_method? Vol_method? RETURN_VARS
@@ -84,7 +84,7 @@ peak_4d:
 	Integer? Integer?
 	((position position position position Simple_name Simple_name Simple_name Simple_name) |
 	 ( Simple_name Simple_name Simple_name Simple_name position position position position))
-	number number?
+	number? number?
 	position? position? position? position?
 	position?
 	note* (RETURN | EOF);

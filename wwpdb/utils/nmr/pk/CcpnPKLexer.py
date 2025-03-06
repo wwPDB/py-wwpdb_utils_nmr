@@ -248,7 +248,7 @@ class CcpnPKLexer(Lexer):
 
     VARS_MODE = 1
 
-    Number = 1
+    Num = 1
     Id = 2
     Assign_F1 = 3
     Position_F1 = 4
@@ -302,7 +302,7 @@ class CcpnPKLexer(Lexer):
             "'Merit'", "'Details'", "'Fit Method'", "'Vol. Method'" ]
 
     symbolicNames = [ "<INVALID>",
-            "Number", "Id", "Assign_F1", "Position_F1", "Shift_F1", "Integer", 
+            "Num", "Id", "Assign_F1", "Position_F1", "Shift_F1", "Integer", 
             "Float", "Real", "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", 
             "Any_name", "SPACE", "RETURN", "SECTION_COMMENT", "LINE_COMMENT", 
             "Id_", "Position_F1_", "Position_F2", "Position_F3", "Position_F4", 
@@ -311,17 +311,17 @@ class CcpnPKLexer(Lexer):
             "Line_width_F2", "Line_width_F3", "Line_width_F4", "Merit", 
             "Details", "Fit_method", "Vol_method", "SPACE_VARS", "RETURN_VARS" ]
 
-    ruleNames = [ "Number", "Id", "Assign_F1", "Position_F1", "Shift_F1", 
-                  "Integer", "Float", "Real", "DEC_DOT_DEC", "DEC_DIGIT", 
-                  "DECIMAL", "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", 
-                  "Any_name", "ALPHA", "ALPHA_NUM", "START_CHAR", "NAME_CHAR", 
-                  "SIMPLE_NAME", "SPACE", "RETURN", "COMMENT_START_CHAR", 
-                  "SECTION_COMMENT", "LINE_COMMENT", "Id_", "Position_F1_", 
-                  "Position_F2", "Position_F3", "Position_F4", "Shift_F1_", 
-                  "Shift_F2", "Shift_F3", "Shift_F4", "Assign_F1_", "Assign_F2", 
-                  "Assign_F3", "Assign_F4", "Height", "Volume", "Line_width_F1", 
-                  "Line_width_F2", "Line_width_F3", "Line_width_F4", "Merit", 
-                  "Details", "Fit_method", "Vol_method", "SPACE_VARS", "RETURN_VARS" ]
+    ruleNames = [ "Num", "Id", "Assign_F1", "Position_F1", "Shift_F1", "Integer", 
+                  "Float", "Real", "DEC_DOT_DEC", "DEC_DIGIT", "DECIMAL", 
+                  "EXCLM_COMMENT", "SMCLN_COMMENT", "Simple_name", "Any_name", 
+                  "ALPHA", "ALPHA_NUM", "START_CHAR", "NAME_CHAR", "SIMPLE_NAME", 
+                  "SPACE", "RETURN", "COMMENT_START_CHAR", "SECTION_COMMENT", 
+                  "LINE_COMMENT", "Id_", "Position_F1_", "Position_F2", 
+                  "Position_F3", "Position_F4", "Shift_F1_", "Shift_F2", 
+                  "Shift_F3", "Shift_F4", "Assign_F1_", "Assign_F2", "Assign_F3", 
+                  "Assign_F4", "Height", "Volume", "Line_width_F1", "Line_width_F2", 
+                  "Line_width_F3", "Line_width_F4", "Merit", "Details", 
+                  "Fit_method", "Vol_method", "SPACE_VARS", "RETURN_VARS" ]
 
     grammarFileName = "CcpnPKLexer.g4"
 

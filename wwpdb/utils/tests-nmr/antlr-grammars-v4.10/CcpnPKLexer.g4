@@ -20,7 +20,7 @@ lexer grammar CcpnPKLexer;
  See also https://sites.google.com/site/ccpnwiki/home/documentation/ccpnmr-analysis/popup-reference/peaks-peak-lists
 */
 
-Number:			'Number' -> pushMode(VARS_MODE);
+Num:			'Number' -> pushMode(VARS_MODE);
 Id:			'#' -> pushMode(VARS_MODE);
 Assign_F1:		'Assign F1' -> pushMode(VARS_MODE);
 Position_F1:		'Position F1' -> pushMode(VARS_MODE);

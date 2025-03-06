@@ -44,6 +44,7 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
 
     __has_number = False
     __has_id = False
+    __has_height = False
     __has_volume = False
     __has_lw_hz = False
     __has_merit = False
@@ -78,12 +79,16 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
         self.initSpectralDim()
 
         self.__has_number = False
-        if ctx.Number():
+        if ctx.Num():
             self.__has_number = True
 
         self.__has_id = False
         if ctx.Id() or ctx.Id_():
             self.__has_id = True
+
+        self.__has_height = False
+        if ctx.Height():
+            self.__has_height = True
 
         self.__has_volume = False
         if ctx.Volume():
@@ -123,6 +128,8 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
 
             if self.__has_id:
                 index = int(str(ctx.Integer(1 if self.__has_number else 0)))
+            elif self.__has_number:
+                index = int(str(ctx.Integer(0)))
             else:
                 index = self.peaks2D
 
@@ -156,8 +163,8 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             if L2 in emptyValue:
                 L2 = None
 
-            height = self.originalNumberSelection[0]
-            volume = self.originalNumberSelection[1] if self.__has_volume else None
+            height = self.originalNumberSelection[0] if self.__has_height else None
+            volume = self.originalNumberSelection[1 if self.__has_height else 0] if self.__has_volume else None
 
             details = None
             if self.__has_details:
@@ -240,12 +247,16 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
         self.initSpectralDim()
 
         self.__has_number = False
-        if ctx.Number():
+        if ctx.Num():
             self.__has_number = True
 
         self.__has_id = False
         if ctx.Id() or ctx.Id_():
             self.__has_id = True
+
+        self.__has_height = False
+        if ctx.Height():
+            self.__has_height = True
 
         self.__has_volume = False
         if ctx.Volume():
@@ -285,6 +296,8 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
 
             if self.__has_id:
                 index = int(str(ctx.Integer(1 if self.__has_number else 0)))
+            elif self.__has_number:
+                index = int(str(ctx.Integer(0)))
             else:
                 index = self.peaks3D
 
@@ -323,8 +336,8 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             if L3 in emptyValue:
                 L3 = None
 
-            height = self.originalNumberSelection[0]
-            volume = self.originalNumberSelection[1] if self.__has_volume else None
+            height = self.originalNumberSelection[0] if self.__has_height else None
+            volume = self.originalNumberSelection[1 if self.__has_height else 0] if self.__has_volume else None
 
             details = None
             if self.__has_details:
@@ -420,12 +433,16 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
         self.initSpectralDim()
 
         self.__has_number = False
-        if ctx.Number():
+        if ctx.Num():
             self.__has_number = True
 
         self.__has_id = False
         if ctx.Id() or ctx.Id_():
             self.__has_id = True
+
+        self.__has_height = False
+        if ctx.Height():
+            self.__has_height = True
 
         self.__has_volume = False
         if ctx.Volume():
@@ -465,6 +482,8 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
 
             if self.__has_id:
                 index = int(str(ctx.Integer(1 if self.__has_number else 0)))
+            elif self.__has_number:
+                index = int(str(ctx.Integer(0)))
             else:
                 index = self.peaks4D
 
@@ -508,8 +527,8 @@ class CcpnPKParserListener(ParseTreeListener, BasePKParserListener):
             if L4 in emptyValue:
                 L4 = None
 
-            height = self.originalNumberSelection[0]
-            volume = self.originalNumberSelection[1] if self.__has_volume else None
+            height = self.originalNumberSelection[0] if self.__has_height else None
+            volume = self.originalNumberSelection[1 if self.__has_height else 0] if self.__has_volume else None
 
             details = None
             if self.__has_details:

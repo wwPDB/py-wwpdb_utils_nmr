@@ -4133,11 +4133,11 @@ class BasePKParserListener():
         _str = PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', string.upper()).split()
         lenStr = len(_str)
 
-        segIdLike, resIdLike, resNameLike, atomNameLike, _atomNameLike, __atomNameLike, ___atomNameLike =\
-            [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr
+        segIdLike, resIdLike, resNameLike, atomNameLike, _atomNameLike, __atomNameLike, ___atomNameLike, atomNameLike_ =\
+            [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr
 
-        segIdSpan, resIdSpan, resNameSpan, atomNameSpan, _atomNameSpan, __atomNameSpan, ___atomNameSpan =\
-            [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr
+        segIdSpan, resIdSpan, resNameSpan, atomNameSpan, _atomNameSpan, __atomNameSpan, ___atomNameSpan, siblingAtomName =\
+            [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr
 
         if not self.__hasCoord:
             if self.authAsymIdSet is None:
@@ -4185,6 +4185,9 @@ class BasePKParserListener():
                         if index < minIndex:
                             resNameSpan[idx] = (index, index + len(compId))
                             minIndex = index
+
+            if hasOneLetterCodeSet and resNameLike[idx] and len(term[resNameSpan[idx][0]:resNameSpan[idx][1]]) > 1:
+                hasOneLetterCodeSet = False
 
             if not resNameLike[idx] and hasOneLetterCodeSet:
                 if not any(compId in term for compId in monDict3 if len(compId) == 3):
@@ -4238,6 +4241,37 @@ class BasePKParserListener():
             for elem in PEAK_HALF_SPIN_NUCLEUS:
                 if len(elem) == 1 and ligAtomId is None:
                     if elem in term:
+                        # handle ambiguous assigned peak '(14Trp/11Trp)Hh2' seen in 6r28/bmr34380/work/data/D_1292101294_nmr-peaks-upload_P1.dat.V1
+                        if idx > 0 and not resNameLike[idx] and any(resIdLike[_idx] and resNameLike[_idx] and not atomNameLike[_idx]
+                                                                    for _idx in range(idx)):
+                            _index = term.index(elem)
+                            _atomId = term[_index:len(term)]
+                            for _idx in range(idx):
+                                if resIdLike[_idx] and resNameLike[_idx] and not atomNameLike[_idx]:
+                                    _compId = _str[_idx][resNameSpan[_idx][0]:resNameSpan[_idx][1]]
+                                    if len(_compId) == 1 and hasOneLetterCodeSet:
+                                        _compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == _compId)
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
+                                        if details is None:
+                                            atomNameLike[idx] = atomNameLike_[_idx] = True
+                                            atomNameSpan[idx] = (_index, len(term))
+                                            if siblingAtomName[_idx] is None:
+                                                siblingAtomName[_idx] = []
+                                            if _atomId not in siblingAtomName[_idx]:
+                                                siblingAtomName[_idx].append(_atomId)
+                                            break
+                                    _atomId = translateToStdAtomName(_atomId, _compId, ccU=self.ccU)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
+                                    if details is None:
+                                        atomNameLike[idx] = atomNameLike_[_idx] = True
+                                        atomNameSpan[idx] = (_index, len(term))
+                                        if siblingAtomName[_idx] is None:
+                                            siblingAtomName[_idx] = []
+                                        if _atomId not in siblingAtomName[_idx]:
+                                            siblingAtomName[_idx].append(_atomId)
+                                        break
+                            if atomNameLike[idx]:
+                                break
                         index = term.rindex(elem)
                         atomId = term[index:len(term)]
                         if index - 1 >= 0 and term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
@@ -5000,8 +5034,12 @@ class BasePKParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
+                    if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
+                        continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
+                    if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
+                        continue
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:
                         ass['chain_id'] = segId
@@ -5085,8 +5123,12 @@ class BasePKParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
+                    if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
+                        continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
+                    if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
+                        continue
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:
                         ass['chain_id'] = segId
@@ -5170,8 +5212,12 @@ class BasePKParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
+                    if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
+                        continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
+                    if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
+                        continue
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:
                         ass['chain_id'] = segId
@@ -5255,8 +5301,12 @@ class BasePKParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
+                    if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
+                        continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
+                    if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
+                        continue
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:
                         ass['chain_id'] = segId
@@ -5266,6 +5316,95 @@ class BasePKParserListener():
                         ass['comp_id'] = resName
                     ret.append(ass)
                 dimId += 1
+            elif atomNameLike_[idx] and siblingAtomName[idx] is not None:
+                if resIdLater:
+                    for _idx, _term in enumerate(_str):
+                        if _idx > idx and resIdLike[_idx]:
+                            resId = int(_term[resIdSpan[_idx][0]:resIdSpan[_idx][1]])
+                            segId = resName = None
+                            break
+                if resId is None:
+                    if _resId is None or len(ret) >= len(_resId):
+                        return None
+                    resId = _resId[len(ret)]
+                for atomName in siblingAtomName[idx]:
+                    if self.__hasCoord:
+                        if segId is None and resName is None:
+                            chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName, src_index)
+                            if len(chainAssign) > 0:
+                                if self.__defaultSegId is None:
+                                    idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
+                                else:
+                                    idx = next((chainAssign.index(a) for a in chainAssign if a[0] == self.__defaultSegId and a[1] == resId), -1)
+                                    if idx == -1:
+                                        idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
+                                if idx != -1:
+                                    # if self.__defaultSegId is None:
+                                    self.__defaultSegId = chainAssign[idx][0]
+                                else:
+                                    idx = 0
+                                segId, _, resName, _ = chainAssign[idx]
+                        elif segId is None:
+                            chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId,
+                                                                             resId, resName, atomName, src_index)
+                            is_valid = is_valid_chain_assign(chainAssign, resName)
+                            if not is_valid:
+                                if self.__defaultSegId != self.__defaultSegId__:
+                                    __preferAuthSeq = self.__preferAuthSeq
+                                    self.__preferAuthSeq = not __preferAuthSeq
+                                    chainAssign, _ = self.assignCoordPolymerSequenceWithChainId(self.__defaultSegId__,
+                                                                                                resId, resName, atomName, src_index)
+                                    is_valid = is_valid_chain_assign(chainAssign, resName)
+                                    self.__preferAuthSeq = __preferAuthSeq
+                            if is_valid:
+                                idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
+                                if idx != -1:
+                                    # if self.__defaultSegId is None:
+                                    self.__defaultSegId = chainAssign[idx][0]
+                                else:
+                                    idx = 0
+                                segId = chainAssign[idx][0]
+                            else:
+                                chainAssign, _ = self.assignCoordPolymerSequence(None,
+                                                                                 resId, resName, atomName, src_index)
+                                if is_valid_chain_assign(chainAssign, resName):
+                                    idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
+                                    if idx != -1:
+                                        # if self.__defaultSegId is None:
+                                        self.__defaultSegId = chainAssign[idx][0]
+                                        if self.reasons is None:
+                                            if 'default_seg_id' not in self.reasonsForReParsing:
+                                                self.reasonsForReParsing['default_seg_id'] = {}
+                                            if self.num_of_dim not in self.reasonsForReParsing['default_seg_id']:
+                                                self.reasonsForReParsing['default_seg_id'][self.num_of_dim] = {}
+                                            if self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
+                                                self.reasonsForReParsing['default_seg_id'][self.num_of_dim][self.cur_list_id] = self.__defaultSegId
+                                    else:
+                                        idx = 0
+                                    segId = chainAssign[idx][0]
+                        elif resName is None:
+                            chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName, src_index)
+                            if len(chainAssign) > 0:
+                                idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), 0)
+                                resName = chainAssign[idx][2]
+                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
+                        if details is not None:
+                            atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
+                        if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
+                            continue
+                        ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
+                    else:
+                        if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
+                            continue
+                        ass = {'dim': dimId, 'atom_id': atomName}
+                        if segId is not None:
+                            ass['chain_id'] = segId
+                        if resId is not None:
+                            ass['seq_id'] = resId
+                        if resName is not None:
+                            ass['comp_id'] = resName
+                        ret.append(ass)
+                    dimId += 1
 
         multiple = len(ret) > numOfDim
 

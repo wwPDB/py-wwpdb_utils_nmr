@@ -8285,7 +8285,7 @@ class CyanaMRParserListener(ParseTreeListener):
 
             if len(self.__col_order_of_dist_w_chain) == 0:
                 for j in range(3):
-                    if len(jVal[j]) > 2 and translateToStdResName(jVal[j], ccU=self.__ccU) in monDict3:
+                    if len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.__ccU) in monDict3:
                         compId = translateToStdResName(jVal[j], ccU=self.__ccU)
                         if self.__ccU.updateChemCompDict(compId):
                             for k in range(3):
@@ -8329,6 +8329,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                         self.__col_order_of_dist_w_chain['atom_id_1'] = k
                                         self.__col_order_of_dist_w_chain['chain_id_1'] = 3 - (j + k)
                                         break
+                            if len(self.__col_order_of_dist_w_chain) == 3:
+                                break
                     elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.__ccU) not in monDict3:
                         compId = translateToStdResName(jVal[j], ccU=self.__ccU)
                         if self.__ccU.updateChemCompDict(compId):
@@ -8373,8 +8375,10 @@ class CyanaMRParserListener(ParseTreeListener):
                                         self.__col_order_of_dist_w_chain['atom_id_1'] = k
                                         self.__col_order_of_dist_w_chain['chain_id_1'] = 3 - (j + k)
                                         break
+                            if len(self.__col_order_of_dist_w_chain) == 3:
+                                break
                 for j in range(3, 6):
-                    if len(jVal[j]) > 2 and translateToStdResName(jVal[j], ccU=self.__ccU) in monDict3:
+                    if len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.__ccU) in monDict3:
                         compId = translateToStdResName(jVal[j], ccU=self.__ccU)
                         if self.__ccU.updateChemCompDict(compId):
                             for k in range(3, 6):
@@ -8418,6 +8422,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                         self.__col_order_of_dist_w_chain['atom_id_2'] = k
                                         self.__col_order_of_dist_w_chain['chain_id_2'] = 12 - (j + k)
                                         break
+                            if len(self.__col_order_of_dist_w_chain) == 6:
+                                break
                     elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.__ccU) not in monDict3:
                         compId = translateToStdResName(jVal[j], ccU=self.__ccU)
                         if self.__ccU.updateChemCompDict(compId):
@@ -8462,8 +8468,14 @@ class CyanaMRParserListener(ParseTreeListener):
                                         self.__col_order_of_dist_w_chain['atom_id_2'] = k
                                         self.__col_order_of_dist_w_chain['chain_id_2'] = 12 - (j + k)
                                         break
+                            if len(self.__col_order_of_dist_w_chain) == 6:
+                                break
 
             if len(self.__col_order_of_dist_w_chain) != 6:
+
+                if not self.__hasPolySeq:
+                    return
+
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                 "Failed to identify columns for comp_id_1, atom_id_1, chain_id_1, comp_id_2, atom_id_2, chain_id_2.")
                 if self.__cur_subtype == 'dist':

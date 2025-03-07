@@ -574,6 +574,7 @@ class CifToNmrStar:
 
                     dBlockStruct = cifObj.getDataBlockStructure(block_name, ext)
                     itVals = next(v for k, v in dBlockStruct.items() if k == category)
+                    lenItems = len(itVals['Items'])
 
                     list_id_idx = entry_id_idx = -1
 
@@ -590,6 +591,8 @@ class CifToNmrStar:
                             entry_id_idx = idx
 
                     for idx, _value in enumerate(itVals['Values']):
+                        if len(_value) != lenItems:  # prevent exception for incomplete stop tag at end of single loop
+                            continue
                         if list_id_idx != -1:
                             _value[list_id_idx] = _cur_list_id
                         if entry_id_idx != -1:

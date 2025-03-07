@@ -334,6 +334,10 @@ class CyanaMRParserListener(ParseTreeListener):
     __modResidue = None
     __splitLigand = None
 
+    __entityAssembly = None
+    __polyPeptide = False
+    __polyDeoxyribonucleotide = False
+
     __offsetHolder = None
     __shiftNonPosSeq = None
 
@@ -471,6 +475,7 @@ class CyanaMRParserListener(ParseTreeListener):
             self.__authToEntityType = ret['auth_to_entity_type']
             self.__modResidue = ret['mod_residue']
             self.__splitLigand = ret['split_ligand']
+            self.__entityAssembly = ret['entity_assembly']
 
         self.__offsetHolder = {}
 
@@ -489,6 +494,13 @@ class CyanaMRParserListener(ParseTreeListener):
 
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
+            for entity in self.__entityAssembly:
+                if 'entity_poly_type' in entity:
+                    poly_type = entity['entity_poly_type']
+                    if poly_type.startswith('polypeptide'):
+                        self.__polyPeptide = True
+                    elif poly_type == 'polydeoxyribonucleotide':
+                        self.__polyDeoxyribonucleotide = True
 
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
@@ -8283,9 +8295,14 @@ class CyanaMRParserListener(ParseTreeListener):
             for j in range(6):
                 jVal[j] = str(ctx.Simple_name(j)).upper()
 
+            minLenCompId = 2 if self.__polyPeptide else (1 if self.__polyDeoxyribonucleotide else 0)
+            if minLenCompId == 0:
+                if any(_compId for _compId in jVal if _compId.startswith('R')):
+                    minLenCompId = 1
+
             if len(self.__col_order_of_dist_w_chain) == 0:
                 for j in range(3):
-                    if len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.__ccU) in monDict3:
+                    if len(jVal[j]) > minLenCompId and translateToStdResName(jVal[j], ccU=self.__ccU) in monDict3:
                         compId = translateToStdResName(jVal[j], ccU=self.__ccU)
                         if self.__ccU.updateChemCompDict(compId):
                             for k in range(3):
@@ -8325,6 +8342,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if len(_atomId) > 0:
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId[0]), None)
                                     if cca is not None:
+                                        if minLenCompId == 0 and 3 - (j + k) != 0:
+                                            continue
                                         self.__col_order_of_dist_w_chain['comp_id_1'] = j
                                         self.__col_order_of_dist_w_chain['atom_id_1'] = k
                                         self.__col_order_of_dist_w_chain['chain_id_1'] = 3 - (j + k)
@@ -8378,7 +8397,7 @@ class CyanaMRParserListener(ParseTreeListener):
                             if len(self.__col_order_of_dist_w_chain) == 3:
                                 break
                 for j in range(3, 6):
-                    if len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.__ccU) in monDict3:
+                    if len(jVal[j]) > minLenCompId and translateToStdResName(jVal[j], ccU=self.__ccU) in monDict3:
                         compId = translateToStdResName(jVal[j], ccU=self.__ccU)
                         if self.__ccU.updateChemCompDict(compId):
                             for k in range(3, 6):
@@ -8418,6 +8437,8 @@ class CyanaMRParserListener(ParseTreeListener):
                                 if len(_atomId) > 0:
                                     cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId[0]), None)
                                     if cca is not None:
+                                        if minLenCompId == 0 and 12 - (j + k) != 3:
+                                            continue
                                         self.__col_order_of_dist_w_chain['comp_id_2'] = j
                                         self.__col_order_of_dist_w_chain['atom_id_2'] = k
                                         self.__col_order_of_dist_w_chain['chain_id_2'] = 12 - (j + k)

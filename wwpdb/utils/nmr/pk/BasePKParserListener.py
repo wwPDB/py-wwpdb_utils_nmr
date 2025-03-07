@@ -4272,6 +4272,20 @@ class BasePKParserListener():
                                         break
                             if atomNameLike[idx]:
                                 break
+                        # prevent to split HH2 -> res_name:'HIS' atom_name:'H2'
+                        if idx > 0 and resNameLike[idx] and resNameSpan[idx][1] - resNameSpan[idx][0] == 1 and resNameSpan[idx][1] == term.rindex(elem)\
+                           and term[resNameSpan[idx][0]] in PEAK_HALF_SPIN_NUCLEUS:
+                            _index = term.index(elem)
+                            _atomId = term[_index:len(term)]
+                            for compId in self.compIdSet:
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    atomNameLike[idx] = True
+                                    atomNameSpan[idx] = (_index, len(term))
+                                    break
+                            if atomNameLike[idx]:
+                                break
+
                         index = term.rindex(elem)
                         atomId = term[index:len(term)]
                         if index - 1 >= 0 and term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:

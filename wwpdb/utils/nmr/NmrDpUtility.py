@@ -7937,7 +7937,6 @@ class NmrDpUtility:
                         input_source.setItemValue('original_file_name', os.path.basename(cs))
 
                         _cs = cs + '.cif2str'
-
                         if not self.__c2S.convert(cs, _cs):
                             _cs = cs
 
@@ -7981,8 +7980,7 @@ class NmrDpUtility:
                             input_source.setItemValue('original_file_name', os.path.basename(cs['file_name']))
 
                         _cs = cs['file_name'] + '.cif2str'
-
-                        if not self.__c2S.convert(cs['file_name'], _cs):
+                        if not self.__c2S.convert(cs['file_name'], _cs, originalFileName=cs.get('original_file_name')):
                             _cs = cs['file_name']
 
                         cs['file_name'] = _cs
@@ -8014,7 +8012,6 @@ class NmrDpUtility:
                             input_source.setItemValue('original_file_name', os.path.basename(mr))
 
                             _mr = mr + '.cif2str'
-
                             if not self.__c2S.convert(mr, _mr):
                                 _mr = mr
 
@@ -8034,8 +8031,7 @@ class NmrDpUtility:
                                 input_source.setItemValue('original_file_name', os.path.basename(mr['file_name']))
 
                             _mr = mr['file_name'] + '.cif2str'
-
-                            if not self.__c2S.convert(mr['file_name'], _mr):
+                            if not self.__c2S.convert(mr['file_name'], _mr, originalFileName=mr.get('original_file_name')):
                                 _mr = mr['file_name']
 
                             mr['file_name'] = _mr
@@ -8195,7 +8191,6 @@ class NmrDpUtility:
                 nmr_cif = self.__inputParamDict['nmr_cif_file_path']
 
                 _nmr_cif = nmr_cif + '.cif2str'
-
                 if self.__c2S.convert(nmr_cif, _nmr_cif):
                     self.__srcNmrCifPath = _nmr_cif
                     self.__native_combined = True  # DAOTHER-8855
@@ -8271,8 +8266,8 @@ class NmrDpUtility:
             is_valid, message = self.__nefT.validate_file(srcPath, 'A')  # 'A' for NMR unified data
 
             if not is_valid:
-                _srcPath = srcPath + '.cif2str'
 
+                _srcPath = srcPath + '.cif2str'
                 if self.__c2S.convert(srcPath, _srcPath):
                     is_valid, message = self.__nefT.validate_file(_srcPath, 'A')  # 'A' for NMR unified data
                     self.__srcPath = srcPath = _srcPath
@@ -8387,8 +8382,7 @@ class NmrDpUtility:
                 if self.__op == 'nmr-cs-mr-merge' and not os.path.basename(csPath).startswith('bmr'):
 
                     _csPath = csPath + '.cif2str'
-
-                    if not self.__c2S.convert(csPath, _csPath):
+                    if not self.__c2S.convert(csPath, _csPath, originalFileName=cs.get('original_file_name') if isinstance(cs, dict) else None):
                         _csPath = csPath
 
                     csPath = _csPath
@@ -8589,6 +8583,12 @@ class NmrDpUtility:
                     if os.path.exists(mrPath + '-corrected'):
                         mrPath = mrPath + '-corrected'
 
+                    if self.__op == 'nmr-cs-mr-merge':
+
+                        _mrPath = mrPath + '.cif2str'
+                        if not self.__c2S.convert(mrPath, _mrPath, originalFileName=mr.get('original_file_name') if isinstance(mr, dict) else None):
+                            mrPath = _mrPath
+
                     codec = detect_bom(mrPath, 'utf-8')
 
                     _mrPath = None
@@ -8602,11 +8602,6 @@ class NmrDpUtility:
                         _mrPath = mrPath + '.rtf2txt'
                         convert_rtf_to_ascii(mrPath, _mrPath)
                         mrPath = _mrPath
-
-                    if self.__op == 'nmr-cs-mr-merge':
-                        _mrPath_ = mrPath + '.cif2str'
-                        if self.__c2S.convert(mrPath, _mrPath_):
-                            os.replace(_mrPath_, mrPath)
 
                     is_valid, message = self.__nefT.validate_file(mrPath, file_subtype)
 
@@ -12716,7 +12711,6 @@ class NmrDpUtility:
                 elif has_cif_format:
 
                     _file_path = file_path + '.cif2str'
-
                     if not self.__c2S.convert(file_path, _file_path):
                         _file_path = file_path
 
@@ -16083,7 +16077,6 @@ class NmrDpUtility:
                                 ofh.write(line)
 
                         _mrPath = os.path.splitext(mrPath)[0] + '.cif2str'
-
                         if not self.__c2S.convert(mrPath, _mrPath):
                             _mrPath = mrPath
 
@@ -17074,7 +17067,6 @@ class NmrDpUtility:
                             mrPath = dst_file
 
                             _mrPath = os.path.splitext(mrPath)[0] + '.cif2str'
-
                             if not self.__c2S.convert(mrPath, _mrPath):
                                 _mrPath = mrPath
 
@@ -43575,10 +43567,10 @@ class NmrDpUtility:
                             if sp_dim['ID'] != i:
                                 continue
                             axis_code = sp_dim['Axis_code']
-                            atom_type = sp_dim['Atom_type']
+                            atom_type = sp_dim.get('Atom_type')
                             if atom_type in emptyValue:
                                 atom_type = ''.join(j for j in axis_code if not j.isdigit())
-                            atom_isotope_number = sp_dim['Atom_isotope_number']
+                            atom_isotope_number = sp_dim.get('Atom_isotope_number')
                             if atom_isotope_number in emptyValue:
                                 if atom_type not in emptyValue and atom_type[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                     atom_isotope_number = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type[0]][0]
@@ -43666,7 +43658,7 @@ class NmrDpUtility:
                                         if _sp_dim['ID'] != hvy_dim:
                                             continue
                                         _axis_code = _sp_dim['Axis_code']
-                                        _atom_type = _sp_dim['Atom_type']
+                                        _atom_type = _sp_dim.get('Atom_type')
                                         if _atom_type in emptyValue:
                                             _atom_type = ''.join(j for j in _axis_code if not j.isdigit())
 
@@ -43832,10 +43824,10 @@ class NmrDpUtility:
                         if sp_dim['ID'] != i:
                             continue
                         axis_code = sp_dim['Axis_code']
-                        atom_type = sp_dim['Atom_type']
+                        atom_type = sp_dim.get('Atom_type')
                         if atom_type in emptyValue:
                             atom_type = ''.join(j for j in axis_code if not j.isdigit())
-                        atom_isotope_number = sp_dim['Atom_isotope_number']
+                        atom_isotope_number = sp_dim.get('Atom_isotope_number')
                         if atom_isotope_number in emptyValue:
                             if atom_type not in emptyValue and atom_type[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                 atom_isotope_number = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type[0]][0]
@@ -43917,7 +43909,7 @@ class NmrDpUtility:
                                     if _sp_dim['ID'] != hvy_dim:
                                         continue
                                     _axis_code = _sp_dim['Axis_code']
-                                    _atom_type = _sp_dim['Atom_type']
+                                    _atom_type = _sp_dim.get('Atom_type')
                                     if _atom_type in emptyValue:
                                         _atom_type = ''.join(j for j in _axis_code if not j.isdigit())
 
@@ -57081,6 +57073,9 @@ class NmrDpUtility:
             return False
 
         master_entry = self.__star_data[0]
+
+        if self.__star_data[0] == 'nmr-star':
+            self.__c2S.set_entry_id(master_entry, self.__entry_id)
 
         master_entry = self.__c2S.normalize(master_entry)
 

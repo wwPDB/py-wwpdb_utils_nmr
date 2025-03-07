@@ -228,6 +228,11 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-D_1300055931/0306REST.txt',
+                 '../../tests-nmr/mock-data-D_1300055931/D_800803_model_P1.cif.V6')
+
     __mrAtomNameMapping__ = [{'auth_atom_id': 'H4', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HP3', 'original_comp_id': 'NGH', 'original_seq_id': 253},
                              {'auth_atom_id': 'H5', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HP2', 'original_comp_id': 'NGH', 'original_seq_id': 253},
                              {'auth_atom_id': 'H1', 'auth_comp_id': 'NGH', 'auth_seq_id': 253, 'original_atom_id': 'HP6', 'original_comp_id': 'NGH', 'original_seq_id': 253},

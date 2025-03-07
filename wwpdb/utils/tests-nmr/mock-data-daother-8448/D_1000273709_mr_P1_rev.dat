@@ -1,92 +1,101 @@
+data_nmr_data_d_1000273709_mr_p1_rev.dat
 
-loop_
-    _Homonucl_NOE.Comp_index_ID_1
-    _Homonucl_NOE.Comp_ID_1
-    _Homonucl_NOE.Atom_ID_1
-    _Homonucl_NOE.Comp_index_ID_2
-    _Homonucl_NOE.Comp_ID_2
-    _Homonucl_NOE.Atom_ID_2
-    _Homonucl_NOE.Val_max
+save_D_1000273709_mr_P1_rev.dat
+   _Homonucl_NOE_list.Sf_category   homonucl_NOEs
+   _Homonucl_NOE_list.Sf_framecode  D_1000273709_mr_P1_rev.dat
+   _Homonucl_NOE_list.Entry_ID      D_1000273709_MR_P1_REV.DAT
+   _Homonucl_NOE_list.ID            1
 
-23             VAL            HA             24             SER            H              3.5            
-21             THR            HA             22             GLY            H              3.5            
-10             ALA            HA             11             ASP            H              3.5            
-19             THR            HA             19             THR            H              3.5            
-4              GLU            HA             4              GLU            H              3.5            
-24             SER            HA             25             LEU            H              3.5            
-8              ALA            HA             9              HIE            H              3.5            
-5              LEU            HA             6              ILE            H              3.5            
-9              HIE            HA             10             ALA            H              3.5            
-3              GLU            HA             4              GLU            H              3.5            
-26             GLN            HA             27             THR            H              3.5            
-27             THR            HA             28             TYR            H              3.5            
-19             THR            HA             20             ASP            H              3.5            
-10             ALA            HA             10             ALA            H              3.5            
-2              LYS            HA             3              GLU            H              3.5            
-3              GLU            HA             3              GLU            H              3.5            
-22             GLY            HA*            23             VAL            H              3.5            
-21             THR            HA             21             THR            H              3.5            
-6              ILE            HA             6              ILE            H              3.5            
-11             ASP            HA             12             PRO            HD2            3.5            
-11             ASP            HA             12             PRO            HD3            3.5            
-4              GLU            HB2            4              GLU            H              3.5            
-13             MET            HA             14             VAL            H              3.5            
-24             SER            HB2            24             SER            H              3.5            
-24             SER            HB3            24             SER            H              3.5            
-24             SER            HB2            25             LEU            H              3.5            
-18             LYS            HA             18             LYS            H              4.5            
-24             SER            HA             24             SER            H              4.5            
-4              GLU            HB3            4              GLU            H              4.5            
-22             GLY            HA*            22             GLY            H              4.5            
-9              HIE            HA             9              HIE            H              4.5            
-11             ASP            HB2            11             ASP            H              4.5            
-17             GLN            HA             18             LYS            H              4.5            
-6              ILE            H              5              LEU            H              4.5            
-7              HIE            HA             8              ALA            H              4.5            
-23             VAL            HG*            24             SER            H              4.5            
-11             ASP            HA             11             ASP            H              4.5            
-3              GLU            HB2            3              GLU            H              4.5            
-11             ASP            HB3            11             ASP            H              4.5            
-28             TYR            HA             28             TYR            H              4.5            
-8              ALA            H              7              HIE            H              4.5            
-27             THR            HB             27             THR            H              4.5            
-27             THR            HB             27             THR            H              4.5            
-23             VAL            H              24             SER            H              4.5            
-4              GLU            H              5              LEU            H              4.5            
-1              THR            HA             2              LYS            H              4.5            
-27             THR            HA             27             THR            H              4.5            
-7              HIE            HA             7              HIE            H              4.5            
-21             THR            H              22             GLY            H              4.5            
-6              ILE            H              7              HIE            H              4.5            
-20             ASP            HB3            20             ASP            H              4.5            
-23             VAL            HA             23             VAL            H              4.5            
-3              GLU            HB3            3              GLU            H              4.5            
-4              GLU            H              3              GLU            H              4.5            
-24             SER            HB3            25             LEU            H              4.5            
-28             TYR            HB3            28             TYR            H              4.5            
-20             ASP            HA             21             THR            H              4.5            
-6              ILE            HB             7              HIE            H              4.5            
-6              ILE            HB             7              HIE            H              4.5            
-6              ILE            HG2*           7              HIE            H              4.5            
-6              ILE            HD1*           7              HIE            H              4.5 
-20             ASP            HB2            20             ASP            H              4.5            
-20             ASP            HA             20             ASP            H              4.5            
-28             TYR            HB2            28             TYR            H              4.5            
-2              LYS            HA             2              LYS            H              4.5            
-4              GLU            HB2            5              LEU            H              6              
-6              ILE            HA             7              HIE            H              6              
-16             ILE            HA             17             GLN            H              6              
-4              GLU            HG2            4              GLU            H              6              
-4              GLU            HG3            4              GLU            H              6              
-4              GLU            HB3            5              LEU            H              6              
-17             GLN            HA             17             GLN            H              6              
-5              LEU            HB3            6              ILE            H              6              
-9              HIE            HB2            10             ALA            H              6              
-5              LEU            HB2            6              ILE            H              6              
-9              HIE            HB3            10             ALA            H              6              
-7              HIE            HB2            8              ALA            H              6              
-7              HIE            HB3            8              ALA            H              6              
-8              ALA            HA             8              ALA            H              6              
+   loop_
+      _Homonucl_NOE.Comp_index_ID_1
+      _Homonucl_NOE.Comp_ID_1
+      _Homonucl_NOE.Atom_ID_1
+      _Homonucl_NOE.Comp_index_ID_2
+      _Homonucl_NOE.Comp_ID_2
+      _Homonucl_NOE.Atom_ID_2
+      _Homonucl_NOE.Val_max
+      _Homonucl_NOE.Homonucl_NOE_list_ID
 
-stop_
+     23   VAL   HA     24   SER   H     3.5   1    
+     21   THR   HA     22   GLY   H     3.5   1    
+     10   ALA   HA     11   ASP   H     3.5   1    
+     19   THR   HA     19   THR   H     3.5   1    
+     4    GLU   HA     4    GLU   H     3.5   1    
+     24   SER   HA     25   LEU   H     3.5   1    
+     8    ALA   HA     9    HIE   H     3.5   1    
+     5    LEU   HA     6    ILE   H     3.5   1    
+     9    HIE   HA     10   ALA   H     3.5   1    
+     3    GLU   HA     4    GLU   H     3.5   1    
+     26   GLN   HA     27   THR   H     3.5   1    
+     27   THR   HA     28   TYR   H     3.5   1    
+     19   THR   HA     20   ASP   H     3.5   1    
+     10   ALA   HA     10   ALA   H     3.5   1    
+     2    LYS   HA     3    GLU   H     3.5   1    
+     3    GLU   HA     3    GLU   H     3.5   1    
+     22   GLY   HA*    23   VAL   H     3.5   1    
+     21   THR   HA     21   THR   H     3.5   1    
+     6    ILE   HA     6    ILE   H     3.5   1    
+     11   ASP   HA     12   PRO   HD2   3.5   1    
+     11   ASP   HA     12   PRO   HD3   3.5   1    
+     4    GLU   HB2    4    GLU   H     3.5   1    
+     13   MET   HA     14   VAL   H     3.5   1    
+     24   SER   HB2    24   SER   H     3.5   1    
+     24   SER   HB3    24   SER   H     3.5   1    
+     24   SER   HB2    25   LEU   H     3.5   1    
+     18   LYS   HA     18   LYS   H     4.5   1    
+     24   SER   HA     24   SER   H     4.5   1    
+     4    GLU   HB3    4    GLU   H     4.5   1    
+     22   GLY   HA*    22   GLY   H     4.5   1    
+     9    HIE   HA     9    HIE   H     4.5   1    
+     11   ASP   HB2    11   ASP   H     4.5   1    
+     17   GLN   HA     18   LYS   H     4.5   1    
+     6    ILE   H      5    LEU   H     4.5   1    
+     7    HIE   HA     8    ALA   H     4.5   1    
+     23   VAL   HG*    24   SER   H     4.5   1    
+     11   ASP   HA     11   ASP   H     4.5   1    
+     3    GLU   HB2    3    GLU   H     4.5   1    
+     11   ASP   HB3    11   ASP   H     4.5   1    
+     28   TYR   HA     28   TYR   H     4.5   1    
+     8    ALA   H      7    HIE   H     4.5   1    
+     27   THR   HB     27   THR   H     4.5   1    
+     27   THR   HB     27   THR   H     4.5   1    
+     23   VAL   H      24   SER   H     4.5   1    
+     4    GLU   H      5    LEU   H     4.5   1    
+     1    THR   HA     2    LYS   H     4.5   1    
+     27   THR   HA     27   THR   H     4.5   1    
+     7    HIE   HA     7    HIE   H     4.5   1    
+     21   THR   H      22   GLY   H     4.5   1    
+     6    ILE   H      7    HIE   H     4.5   1    
+     20   ASP   HB3    20   ASP   H     4.5   1    
+     23   VAL   HA     23   VAL   H     4.5   1    
+     3    GLU   HB3    3    GLU   H     4.5   1    
+     4    GLU   H      3    GLU   H     4.5   1    
+     24   SER   HB3    25   LEU   H     4.5   1    
+     28   TYR   HB3    28   TYR   H     4.5   1    
+     20   ASP   HA     21   THR   H     4.5   1    
+     6    ILE   HB     7    HIE   H     4.5   1    
+     6    ILE   HB     7    HIE   H     4.5   1    
+     6    ILE   HG2*   7    HIE   H     4.5   1    
+     6    ILE   HD1*   7    HIE   H     4.5   1    
+     20   ASP   HB2    20   ASP   H     4.5   1    
+     20   ASP   HA     20   ASP   H     4.5   1    
+     28   TYR   HB2    28   TYR   H     4.5   1    
+     2    LYS   HA     2    LYS   H     4.5   1    
+     4    GLU   HB2    5    LEU   H     6     1    
+     6    ILE   HA     7    HIE   H     6     1    
+     16   ILE   HA     17   GLN   H     6     1    
+     4    GLU   HG2    4    GLU   H     6     1    
+     4    GLU   HG3    4    GLU   H     6     1    
+     4    GLU   HB3    5    LEU   H     6     1    
+     17   GLN   HA     17   GLN   H     6     1    
+     5    LEU   HB3    6    ILE   H     6     1    
+     9    HIE   HB2    10   ALA   H     6     1    
+     5    LEU   HB2    6    ILE   H     6     1    
+     9    HIE   HB3    10   ALA   H     6     1    
+     7    HIE   HB2    8    ALA   H     6     1    
+     7    HIE   HB3    8    ALA   H     6     1    
+     8    ALA   HA     8    ALA   H     6     1    
 
+   stop_
+
+save_

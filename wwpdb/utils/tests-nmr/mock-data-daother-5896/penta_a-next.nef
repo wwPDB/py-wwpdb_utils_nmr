@@ -15,8 +15,9 @@ save_nef_nmr_meta_data
       _nef_program_script.program_name
       _nef_program_script.script_name
       _nef_program_script.script
+      _nef_program_script.Entry_ID
 
-     CcpNmr   exportProject   .    
+     CcpNmr   exportProject   .   NEED_ACC_NO    
 
    stop_
 
@@ -34,12 +35,13 @@ save_nef_molecular_system
       _nef_sequence.linking
       _nef_sequence.residue_variant
       _nef_sequence.cis_peptide
+      _nef_sequence.Entry_ID
 
-     1   A   1   MET   start    .   .    
-     2   A   2   LYS   middle   .   .    
-     3   A   3   ILE   middle   .   .    
-     4   A   4   ILE   middle   .   .    
-     5   A   5   SER   end      .   .    
+     1   A   1   MET   start    .   .   NEED_ACC_NO    
+     2   A   2   LYS   middle   .   .   NEED_ACC_NO    
+     3   A   3   ILE   middle   .   .   NEED_ACC_NO    
+     4   A   4   ILE   middle   .   .   NEED_ACC_NO    
+     5   A   5   SER   end      .   .   NEED_ACC_NO    
 
    stop_
 
@@ -58,67 +60,68 @@ save_nef_chemical_shift_list_cs1
       _nef_chemical_shift.value_uncertainty
       _nef_chemical_shift.element
       _nef_chemical_shift.isotope_number
+      _nef_chemical_shift.Entry_ID
 
-     A   1   MET   C      170.978        0                 C   13    
-     A   1   MET   CA     55.193         0                 C   13    
-     A   1   MET   CB     34.019         0                 C   13    
-     A   1   MET   CG     31.136         0                 C   13    
-     A   1   MET   HA     3.823          0                 H   1     
-     A   1   MET   HBx    1.956          0                 H   1     
-     A   1   MET   HBy    1.976          0                 H   1     
-     A   1   MET   HGx    2.151          0                 H   1     
-     A   1   MET   HGy    2.036          0                 H   1     
-     A   2   LYS   C      174.608        0                 C   13    
-     A   2   LYS   CA     54.206         0                 C   13    
-     A   2   LYS   CB     35.916         0                 C   13    
-     A   2   LYS   CD     29.373         0                 C   13    
-     A   2   LYS   CE     42.086         0                 C   13    
-     A   2   LYS   CG     24.011         0                 C   13    
-     A   2   LYS   H      8.56           0                 H   1     
-     A   2   LYS   HA     4.62           0                 H   1     
-     A   2   LYS   HBx    1.494          0                 H   1     
-     A   2   LYS   HBy    1.329          0                 H   1     
-     A   2   LYS   HDx    1.604          0                 H   1     
-     A   2   LYS   HDy    1.651          0                 H   1     
-     A   2   LYS   HEx    2.909          0                 H   1     
-     A   2   LYS   HGx    1.384          0                 H   1     
-     A   2   LYS   HGy    1.223          0                 H   1     
-     A   2   LYS   N      122.783        0                 N   15    
-     A   3   ILE   C      176.569        0                 C   13    
-     A   3   ILE   CA     62.565         0                 C   13    
-     A   3   ILE   CB     38.792         0                 C   13    
-     A   3   ILE   CD1    14.332         0                 C   13    
-     A   3   ILE   CG1    27.255         0                 C   13    
-     A   3   ILE   CG2    17.2           0                 C   13    
-     A   3   ILE   H      8.376307844    0.0001791922224   H   1     
-     A   3   ILE   HA     3.619032945    0                 H   1     
-     A   3   ILE   HB     1.486          0                 H   1     
-     A   3   ILE   HD1%   0.7444814145   0                 H   1     
-     A   3   ILE   HG1x   0.781          0                 H   1     
-     A   3   ILE   HG1y   0.06           0                 H   1     
-     A   3   ILE   HG2%   0.595          0                 H   1     
-     A   3   ILE   N      119.9906405    0.00327219903     N   15    
-     A   4   ILE   C      176.194        0                 C   13    
-     A   4   ILE   CA     60.586         0                 C   13    
-     A   4   ILE   CB     37.466         0                 C   13    
-     A   4   ILE   CD1    10.304         0                 C   13    
-     A   4   ILE   CG1    26.368         0                 C   13    
-     A   4   ILE   CG2    16.57          0                 C   13    
-     A   4   ILE   H      9.159          0                 H   1     
-     A   4   ILE   HA     4.135          0                 H   1     
-     A   4   ILE   HB     1.613          0                 H   1     
-     A   4   ILE   HD1%   0.64           0                 H   1     
-     A   4   ILE   HG1x   1.164          0                 H   1     
-     A   4   ILE   HG1y   1.025          0                 H   1     
-     A   4   ILE   HG2%   0.802          0                 H   1     
-     A   4   ILE   N      127.239        0                 N   15    
-     A   5   SER   C      171.58         0                 C   13    
-     A   5   SER   CA     57.655         0                 C   13    
-     A   5   SER   CB     65.178         0                 C   13    
-     A   5   SER   H      7.482          0                 H   1     
-     A   5   SER   HA     4.545          0                 H   1     
-     A   5   SER   HB%    3.784          0                 H   1     
-     A   5   SER   N      112.465        0                 N   15    
+     A   1   MET   C      170.978        0                 C   13   NEED_ACC_NO    
+     A   1   MET   CA     55.193         0                 C   13   NEED_ACC_NO    
+     A   1   MET   CB     34.019         0                 C   13   NEED_ACC_NO    
+     A   1   MET   CG     31.136         0                 C   13   NEED_ACC_NO    
+     A   1   MET   HA     3.823          0                 H   1    NEED_ACC_NO    
+     A   1   MET   HBx    1.956          0                 H   1    NEED_ACC_NO    
+     A   1   MET   HBy    1.976          0                 H   1    NEED_ACC_NO    
+     A   1   MET   HGx    2.151          0                 H   1    NEED_ACC_NO    
+     A   1   MET   HGy    2.036          0                 H   1    NEED_ACC_NO    
+     A   2   LYS   C      174.608        0                 C   13   NEED_ACC_NO    
+     A   2   LYS   CA     54.206         0                 C   13   NEED_ACC_NO    
+     A   2   LYS   CB     35.916         0                 C   13   NEED_ACC_NO    
+     A   2   LYS   CD     29.373         0                 C   13   NEED_ACC_NO    
+     A   2   LYS   CE     42.086         0                 C   13   NEED_ACC_NO    
+     A   2   LYS   CG     24.011         0                 C   13   NEED_ACC_NO    
+     A   2   LYS   H      8.56           0                 H   1    NEED_ACC_NO    
+     A   2   LYS   HA     4.62           0                 H   1    NEED_ACC_NO    
+     A   2   LYS   HBx    1.494          0                 H   1    NEED_ACC_NO    
+     A   2   LYS   HBy    1.329          0                 H   1    NEED_ACC_NO    
+     A   2   LYS   HDx    1.604          0                 H   1    NEED_ACC_NO    
+     A   2   LYS   HDy    1.651          0                 H   1    NEED_ACC_NO    
+     A   2   LYS   HEx    2.909          0                 H   1    NEED_ACC_NO    
+     A   2   LYS   HGx    1.384          0                 H   1    NEED_ACC_NO    
+     A   2   LYS   HGy    1.223          0                 H   1    NEED_ACC_NO    
+     A   2   LYS   N      122.783        0                 N   15   NEED_ACC_NO    
+     A   3   ILE   C      176.569        0                 C   13   NEED_ACC_NO    
+     A   3   ILE   CA     62.565         0                 C   13   NEED_ACC_NO    
+     A   3   ILE   CB     38.792         0                 C   13   NEED_ACC_NO    
+     A   3   ILE   CD1    14.332         0                 C   13   NEED_ACC_NO    
+     A   3   ILE   CG1    27.255         0                 C   13   NEED_ACC_NO    
+     A   3   ILE   CG2    17.2           0                 C   13   NEED_ACC_NO    
+     A   3   ILE   H      8.376307844    0.0001791922224   H   1    NEED_ACC_NO    
+     A   3   ILE   HA     3.619032945    0                 H   1    NEED_ACC_NO    
+     A   3   ILE   HB     1.486          0                 H   1    NEED_ACC_NO    
+     A   3   ILE   HD1%   0.7444814145   0                 H   1    NEED_ACC_NO    
+     A   3   ILE   HG1x   0.781          0                 H   1    NEED_ACC_NO    
+     A   3   ILE   HG1y   0.06           0                 H   1    NEED_ACC_NO    
+     A   3   ILE   HG2%   0.595          0                 H   1    NEED_ACC_NO    
+     A   3   ILE   N      119.9906405    0.00327219903     N   15   NEED_ACC_NO    
+     A   4   ILE   C      176.194        0                 C   13   NEED_ACC_NO    
+     A   4   ILE   CA     60.586         0                 C   13   NEED_ACC_NO    
+     A   4   ILE   CB     37.466         0                 C   13   NEED_ACC_NO    
+     A   4   ILE   CD1    10.304         0                 C   13   NEED_ACC_NO    
+     A   4   ILE   CG1    26.368         0                 C   13   NEED_ACC_NO    
+     A   4   ILE   CG2    16.57          0                 C   13   NEED_ACC_NO    
+     A   4   ILE   H      9.159          0                 H   1    NEED_ACC_NO    
+     A   4   ILE   HA     4.135          0                 H   1    NEED_ACC_NO    
+     A   4   ILE   HB     1.613          0                 H   1    NEED_ACC_NO    
+     A   4   ILE   HD1%   0.64           0                 H   1    NEED_ACC_NO    
+     A   4   ILE   HG1x   1.164          0                 H   1    NEED_ACC_NO    
+     A   4   ILE   HG1y   1.025          0                 H   1    NEED_ACC_NO    
+     A   4   ILE   HG2%   0.802          0                 H   1    NEED_ACC_NO    
+     A   4   ILE   N      127.239        0                 N   15   NEED_ACC_NO    
+     A   5   SER   C      171.58         0                 C   13   NEED_ACC_NO    
+     A   5   SER   CA     57.655         0                 C   13   NEED_ACC_NO    
+     A   5   SER   CB     65.178         0                 C   13   NEED_ACC_NO    
+     A   5   SER   H      7.482          0                 H   1    NEED_ACC_NO    
+     A   5   SER   HA     4.545          0                 H   1    NEED_ACC_NO    
+     A   5   SER   HB%    3.784          0                 H   1    NEED_ACC_NO    
+     A   5   SER   N      112.465        0                 N   15   NEED_ACC_NO    
 
    stop_
 
@@ -151,62 +154,63 @@ save_nef_distance_restraint_list_dis1
       _nef_distance_restraint.upper_linear_limit
       _nef_distance_restraint.ccpn_figure_of_merit
       _nef_distance_restraint.ccpn_comment
+      _nef_distance_restraint.Entry_ID
 
-     1    55    .   A   1   MET   HA     A   1   MET   HGx    1   4     .   .   1.8   5     .   .   .    
-     2    56    .   A   1   MET   HA     A   1   MET   HGy    1   4     .   .   1.8   5     .   .   .    
-     3    57    .   A   1   MET   HA     A   2   LYS   H      1   3     .   .   1.8   3.5   .   .   .    
-     4    61    .   A   1   MET   HGx    A   2   LYS   H      1   4     .   .   1.8   6     .   .   .    
-     5    66    .   A   2   LYS   H      A   2   LYS   HA     1   4     .   .   1.8   5     .   .   .    
-     6    68    .   A   2   LYS   HA     A   3   ILE   H      1   2.5   .   .   1.8   2.9   .   .   .    
-     7    69    .   A   2   LYS   HBx    A   2   LYS   HDx    1   4     .   .   1.8   7     .   .   .    
-     8    70    .   A   2   LYS   HBx    A   2   LYS   HEx    1   4     .   .   1.8   7     .   .   .    
-     9    71    .   A   2   LYS   HBx    A   3   ILE   H      1   4     .   .   1.8   6     .   .   .    
-     10   73    .   A   2   LYS   HEx    A   2   LYS   HGx    1   4     .   .   1.8   6     .   .   .    
-     11   74    .   A   2   LYS   HEx    A   2   LYS   HGy    1   4     .   .   1.8   6     .   .   .    
-     12   77    .   A   2   LYS   HEx    A   4   ILE   HD1%   1   4     .   .   1.8   7     .   .   .    
-     13   78    .   A   3   ILE   H      A   3   ILE   HA     1   4     .   .   1.8   5     .   .   .    
-     14   79    .   A   3   ILE   H      A   3   ILE   HB     1   3     .   .   1.8   3.5   .   .   .    
-     15   80    .   A   3   ILE   H      A   3   ILE   HG1x   1   4     .   .   1.8   5     .   .   .    
-     16   81    .   A   3   ILE   H      A   3   ILE   HG1y   1   4     .   .   1.8   5     .   .   .    
-     17   82    .   A   3   ILE   H      A   3   ILE   HG2%   1   4     .   .   1.8   6     .   .   .    
-     18   83    .   A   3   ILE   H      A   3   ILE   HD1%   1   4     .   .   1.8   6     .   .   .    
-     19   87    .   A   3   ILE   HA     A   3   ILE   HG1x   1   4     .   .   1.8   5     .   .   .    
-     20   88    .   A   3   ILE   HA     A   3   ILE   HG1y   1   4     .   .   1.8   5     .   .   .    
-     21   89    .   A   3   ILE   HA     A   3   ILE   HG2%   1   4     .   .   1.8   5.6   .   .   .    
-     22   90    .   A   3   ILE   HA     A   3   ILE   HD1%   1   4     .   .   1.8   6     .   .   .    
-     23   91    .   A   3   ILE   HA     A   4   ILE   H      1   3     .   .   1.8   3.5   .   .   .    
-     24   92    .   A   3   ILE   HA     A   4   ILE   HB     1   4     .   .   1.8   5     .   .   .    
-     25   93    .   A   3   ILE   HA     A   5   SER   H      1   4     .   .   1.8   5     .   .   .    
-     26   96    .   A   3   ILE   HB     A   3   ILE   HD1%   1   4     .   .   1.8   6     .   .   .    
-     27   97    .   A   3   ILE   HG1x   A   3   ILE   HG2%   1   4     .   .   1.8   7     .   .   .    
-     28   98    .   A   3   ILE   HG1x   A   4   ILE   H      1   4     .   .   1.8   6     .   .   .    
-     29   99    .   A   3   ILE   HG1x   A   4   ILE   HD1%   1   4     .   .   1.8   7     .   .   .    
-     30   107   .   A   3   ILE   HD1%   A   3   ILE   HG2%   1   4     .   .   1.8   7     .   .   .    
-     31   108   .   A   3   ILE   HG2%   A   4   ILE   H      1   4     .   .   1.8   6     .   .   .    
-     32   109   .   A   3   ILE   HG2%   A   4   ILE   HA     1   4     .   .   1.8   6     .   .   .    
-     33   110   .   A   3   ILE   HG2%   A   4   ILE   HG1x   1   4     .   .   1.8   7     .   .   .    
-     34   111   .   A   3   ILE   HG2%   A   5   SER   H      1   4     .   .   1.8   6     .   .   .    
-     35   124   .   A   4   ILE   H      A   4   ILE   HA     1   4     .   .   1.8   5     .   .   .    
-     36   125   .   A   4   ILE   H      A   4   ILE   HB     1   3     .   .   1.8   3.5   .   .   .    
-     37   126   .   A   4   ILE   H      A   4   ILE   HG1x   1   4     .   .   1.8   5     .   .   .    
-     38   127   .   A   4   ILE   H      A   4   ILE   HG1y   1   4     .   .   1.8   5     .   .   .    
-     39   128   .   A   4   ILE   H      A   4   ILE   HG2%   1   4     .   .   1.8   6     .   .   .    
-     40   129   .   A   4   ILE   H      A   4   ILE   HD1%   1   4     .   .   1.8   6     .   .   .    
-     41   130   .   A   4   ILE   H      A   5   SER   H      1   3     .   .   1.8   3.5   .   .   .    
-     42   134   .   A   4   ILE   HA     A   4   ILE   HG1x   1   4     .   .   1.8   5     .   .   .    
-     43   135   .   A   4   ILE   HA     A   4   ILE   HG1y   1   4     .   .   1.8   5     .   .   .    
-     44   136   .   A   4   ILE   HA     A   4   ILE   HG2%   1   4     .   .   1.8   5.6   .   .   .    
-     45   137   .   A   4   ILE   HA     A   4   ILE   HD1%   1   4     .   .   1.8   6     .   .   .    
-     46   138   .   A   4   ILE   HA     A   5   SER   H      1   4     .   .   1.8   5     .   .   .    
-     47   139   .   A   4   ILE   HB     A   4   ILE   HD1%   1   4     .   .   1.8   6     .   .   .    
-     48   140   .   A   4   ILE   HB     A   5   SER   H      1   4     .   .   1.8   5     .   .   .    
-     49   144   .   A   4   ILE   HG1x   A   4   ILE   HG2%   1   4     .   .   1.8   7     .   .   .    
-     50   145   .   A   4   ILE   HG1x   A   5   SER   H      1   4     .   .   1.8   5     .   .   .    
-     51   146   .   A   4   ILE   HG1y   A   5   SER   H      1   4     .   .   1.8   5     .   .   .    
-     52   153   .   A   4   ILE   HG2%   A   5   SER   H      1   4     .   .   1.8   6     .   .   .    
-     53   154   .   A   4   ILE   HG2%   A   5   SER   HB%    1   4     .   .   1.8   7     .   .   .    
-     54   161   .   A   5   SER   H      A   5   SER   HA     1   3     .   .   1.8   3.5   .   .   .    
-     55   162   .   A   5   SER   H      A   5   SER   HB%    1   4     .   .   1.8   6     .   .   .    
+     1    55    .   A   1   MET   HA     A   1   MET   HGx    1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     2    56    .   A   1   MET   HA     A   1   MET   HGy    1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     3    57    .   A   1   MET   HA     A   2   LYS   H      1   3     .   .   1.8   3.5   .   .   .   NEED_ACC_NO    
+     4    61    .   A   1   MET   HGx    A   2   LYS   H      1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     5    66    .   A   2   LYS   H      A   2   LYS   HA     1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     6    68    .   A   2   LYS   HA     A   3   ILE   H      1   2.5   .   .   1.8   2.9   .   .   .   NEED_ACC_NO    
+     7    69    .   A   2   LYS   HBx    A   2   LYS   HDx    1   4     .   .   1.8   7     .   .   .   NEED_ACC_NO    
+     8    70    .   A   2   LYS   HBx    A   2   LYS   HEx    1   4     .   .   1.8   7     .   .   .   NEED_ACC_NO    
+     9    71    .   A   2   LYS   HBx    A   3   ILE   H      1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     10   73    .   A   2   LYS   HEx    A   2   LYS   HGx    1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     11   74    .   A   2   LYS   HEx    A   2   LYS   HGy    1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     12   77    .   A   2   LYS   HEx    A   4   ILE   HD1%   1   4     .   .   1.8   7     .   .   .   NEED_ACC_NO    
+     13   78    .   A   3   ILE   H      A   3   ILE   HA     1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     14   79    .   A   3   ILE   H      A   3   ILE   HB     1   3     .   .   1.8   3.5   .   .   .   NEED_ACC_NO    
+     15   80    .   A   3   ILE   H      A   3   ILE   HG1x   1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     16   81    .   A   3   ILE   H      A   3   ILE   HG1y   1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     17   82    .   A   3   ILE   H      A   3   ILE   HG2%   1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     18   83    .   A   3   ILE   H      A   3   ILE   HD1%   1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     19   87    .   A   3   ILE   HA     A   3   ILE   HG1x   1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     20   88    .   A   3   ILE   HA     A   3   ILE   HG1y   1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     21   89    .   A   3   ILE   HA     A   3   ILE   HG2%   1   4     .   .   1.8   5.6   .   .   .   NEED_ACC_NO    
+     22   90    .   A   3   ILE   HA     A   3   ILE   HD1%   1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     23   91    .   A   3   ILE   HA     A   4   ILE   H      1   3     .   .   1.8   3.5   .   .   .   NEED_ACC_NO    
+     24   92    .   A   3   ILE   HA     A   4   ILE   HB     1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     25   93    .   A   3   ILE   HA     A   5   SER   H      1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     26   96    .   A   3   ILE   HB     A   3   ILE   HD1%   1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     27   97    .   A   3   ILE   HG1x   A   3   ILE   HG2%   1   4     .   .   1.8   7     .   .   .   NEED_ACC_NO    
+     28   98    .   A   3   ILE   HG1x   A   4   ILE   H      1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     29   99    .   A   3   ILE   HG1x   A   4   ILE   HD1%   1   4     .   .   1.8   7     .   .   .   NEED_ACC_NO    
+     30   107   .   A   3   ILE   HD1%   A   3   ILE   HG2%   1   4     .   .   1.8   7     .   .   .   NEED_ACC_NO    
+     31   108   .   A   3   ILE   HG2%   A   4   ILE   H      1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     32   109   .   A   3   ILE   HG2%   A   4   ILE   HA     1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     33   110   .   A   3   ILE   HG2%   A   4   ILE   HG1x   1   4     .   .   1.8   7     .   .   .   NEED_ACC_NO    
+     34   111   .   A   3   ILE   HG2%   A   5   SER   H      1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     35   124   .   A   4   ILE   H      A   4   ILE   HA     1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     36   125   .   A   4   ILE   H      A   4   ILE   HB     1   3     .   .   1.8   3.5   .   .   .   NEED_ACC_NO    
+     37   126   .   A   4   ILE   H      A   4   ILE   HG1x   1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     38   127   .   A   4   ILE   H      A   4   ILE   HG1y   1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     39   128   .   A   4   ILE   H      A   4   ILE   HG2%   1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     40   129   .   A   4   ILE   H      A   4   ILE   HD1%   1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     41   130   .   A   4   ILE   H      A   5   SER   H      1   3     .   .   1.8   3.5   .   .   .   NEED_ACC_NO    
+     42   134   .   A   4   ILE   HA     A   4   ILE   HG1x   1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     43   135   .   A   4   ILE   HA     A   4   ILE   HG1y   1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     44   136   .   A   4   ILE   HA     A   4   ILE   HG2%   1   4     .   .   1.8   5.6   .   .   .   NEED_ACC_NO    
+     45   137   .   A   4   ILE   HA     A   4   ILE   HD1%   1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     46   138   .   A   4   ILE   HA     A   5   SER   H      1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     47   139   .   A   4   ILE   HB     A   4   ILE   HD1%   1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     48   140   .   A   4   ILE   HB     A   5   SER   H      1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     49   144   .   A   4   ILE   HG1x   A   4   ILE   HG2%   1   4     .   .   1.8   7     .   .   .   NEED_ACC_NO    
+     50   145   .   A   4   ILE   HG1x   A   5   SER   H      1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     51   146   .   A   4   ILE   HG1y   A   5   SER   H      1   4     .   .   1.8   5     .   .   .   NEED_ACC_NO    
+     52   153   .   A   4   ILE   HG2%   A   5   SER   H      1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
+     53   154   .   A   4   ILE   HG2%   A   5   SER   HB%    1   4     .   .   1.8   7     .   .   .   NEED_ACC_NO    
+     54   161   .   A   5   SER   H      A   5   SER   HA     1   3     .   .   1.8   3.5   .   .   .   NEED_ACC_NO    
+     55   162   .   A   5   SER   H      A   5   SER   HB%    1   4     .   .   1.8   6     .   .   .   NEED_ACC_NO    
 
    stop_
 
@@ -248,10 +252,11 @@ save_nef_dihedral_restraint_list_dih1
       _nef_dihedral_restraint.name
       _nef_dihedral_restraint.ccpn_figure_of_merit
       _nef_dihedral_restraint.ccpn_comment
+      _nef_dihedral_restraint.Entry_ID
 
-     1   1   .   A   2   LYS   C   A   3   ILE   N   A   3   ILE   CA   A   3   ILE   C   1   -40    0   .   -170   90    .   PHI   .   .    
-     2   2   .   A   3   ILE   C   A   4   ILE   N   A   4   ILE   CA   A   4   ILE   C   1   -120   0   .   -155   -85   .   PHI   .   .    
-     3   3   .   A   4   ILE   C   A   5   SER   N   A   5   SER   CA   A   5   SER   C   1   -35    0   .   180    110   .   PHI   .   .    
+     1   1   .   A   2   LYS   C   A   3   ILE   N   A   3   ILE   CA   A   3   ILE   C   1   -40    0   .   -170   90    .   PHI   .   .   NEED_ACC_NO    
+     2   2   .   A   3   ILE   C   A   4   ILE   N   A   4   ILE   CA   A   4   ILE   C   1   -120   0   .   -155   -85   .   PHI   .   .   NEED_ACC_NO    
+     3   3   .   A   4   ILE   C   A   5   SER   N   A   5   SER   CA   A   5   SER   C   1   -35    0   .   180    110   .   PHI   .   .   NEED_ACC_NO    
 
    stop_
 
@@ -276,10 +281,11 @@ save_nef_nmr_spectrum_173
       _nef_spectrum_dimension.absolute_peak_positions
       _nef_spectrum_dimension.is_acquisition
       _nef_spectrum_dimension.ccpn_axis_code
+      _nef_spectrum_dimension.Entry_ID
 
-     1   ppm   1H    500.13    19.99480135   14.89740068   circular   true   .   H     
-     2   ppm   1H    500.13    10.29280387   10.04640194   circular   true   .   H1    
-     3   ppm   13C   125.757   31.8175529    47.20877645   circular   true   .   C     
+     1   ppm   1H    500.13    19.99480135   14.89740068   circular   true   .   H    NEED_ACC_NO    
+     2   ppm   1H    500.13    10.29280387   10.04640194   circular   true   .   H1   NEED_ACC_NO    
+     3   ppm   13C   125.757   31.8175529    47.20877645   circular   true   .   C    NEED_ACC_NO    
 
    stop_
 
@@ -301,10 +307,11 @@ save_nef_nmr_spectrum_173
       _ccpn_spectrum_dimension.sine_window_shift
       _ccpn_spectrum_dimension.dimension_is_complex
       _ccpn_spectrum_dimension.dimension_block_size
+      _ccpn_spectrum_dimension.Entry_ID
 
-     1   2048   1025   2048   0   0.03            -5.097400676    14.89740068   Shift   .   .   .   .   .   .   false   128    
-     2   256    129    256    0   0.04020626512   -0.2464019355   10.04640194   Shift   .   .   .   .   .   .   false   8      
-     3   64     33     64     0   0.4971492641    15.39122355     47.20877645   Shift   .   .   .   .   .   .   false   4      
+     1   2048   1025   2048   0   0.03            -5.097400676    14.89740068   Shift   .   .   .   .   .   .   false   128   NEED_ACC_NO    
+     2   256    129    256    0   0.04020626512   -0.2464019355   10.04640194   Shift   .   .   .   .   .   .   false   8     NEED_ACC_NO    
+     3   64     33     64     0   0.4971492641    15.39122355     47.20877645   Shift   .   .   .   .   .   .   false   4     NEED_ACC_NO    
 
    stop_
 
@@ -313,9 +320,10 @@ save_nef_nmr_spectrum_173
       _nef_spectrum_dimension_transfer.dimension_2
       _nef_spectrum_dimension_transfer.transfer_type
       _nef_spectrum_dimension_transfer.is_indirect
+      _nef_spectrum_dimension_transfer.Entry_ID
 
-     1   2   through-space   false    
-     1   3   onebond         false    
+     1   2   through-space   false   NEED_ACC_NO    
+     1   3   onebond         false   NEED_ACC_NO    
 
    stop_
 
@@ -348,16 +356,17 @@ save_nef_nmr_spectrum_173
       _nef_peak.ccpn_linked_integral
       _nef_peak.ccpn_annotation
       _nef_peak.ccpn_comment
+      _nef_peak.Entry_ID
 
-     1   1    .   .   3006908.25   .   0.6051161072   .   3.751558504    .   27.8381744    .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .    
-     2   2    .   .   5426135.5    .   3.638903211    .   0.7777874324   .   34.06819909   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .    
-     3   3    .   .   3848352.75   .   4.123148558    .   1.643680685    .   34.35938983   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .    
-     4   4    .   .   1354009      .   3.345314971    .   1.765493544    .   34.2262498    .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .    
-     5   5    .   .   1705175      .   3.346022043    .   1.564863878    .   34.24871538   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .    
-     6   7    .   .   2826383.5    .   3.343232688    .   0.902724177    .   34.25168762   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .    
-     7   8    .   .   4542511.5    .   3.345721806    .   0.7711593339   .   34.24103851   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .    
-     8   9    .   .   2955403.25   .   1.961244944    .   4.608234399    .   33.35644258   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .    
-     9   10   .   .   2386816.75   .   1.97335527     .   3.467766587    .   32.47454436   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .    
+     1   1    .   .   3006908.25   .   0.6051161072   .   3.751558504    .   27.8381744    .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .   NEED_ACC_NO    
+     2   2    .   .   5426135.5    .   3.638903211    .   0.7777874324   .   34.06819909   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .   NEED_ACC_NO    
+     3   3    .   .   3848352.75   .   4.123148558    .   1.643680685    .   34.35938983   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .   NEED_ACC_NO    
+     4   4    .   .   1354009      .   3.345314971    .   1.765493544    .   34.2262498    .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .   NEED_ACC_NO    
+     5   5    .   .   1705175      .   3.346022043    .   1.564863878    .   34.24871538   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .   NEED_ACC_NO    
+     6   7    .   .   2826383.5    .   3.343232688    .   0.902724177    .   34.25168762   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .   NEED_ACC_NO    
+     7   8    .   .   4542511.5    .   3.345721806    .   0.7711593339   .   34.24103851   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .   NEED_ACC_NO    
+     8   9    .   .   2955403.25   .   1.961244944    .   4.608234399    .   33.35644258   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .   NEED_ACC_NO    
+     9   10   .   .   2386816.75   .   1.97335527     .   3.467766587    .   32.47454436   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .   NEED_ACC_NO    
 
    stop_
 
@@ -382,10 +391,11 @@ save_nef_nmr_spectrum_182
       _nef_spectrum_dimension.absolute_peak_positions
       _nef_spectrum_dimension.is_acquisition
       _nef_spectrum_dimension.ccpn_axis_code
+      _nef_spectrum_dimension.Entry_ID
 
-     1   ppm   1H    500.13   4.998700338   9.898700338   circular   true   .   H     
-     2   ppm   1H    500.13   10.9861536    10.3930768    circular   true   .   H1    
-     3   ppm   15N   50.666   24.00290135   128.0014507   circular   true   .   N     
+     1   ppm   1H    500.13   4.998700338   9.898700338   circular   true   .   H    NEED_ACC_NO    
+     2   ppm   1H    500.13   10.9861536    10.3930768    circular   true   .   H1   NEED_ACC_NO    
+     3   ppm   15N   50.666   24.00290135   128.0014507   circular   true   .   N    NEED_ACC_NO    
 
    stop_
 
@@ -407,10 +417,11 @@ save_nef_nmr_spectrum_182
       _ccpn_spectrum_dimension.sine_window_shift
       _ccpn_spectrum_dimension.dimension_is_complex
       _ccpn_spectrum_dimension.dimension_block_size
+      _ccpn_spectrum_dimension.Entry_ID
 
-     1   512   513   512   0   0.03           4.9           9.898700338   Shift   .   .   .   .   .   .   false   128    
-     2   256   129   256   0   0.0429146625   -0.5930768    10.3930768    Shift   .   .   .   .   .   .   false   8      
-     3   64    33    64    0   0.4            103.9985493   128.0014507   Shift   .   .   .   .   .   .   false   4      
+     1   512   513   512   0   0.03           4.9           9.898700338   Shift   .   .   .   .   .   .   false   128   NEED_ACC_NO    
+     2   256   129   256   0   0.0429146625   -0.5930768    10.3930768    Shift   .   .   .   .   .   .   false   8     NEED_ACC_NO    
+     3   64    33    64    0   0.4            103.9985493   128.0014507   Shift   .   .   .   .   .   .   false   4     NEED_ACC_NO    
 
    stop_
 
@@ -419,9 +430,10 @@ save_nef_nmr_spectrum_182
       _nef_spectrum_dimension_transfer.dimension_2
       _nef_spectrum_dimension_transfer.transfer_type
       _nef_spectrum_dimension_transfer.is_indirect
+      _nef_spectrum_dimension_transfer.Entry_ID
 
-     1   2   through-space   false    
-     1   3   onebond         false    
+     1   2   through-space   false   NEED_ACC_NO    
+     1   3   onebond         false   NEED_ACC_NO    
 
    stop_
 
@@ -454,11 +466,12 @@ save_nef_nmr_spectrum_182
       _nef_peak.ccpn_linked_integral
       _nef_peak.ccpn_annotation
       _nef_peak.ccpn_comment
+      _nef_peak.Entry_ID
 
-     1   1   .   .   2137900.75   .   8.376128652   .   0.7444814145   .   119.9939127   .   A   3   ILE   H   A   3   ILE   HD1%   A   3   ILE   N   1   .   .   .    
-     2   2   .   .   2309688.75   .   8.375167917   .   0.4802299282   .   119.9837713   .   .   .   .     .   .   .   .     .      .   .   .     .   1   .   .   .    
-     3   3   .   .   2428724.75   .   8.376162972   .   0.2314502766   .   119.9861519   .   .   .   .     .   .   .   .     .      .   .   .     .   1   .   .   .    
-     4   4   .   .   2094722.25   .   8.376487036   .   3.619032945    .   119.9873683   .   A   3   ILE   H   A   3   ILE   HA     A   3   ILE   N   1   .   .   .    
+     1   1   .   .   2137900.75   .   8.376128652   .   0.7444814145   .   119.9939127   .   A   3   ILE   H   A   3   ILE   HD1%   A   3   ILE   N   1   .   .   .   NEED_ACC_NO    
+     2   2   .   .   2309688.75   .   8.375167917   .   0.4802299282   .   119.9837713   .   .   .   .     .   .   .   .     .      .   .   .     .   1   .   .   .   NEED_ACC_NO    
+     3   3   .   .   2428724.75   .   8.376162972   .   0.2314502766   .   119.9861519   .   .   .   .     .   .   .   .     .      .   .   .     .   1   .   .   .   NEED_ACC_NO    
+     4   4   .   .   2094722.25   .   8.376487036   .   3.619032945    .   119.9873683   .   A   3   ILE   H   A   3   ILE   HA     A   3   ILE   N   1   .   .   .   NEED_ACC_NO    
 
    stop_
 

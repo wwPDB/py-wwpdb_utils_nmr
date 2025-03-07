@@ -290,8 +290,8 @@ class CifToNmrStar:
             ofh.write(schema.version)
         self.__lfh.write(f"version: {schema.version}\n")
 
-    def convert(self, cifPath: Optional[str] = None, strPath: Optional[str] = None, datablockName: Optional[str] = None, maxRepeat: int = 1
-                ) -> bool:
+    def convert(self, cifPath: Optional[str] = None, strPath: Optional[str] = None,
+                datablockName: Optional[str] = None, originalFileName: Optional[str] = None, maxRepeat: int = 1) -> bool:
         """ Convert CIF formatted NMR data file to normalized NMR-STAR file.
         """
 
@@ -311,11 +311,18 @@ class CifToNmrStar:
 
                 with open(cifPath, 'r', encoding='utf-8') as ifh, \
                         open(cifPath + '~', 'w', encoding='utf-8') as ofh:
-                    ofh.write('data_' + os.path.basename(cifPath) + '\n\n')
+                    name = datablockName
+                    if datablockName is None:
+                        name = originalFileName
+                    if datablockName is None:
+                        name = os.path.basename(cifPath)
+                    ofh.write('data_' + name + '\n\n')
                     for line in ifh:
                         ofh.write(line)
 
-                return self.convert(cifPath + '~', strPath, datablockName, maxRepeat + 1)
+                    os.replace(cifPath + '~', cifPath)
+
+                return self.convert(cifPath, strPath, datablockName, originalFileName, maxRepeat - 1)
 
             dup_block_name_list = []
             if len(block_name_list) > 1:
@@ -626,7 +633,7 @@ class CifToNmrStar:
                         ofh.write(line)
 
             if changed and maxRepeat > 0:
-                return self.convert(_cifPath, strPath, datablockName, maxRepeat=maxRepeat - 1)
+                return self.convert(_cifPath, strPath, datablockName, originalFileName, maxRepeat - 1)
 
             try:
                 os.remove(_cifPath)
@@ -653,6 +660,13 @@ class CifToNmrStar:
 
         if strData is None:
             return modified
+
+        try:
+            sf = strData.frame_list[0]
+            if sf.category.startswith('nef'):
+                return False
+        except (IndexError, AttributeError):
+            pass
 
         entryId = entryId.strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 
@@ -781,6 +795,13 @@ class CifToNmrStar:
 
         if strData is None:
             return
+
+        try:
+            sf = strData.frame_list[0]
+            if sf.category.startswith('nef'):
+                return
+        except (IndexError, AttributeError):
+            pass
 
         if isinstance(strData, pynmrstar.Saveframe):
 

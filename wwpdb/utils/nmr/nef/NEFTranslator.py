@@ -6496,7 +6496,10 @@ class NEFTranslator:
             atom_id = re.sub(r'\+\+', '+', atom_id)
 
         if '#' in atom_id:
-            atom_id = atom_id.replace('#', '')
+            atom_id = atom_id.replace('#', '%')
+
+        if atom_id.endswith('%%'):
+            atom_id = re.sub('%%', '%', atom_id)
 
         if atom_id[0] in ('1', '2', '3'):
             atom_list, ambiguity_code, details = self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id, coord_atom_site, methyl_only)
@@ -6608,7 +6611,10 @@ class NEFTranslator:
         ambiguity_code = details = None
 
         if '#' in atom_id:
-            atom_id = atom_id.replace('#', '')
+            atom_id = atom_id.replace('#', '%')
+
+        if atom_id.endswith('%%'):
+            atom_id = re.sub('%%', '%', atom_id)
 
         if atom_id == 'HN' or atom_id.endswith('%') or atom_id.endswith('*'):
             atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, atom_id, details, coord_atom_site, methyl_only)
@@ -7013,7 +7019,10 @@ class NEFTranslator:
                 atom_id = re.sub(r'\+\+', '+', atom_id)
 
             if '#' in atom_id:
-                atom_id = atom_id.replace('#', '')
+                atom_id = atom_id.replace('#', '%')
+
+            if atom_id.endswith('%%'):
+                atom_id = re.sub('%%', '%', atom_id)
 
             if atom_id[-1] in ('%', '*') and len(atom_id) > 2 and atom_id[-2] != "'" and self.__csStat.getTypeOfCompId(comp_id)[1]:
                 atom_id = translateToStdAtomName(atom_id[:-1], refCompId=comp_id, ccU=self.__ccU) + atom_id[-1]
@@ -7242,7 +7251,10 @@ class NEFTranslator:
         try:
 
             if '#' in atom_id:
-                atom_id = atom_id.replace('#', '')
+                atom_id = atom_id.replace('#', '%')
+
+            if atom_id.endswith('%%'):
+                atom_id = atom_id.replace('%%', '%')
 
             if atom_id == 'HN' or atom_id.endswith('%') or atom_id.endswith('*'):
                 atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)

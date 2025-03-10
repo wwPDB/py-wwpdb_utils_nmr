@@ -2518,6 +2518,7 @@ class NEFTranslator:
                                 for c in _alt_chain_id_list:
                                     nmr_ps.append({'chain_id': c, 'seq_id': [], 'comp_id': []})
                                 seq = set()
+
                                 valid = True
                                 for idx, row in enumerate(pre_seq_data):
                                     if row[0] in emptyValue or row[1] in emptyValue or row[2] in emptyValue:
@@ -2548,6 +2549,7 @@ class NEFTranslator:
                                     except ValueError:
                                         valid = False
                                         break
+
                                 if valid:
                                     sorted_seq = sorted(seq, key=itemgetter(0, 1))
                                     for row in sorted_seq:
@@ -2562,6 +2564,7 @@ class NEFTranslator:
                                         if ca['matched'] == 0 or ca['conflict'] > 0:
                                             valid = False
                                             break
+
                                     if valid:
                                         chain_id_col = _loop.tags.index('Entity_assembly_ID')
                                         alt_chain_id_col = _loop.tags.index('Auth_asym_ID')
@@ -2659,6 +2662,7 @@ class NEFTranslator:
                                             if ca['matched'] == 0 or ca['conflict'] > 0:
                                                 valid = False
                                                 break
+
                                         if valid:
                                             rev_seq = {}
                                             for ca in chain_assign:
@@ -2949,6 +2953,7 @@ class NEFTranslator:
                             alt_seq_id_col = loop.tags.index('Auth_seq_ID')
                             for r in loop.data:
                                 r[seq_id_col] = r[alt_seq_id_col]
+
                 valid = True
                 if 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags:
                     pre_tags = ['Comp_index_ID', 'Comp_ID', 'Auth_seq_ID', 'Auth_comp_ID']
@@ -2965,6 +2970,7 @@ class NEFTranslator:
                             loop.data[idx][auth_seq_id_col] = None
                             loop.data[idx][auth_comp_id_col] = None
                         valid = False
+
                 if valid:
                     pre_tag = ['Entity_assembly_ID']
                     pre_chain_data = loop.get_tag(pre_tag)
@@ -2990,6 +2996,7 @@ class NEFTranslator:
                             except ValueError:
                                 valid = False
                                 break
+
                         if valid:
                             sorted_seq = sorted(seq, key=itemgetter(0, 1))
                             for row in sorted_seq:
@@ -3003,6 +3010,7 @@ class NEFTranslator:
                                 if ca['matched'] == 0 or ca['conflict'] > 0:
                                     valid = False
                                     break
+
                             if valid:
                                 rev_seq = {}
                                 ref_chain_id = test_chain_id = None
@@ -3335,7 +3343,7 @@ class NEFTranslator:
                                 except ValueError:
                                     continue
 
-                            if offset is not None and offset != 0:
+                            if offset is not None:
                                 return self.get_star_seq(star_data, lp_category, alt_seq_id, comp_id, chain_id,
                                                          alt_seq_id, offset, alt_chain_id, allow_empty, allow_gap, coord_assembly_checker)
 

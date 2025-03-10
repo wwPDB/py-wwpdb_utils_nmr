@@ -7942,7 +7942,7 @@ class NmrDpUtility:
 
                         cs = _cs
 
-                    input_source.setItemValue('file_name', os.path.basename(cs))
+                    input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', os.path.basename(cs)))
                     input_source.setItemValue('file_type', file_type)
                     input_source.setItemValue('content_type', 'nmr-chemical-shifts')
                     input_source.setItemValue('ignore_error', False)
@@ -7985,7 +7985,7 @@ class NmrDpUtility:
 
                         cs['file_name'] = _cs
 
-                    input_source.setItemValue('file_name', os.path.basename(cs['file_name']))
+                    input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', os.path.basename(cs['file_name'])))
                     input_source.setItemValue('file_type', file_type)
                     input_source.setItemValue('content_type', 'nmr-chemical-shifts')
                     if 'original_file_name' in cs:
@@ -8017,7 +8017,7 @@ class NmrDpUtility:
 
                             mr = _mr
 
-                        input_source.setItemValue('file_name', os.path.basename(mr))
+                        input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', os.path.basename(mr)))
                         input_source.setItemValue('file_type', file_type)
                         input_source.setItemValue('content_type', 'nmr-restraints')
                         input_source.setItemValue('ignore_error', False)
@@ -8036,7 +8036,7 @@ class NmrDpUtility:
 
                             mr['file_name'] = _mr
 
-                        input_source.setItemValue('file_name', os.path.basename(mr['file_name']))
+                        input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', os.path.basename(mr['file_name'])))
                         input_source.setItemValue('file_type', file_type)
                         input_source.setItemValue('content_type', 'nmr-restraints')
                         if 'original_file_name' in mr:
@@ -16104,7 +16104,7 @@ class NmrDpUtility:
                         file_type = 'nmr-star'
                         file_name = os.path.basename(mrPath)
 
-                        input_source.setItemValue('file_name', file_name)
+                        input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', file_name))
                         input_source.setItemValue('file_type', file_type)
                         input_source.setItemValue('content_type', 'nmr-restraints')
 
@@ -17098,7 +17098,7 @@ class NmrDpUtility:
                             file_type = 'nmr-star'
                             file_name = os.path.basename(mrPath)
 
-                            input_source.setItemValue('file_name', file_name)
+                            input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', file_name))
                             input_source.setItemValue('file_type', file_type)
                             input_source.setItemValue('content_type', 'nmr-restraints')
                             input_source.setItemValue('original_file_name', os.path.basename(src_basename) + '.mr')

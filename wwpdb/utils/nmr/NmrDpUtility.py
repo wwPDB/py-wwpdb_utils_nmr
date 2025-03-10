@@ -57220,20 +57220,20 @@ class NmrDpUtility:
         self.__c2S.set_entry_id(master_entry, self.__entry_id)
 
         self.__c2S.normalize_str(master_entry)
-
-        if self.__remediation_mode and self.__internal_mode:
-
-            cs_file_path_list = 'chem_shift_file_path_list'
-
-            if isinstance(self.__inputParamDict[cs_file_path_list][0], str):
-                dir_path = os.path.dirname(self.__inputParamDict[cs_file_path_list][0])
-            else:
-                dir_path = os.path.dirname(self.__inputParamDict[cs_file_path_list][0]['file_name'])
-
-            dst_cs_path = os.path.join(dir_path, input_source_dic['file_name'])
-
-            master_entry.write_to_file(dst_cs_path, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
-
+        # """
+        # if self.__remediation_mode and self.__internal_mode:
+        #
+        #     cs_file_path_list = 'chem_shift_file_path_list'
+        #
+        #     if isinstance(self.__inputParamDict[cs_file_path_list][0], str):
+        #         dir_path = os.path.dirname(self.__inputParamDict[cs_file_path_list][0])
+        #     else:
+        #         dir_path = os.path.dirname(self.__inputParamDict[cs_file_path_list][0]['file_name'])
+        #
+        #     dst_cs_path = os.path.join(dir_path, input_source_dic['file_name'])
+        #
+        #     master_entry.write_to_file(dst_cs_path, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
+        # """
         if self.__bmrb_only and self.__internal_mode and self.__bmrb_id is not None:
             master_entry.entry_id = self.__bmrb_id
         else:

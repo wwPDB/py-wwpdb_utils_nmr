@@ -731,7 +731,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
             try:
 
-                index = int(str(ctx.Integer(0)))
+                index = int(str(ctx.Integer()))
                 x_ppm = self.numberSelection[0]
                 y_ppm = self.numberSelection[1]
                 height = self.originalNumberSelection[2]

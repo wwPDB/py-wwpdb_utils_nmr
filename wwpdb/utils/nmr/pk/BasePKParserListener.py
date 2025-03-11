@@ -4241,6 +4241,7 @@ class BasePKParserListener():
             for elem in PEAK_HALF_SPIN_NUCLEUS:
                 if len(elem) == 1 and ligAtomId is None:
                     if elem in term:
+
                         # handle ambiguous assigned peak '(14Trp/11Trp)Hh2' seen in 6r28/bmr34380/work/data/D_1292101294_nmr-peaks-upload_P1.dat.V1
                         if idx > 0 and not resNameLike[idx] and any(resIdLike[_idx] and resNameLike[_idx] and not atomNameLike[_idx]
                                                                     for _idx in range(idx)):
@@ -4272,8 +4273,9 @@ class BasePKParserListener():
                                         break
                             if atomNameLike[idx]:
                                 break
+
                         # prevent to split HH2 -> res_name:'HIS' atom_name:'H2'
-                        if idx > 0 and resNameLike[idx] and resNameSpan[idx][1] - resNameSpan[idx][0] == 1 and resNameSpan[idx][1] == term.rindex(elem)\
+                        if resNameLike[idx] and resNameSpan[idx][1] - resNameSpan[idx][0] == 1 and resNameSpan[idx][1] == term.rindex(elem)\
                            and term[resNameSpan[idx][0]] in PEAK_HALF_SPIN_NUCLEUS:
                             _index = term.index(elem)
                             _atomId = term[_index:len(term)]
@@ -4282,6 +4284,7 @@ class BasePKParserListener():
                                 if details is None:
                                     atomNameLike[idx] = True
                                     atomNameSpan[idx] = (_index, len(term))
+                                    resNameLike[idx] = False
                                     break
                             if atomNameLike[idx]:
                                 break

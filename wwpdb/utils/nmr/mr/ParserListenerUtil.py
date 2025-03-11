@@ -8536,7 +8536,7 @@ def getPkCharRow(pkSubtype: str, indexId: int, listId: int, entryId: str, dstFun
     return row
 
 
-def getPkChemShiftRow(pkSubtype: str, indexId: int, listId: int, entryId: str, dstFunc: dict, dimId: int,
+def getPkChemShiftRow(pkSubtype: str, indexId: int, listId: int, entryId: str, dstFunc: dict, setId: Optional[int], dimId: int,
                       authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], offsetHolder: dict,
                       atom: dict, asis: bool, ambig_code: Optional[int], details: Optional[str] = None) -> Optional[List[Any]]:
     """ Return row data for a _Assigned_peak_chem_shift loop.
@@ -8558,7 +8558,7 @@ def getPkChemShiftRow(pkSubtype: str, indexId: int, listId: int, entryId: str, d
     row[0] = indexId
     row[1] = dimId
 
-    # row[2]: Set_ID
+    row[2] = setId
     # row[3]: Magnetization_linkage_ID
 
     if has_key_value(dstFunc, f'position_{dimId}'):

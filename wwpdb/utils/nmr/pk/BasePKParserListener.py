@@ -3921,23 +3921,67 @@ class BasePKParserListener():
                     row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
                     sf['alt_loops'][2].add_data(row)
                 if has_assignments:
-                    for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
-                        uniqAtoms = []
-                        for idx in range(self.num_of_dim):
-                            atom = atomSelectionSet[idx]
-                            atom0 = atom[0]
-                            if atom0 not in uniqAtoms:
-                                asis = asIsSet[idx]
-                                ambig_code = None
-                                if len(atom) > 1:
-                                    ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
-                                    if ambig_code == 0:
-                                        ambig_code = None
-                                row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1,
-                                                        self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                                                        atom0, asis, ambig_code)
-                                sf['alt_loops'][3].add_data(row)
-                                uniqAtoms.append(atom0)
+                    set_id = None if len(self.atomSelectionSets) < 2 else 0
+                    if set_id is None:
+                        for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
+                            uniqAtoms = []
+                            for idx in range(self.num_of_dim):
+                                atom = atomSelectionSet[idx]
+                                atom0 = atom[0]
+                                if atom0 not in uniqAtoms:
+                                    asis = asIsSet[idx]
+                                    ambig_code = None
+                                    if len(atom) > 1:
+                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
+                                        if ambig_code == 0:
+                                            ambig_code = None
+                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
+                                                            self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                                            atom0, asis, ambig_code)
+                                    sf['alt_loops'][3].add_data(row)
+                                    uniqAtoms.append(atom0)
+                    else:
+                        onebonds = [False]
+                        onebond_dim_pat = [(0, 1)]
+                        for atomSelectionSet in self.atomSelectionSets:
+                            for onebond_idx, (dim1, dim2) in enumerate(onebond_dim_pat):
+                                _atom1, _atom2 = atomSelectionSet[dim1][0], atomSelectionSet[dim2][0]
+                                if _atom1['chain_id'] != _atom2['chain_id']\
+                                   or _atom1['seq_id'] != _atom2['seq_id']\
+                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0]:
+                                    continue
+                                if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                    onebonds[onebond_idx] = True
+                        set_id = 1
+                        for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
+                            valid = True
+                            for onebond_idx, onebond in enumerate(onebonds):
+                                if onebond:
+                                    _atom1, _atom2 = atomSelectionSet[onebond_dim_pat[onebond_idx][0]][0], atomSelectionSet[onebond_dim_pat[onebond_idx][1]][0]
+                                    if _atom1['chain_id'] != _atom2['chain_id']\
+                                       or _atom1['seq_id'] != _atom2['seq_id']\
+                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                        valid = False
+                                        break
+                            if not valid:
+                                continue
+                            uniqAtoms = []
+                            for idx in range(self.num_of_dim):
+                                atom = atomSelectionSet[idx]
+                                atom0 = atom[0]
+                                if atom0 not in uniqAtoms:
+                                    asis = asIsSet[idx]
+                                    ambig_code = None
+                                    if len(atom) > 1:
+                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
+                                        if ambig_code == 0:
+                                            ambig_code = None
+                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
+                                                            self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                                            atom0, asis, ambig_code)
+                                    sf['alt_loops'][3].add_data(row)
+                                    uniqAtoms.append(atom0)
+                            set_id += 1
 
     def addAssignedPkRow3D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
                            asis1: Optional[bool], asis2: Optional[bool], asis3: Optional[bool],
@@ -4009,23 +4053,67 @@ class BasePKParserListener():
                     row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
                     sf['alt_loops'][2].add_data(row)
                 if has_assignments:
-                    for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
-                        uniqAtoms = []
-                        for idx in range(self.num_of_dim):
-                            atom = atomSelectionSet[idx]
-                            atom0 = atom[0]
-                            if atom0 not in uniqAtoms:
-                                asis = asIsSet[idx]
-                                ambig_code = None
-                                if len(atom) > 1:
-                                    ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
-                                    if ambig_code == 0:
-                                        ambig_code = None
-                                row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1,
-                                                        self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                                                        atom0, asis, ambig_code)
-                                sf['alt_loops'][3].add_data(row)
-                                uniqAtoms.append(atom0)
+                    set_id = None if len(self.atomSelectionSets) < 2 else 0
+                    if set_id is None:
+                        for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
+                            uniqAtoms = []
+                            for idx in range(self.num_of_dim):
+                                atom = atomSelectionSet[idx]
+                                atom0 = atom[0]
+                                if atom0 not in uniqAtoms:
+                                    asis = asIsSet[idx]
+                                    ambig_code = None
+                                    if len(atom) > 1:
+                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
+                                        if ambig_code == 0:
+                                            ambig_code = None
+                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
+                                                            self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                                            atom0, asis, ambig_code)
+                                    sf['alt_loops'][3].add_data(row)
+                                    uniqAtoms.append(atom0)
+                    else:
+                        onebonds = [False] * 3
+                        onebond_dim_pat = [(0, 1), (1, 2), (2, 0)]
+                        for atomSelectionSet in self.atomSelectionSets:
+                            for onebond_idx, (dim1, dim2) in enumerate(onebond_dim_pat):
+                                _atom1, _atom2 = atomSelectionSet[dim1][0], atomSelectionSet[dim2][0]
+                                if _atom1['chain_id'] != _atom2['chain_id']\
+                                   or _atom1['seq_id'] != _atom2['seq_id']\
+                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0]:
+                                    continue
+                                if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                    onebonds[onebond_idx] = True
+                        set_id = 1
+                        for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
+                            valid = True
+                            for onebond_idx, onebond in enumerate(onebonds):
+                                if onebond:
+                                    _atom1, _atom2 = atomSelectionSet[onebond_dim_pat[onebond_idx][0]][0], atomSelectionSet[onebond_dim_pat[onebond_idx][1]][0]
+                                    if _atom1['chain_id'] != _atom2['chain_id']\
+                                       or _atom1['seq_id'] != _atom2['seq_id']\
+                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                        valid = False
+                                        break
+                            if not valid:
+                                continue
+                            uniqAtoms = []
+                            for idx in range(self.num_of_dim):
+                                atom = atomSelectionSet[idx]
+                                atom0 = atom[0]
+                                if atom0 not in uniqAtoms:
+                                    asis = asIsSet[idx]
+                                    ambig_code = None
+                                    if len(atom) > 1:
+                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
+                                        if ambig_code == 0:
+                                            ambig_code = None
+                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
+                                                            self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                                            atom0, asis, ambig_code)
+                                    sf['alt_loops'][3].add_data(row)
+                                    uniqAtoms.append(atom0)
+                            set_id += 1
 
     def addAssignedPkRow4D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
                            asis1: Optional[bool], asis2: Optional[bool], asis3: Optional[bool], asis4: Optional[bool],
@@ -4105,23 +4193,77 @@ class BasePKParserListener():
                     row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
                     sf['alt_loops'][2].add_data(row)
                 if has_assignments:
-                    for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
-                        uniqAtoms = []
-                        for idx in range(self.num_of_dim):
-                            atom = atomSelectionSet[idx]
-                            atom0 = atom[0]
-                            if atom0 not in uniqAtoms:
-                                asis = asIsSet[idx]
-                                ambig_code = None
-                                if len(atom) > 1:
-                                    ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
-                                    if ambig_code == 0:
-                                        ambig_code = None
-                                row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1,
-                                                        self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                                                        atom0, asis, ambig_code)
-                                sf['alt_loops'][3].add_data(row)
-                                uniqAtoms.append(atom0)
+                    set_id = None if len(self.atomSelectionSets) < 2 else 0
+                    if set_id is None:
+                        for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
+                            uniqAtoms = []
+                            for idx in range(self.num_of_dim):
+                                atom = atomSelectionSet[idx]
+                                atom0 = atom[0]
+                                if atom0 not in uniqAtoms:
+                                    asis = asIsSet[idx]
+                                    ambig_code = None
+                                    if len(atom) > 1:
+                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
+                                        if ambig_code == 0:
+                                            ambig_code = None
+                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
+                                                            self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                                            atom0, asis, ambig_code)
+                                    sf['alt_loops'][3].add_data(row)
+                                    uniqAtoms.append(atom0)
+                    else:
+                        onebonds = [False] * 3
+                        onebond_dim_pat = [((0, 1), (2, 3)), ((0, 2), (1, 3)), ((0, 3), (1, 2))]
+                        for atomSelectionSet in self.atomSelectionSets:
+                            for onebond_idx, ((dim1, dim2), (dim3, dim4)) in enumerate(onebond_dim_pat):
+                                _atom1, _atom2, _atom3, _atom4 =\
+                                    atomSelectionSet[dim1][0], atomSelectionSet[dim2][0], atomSelectionSet[dim3][0], atomSelectionSet[dim4][0]
+                                if _atom1['chain_id'] != _atom2['chain_id']\
+                                   or _atom1['seq_id'] != _atom2['seq_id']\
+                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0]\
+                                   or _atom3['chain_id'] != _atom4['chain_id']\
+                                   or _atom3['seq_id'] != _atom4['seq_id']\
+                                   or _atom3['atom_id'][0] == _atom4['atom_id'][0]:
+                                    continue
+                                if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id'])\
+                                   and self.ccU.hasBond(_atom3['comp_id'], _atom3['atom_id'], _atom4['atom_id']):
+                                    onebonds[onebond_idx] = True
+                        set_id = 1
+                        for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
+                            valid = True
+                            for onebond_idx, onebond in enumerate(onebonds):
+                                if onebond:
+                                    _atom1, _atom2, _atom3, _atom4 =\
+                                        atomSelectionSet[onebond_dim_pat[onebond_idx][0][0]][0], atomSelectionSet[onebond_dim_pat[onebond_idx][0][1]][0], \
+                                        atomSelectionSet[onebond_dim_pat[onebond_idx][1][0]][0], atomSelectionSet[onebond_dim_pat[onebond_idx][1][1]][0]
+                                    if _atom1['chain_id'] != _atom2['chain_id']\
+                                       or _atom1['seq_id'] != _atom2['seq_id']\
+                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id'])\
+                                       or _atom3['chain_id'] != _atom4['chain_id']\
+                                       or _atom3['seq_id'] != _atom4['seq_id']\
+                                       or _atom3['atom_id'][0] == _atom4['atom_id'][0] or not self.ccU.hasBond(_atom3['comp_id'], _atom3['atom_id'], _atom4['atom_id']):
+                                        valid = False
+                                        break
+                            if not valid:
+                                continue
+                            uniqAtoms = []
+                            for idx in range(self.num_of_dim):
+                                atom = atomSelectionSet[idx]
+                                atom0 = atom[0]
+                                if atom0 not in uniqAtoms:
+                                    asis = asIsSet[idx]
+                                    ambig_code = None
+                                    if len(atom) > 1:
+                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
+                                        if ambig_code == 0:
+                                            ambig_code = None
+                                    row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
+                                                            self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                                            atom0, asis, ambig_code)
+                                    sf['alt_loops'][3].add_data(row)
+                                    uniqAtoms.append(atom0)
+                            set_id += 1
 
     def extractPeakAssignment(self, numOfDim: int, string: str, src_index: int, hint: Optional[List[dict]] = None) -> Optional[List[dict]]:
         """ Extract peak assignment from a given string.

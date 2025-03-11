@@ -10071,10 +10071,7 @@ class NmrDpUtility:
 
                     try:
 
-                        for row in loop:
-                            row.append('.')
-
-                        loop.add_tag(lp_category + '.name')
+                        loop.add_tag(lp_category + '.name', update_data=True)
 
                     except ValueError:
                         pass
@@ -10390,10 +10387,7 @@ class NmrDpUtility:
 
                     try:
 
-                        for row in loop:
-                            row.append('.')
-
-                        loop.add_tag(lp_category + '.Torsion_angle_name')
+                        loop.add_tag(lp_category + '.Torsion_angle_name', update_data=True)
 
                     except ValueError:
                         pass
@@ -33302,30 +33296,21 @@ class NmrDpUtility:
         id_col = loop.tags.index('ID')
         if 'Index_ID' not in loop.tags:
             tag = loop.category + '.Index_ID'
+            for idx in range(len(loop)):
+                loop.data[idx].append(idx + 1)
             loop.add_tag(tag)
             lp.add_tag(tag)
-            for idx, row in enumerate(loop, start=1):
-                row.append(str(idx))
-            for idx, row in enumerate(lp, start=1):
-                row.append(str(idx))
-        index_id_col = loop.tags.index('Index_ID')
         if 'Member_ID' not in loop.tags:
             tag = loop.category + '.Member_ID'
-            loop.add_tag(tag)
+            loop.add_tag(tag, update_data=True)
             lp.add_tag(tag)
-            for row in loop:
-                row.append('.')
-            for row in lp:
-                row.append('.')
-        member_id_col = loop.tags.index('Member_ID')
         if 'Member_logic_code' not in loop.tags:
             tag = loop.category + '.Member_logic_code'
-            loop.add_tag(tag)
+            loop.add_tag(tag, update_data=True)
             lp.add_tag(tag)
-            for row in loop:
-                row.append('.')
-            for row in lp:
-                row.append('.')
+
+        index_id_col = loop.tags.index('Index_ID')
+        member_id_col = loop.tags.index('Member_ID')
         member_logic_code_col = loop.tags.index('Member_logic_code')
 
         combination_id_col = loop.tags.index('Combination_ID') if 'Combination_ID' in loop.tags else -1
@@ -33377,8 +33362,14 @@ class NmrDpUtility:
             try:
 
                 rest_id = row[id_col]
-                member_id = row[member_id_col]
-                member_logic_code = row[member_logic_code_col]
+                try:
+                    member_id = row[member_id_col]
+                except IndexError:
+                    member_id = None
+                try:
+                    member_logic_code = row[member_logic_code_col]
+                except IndexError:
+                    member_logic_code = None
                 values = concat_target_val(row)
 
                 try:
@@ -33416,10 +33407,15 @@ class NmrDpUtility:
                                      and atom1['ref_chain_id'] != _atom2['ref_chain_id'] and atom2['comp_id'] == _atom2['comp_id'])
                                     or (not isAmbigAtomSelection([atom2, _atom2], self.__csStat)
                                         and atom2['ref_chain_id'] != _atom1['ref_chain_id'] and atom1['comp_id'] == _atom1['comp_id']))):
-                            _row[member_logic_code_col] = 'OR'
+                            try:
 
-                            if _member_logic_code in emptyValue:
-                                lp.data[-1][member_logic_code_col] = 'OR'
+                                _row[member_logic_code_col] = 'OR'
+
+                                if _member_logic_code in emptyValue:
+                                    lp.data[-1][member_logic_code_col] = 'OR'
+
+                            except IndexError:
+                                pass
 
                             sf_item['id'] -= 1
 
@@ -33433,12 +33429,17 @@ class NmrDpUtility:
                         if member_logic_code in emptyValue:
                             modified = True
 
-                        _row[member_logic_code_col] = 'OR'
+                        try:
 
-                        if _member_logic_code in emptyValue:
-                            lp.data[-1][member_logic_code_col] = 'OR'
+                            _row[member_logic_code_col] = 'OR'
 
-                            modified = True
+                            if _member_logic_code in emptyValue:
+                                lp.data[-1][member_logic_code_col] = 'OR'
+
+                                modified = True
+
+                        except IndexError:
+                            pass
 
                     sf_item['id'] -= 1
 
@@ -33450,7 +33451,10 @@ class NmrDpUtility:
             if not self.__native_combined:  # DAOTHER-8855
                 _row[id_col] = sf_item['id']
             if combination_id_col == -1 or (combination_id_col != -1 and _row[combination_id_col] in emptyValue):
-                _row[member_id_col] = None
+                try:
+                    _row[member_id_col] = None
+                except IndexError:
+                    pass
             lp.add_data(_row)
 
         if not modified and not has_member_id:
@@ -33488,8 +33492,11 @@ class NmrDpUtility:
             if isAmbigAtomSelection(atom_sel1, self.__csStat)\
                or isAmbigAtomSelection(atom_sel2, self.__csStat):
                 for member_id, row in enumerate(rows, start=1):
-                    index_id = row[index_id_col]
-                    member_id_dict[index_id] = member_id
+                    try:
+                        index_id = row[index_id_col]
+                        member_id_dict[index_id] = member_id
+                    except IndexError:
+                        pass
 
         _row = _rest_id = None
         _union_rows = []
@@ -33518,13 +33525,18 @@ class NmrDpUtility:
 
         if len(member_id_dict) > 0:
             for row in lp:
-                index_id = row[index_id_col]
-                member_logic_code = row[member_logic_code_col]
-                if member_logic_code == 'AND':
-                    continue
+                try:
 
-                if index_id in member_id_dict:
-                    row[member_id_col] = member_id_dict[index_id]
+                    index_id = row[index_id_col]
+                    member_logic_code = row[member_logic_code_col]
+                    if member_logic_code == 'AND':
+                        continue
+
+                    if index_id in member_id_dict:
+                        row[member_id_col] = member_id_dict[index_id]
+
+                except IndexError:
+                    pass
 
         def concat_all_val(row):
             return str(row[chain_id_1_col]) + str(row[seq_id_1_col]) + str(row[comp_id_1_col]) + str(row[atom_id_1_col])\
@@ -33533,17 +33545,22 @@ class NmrDpUtility:
 
         len_data = len(lp)
 
-        for idx, row in enumerate(lp, start=1):
-            if row[member_logic_code_col] != 'OR':
-                continue
-            if idx - 2 > 0:
-                _row = lp.data[idx - 2]
-                if concat_all_val(row) == concat_all_val(_row):
-                    row[member_logic_code_col] = '.'
-            if idx < len_data:
-                _row = lp.data[idx]
-                if concat_all_val(row) == concat_all_val(_row):
-                    row[member_logic_code_col] = '.'
+        try:
+
+            for idx, row in enumerate(lp, start=1):
+                if row[member_logic_code_col] != 'OR':
+                    continue
+                if idx - 2 > 0:
+                    _row = lp.data[idx - 2]
+                    if concat_all_val(row) == concat_all_val(_row):
+                        row[member_logic_code_col] = '.'
+                if idx < len_data:
+                    _row = lp.data[idx]
+                    if concat_all_val(row) == concat_all_val(_row):
+                        row[member_logic_code_col] = '.'
+
+        except IndexError:
+            pass
 
         try:
 
@@ -33570,20 +33587,15 @@ class NmrDpUtility:
         id_col = loop.tags.index('ID')
         if 'Index_ID' not in loop.tags:
             tag = loop.category + '.Index_ID'
+            for idx in range(len(loop)):
+                loop.data[idx].append(idx + 1)
             loop.add_tag(tag)
             lp.add_tag(tag)
-            for idx, row in enumerate(loop, start=1):
-                row.append(str(idx))
-            for idx, row in enumerate(lp, start=1):
-                row.append(str(idx))
         if 'Combination_ID' not in loop.tags:
             tag = loop.category + '.Combination_ID'
-            loop.add_tag(tag)
+            loop.add_tag(tag, update_data=True)
             lp.add_tag(tag)
-            for row in loop:
-                row.append('.')
-            for row in lp:
-                row.append('.')
+
         index_id_col = loop.tags.index('Index_ID')
         combination_id_col = loop.tags.index('Combination_ID')
 
@@ -33630,13 +33642,21 @@ class NmrDpUtility:
             sf_item['id'] += 1
             sf_item['index_id'] += 1
 
-            combination_id = row[combination_id_col]
+            try:
+                combination_id = row[combination_id_col]
+            except IndexError:
+                combination_id = None
 
             if combination_id not in emptyValue and str(combination_id) != '1':
                 sf_item['id'] -= 1
 
             _row[id_col] = sf_item['id']
-            _row[index_id_col] = sf_item['index_id']
+            try:
+                _row[index_id_col] = sf_item['index_id']
+            except IndexError:
+                while index_id_col >= len(_row):
+                    _row.append(None)
+                _row[index_id_col] = sf_item['index_id']
 
             try:
                 key = _row[chain_id_1_col] + str(_row[seq_id_1_col]) + _row[atom_id_1_col]\
@@ -33686,15 +33706,30 @@ class NmrDpUtility:
                             continue
 
                         if combination_id == 1:
-                            _row[combination_id_col] = combination_id
+                            try:
+                                _row[combination_id_col] = combination_id
+                            except IndexError:
+                                while combination_id_col >= len(_row):
+                                    _row.append(None)
+                                _row[combination_id_col] = combination_id
                             lp.add_data(_row)
 
                         sf_item['index_id'] += 1
                         combination_id += 1
 
                         _row_[id_col] = sf_item['id']
-                        _row_[index_id_col] = sf_item['index_id']
-                        _row_[combination_id_col] = combination_id
+                        try:
+                            _row_[index_id_col] = sf_item['index_id']
+                        except IndexError:
+                            while index_id_col >= len(_row_):
+                                _row_.append(None)
+                            _row_[index_id_col] = sf_item['index_id']
+                        try:
+                            _row_[combination_id_col] = combination_id
+                        except IndexError:
+                            while combination_id_col >= len(_row_):
+                                _row_.append(None)
+                            _row_[combination_id_col] = combination_id
 
                         lp.add_data(_row_)
 
@@ -48490,7 +48525,7 @@ class NmrDpUtility:
                     lp.add_tag(loop.tags)
 
                     for idx, row in enumerate(loop, start=1):
-                        lp.add_data([str(idx)] + row)
+                        lp.add_data([idx] + row)
 
                     del sf[loop]
 
@@ -54670,10 +54705,7 @@ class NmrDpUtility:
                     if angle_type_tag in loop.tags:
                         continue
 
-                    for row in loop:
-                        row.append('.')
-
-                    loop.add_tag(angle_type_tag)
+                    loop.add_tag(angle_type_tag, update_data=True)
 
             return True
 

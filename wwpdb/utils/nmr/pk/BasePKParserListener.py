@@ -2500,11 +2500,16 @@ class BasePKParserListener():
                                 swap_seq_id_1()
                             elif diff2_ < diff:
                                 swap_seq_id_2()
+                            else:
+                                if diff_ < diff2_ and diff_ < 1.0:
+                                    swap_seq_id_1()
+                                elif diff_ > diff2_ and diff2_ < 1.0:
+                                    swap_seq_id_2()
 
-                        elif diff_ is not None and diff_ < diff:
+                        elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
                             swap_seq_id_1()
 
-                        elif diff2_ is not None and diff2_ < diff:
+                        elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
                             swap_seq_id_2()
 
                     elif chain_id != chain_id2:
@@ -2578,11 +2583,16 @@ class BasePKParserListener():
                                 swap_chain_seq_id_1()
                             elif diff2_ < diff:
                                 swap_chain_seq_id_2()
+                            else:
+                                if diff_ < diff2_ and diff_ < 1.0:
+                                    swap_chain_seq_id_1()
+                                elif diff_ > diff2_ and diff2_ < 1.0:
+                                    swap_chain_seq_id_2()
 
-                        elif diff_ is not None and diff_ < diff:
+                        elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
                             swap_chain_seq_id_1()
 
-                        elif diff2_ is not None and diff2_ < diff:
+                        elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
                             swap_chain_seq_id_2()
 
             else:
@@ -2752,11 +2762,16 @@ class BasePKParserListener():
                                 alt_swap_seq_id_1()
                             elif diff2_ < diff:
                                 alt_swap_seq_id_2()
+                            else:
+                                if diff_ < diff2_ and diff_ < 1.0:
+                                    alt_swap_seq_id_1()
+                                elif diff_ > diff2_ and diff2_ < 1.0:
+                                    alt_swap_seq_id_2()
 
-                        elif diff_ is not None and diff_ < diff:
+                        elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
                             alt_swap_seq_id_1()
 
-                        elif diff2_ is not None and diff2_ < diff:
+                        elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
                             alt_swap_seq_id_2()
 
                     elif chain_id != chain_id2:
@@ -2824,11 +2839,16 @@ class BasePKParserListener():
                                 alt_swap_chain_seq_id_1()
                             elif diff2_ < diff:
                                 alt_swap_chain_seq_id_2()
+                            else:
+                                if diff_ < diff2_ and diff_ < 1.0:
+                                    alt_swap_chain_seq_id_1()
+                                elif diff_ > diff2_ and diff2_ < 1.0:
+                                    alt_swap_chain_seq_id_2()
 
-                        elif diff_ is not None and diff_ < diff:
+                        elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
                             alt_swap_chain_seq_id_1()
 
-                        elif diff2_ is not None and diff2_ < diff:
+                        elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
                             alt_swap_chain_seq_id_2()
 
     def __remediatePeakAssignmentForJcouplingTransfer(self, num_of_dim: int, jcoupling_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):

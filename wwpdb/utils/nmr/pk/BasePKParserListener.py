@@ -4436,7 +4436,7 @@ class BasePKParserListener():
                             if atomNameLike[idx]:
                                 break
 
-                        # prevent to split HH2 -> res_name:'HIS' atom_name:'H2'
+                        # prevent to split HH2 -> res_name:'HIS', atom_name:'H2'
                         if resNameLike[idx] and resNameSpan[idx][1] - resNameSpan[idx][0] == 1 and resNameSpan[idx][1] == term.rindex(elem)\
                            and term[resNameSpan[idx][0]] in PEAK_HALF_SPIN_NUCLEUS:
                             _index = term.index(elem)
@@ -4450,6 +4450,37 @@ class BasePKParserListener():
                                     break
                             if atomNameLike[idx]:
                                 break
+
+                        # resolve concatenation of residue number and XPLOR-NIH atom nomenclature of proton, D1391HB -> res_id:139, res_name:'ASP', atom_name:'1HB'
+                        # seen in 8e1d/bmr31038/work/data/D_1000267621_nmr-peaks-upload_P6.dat.V1
+                        if resIdLike[idx] and resNameLike[idx] and resIdSpan[idx][1] == term.rindex(elem) and elem == 'H'\
+                           and term[resIdSpan[idx][1] - 1] in ('1', '2', '3') and resIdSpan[idx][1] - resIdSpan[idx][0] > 1:
+                            _resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
+                            _compId = term[idx][resNameSpan[idx][0]:resNameSpan[idx][1]]
+                            if len(_compId) == 1 and hasOneLetterCodeSet:
+                                _compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == _compId)
+                            valid = False
+                            for ps in self.polySeq:
+                                _, _, _compId_ = self.getRealChainSeqId(ps, _resId, None)
+                                if _compId is not None and _compId == _compId_:
+                                    valid = True
+                                    break
+                            if not valid:
+                                _resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1] - 1])
+                                for ps in self.polySeq:
+                                    _, _, _compId_ = self.getRealChainSeqId(ps, _resId, None)
+                                    if _compId is not None and _compId == _compId_:
+                                        valid = True
+                                        break
+                                if valid:
+                                    _index = term.rindex(elem)
+                                    _atomId = term[_index:len(term)] + term[resIdSpan[idx][1] - 1]
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
+                                    if details is None:
+                                        atomNameLike[idx] = True
+                                        atomNameSpan[idx] = (_index - 1, len(term))
+                                        resIdSpan[idx] = (resIdSpan[idx][0], resIdSpan[idx][1] - 1)
+                                        break
 
                         index = term.rindex(elem)
                         atomId = term[index:len(term)]

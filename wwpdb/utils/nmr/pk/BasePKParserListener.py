@@ -2479,6 +2479,12 @@ class BasePKParserListener():
                             elif shift2 is None and shift2_ is not None:
                                 swap_seq_id_2()
 
+                            elif shift is None and shift_ is None and None not in (shift2, shift2_):
+                                swap_seq_id_1()
+
+                            elif shift2 is None and shift2_ is None and None not in (shift, shift_):
+                                swap_seq_id_2()
+
                             continue
 
                         diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
@@ -2560,6 +2566,12 @@ class BasePKParserListener():
                                 swap_chain_seq_id_1()
 
                             elif shift2 is None and shift2_ is not None:
+                                swap_chain_seq_id_2()
+
+                            elif shift is None and shift_ is None and None not in (shift2, shift2_):
+                                swap_chain_seq_id_1()
+
+                            elif shift2 is None and shift2_ is None and None not in (shift, shift_):
                                 swap_chain_seq_id_2()
 
                             continue
@@ -2741,6 +2753,12 @@ class BasePKParserListener():
                             elif shift2 is None and shift2_ is not None:
                                 alt_swap_seq_id_2()
 
+                            elif shift is None and shift_ is None and None not in (shift2, shift2_):
+                                alt_swap_seq_id_1()
+
+                            elif shift2 is None and shift2_ is None and None not in (shift, shift_):
+                                alt_swap_seq_id_2()
+
                             continue
 
                         diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
@@ -2816,6 +2834,12 @@ class BasePKParserListener():
                                 alt_swap_chain_seq_id_1()
 
                             elif shift2 is None and shift2_ is not None:
+                                alt_swap_chain_seq_id_2()
+
+                            elif shift is None and shift_ is None and None not in (shift2, shift2_):
+                                alt_swap_chain_seq_id_1()
+
+                            elif shift2 is None and shift2_ is None and None not in (shift, shift_):
                                 alt_swap_chain_seq_id_2()
 
                             continue
@@ -4458,7 +4482,7 @@ class BasePKParserListener():
                             _resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
                             _compId = term[idx][resNameSpan[idx][0]:resNameSpan[idx][1]]
                             if len(_compId) == 1 and hasOneLetterCodeSet:
-                                _compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == _compId)
+                                _compId = next((k for k, v in monDict3.items() if k in self.compIdSet and v == _compId), _compId)
                             valid = False
                             for ps in self.polySeq:
                                 _, _, _compId_ = self.getRealChainSeqId(ps, _resId, None)

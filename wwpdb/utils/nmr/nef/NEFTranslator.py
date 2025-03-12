@@ -2741,7 +2741,53 @@ class NEFTranslator:
                                     return True
                             return False
 
-                        if len(alt_chain_id_set) > 0 and (len(chain_id_set) > LEN_LARGE_ASYM_ID or len(chain_id_set) == 0):
+                        valid = True
+                        if 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags:
+                            pre_tags = ['Comp_index_ID', 'Comp_ID', 'Auth_seq_ID', 'Auth_comp_ID']
+                            pre_seq_data = loop.get_tag(pre_tags)
+                            count = 0
+                            for row in pre_seq_data:
+                                if row[0] == row[2] and row[1] not in emptyValue and row[3] not in emptyValue and row[1] != row[3]\
+                                   and row[1] in monDict3 and row[3] not in monDict3:
+                                    count += 1
+                            if count > len(pre_seq_data) // 2:  # DAOTHER-9927: reset auth_seq_id and auth_comp_id derived from BMRB archive
+                                auth_seq_id_col = loop.tags.index('Auth_seq_ID')
+                                auth_comp_id_col = loop.tags.index('Auth_comp_ID')
+                                for idx, row in enumerate(loop):
+                                    loop.data[idx][auth_seq_id_col] = None
+                                    loop.data[idx][auth_comp_id_col] = None
+                                valid = False
+                            elif 'Details' in loop.tags:
+                                pre_tags = ['Seq_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Details']
+                                pre_seq_data = loop.get_tag(pre_tags)
+                                count = 0
+                                for row in pre_seq_data:
+                                    if row[0] != row[2] and row[3] in monDict3 and row[1] not in emptyValue and row[4] in emptyValue:
+                                        _k = (row[1], int(row[2]), row[3])
+                                        if _k in coord_assembly_checker['auth_to_star_seq']:
+                                            count += 1
+                                            break
+                                if count > 0:  # DAOTHER-9927: reset auth_seq_id and auth_comp_id derived from BMRB archive
+                                    auth_seq_id_col = loop.tags.index('Auth_seq_ID')
+                                    auth_comp_id_col = loop.tags.index('Auth_comp_ID')
+                                    pdb_seq_id_col = loop.tags.index('PDB_residue_no') if 'PDB_residue_no' in loop.tags else -1
+                                    pdb_comp_id_col = loop.tags.index('PDB_residue_name') if 'PDB_residue_name' in loop.tags else -1
+                                    orig_seq_id_col = loop.tags.index('Original_PDB_residue_no') if 'Original_PDB_residue_no' in loop.tags else -1
+                                    orig_comp_id_col = loop.tags.index('Original_PDB_residue_name') if 'Original_PDB_residue_name' in loop.tags else -1
+                                    for idx, row in enumerate(loop):
+                                        loop.data[idx][auth_seq_id_col] = None
+                                        loop.data[idx][auth_comp_id_col] = None
+                                        if pdb_seq_id_col != -1:
+                                            loop.data[idx][pdb_seq_id_col] = None
+                                        if pdb_comp_id_col != -1:
+                                            loop.data[idx][pdb_comp_id_col] = None
+                                        if orig_seq_id_col != -1:
+                                            loop.data[idx][orig_seq_id_col] = None
+                                        if orig_comp_id_col != -1:
+                                            loop.data[idx][orig_comp_id_col] = None
+                                    valid = False
+
+                        if valid and len(alt_chain_id_set) > 0 and (len(chain_id_set) > LEN_LARGE_ASYM_ID or len(chain_id_set) == 0):
                             if 'UNMAPPED' in alt_chain_id_set:  # 2c34, 2ksi
                                 resolve_entity_assembly(loop, list(alt_chain_id_set), True)
 

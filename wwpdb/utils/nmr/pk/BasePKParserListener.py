@@ -1487,7 +1487,7 @@ class BasePKParserListener():
         if self.num_of_dim not in self.onebond_idx_history:
             self.onebond_idx_history[self.num_of_dim] = {}
         if self.cur_list_id not in self.onebond_idx_history[self.num_of_dim]:
-            self.onebond_idx_history[self.num_of_dim][self.cur_list_id] = -1
+            self.onebond_idx_history[self.num_of_dim][self.cur_list_id] = []
         if self.num_of_dim == 2:
             self.peaks2D = 0
         if self.num_of_dim == 3:
@@ -1711,8 +1711,9 @@ class BasePKParserListener():
                                         cur_spectral_dim_transfer.append(transfer)
 
                     # determine 'onebond' coherence transfer based on assigned chemical shifts
-                    onebond_idx = self.onebond_idx_history[d][_id]
-                    if onebond_idx != -1:
+                    history = self.onebond_idx_history[d][_id]
+                    if len(history):
+                        onebond_idx = collections.Counter(history).most_common()[0][0]
                         if d == 2:
                             _dim_id1, _dim_id2 = ONEBOND_DIM_PAT_2D[onebond_idx]
                             _dim_id1, _dim_id2 = _dim_id1 + 1, _dim_id2 + 1
@@ -2466,8 +2467,11 @@ class BasePKParserListener():
                         shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id)
                         shift2, weight2 = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2)
 
-                        shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id_[0])
-                        shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
+                        shift_ = shift2_ = None
+                        if len(_atom_id_) > 0 and _atom_id_[0][0] == _atom_id[0]:
+                            shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id_[0])
+                        if (len(_atom_id2_) > 0 and _atom_id2_[0][0] == _atom_id2[0]):
+                            shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
 
                         # pylint: disable=cell-var-from-loop
                         def swap_atom_id_1():
@@ -2792,8 +2796,11 @@ class BasePKParserListener():
                         shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id)
                         shift2, weight2 = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2)
 
-                        shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id_[0])
-                        shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
+                        shift_ = shift2_ = None
+                        if len(_atom_id_) > 0 and _atom_id_[0][0] == _atom_id[0]:
+                            shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id_[0])
+                        if (len(_atom_id2_) > 0 and _atom_id2_[0][0] == _atom_id2[0]):
+                            shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
 
                         # pylint: disable=cell-var-from-loop
                         def alt_swap_atom_id_1():
@@ -4126,6 +4133,17 @@ class BasePKParserListener():
                     row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
                     sf['alt_loops'][2].add_data(row)
                 if has_assignments:
+                    history = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
+                    if self.software_name != 'PIPP':
+                        for atomSelectionSet in self.atomSelectionSets:
+                            for onebond_idx, (dim1, dim2) in enumerate(ONEBOND_DIM_PAT_2D):
+                                _atom1, _atom2 = atomSelectionSet[dim1][0], atomSelectionSet[dim2][0]
+                                if _atom1['chain_id'] != _atom2['chain_id']\
+                                   or _atom1['seq_id'] != _atom2['seq_id']\
+                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0]:
+                                    continue
+                                if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                    history.append(onebond_idx)
                     set_id = None if len(self.atomSelectionSets) < 2 else 0
                     if set_id is None:
                         for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
@@ -4146,24 +4164,11 @@ class BasePKParserListener():
                                     sf['alt_loops'][3].add_data(row)
                                     uniqAtoms.append(atom0)
                     else:
-                        if self.onebond_idx_history[self.num_of_dim][self.cur_list_id] == -1:
-                            for atomSelectionSet in self.atomSelectionSets:
-                                for onebond_idx, (dim1, dim2) in enumerate(ONEBOND_DIM_PAT_2D):
-                                    _atom1, _atom2 = atomSelectionSet[dim1][0], atomSelectionSet[dim2][0]
-                                    if _atom1['chain_id'] != _atom2['chain_id']\
-                                       or _atom1['seq_id'] != _atom2['seq_id']\
-                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0]:
-                                        continue
-                                    if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
-                                        self.onebond_idx_history[self.num_of_dim][self.cur_list_id] = onebond_idx
-                                        break
-                                if self.onebond_idx_history[self.num_of_dim][self.cur_list_id] != -1:
-                                    break
                         set_id = 1
                         for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
                             valid = True
-                            onebond_idx = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
-                            if onebond_idx != -1:
+                            if len(history) > 0:
+                                onebond_idx = collections.Counter(history).most_common()[0][0]
                                 _atom1, _atom2 = atomSelectionSet[ONEBOND_DIM_PAT_2D[onebond_idx][0]][0], atomSelectionSet[ONEBOND_DIM_PAT_2D[onebond_idx][1]][0]
                                 if _atom1['chain_id'] != _atom2['chain_id']\
                                    or _atom1['seq_id'] != _atom2['seq_id']\
@@ -4259,6 +4264,17 @@ class BasePKParserListener():
                     row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
                     sf['alt_loops'][2].add_data(row)
                 if has_assignments:
+                    history = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
+                    if self.software_name != 'PIPP':
+                        for atomSelectionSet in self.atomSelectionSets:
+                            for onebond_idx, (dim1, dim2) in enumerate(ONEBOND_DIM_PAT_3D):
+                                _atom1, _atom2 = atomSelectionSet[dim1][0], atomSelectionSet[dim2][0]
+                                if _atom1['chain_id'] != _atom2['chain_id']\
+                                   or _atom1['seq_id'] != _atom2['seq_id']\
+                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0]:
+                                    continue
+                                if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                    history.append(onebond_idx)
                     set_id = None if len(self.atomSelectionSets) < 2 else 0
                     if set_id is None:
                         for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
@@ -4279,24 +4295,11 @@ class BasePKParserListener():
                                     sf['alt_loops'][3].add_data(row)
                                     uniqAtoms.append(atom0)
                     else:
-                        if self.onebond_idx_history[self.num_of_dim][self.cur_list_id] == -1:
-                            for atomSelectionSet in self.atomSelectionSets:
-                                for onebond_idx, (dim1, dim2) in enumerate(ONEBOND_DIM_PAT_3D):
-                                    _atom1, _atom2 = atomSelectionSet[dim1][0], atomSelectionSet[dim2][0]
-                                    if _atom1['chain_id'] != _atom2['chain_id']\
-                                       or _atom1['seq_id'] != _atom2['seq_id']\
-                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0]:
-                                        continue
-                                    if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
-                                        self.onebond_idx_history[self.num_of_dim][self.cur_list_id] = onebond_idx
-                                        break
-                                if self.onebond_idx_history[self.num_of_dim][self.cur_list_id] != -1:
-                                    break
                         set_id = 1
                         for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
                             valid = True
-                            onebond_idx = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
-                            if onebond_idx != -1:
+                            if len(history) > 0:
+                                onebond_idx = collections.Counter(history).most_common()[0][0]
                                 _atom1, _atom2 = atomSelectionSet[ONEBOND_DIM_PAT_3D[onebond_idx][0]][0], atomSelectionSet[ONEBOND_DIM_PAT_3D[onebond_idx][1]][0]
                                 if _atom1['chain_id'] != _atom2['chain_id']\
                                    or _atom1['seq_id'] != _atom2['seq_id']\
@@ -4400,6 +4403,22 @@ class BasePKParserListener():
                     row = getPkCharRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, idx + 1)
                     sf['alt_loops'][2].add_data(row)
                 if has_assignments:
+                    history = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
+                    if self.software_name != 'PIPP':
+                        for atomSelectionSet in self.atomSelectionSets:
+                            for onebond_idx, ((dim1, dim2), (dim3, dim4)) in enumerate(ONEBOND_DIM_PAT_4D):
+                                _atom1, _atom2, _atom3, _atom4 =\
+                                    atomSelectionSet[dim1][0], atomSelectionSet[dim2][0], atomSelectionSet[dim3][0], atomSelectionSet[dim4][0]
+                                if _atom1['chain_id'] != _atom2['chain_id']\
+                                   or _atom1['seq_id'] != _atom2['seq_id']\
+                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0]\
+                                   or _atom3['chain_id'] != _atom4['chain_id']\
+                                   or _atom3['seq_id'] != _atom4['seq_id']\
+                                   or _atom3['atom_id'][0] == _atom4['atom_id'][0]:
+                                    continue
+                                if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id'])\
+                                   and self.ccU.hasBond(_atom3['comp_id'], _atom3['atom_id'], _atom4['atom_id']):
+                                    history.append(onebond_idx)
                     set_id = None if len(self.atomSelectionSets) < 2 else 0
                     if set_id is None:
                         for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
@@ -4420,29 +4439,11 @@ class BasePKParserListener():
                                     sf['alt_loops'][3].add_data(row)
                                     uniqAtoms.append(atom0)
                     else:
-                        if self.onebond_idx_history[self.num_of_dim][self.cur_list_id] == -1:
-                            for atomSelectionSet in self.atomSelectionSets:
-                                for onebond_idx, ((dim1, dim2), (dim3, dim4)) in enumerate(ONEBOND_DIM_PAT_4D):
-                                    _atom1, _atom2, _atom3, _atom4 =\
-                                        atomSelectionSet[dim1][0], atomSelectionSet[dim2][0], atomSelectionSet[dim3][0], atomSelectionSet[dim4][0]
-                                    if _atom1['chain_id'] != _atom2['chain_id']\
-                                       or _atom1['seq_id'] != _atom2['seq_id']\
-                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0]\
-                                       or _atom3['chain_id'] != _atom4['chain_id']\
-                                       or _atom3['seq_id'] != _atom4['seq_id']\
-                                       or _atom3['atom_id'][0] == _atom4['atom_id'][0]:
-                                        continue
-                                    if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id'])\
-                                       and self.ccU.hasBond(_atom3['comp_id'], _atom3['atom_id'], _atom4['atom_id']):
-                                        self.onebond_idx_history[self.num_of_dim][self.cur_list_id] = onebond_idx
-                                        break
-                                if self.onebond_idx_history[self.num_of_dim][self.cur_list_id] != -1:
-                                    break
                         set_id = 1
                         for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
                             valid = True
-                            onebond_idx = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
-                            if onebond_idx != -1:
+                            if len(history) > 0:
+                                onebond_idx = collections.Counter(history).most_common()[0][0]
                                 _atom1, _atom2, _atom3, _atom4 =\
                                     atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][0][0]][0], atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][0][1]][0], \
                                     atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][1][0]][0], atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][1][1]][0]

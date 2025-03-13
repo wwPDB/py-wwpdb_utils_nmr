@@ -2313,13 +2313,12 @@ class BasePKParserListener():
                                     break
 
                         else:
-                            lp = next((aux_lp for aux_lp in sf['aux_loops'] if aux_lp.category == '_Assigned_peak_chem_shift'), None)
-                            if lp is None or len(lp) == 0:
-                                continue
-                            for row in lp.get_tag('Auth_entity_ID'):
-                                if row not in emptyValue:
-                                    has_assign = True
-                                    break
+                            lp = next((alt_lp for alt_lp in sf['alt_loops'] if alt_lp.category == '_Assigned_peak_chem_shift'), None)
+                            if lp is not None and len(lp) > 0:
+                                for row in lp.get_tag('Auth_entity_ID'):
+                                    if row not in emptyValue:
+                                        has_assign = True
+                                        break
 
                         if not has_assign:
                             continue
@@ -2396,34 +2395,88 @@ class BasePKParserListener():
                         len_atom_id_ = len(_atom_id_)
                         len_atom_id2_ = len(_atom_id2_)
 
+                        position, position2 = row[4], row[9]
+
+                        if isinstance(position, str):
+                            position = float(position)
+
+                        if isinstance(position2, str):
+                            position2 = float(position2)
+
+                        shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id)
+                        shift2, weight2 = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2)
+
+                        shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id_[0])
+                        shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
+
                         # pylint: disable=cell-var-from-loop
-                        def swap_atom_1():
+                        def swap_atom_id_1():
                             if loop.data[idx][details_col] in emptyValue:
                                 loop.data[idx][details_col] = f'{atom_id} -> {_atom_id_[0]}'
                             loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_1}')] = _atom_id_[0]
 
                         # pylint: disable=cell-var-from-loop
-                        def swap_atom_2():
+                        def swap_atom_id_2():
                             if loop.data[idx][details_col] in emptyValue:
                                 loop.data[idx][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
                             loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = _atom_id2_[0]
 
+                        if None in (shift, shift2):
+                            diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                            diff *= 2.0
+
+                            diff_ = diff2_ = None
+                            if shift_ is not None:
+                                diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                            if shift2_ is not None:
+                                diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+
+                            if diff_ is not None and diff2_ is not None:
+                                if diff_ < diff and diff2_ < diff:
+                                    if diff_ < diff2_:
+                                        swap_atom_id_1()
+                                        continue
+                                    elif diff_ > diff2_:
+                                        swap_atom_id_2()
+                                        continue
+                                elif diff_ < diff:
+                                    swap_atom_id_1()
+                                    continue
+                                elif diff2_ < diff:
+                                    swap_atom_id_2()
+                                    continue
+                                else:
+                                    if diff_ < diff2_ and diff_ < 1.0:
+                                        swap_atom_id_1()
+                                        continue
+                                    elif diff_ > diff2_ and diff2_ < 1.0:
+                                        swap_atom_id_2()
+                                        continue
+
+                            elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                                swap_atom_id_1()
+                                continue
+
+                            elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                                swap_atom_id_2()
+                                continue
+
                         if len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] != _atom_id_[0][0] and atom_id2[0] == _atom_id2_[0][0]:
-                            swap_atom_2()
+                            swap_atom_id_2()
                         elif len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] == _atom_id_[0][0] and atom_id2[0] != _atom_id2_[0][0]:
-                            swap_atom_1()
+                            swap_atom_id_1()
                         elif 0 < len_atom_id2_ < len_atom_id_:
-                            swap_atom_2()
+                            swap_atom_id_2()
                         elif 0 < len_atom_id_ < len_atom_id2_:
-                            swap_atom_1()
+                            swap_atom_id_1()
                         elif len(atom_id2) < len(atom_id):
-                            swap_atom_2()
+                            swap_atom_id_2()
                         elif len(atom_id) < len(atom_id2):
-                            swap_atom_1()
+                            swap_atom_id_1()
                         elif _atom_id2[0] in protonBeginCode and len_atom_id2_ > 0:
-                            swap_atom_2()
+                            swap_atom_id_2()
                         elif _atom_id[0] in protonBeginCode and len_atom_id_ > 0:
-                            swap_atom_1()
+                            swap_atom_id_1()
                         else:
                             self.f.append(f"[Inconsistent assigned peak] [Check row of Index_ID {loop.data[idx][loop.tags.index('Index_ID')]}] "
                                           f"Inconsistent assignments of spectral peak with onebond coherence transfer type, ({chain_id}:{seq_id}:{comp_id}:{atom_id}) vs "
@@ -2616,7 +2669,7 @@ class BasePKParserListener():
                 seq_id_col = loop.tags.index('Comp_index_ID')
                 comp_id_col = loop.tags.index('Comp_ID')
                 atom_id_col = loop.tags.index('Atom_ID')
-                auth_chain_id_col = loop.tags.index('Auth_asym_ID')
+                auth_chain_id_col = loop.tags.index('Auth_entity_ID')
                 auth_seq_id_col = loop.tags.index('Auth_seq_ID')
                 auth_comp_id_col = loop.tags.index('Auth_comp_ID')
                 auth_atom_id_col = loop.tags.index('Auth_atom_ID')
@@ -2674,34 +2727,82 @@ class BasePKParserListener():
                         len_atom_id_ = len(_atom_id_)
                         len_atom_id2_ = len(_atom_id2_)
 
+                        position, position2 = positions[_dim_id_1], positions[_dim_id_2]
+
+                        shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id)
+                        shift2, weight2 = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2)
+
+                        shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id_[0])
+                        shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
+
                         # pylint: disable=cell-var-from-loop
-                        def alt_swap_atom_1():
+                        def alt_swap_atom_id_1():
                             if loop.data[idx - num_of_dim + dim_id_1][details_col] in emptyValue:
                                 loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{atom_id} -> {_atom_id_[0]}'
                             loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] = _atom_id_[0]
 
                         # pylint: disable=cell-var-from-loop
-                        def alt_swap_atom_2():
+                        def alt_swap_atom_id_2():
                             if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
                                 loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
                             loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = _atom_id2_[0]
 
+                        if None in (shift, shift2):
+                            diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                            diff *= 2.0
+
+                            diff_ = diff2_ = None
+                            if shift_ is not None:
+                                diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                            if shift2_ is not None:
+                                diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+
+                            if diff_ is not None and diff2_ is not None:
+                                if diff_ < diff and diff2_ < diff:
+                                    if diff_ < diff2_:
+                                        alt_swap_atom_id_1()
+                                        continue
+                                    elif diff_ > diff2_:
+                                        alt_swap_atom_id_2()
+                                        continue
+                                elif diff_ < diff:
+                                    alt_swap_atom_id_1()
+                                    continue
+                                elif diff2_ < diff:
+                                    alt_swap_atom_id_2()
+                                    continue
+                                else:
+                                    if diff_ < diff2_ and diff_ < 1.0:
+                                        alt_swap_atom_id_1()
+                                        continue
+                                    elif diff_ > diff2_ and diff2_ < 1.0:
+                                        alt_swap_atom_id_2()
+                                        continue
+
+                            elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                                alt_swap_atom_id_1()
+                                continue
+
+                            elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                                alt_swap_atom_id_2()
+                                continue
+
                         if len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] != _atom_id_[0][0] and atom_id2[0] == _atom_id2_[0][0]:
-                            alt_swap_atom_2()
+                            alt_swap_atom_id_2()
                         elif len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] == _atom_id_[0][0] and atom_id2[0] != _atom_id2_[0][0]:
-                            alt_swap_atom_1()
+                            alt_swap_atom_id_1()
                         elif 0 < len_atom_id2_ < len_atom_id_:
-                            alt_swap_atom_2()
+                            alt_swap_atom_id_2()
                         elif 0 < len_atom_id_ < len_atom_id2_:
-                            alt_swap_atom_1()
+                            alt_swap_atom_id_1()
                         elif len(atom_id2) < len(atom_id):
-                            alt_swap_atom_2()
+                            alt_swap_atom_id_2()
                         elif len(atom_id) < len(atom_id2):
-                            alt_swap_atom_1()
+                            alt_swap_atom_id_1()
                         elif _atom_id2[0] in protonBeginCode and len_atom_id2_ > 0:
-                            alt_swap_atom_2()
+                            alt_swap_atom_id_2()
                         elif _atom_id[0] in protonBeginCode and len_atom_id_ > 0:
-                            alt_swap_atom_1()
+                            alt_swap_atom_id_1()
                         else:
                             self.f.append(f"[Inconsistent assigned peak] [Check row of Peak_ID {loop.data[idx][loop.tags.index('Peak_ID')]}] "
                                           f"Inconsistent assignments of spectral peak with onebond coherence transfer type, ({chain_id}:{seq_id}:{comp_id}:{atom_id}) vs "

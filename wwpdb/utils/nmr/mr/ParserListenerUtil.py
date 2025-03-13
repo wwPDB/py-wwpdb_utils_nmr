@@ -958,7 +958,7 @@ NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int
                                               {'name': 'Dipole_2_atom_ID_1', 'type': 'str'},
                                               {'name': 'Dipole_2_entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1'},
                                               {'name': 'Dipole_2_entity_ID_2', 'type': 'positive-int'},
-                                              # 'Dipole_2_comp_index_ID_2' is inferred from NMR-STAR Dictionary
+                                              # NOTICE: 'Dipole_2_comp_index_ID_2' is inferred from NMR-STAR Dictionary
                                               {'name': 'Dipole_2_comp_index_ID_2', 'type': 'int', 'default-from': 'Dipole_2_seq_ID_2'},
                                               {'name': 'Dipole_2_comp_ID_2', 'type': 'str', 'uppercase': True},
                                               {'name': 'Dipole_2_atom_ID_2', 'type': 'str'}
@@ -2273,7 +2273,7 @@ NMR_STAR_ALT_LP_DATA_ITEMS = {'spectral_peak': {'_Peak': [
                                                 {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
                                                  'enum': ALLOWED_AMBIGUITY_CODES},
                                                 {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False},
-                                                {'name': 'Auth_entity_ID', 'type': 'str', 'mandatory': False},
+                                                {'name': 'Auth_entity_ID', 'type': 'str', 'mandatory': False},  # NOTICE: '_Assigned_peak_chem_shift.Auth_asym_ID' does not exist
                                                 {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
                                                 {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
                                                 {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
@@ -2919,7 +2919,7 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                     return 'HE1'
 
         # BIOSYM atom nomenclature
-        if (atomId[-1] in ('R', 'S', 'Z', 'E') or (lenAtomId > 2 and atomId[-1] in ('*', '%') and atomId[-2] in ('R', 'S'))):
+        if (atomId[-1] in ('R', 'S', 'Z', 'E') or (lenAtomId > 2 and atomId[-2] in ('R', 'S'))):
             if refCompId in ('CYS', 'ASP', 'HIS', 'SER'):
                 if atomId == 'HBR':
                     return 'HB3'
@@ -2966,9 +2966,9 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                     return 'HB2'
                 if atomId == 'HBS':
                     return 'HB3'
-                if atomId in ('HDR*', 'HDR%'):
+                if atomId.startswith('HDR'):
                     return 'HD1'
-                if atomId in ('HDS*', 'HDS%'):
+                if atomId.startswith('HDS'):
                     return 'HD2'
                 if atomId == 'CDR':
                     return 'CD1'
@@ -3044,9 +3044,9 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                 if atomId == 'HH2E':
                     return 'HH22'
             elif refCompId == 'VAL':
-                if atomId in ('HGR*', 'HGR%'):
+                if atomId.startswith('HGR'):
                     return 'HG1'
-                if atomId in ('HGS*', 'HGS%'):
+                if atomId.startswith('HGS'):
                     return 'HG2'
                 if atomId == 'CGR':
                     return 'CG1'
@@ -8437,7 +8437,7 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
 
 
 def getAltPkRow(pkSubtype: str, _indexId: int, indexId: int, listId: int, entryId: str, dstFunc: dict, details: Optional[str] = None) -> Optional[List[Any]]:
-    """ Return row data for a _Peak_general_char loop.
+    """ Return row data for a _Peak loop.
         @return: data array
     """
 

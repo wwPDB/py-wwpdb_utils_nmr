@@ -5427,7 +5427,7 @@ class NmrDpUtility:
                                                                'Dipole_2_atom_type_1', 'Dipole_2_atom_isotope_number_1',
                                                                'Dipole_2_assembly_atom_ID_2', 'Dipole_2_entity_assembly_ID_2',
                                                                'Dipole_2_entity_ID_2', 'Dipole_2_chem_comp_index_ID_2',
-                                                               'Dipole_2_comp_index_ID_2',  # 'Dipole_2_comp_index_ID_2' is inferred from NMR-STAR Dictionary
+                                                               'Dipole_2_comp_index_ID_2',  # NOTICE: 'Dipole_2_comp_index_ID_2' is inferred from NMR-STAR Dictionary
                                                                'Dipole_2_seq_ID_2', 'Dipole_2_comp_ID_2', 'Dipole_2_atom_ID_2',
                                                                'Dipole_2_atom_type_2', 'Dipole_2_atom_isotope_number_2',
                                                                'Val', 'Val_err',
@@ -6922,7 +6922,8 @@ class NmrDpUtility:
                                                   '_Assigned_peak_chem_shift': ['Peak_ID', 'Spectral_dim_ID', 'Set_ID', 'Magnetization_linkage_ID', 'Assembly_atom_ID',
                                                                                 'Val', 'Contribution_fractional_val', 'Figure_of_merit', 'Assigned_chem_shift_list_ID',
                                                                                 'Atom_chem_shift_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Comp_ID',
-                                                                                'Atom_ID', 'Ambiguity_code', 'Ambiguity_set_ID', 'Auth_atom_peak_num', 'Auth_entity_ID',
+                                                                                'Atom_ID', 'Ambiguity_code', 'Ambiguity_set_ID', 'Auth_atom_peak_num',
+                                                                                'Auth_entity_ID',  # NOTICE: '_Assigned_peak_chem_shift.Auth_asym_ID' does not exist
                                                                                 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Auth_ambiguity_code',
                                                                                 'Auth_ambiguity_set_ID', 'Auth_amb_atom_grp_ID', 'Resonance_ID', 'Details',
                                                                                 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']

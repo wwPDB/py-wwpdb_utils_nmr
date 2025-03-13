@@ -225,6 +225,11 @@ PEAK_HALF_SPIN_NUCLEUS = ('H', 'Q', 'M', 'C', 'N', 'P', 'F')
 MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER = 0.2
 
 
+ONEBOND_DIM_PAT_2D = ((0, 1), )
+ONEBOND_DIM_PAT_3D = ((0, 1), (1, 2), (2, 0))
+ONEBOND_DIM_PAT_4D = (((0, 1), (2, 3)), ((0, 2), (1, 3)), ((0, 3), (1, 2)))
+
+
 def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, d: int, cur_spectral_dim: dict) -> str:
     """ Return expected primary dimensional transfer type from a given frequencies.
     """
@@ -936,6 +941,7 @@ class BasePKParserListener():
     acq_dim_id = 1
     spectral_dim = {}
     spectral_dim_transfer = {}
+    onebond_idx_history = {}
     spectrum_name = None
 
     # whether to allow extended sequence temporary
@@ -1144,6 +1150,7 @@ class BasePKParserListener():
         self.cur_spectral_dim = {}
         self.spectral_dim = {}
         self.spectral_dim_transfer = {}
+        self.onebond_idx_history = {}
         self.listIdInternal = {}
         self.chainNumberDict = {}
         self.extResKey = []
@@ -1477,6 +1484,10 @@ class BasePKParserListener():
             self.spectral_dim_transfer[self.num_of_dim] = {}
         if self.cur_list_id not in self.spectral_dim_transfer[self.num_of_dim]:
             self.spectral_dim_transfer[self.num_of_dim][self.cur_list_id] = []
+        if self.num_of_dim not in self.onebond_idx_history:
+            self.onebond_idx_history[self.num_of_dim] = {}
+        if self.cur_list_id not in self.onebond_idx_history[self.num_of_dim]:
+            self.onebond_idx_history[self.num_of_dim][self.cur_list_id] = -1
         if self.num_of_dim == 2:
             self.peaks2D = 0
         if self.num_of_dim == 3:
@@ -1676,6 +1687,7 @@ class BasePKParserListener():
                     is_noesy = any('noe' in n for n in _file_names) or any('roe' in n for n in _file_names)
                     no_aromatic = all(_dict['_spectral_region'] != 'C-aromatic' for _dict in cur_spectral_dim.values())
 
+                    # determine 'onebond' coherence transfer based on capitalized axis names
                     if 'axis_order' in cur_spectral_dim[1]:
                         upper_count = lower_count = 0
                         for _dict in cur_spectral_dim.values():
@@ -1697,6 +1709,54 @@ class BasePKParserListener():
                                         if transfer in cur_spectral_dim_transfer:
                                             continue
                                         cur_spectral_dim_transfer.append(transfer)
+
+                    # determine 'onebond' coherence transfer based on assigned chemical shifts
+                    onebond_idx = self.onebond_idx_history[d][_id]
+                    if onebond_idx != -1:
+                        if d == 2:
+                            _dim_id1, _dim_id2 = ONEBOND_DIM_PAT_2D[onebond_idx]
+                            _dim_id1, _dim_id2 = _dim_id1 + 1, _dim_id2 + 1
+                            if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                       if _transfer['type'] == 'onebond'
+                                       and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
+                                            or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
+                                transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                            'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                            'type': 'onebond',
+                                            'indirect': 'no'}
+                                cur_spectral_dim_transfer.append(transfer)
+                        elif d == 3:
+                            _dim_id1, _dim_id2 = ONEBOND_DIM_PAT_3D[onebond_idx]
+                            _dim_id1, _dim_id2 = _dim_id1 + 1, _dim_id2 + 1
+                            if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                       if _transfer['type'] == 'onebond'
+                                       and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
+                                            or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
+                                transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                            'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                            'type': 'onebond',
+                                            'indirect': 'no'}
+                                cur_spectral_dim_transfer.append(transfer)
+                        elif d == 4:
+                            (_dim_id1, _dim_id2), (_dim_id3, _dim_id4) = ONEBOND_DIM_PAT_4D[onebond_idx]
+                            _dim_id1, _dim_id2, _dim_id3, _dim_id4 = _dim_id1 + 1, _dim_id2 + 1, _dim_id3 + 1, _dim_id4 + 1
+                            if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                       if _transfer['type'] == 'onebond'
+                                       and (_dim_id1 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
+                                            or _dim_id2 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
+                                transfer = {'spectral_dim_id_1': min([_dim_id1, _dim_id2]),
+                                            'spectral_dim_id_2': max([_dim_id1, _dim_id2]),
+                                            'type': 'onebond',
+                                            'indirect': 'no'}
+                            if not any(_transfer for _transfer in cur_spectral_dim_transfer
+                                       if _transfer['type'] == 'onebond'
+                                       and (_dim_id3 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']]
+                                            or _dim_id4 in [_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']])):
+                                transfer = {'spectral_dim_id_1': min([_dim_id3, _dim_id4]),
+                                            'spectral_dim_id_2': max([_dim_id3, _dim_id4]),
+                                            'type': 'onebond',
+                                            'indirect': 'no'}
+                                cur_spectral_dim_transfer.append(transfer)
 
                     # onebond: 'Any transfer that connects only directly bonded atoms in this experiment'
                     for _dim_id1, _dict1 in cur_spectral_dim.items():
@@ -2436,7 +2496,7 @@ class BasePKParserListener():
                                     if diff_ < diff2_:
                                         swap_atom_id_1()
                                         continue
-                                    elif diff_ > diff2_:
+                                    if diff_ > diff2_:
                                         swap_atom_id_2()
                                         continue
                                 elif diff_ < diff:
@@ -2449,7 +2509,7 @@ class BasePKParserListener():
                                     if diff_ < diff2_ and diff_ < 1.0:
                                         swap_atom_id_1()
                                         continue
-                                    elif diff_ > diff2_ and diff2_ < 1.0:
+                                    if diff_ > diff2_ and diff2_ < 1.0:
                                         swap_atom_id_2()
                                         continue
 
@@ -2762,7 +2822,7 @@ class BasePKParserListener():
                                     if diff_ < diff2_:
                                         alt_swap_atom_id_1()
                                         continue
-                                    elif diff_ > diff2_:
+                                    if diff_ > diff2_:
                                         alt_swap_atom_id_2()
                                         continue
                                 elif diff_ < diff:
@@ -2775,7 +2835,7 @@ class BasePKParserListener():
                                     if diff_ < diff2_ and diff_ < 1.0:
                                         alt_swap_atom_id_1()
                                         continue
-                                    elif diff_ > diff2_ and diff2_ < 1.0:
+                                    if diff_ > diff2_ and diff2_ < 1.0:
                                         alt_swap_atom_id_2()
                                         continue
 
@@ -4086,28 +4146,29 @@ class BasePKParserListener():
                                     sf['alt_loops'][3].add_data(row)
                                     uniqAtoms.append(atom0)
                     else:
-                        onebonds = [False]
-                        onebond_dim_pat = [(0, 1)]
-                        for atomSelectionSet in self.atomSelectionSets:
-                            for onebond_idx, (dim1, dim2) in enumerate(onebond_dim_pat):
-                                _atom1, _atom2 = atomSelectionSet[dim1][0], atomSelectionSet[dim2][0]
-                                if _atom1['chain_id'] != _atom2['chain_id']\
-                                   or _atom1['seq_id'] != _atom2['seq_id']\
-                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0]:
-                                    continue
-                                if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
-                                    onebonds[onebond_idx] = True
+                        if self.onebond_idx_history[self.num_of_dim][self.cur_list_id] == -1:
+                            for atomSelectionSet in self.atomSelectionSets:
+                                for onebond_idx, (dim1, dim2) in enumerate(ONEBOND_DIM_PAT_2D):
+                                    _atom1, _atom2 = atomSelectionSet[dim1][0], atomSelectionSet[dim2][0]
+                                    if _atom1['chain_id'] != _atom2['chain_id']\
+                                       or _atom1['seq_id'] != _atom2['seq_id']\
+                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0]:
+                                        continue
+                                    if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                        self.onebond_idx_history[self.num_of_dim][self.cur_list_id] = onebond_idx
+                                        break
+                                if self.onebond_idx_history[self.num_of_dim][self.cur_list_id] != -1:
+                                    break
                         set_id = 1
                         for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
                             valid = True
-                            for onebond_idx, onebond in enumerate(onebonds):
-                                if onebond:
-                                    _atom1, _atom2 = atomSelectionSet[onebond_dim_pat[onebond_idx][0]][0], atomSelectionSet[onebond_dim_pat[onebond_idx][1]][0]
-                                    if _atom1['chain_id'] != _atom2['chain_id']\
-                                       or _atom1['seq_id'] != _atom2['seq_id']\
-                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
-                                        valid = False
-                                        break
+                            onebond_idx = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
+                            if onebond_idx != -1:
+                                _atom1, _atom2 = atomSelectionSet[ONEBOND_DIM_PAT_2D[onebond_idx][0]][0], atomSelectionSet[ONEBOND_DIM_PAT_2D[onebond_idx][1]][0]
+                                if _atom1['chain_id'] != _atom2['chain_id']\
+                                   or _atom1['seq_id'] != _atom2['seq_id']\
+                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                    valid = False
                             if not valid:
                                 continue
                             uniqAtoms = []
@@ -4218,28 +4279,29 @@ class BasePKParserListener():
                                     sf['alt_loops'][3].add_data(row)
                                     uniqAtoms.append(atom0)
                     else:
-                        onebonds = [False] * 3
-                        onebond_dim_pat = [(0, 1), (1, 2), (2, 0)]
-                        for atomSelectionSet in self.atomSelectionSets:
-                            for onebond_idx, (dim1, dim2) in enumerate(onebond_dim_pat):
-                                _atom1, _atom2 = atomSelectionSet[dim1][0], atomSelectionSet[dim2][0]
-                                if _atom1['chain_id'] != _atom2['chain_id']\
-                                   or _atom1['seq_id'] != _atom2['seq_id']\
-                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0]:
-                                    continue
-                                if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
-                                    onebonds[onebond_idx] = True
+                        if self.onebond_idx_history[self.num_of_dim][self.cur_list_id] == -1:
+                            for atomSelectionSet in self.atomSelectionSets:
+                                for onebond_idx, (dim1, dim2) in enumerate(ONEBOND_DIM_PAT_3D):
+                                    _atom1, _atom2 = atomSelectionSet[dim1][0], atomSelectionSet[dim2][0]
+                                    if _atom1['chain_id'] != _atom2['chain_id']\
+                                       or _atom1['seq_id'] != _atom2['seq_id']\
+                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0]:
+                                        continue
+                                    if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                        self.onebond_idx_history[self.num_of_dim][self.cur_list_id] = onebond_idx
+                                        break
+                                if self.onebond_idx_history[self.num_of_dim][self.cur_list_id] != -1:
+                                    break
                         set_id = 1
                         for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
                             valid = True
-                            for onebond_idx, onebond in enumerate(onebonds):
-                                if onebond:
-                                    _atom1, _atom2 = atomSelectionSet[onebond_dim_pat[onebond_idx][0]][0], atomSelectionSet[onebond_dim_pat[onebond_idx][1]][0]
-                                    if _atom1['chain_id'] != _atom2['chain_id']\
-                                       or _atom1['seq_id'] != _atom2['seq_id']\
-                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
-                                        valid = False
-                                        break
+                            onebond_idx = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
+                            if onebond_idx != -1:
+                                _atom1, _atom2 = atomSelectionSet[ONEBOND_DIM_PAT_3D[onebond_idx][0]][0], atomSelectionSet[ONEBOND_DIM_PAT_3D[onebond_idx][1]][0]
+                                if _atom1['chain_id'] != _atom2['chain_id']\
+                                   or _atom1['seq_id'] != _atom2['seq_id']\
+                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                    valid = False
                             if not valid:
                                 continue
                             uniqAtoms = []
@@ -4358,38 +4420,39 @@ class BasePKParserListener():
                                     sf['alt_loops'][3].add_data(row)
                                     uniqAtoms.append(atom0)
                     else:
-                        onebonds = [False] * 3
-                        onebond_dim_pat = [((0, 1), (2, 3)), ((0, 2), (1, 3)), ((0, 3), (1, 2))]
-                        for atomSelectionSet in self.atomSelectionSets:
-                            for onebond_idx, ((dim1, dim2), (dim3, dim4)) in enumerate(onebond_dim_pat):
-                                _atom1, _atom2, _atom3, _atom4 =\
-                                    atomSelectionSet[dim1][0], atomSelectionSet[dim2][0], atomSelectionSet[dim3][0], atomSelectionSet[dim4][0]
-                                if _atom1['chain_id'] != _atom2['chain_id']\
-                                   or _atom1['seq_id'] != _atom2['seq_id']\
-                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0]\
-                                   or _atom3['chain_id'] != _atom4['chain_id']\
-                                   or _atom3['seq_id'] != _atom4['seq_id']\
-                                   or _atom3['atom_id'][0] == _atom4['atom_id'][0]:
-                                    continue
-                                if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id'])\
-                                   and self.ccU.hasBond(_atom3['comp_id'], _atom3['atom_id'], _atom4['atom_id']):
-                                    onebonds[onebond_idx] = True
+                        if self.onebond_idx_history[self.num_of_dim][self.cur_list_id] == -1:
+                            for atomSelectionSet in self.atomSelectionSets:
+                                for onebond_idx, ((dim1, dim2), (dim3, dim4)) in enumerate(ONEBOND_DIM_PAT_4D):
+                                    _atom1, _atom2, _atom3, _atom4 =\
+                                        atomSelectionSet[dim1][0], atomSelectionSet[dim2][0], atomSelectionSet[dim3][0], atomSelectionSet[dim4][0]
+                                    if _atom1['chain_id'] != _atom2['chain_id']\
+                                       or _atom1['seq_id'] != _atom2['seq_id']\
+                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0]\
+                                       or _atom3['chain_id'] != _atom4['chain_id']\
+                                       or _atom3['seq_id'] != _atom4['seq_id']\
+                                       or _atom3['atom_id'][0] == _atom4['atom_id'][0]:
+                                        continue
+                                    if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id'])\
+                                       and self.ccU.hasBond(_atom3['comp_id'], _atom3['atom_id'], _atom4['atom_id']):
+                                        self.onebond_idx_history[self.num_of_dim][self.cur_list_id] = onebond_idx
+                                        break
+                                if self.onebond_idx_history[self.num_of_dim][self.cur_list_id] != -1:
+                                    break
                         set_id = 1
                         for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
                             valid = True
-                            for onebond_idx, onebond in enumerate(onebonds):
-                                if onebond:
-                                    _atom1, _atom2, _atom3, _atom4 =\
-                                        atomSelectionSet[onebond_dim_pat[onebond_idx][0][0]][0], atomSelectionSet[onebond_dim_pat[onebond_idx][0][1]][0], \
-                                        atomSelectionSet[onebond_dim_pat[onebond_idx][1][0]][0], atomSelectionSet[onebond_dim_pat[onebond_idx][1][1]][0]
-                                    if _atom1['chain_id'] != _atom2['chain_id']\
-                                       or _atom1['seq_id'] != _atom2['seq_id']\
-                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id'])\
-                                       or _atom3['chain_id'] != _atom4['chain_id']\
-                                       or _atom3['seq_id'] != _atom4['seq_id']\
-                                       or _atom3['atom_id'][0] == _atom4['atom_id'][0] or not self.ccU.hasBond(_atom3['comp_id'], _atom3['atom_id'], _atom4['atom_id']):
-                                        valid = False
-                                        break
+                            onebond_idx = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
+                            if onebond_idx != -1:
+                                _atom1, _atom2, _atom3, _atom4 =\
+                                    atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][0][0]][0], atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][0][1]][0], \
+                                    atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][1][0]][0], atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][1][1]][0]
+                                if _atom1['chain_id'] != _atom2['chain_id']\
+                                   or _atom1['seq_id'] != _atom2['seq_id']\
+                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id'])\
+                                   or _atom3['chain_id'] != _atom4['chain_id']\
+                                   or _atom3['seq_id'] != _atom4['seq_id']\
+                                   or _atom3['atom_id'][0] == _atom4['atom_id'][0] or not self.ccU.hasBond(_atom3['comp_id'], _atom3['atom_id'], _atom4['atom_id']):
+                                    valid = False
                             if not valid:
                                 continue
                             uniqAtoms = []

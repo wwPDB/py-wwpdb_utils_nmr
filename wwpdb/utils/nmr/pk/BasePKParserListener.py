@@ -2481,7 +2481,7 @@ class BasePKParserListener():
                                 loop.data[idx][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
                             loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = _atom_id2_[0]
 
-                        if None in (shift, shift2):
+                        if None not in (shift, shift2):
                             diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
                             diff *= 2.0
 
@@ -2807,7 +2807,7 @@ class BasePKParserListener():
                                 loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
                             loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = _atom_id2_[0]
 
-                        if None in (shift, shift2):
+                        if None not in (shift, shift2):
                             diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
                             diff *= 2.0
 

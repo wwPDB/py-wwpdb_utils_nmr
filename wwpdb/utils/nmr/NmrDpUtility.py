@@ -220,7 +220,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "4.2.0"
+__version__ = "4.3.0"
 
 import sys
 import os
@@ -7518,6 +7518,7 @@ class NmrDpUtility:
 
         self.__nefT.set_remediation_mode(self.__remediation_mode)
         self.__nefT.set_internal_mode(self.__internal_mode)
+        self.__nefT.set_merge_rescue_mode(op == 'nmr-cs-mr-merge')  # DAOTHER-9927
 
         if not self.__allow_missing_legacy_dist_restraint and self.__remediation_mode:
             self.__nefT.allow_missing_dist_restraint(True)

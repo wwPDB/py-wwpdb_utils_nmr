@@ -104,6 +104,7 @@
 # 28-Nov-2024  M. Yokochi - drop support for old pynmrstar versions less than 3.2 (v4.1.0)
 # 27-Dec-2024  M. Yokochi - change class path and visibility of class method (v4.1.1)
 # 19-Feb-2025  M. Yokochi - try to extract sequence using Seq_ID_# tags if necessary (v4.2.0)
+# 12-Mar-2025  M. Yokochi - allow to reset auth_seq_id of cs loop if necessary (v4.3.0, DAOTHER-9927)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -112,7 +113,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "4.2.0"
+__version__ = "4.3.0"
 
 import sys
 import os
@@ -618,6 +619,8 @@ class NEFTranslator:
         self.__remediation_mode = False
         # whether to allow to raise internal error
         self.__internal_mode = False
+        # whether to allow to reset auth_seq_id of cs loop if necessary (DAOTHER-9927)
+        self.__merge_rescue_mode = False
         # whether the initial sequence number starts from '1' in NEF file, otherwise preserves author sequence scheme of the coordinates
         self.__bmrb_only = False
         # whether allow missing distance restraints
@@ -1540,6 +1543,12 @@ class NEFTranslator:
         """
 
         self.__internal_mode = flag
+
+    def set_merge_rescue_mode(self, flag: bool):
+        """ Set merge-rescue mode.
+        """
+
+        self.__merge_rescue_mode = flag
 
     def set_bmrb_only_mode(self, flag: bool):
         """ Set BMRB-only mode.
@@ -2742,49 +2751,57 @@ class NEFTranslator:
                             return False
 
                         valid = True
-                        if 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags:
-                            pre_tags = ['Comp_index_ID', 'Comp_ID', 'Auth_seq_ID', 'Auth_comp_ID']
+                        if self.__merge_rescue_mode and 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags and 'Details' in loop.tags:
+                            pre_tags = ['Comp_index_ID', 'Comp_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Details']
                             pre_seq_data = loop.get_tag(pre_tags)
                             count = 0
                             for row in pre_seq_data:
-                                if row[0] == row[2] and row[1] not in emptyValue and row[3] not in emptyValue and row[1] != row[3]\
+                                if row[0] in emptyValue or row[2] in emptyValue or row[4] == 'UNMAPPED':
+                                    count = 0
+                                    break
+                                _seq_id_ = int(row[0]) if isinstance(row[0], str) else row[0]
+                                try:
+                                    _auth_seq_id_ = int(row[2]) if isinstance(row[2], str) else row[2]
+                                except ValueError:
+                                    continue
+                                if _seq_id_ == _auth_seq_id_ and row[1] not in emptyValue and row[3] not in emptyValue and row[1] != row[3]\
                                    and row[1] in monDict3 and row[3] not in monDict3:
                                     count += 1
                             if count > len(pre_seq_data) // 2:  # DAOTHER-9927: reset auth_seq_id and auth_comp_id derived from BMRB archive
                                 auth_seq_id_col = loop.tags.index('Auth_seq_ID')
                                 auth_comp_id_col = loop.tags.index('Auth_comp_ID')
-                                for idx, row in enumerate(loop):
+                                for idx in range(len(loop)):
                                     loop.data[idx][auth_seq_id_col] = None
                                     loop.data[idx][auth_comp_id_col] = None
                                 valid = False
-                            elif 'Details' in loop.tags:
-                                pre_tags = ['Seq_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Details']
+
+                            elif 'Entry_ID' in loop.tags:
+                                pre_tags = ['Comp_index_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Details', 'Entry_ID']
                                 pre_seq_data = loop.get_tag(pre_tags)
                                 count = 0
                                 for row in pre_seq_data:
-                                    if row[0] != row[2] and row[3] in monDict3 and row[1] not in emptyValue and row[4] in emptyValue:
-                                        _k = (row[1], int(row[2]), row[3])
+                                    if row[0] in emptyValue or row[2] in emptyValue or row[4] == 'UNMAPPED' or row[5] in emptyValue or not row[5].isdigit():
+                                        count = 0
+                                        break
+                                    _seq_id_ = int(row[0]) if isinstance(row[0], str) else row[0]
+                                    try:
+                                        _auth_seq_id_ = int(row[2]) if isinstance(row[2], str) else row[2]
+                                    except ValueError:
+                                        continue
+                                    if _seq_id_ != _auth_seq_id_ and row[3] in monDict3 and row[1] not in emptyValue and row[4] in emptyValue:
+                                        _k = (row[1], _auth_seq_id_, row[3])
                                         if _k in coord_assembly_checker['auth_to_star_seq']:
                                             count += 1
-                                            break
-                                if count > 0:  # DAOTHER-9927: reset auth_seq_id and auth_comp_id derived from BMRB archive
+                                if 0 < count < len(loop):  # DAOTHER-9927: reset auth_seq_id derived from BMRB archive
                                     auth_seq_id_col = loop.tags.index('Auth_seq_ID')
-                                    auth_comp_id_col = loop.tags.index('Auth_comp_ID')
                                     pdb_seq_id_col = loop.tags.index('PDB_residue_no') if 'PDB_residue_no' in loop.tags else -1
-                                    pdb_comp_id_col = loop.tags.index('PDB_residue_name') if 'PDB_residue_name' in loop.tags else -1
                                     orig_seq_id_col = loop.tags.index('Original_PDB_residue_no') if 'Original_PDB_residue_no' in loop.tags else -1
-                                    orig_comp_id_col = loop.tags.index('Original_PDB_residue_name') if 'Original_PDB_residue_name' in loop.tags else -1
                                     for idx, row in enumerate(loop):
                                         loop.data[idx][auth_seq_id_col] = None
-                                        loop.data[idx][auth_comp_id_col] = None
                                         if pdb_seq_id_col != -1:
                                             loop.data[idx][pdb_seq_id_col] = None
-                                        if pdb_comp_id_col != -1:
-                                            loop.data[idx][pdb_comp_id_col] = None
                                         if orig_seq_id_col != -1:
                                             loop.data[idx][orig_seq_id_col] = None
-                                        if orig_comp_id_col != -1:
-                                            loop.data[idx][orig_comp_id_col] = None
                                     valid = False
 
                         if valid and len(alt_chain_id_set) > 0 and (len(chain_id_set) > LEN_LARGE_ASYM_ID or len(chain_id_set) == 0):
@@ -2869,7 +2886,7 @@ class NEFTranslator:
                             auth_asym_id = row[0]
                             try:
                                 auth_seq_id = int(row[1])
-                            except ValueError:
+                            except (TypeError, ValueError):
                                 continue
                             auth_comp_id = row[2].upper()
                             if len(auth_comp_id) not in (1, 2, 3, 5):
@@ -3001,18 +3018,26 @@ class NEFTranslator:
                                 r[seq_id_col] = r[alt_seq_id_col]
 
                 valid = True
-                if 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags:
-                    pre_tags = ['Comp_index_ID', 'Comp_ID', 'Auth_seq_ID', 'Auth_comp_ID']
+                if self.__merge_rescue_mode and 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags and 'Details' in loop.tags:
+                    pre_tags = ['Comp_index_ID', 'Comp_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Details']
                     pre_seq_data = loop.get_tag(pre_tags)
                     count = 0
                     for row in pre_seq_data:
-                        if row[0] == row[2] and row[1] not in emptyValue and row[3] not in emptyValue and row[1] != row[3]\
+                        if row[0] in emptyValue or row[2] in emptyValue or row[4] == 'UNMAPPED':
+                            count = 0
+                            break
+                        _seq_id_ = int(row[0]) if isinstance(row[0], str) else row[0]
+                        try:
+                            _auth_seq_id_ = int(row[2]) if isinstance(row[2], str) else row[2]
+                        except ValueError:
+                            continue
+                        if _seq_id_ == _auth_seq_id_ and row[1] not in emptyValue and row[3] not in emptyValue and row[1] != row[3]\
                            and row[1] in monDict3 and row[3] not in monDict3:
                             count += 1
                     if count > len(pre_seq_data) // 2:  # DAOTHER-9927: reset auth_seq_id and auth_comp_id derived from BMRB archive
                         auth_seq_id_col = loop.tags.index('Auth_seq_ID')
                         auth_comp_id_col = loop.tags.index('Auth_comp_ID')
-                        for idx, row in enumerate(loop):
+                        for idx in range(len(loop)):
                             loop.data[idx][auth_seq_id_col] = None
                             loop.data[idx][auth_comp_id_col] = None
                         valid = False
@@ -6555,7 +6580,7 @@ class NEFTranslator:
             @note: used only for annotation (DAOTHER-9286)
         """
 
-        if comp_id in emptyValue:
+        if comp_id in emptyValue or atom_id in emptyValue:
             return [], None, None
 
         methyl_only = atom_id[0] == 'M'
@@ -6673,7 +6698,7 @@ class NEFTranslator:
             @note: used only for annotation (DAOTHER-9286)
         """
 
-        if comp_id in emptyValue:
+        if comp_id in emptyValue or atom_id in emptyValue:
             return [], None, None
 
         methyl_only |= atom_id[0] == 'M'
@@ -7072,7 +7097,7 @@ class NEFTranslator:
             @return: list of instanced atom_id, ambiguity_code, and description
         """
 
-        if comp_id in emptyValue:
+        if comp_id in emptyValue or atom_id in emptyValue:
             return [], None, None
 
         methyl_only = atom_id[0] == 'M' or atom_id.startswith('QM') or atom_id.startswith('QQM')
@@ -7307,7 +7332,7 @@ class NEFTranslator:
             @return: list of instanced atom_id, ambiguity_code, and description
         """
 
-        if comp_id in emptyValue:
+        if comp_id in emptyValue or atom_id in emptyValue:
             return [], None, None
 
         methyl_only |= atom_id[0] == 'M' or atom_id.startswith('QM') or atom_id.startswith('QQM')

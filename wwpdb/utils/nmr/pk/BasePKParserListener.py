@@ -2427,13 +2427,16 @@ class BasePKParserListener():
             _atom_id2_ = self.ccU.getBondedAtoms(comp_id, _atom_id, exclProton=_atom_id[0] in protonBeginCode, onlyProton=_atom_id[0] not in protonBeginCode)
             _atom_id_ = self.ccU.getBondedAtoms(comp_id, _atom_id2, exclProton=_atom_id2[0] in protonBeginCode, onlyProton=_atom_id2[0] not in protonBeginCode)
 
+            len_atom_id_ = len(_atom_id_)
+            len_atom_id2_ = len(_atom_id2_)
+
             shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id)
             shift2, weight2 = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2)
 
             shift_ = shift2_ = None
-            if len(_atom_id_) > 0 and _atom_id_[0][0] == _atom_id[0]:
+            if len_atom_id_ > 0 and _atom_id_[0][0] == _atom_id[0]:
                 shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id_[0])
-            if (len(_atom_id2_) > 0 and _atom_id2_[0][0] == _atom_id2[0]):
+            if len_atom_id2_ > 0 and _atom_id2_[0][0] == _atom_id2[0]:
                 shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
 
             if shift_ is not None and not self.ccU.hasBond(comp_id, _atom_id_[0], _atom_id2):
@@ -2454,24 +2457,24 @@ class BasePKParserListener():
 
                 if diff_ is not None and diff2_ is not None:
                     if diff_ < diff and diff2_ < diff:
-                        if diff_ < diff2_:
+                        if diff_ < diff2_ and len_atom_id_ > 0:
                             return True
-                        if diff_ > diff2_:
+                        if diff_ > diff2_ and len_atom_id2_ > 0:
                             return True
-                    elif diff_ < diff:
+                    elif diff_ < diff and len_atom_id_ > 0:
                         return True
-                    elif diff2_ < diff:
+                    elif diff2_ < diff and len_atom_id2_ > 0:
                         return True
                     else:
-                        if diff_ < diff2_ and diff_ < 1.0:
+                        if diff_ < diff2_ and diff_ < 1.0 and len_atom_id_ > 0:
                             return True
-                        if diff_ > diff2_ and diff2_ < 1.0:
+                        if diff_ > diff2_ and diff2_ < 1.0 and len_atom_id2_ > 0:
                             return True
 
-                elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                elif diff_ is not None and (diff_ < diff or diff_ < 1.0) and len_atom_id_ > 0:
                     return True
 
-                elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0) and len_atom_id2_ > 0:
                     return True
 
             return False
@@ -2549,10 +2552,13 @@ class BasePKParserListener():
                 _atom_id2_ = self.ccU.getBondedAtoms(comp_id, _atom_id, exclProton=_atom_id[0] in protonBeginCode, onlyProton=_atom_id[0] not in protonBeginCode)
                 _atom_id_ = self.ccU.getBondedAtoms(comp_id2, _atom_id2, exclProton=_atom_id2[0] in protonBeginCode, onlyProton=_atom_id2[0] not in protonBeginCode)
 
+                len_atom_id_ = len(_atom_id_)
+                len_atom_id2_ = len(_atom_id2_)
+
                 shift_ = shift2_ = None
-                if len(_atom_id_) > 0 and _atom_id_[0][0] == _atom_id[0]:
+                if len_atom_id_ > 0 and _atom_id_[0][0] == _atom_id[0]:
                     shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, _atom_id_[0])
-                if (len(_atom_id2_) > 0 and _atom_id2_[0][0] == _atom_id2[0]):
+                if len_atom_id2_ > 0 and _atom_id2_[0][0] == _atom_id2[0]:
                     shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
 
                 diff_ = diff2_ = None
@@ -2563,24 +2569,24 @@ class BasePKParserListener():
 
                 if diff_ is not None and diff2_ is not None:
                     if diff_ < diff and diff2_ < diff:
-                        if diff_ < diff2_:
+                        if diff_ < diff2_ and len_atom_id_ > 0:
                             return True
-                        if diff_ > diff2_:
+                        if diff_ > diff2_ and len_atom_id2_ > 0:
                             return True
-                    elif diff_ < diff:
+                    elif diff_ < diff and len_atom_id_ > 0:
                         return True
-                    elif diff2_ < diff:
+                    elif diff2_ < diff and len_atom_id2_ > 0:
                         return True
                     else:
-                        if diff_ < diff2_ and diff_ < 1.0:
+                        if diff_ < diff2_ and diff_ < 1.0 and len_atom_id_ > 0:
                             return True
-                        if diff_ > diff2_ and diff2_ < 1.0:
+                        if diff_ > diff2_ and diff2_ < 1.0 and len_atom_id2_ > 0:
                             return True
 
-                elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                elif diff_ is not None and (diff_ < diff or diff_ < 1.0) and len_atom_id_ > 0:
                     return True
 
-                elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0) and len_atom_id2_ > 0:
                     return True
 
             return False
@@ -2717,9 +2723,9 @@ class BasePKParserListener():
                         shift2, weight2 = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2)
 
                         shift_ = shift2_ = None
-                        if len(_atom_id_) > 0 and _atom_id_[0][0] == _atom_id[0]:
+                        if len_atom_id_ > 0 and _atom_id_[0][0] == _atom_id[0]:
                             shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id_[0])
-                        if (len(_atom_id2_) > 0 and _atom_id2_[0][0] == _atom_id2[0]):
+                        if len_atom_id2_ > 0 and _atom_id2_[0][0] == _atom_id2[0]:
                             shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
 
                         if shift_ is not None and not self.ccU.hasBond(comp_id, _atom_id_[0], _atom_id2):
@@ -2752,31 +2758,31 @@ class BasePKParserListener():
 
                             if diff_ is not None and diff2_ is not None:
                                 if diff_ < diff and diff2_ < diff:
-                                    if diff_ < diff2_:
+                                    if diff_ < diff2_ and len_atom_id_ > 0:
                                         swap_atom_id_1()
                                         continue
-                                    if diff_ > diff2_:
+                                    if diff_ > diff2_ and len_atom_id2_ > 0:
                                         swap_atom_id_2()
                                         continue
-                                elif diff_ < diff:
+                                elif diff_ < diff and len_atom_id_ > 0:
                                     swap_atom_id_1()
                                     continue
-                                elif diff2_ < diff:
+                                elif diff2_ < diff and len_atom_id2_ > 0:
                                     swap_atom_id_2()
                                     continue
                                 else:
-                                    if diff_ < diff2_ and diff_ < 1.0:
+                                    if diff_ < diff2_ and diff_ < 1.0 and len_atom_id_ > 0:
                                         swap_atom_id_1()
                                         continue
-                                    if diff_ > diff2_ and diff2_ < 1.0:
+                                    if diff_ > diff2_ and diff2_ < 1.0 and len_atom_id2_ > 0:
                                         swap_atom_id_2()
                                         continue
 
-                            elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                            elif diff_ is not None and (diff_ < diff or diff_ < 1.0) and len_atom_id_ > 0:
                                 swap_atom_id_1()
                                 continue
 
-                            elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                            elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0) and len_atom_id2_ > 0:
                                 swap_atom_id_2()
                                 continue
 
@@ -2791,9 +2797,9 @@ class BasePKParserListener():
                             swap_atom_id_2()
                         elif 0 < len_atom_id_ < len_atom_id2_:
                             swap_atom_id_1()
-                        elif len(atom_id2) < len(atom_id):
+                        elif len(atom_id2) < len(atom_id) and len_atom_id2_ > 0:
                             swap_atom_id_2()
-                        elif len(atom_id) < len(atom_id2):
+                        elif len(atom_id) < len(atom_id2) and len_atom_id_ > 0:
                             swap_atom_id_1()
                         else:
 
@@ -2933,10 +2939,13 @@ class BasePKParserListener():
                             _atom_id2_ = self.ccU.getBondedAtoms(comp_id, _atom_id, exclProton=_atom_id[0] in protonBeginCode, onlyProton=_atom_id[0] not in protonBeginCode)
                             _atom_id_ = self.ccU.getBondedAtoms(comp_id2, _atom_id2, exclProton=_atom_id2[0] in protonBeginCode, onlyProton=_atom_id2[0] not in protonBeginCode)
 
+                            len_atom_id_ = len(_atom_id_)
+                            len_atom_id2_ = len(_atom_id2_)
+
                             shift_ = shift2_ = None
-                            if len(_atom_id_) > 0 and _atom_id_[0][0] == _atom_id[0]:
+                            if len_atom_id_ > 0 and _atom_id_[0][0] == _atom_id[0]:
                                 shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, _atom_id_[0])
-                            if (len(_atom_id2_) > 0 and _atom_id2_[0][0] == _atom_id2[0]):
+                            if len_atom_id2_ > 0 and _atom_id2_[0][0] == _atom_id2[0]:
                                 shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
 
                             # pylint: disable=cell-var-from-loop
@@ -2967,31 +2976,31 @@ class BasePKParserListener():
 
                             if diff_ is not None and diff2_ is not None:
                                 if diff_ < diff and diff2_ < diff:
-                                    if diff_ < diff2_:
+                                    if diff_ < diff2_ and len_atom_id_ > 0:
                                         swap_seq_atom_id_1()
                                         continue
-                                    if diff_ > diff2_:
+                                    if diff_ > diff2_ and len_atom_id2_ > 0:
                                         swap_seq_atom_id_2()
                                         continue
-                                elif diff_ < diff:
+                                elif diff_ < diff and len_atom_id_ > 0:
                                     swap_seq_atom_id_1()
                                     continue
-                                elif diff2_ < diff:
+                                elif diff2_ < diff and len_atom_id2_ > 0:
                                     swap_seq_atom_id_2()
                                     continue
                                 else:
-                                    if diff_ < diff2_ and diff_ < 1.0:
+                                    if diff_ < diff2_ and diff_ < 1.0 and len_atom_id_ > 0:
                                         swap_seq_atom_id_1()
                                         continue
-                                    if diff_ > diff2_ and diff2_ < 1.0:
+                                    if diff_ > diff2_ and diff2_ < 1.0 and len_atom_id2_ > 0:
                                         swap_seq_atom_id_2()
                                         continue
 
-                            elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                            elif diff_ is not None and (diff_ < diff or diff_ < 1.0) and len_atom_id_ > 0:
                                 swap_seq_atom_id_1()
                                 continue
 
-                            elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                            elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0) and len_atom_id2_ > 0:
                                 swap_seq_atom_id_2()
                                 continue
 
@@ -3188,9 +3197,9 @@ class BasePKParserListener():
                         shift2, weight2 = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2)
 
                         shift_ = shift2_ = None
-                        if len(_atom_id_) > 0 and _atom_id_[0][0] == _atom_id[0]:
+                        if len_atom_id_ > 0 and _atom_id_[0][0] == _atom_id[0]:
                             shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id_[0])
-                        if (len(_atom_id2_) > 0 and _atom_id2_[0][0] == _atom_id2[0]):
+                        if len_atom_id2_ > 0 and _atom_id2_[0][0] == _atom_id2[0]:
                             shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
 
                         if shift_ is not None and not self.ccU.hasBond(comp_id, _atom_id_[0], _atom_id2):
@@ -3223,23 +3232,23 @@ class BasePKParserListener():
 
                             if diff_ is not None and diff2_ is not None:
                                 if diff_ < diff and diff2_ < diff:
-                                    if diff_ < diff2_:
+                                    if diff_ < diff2_ and len_atom_id_ > 0:
                                         alt_swap_atom_id_1()
                                         continue
-                                    if diff_ > diff2_:
+                                    if diff_ > diff2_ and len_atom_id2_ > 0:
                                         alt_swap_atom_id_2()
                                         continue
-                                elif diff_ < diff:
+                                elif diff_ < diff and len_atom_id_ > 0:
                                     alt_swap_atom_id_1()
                                     continue
-                                elif diff2_ < diff:
+                                elif diff2_ < diff and len_atom_id2_ > 0:
                                     alt_swap_atom_id_2()
                                     continue
                                 else:
-                                    if diff_ < diff2_ and diff_ < 1.0:
+                                    if diff_ < diff2_ and diff_ < 1.0 and len_atom_id_ > 0:
                                         alt_swap_atom_id_1()
                                         continue
-                                    if diff_ > diff2_ and diff2_ < 1.0:
+                                    if diff_ > diff2_ and diff2_ < 1.0 and len_atom_id2_ > 0:
                                         alt_swap_atom_id_2()
                                         continue
 
@@ -3248,11 +3257,11 @@ class BasePKParserListener():
 
                                 continue
 
-                            if diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                            if diff_ is not None and (diff_ < diff or diff_ < 1.0) and len_atom_id_ > 0:
                                 alt_swap_atom_id_1()
                                 continue
 
-                            if diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                            if diff2_ is not None and (diff2_ < diff or diff2_ < 1.0) and len_atom_id2_ > 0:
                                 alt_swap_atom_id_2()
                                 continue
 
@@ -3264,9 +3273,9 @@ class BasePKParserListener():
                             alt_swap_atom_id_2()
                         elif 0 < len_atom_id_ < len_atom_id2_:
                             alt_swap_atom_id_1()
-                        elif len(atom_id2) < len(atom_id):
+                        elif len(atom_id2) < len(atom_id) and len_atom_id2_ > 0:
                             alt_swap_atom_id_2()
-                        elif len(atom_id) < len(atom_id2):
+                        elif len(atom_id) < len(atom_id2) and len_atom_id_ > 0:
                             alt_swap_atom_id_1()
                         else:
 
@@ -3402,10 +3411,13 @@ class BasePKParserListener():
                             _atom_id2_ = self.ccU.getBondedAtoms(comp_id, _atom_id, exclProton=_atom_id[0] in protonBeginCode, onlyProton=_atom_id[0] not in protonBeginCode)
                             _atom_id_ = self.ccU.getBondedAtoms(comp_id2, _atom_id2, exclProton=_atom_id2[0] in protonBeginCode, onlyProton=_atom_id2[0] not in protonBeginCode)
 
+                            len_atom_id_ = len(_atom_id_)
+                            len_atom_id2_ = len(_atom_id2_)
+
                             shift_ = shift2_ = None
-                            if len(_atom_id_) > 0 and _atom_id_[0][0] == _atom_id[0]:
+                            if len_atom_id_ > 0 and _atom_id_[0][0] == _atom_id[0]:
                                 shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, _atom_id_[0])
-                            if (len(_atom_id2_) > 0 and _atom_id2_[0][0] == _atom_id2[0]):
+                            if len_atom_id2_ > 0 and _atom_id2_[0][0] == _atom_id2[0]:
                                 shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
 
                             # pylint: disable=cell-var-from-loop
@@ -3436,31 +3448,31 @@ class BasePKParserListener():
 
                             if diff_ is not None and diff2_ is not None:
                                 if diff_ < diff and diff2_ < diff:
-                                    if diff_ < diff2_:
+                                    if diff_ < diff2_ and len_atom_id_ > 0:
                                         alt_swap_seq_atom_id_1()
                                         continue
-                                    if diff_ > diff2_:
+                                    if diff_ > diff2_ and len_atom_id2_ > 0:
                                         alt_swap_seq_atom_id_2()
                                         continue
-                                elif diff_ < diff:
+                                elif diff_ < diff and len_atom_id_ > 0:
                                     alt_swap_seq_atom_id_1()
                                     continue
-                                elif diff2_ < diff:
+                                elif diff2_ < diff and len_atom_id2_ > 0:
                                     alt_swap_seq_atom_id_2()
                                     continue
                                 else:
-                                    if diff_ < diff2_ and diff_ < 1.0:
+                                    if diff_ < diff2_ and diff_ < 1.0 and len_atom_id_ > 0:
                                         alt_swap_seq_atom_id_1()
                                         continue
-                                    if diff_ > diff2_ and diff2_ < 1.0:
+                                    if diff_ > diff2_ and diff2_ < 1.0 and len_atom_id2_ > 0:
                                         alt_swap_seq_atom_id_2()
                                         continue
 
-                            elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                            elif diff_ is not None and (diff_ < diff or diff_ < 1.0) and len_atom_id_ > 0:
                                 alt_swap_seq_atom_id_1()
                                 continue
 
-                            elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                            elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0) and len_atom_id2_ > 0:
                                 alt_swap_seq_atom_id_2()
                                 continue
 

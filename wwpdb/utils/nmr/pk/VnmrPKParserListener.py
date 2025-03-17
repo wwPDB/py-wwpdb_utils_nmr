@@ -272,7 +272,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                             assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
 
                 has_assignments, has_multiple_assignments, asis1, asis2 =\
-                    self.checkAssignments2D(index, assignments)
+                    self.checkAssignments2D(index, assignments, dstFunc)
 
             self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2,
@@ -384,7 +384,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                             assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
-                    self.checkAssignments3D(index, assignments)
+                    self.checkAssignments3D(index, assignments, dstFunc)
 
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
@@ -502,7 +502,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                             assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
-                    self.checkAssignments4D(index, assignments)
+                    self.checkAssignments4D(index, assignments, dstFunc)
 
             self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3, asis4,
@@ -623,7 +623,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                             assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
 
                 has_assignments, has_multiple_assignments, asis1, asis2 =\
-                    self.checkAssignments2D(index, assignments)
+                    self.checkAssignments2D(index, assignments, dstFunc)
 
             self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2,
@@ -728,7 +728,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                             assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
-                    self.checkAssignments3D(index, assignments)
+                    self.checkAssignments3D(index, assignments, dstFunc)
 
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
@@ -836,7 +836,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                             assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
-                    self.checkAssignments4D(index, assignments)
+                    self.checkAssignments4D(index, assignments, dstFunc)
 
             self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3, asis4,

@@ -308,7 +308,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                                 assignments[1] = ext
 
                 has_assignments, has_multiple_assignments, asis1, asis2 =\
-                    self.checkAssignments2D(index, assignments)
+                    self.checkAssignments2D(index, assignments, dstFunc)
 
             self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2,
@@ -480,7 +480,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                                 assignments[2] = ext
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
-                    self.checkAssignments3D(index, assignments)
+                    self.checkAssignments3D(index, assignments, dstFunc)
 
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
@@ -679,7 +679,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                                 assignments[3] = ext
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
-                    self.checkAssignments4D(index, assignments)
+                    self.checkAssignments4D(index, assignments, dstFunc)
 
             self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3, asis4,
@@ -794,7 +794,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                                 assignments[1] = ext
 
                 has_assignments, has_multiple_assignments, asis1, asis2 =\
-                    self.checkAssignments2D(index, assignments)
+                    self.checkAssignments2D(index, assignments, dstFunc)
 
             self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2,
@@ -929,7 +929,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                                 assignments[2] = ext
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
-                    self.checkAssignments3D(index, assignments)
+                    self.checkAssignments3D(index, assignments, dstFunc)
 
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
@@ -1084,7 +1084,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
                                 assignments[3] = ext
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
-                    self.checkAssignments4D(index, assignments)
+                    self.checkAssignments4D(index, assignments, dstFunc)
 
             self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3, asis4,

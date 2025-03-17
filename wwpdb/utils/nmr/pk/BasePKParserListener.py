@@ -2592,48 +2592,122 @@ class BasePKParserListener():
 
                             if shift is None and shift_ is not None:
                                 swap_seq_id_1()
+                                continue
 
-                            elif shift2 is None and shift2_ is not None:
+                            if shift2 is None and shift2_ is not None:
                                 swap_seq_id_2()
+                                continue
 
-                            elif shift is None and shift_ is None and None not in (shift2, shift2_):
+                            if shift is None and shift_ is None and None not in (shift2, shift2_):
                                 swap_seq_id_1()
+                                continue
 
-                            elif shift2 is None and shift2_ is None and None not in (shift, shift_):
+                            if shift2 is None and shift2_ is None and None not in (shift, shift_):
                                 swap_seq_id_2()
+                                continue
 
-                            continue
+                        else:
 
-                        diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
-                        diff *= 2.0
+                            diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                            diff *= 2.0
 
-                        diff_ = diff2_ = None
-                        if shift_ is not None:
-                            diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
-                        if shift2_ is not None:
-                            diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+                            diff_ = diff2_ = None
+                            if shift_ is not None:
+                                diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                            if shift2_ is not None:
+                                diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
 
-                        if diff_ is not None and diff2_ is not None:
-                            if diff_ < diff and diff2_ < diff:
-                                if diff_ < diff2_:
+                            if diff_ is not None and diff2_ is not None:
+                                if diff_ < diff and diff2_ < diff:
+                                    if diff_ < diff2_:
+                                        swap_seq_id_1()
+                                        continue
+                                    if diff_ > diff2_:
+                                        swap_seq_id_2()
+                                        continue
+                                elif diff_ < diff:
                                     swap_seq_id_1()
-                                elif diff_ > diff2_:
+                                    continue
+                                elif diff2_ < diff:
                                     swap_seq_id_2()
-                            elif diff_ < diff:
+                                    continue
+                                else:
+                                    if diff_ < diff2_ and diff_ < 1.0:
+                                        swap_seq_id_1()
+                                        continue
+                                    if diff_ > diff2_ and diff2_ < 1.0:
+                                        swap_seq_id_2()
+                                        continue
+
+                            elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
                                 swap_seq_id_1()
-                            elif diff2_ < diff:
+                                continue
+
+                            elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
                                 swap_seq_id_2()
-                            else:
-                                if diff_ < diff2_ and diff_ < 1.0:
-                                    swap_seq_id_1()
-                                elif diff_ > diff2_ and diff2_ < 1.0:
-                                    swap_seq_id_2()
+                                continue
 
-                        elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
-                            swap_seq_id_1()
+                            _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                            _atom_ids2 = self.nefT.get_valid_star_atom(comp_id2, atom_id2, leave_unmatched=False)[0]
 
-                        elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
-                            swap_seq_id_2()
+                            _atom_id, _atom_id2 = _atom_ids[0], _atom_ids2[0]
+
+                            _atom_id2_ = self.ccU.getBondedAtoms(comp_id, _atom_id, exclProton=_atom_id[0] in protonBeginCode, onlyProton=_atom_id[0] not in protonBeginCode)
+                            _atom_id_ = self.ccU.getBondedAtoms(comp_id2, _atom_id2, exclProton=_atom_id2[0] in protonBeginCode, onlyProton=_atom_id2[0] not in protonBeginCode)
+
+                            shift_ = shift2_ = None
+                            if len(_atom_id_) > 0 and _atom_id_[0][0] == _atom_id[0]:
+                                shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, _atom_id_[0])
+                            if (len(_atom_id2_) > 0 and _atom_id2_[0][0] == _atom_id2[0]):
+                                shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
+
+                            # pylint: disable=cell-var-from-loop
+                            def swap_seq_atom_id_1():
+                                if loop.data[idx][details_col] in emptyValue:
+                                    loop.data[idx][details_col] = f'{seq_id}:{comp_id}:{atom_id} -> {seq_id2}:{comp_id2}:{_atom_id_[0]}'
+                                loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')]
+                                loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_1}')] = _atom_id_[0]
+
+                            # pylint: disable=cell-var-from-loop
+                            def swap_seq_atom_id_2():
+                                if loop.data[idx][details_col] in emptyValue:
+                                    loop.data[idx][details_col] = f'{seq_id2}:{comp_id2}:{atom_id2} -> {seq_id}:{comp_id}:{_atom_id2_[0]}'
+                                loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')]
+                                loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = _atom_id2_[0]
+
+                            diff_ = diff2_ = None
+                            if shift_ is not None:
+                                diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                            if shift2_ is not None:
+                                diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+
+                            if diff_ is not None and diff2_ is not None:
+                                if diff_ < diff and diff2_ < diff:
+                                    if diff_ < diff2_:
+                                        swap_seq_atom_id_1()
+                                    if diff_ > diff2_:
+                                        swap_seq_atom_id_2()
+                                elif diff_ < diff:
+                                    swap_seq_atom_id_1()
+                                elif diff2_ < diff:
+                                    swap_seq_atom_id_2()
+                                else:
+                                    if diff_ < diff2_ and diff_ < 1.0:
+                                        swap_seq_atom_id_1()
+                                    if diff_ > diff2_ and diff2_ < 1.0:
+                                        swap_seq_atom_id_2()
+
+                            elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                                swap_seq_atom_id_1()
+
+                            elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                                swap_seq_atom_id_2()
 
                     elif chain_id != chain_id2:
                         position, position2 = row[4], row[9]
@@ -2917,48 +2991,122 @@ class BasePKParserListener():
 
                             if shift is None and shift_ is not None:
                                 alt_swap_seq_id_1()
+                                continue
 
-                            elif shift2 is None and shift2_ is not None:
+                            if shift2 is None and shift2_ is not None:
                                 alt_swap_seq_id_2()
+                                continue
 
-                            elif shift is None and shift_ is None and None not in (shift2, shift2_):
+                            if shift is None and shift_ is None and None not in (shift2, shift2_):
                                 alt_swap_seq_id_1()
+                                continue
 
-                            elif shift2 is None and shift2_ is None and None not in (shift, shift_):
+                            if shift2 is None and shift2_ is None and None not in (shift, shift_):
                                 alt_swap_seq_id_2()
+                                continue
 
-                            continue
+                        else:
 
-                        diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
-                        diff *= 2.0
+                            diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                            diff *= 2.0
 
-                        diff_ = diff2_ = None
-                        if shift_ is not None:
-                            diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
-                        if shift2_ is not None:
-                            diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+                            diff_ = diff2_ = None
+                            if shift_ is not None:
+                                diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                            if shift2_ is not None:
+                                diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
 
-                        if diff_ is not None and diff2_ is not None:
-                            if diff_ < diff and diff2_ < diff:
-                                if diff_ < diff2_:
+                            if diff_ is not None and diff2_ is not None:
+                                if diff_ < diff and diff2_ < diff:
+                                    if diff_ < diff2_:
+                                        alt_swap_seq_id_1()
+                                        continue
+                                    if diff_ > diff2_:
+                                        alt_swap_seq_id_2()
+                                        continue
+                                elif diff_ < diff:
                                     alt_swap_seq_id_1()
-                                elif diff_ > diff2_:
+                                    continue
+                                elif diff2_ < diff:
                                     alt_swap_seq_id_2()
-                            elif diff_ < diff:
+                                    continue
+                                else:
+                                    if diff_ < diff2_ and diff_ < 1.0:
+                                        alt_swap_seq_id_1()
+                                        continue
+                                    if diff_ > diff2_ and diff2_ < 1.0:
+                                        alt_swap_seq_id_2()
+                                        continue
+
+                            elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
                                 alt_swap_seq_id_1()
-                            elif diff2_ < diff:
+                                continue
+
+                            elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
                                 alt_swap_seq_id_2()
-                            else:
-                                if diff_ < diff2_ and diff_ < 1.0:
-                                    alt_swap_seq_id_1()
-                                elif diff_ > diff2_ and diff2_ < 1.0:
-                                    alt_swap_seq_id_2()
+                                continue
 
-                        elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
-                            alt_swap_seq_id_1()
+                            _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                            _atom_ids2 = self.nefT.get_valid_star_atom(comp_id2, atom_id2, leave_unmatched=False)[0]
 
-                        elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
-                            alt_swap_seq_id_2()
+                            _atom_id, _atom_id2 = _atom_ids[0], _atom_ids2[0]
+
+                            _atom_id2_ = self.ccU.getBondedAtoms(comp_id, _atom_id, exclProton=_atom_id[0] in protonBeginCode, onlyProton=_atom_id[0] not in protonBeginCode)
+                            _atom_id_ = self.ccU.getBondedAtoms(comp_id2, _atom_id2, exclProton=_atom_id2[0] in protonBeginCode, onlyProton=_atom_id2[0] not in protonBeginCode)
+
+                            shift_ = shift2_ = None
+                            if len(_atom_id_) > 0 and _atom_id_[0][0] == _atom_id[0]:
+                                shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, _atom_id_[0])
+                            if (len(_atom_id2_) > 0 and _atom_id2_[0][0] == _atom_id2[0]):
+                                shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
+
+                            # pylint: disable=cell-var-from-loop
+                            def alt_swap_seq_atom_id_1():
+                                if loop.data[idx][details_col] in emptyValue:
+                                    loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{seq_id}:{comp_id}:{atom_id} -> {seq_id2}:{comp_id2}:{_atom_id_[0]}'
+                                loop.data[idx - num_of_dim + dim_id_1][seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][comp_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col]
+                                loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] = _atom_id_[0]
+
+                            # pylint: disable=cell-var-from-loop
+                            def alt_swap_seq_atom_id_2():
+                                if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
+                                    loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{seq_id2}:{comp_id2}:{atom_id2} -> {seq_id}:{comp_id}:{_atom_id2_[0]}'
+                                loop.data[idx - num_of_dim + dim_id_2][seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][comp_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
+                                loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = _atom_id2_[0]
+
+                            diff_ = diff2_ = None
+                            if shift_ is not None:
+                                diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                            if shift2_ is not None:
+                                diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+
+                            if diff_ is not None and diff2_ is not None:
+                                if diff_ < diff and diff2_ < diff:
+                                    if diff_ < diff2_:
+                                        alt_swap_seq_atom_id_1()
+                                    if diff_ > diff2_:
+                                        alt_swap_seq_atom_id_2()
+                                elif diff_ < diff:
+                                    alt_swap_seq_atom_id_1()
+                                elif diff2_ < diff:
+                                    alt_swap_seq_atom_id_2()
+                                else:
+                                    if diff_ < diff2_ and diff_ < 1.0:
+                                        alt_swap_seq_atom_id_1()
+                                    if diff_ > diff2_ and diff2_ < 1.0:
+                                        alt_swap_seq_atom_id_2()
+
+                            elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                                alt_swap_seq_atom_id_1()
+
+                            elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                                alt_swap_seq_atom_id_2()
 
                     elif chain_id != chain_id2:
                         position, position2 = positions[_dim_id_1], positions[_dim_id_2]

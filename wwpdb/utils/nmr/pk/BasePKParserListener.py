@@ -1713,7 +1713,7 @@ class BasePKParserListener():
                     # determine 'onebond' coherence transfer based on assigned chemical shifts
                     history = self.onebond_idx_history[d][_id]
                     if len(history) > 0:
-                        onebond_idx = collections.Counter(history).most_common()[0][0]
+                        onebond_idx = self.onebond_idx_history[d][_id] = collections.Counter(history).most_common()[0][0]
                         if d == 2:
                             _dim_id1, _dim_id2 = ONEBOND_DIM_PAT_2D[onebond_idx]
                             _dim_id1, _dim_id2 = _dim_id1 + 1, _dim_id2 + 1
@@ -4368,8 +4368,7 @@ class BasePKParserListener():
                                 self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2])
                                 if self.reasons is not None and 'onebond_idx_history' in self.reasons:
-                                    history = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
-                                    onebond_idx = collections.Counter(history).most_common()[0][0]
+                                    onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
                                     _atom1, _atom2 = self.atomSelectionSet[ONEBOND_DIM_PAT_2D[onebond_idx][0]][0], self.atomSelectionSet[ONEBOND_DIM_PAT_2D[onebond_idx][1]][0]
                                     if _atom1['chain_id'] != _atom2['chain_id']\
                                        or _atom1['seq_id'] != _atom2['seq_id']\
@@ -4378,7 +4377,7 @@ class BasePKParserListener():
                                                                                                    float(dstFunc[f'position_{ONEBOND_DIM_PAT_2D[onebond_idx][0] + 1}']),
                                                                                                    float(dstFunc[f'position_{ONEBOND_DIM_PAT_2D[onebond_idx][1] + 1}'])):
                                             has_assignments = False
-                                if not has_long_range:
+                                if not has_long_range and has_assignments:
                                     if hasInterChainRestraint(self.atomSelectionSet):
                                         has_long_range = True
                                         if 'long_range' not in primary_specral_dim:
@@ -4482,8 +4481,7 @@ class BasePKParserListener():
                                 self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3])
                                 if self.reasons is not None and 'onebond_idx_history' in self.reasons:
-                                    history = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
-                                    onebond_idx = collections.Counter(history).most_common()[0][0]
+                                    onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
                                     _atom1, _atom2 = self.atomSelectionSet[ONEBOND_DIM_PAT_3D[onebond_idx][0]][0], self.atomSelectionSet[ONEBOND_DIM_PAT_3D[onebond_idx][1]][0]
                                     if _atom1['chain_id'] != _atom2['chain_id']\
                                        or _atom1['seq_id'] != _atom2['seq_id']\
@@ -4492,7 +4490,7 @@ class BasePKParserListener():
                                                                                                    float(dstFunc[f'position_{ONEBOND_DIM_PAT_3D[onebond_idx][0] + 1}']),
                                                                                                    float(dstFunc[f'position_{ONEBOND_DIM_PAT_3D[onebond_idx][1] + 1}'])):
                                             has_assignments = False
-                                if not has_long_range:
+                                if not has_long_range and has_assignments:
                                     if hasInterChainRestraint(self.atomSelectionSet):
                                         has_long_range = True
                                         if 'long_range' not in primary_specral_dim:
@@ -4603,8 +4601,7 @@ class BasePKParserListener():
                                 self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3, asis4])
                                 if self.reasons is not None and 'onebond_idx_history' in self.reasons:
-                                    history = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
-                                    onebond_idx = collections.Counter(history).most_common()[0][0]
+                                    onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
                                     _atom1, _atom2, _atom3, _atom4 =\
                                         self.atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][0][0]][0], self.atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][0][1]][0], \
                                         self.atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][1][0]][0], self.atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][1][1]][0]
@@ -4624,7 +4621,7 @@ class BasePKParserListener():
                                                                                                    float(dstFunc[f'position_{ONEBOND_DIM_PAT_4D[onebond_idx][1][0] + 1}']),
                                                                                                    float(dstFunc[f'position_{ONEBOND_DIM_PAT_4D[onebond_idx][1][1] + 1}'])):
                                             has_assignments = False
-                                if not has_long_range:
+                                if not has_long_range and has_assignments:
                                     if hasInterChainRestraint(self.atomSelectionSet):
                                         has_long_range = True
                                         if 'long_range' not in primary_specral_dim:

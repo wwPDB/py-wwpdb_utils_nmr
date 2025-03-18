@@ -3284,7 +3284,7 @@ class NEFTranslator:
                     row.append(def_chain_id)
                 loop.add_tag(chain_id)
             else:
-                _tags_exist = False
+                _tags_exist = _normal_chain_tag = False
                 for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
                     _tags = [seq_id + '_' + str(j), comp_id + '_' + str(j), chain_id + '_' + str(j)]
                     _tags_ = [seq_id + '_' + str(j), comp_id + '_' + str(j)]
@@ -3303,7 +3303,8 @@ class NEFTranslator:
                             if row_[2] in emptyValue:
                                 row_[2] = def_chain_id
                         seq_data += seq_data_
-                    elif set(_tags__) & set(loop.tags) == set(_tags__):  # DAOTHER-7421
+                        _normal_chain_tag = True
+                    elif set(_tags__) & set(loop.tags) == set(_tags__) and not _normal_chain_tag:  # DAOTHER-7421
                         _tags_exist = True
                         seq_data_ = loop.get_tag(_tags__)
                         for row_ in seq_data_:
@@ -3325,7 +3326,8 @@ class NEFTranslator:
                             if row_[2] in emptyValue:
                                 row_[2] = def_chain_id
                         seq_data += seq_data_
-                    elif set(_alt_tags__) & set(loop.tags) == set(_alt_tags__):  # DAOTHER-7421
+                        _normal_chain_tag = True
+                    elif set(_alt_tags__) & set(loop.tags) == set(_alt_tags__) and not _normal_chain_tag:  # DAOTHER-7421
                         _tags_exist = True
                         seq_data_ = loop.get_tag(_alt_tags__)
                         for row_ in seq_data_:

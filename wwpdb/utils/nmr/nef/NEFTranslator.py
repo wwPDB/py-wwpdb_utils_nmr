@@ -3304,12 +3304,14 @@ class NEFTranslator:
                                 row_[2] = def_chain_id
                         seq_data += seq_data_
                         _normal_chain_tag = True
-                    elif set(_tags__) & set(loop.tags) == set(_tags__) and not _normal_chain_tag:  # DAOTHER-7421
+                    elif set(_tags__) & set(loop.tags) == set(_tags__):  # DAOTHER-7421
                         _tags_exist = True
                         seq_data_ = loop.get_tag(_tags__)
                         for row_ in seq_data_:
                             row_[2] = def_chain_id if row_[2] in emptyValue else str(row_[2] if self.__remediation_mode else letterToDigit(row_[2], 1))
                         seq_data += seq_data_
+                        if _normal_chain_tag:
+                            raise LookupError(f"Missing mandatory {_tags[2]!r} loop tag.")
                     elif set(_tags_) & set(loop.tags) == set(_tags_):
                         _tags_exist = True
                         seq_data_ = loop.get_tag(_tags_)
@@ -3327,12 +3329,14 @@ class NEFTranslator:
                                 row_[2] = def_chain_id
                         seq_data += seq_data_
                         _normal_chain_tag = True
-                    elif set(_alt_tags__) & set(loop.tags) == set(_alt_tags__) and not _normal_chain_tag:  # DAOTHER-7421
+                    elif set(_alt_tags__) & set(loop.tags) == set(_alt_tags__):  # DAOTHER-7421
                         _tags_exist = True
                         seq_data_ = loop.get_tag(_alt_tags__)
                         for row_ in seq_data_:
                             row_[2] = def_chain_id if row_[2] in emptyValue else str(row_[2] if self.__remediation_mode else letterToDigit(row_[2], 1))
                         seq_data += seq_data_
+                        if _normal_chain_tag:
+                            raise LookupError(f"Missing mandatory {_alt_tags[2]!r} loop tag.")
                     elif set(_alt_tags_) & set(loop.tags) == set(_alt_tags_):
                         _tags_exist = True
                         seq_data_ = loop.get_tag(_alt_tags_)
@@ -3345,8 +3349,8 @@ class NEFTranslator:
                         return self.get_star_seq(star_data, lp_category, 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_asym_ID',
                                                  alt_seq_id, alt_seq_id_offset, alt_chain_id, allow_empty, allow_gap, coord_assembly_checker)
 
-                    missing_tags = list(set(tags) - set(loop.tags))
-                    raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+                    # missing_tags = list(set(tags) - set(loop.tags))
+                    # raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             if allow_empty:
                 # seq_data = list(filter(is_data, seq_data))

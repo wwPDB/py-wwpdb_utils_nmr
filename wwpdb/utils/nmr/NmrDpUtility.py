@@ -17977,7 +17977,10 @@ class NmrDpUtility:
 
                 if file_type == 'nmr-star':
 
-                    auth_poly_seq = self.__nefT.get_star_auth_seq(sf, lp_category)[0]
+                    try:
+                        auth_poly_seq = self.__nefT.get_star_auth_seq(sf, lp_category)[0]
+                    except LookupError:
+                        return has_poly_seq
 
                     for ps in poly_seq:
                         chain_id, seq_ids, comp_ids = ps['chain_id'], ps['seq_id'], ps['comp_id']
@@ -18089,17 +18092,15 @@ class NmrDpUtility:
                 if self.__verbose:
                     self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ KeyError  - {str(e)}\n")
 
-        except LookupError:
-            # """
-            # self.report.error.appendDescription('missing_mandatory_item',
-            #                                     {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
-            #                                      'description': str(e).strip("'")})
-            # self.report.setError()
+        except LookupError as e:
 
-            # self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ LookupError  - "
-            #                  f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
-            # """
-            pass
+            self.report.error.appendDescription('missing_mandatory_item',
+                                                {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
+                                                 'description': str(e).strip("'")})
+            self.report.setError()
+
+            self.__lfh.write(f"+{self.__class_name__}.__extractPolymerSequenceInLoop() ++ LookupError  - "
+                             f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
 

@@ -4377,7 +4377,7 @@ class BasePKParserListener():
                             has_assignments &= self.validateAtomType(1, self.atomSelectionSet[0][0]['atom_id'][0])
                             has_assignments &= self.validateAtomType(2, self.atomSelectionSet[1][0]['atom_id'][0])
                             if has_assignments:
-                                self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
+                                self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2])
                                 if self.reasons is not None and 'onebond_idx_history' in self.reasons:
                                     onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
@@ -4490,7 +4490,7 @@ class BasePKParserListener():
                             has_assignments &= self.validateAtomType(2, self.atomSelectionSet[1][0]['atom_id'][0])
                             has_assignments &= self.validateAtomType(3, self.atomSelectionSet[2][0]['atom_id'][0])
                             if has_assignments:
-                                self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
+                                self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3])
                                 if self.reasons is not None and 'onebond_idx_history' in self.reasons:
                                     onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
@@ -4610,7 +4610,7 @@ class BasePKParserListener():
                             has_assignments &= self.validateAtomType(3, self.atomSelectionSet[2][0]['atom_id'][0])
                             has_assignments &= self.validateAtomType(4, self.atomSelectionSet[3][0]['atom_id'][0])
                             if has_assignments:
-                                self.atomSelectionSets.append(copy.copy(self.atomSelectionSet))
+                                self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3, asis4])
                                 if self.reasons is not None and 'onebond_idx_history' in self.reasons:
                                     onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]

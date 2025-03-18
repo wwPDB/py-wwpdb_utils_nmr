@@ -7480,12 +7480,18 @@ class NEFTranslator:
 
             if details is not None and self.__csStat.peptideLike(comp_id) and len_atom_id > 2 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
                 if atom_id[2] in ('A', 'B'):
+                    _details = None
                     for n in ['1', '2'] if atom_id[2] == 'A' else ['3', '2']:
                         _atom_id = atom_id[:2] + n + (atom_id[3:] if len_atom_id > 3 else '')
                         _atom_list, _ambiguity_code, _details = self.get_star_atom(comp_id, _atom_id, None, leave_unmatched, methyl_only)
                         if _details is None:
                             atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                             break
+                    if _details is not None:
+                        _atom_id = atom_id[:2] + (atom_id[3:] if len_atom_id > 3 else '')
+                        _atom_list, _ambiguity_code, _details = self.get_star_atom(comp_id, _atom_id, None, leave_unmatched, methyl_only)
+                        if _details is None:
+                            atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                 elif len_atom_id > 3 and atom_id[3] in ('A', 'B'):
                     for n in ['1', '2'] if atom_id[3] == 'A' else ['3', '2']:
                         _atom_id = atom_id[:3] + n + (atom_id[4:] if len_atom_id > 4 else '')

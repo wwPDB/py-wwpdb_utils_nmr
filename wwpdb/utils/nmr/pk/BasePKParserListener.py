@@ -941,6 +941,7 @@ class BasePKParserListener():
     acq_dim_id = 1
     spectral_dim = {}
     spectral_dim_transfer = {}
+    atom_type_history = {}
     onebond_idx_history = {}
     jcoupling_idx_history = {}
     relayed_idx_history = {}
@@ -1152,6 +1153,7 @@ class BasePKParserListener():
         self.cur_spectral_dim = {}
         self.spectral_dim = {}
         self.spectral_dim_transfer = {}
+        self.atom_type_history = {}
         self.onebond_idx_history = {}
         self.jcoupling_idx_history = {}
         self.relayed_idx_history = {}
@@ -1488,6 +1490,10 @@ class BasePKParserListener():
             self.spectral_dim_transfer[self.num_of_dim] = {}
         if self.cur_list_id not in self.spectral_dim_transfer[self.num_of_dim]:
             self.spectral_dim_transfer[self.num_of_dim][self.cur_list_id] = []
+        if self.num_of_dim not in self.atom_type_history:
+            self.atom_type_history[self.num_of_dim] = {}
+        if self.cur_list_id not in self.atom_type_history[self.num_of_dim]:
+            self.atom_type_history[self.num_of_dim][self.cur_list_id] = []
         if self.num_of_dim not in self.onebond_idx_history:
             self.onebond_idx_history[self.num_of_dim] = {}
         if self.cur_list_id not in self.onebond_idx_history[self.num_of_dim]:
@@ -1677,6 +1683,7 @@ class BasePKParserListener():
                             __v['_spectral_region'] = 'H-aromatic' if has_a else 'HN'
                         else:
                             __v['_spectral_region'] = __v['spectral_region']
+                        self.atom_type_history[d][_id].append(__v['atom_type'])
 
             for d, v in self.spectral_dim.items():
                 for _id, cur_spectral_dim in v.items():
@@ -2396,6 +2403,8 @@ class BasePKParserListener():
                         if not has_assign:
                             continue
 
+                        self.__remediatePeakAssignmentForAtomType(d, self.atom_type_history[d][_id], sf['peak_row_format'], lp)
+
                         if any(transfer['type'] == 'onebond' for transfer in cur_spectral_dim_transfer):
                             onebond_dim_transfers = [[transfer['spectral_dim_id_1'], transfer['spectral_dim_id_2']]
                                                      for transfer in cur_spectral_dim_transfer
@@ -2461,6 +2470,29 @@ class BasePKParserListener():
                                             break
 
                             self.__remediatePeakAssignmentForRelayedTransfer(d, relayed_dim_transfers, sf['peak_row_format'], lp)
+
+    def __canRemediatePeakAssignmentForAtomType(self) -> bool:
+
+        atom_type = self.reasons['atom_type_history'][self.num_of_dim][self.cur_list_id]
+
+        for col, atom_sel in enumerate(self.atomSelectionSet):
+
+            atom_id = atom_sel[0]['atom_id']
+
+            if atom_id in emptyValue:
+                continue
+
+            if atom_id[0] in protonBeginCode:
+
+                if atom_type[col] == 'H':
+                    continue
+
+                return False
+
+            if atom_id[0] != atom_type[col] and atom_type[col] in ('C', 'N', 'P', 'F'):
+                return False
+
+        return True
 
     def __canRemediatePeakAssignmentForOneBondTransfer(self, atom1: dict, atom2: dict, position: float, position2: float) -> bool:
 
@@ -2817,6 +2849,71 @@ class BasePKParserListener():
                 return True
 
         return False
+
+    def __remediatePeakAssignmentForAtomType(self, num_of_dim: int, atom_type: List[str], use_peak_row_format: bool, loop: pynmrstar.Loop):
+
+        is_reparsable = self.reasons is None and self.software_name != 'PIPP'
+
+        if not is_reparsable:
+            return
+
+        if use_peak_row_format:
+
+            tags = [f'Atom_ID_{dim_id}' for dim_id in range(1, num_of_dim + 1)]
+
+            dat = loop.get_tag(tags)
+
+            for row in dat:
+
+                for col in range(num_of_dim):
+
+                    atom_id = row[col]
+
+                    if atom_id in emptyValue:
+                        continue
+
+                    if atom_id[0] in protonBeginCode:
+
+                        if atom_type[col] == 'H':
+                            continue
+
+                        self.reasonsForReParsing['atom_type_history'] = self.atom_type_history
+
+                        return
+
+                    if atom_id[0] != atom_type[col] and atom_type[col] in ('C', 'N', 'P', 'F'):
+
+                        self.reasonsForReParsing['atom_type_history'] = self.atom_type_history
+
+                        return
+
+        else:
+
+            tags = ['Spectral_dim_ID', 'Atom_ID']
+
+            dat = loop.get_tag(tags)
+
+            for row in dat:
+
+                col, atom_id = row[0] - 1, row[1]
+
+                if atom_id in emptyValue:
+                    continue
+
+                if atom_id[0] in protonBeginCode:
+
+                    if atom_type[col] == 'H':
+                        continue
+
+                    self.reasonsForReParsing['atom_type_history'] = self.atom_type_history
+
+                    return
+
+                if atom_id[0] != atom_type[col] and atom_type[col] in ('C', 'N', 'P', 'F'):
+
+                    self.reasonsForReParsing['atom_type_history'] = self.atom_type_history
+
+                    return
 
     def __remediatePeakAssignmentForOneBondTransfer(self, num_of_dim: int, onebond_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
 
@@ -4697,6 +4794,9 @@ class BasePKParserListener():
                                 self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2])
                                 if self.reasons is not None:
+                                    if 'atom_type_history' in self.reasons:
+                                        if not self.__canRemediatePeakAssignmentForAtomType():
+                                            has_assignments = False
                                     if 'onebond_idx_history' in self.reasons:
                                         onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
                                         _atom1, _atom2 =\
@@ -4837,6 +4937,9 @@ class BasePKParserListener():
                                 self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3])
                                 if self.reasons is not None:
+                                    if 'atom_type_history' in self.reasons:
+                                        if not self.__canRemediatePeakAssignmentForAtomType():
+                                            has_assignments = False
                                     if 'onebond_idx_history' in self.reasons:
                                         onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
                                         _atom1, _atom2 =\
@@ -4984,6 +5087,9 @@ class BasePKParserListener():
                                 self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3, asis4])
                                 if self.reasons is not None:
+                                    if 'atom_type_history' in self.reasons:
+                                        if not self.__canRemediatePeakAssignmentForAtomType():
+                                            has_assignments = False
                                     if 'onebond_idx_history' in self.reasons:
                                         onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
                                         _atom1, _atom2, _atom3, _atom4 =\

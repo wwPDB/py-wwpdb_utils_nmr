@@ -2071,6 +2071,7 @@ class CnsMRParserListener(ParseTreeListener):
                                and (isAmbigAtomSelection(self.atomSelectionSet[i], self.__csStat)
                                     or isAmbigAtomSelection(self.atomSelectionSet[i + 1], self.__csStat))):
                             sf['constraint_subsubtype'] = 'ambi'
+
                         if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                             upperLimit = float(dstFunc['upper_limit'])
                             if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
@@ -10089,8 +10090,6 @@ class CnsMRParserListener(ParseTreeListener):
         if content_subtype is None:
             return
 
-        self.__cur_constraint_type = constraintType
-
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
@@ -10169,6 +10168,8 @@ class CnsMRParserListener(ParseTreeListener):
                     self.sfDict[key] = [self.sfDict[old_key].pop(-1)]
             if not replaced:
                 self.__addSf(constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)
+
+        self.__cur_constraint_type = constraintType
 
         return self.sfDict[key][-1]
 

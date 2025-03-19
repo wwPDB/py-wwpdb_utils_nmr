@@ -1519,6 +1519,7 @@ class AmberMRParserListener(ParseTreeListener):
                                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                                             or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                                         sf['constraint_subsubtype'] = 'ambi'
+
                                     if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                                         upperLimit = float(dstFunc['upper_limit'])
                                         if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
@@ -3725,6 +3726,7 @@ class AmberMRParserListener(ParseTreeListener):
                                        and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
                                             or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                                         sf['constraint_subsubtype'] = 'ambi'
+
                                     if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
                                         upperLimit = float(dstFunc['upper_limit'])
                                         if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
@@ -11392,8 +11394,6 @@ class AmberMRParserListener(ParseTreeListener):
         if content_subtype is None:
             return
 
-        self.__cur_constraint_type = constraintType
-
         self.__listIdCounter = incListIdCounter(self.__cur_subtype, self.__listIdCounter)
 
         key = (self.__cur_subtype, constraintType, potentialType, rdcCode, None)
@@ -11464,6 +11464,8 @@ class AmberMRParserListener(ParseTreeListener):
                             sf.add_tag('Details', rdcCode)
             if not replaced:
                 self.__addSf(constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)
+
+        self.__cur_constraint_type = constraintType
 
         return self.sfDict[key][-1]
 

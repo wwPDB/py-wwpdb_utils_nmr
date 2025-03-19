@@ -225,9 +225,9 @@ PEAK_HALF_SPIN_NUCLEUS = ('H', 'Q', 'M', 'C', 'N', 'P', 'F')
 MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER = 0.2
 
 
-ONEBOND_DIM_PAT_2D = ((0, 1), )
-ONEBOND_DIM_PAT_3D = ((0, 1), (1, 2), (2, 0))
-ONEBOND_DIM_PAT_4D = (((0, 1), (2, 3)), ((0, 2), (1, 3)), ((0, 3), (1, 2)))
+DIM_TRANSFER_PAT_2D = ((0, 1), )
+DIM_TRANSFER_PAT_3D = ((0, 1), (1, 2), (2, 0))
+DIM_TRANSFER_PAT_4D = (((0, 1), (2, 3)), ((0, 2), (1, 3)), ((0, 3), (1, 2)))
 
 
 def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, d: int, cur_spectral_dim: dict) -> str:
@@ -942,6 +942,8 @@ class BasePKParserListener():
     spectral_dim = {}
     spectral_dim_transfer = {}
     onebond_idx_history = {}
+    jcoupling_idx_history = {}
+    relayed_idx_history = {}
     spectrum_name = None
 
     # whether to allow extended sequence temporary
@@ -1151,6 +1153,8 @@ class BasePKParserListener():
         self.spectral_dim = {}
         self.spectral_dim_transfer = {}
         self.onebond_idx_history = {}
+        self.jcoupling_idx_history = {}
+        self.relayed_idx_history = {}
         self.listIdInternal = {}
         self.chainNumberDict = {}
         self.extResKey = []
@@ -1488,6 +1492,14 @@ class BasePKParserListener():
             self.onebond_idx_history[self.num_of_dim] = {}
         if self.cur_list_id not in self.onebond_idx_history[self.num_of_dim]:
             self.onebond_idx_history[self.num_of_dim][self.cur_list_id] = []
+        if self.num_of_dim not in self.jcoupling_idx_history:
+            self.jcoupling_idx_history[self.num_of_dim] = {}
+        if self.cur_list_id not in self.jcoupling_idx_history[self.num_of_dim]:
+            self.jcoupling_idx_history[self.num_of_dim][self.cur_list_id] = -1
+        if self.num_of_dim not in self.relayed_idx_history:
+            self.relayed_idx_history[self.num_of_dim] = {}
+        if self.cur_list_id not in self.relayed_idx_history[self.num_of_dim]:
+            self.relayed_idx_history[self.num_of_dim][self.cur_list_id] = -1
         if self.num_of_dim == 2:
             self.peaks2D = 0
         if self.num_of_dim == 3:
@@ -1715,7 +1727,7 @@ class BasePKParserListener():
                     if len(history) > 0:
                         onebond_idx = self.onebond_idx_history[d][_id] = collections.Counter(history).most_common()[0][0]
                         if d == 2:
-                            _dim_id1, _dim_id2 = ONEBOND_DIM_PAT_2D[onebond_idx]
+                            _dim_id1, _dim_id2 = DIM_TRANSFER_PAT_2D[onebond_idx]
                             _dim_id1, _dim_id2 = _dim_id1 + 1, _dim_id2 + 1
                             if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                        if _transfer['type'] == 'onebond'
@@ -1727,7 +1739,7 @@ class BasePKParserListener():
                                             'indirect': 'no'}
                                 cur_spectral_dim_transfer.append(transfer)
                         elif d == 3:
-                            _dim_id1, _dim_id2 = ONEBOND_DIM_PAT_3D[onebond_idx]
+                            _dim_id1, _dim_id2 = DIM_TRANSFER_PAT_3D[onebond_idx]
                             _dim_id1, _dim_id2 = _dim_id1 + 1, _dim_id2 + 1
                             if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                        if _transfer['type'] == 'onebond'
@@ -1739,7 +1751,7 @@ class BasePKParserListener():
                                             'indirect': 'no'}
                                 cur_spectral_dim_transfer.append(transfer)
                         elif d == 4:
-                            (_dim_id1, _dim_id2), (_dim_id3, _dim_id4) = ONEBOND_DIM_PAT_4D[onebond_idx]
+                            (_dim_id1, _dim_id2), (_dim_id3, _dim_id4) = DIM_TRANSFER_PAT_4D[onebond_idx]
                             _dim_id1, _dim_id2, _dim_id3, _dim_id4 = _dim_id1 + 1, _dim_id2 + 1, _dim_id3 + 1, _dim_id4 + 1
                             if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                        if _transfer['type'] == 'onebond'
@@ -2396,6 +2408,28 @@ class BasePKParserListener():
                                                        for transfer in cur_spectral_dim_transfer
                                                        if transfer['type'] == 'jcoupling']
 
+                            for (_dim_id_1, _dim_id_2) in jcoupling_dim_transfers:
+                                _pair = set([_dim_id_1 - 1, _dim_id_2 - 1])
+                                if d == 2:
+                                    for jcoupling_idx, (__dim_id_1, __dim_id_2) in enumerate(DIM_TRANSFER_PAT_2D):
+                                        __pair = set([__dim_id_1, __dim_id_2])
+                                        if _pair == __pair:
+                                            self.jcoupling_idx_history[d][_id] = jcoupling_idx
+                                            break
+                                elif d == 3:
+                                    for jcoupling_idx, (__dim_id_1, __dim_id_2) in enumerate(DIM_TRANSFER_PAT_3D):
+                                        __pair = set([__dim_id_1, __dim_id_2])
+                                        if _pair == __pair:
+                                            self.jcoupling_idx_history[d][_id] = jcoupling_idx
+                                            break
+                                elif d == 4:
+                                    for jcoupling_idx, ((__dim_id_1, __dim_id_2), (__dim_id_3, __dim_id_4)) in enumerate(DIM_TRANSFER_PAT_3D):
+                                        __pair_1 = set([__dim_id_1, __dim_id_2])
+                                        __pair_2 = set([__dim_id_3, __dim_id_4])
+                                        if _pair in (__pair_1, __pair_2):
+                                            self.jcoupling_idx_history[d][_id] = jcoupling_idx
+                                            break
+
                             self.__remediatePeakAssignmentForJcouplingTransfer(d, jcoupling_dim_transfers, sf['peak_row_format'], lp)
 
                         if any(transfer['type'] == 'relayed' for transfer in cur_spectral_dim_transfer)\
@@ -2403,6 +2437,28 @@ class BasePKParserListener():
                             relayed_dim_transfers = [[transfer['spectral_dim_id_1'], transfer['spectral_dim_id_2']]
                                                      for transfer in cur_spectral_dim_transfer
                                                      if transfer['type'] == 'relayed']
+
+                            for (_dim_id_1, _dim_id_2) in relayed_dim_transfers:
+                                _pair = set([_dim_id_1 - 1, _dim_id_2 - 1])
+                                if d == 2:
+                                    for relayed_idx, (__dim_id_1, __dim_id_2) in enumerate(DIM_TRANSFER_PAT_2D):
+                                        __pair = set([__dim_id_1, __dim_id_2])
+                                        if _pair == __pair:
+                                            self.relayed_idx_history[d][_id] = relayed_idx
+                                            break
+                                elif d == 3:
+                                    for relayed_idx, (__dim_id_1, __dim_id_2) in enumerate(DIM_TRANSFER_PAT_3D):
+                                        __pair = set([__dim_id_1, __dim_id_2])
+                                        if _pair == __pair:
+                                            self.relayed_idx_history[d][_id] = relayed_idx
+                                            break
+                                elif d == 4:
+                                    for relayed_idx, ((__dim_id_1, __dim_id_2), (__dim_id_3, __dim_id_4)) in enumerate(DIM_TRANSFER_PAT_3D):
+                                        __pair_1 = set([__dim_id_1, __dim_id_2])
+                                        __pair_2 = set([__dim_id_3, __dim_id_4])
+                                        if _pair in (__pair_1, __pair_2):
+                                            self.relayed_idx_history[d][_id] = relayed_idx
+                                            break
 
                             self.__remediatePeakAssignmentForRelayedTransfer(d, relayed_dim_transfers, sf['peak_row_format'], lp)
 
@@ -2658,6 +2714,110 @@ class BasePKParserListener():
 
         return False
 
+    def __canRemediatePeakAssignmentForJcouplingTransfer(self, atom1: dict, atom2: dict, position: float, position2: float) -> bool:
+
+        chain_id, seq_id, comp_id, atom_id, chain_id2, seq_id2, comp_id2, atom_id2 =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'], \
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+
+        if chain_id == chain_id2 and seq_id == seq_id2 and comp_id == comp_id2:
+            return True
+
+        if chain_id == chain_id2 and seq_id != seq_id2:
+            shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+            shift2, weight2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
+
+            if None in (shift, shift2):
+                return False
+
+            shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)
+            shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)
+
+            diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+            diff *= 2.0
+
+            diff_ = diff2_ = None
+            if shift_ is not None:
+                diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+            if shift2_ is not None:
+                diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+
+            if diff_ is not None and diff2_ is not None:
+                if diff_ < diff and diff2_ < diff:
+                    if diff_ < diff2_:
+                        return True
+                    if diff_ > diff2_:
+                        return True
+                elif diff_ < diff:
+                    return True
+                elif diff2_ < diff:
+                    return True
+                else:
+                    if diff_ < diff2_ and diff_ < 1.0:
+                        return True
+                    if diff_ > diff2_ and diff2_ < 1.0:
+                        return True
+
+            elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                return True
+
+            elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                return True
+
+        return False
+
+    def __canRemediatePeakAssignmentForRelayedTransfer(self, atom1: dict, atom2: dict, position: float, position2: float) -> bool:
+
+        chain_id, seq_id, comp_id, atom_id, chain_id2, seq_id2, comp_id2, atom_id2 =\
+            atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'], \
+            atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
+
+        if chain_id == chain_id2 and abs(seq_id - seq_id2) < 2:
+            return True
+
+        if chain_id == chain_id2:
+            shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
+            shift2, weight2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
+
+            if None in (shift, shift2):
+                return False
+
+            shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)
+            shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)
+
+            diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+            diff *= 2.0
+
+            diff_ = diff2_ = None
+            if shift_ is not None:
+                diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+            if shift2_ is not None:
+                diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+
+            if diff_ is not None and diff2_ is not None:
+                if diff_ < diff and diff2_ < diff:
+                    if diff_ < diff2_:
+                        return True
+                    if diff_ > diff2_:
+                        return True
+                elif diff_ < diff:
+                    return True
+                elif diff2_ < diff:
+                    return True
+                else:
+                    if diff_ < diff2_ and diff_ < 1.0:
+                        return True
+                    if diff_ > diff2_ and diff2_ < 1.0:
+                        return True
+
+            elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                return True
+
+            elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                return True
+
+        return False
+
     def __remediatePeakAssignmentForOneBondTransfer(self, num_of_dim: int, onebond_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
 
         is_reparsable = self.reasons is None and self.software_name != 'PIPP'
@@ -2786,8 +2946,9 @@ class BasePKParserListener():
                                 swap_atom_id_2()
                                 continue
 
-                            if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                            if is_reparsable:
                                 self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                                is_reparsable = False
 
                         if len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] != _atom_id_[0][0] and atom_id2[0] == _atom_id2_[0][0]:
                             swap_atom_id_2()
@@ -2803,8 +2964,9 @@ class BasePKParserListener():
                             swap_atom_id_1()
                         else:
 
-                            if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                            if is_reparsable:
                                 self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                                is_reparsable = False
 
                             if _atom_id2[0] in protonBeginCode and len_atom_id2_ > 0:
                                 swap_atom_id_2()
@@ -2864,8 +3026,9 @@ class BasePKParserListener():
 
                             if shift is None and shift2 is None:
 
-                                if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                                if is_reparsable:
                                     self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                                    is_reparsable = False
 
                                 continue
 
@@ -2918,8 +3081,9 @@ class BasePKParserListener():
                                         swap_seq_id_2()
                                         continue
 
-                                if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                                if is_reparsable:
                                     self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                                    is_reparsable = False
 
                                 continue
 
@@ -3004,8 +3168,9 @@ class BasePKParserListener():
                                 swap_seq_atom_id_2()
                                 continue
 
-                            if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                            if is_reparsable:
                                 self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                                is_reparsable = False
 
                     elif chain_id != chain_id2:
                         position, position2 = row[4], row[9]
@@ -3056,8 +3221,9 @@ class BasePKParserListener():
 
                             if shift is None and shift2 is None:
 
-                                if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                                if is_reparsable:
                                     self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                                    is_reparsable = False
 
                                 continue
 
@@ -3077,8 +3243,9 @@ class BasePKParserListener():
                                 swap_chain_seq_id_2()
                                 continue
 
-                            if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                            if is_reparsable:
                                 self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                                is_reparsable = False
 
                             continue
 
@@ -3121,8 +3288,9 @@ class BasePKParserListener():
                             swap_chain_seq_id_2()
                             continue
 
-                        if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                        if is_reparsable:
                             self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                            is_reparsable = False
 
             else:
 
@@ -3252,8 +3420,9 @@ class BasePKParserListener():
                                         alt_swap_atom_id_2()
                                         continue
 
-                                if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                                if is_reparsable:
                                     self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                                    is_reparsable = False
 
                                 continue
 
@@ -3279,8 +3448,9 @@ class BasePKParserListener():
                             alt_swap_atom_id_1()
                         else:
 
-                            if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                            if is_reparsable:
                                 self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                                is_reparsable = False
 
                             if _atom_id2[0] in protonBeginCode and len_atom_id2_ > 0:
                                 alt_swap_atom_id_2()
@@ -3336,8 +3506,9 @@ class BasePKParserListener():
 
                             if shift is None and shift2 is None:
 
-                                if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                                if is_reparsable:
                                     self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                                    is_reparsable = False
 
                                 continue
 
@@ -3390,8 +3561,9 @@ class BasePKParserListener():
                                         alt_swap_seq_id_2()
                                         continue
 
-                                if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                                if is_reparsable:
                                     self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                                    is_reparsable = False
 
                                 continue
 
@@ -3476,8 +3648,9 @@ class BasePKParserListener():
                                 alt_swap_seq_atom_id_2()
                                 continue
 
-                        if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                        if is_reparsable:
                             self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                            is_reparsable = False
 
                     elif chain_id != chain_id2:
                         position, position2 = positions[_dim_id_1], positions[_dim_id_2]
@@ -3522,8 +3695,9 @@ class BasePKParserListener():
 
                             if shift is None and shift2 is None:
 
-                                if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                                if is_reparsable:
                                     self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                                    is_reparsable = False
 
                                 continue
 
@@ -3543,8 +3717,9 @@ class BasePKParserListener():
                                 alt_swap_chain_seq_id_2()
                                 continue
 
-                            if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                            if is_reparsable:
                                 self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                                is_reparsable = False
 
                             continue
 
@@ -3587,10 +3762,13 @@ class BasePKParserListener():
                             alt_swap_chain_seq_id_2()
                             continue
 
-                        if is_reparsable and 'onebond_idx_history' not in self.reasonsForReParsing:
+                        if is_reparsable:
                             self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
+                            is_reparsable = False
 
     def __remediatePeakAssignmentForJcouplingTransfer(self, num_of_dim: int, jcoupling_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
+
+        is_reparsable = self.reasons is None and self.software_name != 'PIPP'
 
         details_col = loop.tags.index('Details')
 
@@ -3638,81 +3816,90 @@ class BasePKParserListener():
                         shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
                         shift2, weight2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
 
-                        if None in (shift, shift2):
-                            continue
+                        # pylint: disable=cell-var-from-loop
+                        def swap_seq_id_1():
+                            if loop.data[idx][details_col] in emptyValue:
+                                loop.data[idx][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
+                            loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')]
+                            loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')]
+                            loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')]
+                            loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')]
 
-                        diff = abs(position - shift) * weight
-                        diff2 = abs(position2 - shift2) * weight2
-
-                        if diff < diff2:
-                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)[0] is not None:
-                                if loop.data[idx][details_col] in emptyValue:
-                                    loop.data[idx][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
-                                loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')]
-                                loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')]
-                                loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')]
-                                loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')]
-
-                        elif diff > diff2:
-                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)[0] is not None:
-                                if loop.data[idx][details_col] in emptyValue:
-                                    loop.data[idx][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
-                                loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')]
-                                loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')]
-                                loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')]
-                                loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')]
-
-                    elif chain_id != chain_id2:
-                        position, position2 = row[4], row[9]
-
-                        if isinstance(position, str):
-                            position = float(position)
-
-                        if isinstance(position2, str):
-                            position2 = float(position2)
-
-                        shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
-                        shift2, weight2 = self.__getCsValue(chain_id2, seq_id2, comp_id2, atom_id2)
+                        # pylint: disable=cell-var-from-loop
+                        def swap_seq_id_2():
+                            if loop.data[idx][details_col] in emptyValue:
+                                loop.data[idx][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
+                            loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')]
+                            loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')]
+                            loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')]
+                            loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')]
 
                         if None in (shift, shift2):
+
+                            if is_reparsable:
+                                self.reasonsForReParsing['jcoupling_idx_history'] = self.jcoupling_idx_history
+                                is_reparsable = False
+
                             continue
 
-                        diff = abs(position - shift) * weight
-                        diff2 = abs(position2 - shift2) * weight2
+                        shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)
+                        shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)
 
-                        if diff < diff2:
-                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)[0] is not None:
-                                if loop.data[idx][details_col] in emptyValue:
-                                    loop.data[idx][details_col] = f'{chain_id2}:{seq_id2}:{comp_id2} -> {chain_id}:{seq_id}:{comp_id}'
-                                loop.data[idx][loop.tags.index(f'Entity_assembly_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Entity_assembly_ID_{dim_id_1}')]
-                                loop.data[idx][loop.tags.index(f'Entity_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Entity_ID_{dim_id_1}')]
-                                loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')]
-                                loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')]
-                                loop.data[idx][loop.tags.index(f'Auth_asym_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_asym_ID_{dim_id_1}')]
-                                loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')]
-                                loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')]
+                        diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        diff *= 2.0
 
-                        elif diff > diff2:
-                            if self.__getCsValue(chain_id2, seq_id2, comp_id2, atom_id)[0] is not None:
-                                if loop.data[idx][details_col] in emptyValue:
-                                    loop.data[idx][details_col] = f'{chain_id}:{seq_id}:{comp_id} -> {chain_id2}:{seq_id2}:{comp_id2}'
-                                loop.data[idx][loop.tags.index(f'Entity_assembly_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Entity_assembly_ID_{dim_id_2}')]
-                                loop.data[idx][loop.tags.index(f'Entity_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Entity_ID_{dim_id_2}')]
-                                loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')]
-                                loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')]
-                                loop.data[idx][loop.tags.index(f'Auth_asym_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_asym_ID_{dim_id_2}')]
-                                loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')]
-                                loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')]
+                        diff_ = diff2_ = None
+                        if shift_ is not None:
+                            diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        if shift2_ is not None:
+                            diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+
+                        if diff_ is not None and diff2_ is not None:
+                            if diff_ < diff and diff2_ < diff:
+                                if diff_ < diff2_:
+                                    swap_seq_id_1()
+                                    continue
+                                if diff_ > diff2_:
+                                    swap_seq_id_2()
+                                    continue
+                            elif diff_ < diff:
+                                swap_seq_id_1()
+                                continue
+                            elif diff2_ < diff:
+                                swap_seq_id_2()
+                                continue
+                            else:
+                                if diff_ < diff2_ and diff_ < 1.0:
+                                    swap_seq_id_1()
+                                    continue
+                                if diff_ > diff2_ and diff2_ < 1.0:
+                                    swap_seq_id_2()
+                                    continue
+
+                        elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                            swap_seq_id_1()
+                            continue
+
+                        elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                            swap_seq_id_2()
+                            continue
+
+                        if is_reparsable:
+                            self.reasonsForReParsing['jcoupling_idx_history'] = self.jcoupling_idx_history
+                            is_reparsable = False
+
+                    else:
+
+                        if is_reparsable:
+                            self.reasonsForReParsing['jcoupling_idx_history'] = self.jcoupling_idx_history
+                            is_reparsable = False
 
             else:
 
                 tags = ['Peak_ID', 'Spectral_dim_ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID', 'Val']
 
-                chain_id_col = loop.tags.index('Entity_assembly_ID')
-                entity_id_col = loop.tags.index('Entity_ID')
                 seq_id_col = loop.tags.index('Comp_index_ID')
                 comp_id_col = loop.tags.index('Comp_ID')
-                auth_chain_id_col = loop.tags.index('Auth_asym_ID')
                 auth_seq_id_col = loop.tags.index('Auth_seq_ID')
                 auth_comp_id_col = loop.tags.index('Auth_comp_ID')
 
@@ -3759,65 +3946,87 @@ class BasePKParserListener():
                         shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
                         shift2, weight2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
 
-                        if None in (shift, shift2):
-                            continue
+                        # pylint: disable=cell-var-from-loop
+                        def alt_swap_seq_id_1():
+                            if loop.data[idx][details_col] in emptyValue:
+                                loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
+                            loop.data[idx - num_of_dim + dim_id_1][seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_1][comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][comp_id_col]
+                            loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col]
 
-                        diff = abs(position - shift) * weight
-                        diff2 = abs(position2 - shift2) * weight2
-
-                        if diff < diff2:
-                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)[0] is not None:
-                                if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
-                                    loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
-                                loop.data[idx - num_of_dim + dim_id_2][seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][seq_id_col]
-                                loop.data[idx - num_of_dim + dim_id_2][comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][comp_id_col]
-                                loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col]
-                                loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
-
-                        elif diff > diff2:
-                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)[0] is not None:
-                                if loop.data[idx][details_col] in emptyValue:
-                                    loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
-                                loop.data[idx - num_of_dim + dim_id_1][seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][seq_id_col]
-                                loop.data[idx - num_of_dim + dim_id_1][comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][comp_id_col]
-                                loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col]
-                                loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col]
-
-                    elif chain_id != chain_id2:
-                        shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
-                        shift2, weight2 = self.__getCsValue(chain_id2, seq_id2, comp_id2, atom_id2)
+                        # pylint: disable=cell-var-from-loop
+                        def alt_swap_seq_id_2():
+                            if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
+                                loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
+                            loop.data[idx - num_of_dim + dim_id_2][seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_2][comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][comp_id_col]
+                            loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
 
                         if None in (shift, shift2):
+
+                            if is_reparsable:
+                                self.reasonsForReParsing['jcoupling_idx_history'] = self.jcoupling_idx_history
+                                is_reparsable = False
+
                             continue
 
-                        diff = abs(position - shift) * weight
-                        diff2 = abs(position2 - shift2) * weight2
+                        shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)
+                        shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)
 
-                        if diff < diff2:
-                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)[0] is not None:
-                                if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
-                                    loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{chain_id2}:{seq_id2}:{comp_id2} -> {chain_id}:{seq_id}:{comp_id}'
-                                loop.data[idx - num_of_dim + dim_id_2][chain_id_col] = loop.data[idx - num_of_dim + dim_id_1][chain_id_col]
-                                loop.data[idx - num_of_dim + dim_id_2][entity_id_col] = loop.data[idx - num_of_dim + dim_id_1][entity_id_col]
-                                loop.data[idx - num_of_dim + dim_id_2][seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][seq_id_col]
-                                loop.data[idx - num_of_dim + dim_id_2][comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][comp_id_col]
-                                loop.data[idx - num_of_dim + dim_id_2][auth_chain_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_chain_id_col]
-                                loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col]
-                                loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
+                        diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        diff *= 2.0
 
-                        elif diff > diff2:
-                            if self.__getCsValue(chain_id2, seq_id2, comp_id2, atom_id)[0] is not None:
-                                if loop.data[idx][details_col] in emptyValue:
-                                    loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{chain_id}:{seq_id}:{comp_id} -> {chain_id2}:{seq_id2}:{comp_id2}'
-                                loop.data[idx - num_of_dim + dim_id_1][chain_id_col] = loop.data[idx - num_of_dim + dim_id_2][chain_id_col]
-                                loop.data[idx - num_of_dim + dim_id_1][entity_id_col] = loop.data[idx - num_of_dim + dim_id_2][entity_id_col]
-                                loop.data[idx - num_of_dim + dim_id_1][seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][seq_id_col]
-                                loop.data[idx - num_of_dim + dim_id_1][comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][comp_id_col]
-                                loop.data[idx - num_of_dim + dim_id_1][auth_chain_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_chain_id_col]
-                                loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col]
-                                loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col]
+                        diff_ = diff2_ = None
+                        if shift_ is not None:
+                            diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        if shift2_ is not None:
+                            diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+
+                        if diff_ is not None and diff2_ is not None:
+                            if diff_ < diff and diff2_ < diff:
+                                if diff_ < diff2_:
+                                    alt_swap_seq_id_1()
+                                    continue
+                                if diff_ > diff2_:
+                                    alt_swap_seq_id_2()
+                                    continue
+                            elif diff_ < diff:
+                                alt_swap_seq_id_1()
+                                continue
+                            elif diff2_ < diff:
+                                alt_swap_seq_id_2()
+                                continue
+                            else:
+                                if diff_ < diff2_ and diff_ < 1.0:
+                                    alt_swap_seq_id_1()
+                                    continue
+                                if diff_ > diff2_ and diff2_ < 1.0:
+                                    alt_swap_seq_id_2()
+                                    continue
+
+                        elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                            alt_swap_seq_id_1()
+                            continue
+
+                        elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                            alt_swap_seq_id_2()
+                            continue
+
+                        if is_reparsable:
+                            self.reasonsForReParsing['jcoupling_idx_history'] = self.jcoupling_idx_history
+                            is_reparsable = False
+
+                    else:
+
+                        if is_reparsable:
+                            self.reasonsForReParsing['jcoupling_idx_history'] = self.jcoupling_idx_history
+                            is_reparsable = False
 
     def __remediatePeakAssignmentForRelayedTransfer(self, num_of_dim: int, relayed_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
+
+        is_reparsable = self.reasons is None and self.software_name != 'PIPP'
 
         details_col = loop.tags.index('Details')
 
@@ -3850,10 +4059,10 @@ class BasePKParserListener():
                     if isinstance(seq_id2, str):
                         seq_id2 = int(seq_id2)
 
-                    if chain_id != chain_id2 or (seq_id == seq_id2 and comp_id == comp_id2):
+                    if chain_id == chain_id2 and abs(seq_id - seq_id2) < 2:
                         continue
 
-                    if abs(seq_id - seq_id2) > 1:
+                    if chain_id == chain_id2:
                         position, position2 = row[4], row[9]
 
                         if isinstance(chain_id, int):
@@ -3868,29 +4077,83 @@ class BasePKParserListener():
                         shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
                         shift2, weight2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
 
+                        # pylint: disable=cell-var-from-loop
+                        def swap_seq_id_1():
+                            if loop.data[idx][details_col] in emptyValue:
+                                loop.data[idx][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
+                            loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')]
+                            loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')]
+                            loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')]
+                            loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')]
+
+                        # pylint: disable=cell-var-from-loop
+                        def swap_seq_id_2():
+                            if loop.data[idx][details_col] in emptyValue:
+                                loop.data[idx][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
+                            loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')]
+                            loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')]
+                            loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')]
+                            loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')]
+
                         if None in (shift, shift2):
+
+                            if is_reparsable:
+                                self.reasonsForReParsing['relayed_idx_history'] = self.relayed_idx_history
+                                is_reparsable = False
+
                             continue
 
-                        diff = abs(position - shift) * weight
-                        diff2 = abs(position2 - shift2) * weight2
+                        shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)
+                        shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)
 
-                        if diff < diff2:
-                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)[0] is not None:
-                                if loop.data[idx][details_col] in emptyValue:
-                                    loop.data[idx][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
-                                loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')]
-                                loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')]
-                                loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')]
-                                loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')]
+                        diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        diff *= 2.0
 
-                        elif diff > diff2:
-                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)[0] is not None:
-                                if loop.data[idx][details_col] in emptyValue:
-                                    loop.data[idx][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
-                                loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')]
-                                loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')]
-                                loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')]
-                                loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')]
+                        diff_ = diff2_ = None
+                        if shift_ is not None:
+                            diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        if shift2_ is not None:
+                            diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+
+                        if diff_ is not None and diff2_ is not None:
+                            if diff_ < diff and diff2_ < diff:
+                                if diff_ < diff2_:
+                                    swap_seq_id_1()
+                                    continue
+                                if diff_ > diff2_:
+                                    swap_seq_id_2()
+                                    continue
+                            elif diff_ < diff:
+                                swap_seq_id_1()
+                                continue
+                            elif diff2_ < diff:
+                                swap_seq_id_2()
+                                continue
+                            else:
+                                if diff_ < diff2_ and diff_ < 1.0:
+                                    swap_seq_id_1()
+                                    continue
+                                if diff_ > diff2_ and diff2_ < 1.0:
+                                    swap_seq_id_2()
+                                    continue
+
+                        elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                            swap_seq_id_1()
+                            continue
+
+                        elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                            swap_seq_id_2()
+                            continue
+
+                        if is_reparsable:
+                            self.reasonsForReParsing['relayed_idx_history'] = self.relayed_idx_history
+                            is_reparsable = False
+
+                    else:
+
+                        if is_reparsable:
+                            self.reasonsForReParsing['relayed_idx_history'] = self.relayed_idx_history
+                            is_reparsable = False
 
             else:
 
@@ -3937,10 +4200,10 @@ class BasePKParserListener():
                         chain_ids[_dim_id_1], seq_ids[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], positions[_dim_id_1], \
                         chain_ids[_dim_id_2], seq_ids[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2], positions[_dim_id_2]
 
-                    if chain_id != chain_id2 or (seq_id == seq_id2 and comp_id == comp_id2):
+                    if chain_id == chain_id2 and abs(seq_id - seq_id2) < 2:
                         continue
 
-                    if abs(seq_id - seq_id2) > 1:
+                    if chain_id == chain_id2:
                         chain_id = chain_ids[_dim_id_1]
 
                         if isinstance(chain_id, int):
@@ -3949,29 +4212,83 @@ class BasePKParserListener():
                         shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, atom_id)
                         shift2, weight2 = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id2)
 
+                        # pylint: disable=cell-var-from-loop
+                        def alt_swap_seq_id_1():
+                            if loop.data[idx][details_col] in emptyValue:
+                                loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
+                            loop.data[idx - num_of_dim + dim_id_1][seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_1][comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][comp_id_col]
+                            loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col]
+
+                        # pylint: disable=cell-var-from-loop
+                        def alt_swap_seq_id_2():
+                            if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
+                                loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
+                            loop.data[idx - num_of_dim + dim_id_2][seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_2][comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][comp_id_col]
+                            loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col]
+                            loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
+
                         if None in (shift, shift2):
+
+                            if is_reparsable:
+                                self.reasonsForReParsing['relayed_idx_history'] = self.relayed_idx_history
+                                is_reparsable = False
+
                             continue
 
-                        diff = abs(position - shift) * weight
-                        diff2 = abs(position2 - shift2) * weight2
+                        shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)
+                        shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)
 
-                        if diff < diff2:
-                            if self.__getCsValue(chain_id, seq_id, comp_id, atom_id2)[0] is not None:
-                                if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
-                                    loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{seq_id2}:{comp_id2} -> {seq_id}:{comp_id}'
-                                loop.data[idx - num_of_dim + dim_id_2][seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][seq_id_col]
-                                loop.data[idx - num_of_dim + dim_id_2][comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][comp_id_col]
-                                loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col]
-                                loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
+                        diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        diff *= 2.0
 
-                        elif diff > diff2:
-                            if self.__getCsValue(chain_id, seq_id2, comp_id2, atom_id)[0] is not None:
-                                if loop.data[idx][details_col] in emptyValue:
-                                    loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{seq_id}:{comp_id} -> {seq_id2}:{comp_id2}'
-                                loop.data[idx - num_of_dim + dim_id_1][seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][seq_id_col]
-                                loop.data[idx - num_of_dim + dim_id_1][comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][comp_id_col]
-                                loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col]
-                                loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col]
+                        diff_ = diff2_ = None
+                        if shift_ is not None:
+                            diff_ = ((position - shift_) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
+                        if shift2_ is not None:
+                            diff2_ = ((position - shift) * weight) ** 2 + ((position2 - shift2_) * weight2) ** 2
+
+                        if diff_ is not None and diff2_ is not None:
+                            if diff_ < diff and diff2_ < diff:
+                                if diff_ < diff2_:
+                                    alt_swap_seq_id_1()
+                                    continue
+                                if diff_ > diff2_:
+                                    alt_swap_seq_id_2()
+                                    continue
+                            elif diff_ < diff:
+                                alt_swap_seq_id_1()
+                                continue
+                            elif diff2_ < diff:
+                                alt_swap_seq_id_2()
+                                continue
+                            else:
+                                if diff_ < diff2_ and diff_ < 1.0:
+                                    alt_swap_seq_id_1()
+                                    continue
+                                if diff_ > diff2_ and diff2_ < 1.0:
+                                    alt_swap_seq_id_2()
+                                    continue
+
+                        elif diff_ is not None and (diff_ < diff or diff_ < 1.0):
+                            alt_swap_seq_id_1()
+                            continue
+
+                        elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0):
+                            alt_swap_seq_id_2()
+                            continue
+
+                        if is_reparsable:
+                            self.reasonsForReParsing['relayed_idx_history'] = self.relayed_idx_history
+                            is_reparsable = False
+
+                    else:
+
+                        if is_reparsable:
+                            self.reasonsForReParsing['relayed_idx_history'] = self.relayed_idx_history
+                            is_reparsable = False
 
     def __getCsValue(self, chain_id: str, seq_id: int, comp_id: str, atom_id: str) -> Tuple[Optional[float], Optional[float]]:
 
@@ -4379,16 +4696,43 @@ class BasePKParserListener():
                             if has_assignments:
                                 self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2])
-                                if self.reasons is not None and 'onebond_idx_history' in self.reasons:
-                                    onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
-                                    _atom1, _atom2 = self.atomSelectionSet[ONEBOND_DIM_PAT_2D[onebond_idx][0]][0], self.atomSelectionSet[ONEBOND_DIM_PAT_2D[onebond_idx][1]][0]
-                                    if _atom1['chain_id'] != _atom2['chain_id']\
-                                       or _atom1['seq_id'] != _atom2['seq_id']\
-                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
-                                        if not self.__canRemediatePeakAssignmentForOneBondTransfer(_atom1, _atom2,
-                                                                                                   float(dstFunc[f'position_{ONEBOND_DIM_PAT_2D[onebond_idx][0] + 1}']),
-                                                                                                   float(dstFunc[f'position_{ONEBOND_DIM_PAT_2D[onebond_idx][1] + 1}'])):
-                                            has_assignments = False
+                                if self.reasons is not None:
+                                    if 'onebond_idx_history' in self.reasons:
+                                        onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
+                                        _atom1, _atom2 =\
+                                            self.atomSelectionSet[DIM_TRANSFER_PAT_2D[onebond_idx][0]][0], self.atomSelectionSet[DIM_TRANSFER_PAT_2D[onebond_idx][1]][0]
+                                        if _atom1['chain_id'] != _atom2['chain_id']\
+                                           or _atom1['seq_id'] != _atom2['seq_id']\
+                                           or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                            if not self.__canRemediatePeakAssignmentForOneBondTransfer(
+                                                    _atom1, _atom2,
+                                                    float(dstFunc[f'position_{DIM_TRANSFER_PAT_2D[onebond_idx][0] + 1}']),
+                                                    float(dstFunc[f'position_{DIM_TRANSFER_PAT_2D[onebond_idx][1] + 1}'])):
+                                                has_assignments = False
+                                    if 'jcoupling_idx_history' in self.reasons:
+                                        jcoupling_idx = self.reasons['jcoupling_idx_history'][self.num_of_dim][self.cur_list_id]
+                                        if jcoupling_idx != -1:
+                                            _atom1, _atom2 =\
+                                                self.atomSelectionSet[DIM_TRANSFER_PAT_2D[jcoupling_idx][0]][0], self.atomSelectionSet[DIM_TRANSFER_PAT_2D[jcoupling_idx][1]][0]
+                                            if _atom1['chain_id'] != _atom2['chain_id']\
+                                               or _atom1['seq_id'] != _atom2['seq_id']:
+                                                if not self.__canRemediatePeakAssignmentForJcouplingTransfer(
+                                                        _atom1, _atom2,
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_2D[jcoupling_idx][0] + 1}']),
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_2D[jcoupling_idx][1] + 1}'])):
+                                                    has_assignments = False
+                                    if 'relayed_idx_history' in self.reasons:
+                                        relayed_idx = self.reasons['relayed_idx_history'][self.num_of_dim][self.cur_list_id]
+                                        if relayed_idx != -1:
+                                            _atom1, _atom2 =\
+                                                self.atomSelectionSet[DIM_TRANSFER_PAT_2D[relayed_idx][0]][0], self.atomSelectionSet[DIM_TRANSFER_PAT_2D[relayed_idx][1]][0]
+                                            if _atom1['chain_id'] != _atom2['chain_id']\
+                                               or _atom1['seq_id'] != _atom2['seq_id']:
+                                                if not self.__canRemediatePeakAssignmentForRelayedTransfer(
+                                                        _atom1, _atom2,
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_2D[relayed_idx][0] + 1}']),
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_2D[relayed_idx][1] + 1}'])):
+                                                    has_assignments = False
                                 if not has_long_range and has_assignments:
                                     if hasInterChainRestraint(self.atomSelectionSet):
                                         has_long_range = True
@@ -4492,16 +4836,43 @@ class BasePKParserListener():
                             if has_assignments:
                                 self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3])
-                                if self.reasons is not None and 'onebond_idx_history' in self.reasons:
-                                    onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
-                                    _atom1, _atom2 = self.atomSelectionSet[ONEBOND_DIM_PAT_3D[onebond_idx][0]][0], self.atomSelectionSet[ONEBOND_DIM_PAT_3D[onebond_idx][1]][0]
-                                    if _atom1['chain_id'] != _atom2['chain_id']\
-                                       or _atom1['seq_id'] != _atom2['seq_id']\
-                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
-                                        if not self.__canRemediatePeakAssignmentForOneBondTransfer(_atom1, _atom2,
-                                                                                                   float(dstFunc[f'position_{ONEBOND_DIM_PAT_3D[onebond_idx][0] + 1}']),
-                                                                                                   float(dstFunc[f'position_{ONEBOND_DIM_PAT_3D[onebond_idx][1] + 1}'])):
-                                            has_assignments = False
+                                if self.reasons is not None:
+                                    if 'onebond_idx_history' in self.reasons:
+                                        onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
+                                        _atom1, _atom2 =\
+                                            self.atomSelectionSet[DIM_TRANSFER_PAT_3D[onebond_idx][0]][0], self.atomSelectionSet[DIM_TRANSFER_PAT_3D[onebond_idx][1]][0]
+                                        if _atom1['chain_id'] != _atom2['chain_id']\
+                                           or _atom1['seq_id'] != _atom2['seq_id']\
+                                           or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                            if not self.__canRemediatePeakAssignmentForOneBondTransfer(
+                                                    _atom1, _atom2,
+                                                    float(dstFunc[f'position_{DIM_TRANSFER_PAT_3D[onebond_idx][0] + 1}']),
+                                                    float(dstFunc[f'position_{DIM_TRANSFER_PAT_3D[onebond_idx][1] + 1}'])):
+                                                has_assignments = False
+                                    if 'jcoupling_idx_history' in self.reasons:
+                                        jcoupling_idx = self.reasons['jcoupling_idx_history'][self.num_of_dim][self.cur_list_id]
+                                        if jcoupling_idx != -1:
+                                            _atom1, _atom2 =\
+                                                self.atomSelectionSet[DIM_TRANSFER_PAT_3D[jcoupling_idx][0]][0], self.atomSelectionSet[DIM_TRANSFER_PAT_3D[jcoupling_idx][1]][0]
+                                            if _atom1['chain_id'] != _atom2['chain_id']\
+                                               or _atom1['seq_id'] != _atom2['seq_id']:
+                                                if not self.__canRemediatePeakAssignmentForJcouplingTransfer(
+                                                        _atom1, _atom2,
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_3D[jcoupling_idx][0] + 1}']),
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_3D[jcoupling_idx][1] + 1}'])):
+                                                    has_assignments = False
+                                    if 'relayed_idx_history' in self.reasons:
+                                        relayed_idx = self.reasons['relayed_idx_history'][self.num_of_dim][self.cur_list_id]
+                                        if jcoupling_idx != -1:
+                                            _atom1, _atom2 =\
+                                                self.atomSelectionSet[DIM_TRANSFER_PAT_3D[relayed_idx][0]][0], self.atomSelectionSet[DIM_TRANSFER_PAT_3D[relayed_idx][1]][0]
+                                            if _atom1['chain_id'] != _atom2['chain_id']\
+                                               or _atom1['seq_id'] != _atom2['seq_id']:
+                                                if not self.__canRemediatePeakAssignmentForRelayedTransfer(
+                                                        _atom1, _atom2,
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_3D[relayed_idx][0] + 1}']),
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_3D[relayed_idx][1] + 1}'])):
+                                                    has_assignments = False
                                 if not has_long_range and has_assignments:
                                     if hasInterChainRestraint(self.atomSelectionSet):
                                         has_long_range = True
@@ -4612,27 +4983,76 @@ class BasePKParserListener():
                             if has_assignments:
                                 self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3, asis4])
-                                if self.reasons is not None and 'onebond_idx_history' in self.reasons:
-                                    onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
-                                    _atom1, _atom2, _atom3, _atom4 =\
-                                        self.atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][0][0]][0], self.atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][0][1]][0], \
-                                        self.atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][1][0]][0], self.atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][1][1]][0]
-                                    if _atom1['chain_id'] != _atom2['chain_id']\
-                                       or _atom1['seq_id'] != _atom2['seq_id']\
-                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0]\
-                                       or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
-                                        if not self.__canRemediatePeakAssignmentForOneBondTransfer(_atom1, _atom2,
-                                                                                                   float(dstFunc[f'position_{ONEBOND_DIM_PAT_4D[onebond_idx][0][0] + 1}']),
-                                                                                                   float(dstFunc[f'position_{ONEBOND_DIM_PAT_4D[onebond_idx][0][1] + 1}'])):
-                                            has_assignments = False
-                                    if _atom3['chain_id'] != _atom4['chain_id']\
-                                       or _atom3['seq_id'] != _atom4['seq_id']\
-                                       or _atom3['atom_id'][0] == _atom4['atom_id'][0]\
-                                       or _atom3['atom_id'][0] == _atom4['atom_id'][0] or not self.ccU.hasBond(_atom3['comp_id'], _atom3['atom_id'], _atom4['atom_id']):
-                                        if not self.__canRemediatePeakAssignmentForOneBondTransfer(_atom3, _atom4,
-                                                                                                   float(dstFunc[f'position_{ONEBOND_DIM_PAT_4D[onebond_idx][1][0] + 1}']),
-                                                                                                   float(dstFunc[f'position_{ONEBOND_DIM_PAT_4D[onebond_idx][1][1] + 1}'])):
-                                            has_assignments = False
+                                if self.reasons is not None:
+                                    if 'onebond_idx_history' in self.reasons:
+                                        onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
+                                        _atom1, _atom2, _atom3, _atom4 =\
+                                            self.atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][0]][0], \
+                                            self.atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][1]][0], \
+                                            self.atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][0]][0], \
+                                            self.atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][1]][0]
+                                        if _atom1['chain_id'] != _atom2['chain_id']\
+                                           or _atom1['seq_id'] != _atom2['seq_id']\
+                                           or _atom1['atom_id'][0] == _atom2['atom_id'][0]\
+                                           or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                            if not self.__canRemediatePeakAssignmentForOneBondTransfer(
+                                                    _atom1, _atom2,
+                                                    float(dstFunc[f'position_{DIM_TRANSFER_PAT_4D[onebond_idx][0][0] + 1}']),
+                                                    float(dstFunc[f'position_{DIM_TRANSFER_PAT_4D[onebond_idx][0][1] + 1}'])):
+                                                has_assignments = False
+                                        if _atom3['chain_id'] != _atom4['chain_id']\
+                                           or _atom3['seq_id'] != _atom4['seq_id']\
+                                           or _atom3['atom_id'][0] == _atom4['atom_id'][0]\
+                                           or _atom3['atom_id'][0] == _atom4['atom_id'][0] or not self.ccU.hasBond(_atom3['comp_id'], _atom3['atom_id'], _atom4['atom_id']):
+                                            if not self.__canRemediatePeakAssignmentForOneBondTransfer(
+                                                    _atom3, _atom4,
+                                                    float(dstFunc[f'position_{DIM_TRANSFER_PAT_4D[onebond_idx][1][0] + 1}']),
+                                                    float(dstFunc[f'position_{DIM_TRANSFER_PAT_4D[onebond_idx][1][1] + 1}'])):
+                                                has_assignments = False
+                                    if 'jcoupling_idx_history' in self.reasons:
+                                        jcoupling_idx = self.reasons['jcoupling_idx_history'][self.num_of_dim][self.cur_list_id]
+                                        if jcoupling_idx != -1:
+                                            _atom1, _atom2, _atom3, _atom4 =\
+                                                self.atomSelectionSet[DIM_TRANSFER_PAT_4D[jcoupling_idx][0][0]][0], \
+                                                self.atomSelectionSet[DIM_TRANSFER_PAT_4D[jcoupling_idx][0][1]][0], \
+                                                self.atomSelectionSet[DIM_TRANSFER_PAT_4D[jcoupling_idx][1][0]][0], \
+                                                self.atomSelectionSet[DIM_TRANSFER_PAT_4D[jcoupling_idx][1][1]][0]
+                                            if _atom1['chain_id'] != _atom2['chain_id']\
+                                               or _atom1['seq_id'] != _atom2['seq_id']:
+                                                if not self.__canRemediatePeakAssignmentForJcouplingTransfer(
+                                                        _atom1, _atom2,
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_4D[jcoupling_idx][0][0] + 1}']),
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_4D[jcoupling_idx][0][1] + 1}'])):
+                                                    has_assignments = False
+                                            if _atom3['chain_id'] != _atom4['chain_id']\
+                                               or _atom3['seq_id'] != _atom4['seq_id']:
+                                                if not self.__canRemediatePeakAssignmentForJcouplingTransfer(
+                                                        _atom3, _atom4,
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_4D[jcoupling_idx][1][0] + 1}']),
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_4D[jcoupling_idx][1][1] + 1}'])):
+                                                    has_assignments = False
+                                    if 'relayed_idx_history' in self.reasons:
+                                        relayed_idx = self.reasons['relayed_idx_history'][self.num_of_dim][self.cur_list_id]
+                                        if jcoupling_idx != -1:
+                                            _atom1, _atom2, _atom3, _atom4 =\
+                                                self.atomSelectionSet[DIM_TRANSFER_PAT_4D[relayed_idx][0][0]][0], \
+                                                self.atomSelectionSet[DIM_TRANSFER_PAT_4D[relayed_idx][0][1]][0], \
+                                                self.atomSelectionSet[DIM_TRANSFER_PAT_4D[relayed_idx][1][0]][0], \
+                                                self.atomSelectionSet[DIM_TRANSFER_PAT_4D[relayed_idx][1][1]][0]
+                                            if _atom1['chain_id'] != _atom2['chain_id']\
+                                               or _atom1['seq_id'] != _atom2['seq_id']:
+                                                if not self.__canRemediatePeakAssignmentForRelayedTransfer(
+                                                        _atom1, _atom2,
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_4D[relayed_idx][0][0] + 1}']),
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_4D[relayed_idx][0][1] + 1}'])):
+                                                    has_assignments = False
+                                            if _atom3['chain_id'] != _atom4['chain_id']\
+                                               or _atom3['seq_id'] != _atom4['seq_id']:
+                                                if not self.__canRemediatePeakAssignmentForRelayedTransfer(
+                                                        _atom3, _atom4,
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_4D[relayed_idx][1][0] + 1}']),
+                                                        float(dstFunc[f'position_{DIM_TRANSFER_PAT_4D[relayed_idx][1][1] + 1}'])):
+                                                    has_assignments = False
                                 if not has_long_range and has_assignments:
                                     if hasInterChainRestraint(self.atomSelectionSet):
                                         has_long_range = True
@@ -4793,7 +5213,7 @@ class BasePKParserListener():
                     history = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
                     if self.software_name != 'PIPP':
                         for atomSelectionSet in self.atomSelectionSets:
-                            for onebond_idx, (dim1, dim2) in enumerate(ONEBOND_DIM_PAT_2D):
+                            for onebond_idx, (dim1, dim2) in enumerate(DIM_TRANSFER_PAT_2D):
                                 _atom1, _atom2 = atomSelectionSet[dim1][0], atomSelectionSet[dim2][0]
                                 if _atom1['chain_id'] != _atom2['chain_id']\
                                    or _atom1['seq_id'] != _atom2['seq_id']\
@@ -4835,7 +5255,8 @@ class BasePKParserListener():
                             valid = True
                             if len(history) > 0:
                                 onebond_idx = collections.Counter(history).most_common()[0][0]
-                                _atom1, _atom2 = atomSelectionSet[ONEBOND_DIM_PAT_2D[onebond_idx][0]][0], atomSelectionSet[ONEBOND_DIM_PAT_2D[onebond_idx][1]][0]
+                                _atom1, _atom2 =\
+                                    atomSelectionSet[DIM_TRANSFER_PAT_2D[onebond_idx][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_2D[onebond_idx][1]][0]
                                 if _atom1['chain_id'] != _atom2['chain_id']\
                                    or _atom1['seq_id'] != _atom2['seq_id']\
                                    or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
@@ -4942,7 +5363,7 @@ class BasePKParserListener():
                     history = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
                     if self.software_name != 'PIPP':
                         for atomSelectionSet in self.atomSelectionSets:
-                            for onebond_idx, (dim1, dim2) in enumerate(ONEBOND_DIM_PAT_3D):
+                            for onebond_idx, (dim1, dim2) in enumerate(DIM_TRANSFER_PAT_3D):
                                 _atom1, _atom2 = atomSelectionSet[dim1][0], atomSelectionSet[dim2][0]
                                 if _atom1['chain_id'] != _atom2['chain_id']\
                                    or _atom1['seq_id'] != _atom2['seq_id']\
@@ -4984,7 +5405,8 @@ class BasePKParserListener():
                             valid = True
                             if len(history) > 0:
                                 onebond_idx = collections.Counter(history).most_common()[0][0]
-                                _atom1, _atom2 = atomSelectionSet[ONEBOND_DIM_PAT_3D[onebond_idx][0]][0], atomSelectionSet[ONEBOND_DIM_PAT_3D[onebond_idx][1]][0]
+                                _atom1, _atom2 =\
+                                    atomSelectionSet[DIM_TRANSFER_PAT_3D[onebond_idx][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_3D[onebond_idx][1]][0]
                                 if _atom1['chain_id'] != _atom2['chain_id']\
                                    or _atom1['seq_id'] != _atom2['seq_id']\
                                    or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
@@ -5099,7 +5521,7 @@ class BasePKParserListener():
                     history = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
                     if self.software_name != 'PIPP':
                         for atomSelectionSet in self.atomSelectionSets:
-                            for onebond_idx, ((dim1, dim2), (dim3, dim4)) in enumerate(ONEBOND_DIM_PAT_4D):
+                            for onebond_idx, ((dim1, dim2), (dim3, dim4)) in enumerate(DIM_TRANSFER_PAT_4D):
                                 _atom1, _atom2, _atom3, _atom4 =\
                                     atomSelectionSet[dim1][0], atomSelectionSet[dim2][0], atomSelectionSet[dim3][0], atomSelectionSet[dim4][0]
                                 if _atom1['chain_id'] != _atom2['chain_id']\
@@ -5147,8 +5569,8 @@ class BasePKParserListener():
                             if len(history) > 0:
                                 onebond_idx = collections.Counter(history).most_common()[0][0]
                                 _atom1, _atom2, _atom3, _atom4 =\
-                                    atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][0][0]][0], atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][0][1]][0], \
-                                    atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][1][0]][0], atomSelectionSet[ONEBOND_DIM_PAT_4D[onebond_idx][1][1]][0]
+                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][1]][0], \
+                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][1]][0]
                                 if _atom1['chain_id'] != _atom2['chain_id']\
                                    or _atom1['seq_id'] != _atom2['seq_id']\
                                    or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id'])\

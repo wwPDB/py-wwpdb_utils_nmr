@@ -8305,9 +8305,9 @@ class NEFTranslator:
         if not self.__ccU.updateChemCompDict(comp_id):
             return None, None
 
-        atom_id, h_list = self.get_group(comp_id, atom_id)
+        hvy, h_list = self.get_group(comp_id, atom_id)
 
-        if atom_id is None:
+        if hvy is None:
             return None, None
 
         h_list_len = len(h_list)
@@ -8315,21 +8315,24 @@ class NEFTranslator:
         try:
 
             ccb = next(b for b in self.__ccU.lastBonds
-                       if (b[self.__ccU.ccbAtomId2] == atom_id and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)
-                       or (b[self.__ccU.ccbAtomId1] == atom_id and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode))
+                       if (b[self.__ccU.ccbAtomId2] == hvy and b[self.__ccU.ccbAtomId1][0] not in protonBeginCode)
+                       or (b[self.__ccU.ccbAtomId1] == hvy and b[self.__ccU.ccbAtomId2][0] not in protonBeginCode))
 
-            hvy_conn = ccb[self.__ccU.ccbAtomId1 if ccb[self.__ccU.ccbAtomId2] == atom_id else self.__ccU.ccbAtomId2]
+            hvy_conn = ccb[self.__ccU.ccbAtomId1 if ccb[self.__ccU.ccbAtomId2] == hvy else self.__ccU.ccbAtomId2]
 
-            hvy_2 = next(c[self.__ccU.ccbAtomId1 if c[self.__ccU.ccbAtomId2] == hvy_conn else self.__ccU.ccbAtomId2]
-                         for c in self.__ccU.lastBonds
-                         if (c[self.__ccU.ccbAtomId2] == hvy_conn and c[self.__ccU.ccbAtomId1] != atom_id and c[self.__ccU.ccbAtomId1][0] not in protonBeginCode
-                             and self.get_group(comp_id, c[self.__ccU.ccbAtomId1])[1] is not None
-                             and len(self.get_group(comp_id, c[self.__ccU.ccbAtomId1])[1]) == h_list_len)
-                         or (c[self.__ccU.ccbAtomId1] == hvy_conn and c[self.__ccU.ccbAtomId2] != atom_id and c[self.__ccU.ccbAtomId2][0] not in protonBeginCode
-                             and self.get_group(comp_id, c[self.__ccU.ccbAtomId2])[1] is not None
-                             and len(self.get_group(comp_id, c[self.__ccU.ccbAtomId2])[1]) == h_list_len))
+            hvy_gem = next(c[self.__ccU.ccbAtomId1 if c[self.__ccU.ccbAtomId2] == hvy_conn else self.__ccU.ccbAtomId2]
+                           for c in self.__ccU.lastBonds
+                           if (c[self.__ccU.ccbAtomId2] == hvy_conn and c[self.__ccU.ccbAtomId1] != hvy and c[self.__ccU.ccbAtomId1][0] not in protonBeginCode
+                               and self.get_group(comp_id, c[self.__ccU.ccbAtomId1])[1] is not None
+                               and len(self.get_group(comp_id, c[self.__ccU.ccbAtomId1])[1]) == h_list_len)
+                           or (c[self.__ccU.ccbAtomId1] == hvy_conn and c[self.__ccU.ccbAtomId2] != hvy and c[self.__ccU.ccbAtomId2][0] not in protonBeginCode
+                               and self.get_group(comp_id, c[self.__ccU.ccbAtomId2])[1] is not None
+                               and len(self.get_group(comp_id, c[self.__ccU.ccbAtomId2])[1]) == h_list_len))
 
-            return self.get_group(comp_id, hvy_2)
+            if hvy[0] != hvy_gem[0]:
+                return None, None
+
+            return self.get_group(comp_id, hvy_gem)
 
         except StopIteration:
             return None, None

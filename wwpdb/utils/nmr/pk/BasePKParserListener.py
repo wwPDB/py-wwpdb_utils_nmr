@@ -4659,6 +4659,75 @@ class BasePKParserListener():
 
         return has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4
 
+    def __extractCommonAtom(self, atom_sel: List[dict]) -> dict:
+
+        if len(atom_sel) < 2:
+            return atom_sel[0]
+
+        strings = [a['atom_id'] for a in atom_sel]
+
+        min_str = min(strings, key=len)
+        max_str = max(strings, key=len)
+
+        len_min_str = len(min_str)
+        longest_substr = ''
+
+        for i in range(len_min_str):
+            for j in range(i + 1, len_min_str + 1):
+                substr = min_str[i:j]
+                if all(substr in s for s in strings):
+                    if len(substr) > len(longest_substr):
+                        longest_substr = substr
+
+        if len(longest_substr) == 0:
+            return atom_sel[0]
+
+        self.pA.setReferenceSequence(list(longest_substr), 'REFNAME')
+        self.pA.addTestSequence(list(max_str), 'NAME')
+        self.pA.doAlign()
+
+        myAlign = self.pA.getAlignment('NAME')
+
+        length = len(myAlign)
+
+        if length == 0:
+            return atom_sel[0]
+
+        common_name = []
+
+        for i in range(length):
+            myPr = myAlign[i]
+            myPr0 = str(myPr[0])
+            myPr1 = str(myPr[1])
+            if myPr0 == myPr1:
+                if myPr0 not in emptyValue:
+                    common_name.append(myPr0)
+            elif myPr0 in emptyValue:
+                if myPr1 not in emptyValue:
+                    common_name.append('#' if myPr1.isdigit() else '%')
+
+        if len(common_name) == 0:
+            return atom_sel[0]
+
+        common_name = ''.join(common_name)
+
+        if '%%' in common_name:
+            common_name = re.sub('%%', '*', common_name)
+
+        if '*%' in common_name:
+            common_name = re.sub(r'*%', '*', common_name)
+
+        if '%*' in common_name:
+            common_name = re.sub(r'%*', '*', common_name)
+
+        if '**' in common_name:
+            common_name = re.sub(r'**', '*', common_name)
+
+        _atom_sel = copy.copy(atom_sel[0])
+        _atom_sel['atom_id'] = ''.join(common_name)
+
+        return _atom_sel
+
     def addAssignedPkRow2D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
                            asis1: Optional[bool], asis2: Optional[bool],
                            debug_label: Optional[str], details: Optional[str]):
@@ -4737,20 +4806,29 @@ class BasePKParserListener():
                         for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
                             uniqAtoms = []
                             for idx in range(self.num_of_dim):
-                                atom = atomSelectionSet[idx]
-                                atom0 = atom[0]
-                                if atom0 not in uniqAtoms:
+                                atom_sel = atomSelectionSet[idx]
+                                common_atom = self.__extractCommonAtom(atom_sel)
+                                if common_atom not in uniqAtoms:
                                     asis = asIsSet[idx]
                                     ambig_code = None
-                                    if len(atom) > 1:
-                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
+                                    if len(atom_sel) > 1:
+                                        comp_id = common_atom['comp_id']
+                                        rep_atom_id = atom_sel[0]['atom_id']
+                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(comp_id, rep_atom_id)
                                         if ambig_code == 0:
                                             ambig_code = None
+                                        elif ambig_code == 2:
+                                            hvy_grp_atoms, _ = self.nefT.get_group(comp_id, rep_atom_id)
+                                            hvy_gem_atoms, pro_gem_atoms = self.nefT.get_geminal_group(comp_id, rep_atom_id)
+                                            if None not in (hvy_grp_atoms, hvy_gem_atoms):
+                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in protonBeginCode else hvy_gem_atoms
+                                                if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
+                                                    ambig_code = 1
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                                                            atom0, asis, ambig_code)
+                                                            common_atom, asis, ambig_code)
                                     sf['alt_loops'][3].add_data(row)
-                                    uniqAtoms.append(atom0)
+                                    uniqAtoms.append(common_atom)
                     else:
                         set_id = 1
                         for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
@@ -4766,20 +4844,29 @@ class BasePKParserListener():
                                 continue
                             uniqAtoms = []
                             for idx in range(self.num_of_dim):
-                                atom = atomSelectionSet[idx]
-                                atom0 = atom[0]
-                                if atom0 not in uniqAtoms:
+                                atom_sel = atomSelectionSet[idx]
+                                common_atom = self.__extractCommonAtom(atom_sel)
+                                if common_atom not in uniqAtoms:
                                     asis = asIsSet[idx]
                                     ambig_code = None
-                                    if len(atom) > 1:
-                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
+                                    if len(atom_sel) > 1:
+                                        comp_id = common_atom['comp_id']
+                                        rep_atom_id = atom_sel[0]['atom_id']
+                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(comp_id, rep_atom_id)
                                         if ambig_code == 0:
                                             ambig_code = None
+                                        elif ambig_code == 2:
+                                            hvy_grp_atoms, _ = self.nefT.get_group(comp_id, rep_atom_id)
+                                            hvy_gem_atoms, pro_gem_atoms = self.nefT.get_geminal_group(comp_id, rep_atom_id)
+                                            if None not in (hvy_grp_atoms, hvy_gem_atoms):
+                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in protonBeginCode else hvy_gem_atoms
+                                                if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
+                                                    ambig_code = 1
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                                                            atom0, asis, ambig_code)
+                                                            common_atom, asis, ambig_code)
                                     sf['alt_loops'][3].add_data(row)
-                                    uniqAtoms.append(atom0)
+                                    uniqAtoms.append(common_atom)
                             set_id += 1
 
     def addAssignedPkRow3D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
@@ -4868,20 +4955,29 @@ class BasePKParserListener():
                         for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
                             uniqAtoms = []
                             for idx in range(self.num_of_dim):
-                                atom = atomSelectionSet[idx]
-                                atom0 = atom[0]
-                                if atom0 not in uniqAtoms:
+                                atom_sel = atomSelectionSet[idx]
+                                common_atom = self.__extractCommonAtom(atom_sel)
+                                if common_atom not in uniqAtoms:
                                     asis = asIsSet[idx]
                                     ambig_code = None
-                                    if len(atom) > 1:
-                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
+                                    if len(atom_sel) > 1:
+                                        comp_id = common_atom['comp_id']
+                                        rep_atom_id = atom_sel[0]['atom_id']
+                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(comp_id, rep_atom_id)
                                         if ambig_code == 0:
                                             ambig_code = None
+                                        elif ambig_code == 2:
+                                            hvy_grp_atoms, _ = self.nefT.get_group(comp_id, rep_atom_id)
+                                            hvy_gem_atoms, pro_gem_atoms = self.nefT.get_geminal_group(comp_id, rep_atom_id)
+                                            if None not in (hvy_grp_atoms, hvy_gem_atoms):
+                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in protonBeginCode else hvy_gem_atoms
+                                                if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
+                                                    ambig_code = 1
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                                                            atom0, asis, ambig_code)
+                                                            common_atom, asis, ambig_code)
                                     sf['alt_loops'][3].add_data(row)
-                                    uniqAtoms.append(atom0)
+                                    uniqAtoms.append(common_atom)
                     else:
                         set_id = 1
                         for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
@@ -4897,20 +4993,29 @@ class BasePKParserListener():
                                 continue
                             uniqAtoms = []
                             for idx in range(self.num_of_dim):
-                                atom = atomSelectionSet[idx]
-                                atom0 = atom[0]
-                                if atom0 not in uniqAtoms:
+                                atom_sel = atomSelectionSet[idx]
+                                common_atom = self.__extractCommonAtom(atom_sel)
+                                if common_atom not in uniqAtoms:
                                     asis = asIsSet[idx]
                                     ambig_code = None
-                                    if len(atom) > 1:
-                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
+                                    if len(atom_sel) > 1:
+                                        comp_id = common_atom['comp_id']
+                                        rep_atom_id = atom_sel[0]['atom_id']
+                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(comp_id, rep_atom_id)
                                         if ambig_code == 0:
                                             ambig_code = None
+                                        elif ambig_code == 2:
+                                            hvy_grp_atoms, _ = self.nefT.get_group(comp_id, rep_atom_id)
+                                            hvy_gem_atoms, pro_gem_atoms = self.nefT.get_geminal_group(comp_id, rep_atom_id)
+                                            if None not in (hvy_grp_atoms, hvy_gem_atoms):
+                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in protonBeginCode else hvy_gem_atoms
+                                                if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
+                                                    ambig_code = 1
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                                                            atom0, asis, ambig_code)
+                                                            common_atom, asis, ambig_code)
                                     sf['alt_loops'][3].add_data(row)
-                                    uniqAtoms.append(atom0)
+                                    uniqAtoms.append(common_atom)
                             set_id += 1
 
     def addAssignedPkRow4D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
@@ -5012,20 +5117,29 @@ class BasePKParserListener():
                         for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
                             uniqAtoms = []
                             for idx in range(self.num_of_dim):
-                                atom = atomSelectionSet[idx]
-                                atom0 = atom[0]
-                                if atom0 not in uniqAtoms:
+                                atom_sel = atomSelectionSet[idx]
+                                common_atom = self.__extractCommonAtom(atom_sel)
+                                if common_atom not in uniqAtoms:
                                     asis = asIsSet[idx]
                                     ambig_code = None
-                                    if len(atom) > 1:
-                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
+                                    if len(atom_sel) > 1:
+                                        comp_id = common_atom['comp_id']
+                                        rep_atom_id = atom_sel[0]['atom_id']
+                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(comp_id, rep_atom_id)
                                         if ambig_code == 0:
                                             ambig_code = None
+                                        elif ambig_code == 2:
+                                            hvy_grp_atoms, _ = self.nefT.get_group(comp_id, rep_atom_id)
+                                            hvy_gem_atoms, pro_gem_atoms = self.nefT.get_geminal_group(comp_id, rep_atom_id)
+                                            if None not in (hvy_grp_atoms, hvy_gem_atoms):
+                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in protonBeginCode else hvy_gem_atoms
+                                                if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
+                                                    ambig_code = 1
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                                                            atom0, asis, ambig_code)
+                                                            common_atom, asis, ambig_code)
                                     sf['alt_loops'][3].add_data(row)
-                                    uniqAtoms.append(atom0)
+                                    uniqAtoms.append(common_atom)
                     else:
                         set_id = 1
                         for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
@@ -5046,20 +5160,29 @@ class BasePKParserListener():
                                 continue
                             uniqAtoms = []
                             for idx in range(self.num_of_dim):
-                                atom = atomSelectionSet[idx]
-                                atom0 = atom[0]
-                                if atom0 not in uniqAtoms:
+                                atom_sel = atomSelectionSet[idx]
+                                common_atom = self.__extractCommonAtom(atom_sel)
+                                if common_atom not in uniqAtoms:
                                     asis = asIsSet[idx]
                                     ambig_code = None
-                                    if len(atom) > 1:
-                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom0['comp_id'], atom0['atom_id'])
+                                    if len(atom_sel) > 1:
+                                        comp_id = common_atom['comp_id']
+                                        rep_atom_id = atom_sel[0]['atom_id']
+                                        ambig_code = self.csStat.getMaxAmbigCodeWoSetId(comp_id, rep_atom_id)
                                         if ambig_code == 0:
                                             ambig_code = None
+                                        elif ambig_code == 2:
+                                            hvy_grp_atoms, _ = self.nefT.get_group(comp_id, rep_atom_id)
+                                            hvy_gem_atoms, pro_gem_atoms = self.nefT.get_geminal_group(comp_id, rep_atom_id)
+                                            if None not in (hvy_grp_atoms, hvy_gem_atoms):
+                                                gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in protonBeginCode else hvy_gem_atoms
+                                                if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
+                                                    ambig_code = 1
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                                                            atom0, asis, ambig_code)
+                                                            common_atom, asis, ambig_code)
                                     sf['alt_loops'][3].add_data(row)
-                                    uniqAtoms.append(atom0)
+                                    uniqAtoms.append(common_atom)
                             set_id += 1
 
     def extractPeakAssignment(self, numOfDim: int, string: str, src_index: int, hint: Optional[List[dict]] = None) -> Optional[List[dict]]:

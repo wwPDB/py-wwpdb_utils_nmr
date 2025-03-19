@@ -58581,9 +58581,10 @@ class NmrDpUtility:
                             data_format
                         software_dict[data_format] = (software_id, _code)
 
-                sel_res_file = os.path.join(dir_path, file_path + '-selected-as-res-cif')
+                sel_res_cif_file = os.path.join(dir_path, file_path + '-selected-as-res-cif')
+                sel_res_oth_file = os.path.join(dir_path, file_path + '-selected-as-res-oth')
 
-                if os.path.exists(sel_res_file):
+                if os.path.exists(sel_res_cif_file):
                     data_format = 'mmCIF'
 
                 sf.add_tag('Text_data_format', data_format)
@@ -58597,7 +58598,7 @@ class NmrDpUtility:
 
                 ext_mr_sf_holder.append(sf)
 
-                if not os.path.exists(sel_res_file) and self.__internal_mode:
+                if not os.path.exists(sel_res_cif_file) and not os.path.exists(sel_res_oth_file) and self.__internal_mode:
 
                     err = f"Uninterpreted NMR restraints are stored in {sf_framecode} saveframe as raw text format. "\
                         "@todo: It needs to be reviewed."

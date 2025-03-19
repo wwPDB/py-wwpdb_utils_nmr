@@ -33105,7 +33105,6 @@ class NmrDpUtility:
 
                 sf_item['id'] = count
 
-                id_col = lp.tags.index('ID')
                 auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')
                 auth_seq_id_col = lp.tags.index('Auth_seq_ID_2')
                 auth_comp_id_col = lp.tags.index('Auth_comp_ID_2')
@@ -57626,6 +57625,9 @@ class NmrDpUtility:
                     self.__updateTorsionAngleConstIdInMrStr(sf_item)
 
                     lp = sf_item['loop']
+
+                    lp.sort_rows('ID')
+                    lp.renumber_rows('Index_ID')
 
                     id_col = lp.tags.index('ID')
                     auth_asym_id_col = lp.tags.index('Auth_asym_ID_2')

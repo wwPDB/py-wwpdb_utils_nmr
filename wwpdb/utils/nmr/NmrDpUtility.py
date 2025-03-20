@@ -1161,7 +1161,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
         return 'nm-pea-ari' if asCode else 'ARIA'
 
     if ('Position F1' in string or 'Shift F1' in string) and ('Position F2' in string or 'Shift F2' in string)\
-       and 'Assign F1' in string and 'Assign F2' in string and ('Height' in string or 'Volume' in string):
+       and 'Assign F1' in string and 'Assign F2' in string:  # and ('Height' in string or 'Volume' in string):
         return 'nm-pea-ccp' if asCode else 'CCPN'
 
     if 'NOESYTYPE' in string:  # PONDEROSA peak list
@@ -1222,7 +1222,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
             pass
 
     if ('Position F1' in header or 'Shift F1' in header) and ('Position F2' in header or 'Shift F2' in header)\
-       and 'Assign F1' in header and 'Assign F2' in header and ('Height' in header or 'Volume' in header):
+       and 'Assign F1' in header and 'Assign F2' in header:  # and ('Height' in header or 'Volume' in header):
         if len_col > 4 and not col[0].isdigit():
             return 'nm-pea-ccp' if asCode else 'CCPN'  # header broken CCPN
 
@@ -1343,7 +1343,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
 
                 if file_type in ('CCPN', 'nm-pea-ccp') and idx < 20 and header is not None\
                    and ('Position F1' in header or 'Shift F1' in header) and ('Position F2' in header or 'Shift F2' in header)\
-                   and 'Assign F1' in header and 'Assign F2' in header and ('Height' in header or 'Volume' in header):
+                   and 'Assign F1' in header and 'Assign F2' in header:  # and ('Height' in header or 'Volume' in header):
 
                     header = header.replace('#', '')
 
@@ -1353,10 +1353,31 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
                                 open(fPath + '~', 'w', encoding='utf-8') as ofh:
                             ofh.write(header)
                             for _line in ifh:
+
+                                if ('Position F1' in _line or 'Shift F1' in _line) and ('Position F2' in _line or 'Shift F2' in _line)\
+                                   and 'Assign F1' in _line and 'Assign F2' in _line:  # and ('Height' in _line or 'Volume' in _line):
+                                    continue
+
                                 if not _line.startswith('#'):
                                     ofh.write(_line)
 
                         os.replace(fPath + '~', fPath)
+
+                    except OSError:
+                        pass
+
+                if file_type in ('CCPN', 'nm-pea-ccp') and idx < 20 and header is None and ',' in line\
+                   and ('Position F1' in line or 'Shift F1' in line) and ('Position F2' in line or 'Shift F2' in line)\
+                   and 'Assign F1' in line and 'Assign F2' in line:  # and ('Height' in line or 'Volume' in line):
+
+                    try:
+
+                        with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
+                                open(fPath + '~', 'w', encoding='utf-8') as ofh:
+                            for _line in ifh:
+                                ofh.write(_line.replace(',', ' '))
+
+                        os.replace(fPath + '~', fPath.replace('~', ''))
 
                     except OSError:
                         pass

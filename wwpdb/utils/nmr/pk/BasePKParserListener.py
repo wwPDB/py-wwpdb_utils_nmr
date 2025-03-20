@@ -2500,7 +2500,7 @@ class BasePKParserListener():
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'], \
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
-        if chain_id == chain_id2 and seq_id == seq_id2 and comp_id == comp_id2 and atom_id != atom_id2\
+        if chain_id == chain_id2 and seq_id == seq_id2 and atom_id != atom_id2\
            and self.ccU.updateChemCompDict(comp_id):
             _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
             _atom_ids2 = self.nefT.get_valid_star_atom(comp_id, atom_id2, leave_unmatched=False)[0]
@@ -2752,7 +2752,7 @@ class BasePKParserListener():
             atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'], \
             atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
-        if chain_id == chain_id2 and seq_id == seq_id2 and comp_id == comp_id2:
+        if chain_id == chain_id2 and seq_id == seq_id2:
             return True
 
         if chain_id == chain_id2 and seq_id != seq_id2:
@@ -2950,7 +2950,7 @@ class BasePKParserListener():
                     if isinstance(seq_id2, str):
                         seq_id2 = int(seq_id2)
 
-                    if chain_id == chain_id2 and seq_id == seq_id2 and comp_id == comp_id2 and atom_id != atom_id2\
+                    if chain_id == chain_id2 and seq_id == seq_id2 and atom_id != atom_id2\
                        and self.ccU.updateChemCompDict(comp_id):
                         _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                         _atom_ids2 = self.nefT.get_valid_star_atom(comp_id, atom_id2, leave_unmatched=False)[0]
@@ -3439,7 +3439,7 @@ class BasePKParserListener():
                         chain_ids[_dim_id_1], seq_ids[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], \
                         chain_ids[_dim_id_2], seq_ids[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2]
 
-                    if chain_id == chain_id2 and seq_id == seq_id2 and comp_id == comp_id2 and atom_id != atom_id2\
+                    if chain_id == chain_id2 and seq_id == seq_id2 and atom_id != atom_id2\
                        and self.ccU.updateChemCompDict(comp_id):
                         _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                         _atom_ids2 = self.nefT.get_valid_star_atom(comp_id, atom_id2, leave_unmatched=False)[0]
@@ -3898,7 +3898,7 @@ class BasePKParserListener():
                     if isinstance(seq_id2, str):
                         seq_id2 = int(seq_id2)
 
-                    if chain_id == chain_id2 and seq_id == seq_id2 and comp_id == comp_id2:
+                    if chain_id == chain_id2 and seq_id == seq_id2:
                         continue
 
                     if chain_id == chain_id2 and seq_id != seq_id2:
@@ -4036,7 +4036,7 @@ class BasePKParserListener():
                         chain_ids[_dim_id_1], seq_ids[_dim_id_1], comp_ids[_dim_id_1], atom_ids[_dim_id_1], positions[_dim_id_1], \
                         chain_ids[_dim_id_2], seq_ids[_dim_id_2], comp_ids[_dim_id_2], atom_ids[_dim_id_2], positions[_dim_id_2]
 
-                    if chain_id == chain_id2 and seq_id == seq_id2 and comp_id == comp_id2:
+                    if chain_id == chain_id2 and seq_id == seq_id2:
                         continue
 
                     if chain_id == chain_id2 and seq_id != seq_id2:
@@ -5250,7 +5250,7 @@ class BasePKParserListener():
             common_name = re.sub(r'**', '*', common_name)
 
         _atom_sel = copy.copy(atom_sel[0])
-        _atom_sel['atom_id'] = ''.join(common_name)
+        _atom_sel['atom_id'] = common_name
 
         return _atom_sel
 

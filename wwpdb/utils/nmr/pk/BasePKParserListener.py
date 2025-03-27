@@ -53,6 +53,7 @@ try:
                                                        getSpectralDimRow,
                                                        getSpectralDimTransferRow,
                                                        getMaxEffDigits,
+                                                       getStarAtom,
                                                        roundString,
                                                        ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -128,6 +129,7 @@ except ImportError:
                                            getSpectralDimRow,
                                            getSpectralDimTransferRow,
                                            getMaxEffDigits,
+                                           getStarAtom,
                                            roundString,
                                            ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
@@ -217,8 +219,9 @@ H_METHYL_CENTER_MAX = H_ALIPHATIC_CENTER_MIN
 H_METHYL_CENTER_MIN = 0
 
 
-PEAK_ASSIGNMENT_SEPARATOR_PAT = re.compile('[^0-9A-Za-z\'\"]+')
-PEAK_ASSIGNMENT_RESID_PAT = re.compile('[0-9]+')
+POSITION_SEPARATOR_PAT = re.compile(r'[,;\|/]+')
+PEAK_ASSIGNMENT_SEPARATOR_PAT = re.compile(r'[^0-9A-Za-z\'\"]+')
+PEAK_ASSIGNMENT_RESID_PAT = re.compile(r'[0-9]+')
 PEAK_HALF_SPIN_NUCLEUS = ('H', 'Q', 'M', 'C', 'N', 'P', 'F')
 
 
@@ -997,6 +1000,9 @@ class BasePKParserListener():
 
     # list of assigned chemical shift loops
     __csLoops = None
+
+    # tentative chemical shift values
+    __tempCsValues = []
 
     __cachedDictForStarAtom = {}
 
@@ -4426,7 +4432,61 @@ class BasePKParserListener():
                     weight = 0.153506088
                 return row['Val'], weight
 
+            try:
+
+                row = next(row for row in self.__tempCsValues
+                           if row['chain_id'] == chain_id
+                           and row['seq_id'] == seq_id
+                           and row['comp_id'] == comp_id
+                           and row['atom_id'] == atom_id)
+
+                return row['value'], row['weight']
+
+            except StopIteration:
+                pass
+
         return None, None
+
+    def __setTempCsValue(self, star_atom: dict, values: List[float]):
+
+        try:
+
+            next(row for row in self.__tempCsValues
+                 if row['chain_id'] == star_atom['chain_id']
+                 and row['seq_id'] == star_atom['seq_id']
+                 and row['comp_id'] == star_atom['comp_id']
+                 and row['atom_id'] == star_atom['atom_id'])
+
+        except StopIteration:
+            atom_type = star_atom['atom_id'][0]
+
+            weight = 1.0
+            if atom_type == 'C':
+                weight = 0.251449530
+            elif atom_type == 'N':
+                weight = 0.101329118
+
+            own_values = [row['value'] for row in self.__tempCsValues
+                          if row['chain_id'] == star_atom['chain_id']
+                          and row['seq_id'] == star_atom['seq_id']
+                          and row['comp_id'] == star_atom['comp_id']]
+
+            for value in values:
+
+                unique = True
+                for _value in own_values:
+                    if ((value - _value) * weight) ** 2 < 0.02:
+                        unique = False
+                        break
+
+                if unique:
+                    self.__tempCsValues.append({'chain_id': star_atom['chain_id'],
+                                                'seq_id': star_atom['seq_id'],
+                                                'comp_id': star_atom['comp_id'],
+                                                'atom_id': star_atom['atom_id'],
+                                                'weight': weight,
+                                                'value': value})
+                    return
 
     def validatePeak2D(self, index: int, pos_1: float, pos_2: float,
                        pos_unc_1: Optional[float], pos_unc_2: Optional[float],
@@ -4743,6 +4803,105 @@ class BasePKParserListener():
 
         return dstFunc
 
+    def selectProbablePosition(self, index: int, label: str, positions: List[float]) -> float:
+
+        position = positions[0]
+
+        if label is None:
+            return position
+
+        ext = self.extractPeakAssignment(1, label, index)
+
+        if ext is None:
+            return position
+
+        assignment = None
+
+        status, _label = self.testAssignment(1, ext, label)
+
+        if status:
+            assignment = ext
+        elif _label is not None:
+            ext = self.extractPeakAssignment(1, _label, index)
+            if ext is not None:
+                assignment = ext
+
+        if assignment is None:
+            return position
+
+        self.checkAssignment(index, assignment)
+
+        if len(self.atomSelectionSet) == 0:
+            return position
+
+        _diff = None
+
+        for atom in self.atomSelectionSet[0]:
+            star_atom = getStarAtom(self.authToStarSeq, self.authToOrigSeq, self.offsetHolder, atom)
+
+            if star_atom is None:
+                continue
+
+            star_atom['chain_id'] = str(star_atom['chain_id'])
+
+            shift, weight = self.__getCsValue(star_atom['chain_id'], star_atom['seq_id'], star_atom['comp_id'], star_atom['atom_id'])
+
+            if shift is None:
+                self.__setTempCsValue(star_atom, positions)
+
+                shift, weight = self.__getCsValue(star_atom['chain_id'], star_atom['seq_id'], star_atom['comp_id'], star_atom['atom_id'])
+
+                if shift is None:
+                    continue
+
+            _position = None
+
+            for _position_ in positions:
+                diff = ((_position_ - shift) * weight) ** 2
+                if _diff is None or diff < _diff:
+                    _position = _position_
+                    _diff = diff
+
+            if _position is not None and _diff < 1.0:
+                position = _position
+
+        self.atomSelectionSet.clear()
+
+        return position
+
+    def checkAssignment(self, index: int, assignment: List[dict]):
+
+        if assignment is not None:
+
+            self.retrieveLocalSeqScheme()
+
+            try:
+
+                hasChainId = assignment[0]['chain_id'] is not None
+                hasCompId = assignment[0]['comp_id'] is not None
+
+                for a1 in assignment:
+
+                    self.atomSelectionSet.clear()
+
+                    if hasChainId and hasCompId:
+                        chainAssign1, _ = self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+
+                    elif hasChainId:
+                        chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'], index)
+
+                    elif hasCompId:
+                        chainAssign1, _ = self.assignCoordPolymerSequence(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+
+                    else:
+                        chainAssign1 = self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
+
+                    if len(chainAssign1) > 0:
+                        self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+
+            except (KeyError, TypeError):
+                pass
+
     def checkAssignments2D(self, index: int, assignments: List[List[dict]], dstFunc: dict
                            ) -> Tuple[bool, bool, Optional[bool], Optional[bool]]:
         has_assignments = has_multiple_assignments = False
@@ -4802,6 +4961,7 @@ class BasePKParserListener():
                     if len(chainAssign1) > 0 and len(chainAssign2) > 0:
                         self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
                         self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
                             has_assignments &= self.validateAtomType(1, self.atomSelectionSet[0][0]['atom_id'][0], dstFunc['position_1'])

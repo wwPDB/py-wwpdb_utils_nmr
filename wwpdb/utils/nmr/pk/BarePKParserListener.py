@@ -20,7 +20,8 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.BarePKParser import BarePKParser
-    from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
+    from wwpdb.utils.nmr.pk.BasePKParserListener import (BasePKParserListener,
+                                                         POSITION_SEPARATOR_PAT)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -29,7 +30,8 @@ try:
 except ImportError:
     from nmr.io.CifReader import CifReader
     from nmr.pk.BarePKParser import BarePKParser
-    from nmr.pk.BasePKParserListener import BasePKParserListener
+    from nmr.pk.BasePKParserListener import (BasePKParserListener,
+                                             POSITION_SEPARATOR_PAT)
     from nmr.mr.ParserListenerUtil import (REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
     from nmr.ChemCompUtil import ChemCompUtil
@@ -84,14 +86,18 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
+            if len(self.positionSelection) == 0:
+                self.peaks2D -= 1
+                return
+
             index = self.peaks2D
 
             try:
 
-                P1 = float(str(ctx.Float(0)))
-                P2 = float(str(ctx.Float(1)))
+                P1 = self.positionSelection[0]
+                P2 = self.positionSelection[1]
 
-            except (TypeError, ValueError):
+            except IndexError:
                 self.peaks2D -= 1
                 return
 
@@ -104,6 +110,16 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
+
+            if None in (P1, P2):
+                self.peaks2D -= 1
+                return
+
+            if isinstance(P1, list):
+                P1 = self.selectProbablePosition(index, L1, P1)
+
+            if isinstance(P2, list):
+                P2 = self.selectProbablePosition(index, L2, P2)
 
             dstFunc = self.validatePeak2D(index, P1, P2, None, None, None, None,
                                           None, None, None, None, height, None, volume, None)
@@ -157,6 +173,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     else f'{L1} {L2}')
 
         finally:
+            self.positionSelection.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
@@ -181,15 +198,19 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
+            if len(self.positionSelection) == 0:
+                self.peaks3D -= 1
+                return
+
             index = self.peaks3D
 
             try:
 
-                P1 = float(str(ctx.Float(0)))
-                P2 = float(str(ctx.Float(1)))
-                P3 = float(str(ctx.Float(2)))
+                P1 = self.positionSelection[0]
+                P2 = self.positionSelection[1]
+                P3 = self.positionSelection[2]
 
-            except (TypeError, ValueError):
+            except IndexError:
                 self.peaks3D -= 1
                 return
 
@@ -202,6 +223,10 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             details = None
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
+
+            if None in (P1, P2, P3):
+                self.peaks3D -= 1
                 return
 
             dstFunc = self.validatePeak3D(index, P1, P2, P3, None, None, None, None, None, None,
@@ -269,6 +294,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     else f'{L1} {L2} {L3}')
 
         finally:
+            self.positionSelection.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
@@ -293,16 +319,20 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
+            if len(self.positionSelection) == 0:
+                self.peaks4D -= 1
+                return
+
             index = self.peaks4D
 
             try:
 
-                P1 = float(str(ctx.Float(0)))
-                P2 = float(str(ctx.Float(1)))
-                P3 = float(str(ctx.Float(2)))
-                P4 = float(str(ctx.Float(3)))
+                P1 = self.positionSelection[0]
+                P2 = self.positionSelection[1]
+                P3 = self.positionSelection[2]
+                P4 = self.positionSelection[3]
 
-            except (TypeError, ValueError):
+            except IndexError:
                 self.peaks4D -= 1
                 return
 
@@ -316,6 +346,10 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             details = None
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
+
+            if None in (P1, P2, P3, P4):
+                self.peaks4D -= 1
                 return
 
             dstFunc = self.validatePeak4D(index, P1, P2, P3, P4, None, None, None, None, None, None, None, None,
@@ -396,6 +430,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     else f'{L1} {L2} {L3} {L4}')
 
         finally:
+            self.positionSelection.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
@@ -420,14 +455,18 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
+            if len(self.positionSelection) == 0:
+                self.peaks2D -= 1
+                return
+
             index = self.peaks2D
 
             try:
 
-                P1 = float(str(ctx.Float(0)))
-                P2 = float(str(ctx.Float(1)))
+                P1 = self.positionSelection[0]
+                P2 = self.positionSelection[1]
 
-            except (TypeError, ValueError):
+            except IndexError:
                 self.peaks2D -= 1
                 return
 
@@ -440,6 +479,16 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
+
+            if None in (P1, P2):
+                self.peaks2D -= 1
+                return
+
+            if isinstance(P1, list):
+                P1 = self.selectProbablePosition(index, L1, P1)
+
+            if isinstance(P2, list):
+                P2 = self.selectProbablePosition(index, L2, P2)
 
             dstFunc = self.validatePeak2D(index, P1, P2, None, None, None, None,
                                           None, None, None, None, height, None, volume, None)
@@ -493,6 +542,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     else f'{L1} {L2}')
 
         finally:
+            self.positionSelection.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
@@ -517,15 +567,19 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
+            if len(self.positionSelection) == 0:
+                self.peaks3D -= 1
+                return
+
             index = self.peaks3D
 
             try:
 
-                P1 = float(str(ctx.Float(0)))
-                P2 = float(str(ctx.Float(1)))
-                P3 = float(str(ctx.Float(2)))
+                P1 = self.positionSelection[0]
+                P2 = self.positionSelection[1]
+                P3 = self.positionSelection[2]
 
-            except (TypeError, ValueError):
+            except IndexError:
                 self.peaks3D -= 1
                 return
 
@@ -538,6 +592,10 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             details = None
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
+
+            if None in (P1, P2, P3):
+                self.peaks3D -= 1
                 return
 
             dstFunc = self.validatePeak3D(index, P1, P2, P3, None, None, None, None, None, None,
@@ -605,6 +663,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     else f'{L1} {L2} {L3}')
 
         finally:
+            self.positionSelection.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
 
@@ -629,16 +688,20 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
+            if len(self.positionSelection) == 0:
+                self.peaks4D -= 1
+                return
+
             index = self.peaks4D
 
             try:
 
-                P1 = float(str(ctx.Float(0)))
-                P2 = float(str(ctx.Float(1)))
-                P3 = float(str(ctx.Float(2)))
-                P4 = float(str(ctx.Float(3)))
+                P1 = self.positionSelection[0]
+                P2 = self.positionSelection[1]
+                P3 = self.positionSelection[2]
+                P4 = self.positionSelection[3]
 
-            except (TypeError, ValueError):
+            except IndexError:
                 self.peaks4D -= 1
                 return
 
@@ -652,6 +715,10 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             details = None
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
+
+            if None in (P1, P2, P3, P4):
+                self.peaks4D -= 1
                 return
 
             dstFunc = self.validatePeak4D(index, P1, P2, P3, P4, None, None, None, None, None, None, None, None,
@@ -732,8 +799,37 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     else f'{L1} {L2} {L3} {L4}')
 
         finally:
+            self.positionSelection.clear()
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
+
+    # Enter a parse tree produced by BarePKParser#position.
+    def enterPosition(self, ctx: BarePKParser.PositionContext):
+
+        try:
+
+            if ctx.Float():
+                value = str(ctx.Float())
+                self.positionSelection.append(float(value))
+
+            elif ctx.Integer():
+                value = str(ctx.Integer())
+                self.positionSelection.append(float(value))
+
+            elif ctx.Ambig_float():
+                value = str(ctx.Ambig_float())
+                values = [float(v) for v in POSITION_SEPARATOR_PAT.sub(' ', value).split()]
+                self.positionSelection.append(values)
+
+            else:
+                self.positionSelection.append(None)
+
+        except ValueError:
+            self.positionSelection.append(None)
+
+    # Exit a parse tree produced by BarePKParser#position.
+    def exitPosition(self, ctx: BarePKParser.PositionContext):  # pylint: disable=unused-argument
+        pass
 
     # Enter a parse tree produced by BarePKParser#number.
     def enterNumber(self, ctx: BarePKParser.NumberContext):

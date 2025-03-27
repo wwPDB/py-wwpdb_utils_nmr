@@ -8201,6 +8201,11 @@ class NmrDpUtility:
                                 if file_type is not None:
                                     ar['file_type'] = file_type
 
+                                for test_file_type in parsable_pk_file_types:
+                                    if os.path.exists(arPath + f'-selected-as-{test_file_type[-7:]}'):
+                                        ar['file_type'] = test_file_type
+                                        break
+
                     input_source.setItemValue('file_name', os.path.basename(arPath))
                     input_source.setItemValue('file_type', ar['file_type'])
                     input_source.setItemValue('content_type',

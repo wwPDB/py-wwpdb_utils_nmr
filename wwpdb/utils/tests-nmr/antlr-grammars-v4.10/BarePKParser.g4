@@ -35,55 +35,58 @@ peak_list_2d:
 	peak_2d+;
 
 peak_2d:
-	Simple_name Integer Simple_name Simple_name Float
-	Simple_name Integer Simple_name Simple_name Float
+	Simple_name Integer Simple_name Simple_name position
+	Simple_name Integer Simple_name Simple_name position
 	number* (RETURN | EOF);
 
 peak_list_3d:
 	peak_3d+;
 
 peak_3d:
-	Simple_name Integer Simple_name Simple_name Float
-	Simple_name Integer Simple_name Simple_name Float
-	Simple_name Integer Simple_name Simple_name Float
+	Simple_name Integer Simple_name Simple_name position
+	Simple_name Integer Simple_name Simple_name position
+	Simple_name Integer Simple_name Simple_name position
 	number* (RETURN | EOF);
 
 peak_list_4d:
 	peak_4d+;
 
 peak_4d:
-	Simple_name Integer Simple_name Simple_name Float
-	Simple_name Integer Simple_name Simple_name Float
-	Simple_name Integer Simple_name Simple_name Float
-	Simple_name Integer Simple_name Simple_name Float
+	Simple_name Integer Simple_name Simple_name position
+	Simple_name Integer Simple_name Simple_name position
+	Simple_name Integer Simple_name Simple_name position
+	Simple_name Integer Simple_name Simple_name position
 	number* (RETURN | EOF);
 
 peak_list_wo_chain_2d:
 	peak_wo_chain_2d+;
 
 peak_wo_chain_2d:
-	Integer Simple_name Simple_name Float
-	Integer Simple_name Simple_name Float
+	Integer Simple_name Simple_name position
+	Integer Simple_name Simple_name position
 	number* (RETURN | EOF);
 
 peak_list_wo_chain_3d:
 	peak_wo_chain_3d+;
 
 peak_wo_chain_3d:
-	Integer Simple_name Simple_name Float
-	Integer Simple_name Simple_name Float
-	Integer Simple_name Simple_name Float
+	Integer Simple_name Simple_name position
+	Integer Simple_name Simple_name position
+	Integer Simple_name Simple_name position
 	number* (RETURN | EOF);
 
 peak_list_wo_chain_4d:
 	peak_wo_chain_4d+;
 
 peak_wo_chain_4d:
-	Integer Simple_name Simple_name Float
-	Integer Simple_name Simple_name Float
-	Integer Simple_name Simple_name Float
-	Integer Simple_name Simple_name Float
+	Integer Simple_name Simple_name position
+	Integer Simple_name Simple_name position
+	Integer Simple_name Simple_name position
+	Integer Simple_name Simple_name position
 	number* (RETURN | EOF);
+
+/* position expression in peak list */
+position: Float | Integer | Ambig_float;
 
 /* number expression in peak list */
 number:	Float | Real | Integer;

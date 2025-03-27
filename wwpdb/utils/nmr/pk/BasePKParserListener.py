@@ -1529,8 +1529,42 @@ class BasePKParserListener():
                 return False, None
         return True, None
 
-    def validateAtomType(self, _dim_id: int, atom_type: str) -> bool:
+    def validateAtomType(self, _dim_id: int, atom_type: str, position: str) -> bool:
         cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
+
+        def predict_spectral_region_from_position():
+            _position = float(position)
+
+            if C_AROMATIC_CENTER_MIN_TOR < _position <= C_AROMATIC_CENTER_MAX and atom_type == 'C':
+                return 'C-aromatic'
+            if N_AMIDE_CENTER_MIN < _position <= N_AMIDE_CENTER_MAX and atom_type == 'N':
+                return 'N'
+            if C_CARBONYL_CENTER_MIN <= _position <= C_CARBONYL_CENTER_MAX and atom_type == 'C':
+                return 'CO'
+            if HN_AROMATIC_CENTER_MIN < _position <= HN_AROMATIC_CENTER_MAX and atom_type == 'H':
+                return 'HN/H-aromatic'
+            if H_ALL_CENTER_MIN < _position <= H_ALL_CENTER_MAX and atom_type == 'H':
+                return 'H'  # all
+            max_ppm = max(cur_spectral_dim['freq_hint']) if len(cur_spectral_dim['freq_hint']) > 0 else _position
+            if H_ALIPHATIC_CENTER_MIN < _position <= H_ALIPHATIC_CENTER_MAX and atom_type == 'H':
+                return 'H-aliphatic' if max_ppm < 7 else 'H'
+            if H_METHYL_CENTER_MIN < _position <= H_METHYL_CENTER_MAX and atom_type == 'H':
+                return 'H-methyl' if max_ppm < 3 else 'H-aliphatic'
+            if C_ALL_CENTER_MIN < _position <= C_ALL_CENTER_MAX and atom_type == 'C':
+                return 'C'  # all
+            if C_ALIPHATIC_CENTER_MIN < _position <= C_ALIPHATIC_CENTER_MAX and atom_type == 'C':
+                return 'C-aliphatic'
+            if C_METHYL_CENTER_MIN < _position <= C_METHYL_CENTER_MAX and atom_type == 'C':
+                return 'C-methyl'
+            return ''
+
+        if self.reasons and 'atom_type_history' in self.reasons:
+            atom_types = self.reasons['atom_type_history'][self.num_of_dim][self.cur_list_id]
+            if len(atom_types) == self.num_of_dim:
+                _atom_type = atom_types[_dim_id - 1]
+                if atom_type in protonBeginCode:
+                    return _atom_type == 'H'
+                return _atom_type == atom_type
         if cur_spectral_dim['atom_type'] is not None:
             if cur_spectral_dim['atom_type'] == atom_type:
                 cur_spectral_dim['fixed'] = True  # be robust against interference of unreliable assignments (bmr36675)
@@ -1538,11 +1572,16 @@ class BasePKParserListener():
             if 'fixed' in cur_spectral_dim:  # XEASY INNAME label is not reliable (2kj5)
                 return False
             if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                if not predict_spectral_region_from_position().startswith(atom_type):
+                    return False
                 cur_spectral_dim['fixed'] = True
                 cur_spectral_dim['atom_type'] = None
                 cur_spectral_dim['axis_code'] = None
                 cur_spectral_dim['atom_isotope_number'] = None
+                return True
         if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+            if not predict_spectral_region_from_position().startswith(atom_type):
+                return False
             cur_spectral_dim['atom_type'] = atom_type
             cur_spectral_dim['axis_code'] = atom_type
             cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]
@@ -2471,29 +2510,6 @@ class BasePKParserListener():
 
                             self.__remediatePeakAssignmentForRelayedTransfer(d, relayed_dim_transfers, sf['peak_row_format'], lp)
 
-    def __canRemediatePeakAssignmentForAtomType(self) -> bool:
-
-        atom_type = self.reasons['atom_type_history'][self.num_of_dim][self.cur_list_id]
-
-        for col, atom_sel in enumerate(self.atomSelectionSet):
-
-            atom_id = atom_sel[0]['atom_id']
-
-            if atom_id in emptyValue:
-                continue
-
-            if atom_id[0] in protonBeginCode:
-
-                if atom_type[col] == 'H':
-                    continue
-
-                return False
-
-            if atom_id[0] != atom_type[col] and atom_type[col] in ('C', 'N', 'P', 'F'):
-                return False
-
-        return True
-
     def __canRemediatePeakAssignmentForOneBondTransfer(self, atom1: dict, atom2: dict, position: float, position2: float) -> bool:
 
         chain_id, seq_id, comp_id, atom_id, chain_id2, seq_id2, comp_id2, atom_id2 =\
@@ -2869,7 +2885,7 @@ class BasePKParserListener():
 
                     atom_id = row[col]
 
-                    if atom_id in emptyValue:
+                    if atom_id in emptyValue or atom_type[col] not in PEAK_HALF_SPIN_NUCLEUS:
                         continue
 
                     if atom_id[0] in protonBeginCode:
@@ -2881,7 +2897,7 @@ class BasePKParserListener():
 
                         return
 
-                    if atom_id[0] != atom_type[col] and atom_type[col] in ('C', 'N', 'P', 'F'):
+                    if atom_id[0] != atom_type[col]:
 
                         self.reasonsForReParsing['atom_type_history'] = self.atom_type_history
 
@@ -2897,7 +2913,7 @@ class BasePKParserListener():
 
                 col, atom_id = row[0] - 1, row[1]
 
-                if atom_id in emptyValue:
+                if atom_id in emptyValue or atom_type[col] not in PEAK_HALF_SPIN_NUCLEUS:
                     continue
 
                 if atom_id[0] in protonBeginCode:
@@ -2909,7 +2925,7 @@ class BasePKParserListener():
 
                     return
 
-                if atom_id[0] != atom_type[col] and atom_type[col] in ('C', 'N', 'P', 'F'):
+                if atom_id[0] != atom_type[col]:
 
                     self.reasonsForReParsing['atom_type_history'] = self.atom_type_history
 
@@ -4788,15 +4804,12 @@ class BasePKParserListener():
                         self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
-                            has_assignments &= self.validateAtomType(1, self.atomSelectionSet[0][0]['atom_id'][0])
-                            has_assignments &= self.validateAtomType(2, self.atomSelectionSet[1][0]['atom_id'][0])
+                            has_assignments &= self.validateAtomType(1, self.atomSelectionSet[0][0]['atom_id'][0], dstFunc['position_1'])
+                            has_assignments &= self.validateAtomType(2, self.atomSelectionSet[1][0]['atom_id'][0], dstFunc['position_2'])
                             if has_assignments:
                                 self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2])
                                 if self.reasons is not None:
-                                    if 'atom_type_history' in self.reasons:
-                                        if not self.__canRemediatePeakAssignmentForAtomType():
-                                            has_assignments = False
                                     if 'onebond_idx_history' in self.reasons:
                                         onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
                                         _atom1, _atom2 =\
@@ -4930,16 +4943,13 @@ class BasePKParserListener():
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
-                            has_assignments &= self.validateAtomType(1, self.atomSelectionSet[0][0]['atom_id'][0])
-                            has_assignments &= self.validateAtomType(2, self.atomSelectionSet[1][0]['atom_id'][0])
-                            has_assignments &= self.validateAtomType(3, self.atomSelectionSet[2][0]['atom_id'][0])
+                            has_assignments &= self.validateAtomType(1, self.atomSelectionSet[0][0]['atom_id'][0], dstFunc['position_1'])
+                            has_assignments &= self.validateAtomType(2, self.atomSelectionSet[1][0]['atom_id'][0], dstFunc['position_2'])
+                            has_assignments &= self.validateAtomType(3, self.atomSelectionSet[2][0]['atom_id'][0], dstFunc['position_3'])
                             if has_assignments:
                                 self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3])
                                 if self.reasons is not None:
-                                    if 'atom_type_history' in self.reasons:
-                                        if not self.__canRemediatePeakAssignmentForAtomType():
-                                            has_assignments = False
                                     if 'onebond_idx_history' in self.reasons:
                                         onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
                                         _atom1, _atom2 =\
@@ -5079,17 +5089,14 @@ class BasePKParserListener():
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
-                            has_assignments &= self.validateAtomType(1, self.atomSelectionSet[0][0]['atom_id'][0])
-                            has_assignments &= self.validateAtomType(2, self.atomSelectionSet[1][0]['atom_id'][0])
-                            has_assignments &= self.validateAtomType(3, self.atomSelectionSet[2][0]['atom_id'][0])
-                            has_assignments &= self.validateAtomType(4, self.atomSelectionSet[3][0]['atom_id'][0])
+                            has_assignments &= self.validateAtomType(1, self.atomSelectionSet[0][0]['atom_id'][0], dstFunc['position_1'])
+                            has_assignments &= self.validateAtomType(2, self.atomSelectionSet[1][0]['atom_id'][0], dstFunc['position_2'])
+                            has_assignments &= self.validateAtomType(3, self.atomSelectionSet[2][0]['atom_id'][0], dstFunc['position_3'])
+                            has_assignments &= self.validateAtomType(4, self.atomSelectionSet[3][0]['atom_id'][0], dstFunc['position_4'])
                             if has_assignments:
                                 self.atomSelectionSets.append(copy.deepcopy(self.atomSelectionSet))
                                 self.asIsSets.append([asis1, asis2, asis3, asis4])
                                 if self.reasons is not None:
-                                    if 'atom_type_history' in self.reasons:
-                                        if not self.__canRemediatePeakAssignmentForAtomType():
-                                            has_assignments = False
                                     if 'onebond_idx_history' in self.reasons:
                                         onebond_idx = self.reasons['onebond_idx_history'][self.num_of_dim][self.cur_list_id]
                                         _atom1, _atom2, _atom3, _atom4 =\

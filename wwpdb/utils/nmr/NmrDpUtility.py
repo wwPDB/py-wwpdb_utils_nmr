@@ -1258,6 +1258,45 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
             except (ValueError, TypeError):
                 pass
 
+    if 'eak' in header and ('able' in header or 'nnotation' in header or 'ssign' in header)\
+       and ('F1' in header or 'f1' in header) and ('F2' in header or 'f2' in header):
+        offset = 0
+        if 'mplitude' in header or 'ntensity' in header or 'eight' in header:
+            offset += 1
+        if 'olume' in header:
+            offset += 1
+        if 'F3' not in header and 'f3' not in header and 'F4' not in header and 'f4' not in header\
+           and len_col > 3 + offset and sparky_assignment_pattern.match(col[3 + offset]):
+            try:
+                int(col[0])
+                float(col[1])
+                float(col[2])
+                return 'nm-pea-bar' if asCode else 'unknown'
+            except (ValueError, TypeError):
+                pass
+
+        elif 'F4' not in header and 'f4' not in header\
+                and len_col > 4 + offset and sparky_assignment_pattern.match(col[4 + offset]):
+            try:
+                int(col[0])
+                float(col[1])
+                float(col[2])
+                float(col[3])
+                return 'nm-pea-bar' if asCode else 'unknown'
+            except (ValueError, TypeError):
+                pass
+
+        elif len_col > 5 + offset and sparky_assignment_pattern.match(col[5 + offset]):
+            try:
+                int(col[0])
+                float(col[1])
+                float(col[2])
+                float(col[3])
+                float(col[4])
+                return 'nm-pea-bar' if asCode else 'unknown'
+            except (ValueError, TypeError):
+                pass
+
     if 'label' in header and 'data' in header and 'dataset' not in header\
        and 'sw' in col and 'sf' in col:
         return 'nm-pea-vie' if asCode else 'NMRView'  # header broken NMRVIEW
@@ -1299,7 +1338,9 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
                 header = line
                 continue
 
-            if (' w1 ' in line and ' w2' in line) or ('Assignment' in line and 'Shift (ppm)' in line):
+            if (' w1 ' in line and ' w2' in line) or ('Assignment' in line and 'Shift (ppm)' in line)\
+               or ('eak' in line and ('abel' in line or 'nnotation' in line or 'ssign' in line)
+                   and ('F1' in line or 'f1' in line) and ('F2' in line or 'f2' in line)):
                 header = line
                 continue
 
@@ -1568,6 +1609,14 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
                 return val.count(';')
             if 2 <= val.count(',') + 1 <= 4:
                 return val.count(',')
+
+    if file_format == 'unknown':
+        if '4 (ppm)' in line:
+            return 4
+        if '3 (ppm)' in line:
+            return 3
+        if '2 (ppm)' in line:
+            return 2
 
     return None
 
@@ -8179,14 +8228,25 @@ class NmrDpUtility:
 
                     if ar['file_type'] == 'nm-pea-any':
 
-                        if not is_binary_file(arPath):
+                        for test_file_type in archival_mr_file_types:
+                            if test_file_type == 'nmr-star':
+                                continue
+                            if os.path.exists(arPath + f'-selected-as-{test_file_type[-7:]}'):
+                                ar['file_type'] = test_file_type
+                                break
 
-                            for test_file_type in archival_mr_file_types:
-                                if test_file_type == 'nmr-star':
-                                    continue
+                        if ar['file_type'] == 'nm-pea-any':
+                            file_type = get_peak_list_format(arPath, True)
+
+                            if file_type is not None:
+                                ar['file_type'] = file_type
+
+                            for test_file_type in parsable_pk_file_types:
                                 if os.path.exists(arPath + f'-selected-as-{test_file_type[-7:]}'):
                                     ar['file_type'] = test_file_type
                                     break
+
+                        if not is_binary_file(arPath) or ar['file_type'] != 'nm-pea-any':
 
                             codec = detect_bom(arPath, 'utf-8')
 
@@ -8194,17 +8254,6 @@ class NmrDpUtility:
                                 _arPath = arPath + '~'
                                 convert_codec(arPath, _arPath, codec, 'utf-8')
                                 arPath = _arPath
-
-                            if ar['file_type'] == 'nm-pea-any':
-                                file_type = get_peak_list_format(arPath, True)
-
-                                if file_type is not None:
-                                    ar['file_type'] = file_type
-
-                                for test_file_type in parsable_pk_file_types:
-                                    if os.path.exists(arPath + f'-selected-as-{test_file_type[-7:]}'):
-                                        ar['file_type'] = test_file_type
-                                        break
 
                     input_source.setItemValue('file_name', os.path.basename(arPath))
                     input_source.setItemValue('file_type', ar['file_type'])

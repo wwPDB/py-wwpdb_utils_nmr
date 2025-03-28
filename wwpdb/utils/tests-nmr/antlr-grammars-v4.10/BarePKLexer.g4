@@ -16,9 +16,13 @@ limitations under the License.
 
 lexer grammar BarePKLexer;
 
+options { caseInsensitive=true; }
+
+Peak:			'Peak' ([ _] ('Number' | 'Id'))? -> pushMode(PEAK_MODE);
+
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
-Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ([Ee] ('+' | '-')? DECIMAL)?;
+Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('E' ('+' | '-')? DECIMAL)?;
 Ambig_float:		(Float | Integer) (( ',' | ';' | '|' | '/') (Float | Integer))+;
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
@@ -26,14 +30,14 @@ fragment DECIMAL:	DEC_DIGIT+;
 
 SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
-SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
+//SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
 Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;
 //Residue_name:		SIMPLE_NAME;
 //Atom_name:		ALPHA_NUM ATM_NAME_CHAR*;
 
-fragment ALPHA:		[A-Za-z];
+fragment ALPHA:		[A-Z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_' | '-' | '+' | '.' | '*' | '?' | '(' | '{';
 fragment NAME_CHAR:	START_CHAR | '\'' | '"' | ',' | ';' | '#' | '%' | '|' | '/' | ')' | '}';
@@ -48,4 +52,19 @@ fragment COMMENT_START_CHAR:	('#' | '!' | '\\' | '&' | '/' | '*' | '=');
 //ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
 SECTION_COMMENT:	(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
 LINE_COMMENT:		(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
+
+mode PEAK_MODE;
+
+X_ppm:			'F1' ([ _] '(ppm)')?;
+Y_ppm:			'F2' ([ _] '(ppm)')?;
+Z_ppm:			'F3' ([ _] '(ppm)')?;
+A_ppm:			'F4' ([ _] '(ppm)')?;
+Amplitude:		'Amplitude' | 'Intensity' | 'Height';
+Volume:			'Volume';
+
+Label:			'Label' | 'Annotation' | 'Assign' 'ment'?;
+Comment:		'Comment' | 'Note';
+
+SPACE_FO:		[ \t]+ -> skip;
+RETURN_FO:		[\r\n]+ -> popMode;
 

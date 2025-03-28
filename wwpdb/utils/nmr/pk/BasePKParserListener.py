@@ -84,6 +84,7 @@ try:
                                            sortPolySeqRst,
                                            syncCompIdOfPolySeqRst,
                                            alignPolymerSequence,
+                                           alignPolymerSequenceWithConflicts,
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
                                            updatePolySeqRstAmbig,
@@ -160,6 +161,7 @@ except ImportError:
                                sortPolySeqRst,
                                syncCompIdOfPolySeqRst,
                                alignPolymerSequence,
+                               alignPolymerSequenceWithConflicts,
                                assignPolymerSequence,
                                trimSequenceAlignment,
                                updatePolySeqRstAmbig,
@@ -1186,6 +1188,13 @@ class BasePKParserListener():
                                                         resolvedMultimer=self.reasons is not None)
                 self.chainAssign, message = assignPolymerSequence(self.pA, self.ccU, self.file_type, self.polySeq, self.polySeqRst, self.seqAlign)
 
+                if len(self.seqAlign) == 0 and not self.hasNonPolySeq:  # allow conflict to detect sequence mismatch with sequence number shift (8dhz)
+                    for c in range(1, 5):
+                        self.seqAlign, _ = alignPolymerSequenceWithConflicts(self.pA, self.polySeq, self.polySeqRst, c)
+                        if len(self.seqAlign) > 0:
+                            self.chainAssign, message = assignPolymerSequence(self.pA, self.ccU, self.file_type, self.polySeq, self.polySeqRst, self.seqAlign)
+                            break
+
                 if len(message) > 0:
                     self.f.extend(message)
 
@@ -1215,7 +1224,7 @@ class BasePKParserListener():
                     trimSequenceAlignment(self.seqAlign, self.chainAssign)
 
                     if self.reasons is None and any(f for f in self.f
-                                                    if '[Atom not found]' in f or '[Sequence mismatch]' in f):
+                                                    if '[Atom not found]' in f or '[Sequence mismatch]' in f or '[Invalid atom nomenclature]' in f):
 
                         seqIdRemap = []
 
@@ -6634,14 +6643,20 @@ class BasePKParserListener():
                     if atomNameCount >= numOfDim:
                         ignoreBefore = True
 
-        hasResName = False
+        hasResName = hasResId = False
         for idx in range(lenStr):
             if ___atomNameLike[idx]:
                 if resNameLike[idx]:
                     if not hasResName and resNameSpan[idx][0] < ___atomNameSpan[idx][0] and resNameSpan[idx][1] >= ___atomNameSpan[idx][1]:
                         ___atomNameLike[idx] = False
                     elif resNameSpan[idx][1] > ___atomNameSpan[idx][0]:
-                        resNameLike[idx] = False
+                        term = _str[idx]
+                        if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
+                           and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]]\
+                           and any(_idx for _idx in range(idx + 1, lenStr) if __atomNameLike[_idx] or _atomNameLike[_idx] or atomNameLike[_idx]):
+                            ___atomNameLike[idx] = False
+                        else:
+                            resNameLike[idx] = False
                 if resIdLike[idx]:
                     if resIdSpan[idx][1] > ___atomNameSpan[idx][0]:
                         resIdLike[idx] = False
@@ -6654,7 +6669,13 @@ class BasePKParserListener():
                     if not hasResName and resNameSpan[idx][0] < __atomNameSpan[idx][0] and resNameSpan[idx][1] >= __atomNameSpan[idx][1]:
                         __atomNameLike[idx] = False
                     elif resNameSpan[idx][1] > __atomNameSpan[idx][0]:
-                        resNameLike[idx] = False
+                        term = _str[idx]
+                        if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
+                           and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[__atomNameSpan[idx][0]:__atomNameSpan[idx][1]]\
+                           and any(_idx for _idx in range(idx + 1, lenStr) if _atomNameLike[_idx] or atomNameLike[_idx]):
+                            __atomNameLike[idx] = False
+                        else:
+                            resNameLike[idx] = False
                 if resIdLike[idx]:
                     if resIdSpan[idx][1] > __atomNameSpan[idx][0]:
                         resIdLike[idx] = False
@@ -6667,7 +6688,13 @@ class BasePKParserListener():
                     if not hasResName and resNameSpan[idx][0] < _atomNameSpan[idx][0] and resNameSpan[idx][1] >= _atomNameSpan[idx][1]:
                         _atomNameLike[idx] = False
                     elif resNameSpan[idx][1] > _atomNameSpan[idx][0]:
-                        resNameLike[idx] = False
+                        term = _str[idx]
+                        if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
+                           and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[_atomNameSpan[idx][0]:_atomNameSpan[idx][1]]\
+                           and any(_idx for _idx in range(idx + 1, lenStr) if atomNameLike[_idx]):
+                            _atomNameLike[idx] = False
+                        else:
+                            resNameLike[idx] = False
                 if resIdLike[idx]:
                     if resIdSpan[idx][1] > _atomNameSpan[idx][0]:
                         resIdLike[idx] = False
@@ -6680,7 +6707,13 @@ class BasePKParserListener():
                     if not hasResName and resNameSpan[idx][0] < atomNameSpan[idx][0] and resNameSpan[idx][1] >= atomNameSpan[idx][1]:
                         atomNameLike[idx] = False
                     elif resNameSpan[idx][1] > atomNameSpan[idx][0]:
-                        resNameLike[idx] = False
+                        term = _str[idx]
+                        if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
+                           and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]\
+                           and any(_idx for _idx in range(idx + 1, lenStr) if atomNameLike[_idx]):
+                            atomNameLike[idx] = False
+                        else:
+                            resNameLike[idx] = False
                 if resIdLike[idx]:
                     if resIdSpan[idx][1] > atomNameSpan[idx][0]:
                         resIdLike[idx] = False
@@ -6696,9 +6729,15 @@ class BasePKParserListener():
                            or (resIdSpan[idx] and segIdSpan[idx][1] == resIdSpan[idx][0]):
                             segIdLike[idx] = False
                         else:
-                            resNameLike[idx] = False
+                            if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
+                               and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]\
+                               and any(_idx for _idx in range(idx + 1, lenStr) if atomNameLike[_idx]):
+                                atomNameLike[idx] = False
+                            else:
+                                resNameLike[idx] = False
 
             if resIdLike[idx]:
+                hasResId = True
                 if atomNameLike[idx]:
                     if resIdSpan[idx][1] > atomNameSpan[idx][0]:
                         resIdLike[idx] = False

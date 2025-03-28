@@ -228,5 +228,17 @@ if __name__ == "__main__":
     reader = BarePKReader(True)
     reader.setDebugMode(True)
     reader.setInternalMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/8dhz/bmr31029/work/data/D_1000266559_nmr-peaks-upload_P1.dat.V2',
+                     '../../tests-nmr/mock-data-remediation/8dhz/8dhz.cif')
+    reader = BarePKReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.setInternalMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/8dhz/bmr31029/work/data/D_1000266559_nmr-peaks-upload_P1.dat.V2',
+                 '../../tests-nmr/mock-data-remediation/8dhz/8dhz.cif')
+
+    reader = BarePKReader(True)
+    reader.setDebugMode(True)
+    reader.setInternalMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/7d0y/bmr36379/work/data/D_1300015736_nmr-peaks-upload_P1.dat.V2',
                  '../../tests-nmr/mock-data-remediation/7d0y/7d0y.cif')

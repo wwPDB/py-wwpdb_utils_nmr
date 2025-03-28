@@ -42,6 +42,11 @@ except ImportError:
 # This class defines a complete listener for a parse tree produced by BarePKParser.
 class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
+    __position_order = True
+    __has_amplitude = False
+    __has_volume = False
+    __has_assign = False
+
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
@@ -229,6 +234,15 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
+            if isinstance(P1, list):
+                P1 = self.selectProbablePosition(index, L1, P1)
+
+            if isinstance(P2, list):
+                P2 = self.selectProbablePosition(index, L2, P2)
+
+            if isinstance(P3, list):
+                P3 = self.selectProbablePosition(index, L3, P3)
+
             dstFunc = self.validatePeak3D(index, P1, P2, P3, None, None, None, None, None, None,
                                           None, None, None, None, None, None, height, None, volume, None)
 
@@ -351,6 +365,18 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             if None in (P1, P2, P3, P4):
                 self.peaks4D -= 1
                 return
+
+            if isinstance(P1, list):
+                P1 = self.selectProbablePosition(index, L1, P1)
+
+            if isinstance(P2, list):
+                P2 = self.selectProbablePosition(index, L2, P2)
+
+            if isinstance(P3, list):
+                P3 = self.selectProbablePosition(index, L3, P3)
+
+            if isinstance(P4, list):
+                P4 = self.selectProbablePosition(index, L4, P4)
 
             dstFunc = self.validatePeak4D(index, P1, P2, P3, P4, None, None, None, None, None, None, None, None,
                                           None, None, None, None, None, None, None, None, height, None, volume, None)
@@ -598,6 +624,15 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
+            if isinstance(P1, list):
+                P1 = self.selectProbablePosition(index, L1, P1)
+
+            if isinstance(P2, list):
+                P2 = self.selectProbablePosition(index, L2, P2)
+
+            if isinstance(P3, list):
+                P3 = self.selectProbablePosition(index, L3, P3)
+
             dstFunc = self.validatePeak3D(index, P1, P2, P3, None, None, None, None, None, None,
                                           None, None, None, None, None, None, height, None, volume, None)
 
@@ -721,6 +756,18 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
+            if isinstance(P1, list):
+                P1 = self.selectProbablePosition(index, L1, P1)
+
+            if isinstance(P2, list):
+                P2 = self.selectProbablePosition(index, L2, P2)
+
+            if isinstance(P3, list):
+                P3 = self.selectProbablePosition(index, L3, P3)
+
+            if isinstance(P4, list):
+                P4 = self.selectProbablePosition(index, L4, P4)
+
             dstFunc = self.validatePeak4D(index, P1, P2, P3, P4, None, None, None, None, None, None, None, None,
                                           None, None, None, None, None, None, None, None, height, None, volume, None)
 
@@ -797,6 +844,435 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{L1} {L2} {L3} {L4} -> ',
                                     details if details is not None or None in (L1, L2, L3, L4) or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2} {L3} {L4}')
+
+        finally:
+            self.positionSelection.clear()
+            self.numberSelection.clear()
+            self.originalNumberSelection.clear()
+
+    # Enter a parse tree produced by BarePKParser#raw_format_2d.
+    def enterRaw_format_2d(self, ctx: BarePKParser.Raw_format_2dContext):
+        self.num_of_dim = 2
+        self.initSpectralDim()
+
+        self.__position_order = True
+        self.__has_amplitude = bool(ctx.Amplitude())
+        self.__has_volume = bool(ctx.Volume())
+        self.__has_assign = bool(ctx.Label())
+
+    # Exit a parse tree produced by BarePKParser#raw_format_2d.
+    def exitRaw_format_2d(self, ctx: BarePKParser.Raw_format_2dContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BarePKParser#raw_format_3d.
+    def enterRaw_format_3d(self, ctx: BarePKParser.Raw_format_3dContext):
+        self.num_of_dim = 3
+        self.initSpectralDim()
+
+        self.__position_order = True
+        self.__has_amplitude = bool(ctx.Amplitude())
+        self.__has_volume = bool(ctx.Volume())
+        self.__has_assign = bool(ctx.Label())
+
+    # Exit a parse tree produced by BarePKParser#raw_format_3d.
+    def exitRaw_format_3d(self, ctx: BarePKParser.Raw_format_3dContext):
+        pass
+
+    # Enter a parse tree produced by BarePKParser#raw_format_4d.
+    def enterRaw_format_4d(self, ctx: BarePKParser.Raw_format_4dContext):  # pylint: disable=unused-argument
+        self.num_of_dim = 4
+        self.initSpectralDim()
+
+        self.__position_order = True
+        self.__has_amplitude = bool(ctx.Amplitude())
+        self.__has_volume = bool(ctx.Volume())
+        self.__has_assign = bool(ctx.Label())
+
+    # Exit a parse tree produced by BarePKParser#raw_format_4d.
+    def exitRaw_format_4d(self, ctx: BarePKParser.Raw_format_4dContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BarePKParser#rev_raw_format_2d.
+    def enterRev_raw_format_2d(self, ctx: BarePKParser.Rev_raw_format_2dContext):
+        self.num_of_dim = 2
+        self.initSpectralDim()
+
+        self.__position_order = False
+        self.__has_amplitude = bool(ctx.Amplitude())
+        self.__has_volume = bool(ctx.Volume())
+        self.__has_assign = bool(ctx.Label())
+
+    # Exit a parse tree produced by BarePKParser#rev_raw_format_2d.
+    def exitRev_raw_format_2d(self, ctx: BarePKParser.Rev_raw_format_2dContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BarePKParser#rev_raw_format_3d.
+    def enterRev_raw_format_3d(self, ctx: BarePKParser.Rev_raw_format_3dContext):
+        self.num_of_dim = 3
+        self.initSpectralDim()
+
+        self.__position_order = False
+        self.__has_amplitude = bool(ctx.Amplitude())
+        self.__has_volume = bool(ctx.Volume())
+        self.__has_assign = bool(ctx.Label())
+
+    # Exit a parse tree produced by BarePKParser#rev_raw_format_3d.
+    def exitRev_raw_format_3d(self, ctx: BarePKParser.Rev_raw_format_3dContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BarePKParser#rev_raw_format_4d.
+    def enterRev_raw_format_4d(self, ctx: BarePKParser.Rev_raw_format_4dContext):
+        self.num_of_dim = 4
+        self.initSpectralDim()
+
+        self.__position_order = False
+        self.__has_amplitude = bool(ctx.Amplitude())
+        self.__has_volume = bool(ctx.Volume())
+        self.__has_assign = bool(ctx.Label())
+
+    # Exit a parse tree produced by BarePKParser#rev_raw_format_4d.
+    def exitRev_raw_format_4d(self, ctx: BarePKParser.Rev_raw_format_4dContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BarePKParser#peak_list_raw_2d.
+    def enterPeak_list_raw_2d(self, ctx: BarePKParser.Peak_list_raw_2dContext):  # pylint: disable=unused-argument
+        self.peaks2D += 1
+
+        self.atomSelectionSets.clear()
+        self.asIsSets.clear()
+
+    # Exit a parse tree produced by BarePKParser#peak_list_raw_2d.
+    def exitPeak_list_raw_2d(self, ctx: BarePKParser.Peak_list_raw_2dContext):
+
+        try:
+
+            index = int(str(ctx.Integer()))
+
+            try:
+
+                x_ppm = self.positionSelection[0 if self.__position_order else 1]
+                y_ppm = self.positionSelection[1 if self.__position_order else 0]
+
+            except IndexError:
+                self.peaks2D -= 1
+                return
+
+            offset = 0
+
+            height = volume = None
+            if self.__has_amplitude:
+                height = self.originalNumberSelection[offset] if len(self.numberSelection) > offset else None
+                offset += 1
+            if self.__has_volume:
+                volume = self.originalNumberSelection[offset] if len(self.numberSelection) > offset else None
+
+            offset = 0
+
+            ass = comment = None
+            if self.__has_assign and ctx.Simple_name(offset):
+                ass = str(ctx.Simple_name(offset))
+                offset += 1
+
+            comments = []
+            for col in range(offset, 20):
+                if ctx.Simple_name(col):
+                    comments.append(str(ctx.Simple_name(col)))
+                else:
+                    break
+
+            if len(comments) > 0:
+                comment = ' '.join(comments)
+
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
+
+            if None in (x_ppm, y_ppm) or isinstance(x_ppm, list) or isinstance(y_ppm, list):
+                self.peaks2D -= 1
+                return
+
+            dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, None, None, None, None,
+                                          None, None, None, None, height, None, volume, None)
+
+            if dstFunc is None:
+                self.peaks2D -= 1
+                return
+
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+
+            cur_spectral_dim[1]['freq_hint'].append(x_ppm)
+            cur_spectral_dim[2]['freq_hint'].append(y_ppm)
+
+            has_assignments = has_multiple_assignments = False
+            asis1 = asis2 = None
+
+            if ass is not None:
+                assignments = []
+                if len(ass.split('-')) == self.num_of_dim:
+                    hint = None
+                    for _ass in ass.split('-'):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        hint = assignments[-1] if assignments[-1] is not None else None
+                elif len(ass.split(':')) == self.num_of_dim:
+                    hint = None
+                    for _ass in ass.split(':'):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        hint = assignments[-1] if assignments[-1] is not None else None
+                elif len(ass.split(';')) == self.num_of_dim:
+                    hint = None
+                    for _ass in ass.split(';'):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        hint = assignments[-1] if assignments[-1] is not None else None
+                elif len(ass.split(',')) == self.num_of_dim:
+                    hint = None
+                    for _ass in ass.split(','):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        hint = assignments[-1] if assignments[-1] is not None else None
+                else:
+                    assignments = [None] * self.num_of_dim
+                    _assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
+                    if _assignments is not None and len(_assignments) == self.num_of_dim:
+                        for idx in range(self.num_of_dim):
+                            assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
+
+                has_assignments, has_multiple_assignments, asis1, asis2 =\
+                    self.checkAssignments2D(index, assignments, dstFunc)
+
+            self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                    asis1, asis2,
+                                    f'{ass} -> ',
+                                    comment if comment is not None or has_assignments and not has_multiple_assignments else ass)
+
+        finally:
+            self.positionSelection.clear()
+            self.numberSelection.clear()
+            self.originalNumberSelection.clear()
+
+    # Enter a parse tree produced by BarePKParser#peak_list_raw_3d.
+    def enterPeak_list_raw_3d(self, ctx: BarePKParser.Peak_list_raw_3dContext):  # pylint: disable=unused-argument
+        self.peaks3D += 1
+
+        self.atomSelectionSets.clear()
+        self.asIsSets.clear()
+
+    # Exit a parse tree produced by BarePKParser#peak_list_raw_3d.
+    def exitPeak_list_raw_3d(self, ctx: BarePKParser.Peak_list_raw_3dContext):
+
+        try:
+
+            index = int(str(ctx.Integer()))
+
+            try:
+
+                x_ppm = self.positionSelection[0 if self.__position_order else 2]
+                y_ppm = self.positionSelection[1]
+                z_ppm = self.positionSelection[2 if self.__position_order else 0]
+
+            except IndexError:
+                self.peaks3D -= 1
+                return
+
+            offset = 0
+
+            height = volume = None
+            if self.__has_amplitude:
+                height = self.originalNumberSelection[offset] if len(self.numberSelection) > offset else None
+                offset += 1
+            if self.__has_volume:
+                volume = self.originalNumberSelection[offset] if len(self.numberSelection) > offset else None
+
+            offset = 0
+
+            ass = comment = None
+            if self.__has_assign and ctx.Simple_name(offset):
+                ass = str(ctx.Simple_name(offset))
+                offset += 1
+
+            comments = []
+            for col in range(offset, 20):
+                if ctx.Simple_name(col):
+                    comments.append(str(ctx.Simple_name(col)))
+                else:
+                    break
+
+            if len(comments) > 0:
+                comment = ' '.join(comments)
+
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
+
+            if None in (x_ppm, y_ppm, z_ppm) or isinstance(x_ppm, list) or isinstance(y_ppm, list) or isinstance(z_ppm, list):
+                self.peaks3D -= 1
+                return
+
+            dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, None, None, None, None, None, None,
+                                          None, None, None, None, None, None, height, None, volume, None)
+
+            if dstFunc is None:
+                self.peaks3D -= 1
+                return
+
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+
+            cur_spectral_dim[1]['freq_hint'].append(x_ppm)
+            cur_spectral_dim[2]['freq_hint'].append(y_ppm)
+            cur_spectral_dim[3]['freq_hint'].append(z_ppm)
+
+            has_assignments = has_multiple_assignments = False
+            asis1 = asis2 = asis3 = None
+
+            if ass is not None:
+                assignments = []
+                if len(ass.split('-')) == self.num_of_dim:
+                    hint = None
+                    for _ass in ass.split('-'):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        hint = assignments[-1] if assignments[-1] is not None else None
+                elif len(ass.split(':')) == self.num_of_dim:
+                    hint = None
+                    for _ass in ass.split(':'):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        hint = assignments[-1] if assignments[-1] is not None else None
+                elif len(ass.split(';')) == self.num_of_dim:
+                    hint = None
+                    for _ass in ass.split(';'):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        hint = assignments[-1] if assignments[-1] is not None else None
+                elif len(ass.split(',')) == self.num_of_dim:
+                    hint = None
+                    for _ass in ass.split(','):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        hint = assignments[-1] if assignments[-1] is not None else None
+                else:
+                    assignments = [None] * self.num_of_dim
+                    _assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
+                    if _assignments is not None and len(_assignments) == self.num_of_dim:
+                        for idx in range(self.num_of_dim):
+                            assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
+
+                has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
+                    self.checkAssignments3D(index, assignments, dstFunc)
+
+            self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                    asis1, asis2, asis3,
+                                    f'{ass} -> ',
+                                    comment if comment is not None or has_assignments and not has_multiple_assignments else ass)
+
+        finally:
+            self.positionSelection.clear()
+            self.numberSelection.clear()
+            self.originalNumberSelection.clear()
+
+    # Enter a parse tree produced by BarePKParser#peak_list_raw_4d.
+    def enterPeak_list_raw_4d(self, ctx: BarePKParser.Peak_list_raw_4dContext):  # pylint: disable=unused-argument
+        self.peaks4D += 1
+
+        self.atomSelectionSets.clear()
+        self.asIsSets.clear()
+
+    # Exit a parse tree produced by BarePKParser#peak_list_raw_4d.
+    def exitPeak_list_raw_4d(self, ctx: BarePKParser.Peak_list_raw_4dContext):
+
+        try:
+
+            index = int(str(ctx.Integer()))
+
+            try:
+
+                x_ppm = self.positionSelection[0 if self.__position_order else 3]
+                y_ppm = self.positionSelection[1 if self.__position_order else 2]
+                z_ppm = self.positionSelection[2 if self.__position_order else 1]
+                a_ppm = self.positionSelection[3 if self.__position_order else 0]
+
+            except IndexError:
+                self.peaks4D -= 1
+                return
+
+            offset = 0
+
+            height = volume = None
+            if self.__has_amplitude:
+                height = self.originalNumberSelection[offset] if len(self.numberSelection) > offset else None
+                offset += 1
+            if self.__has_volume:
+                volume = self.originalNumberSelection[offset] if len(self.numberSelection) > offset else None
+
+            offset = 0
+
+            ass = comment = None
+            if self.__has_assign and ctx.Simple_name(offset):
+                ass = str(ctx.Simple_name(offset))
+                offset += 1
+
+            comments = []
+            for col in range(offset, 20):
+                if ctx.Simple_name(col):
+                    comments.append(str(ctx.Simple_name(col)))
+                else:
+                    break
+
+            if len(comments) > 0:
+                comment = ' '.join(comments)
+
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
+
+            if None in (x_ppm, y_ppm, z_ppm, a_ppm) or isinstance(x_ppm, list) or isinstance(y_ppm, list) or isinstance(z_ppm, list) or isinstance(a_ppm, list):
+                self.peaks4D -= 1
+                return
+
+            dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, None, None, None, None, None, None, None, None,
+                                          None, None, None, None, None, None, None, None, height, None, volume, None)
+
+            if dstFunc is None:
+                self.peaks4D -= 1
+                return
+
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+
+            cur_spectral_dim[1]['freq_hint'].append(x_ppm)
+            cur_spectral_dim[2]['freq_hint'].append(y_ppm)
+            cur_spectral_dim[3]['freq_hint'].append(z_ppm)
+            cur_spectral_dim[4]['freq_hint'].append(a_ppm)
+
+            has_assignments = has_multiple_assignments = False
+            asis1 = asis2 = asis3 = asis4 = None
+
+            if ass is not None:
+                assignments = []
+                if len(ass.split('-')) == self.num_of_dim:
+                    hint = None
+                    for _ass in ass.split('-'):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        hint = assignments[-1] if assignments[-1] is not None else None
+                elif len(ass.split(':')) == self.num_of_dim:
+                    hint = None
+                    for _ass in ass.split(':'):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        hint = assignments[-1] if assignments[-1] is not None else None
+                elif len(ass.split(';')) == self.num_of_dim:
+                    hint = None
+                    for _ass in ass.split(';'):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        hint = assignments[-1] if assignments[-1] is not None else None
+                elif len(ass.split(',')) == self.num_of_dim:
+                    hint = None
+                    for _ass in ass.split(','):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        hint = assignments[-1] if assignments[-1] is not None else None
+                else:
+                    assignments = [None] * self.num_of_dim
+                    _assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
+                    if _assignments is not None and len(_assignments) == self.num_of_dim:
+                        for idx in range(self.num_of_dim):
+                            assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
+
+                has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
+                    self.checkAssignments4D(index, assignments, dstFunc)
+
+            self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                    asis1, asis2, asis3, asis4,
+                                    f'{ass} -> ',
+                                    comment if comment is not None or has_assignments and not has_multiple_assignments else ass)
 
         finally:
             self.positionSelection.clear()

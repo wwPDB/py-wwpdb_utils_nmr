@@ -1572,7 +1572,6 @@ class BasePKParserListener():
             if C_METHYL_CENTER_MIN < _position <= C_METHYL_CENTER_MAX and atom_type == 'C':
                 return 'C-methyl'
             return ''
-
         if self.reasons and 'atom_type_history' in self.reasons:
             atom_types = self.reasons['atom_type_history'][self.num_of_dim][self.cur_list_id]
             if len(atom_types) == self.num_of_dim:
@@ -1587,7 +1586,8 @@ class BasePKParserListener():
             if 'fixed' in cur_spectral_dim:  # XEASY INNAME label is not reliable (2kj5)
                 return False
             if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                if not predict_spectral_region_from_position().startswith(atom_type):
+                _atom_type = predict_spectral_region_from_position()
+                if not _atom_type.startswith(atom_type) and len(_atom_type) > 0:
                     return False
                 cur_spectral_dim['fixed'] = True
                 cur_spectral_dim['atom_type'] = None
@@ -1595,7 +1595,8 @@ class BasePKParserListener():
                 cur_spectral_dim['atom_isotope_number'] = None
                 return True
         if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-            if not predict_spectral_region_from_position().startswith(atom_type):
+            _atom_type = predict_spectral_region_from_position()
+            if not _atom_type.startswith(atom_type) and len(_atom_type) > 0:
                 return False
             cur_spectral_dim['atom_type'] = atom_type
             cur_spectral_dim['axis_code'] = atom_type
@@ -5426,7 +5427,7 @@ class BasePKParserListener():
             common_name = re.sub(r'**', '*', common_name)
 
         _atom_sel = copy.copy(atom_sel[0])
-        _atom_sel['atom_id'] = common_name
+        _atom_sel['auth_atom_id'] = common_name
 
         return _atom_sel
 
@@ -5456,8 +5457,8 @@ class BasePKParserListener():
                 sf['index_id'] += 1
                 ambig_code1 = ambig_code2 = None
                 if has_assignments and not has_multiple_assignments:
-                    atom1 = self.atomSelectionSet[0][0]
-                    atom2 = self.atomSelectionSet[1][0]
+                    atom1 = self.__extractCommonAtom(self.atomSelectionSet[0])
+                    atom2 = self.__extractCommonAtom(self.atomSelectionSet[1])
                     if len(self.atomSelectionSet[0]) > 1:
                         ambig_code1 = self.csStat.getMaxAmbigCodeWoSetId(atom1['comp_id'], atom1['atom_id'])
                         if ambig_code1 == 0:
@@ -5600,9 +5601,9 @@ class BasePKParserListener():
                 sf['index_id'] += 1
                 ambig_code1 = ambig_code2 = ambig_code3 = None
                 if has_assignments and not has_multiple_assignments:
-                    atom1 = self.atomSelectionSet[0][0]
-                    atom2 = self.atomSelectionSet[1][0]
-                    atom3 = self.atomSelectionSet[2][0]
+                    atom1 = self.__extractCommonAtom(self.atomSelectionSet[0])
+                    atom2 = self.__extractCommonAtom(self.atomSelectionSet[1])
+                    atom3 = self.__extractCommonAtom(self.atomSelectionSet[2])
                     if len(self.atomSelectionSet[0]) > 1:
                         ambig_code1 = self.csStat.getMaxAmbigCodeWoSetId(atom1['comp_id'], atom1['atom_id'])
                         if ambig_code1 == 0:
@@ -5752,10 +5753,10 @@ class BasePKParserListener():
                 sf['index_id'] += 1
                 ambig_code1 = ambig_code2 = ambig_code3 = ambig_code4 = None
                 if has_assignments and not has_multiple_assignments:
-                    atom1 = self.atomSelectionSet[0][0]
-                    atom2 = self.atomSelectionSet[1][0]
-                    atom3 = self.atomSelectionSet[2][0]
-                    atom4 = self.atomSelectionSet[3][0]
+                    atom1 = self.__extractCommonAtom(self.atomSelectionSet[0])
+                    atom2 = self.__extractCommonAtom(self.atomSelectionSet[1])
+                    atom3 = self.__extractCommonAtom(self.atomSelectionSet[2])
+                    atom4 = self.__extractCommonAtom(self.atomSelectionSet[3])
                     if len(self.atomSelectionSet[0]) > 1:
                         ambig_code1 = self.csStat.getMaxAmbigCodeWoSetId(atom1['comp_id'], atom1['atom_id'])
                         if ambig_code1 == 0:

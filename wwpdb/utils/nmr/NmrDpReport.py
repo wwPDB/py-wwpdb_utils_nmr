@@ -95,7 +95,8 @@
 # 18-Feb-2025  M. Yokochi - add 'nm-pea-pon' file type for PONDEROSA spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
 # 26-Feb-2025  M. Yokochi - add 'nm-pea-ccp' file type for CCPN tabular spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
 # 05-Mar-2025  M. Yokochi - add 'nm-pea-bar' file type for bare spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
-# 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR restraint remediation Phase 2)
+# 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR data remediation Phase 2)
+# 28-Mar-2025  M. Yokochi - add 'nm-pea-sps' file type for SPARKY's 'save' (aka. ornament) peak list file (DAOTHER-8905, 9785, NMR data remediation Phase 2)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1775,8 +1776,8 @@ class NmrDpReportInputSource:
                            'nm-res-noa', 'nm-res-oth', 'nm-res-ros', 'nm-res-sax', 'nm-res-syb',
                            'nm-res-xpl',
                            'nm-pea-any', 'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-pip',
-                           'nm-pea-pon', 'nm-pea-spa', 'nm-pea-top', 'nm-pea-vie', 'nm-pea-vnm',
-                           'nm-pea-xea', 'nm-pea-xwi')
+                           'nm-pea-pon', 'nm-pea-spa', 'nm-pea-sps', 'nm-pea-top', 'nm-pea-vie',
+                           'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',
                               'nmr-chemical-shifts', 'nmr-restraints', 'nmr-peaks')

@@ -211,7 +211,8 @@
 # 18-Feb-2025  M. Yokochi - add support for PONDEROSA spectral peak list (DAOTHER-8905, 9785)
 # 26-Feb-2025  M. Yokochi - add support for CCPN tabular spectral peak list (DAOTHER-8905, 9785)
 # 05-Mar-2025  M. Yokochi - add support for bare spectral peak list (DAOTHER-8905, 9785)
-# 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR restraint remediation Phase 2)
+# 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR data remediation Phase 2)
+# 28-Mar-2025  M. Yokochi - add support for SPARKY's 'save' (aka. ornament) peak list (DAOTHER-8905, 9785, NMR data remediation Phase 2)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -387,6 +388,7 @@ try:
     from wwpdb.utils.nmr.pk.SparkyPKReader import SparkyPKReader
     from wwpdb.utils.nmr.pk.SparkyRPKReader import SparkyRPKReader
     from wwpdb.utils.nmr.pk.SparkyNPKReader import SparkyNPKReader
+    from wwpdb.utils.nmr.pk.SparkySPKReader import SparkySPKReader
     from wwpdb.utils.nmr.pk.TopSpinPKReader import TopSpinPKReader
     from wwpdb.utils.nmr.pk.VnmrPKReader import VnmrPKReader
     from wwpdb.utils.nmr.pk.XeasyPKReader import XeasyPKReader
@@ -541,6 +543,7 @@ except ImportError:
     from nmr.pk.SparkyPKReader import SparkyPKReader
     from nmr.pk.SparkyRPKReader import SparkyRPKReader
     from nmr.pk.SparkyNPKReader import SparkyNPKReader
+    from nmr.pk.SparkySPKReader import SparkySPKReader
     from nmr.pk.TopSpinPKReader import TopSpinPKReader
     from nmr.pk.VnmrPKReader import VnmrPKReader
     from nmr.pk.XeasyPKReader import XeasyPKReader
@@ -683,8 +686,8 @@ archival_mr_file_types = ('nmr-star',
 
 parsable_pk_file_types = ('nm-aux-xea',
                           'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-pip',
-                          'nm-pea-pon', 'nm-pea-spa', 'nm-pea-top', 'nm-pea-vie',
-                          'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi')
+                          'nm-pea-pon', 'nm-pea-spa', 'nm-pea-sps', 'nm-pea-top',
+                          'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi')
 
 
 def detect_bom(fPath: str, default: str = 'utf-8') -> str:
@@ -1147,6 +1150,9 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
 
     if ' w1 ' in string and ' w2' in string:  # Sparky peak list
         return 'nm-pea-spa' if asCode else 'Sparky'
+
+    if '<sparky save file>' in string:  # Sparky save file
+        return 'nm-pea-sps' if asCode else 'Sparky'
 
     if 'label' in string and 'dataset' in string and 'sw' in string and 'sf' in string:  # NMRView peak list
         return 'nm-pea-vie' if asCode else 'NMRView'
@@ -1611,11 +1617,11 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
                 return val.count(',')
 
     if file_format == 'unknown':
-        if '4 (ppm)' in line:
+        if 'F4' in line or 'f4' in line:
             return 4
-        if '3 (ppm)' in line:
+        if 'F3' in line or 'f3' in line:
             return 3
-        if '2 (ppm)' in line:
+        if 'F2' in line or 'f2' in line:
             return 2
 
     return None
@@ -13128,6 +13134,11 @@ class NmrDpUtility:
                                     self.__ccU, self.__csStat, self.__nefT,
                                     reasons)
             return reader
+        if file_type == 'nm-pea-sps':
+            reader = SparkySPKReader(verbose, self.__lfh, None, None, None, None, None,
+                                     self.__ccU, self.__csStat, self.__nefT,
+                                     reasons)
+            return reader
         if file_type == 'nm-pea-top':
             reader = TopSpinPKReader(verbose, self.__lfh, None, None, None, None, None,
                                      self.__ccU, self.__csStat, self.__nefT,
@@ -15341,6 +15352,17 @@ class NmrDpUtility:
         if _file_type == 'nm-pea-spa' and file_type != 'nm-pea-spa':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-spa')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if _file_type == 'nm-pea-sps' and file_type != 'nm-pea-sps':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-sps')
 
             is_valid |= _is_valid
             err += _err
@@ -37084,6 +37106,82 @@ class NmrDpUtility:
                                     if sf not in pk_sf_dict_holder[content_subtype]:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
+            elif file_type == 'nm-pea-sps':
+                reader = SparkySPKReader(self.__verbose, self.__lfh,
+                                         self.__representative_model_id,
+                                         self.__representative_alt_id,
+                                         self.__mr_atom_name_mapping,
+                                         self.__cR, self.__caC,
+                                         self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, parser_err_listener, lexer_err_listener =\
+                    reader.parse(file_path, self.__cifPath,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                 csLoops=self.__lp_data['chem_shift'])
+
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+
+                if None not in (lexer_err_listener, parser_err_listener, listener)\
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                        or _content_subtype is not None):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_pea_warn_message_for_lazy_eval(listener)
+
+                        reader = SparkySPKReader(self.__verbose, self.__lfh,
+                                                 self.__representative_model_id,
+                                                 self.__representative_alt_id,
+                                                 self.__mr_atom_name_mapping,
+                                                 self.__cR, self.__caC,
+                                                 self.__ccU, self.__csStat, self.__nefT,
+                                                 reasons)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                      csLoops=self.__lp_data['chem_shift'])
+
+                    deal_pea_warn_message(listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate NMR spectral peak list file (SPARKY) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in pk_sf_dict_holder:
+                                    pk_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in pk_sf_dict_holder[content_subtype]:
+                                        pk_sf_dict_holder[content_subtype].append(sf)
+
             elif file_type == 'nm-pea-top':
                 reader = TopSpinPKReader(self.__verbose, self.__lfh,
                                          self.__representative_model_id,
@@ -51781,6 +51879,70 @@ class NmrDpUtility:
                                             self.__cR, self.__caC,
                                             self.__ccU, self.__csStat, self.__nefT,
                                             reasons)
+
+                    listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
+                                                  createSfDict=True, originalFileName=data_file_name,
+                                                  listIdCounter=_list_id_counter, entryId=self.__entry_id,
+                                                  csLoops=self.__lp_data['chem_shift'])
+
+                deal_pea_warn_message(listener)
+
+                poly_seq = listener.getPolymerSequence()
+                if poly_seq is not None:
+                    input_source.setItemValue('polymer_sequence', poly_seq)
+                    poly_seq_set.append(poly_seq)
+
+                seq_align = listener.getSequenceAlignment()
+                if seq_align is not None:
+                    self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+
+                if len(listener.getContentSubtype()) == 0:
+                    err = f"Failed to validate NMR spectral peak list file (SPARKY) {data_file_name!r}."
+
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {err}\n")
+
+                self.__list_id_counter, sf_dict = listener.getSfDict()
+                if sf_dict is not None:
+                    for k, v in sf_dict.items():
+                        content_subtype = contentSubtypeOf(k[0])
+                        if content_subtype not in pk_sf_dict_holder:
+                            pk_sf_dict_holder[content_subtype] = []
+                        for sf in v:
+                            if sf not in pk_sf_dict_holder[content_subtype]:
+                                pk_sf_dict_holder[content_subtype].append(sf)
+
+        elif file_type == 'nm-pea-sps':
+            reader = SparkySPKReader(self.__verbose, self.__lfh,
+                                     self.__representative_model_id,
+                                     self.__representative_alt_id,
+                                     self.__mr_atom_name_mapping,
+                                     self.__cR, self.__caC,
+                                     self.__ccU, self.__csStat, self.__nefT)
+
+            _list_id_counter = copy.copy(self.__list_id_counter)
+
+            listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
+                                          createSfDict=True, originalFileName=data_file_name,
+                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                          csLoops=self.__lp_data['chem_shift'])
+
+            if listener is not None:
+                reasons = listener.getReasonsForReparsing()
+
+                if reasons is not None:
+                    deal_pea_warn_message_for_lazy_eval(listener)
+
+                    reader = SparkySPKReader(self.__verbose, self.__lfh,
+                                             self.__representative_model_id,
+                                             self.__representative_alt_id,
+                                             self.__mr_atom_name_mapping,
+                                             self.__cR, self.__caC,
+                                             self.__ccU, self.__csStat, self.__nefT,
+                                             reasons)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,

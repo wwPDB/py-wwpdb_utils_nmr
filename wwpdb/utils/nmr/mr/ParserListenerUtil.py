@@ -8589,6 +8589,10 @@ def getPkChemShiftRow(pkSubtype: str, indexId: int, listId: int, entryId: str, d
             asis = True
         star_atom = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom, asis=asis)
         if star_atom is not None:
+            if isinstance(ambig_code, int):
+                star_atom['atom_id'] = atom['auth_atom_id']
+                if 'orig_atom_id' in atom:
+                    atom['atom_id'] = atom['orig_atom_id']
             row[8], row[9], row[10], row[11], row[12] =\
                 star_atom['chain_id'], star_atom['entity_id'], star_atom['seq_id'], star_atom['comp_id'], star_atom['atom_id']
         row[13] = ambig_code

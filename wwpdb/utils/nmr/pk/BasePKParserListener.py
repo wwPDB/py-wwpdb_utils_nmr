@@ -1545,6 +1545,9 @@ class BasePKParserListener():
         return True, None
 
     def validateAtomType(self, _dim_id: int, atom_type: str, position: str) -> bool:
+        if self.reasons is None and self.software_name == 'PIPP':
+            return True
+
         cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
 
         def predict_spectral_region_from_position():
@@ -2371,7 +2374,8 @@ class BasePKParserListener():
                                     else:
                                         hvy_axis = _dim_id
                             if pro_axis != -1 and hvy_axis != -1:
-                                self.reasonsForReParsing['onebond_resolved'] = {0: 5 - hvy_axis - pro_axis, 1: hvy_axis - 1, 2: pro_axis - 1}
+                                self.reasonsForReParsing['onebond_resolved'] = {0: {0: hvy_axis - 1, 1: pro_axis - 1, 2: 5 - hvy_axis - pro_axis},
+                                                                                1: {1: hvy_axis - 1, 2: pro_axis - 1, 0: 5 - hvy_axis - pro_axis}}
                         elif d == 4 and len([transfer for transfer in cur_spectral_dim_transfer if transfer['type'] == 'onebond']) == 2:
                             self.reasonsForReParsing['onebond_resolved'] = {}
                             for offset, transfer in enumerate([transfer for transfer in cur_spectral_dim_transfer if transfer['type'] == 'onebond']):
@@ -5040,7 +5044,7 @@ class BasePKParserListener():
 
         return has_assignments, has_multiple_assignments, asis1, asis2
 
-    def checkAssignments3D(self, index: int, assignments: List[List[dict]], dstFunc: dict
+    def checkAssignments3D(self, index: int, assignments: List[List[dict]], dstFunc: dict, onebondOrder: int = 0
                            ) -> Tuple[bool, bool, Optional[bool], Optional[bool], Optional[bool]]:
         has_assignments = has_multiple_assignments = False
         asis1 = asis2 = asis3 = None
@@ -5060,7 +5064,7 @@ class BasePKParserListener():
 
             if self.reasons is not None and 'onebond_resolved' in self.reasons:
                 _assignments = [None] * 3
-                for k, v in self.reasons['onebond_resolved'].items():
+                for k, v in self.reasons['onebond_resolved'][onebondOrder].items():
                     _assignments[v] = assignments[k]
                 assignments = _assignments
 

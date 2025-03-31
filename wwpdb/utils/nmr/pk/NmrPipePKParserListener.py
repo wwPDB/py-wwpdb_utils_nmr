@@ -918,6 +918,12 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 ass = ass2
 
             if ass is not None and self.reasons is not None and 'onebond_resolved' in self.reasons:
+
+                if self.extractPeakAssignment(2, ass1, index) is not None:
+                    onebondOrder = 0
+                else:
+                    onebondOrder = 1
+
                 assignments = []
                 if len(ass.split('-')) == self.num_of_dim:
                     hint = None
@@ -947,7 +953,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                             assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
-                    self.checkAssignments3D(index, assignments, dstFunc)
+                    self.checkAssignments3D(index, assignments, dstFunc, onebondOrder)
 
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
@@ -1047,9 +1053,6 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 ass = ass1
             elif ass2 is not None:
                 ass = ass2
-
-            has_assignments = has_multiple_assignments = False
-            asis1 = asis2 = asis3 = asis4 = None
 
             if ass is not None and self.reasons is not None and 'onebond_resolved' in self.reasons:
                 assignments = []

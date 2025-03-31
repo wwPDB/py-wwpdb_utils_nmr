@@ -61189,7 +61189,7 @@ class NmrDpUtility:
                     if data_format is not None:
 
                         for lp in sf.loops:
-                            if lp.category in ('_Peak_row_format', '_Peak', '_Peak_general_char', '_Peak_char', '_Assignemd_peak_chem_shift'):
+                            if lp.category in ('_Peak_row_format', '_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift'):
                                 del sf[lp]  # What a waste!
 
                         set_sf_tag(sf, 'Text_data_format', data_format)

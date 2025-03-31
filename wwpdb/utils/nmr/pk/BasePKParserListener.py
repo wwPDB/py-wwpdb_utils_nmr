@@ -5373,6 +5373,7 @@ class BasePKParserListener():
         max_str = max(strings, key=len)
 
         len_min_str = len(min_str)
+        len_max_str = len(max_str)
         longest_substr = ''
 
         for i in range(len_min_str):
@@ -5407,12 +5408,15 @@ class BasePKParserListener():
                     common_name.append(myPr0)
             elif myPr0 in emptyValue:
                 if myPr1 not in emptyValue:
-                    common_name.append('#' if myPr1.isdigit() else '%')
+                    common_name.append(('#' if myPr1.isdigit() else '%') if len_min_str == len_max_str else '*')
 
         if len(common_name) == 0:
             return atom_sel[0]
 
         common_name = ''.join(common_name)
+
+        if '##' in common_name:
+            common_name = re.sub('##', '*', common_name)
 
         if '%%' in common_name:
             common_name = re.sub('%%', '*', common_name)
@@ -5427,6 +5431,7 @@ class BasePKParserListener():
             common_name = re.sub(r'**', '*', common_name)
 
         _atom_sel = copy.copy(atom_sel[0])
+        _atom_sel['orig_atom_id'] = _atom_sel['auth_atom_id']
         _atom_sel['auth_atom_id'] = common_name
 
         return _atom_sel

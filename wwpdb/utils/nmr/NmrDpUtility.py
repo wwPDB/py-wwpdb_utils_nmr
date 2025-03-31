@@ -20858,7 +20858,8 @@ class NmrDpUtility:
                         if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and self.__isNmrAtomName(comp_id, atom_id):
                             atom_id_ = self.__getRepAtomId(comp_id, atom_id)
 
-                            if file_type == 'nmr-star' and self.__combined_mode and self.__transl_pseudo_name and atom_id != atom_id_:
+                            if file_type == 'nmr-star' and self.__combined_mode and self.__transl_pseudo_name and atom_id != atom_id_\
+                               and not content_subtype.startswith('spectral_peak'):
 
                                 warn = f"Conventional psuedo atom {comp_id}:{atom_id} is translated to {atom_id_!r} "\
                                     "according to the IUPAC atom nomenclature."

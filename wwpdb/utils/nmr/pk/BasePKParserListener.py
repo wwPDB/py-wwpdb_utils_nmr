@@ -5929,6 +5929,7 @@ class BasePKParserListener():
         elif not self.polyPeptide and not self.polyDeoxyribonucleotide and self.polyRibonucleotide:
             oneLetterCodeSet = [getOneLetterCode(compId) for compId in self.compIdSet if len(compId) == 1]
         hasOneLetterCodeSet = len(oneLetterCodeSet) > 0
+        useOneLetterCodeSet = False
         ligCompId = ligAtomId = None
 
         for idx, term in enumerate(_str):
@@ -5962,7 +5963,7 @@ class BasePKParserListener():
                             resNameSpan[idx] = (index, index + len(compId))
                             minIndex = index
 
-            if hasOneLetterCodeSet and resNameLike[idx] and len(term[resNameSpan[idx][0]:resNameSpan[idx][1]]) > 1:
+            if hasOneLetterCodeSet and not useOneLetterCodeSet and resNameLike[idx] and len(term[resNameSpan[idx][0]:resNameSpan[idx][1]]) > 1:
                 hasOneLetterCodeSet = False
 
             if not resNameLike[idx] and hasOneLetterCodeSet:
@@ -6030,7 +6031,7 @@ class BasePKParserListener():
                                         _compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == _compId)
                                         _, _, details = self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
                                         if details is None:
-                                            atomNameLike[idx] = atomNameLike_[_idx] = True
+                                            atomNameLike[idx] = atomNameLike_[_idx] = useOneLetterCodeSet = True
                                             atomNameSpan[idx] = (_index, len(term))
                                             if siblingAtomName[_idx] is None:
                                                 siblingAtomName[_idx] = []
@@ -6116,7 +6117,7 @@ class BasePKParserListener():
                                 compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                 if details is None:
-                                    atomNameLike[idx] = True
+                                    atomNameLike[idx] = useOneLetterCodeSet = True
                                     atomNameSpan[idx] = (index, len(term))
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                         resNameLike[idx] = False
@@ -6171,7 +6172,7 @@ class BasePKParserListener():
                                     compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                     if details is None:
-                                        _atomNameLike[idx] = True
+                                        _atomNameLike[idx] = useOneLetterCodeSet = True
                                         _atomNameSpan[idx] = (index, len(_term))
                                         if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
@@ -6226,7 +6227,7 @@ class BasePKParserListener():
                                     compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                     if details is None:
-                                        __atomNameLike[idx] = True
+                                        __atomNameLike[idx] = useOneLetterCodeSet = True
                                         __atomNameSpan[idx] = (index, len(__term))
                                         if resNameSpan[idx][0] == __atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
@@ -6281,7 +6282,7 @@ class BasePKParserListener():
                                     compId = next(k for k, v in monDict3.items() if k in self.compIdSet and v == compId)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                     if details is None:
-                                        ___atomNameLike[idx] = True
+                                        ___atomNameLike[idx] = useOneLetterCodeSet = True
                                         ___atomNameSpan[idx] = (index, len(___term))
                                         if resNameSpan[idx][0] == ___atomNameSpan[idx][0]:
                                             resNameLike[idx] = False

@@ -5420,19 +5420,19 @@ class BasePKParserListener():
         common_name = ''.join(common_name)
 
         if '##' in common_name:
-            common_name = re.sub('##', '*', common_name)
+            common_name = common_name.replace('##', '*')
 
         if '%%' in common_name:
-            common_name = re.sub('%%', '*', common_name)
+            common_name = common_name.replace('%%', '*')
 
         if '*%' in common_name:
-            common_name = re.sub(r'*%', '*', common_name)
+            common_name = common_name.replace('*%', '*')
 
         if '%*' in common_name:
-            common_name = re.sub(r'%*', '*', common_name)
+            common_name = common_name.replace('%*', '*')
 
         if '**' in common_name:
-            common_name = re.sub(r'**', '*', common_name)
+            common_name = common_name.replace('**', '*')
 
         _atom_sel = copy.copy(atom_sel[0])
         _atom_sel['orig_atom_id'] = _atom_sel['auth_atom_id']

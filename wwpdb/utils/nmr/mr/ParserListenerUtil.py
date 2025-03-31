@@ -8313,10 +8313,10 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, atom2, asis=asis1)
         if star_atom1 is None:
             star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, asis=asis1)
-        if isinstance(ambig_code1, int):
-            star_atom1['atom_id'] = atom1['auth_atom_id']
-            if 'orig_atom_id' in atom1:
-                atom1['atom_id'] = atom1['orig_atom_id']
+            if isinstance(ambig_code1, int):
+                star_atom1['atom_id'] = atom1['auth_atom_id']
+                if 'orig_atom_id' in atom1:
+                    atom1['atom_id'] = atom1['orig_atom_id']
 
     if atom2 is not None:
         if 'asis' in atom2:
@@ -8324,10 +8324,10 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, atom1, asis=asis2)
         if star_atom2 is None:
             star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, asis=asis2)
-        if isinstance(ambig_code2, int):
-            star_atom2['atom_id'] = atom2['auth_atom_id']
-            if 'orig_atom_id' in atom2:
-                atom2['atom_id'] = atom2['orig_atom_id']
+            if isinstance(ambig_code2, int):
+                star_atom2['atom_id'] = atom2['auth_atom_id']
+                if 'orig_atom_id' in atom2:
+                    atom2['atom_id'] = atom2['orig_atom_id']
 
     if atom3 is not None:
         if 'asis' in atom3:
@@ -8335,10 +8335,10 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, atom1, asis=asis3)
         if star_atom3 is None:
             star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, asis=asis3)
-        if isinstance(ambig_code3, int):
-            star_atom3['atom_id'] = atom3['auth_atom_id']
-            if 'orig_atom_id' in atom3:
-                atom3['atom_id'] = atom3['orig_atom_id']
+            if isinstance(ambig_code3, int):
+                star_atom3['atom_id'] = atom3['auth_atom_id']
+                if 'orig_atom_id' in atom3:
+                    atom3['atom_id'] = atom3['orig_atom_id']
 
     if atom4 is not None:
         if 'asis' in atom4:
@@ -8346,10 +8346,10 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, atom1, asis=asis4)
         if star_atom4 is None:
             star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, asis=asis4)
-        if isinstance(ambig_code4, int):
-            star_atom4['atom_id'] = atom4['auth_atom_id']
-            if 'orig_atom_id' in atom4:
-                atom4['atom_id'] = atom4['orig_atom_id']
+            if isinstance(ambig_code4, int):
+                star_atom4['atom_id'] = atom4['auth_atom_id']
+                if 'orig_atom_id' in atom4:
+                    atom4['atom_id'] = atom4['orig_atom_id']
 
     row[key_size] = indexId
 

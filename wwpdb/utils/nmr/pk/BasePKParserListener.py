@@ -5907,6 +5907,7 @@ class BasePKParserListener():
         if numOfDim not in (1, 2, 3, 4) or string is None:
             return None
 
+        _str_ = PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', string).split()
         _str = PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', string.upper()).split()
         lenStr = len(_str)
 
@@ -6015,6 +6016,12 @@ class BasePKParserListener():
                     atomNameLike[idx] = True
                     atomNameSpan[idx] = (0, len(term) + 1)
                     ligAtomId = term
+
+            if resIdLike[idx] and resIdSpan[idx][1] + 1 <= len(term) and _str_[idx][resIdSpan[idx][1]].islower() and _str[idx][resIdSpan[idx][1]].isupper():
+                if resIdSpan[idx][1] + 1 < len(term) and any(_str_[idx][resIdSpan[idx][1] + 1].startswith(elem) for elem in PEAK_HALF_SPIN_NUCLEUS):
+                    term = _str[idx] = term[0:resIdSpan[idx][1]] + term[resIdSpan[idx][1] + 1:]
+                elif resIdSpan[idx][1] + 1 == len(term):
+                    term = _str[idx] = term[0:resIdSpan[idx][1]]
 
             for elem in PEAK_HALF_SPIN_NUCLEUS:
                 if len(elem) == 1 and ligAtomId is None:

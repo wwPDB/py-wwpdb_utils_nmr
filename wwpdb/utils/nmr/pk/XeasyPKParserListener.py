@@ -601,7 +601,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if '/' in __last_comment:
             for last_comment in __last_comment.split('/'):
-                if len(PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) == self.num_of_dim:
+                if len(PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
                     assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
                                                              self.__index - 1 if isinstance(self.__index, int) else 1)
                     if assignments is not None and self.__atomNumberDict is None:
@@ -618,7 +618,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if not has_split and '|' in __last_comment:
             for last_comment in __last_comment.split('|'):
-                if len(PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) == self.num_of_dim:
+                if len(PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
                     assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
                                                              self.__index - 1 if isinstance(self.__index, int) else 1)
                     if assignments is not None and self.__atomNumberDict is None:
@@ -635,7 +635,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         if not has_split and ',' in __last_comment:
             for last_comment in __last_comment.split(','):
-                if len(PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) == self.num_of_dim:
+                if len(PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
                     assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
                                                              self.__index - 1 if isinstance(self.__index, int) else 1)
                     if assignments is not None and self.__atomNumberDict is None:

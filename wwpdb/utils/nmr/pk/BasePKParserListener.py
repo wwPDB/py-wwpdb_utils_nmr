@@ -845,6 +845,7 @@ class BasePKParserListener():
     debug = False
     ass_expr_debug = False
     internal = False
+    ignore_diagonal = True
 
     createSfDict__ = False
 
@@ -6905,11 +6906,13 @@ class BasePKParserListener():
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
                     if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        continue
+                        if self.ignore_diagonal:
+                            continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        continue
+                        if self.ignore_diagonal:
+                            continue
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:
                         ass['chain_id'] = segId
@@ -7009,11 +7012,13 @@ class BasePKParserListener():
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
                     if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        continue
+                        if self.ignore_diagonal:
+                            continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        continue
+                        if self.ignore_diagonal:
+                            continue
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:
                         ass['chain_id'] = segId
@@ -7113,11 +7118,13 @@ class BasePKParserListener():
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
                     if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        continue
+                        if self.ignore_diagonal:
+                            continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        continue
+                        if self.ignore_diagonal:
+                            continue
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:
                         ass['chain_id'] = segId
@@ -7217,11 +7224,13 @@ class BasePKParserListener():
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
                     if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        continue
+                        if self.ignore_diagonal:
+                            continue
                     ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
-                        continue
+                        if self.ignore_diagonal:
+                            continue
                     ass = {'dim': dimId, 'atom_id': atomName}
                     if segId is not None:
                         ass['chain_id'] = segId
@@ -7321,11 +7330,13 @@ class BasePKParserListener():
                         if details is not None:
                             atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
                         if any(item for item in ret if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
-                            continue
+                            if self.ignore_diagonal:
+                                continue
                         ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                     else:
                         if any(item for item in ret if (segId is None or item['chain_id'] == segId) and item['seq_id'] == resId and item['atom_id'] == atomName):
-                            continue
+                            if self.ignore_diagonal:
+                                continue
                         ass = {'dim': dimId, 'atom_id': atomName}
                         if segId is not None:
                             ass['chain_id'] = segId

@@ -1155,15 +1155,21 @@ class BasePKParserListener():
         if self.__csLoops is None or len(self.__csLoops) == 0:
             return
 
-        segIds = []
+        segIds = set()
         for lp in self.__csLoops:
             for row in lp['data']:
                 if 'Auth_asym_ID' in row:
                     seg_id = row['Auth_asym_ID']
                     if seg_id in emptyValue:
                         continue
-                    segIds.append(seg_id)
+                    segIds.add(seg_id)
         if len(segIds) > 0:
+            if len(self.polySeq) > 1:
+                for ps1, ps2 in itertools.combinations(self.polySeq, 2):
+                    if 'identical_auth_chain_id' in ps1 and ps2['auth_chain_id'] in ps1['identical_auth_chain_id']:
+                        continue
+                    if len(set(ps1['auth_seq_id']) & set(ps2['auth_seq_id'])) != len(ps1['auth_seq_id']) + len(ps2['auth_seq_id']):
+                        return
             self.__defaultSegId__ = collections.Counter(segIds).most_common()[0][0]
 
     def enter(self):
@@ -6900,7 +6906,8 @@ class BasePKParserListener():
                                         idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
                                 if idx != -1:
                                     # if self.__defaultSegId is None:
-                                    self.__defaultSegId = chainAssign[idx][0]
+                                    # self.__defaultSegId = chainAssign[idx][0]
+                                    pass
                                 else:
                                     idx = 0
                                 segId, _, resName, _ = chainAssign[idx]
@@ -7006,7 +7013,8 @@ class BasePKParserListener():
                                         idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
                                 if idx != -1:
                                     # if self.__defaultSegId is None:
-                                    self.__defaultSegId = chainAssign[idx][0]
+                                    # self.__defaultSegId = chainAssign[idx][0]
+                                    pass
                                 else:
                                     idx = 0
                                 segId, _, resName, _ = chainAssign[idx]
@@ -7112,7 +7120,8 @@ class BasePKParserListener():
                                         idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
                                 if idx != -1:
                                     # if self.__defaultSegId is None:
-                                    self.__defaultSegId = chainAssign[idx][0]
+                                    # self.__defaultSegId = chainAssign[idx][0]
+                                    pass
                                 else:
                                     idx = 0
                                 segId, _, resName, _ = chainAssign[idx]
@@ -7218,7 +7227,8 @@ class BasePKParserListener():
                                         idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
                                 if idx != -1:
                                     # if self.__defaultSegId is None:
-                                    self.__defaultSegId = chainAssign[idx][0]
+                                    # self.__defaultSegId = chainAssign[idx][0]
+                                    pass
                                 else:
                                     idx = 0
                                 segId, _, resName, _ = chainAssign[idx]
@@ -7324,7 +7334,8 @@ class BasePKParserListener():
                                             idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
                                     if idx != -1:
                                         # if self.__defaultSegId is None:
-                                        self.__defaultSegId = chainAssign[idx][0]
+                                        # self.__defaultSegId = chainAssign[idx][0]
+                                        pass
                                     else:
                                         idx = 0
                                     segId, _, resName, _ = chainAssign[idx]

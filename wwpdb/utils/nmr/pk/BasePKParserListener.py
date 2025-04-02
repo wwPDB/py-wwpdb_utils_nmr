@@ -328,6 +328,16 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                     __v['spectral_region'] = 'C-aliphatic'
                 elif C_METHYL_CENTER_MIN < center <= C_METHYL_CENTER_MAX and atom_type == 'C':
                     __v['spectral_region'] = 'C-methyl'
+                elif __v['atom_isotope_number'] == 1:
+                    __v['spectral_region'] = 'H'
+                elif __v['atom_isotope_number'] == 13:
+                    __v['spectral_region'] = 'C'
+                elif __v['atom_isotope_number'] == 15:
+                    __v['spectral_region'] = 'N'
+                elif __v['atom_isotope_number'] == 19:
+                    __v['spectral_region'] = 'F'
+                elif __v['atom_isotope_number'] == 31:
+                    __v['spectral_region'] = 'P'
 
             if __v['freq_hint'].size > 0 and d > 2 and __d >= 2\
                and not solid_state_nmr and __v['atom_isotope_number'] == 13:
@@ -1576,7 +1586,8 @@ class BasePKParserListener():
             if C_METHYL_CENTER_MIN < _position <= C_METHYL_CENTER_MAX and atom_type == 'C':
                 return 'C-methyl'
             return ''
-        if self.reasons and 'atom_type_history' in self.reasons:
+
+        if self.reasons is not None and 'atom_type_history' in self.reasons:
             atom_types = self.reasons['atom_type_history'][self.num_of_dim][self.cur_list_id]
             if len(atom_types) == self.num_of_dim:
                 _atom_type = atom_types[_dim_id - 1]
@@ -1710,6 +1721,33 @@ class BasePKParserListener():
                                     __v['spectral_region'] = 'C-aliphatic'
                                 elif C_METHYL_CENTER_MIN < center <= C_METHYL_CENTER_MAX and atom_type == 'C':
                                     __v['spectral_region'] = 'C-methyl'
+                                elif __v['atom_isotope_number'] == 1:
+                                    __v['spectral_region'] = 'H'
+                                elif __v['atom_isotope_number'] == 13:
+                                    __v['spectral_region'] = 'C'
+                                elif __v['atom_isotope_number'] == 15:
+                                    __v['spectral_region'] = 'N'
+                                elif __v['atom_isotope_number'] == 19:
+                                    __v['spectral_region'] = 'F'
+                                elif __v['atom_isotope_number'] == 31:
+                                    __v['spectral_region'] = 'P'
+                                elif self.reasons is not None and 'atom_type_history' in self.reasons:
+                                    atom_type = self.reasons['atom_type_history'][d][_id][__d - 1]
+                                    if atom_type == 'H':
+                                        __v['atom_type'] = __v['axis_code'] = __v['spectral_region'] = 'H'
+                                        __v['atom_isotope_number'] = 1
+                                    elif atom_type == 'C':
+                                        __v['atom_type'] = __v['axis_code'] = __v['spectral_region'] = 'C'
+                                        __v['atom_isotope_number'] = 13
+                                    elif atom_type == 'N':
+                                        __v['atom_type'] = __v['axis_code'] = __v['spectral_region'] = 'N'
+                                        __v['atom_isotope_number'] = 15
+                                    elif atom_type == 'F':
+                                        __v['atom_type'] = __v['axis_code'] = __v['spectral_region'] = 'F'
+                                        __v['atom_isotope_number'] = 19
+                                    elif atom_type == 'P':
+                                        __v['atom_type'] = __v['axis_code'] = __v['spectral_region'] = 'P'
+                                        __v['atom_isotope_number'] = 31
 
                             if __v['freq_hint'].size > 0 and d > 2 and __d >= 2\
                                and self.exptlMethod != 'SOLID-STATE NMR' and __v['atom_isotope_number'] == 13:

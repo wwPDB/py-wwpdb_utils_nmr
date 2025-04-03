@@ -32550,13 +32550,13 @@ class NmrDpUtility:
                                                 if seq_key in auth_to_star_seq:
                                                     row_[d] = chain_id
                                                     row_[atom_dim_num * 2 + d] = comp_id
-                                            if seq_key not in auth_to_star_seq:
-                                                comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                                if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
-                                                _auth_seq_id = next((_auth_seq_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                                     if _auth_asym_id == chain_id and _auth_comp_id == comp_id), None)
-                                                if _auth_seq_id is not None:
-                                                    seq_key = (chain_id, _auth_seq_id, comp_id)
+                                        if seq_key not in auth_to_star_seq:
+                                            comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                            if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
+                                            _auth_seq_id = next((_auth_seq_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                                 if _auth_asym_id == chain_id and _auth_comp_id == comp_id), None)
+                                            if _auth_seq_id is not None:
+                                                seq_key = (chain_id, _auth_seq_id, comp_id)
 
                                     if comp_id in auth_atom_name_to_id:
                                         if atom_id in auth_atom_name_to_id[comp_id]:
@@ -32631,7 +32631,6 @@ class NmrDpUtility:
                                         if seq_key not in auth_to_star_seq:
                                             comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                             if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
-                                            print(f'3 {comp_id}')
                                             _auth_seq_id = next((_auth_seq_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                                  if _auth_asym_id == chain_id and _auth_comp_id == comp_id), None)
                                             if _auth_seq_id is not None:

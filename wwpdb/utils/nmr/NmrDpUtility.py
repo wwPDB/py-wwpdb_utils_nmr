@@ -32272,7 +32272,7 @@ class NmrDpUtility:
                                             _index_tag = 'Index_ID'
                                             idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
 
-                                    if warn.startswith('[Atom not found] '):
+                                    if warn.startswith('[Atom not found]'):
                                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                                             self.report.error.appendDescription('atom_not_found',
                                                                                 {'file_name': original_file_name,
@@ -32354,7 +32354,7 @@ class NmrDpUtility:
                                             _index_tag = 'Index_ID'
                                             idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
 
-                                    if warn.startswith('[Atom not found] '):
+                                    if warn.startswith('[Atom not found]'):
                                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                                             self.report.error.appendDescription('atom_not_found',
                                                                                 {'file_name': original_file_name,
@@ -32724,7 +32724,7 @@ class NmrDpUtility:
                                             _index_tag = 'Index_ID'
                                             idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
 
-                                    if warn.startswith('[Atom not found] '):
+                                    if warn.startswith('[Atom not found]'):
                                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                                             self.report.error.appendDescription('atom_not_found',
                                                                                 {'file_name': original_file_name,
@@ -32769,7 +32769,7 @@ class NmrDpUtility:
                                             _index_tag = 'Index_ID'
                                             idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
 
-                                    if warn.startswith('[Atom not found] '):
+                                    if warn.startswith('[Atom not found]'):
                                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                                             self.report.error.appendDescription('atom_not_found',
                                                                                 {'file_name': original_file_name,

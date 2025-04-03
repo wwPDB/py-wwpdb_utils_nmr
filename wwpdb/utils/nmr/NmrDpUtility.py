@@ -32217,22 +32217,34 @@ class NmrDpUtility:
                                     auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
                                 except KeyError:
                                     if self.__annotation_mode or self.__native_combined:
-                                        chain_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                         if _auth_seq_id == seq_id and _auth_comp_id == comp_id), chain_id)
-                                        seq_key = (chain_id, seq_id, comp_id)
-                                        if seq_key in auth_to_star_seq:
-                                            row_[d] = chain_id
+                                        _auth_asym_id, _auth_seq_id =\
+                                            next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
+                                                  if chain_id.isdigit() and v[0] == int(chain_id) and v[1] == seq_id and k[2] == comp_id), (None, None))
+                                        if _auth_asym_id is not None:
+                                            seq_key = (_auth_asym_id, _auth_seq_id, comp_id)
+                                            if seq_key in auth_to_star_seq:
+                                                chain_id, seq_id = _auth_asym_id, _auth_seq_id
                                         else:
-                                            chain_id, comp_id = next(((_auth_asym_id, _auth_comp_id)
-                                                                      for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                                      if _auth_seq_id == seq_id), (chain_id, comp_id))
+                                            chain_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                             if _auth_seq_id == seq_id and _auth_comp_id == comp_id), chain_id)
                                             seq_key = (chain_id, seq_id, comp_id)
                                             if seq_key in auth_to_star_seq:
                                                 row_[d] = chain_id
-                                                row_[atom_dim_num * 2 + d] = comp_id
-                                    if seq_key not in auth_to_star_seq:
-                                        comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                        if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
+                                            else:
+                                                chain_id, comp_id =\
+                                                    next(((_auth_asym_id, _auth_comp_id) for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                          if _auth_seq_id == seq_id), (chain_id, comp_id))
+                                                seq_key = (chain_id, seq_id, comp_id)
+                                                if seq_key in auth_to_star_seq:
+                                                    row_[d] = chain_id
+                                                    row_[atom_dim_num * 2 + d] = comp_id
+                                        if seq_key not in auth_to_star_seq:
+                                            comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                            if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
+                                            _auth_seq_id = next((_auth_seq_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                                 if _auth_asym_id == chain_id and _auth_comp_id == comp_id), None)
+                                            if _auth_seq_id is not None:
+                                                seq_key = (chain_id, _auth_seq_id, comp_id)
 
                                 if has_auth_atom_name:
                                     auth_atom_id = row_[atom_dim_num * 4 + d]
@@ -32260,7 +32272,7 @@ class NmrDpUtility:
                                             _index_tag = 'Index_ID'
                                             idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
 
-                                    if warn.startswith('[Atom not found]'):
+                                    if warn.startswith('[Atom not found] '):
                                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                                             self.report.error.appendDescription('atom_not_found',
                                                                                 {'file_name': original_file_name,
@@ -32342,7 +32354,7 @@ class NmrDpUtility:
                                             _index_tag = 'Index_ID'
                                             idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
 
-                                    if warn.startswith('[Atom not found]'):
+                                    if warn.startswith('[Atom not found] '):
                                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                                             self.report.error.appendDescription('atom_not_found',
                                                                                 {'file_name': original_file_name,
@@ -32355,26 +32367,15 @@ class NmrDpUtility:
                                                 self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Hydrogen not instantiated]'):
-                                        if self.__remediation_mode:
-                                            self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                                  {'file_name': original_file_name,
-                                                                                   'sf_framecode': sf_framecode,
-                                                                                   'category': lp_category,
-                                                                                   'description': idx_msg + warn})
-                                            self.report.setWarning()
+                                        self.report.warning.appendDescription('hydrogen_not_instantiated',
+                                                                              {'file_name': original_file_name,
+                                                                               'sf_framecode': sf_framecode,
+                                                                               'category': lp_category,
+                                                                               'description': idx_msg + warn})
+                                        self.report.setWarning()
 
-                                            if self.__verbose:
-                                                self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Warning  - {idx_msg + warn}\n")
-                                        else:
-                                            self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                                {'file_name': original_file_name,
-                                                                                 'sf_framecode': sf_framecode,
-                                                                                 'category': lp_category,
-                                                                                 'description': idx_msg + warn})
-                                            self.report.setError()
-
-                                            if self.__verbose:
-                                                self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Warning  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Invalid atom nomenclature]'):
                                         self.report.error.appendDescription('invalid_atom_nomenclature',
@@ -32528,22 +32529,34 @@ class NmrDpUtility:
                                     try:
                                         auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
                                     except KeyError:
-                                        chain_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                         if _auth_seq_id == seq_id and _auth_comp_id == comp_id), chain_id)
-                                        seq_key = (chain_id, seq_id, comp_id)
-                                        if seq_key in auth_to_star_seq:
-                                            row_[d] = chain_id
+                                        _auth_asym_id, _auth_seq_id =\
+                                            next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
+                                                  if chain_id.isdigit() and v[0] == int(chain_id) and v[1] == seq_id and k[2] == comp_id), (None, None))
+                                        if _auth_asym_id is not None:
+                                            seq_key = (_auth_asym_id, _auth_seq_id, comp_id)
+                                            if seq_key in auth_to_star_seq:
+                                                chain_id, seq_id = _auth_asym_id, _auth_seq_id
                                         else:
-                                            chain_id, comp_id = next(((_auth_asym_id, _auth_comp_id)
-                                                                      for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                                      if _auth_seq_id == seq_id), (chain_id, comp_id))
+                                            chain_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                             if _auth_seq_id == seq_id and _auth_comp_id == comp_id), chain_id)
                                             seq_key = (chain_id, seq_id, comp_id)
                                             if seq_key in auth_to_star_seq:
                                                 row_[d] = chain_id
-                                                row_[atom_dim_num * 2 + d] = comp_id
-                                        if seq_key not in auth_to_star_seq:
-                                            comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                            if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
+                                            else:
+                                                chain_id, comp_id =\
+                                                    next(((_auth_asym_id, _auth_comp_id) for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                          if _auth_seq_id == seq_id), (chain_id, comp_id))
+                                                seq_key = (chain_id, seq_id, comp_id)
+                                                if seq_key in auth_to_star_seq:
+                                                    row_[d] = chain_id
+                                                    row_[atom_dim_num * 2 + d] = comp_id
+                                            if seq_key not in auth_to_star_seq:
+                                                comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                                if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
+                                                _auth_seq_id = next((_auth_seq_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                                     if _auth_asym_id == chain_id and _auth_comp_id == comp_id), None)
+                                                if _auth_seq_id is not None:
+                                                    seq_key = (chain_id, _auth_seq_id, comp_id)
 
                                     if comp_id in auth_atom_name_to_id:
                                         if atom_id in auth_atom_name_to_id[comp_id]:
@@ -32594,26 +32607,35 @@ class NmrDpUtility:
                                     auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
                                 except KeyError:
                                     if self.__annotation_mode or self.__native_combined:
-                                        chain_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                         if _auth_seq_id == seq_id and _auth_comp_id == comp_id), chain_id)
-                                        seq_key = (chain_id, seq_id, comp_id)
-                                        if seq_key in auth_to_star_seq:
-                                            row_[d] = chain_id
+                                        _auth_asym_id, _auth_seq_id =\
+                                            next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
+                                                  if chain_id.isdigit() and v[0] == int(chain_id) and v[1] == seq_id and k[2] == comp_id), (None, None))
+                                        if _auth_asym_id is not None:
+                                            seq_key = (_auth_asym_id, _auth_seq_id, comp_id)
+                                            if seq_key in auth_to_star_seq:
+                                                chain_id, seq_id = _auth_asym_id, _auth_seq_id
                                         else:
-                                            chain_id, comp_id = next(((_auth_asym_id, _auth_comp_id)
-                                                                      for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                                      if _auth_seq_id == seq_id), (chain_id, comp_id))
+                                            chain_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                             if _auth_seq_id == seq_id and _auth_comp_id == comp_id), chain_id)
                                             seq_key = (chain_id, seq_id, comp_id)
                                             if seq_key in auth_to_star_seq:
                                                 row_[d] = chain_id
-                                                row_[atom_dim_num * 2 + d] = comp_id
-                                    if seq_key not in auth_to_star_seq:
-                                        comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                        if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
-                                        _auth_seq_id = next((_auth_seq_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                             if _auth_asym_id == chain_id and _auth_comp_id == comp_id), None)
-                                        if _auth_seq_id is not None:
-                                            seq_key = (chain_id, _auth_seq_id, comp_id)
+                                            else:
+                                                chain_id, comp_id =\
+                                                    next(((_auth_asym_id, _auth_comp_id) for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                          if _auth_seq_id == seq_id), (chain_id, comp_id))
+                                                seq_key = (chain_id, seq_id, comp_id)
+                                                if seq_key in auth_to_star_seq:
+                                                    row_[d] = chain_id
+                                                    row_[atom_dim_num * 2 + d] = comp_id
+                                        if seq_key not in auth_to_star_seq:
+                                            comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                            if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
+                                            print(f'3 {comp_id}')
+                                            _auth_seq_id = next((_auth_seq_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                                 if _auth_asym_id == chain_id and _auth_comp_id == comp_id), None)
+                                            if _auth_seq_id is not None:
+                                                seq_key = (chain_id, _auth_seq_id, comp_id)
 
                                 if has_auth_atom_name:
                                     auth_atom_id = row_[atom_dim_num * 4 + d]
@@ -32702,7 +32724,7 @@ class NmrDpUtility:
                                             _index_tag = 'Index_ID'
                                             idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
 
-                                    if warn.startswith('[Atom not found]'):
+                                    if warn.startswith('[Atom not found] '):
                                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                                             self.report.error.appendDescription('atom_not_found',
                                                                                 {'file_name': original_file_name,
@@ -32747,7 +32769,7 @@ class NmrDpUtility:
                                             _index_tag = 'Index_ID'
                                             idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
 
-                                    if warn.startswith('[Atom not found]'):
+                                    if warn.startswith('[Atom not found] '):
                                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                                             self.report.error.appendDescription('atom_not_found',
                                                                                 {'file_name': original_file_name,
@@ -32760,26 +32782,15 @@ class NmrDpUtility:
                                                 self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Hydrogen not instantiated]'):
-                                        if self.__remediation_mode:
-                                            self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                                  {'file_name': original_file_name,
-                                                                                   'sf_framecode': sf_framecode,
-                                                                                   'category': lp_category,
-                                                                                   'description': idx_msg + warn})
-                                            self.report.setWarning()
+                                        self.report.warning.appendDescription('hydrogen_not_instantiated',
+                                                                              {'file_name': original_file_name,
+                                                                               'sf_framecode': sf_framecode,
+                                                                               'category': lp_category,
+                                                                               'description': idx_msg + warn})
+                                        self.report.setWarning()
 
-                                            if self.__verbose:
-                                                self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Warning  - {idx_msg + warn}\n")
-                                        else:
-                                            self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                                {'file_name': original_file_name,
-                                                                                 'sf_framecode': sf_framecode,
-                                                                                 'category': lp_category,
-                                                                                 'description': idx_msg + warn})
-                                            self.report.setError()
-
-                                            if self.__verbose:
-                                                self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Error  - {idx_msg + warn}\n")
+                                        if self.__verbose:
+                                            self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ Warning  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Invalid atom nomenclature]'):
                                         self.report.error.appendDescription('invalid_atom_nomenclature',

@@ -10382,6 +10382,11 @@ def testCoordAtomIdConsistency(caC: dict, ccU, authChainId: str, chainId: str, s
                             return 'Ignorable hydroxyl group'
                 if enableWarning:
                     if chainId in LARGE_ASYM_ID:
+                        if seqKey in caC['coord_unobs_atom']\
+                                and (atomId in caC['coord_unobs_atom'][seqKey]['atom_ids']
+                                     or (atomId[0] in protonBeginCode and any(bondedTo for bondedTo in ccU.getBondedAtoms(compId, atomId, exclProton=True)
+                                                                              if bondedTo in caC['coord_unobs_atom'][seqKey]['atom_ids']))):
+                            return 'Ignorable missing atom'
                         return f"[Atom not found] "\
                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates."
 

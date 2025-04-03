@@ -19715,6 +19715,13 @@ class NmrDpUtility:
                                                     in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                                                     if __c1 != '.' and __c2 != '.' and __c1 != __c2)
 
+                                if seq_mismatch or comp_mismatch:
+                                    if all(__c1 == _s2['comp_id'][_s2['seq_id'].index(__s1)] for __s1, __c1 in zip(_s1['seq_id'], _s1['comp_id'])
+                                           if _s1 != '.' and __c1 != '.' and __s1 in _s2['seq_id'] and _s2['comp_id'][_s2['seq_id'].index(__s1)] != '.'):
+                                        if all(__c2 == _s1['comp_id'][_s1['seq_id'].index(__s2)] for __s2, __c2 in zip(_s2['seq_id'], _s2['comp_id'])
+                                               if _s2 != '.' and __c2 != '.' and __s2 in _s1['seq_id'] and _s1['comp_id'][_s1['seq_id'].index(__s2)] != '.'):
+                                            continue
+
                                 if 0 < _matched < 4 and unmapped // _matched > 20 and seq_mismatch and len(polymer_sequence) > 1:
                                     continue
 
@@ -20001,6 +20008,13 @@ class NmrDpUtility:
                                                     in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                                                     if __c1 != '.' and __c2 != '.' and __c1 != __c2)
 
+                                if seq_mismatch or comp_mismatch:
+                                    if all(__c1 == _s2['comp_id'][_s2['seq_id'].index(__s1)] for __s1, __c1 in zip(_s1['seq_id'], _s1['comp_id'])
+                                           if _s1 != '.' and __c1 != '.' and __s1 in _s2['seq_id'] and _s2['comp_id'][_s2['seq_id'].index(__s1)] != '.'):
+                                        if all(__c2 == _s1['comp_id'][_s1['seq_id'].index(__s2)] for __s2, __c2 in zip(_s2['seq_id'], _s2['comp_id'])
+                                               if _s2 != '.' and __c2 != '.' and __s2 in _s1['seq_id'] and _s1['comp_id'][_s1['seq_id'].index(__s2)] != '.'):
+                                            continue
+
                                 if 0 < _matched < 4 and unmapped // _matched > 20 and seq_mismatch and len(polymer_sequence) > 1:
                                     continue
 
@@ -20199,6 +20213,13 @@ class NmrDpUtility:
                                         comp_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2)
                                                             in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
                                                             if __c1 != '.' and __c2 != '.' and __c1 != __c2)
+
+                                        if seq_mismatch or comp_mismatch:
+                                            if all(__c1 == _s2['comp_id'][_s2['seq_id'].index(__s1)] for __s1, __c1 in zip(_s1['seq_id'], _s1['comp_id'])
+                                                   if _s1 != '.' and __c1 != '.' and __s1 in _s2['seq_id'] and _s2['comp_id'][_s2['seq_id'].index(__s1)] != '.'):
+                                                if all(__c2 == _s1['comp_id'][_s1['seq_id'].index(__s2)] for __s2, __c2 in zip(_s2['seq_id'], _s2['comp_id'])
+                                                       if _s2 != '.' and __c2 != '.' and __s2 in _s1['seq_id'] and _s1['comp_id'][_s1['seq_id'].index(__s2)] != '.'):
+                                                    continue
 
                                         if 0 < _matched < 4 and unmapped // _matched > 20 and seq_mismatch and len(polymer_sequence) > 1:
                                             continue

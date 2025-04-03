@@ -9159,7 +9159,7 @@ class NmrDpUtility:
 
                         if not has_sf_category and not has_sf_framecode:
 
-                            in_loop = False
+                            in_lp = False
 
                             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                                     open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
@@ -9169,19 +9169,19 @@ class NmrDpUtility:
                                         if loop_count < 2:
                                             ofh.write(f"save_{g[0]}\n")
                                     elif cif_stop_pattern.match(line):
-                                        if in_loop:
+                                        if in_lp:
                                             if loop_count < 2:
                                                 ofh.write('stop_\nsave_\n')
                                             else:
                                                 ofh.write('stop_\n')
                                         else:
                                             ofh.write(line)
-                                        in_loop = False
+                                        in_lp = False
                                     elif loop_pattern.match(line):
-                                        in_loop = True
+                                        in_lp = True
                                         ofh.write(line)
                                     else:
-                                        if in_loop or loop_count < 2:
+                                        if in_lp or loop_count < 2:
                                             ofh.write(line)
 
                                 _srcPath = ofh.name
@@ -18266,25 +18266,23 @@ class NmrDpUtility:
             input_source_dic = input_source.get()
 
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
-            has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+            has_poly_seq_in_lp = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
-            if (not has_poly_seq) or (not has_poly_seq_in_loop):
+            if (not has_poly_seq) or (not has_poly_seq_in_lp):
                 continue
 
-            polymer_sequence = input_source_dic['polymer_sequence']
-            polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
-
-            poly_seq = 'poly_seq'
+            poly_seq = input_source_dic['polymer_sequence']
+            poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
 
             subtype_with_poly_seq = [poly_seq if has_poly_seq else None]
 
-            for subtype in polymer_sequence_in_loop.keys():
+            for subtype in poly_seq_in_lp.keys():
                 subtype_with_poly_seq.append(subtype)
 
             for subtype_pair in itertools.combinations_with_replacement(subtype_with_poly_seq, 2):
 
                 # poly_seq is reference sequence and suppress tests on combinations of two sequences in loop
-                if has_poly_seq and ((poly_seq not in subtype_pair) or subtype_pair == (poly_seq, poly_seq)):
+                if has_poly_seq and ('poly_seq' not in subtype_pair or subtype_pair == ('poly_seq', 'poly_seq')):
                     continue
 
                 subtype1 = subtype_pair[0]  # poly_seq will appear only on subtype1
@@ -18294,35 +18292,35 @@ class NmrDpUtility:
                     continue
 
                 # reference polymer sequence exists
-                if has_poly_seq and subtype1 == poly_seq:
-                    ps1 = polymer_sequence
+                if has_poly_seq and subtype1 == 'poly_seq':
+                    poly_seq1 = poly_seq
 
-                    ref_chain_ids = {s1['chain_id'] for s1 in ps1}
+                    ref_chain_ids = {ps1['chain_id'] for ps1 in poly_seq1}
 
-                    for ps_in_loop in polymer_sequence_in_loop[subtype2]:
-                        ps2 = ps_in_loop['polymer_sequence']
+                    for _poly_seq_in_lp in poly_seq_in_lp[subtype2]:
+                        poly_seq2 = _poly_seq_in_lp['polymer_sequence']
 
-                        for s2 in ps2:
-                            chain_id = s2['chain_id']
+                        for ps2 in poly_seq2:
+                            chain_id = ps2['chain_id']
 
-                            if chain_id not in ref_chain_ids and not ('identical_chain_id' in s2 and chain_id not in s2['identical_chain_id']):
+                            if chain_id not in ref_chain_ids and not ('identical_chain_id' in ps2 and chain_id not in ps2['identical_chain_id']):
                                 return False
 
-                            for s1 in ps1:
+                            for ps1 in poly_seq1:
 
-                                if s1['chain_id'] != chain_id and not ('identical_chain_id' in s2 and s1['chain_id'] in s2['identical_chain_id']):
+                                if ps1['chain_id'] != chain_id and not ('identical_chain_id' in ps2 and ps1['chain_id'] in ps2['identical_chain_id']):
                                     continue
 
-                                for seq_id, comp_id in zip(s2['seq_id'], s2['comp_id']):
+                                for seq_id, comp_id in zip(ps2['seq_id'], ps2['comp_id']):
 
-                                    if seq_id not in s1['seq_id']:
+                                    if seq_id not in ps1['seq_id']:
 
                                         if comp_id != '.':
                                             return False
 
                                     else:
-                                        i = s1['seq_id'].index(seq_id)
-                                        _comp_id = s1['comp_id'][i]
+                                        i = ps1['seq_id'].index(seq_id)
+                                        _comp_id = ps1['comp_id'][i]
 
                                         if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
                                             return False
@@ -18330,46 +18328,46 @@ class NmrDpUtility:
                 #  brute force check
                 else:
 
-                    for ps_in_loop in polymer_sequence_in_loop[subtype1]:
-                        ps1 = ps_in_loop['polymer_sequence']
+                    for _poly_seq_in_lp in poly_seq_in_lp[subtype1]:
+                        poly_seq1 = _poly_seq_in_lp['polymer_sequence']
 
-                        for ps_in_loop2 in polymer_sequence_in_loop[subtype2]:
-                            ps2 = ps_in_loop2['polymer_sequence']
+                        for _poly_seq_in_lp2 in poly_seq_in_lp[subtype2]:
+                            poly_seq2 = _poly_seq_in_lp2['polymer_sequence']
 
                             # suppress redundant tests inside the same subtype
-                            if subtype1 == subtype2 and ps_in_loop['list_id'] >= ps_in_loop2['list_id']:
+                            if subtype1 == subtype2 and _poly_seq_in_lp['list_id'] >= _poly_seq_in_lp2['list_id']:
                                 continue
 
-                            for s2 in ps2:
-                                chain_id = s2['chain_id']
+                            for ps2 in poly_seq2:
+                                chain_id = ps2['chain_id']
 
-                                for s1 in ps1:
+                                for ps1 in poly_seq1:
 
-                                    if chain_id != s1['chain_id']:
+                                    if chain_id != ps1['chain_id']:
                                         continue
 
-                                    for seq_id, comp_id in zip(s2['seq_id'], s2['comp_id']):
+                                    for seq_id, comp_id in zip(ps2['seq_id'], ps2['comp_id']):
 
-                                        if seq_id in s1['seq_id']:
-                                            i = s1['seq_id'].index(seq_id)
-                                            _comp_id = s1['comp_id'][i]
+                                        if seq_id in ps1['seq_id']:
+                                            i = ps1['seq_id'].index(seq_id)
+                                            _comp_id = ps1['comp_id'][i]
 
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
                                                 return False
 
                             # inverse check required for unverified sequences
-                            for s1 in ps1:
-                                chain_id = s1['chain_id']
+                            for ps1 in poly_seq1:
+                                chain_id = ps1['chain_id']
 
-                                for s2 in ps2:
-                                    if chain_id != s2['chain_id']:
+                                for ps2 in poly_seq2:
+                                    if chain_id != ps2['chain_id']:
                                         continue
 
-                                    for seq_id, comp_id in zip(s1['seq_id'], s1['comp_id']):
+                                    for seq_id, comp_id in zip(ps1['seq_id'], ps1['comp_id']):
 
-                                        if seq_id in s2['seq_id']:
-                                            j = s2['seq_id'].index(seq_id)
-                                            _comp_id = s2['comp_id'][j]
+                                        if seq_id in ps2['seq_id']:
+                                            j = ps2['seq_id'].index(seq_id)
+                                            _comp_id = ps2['comp_id'][j]
 
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
                                                 return False
@@ -18394,19 +18392,17 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
 
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
-            has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+            has_poly_seq_in_lp = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
-            if (not has_poly_seq) or (not has_poly_seq_in_loop):
+            if (not has_poly_seq) or (not has_poly_seq_in_lp):
                 continue
 
-            polymer_sequence = input_source_dic['polymer_sequence']
-            polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+            poly_seq = input_source_dic['polymer_sequence']
+            poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
 
-            poly_seq = 'poly_seq'
+            subtype_with_poly_seq = ['poly_seq' if has_poly_seq else None]
 
-            subtype_with_poly_seq = [poly_seq if has_poly_seq else None]
-
-            for subtype in polymer_sequence_in_loop.keys():
+            for subtype in poly_seq_in_lp.keys():
                 subtype_with_poly_seq.append(subtype)
 
             if self.__bmrb_only and self.__internal_mode:
@@ -18431,7 +18427,7 @@ class NmrDpUtility:
             for subtype_pair in itertools.combinations_with_replacement(subtype_with_poly_seq, 2):
 
                 # poly_seq is reference sequence and suppress tests on combinations of two sequences in loop
-                if has_poly_seq and ((poly_seq not in subtype_pair) or subtype_pair == (poly_seq, poly_seq)):
+                if has_poly_seq and ('poly_seq' not in subtype_pair or subtype_pair == ('poly_seq', 'poly_seq')):
                     continue
 
                 subtype1 = subtype_pair[0]  # poly_seq will appear only on subtype1
@@ -18447,20 +18443,20 @@ class NmrDpUtility:
                         lp_category2 = '_Assigned_peak_chem_shift'
 
                 # reference polymer sequence exists
-                if has_poly_seq and subtype1 == poly_seq:
-                    ps1 = polymer_sequence
+                if has_poly_seq and subtype1 == 'poly_seq':
+                    poly_seq1 = poly_seq
 
-                    ref_chain_ids = {s1['chain_id'] for s1 in ps1}
+                    ref_chain_ids = {ps1['chain_id'] for ps1 in poly_seq1}
 
-                    for ps_in_loop in polymer_sequence_in_loop[subtype2]:
-                        ps2 = ps_in_loop['polymer_sequence']
-                        sf_framecode2 = ps_in_loop['sf_framecode']
+                    for _poly_seq_in_lp in poly_seq_in_lp[subtype2]:
+                        poly_seq2 = _poly_seq_in_lp['polymer_sequence']
+                        sf_framecode2 = _poly_seq_in_lp['sf_framecode']
 
-                        for s2 in ps2:
-                            chain_id = s2['chain_id']
+                        for ps2 in poly_seq2:
+                            chain_id = ps2['chain_id']
 
                             if self.__bmrb_only and self.__internal_mode\
-                               and chain_id not in ref_chain_ids and not ('identical_chain_id' in s2 and chain_id not in s2['identical_chain_id']):
+                               and chain_id not in ref_chain_ids and not ('identical_chain_id' in ps2 and chain_id not in ps2['identical_chain_id']):
 
                                 chain_id = to_entity_id.get(chain_id, chain_id)
 
@@ -18468,7 +18464,7 @@ class NmrDpUtility:
                                 chain_id = next((str(item['entity_assembly_id']) for item in self.__caC['entity_assembly']
                                                  if chain_id in item['auth_asym_id'].split(',')), chain_id)
 
-                            if chain_id not in ref_chain_ids and not ('identical_chain_id' in s2 and chain_id not in s2['identical_chain_id']):
+                            if chain_id not in ref_chain_ids and not ('identical_chain_id' in ps2 and chain_id not in ps2['identical_chain_id']):
 
                                 err = f"Invalid chain_id {chain_id!r} in a loop {lp_category2}."
 
@@ -18494,27 +18490,27 @@ class NmrDpUtility:
 
                             else:
 
-                                for s1 in ps1:
+                                for ps1 in poly_seq1:
 
-                                    if s1['chain_id'] != chain_id and not ('identical_chain_id' in s2 and s1['chain_id'] in s2['identical_chain_id']):
+                                    if ps1['chain_id'] != chain_id and not ('identical_chain_id' in ps2 and ps1['chain_id'] in ps2['identical_chain_id']):
                                         continue
 
-                                    if 'identical_chain_id' in s2:
-                                        _s1 = next((_s1 for _s1 in ps1 if _s1['chain_id'] == chain_id), None)
-                                        __s1 = next((_s1 for _s1 in ps1 if _s1['chain_id'] in s2['identical_chain_id']), None)
-                                        if _s1 is not None and len(s1['seq_id']) != len(_s1['seq_id']):
+                                    if 'identical_chain_id' in ps2:
+                                        _ps1 = next((_ps1 for _ps1 in poly_seq1 if _ps1['chain_id'] == chain_id), None)
+                                        __ps1 = next((_ps1 for _ps1 in poly_seq1 if _ps1['chain_id'] in ps2['identical_chain_id']), None)
+                                        if _ps1 is not None and len(ps1['seq_id']) != len(_ps1['seq_id']):
                                             continue
-                                        if __s1 is not None and len(s1['seq_id']) != len(__s1['seq_id']):
+                                        if __ps1 is not None and len(ps1['seq_id']) != len(__ps1['seq_id']):
                                             continue
 
-                                    for seq_id, comp_id in zip(s2['seq_id'], s2['comp_id']):
+                                    for seq_id, comp_id in zip(ps2['seq_id'], ps2['comp_id']):
 
-                                        if seq_id not in s1['seq_id']:
+                                        if seq_id not in ps1['seq_id']:
 
                                             if comp_id != '.':
 
                                                 if not self.__remediation_mode\
-                                                   and ((min(set(s2['seq_id']) - set(s1['seq_id'])) > 0 and seq_id > 0) or not self.__nonblk_bad_nterm):
+                                                   and ((min(set(ps2['seq_id']) - set(ps1['seq_id'])) > 0 and seq_id > 0) or not self.__nonblk_bad_nterm):
 
                                                     err = f"Invalid seq_id {str(seq_id)!r} (chain_id {chain_id}) in a loop {lp_category2}."
 
@@ -18540,8 +18536,8 @@ class NmrDpUtility:
                                                         self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Warning  - {warn}\n")
 
                                         else:
-                                            i = s1['seq_id'].index(seq_id)
-                                            _comp_id = s1['comp_id'][i]
+                                            i = ps1['seq_id'].index(seq_id)
+                                            _comp_id = ps1['comp_id'][i]
 
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
 
@@ -18583,31 +18579,31 @@ class NmrDpUtility:
                 # brute force check
                 else:
 
-                    for ps_in_loop in polymer_sequence_in_loop[subtype1]:
-                        ps1 = ps_in_loop['polymer_sequence']
-                        sf_framecode1 = ps_in_loop['sf_framecode']
+                    for _poly_seq_in_lp in poly_seq_in_lp[subtype1]:
+                        poly_seq1 = _poly_seq_in_lp['polymer_sequence']
+                        sf_framecode1 = _poly_seq_in_lp['sf_framecode']
 
-                        for ps_in_loop2 in polymer_sequence_in_loop[subtype2]:
-                            ps2 = ps_in_loop2['polymer_sequence']
-                            sf_framecode2 = ps_in_loop2['sf_framecode']
+                        for _poly_seq_in_lp2 in poly_seq_in_lp[subtype2]:
+                            poly_seq2 = _poly_seq_in_lp2['polymer_sequence']
+                            sf_framecode2 = _poly_seq_in_lp2['sf_framecode']
 
                             # suppress redundant tests inside the same subtype
-                            if subtype1 == subtype2 and ps_in_loop['list_id'] >= ps_in_loop2['list_id']:
+                            if subtype1 == subtype2 and _poly_seq_in_lp['list_id'] >= _poly_seq_in_lp2['list_id']:
                                 continue
 
-                            for s2 in ps2:
-                                chain_id = s2['chain_id']
+                            for ps2 in poly_seq2:
+                                chain_id = ps2['chain_id']
 
-                                for s1 in ps1:
+                                for ps1 in poly_seq1:
 
-                                    if chain_id != s1['chain_id']:
+                                    if chain_id != ps1['chain_id']:
                                         continue
 
-                                    for seq_id, comp_id in zip(s2['seq_id'], s2['comp_id']):
+                                    for seq_id, comp_id in zip(ps2['seq_id'], ps2['comp_id']):
 
-                                        if seq_id in s1['seq_id']:
-                                            i = s1['seq_id'].index(seq_id)
-                                            _comp_id = s1['comp_id'][i]
+                                        if seq_id in ps1['seq_id']:
+                                            i = ps1['seq_id'].index(seq_id)
+                                            _comp_id = ps1['comp_id'][i]
 
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
 
@@ -18633,19 +18629,19 @@ class NmrDpUtility:
                                                         self.__lfh.write(f"+{self.__class_name__}.__testSequenceConsistency() ++ Error  - {err}\n")
 
                             # inverse check required for unverified sequences
-                            for s1 in ps1:
-                                chain_id = s1['chain_id']
+                            for ps1 in poly_seq1:
+                                chain_id = ps1['chain_id']
 
-                                for s2 in ps2:
+                                for ps2 in poly_seq2:
 
-                                    if chain_id != s2['chain_id']:
+                                    if chain_id != ps2['chain_id']:
                                         continue
 
-                                    for seq_id, comp_id in zip(s1['seq_id'], s1['comp_id']):
+                                    for seq_id, comp_id in zip(ps1['seq_id'], ps1['comp_id']):
 
-                                        if seq_id in s2['seq_id']:
-                                            j = s2['seq_id'].index(seq_id)
-                                            _comp_id = s2['comp_id'][j]
+                                        if seq_id in ps2['seq_id']:
+                                            j = ps2['seq_id'].index(seq_id)
+                                            _comp_id = ps2['comp_id'][j]
 
                                             if comp_id not in emptyValue and _comp_id not in emptyValue and comp_id != _comp_id:
 
@@ -18787,7 +18783,7 @@ class NmrDpUtility:
             seq_id_col = loop.tags.index(seq_id_name) if seq_id_name in loop.tags else -1
             comp_id_col = loop.tags.index(comp_id_name) if comp_id_name in loop.tags else -1
 
-            if chain_id_col == -1 or seq_id_col == -1 or comp_id_col == -1:
+            if -1 in (chain_id_col, seq_id_col, comp_id_col):
                 return
 
             for row in loop:
@@ -18817,7 +18813,7 @@ class NmrDpUtility:
                 seq_id_col = loop.tags.index(_seq_id_name) if _seq_id_name in loop.tags else -1
                 comp_id_col = loop.tags.index(_comp_id_name) if _comp_id_name in loop.tags else -1
 
-                if chain_id_col == -1 or seq_id_col == -1 or comp_id_col == -1:
+                if -1 in (chain_id_col, seq_id_col, comp_id_col):
                     continue
 
                 for row in loop:
@@ -18851,12 +18847,12 @@ class NmrDpUtility:
             content_type = input_source_dic['content_type']
 
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
-            has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+            has_poly_seq_in_lp = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
             # pass if poly_seq exists
-            if has_poly_seq or (not has_poly_seq_in_loop):
+            if has_poly_seq or (not has_poly_seq_in_lp):
 
-                if not has_poly_seq or not has_poly_seq_in_loop:
+                if not has_poly_seq or not has_poly_seq_in_lp:
                     continue
 
                 self.__mergePolymerSequenceInCsLoop(fileListId)
@@ -18866,25 +18862,25 @@ class NmrDpUtility:
             if self.__extractPolymerSequenceInEntityAssembly(fileListId):
                 continue
 
-            polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+            poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
 
             content_subtype = 'chem_shift'
 
-            if content_subtype not in polymer_sequence_in_loop or content_type == 'nmr-restraints':  # DAOTHER-7545 NMR-STAR formatted MR has no chem_shift
+            if content_subtype not in poly_seq_in_lp or content_type == 'nmr-restraints':  # DAOTHER-7545 NMR-STAR formatted MR has no chem_shift
 
-                if 'dist_restraint' in polymer_sequence_in_loop:
+                if 'dist_restraint' in poly_seq_in_lp:
                     content_subtype = 'dist_restraint'
-                elif 'dihed_restraint' in polymer_sequence_in_loop:
+                elif 'dihed_restraint' in poly_seq_in_lp:
                     content_subtype = 'dihed_restraint'
-                elif 'rdc_restraint' in polymer_sequence_in_loop:
+                elif 'rdc_restraint' in poly_seq_in_lp:
                     content_subtype = 'rdc_restraint'
                 else:
                     continue
 
-            for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
-                polymer_sequence = ps_in_loop['polymer_sequence']
+            for _poly_seq_in_lp in poly_seq_in_lp[content_subtype]:
+                poly_seq = _poly_seq_in_lp['polymer_sequence']
 
-                for ps in polymer_sequence:
+                for ps in poly_seq:
                     chain_id = ps['chain_id']
 
                     if chain_id not in common_poly_seq:
@@ -18893,10 +18889,10 @@ class NmrDpUtility:
             chain_ids = common_poly_seq.keys()
             offset_seq_ids = {c: 0 for c in chain_ids}
 
-            for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
-                polymer_sequence = ps_in_loop['polymer_sequence']
+            for _poly_seq_in_lp in poly_seq_in_lp[content_subtype]:
+                poly_seq = _poly_seq_in_lp['polymer_sequence']
 
-                for ps in polymer_sequence:
+                for ps in poly_seq:
                     chain_id = ps['chain_id']
 
                     min_seq_id = min(ps['seq_id'])
@@ -18959,10 +18955,10 @@ class NmrDpUtility:
                 input_source_dic = input_source.get()
 
                 has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
-                has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+                has_poly_seq_in_lp = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
                 # pass if poly_seq exists
-                if has_poly_seq or (not has_poly_seq_in_loop):
+                if has_poly_seq or (not has_poly_seq_in_lp):
                     continue
 
                 if self.__extractPolymerSequenceInEntityAssembly(fileListId):
@@ -18980,26 +18976,26 @@ class NmrDpUtility:
         input_source_dic = input_source.get()
 
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
-        has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+        has_poly_seq_in_lp = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
-        if not has_poly_seq or not has_poly_seq_in_loop:
+        if not has_poly_seq or not has_poly_seq_in_lp:
             return False
 
-        polymer_sequence = input_source_dic['polymer_sequence']
-        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+        poly_seq = input_source_dic['polymer_sequence']
+        poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
 
         content_subtype = 'chem_shift'
 
-        if content_subtype not in polymer_sequence_in_loop:
+        if content_subtype not in poly_seq_in_lp:
             return False
 
         ext_seq_key_set = set()
 
-        for polymer_sequence_in_cs_loop in polymer_sequence_in_loop[content_subtype]:
-            for ps_in_cs_loop in polymer_sequence_in_cs_loop['polymer_sequence']:
+        for poly_seq_in_cs_loop in poly_seq_in_lp[content_subtype]:
+            for ps_in_cs_loop in poly_seq_in_cs_loop['polymer_sequence']:
                 _chain_id = ps_in_cs_loop['chain_id']
 
-                for ps in polymer_sequence:
+                for ps in poly_seq:
                     chain_id = ps['chain_id']
 
                     if chain_id == _chain_id\
@@ -19020,7 +19016,7 @@ class NmrDpUtility:
             cs_has_alt_comp_id = False
 
             for ext_seq_key in ext_seq_key_set:
-                ps = next(ps for ps in polymer_sequence if ps['chain_id'] == ext_seq_key[0])
+                ps = next(ps for ps in poly_seq if ps['chain_id'] == ext_seq_key[0])
 
                 seq_id = ext_seq_key[1]
                 comp_id = ext_seq_key[2]
@@ -19055,7 +19051,7 @@ class NmrDpUtility:
                         chain_ids.append(ext_seq_key[0])
 
                 for chain_id in chain_ids:
-                    ps = next(ps for ps in polymer_sequence if ps['chain_id'] == chain_id)
+                    ps = next(ps for ps in poly_seq if ps['chain_id'] == chain_id)
                     if 'alt_comp_id' not in ps or len(ps['alt_comp_id']) != len(ps['comp_id']):
                         ps['alt_comp_id'] = copy.deepcopy(ps['comp_id'])
                     for ext_seq_key in ext_seq_key_set:
@@ -19427,11 +19423,11 @@ class NmrDpUtility:
 
         input_source_dic = input_source.get()
 
-        polymer_sequence = input_source_dic['polymer_sequence']
+        poly_seq = input_source_dic['polymer_sequence']
 
         asm = []
 
-        for ps in polymer_sequence:
+        for ps in poly_seq:
 
             has_nstd_res = False
 
@@ -19547,49 +19543,49 @@ class NmrDpUtility:
             file_type = input_source_dic['file_type']
 
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
-            has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+            has_poly_seq_in_lp = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
             if not has_poly_seq:
                 is_done = False
                 continue
 
-            if not has_poly_seq_in_loop:
+            if not has_poly_seq_in_lp:
                 continue
 
-            polymer_sequence = input_source_dic['polymer_sequence']
-            polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+            poly_seq = input_source_dic['polymer_sequence']
+            poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
 
-            for content_subtype in polymer_sequence_in_loop.keys():
+            for content_subtype in poly_seq_in_lp.keys():
 
                 seq_align_set = []
 
                 dst_chain_ids, ref_chain_ids, map_chain_ids, map_seq_ids, proc_chain_ids =\
                     {}, {}, {}, {}, {}
 
-                for s1 in polymer_sequence:
-                    chain_id = s1['chain_id']
+                for ps1 in poly_seq:
+                    chain_id = ps1['chain_id']
 
-                    for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
-                        ps2 = ps_in_loop['polymer_sequence']
-                        sf_framecode2 = ps_in_loop['sf_framecode']
+                    for _poly_seq_in_lp in poly_seq_in_lp[content_subtype]:
+                        poly_seq2 = _poly_seq_in_lp['polymer_sequence']
+                        sf_framecode2 = _poly_seq_in_lp['sf_framecode']
 
-                        for s2 in ps2:
+                        for ps2 in poly_seq2:
 
                             if sf_framecode2 in ref_chain_ids and chain_id in ref_chain_ids[sf_framecode2]:
                                 continue
 
-                            chain_id2 = s2['chain_id']
+                            chain_id2 = ps2['chain_id']
 
                             if chain_id != chain_id2:
                                 continue
 
-                            _s2 = fillBlankCompIdWithOffset(s2, 0)
+                            _ps2 = fillBlankCompIdWithOffset(ps2, 0)
 
-                            if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
-                                s2 = _s2
+                            if len(_ps2['seq_id']) > len(ps2['seq_id']) and len(_ps2['seq_id']) < len(ps1['seq_id']):
+                                ps2 = _ps2
 
-                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-                            self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                            self.__pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                            self.__pA.addTestSequence(ps2['comp_id'], chain_id)
                             self.__pA.doAlign()
 
                             myAlign = self.__pA.getAlignment(chain_id)
@@ -19604,28 +19600,28 @@ class NmrDpUtility:
                             alt_chain = False
 
                             if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0)\
-                               or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
+                               or (len(poly_seq) > 1 and _matched < 4 and offset_1 > 0):
 
-                                if self.__tolerant_seq_align and _matched <= conflict + (1 if length > 1 else 0) and len(polymer_sequence) > 1:
+                                if self.__tolerant_seq_align and _matched <= conflict + (1 if length > 1 else 0) and len(poly_seq) > 1:
 
                                     __length = length
                                     __matched = _matched
                                     __unmapped = unmapped
                                     __conflict = conflict
-                                    __chain_id = __s1 = __offset_1 = __offset_2 = None
+                                    __chain_id = __ps1 = __offset_1 = __offset_2 = None
 
-                                    for _s1 in polymer_sequence:
+                                    for _ps1 in poly_seq:
 
-                                        if _s1 == s1:
+                                        if _ps1 == ps1:
                                             continue
 
-                                        chain_id_ = _s1['chain_id']
+                                        chain_id_ = _ps1['chain_id']
 
                                         if sf_framecode2 in ref_chain_ids and chain_id_ in ref_chain_ids[sf_framecode2]:
                                             continue
 
-                                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id_)
-                                        self.__pA.addTestSequence(s2['comp_id'], chain_id_)
+                                        self.__pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id_)
+                                        self.__pA.addTestSequence(ps2['comp_id'], chain_id_)
                                         self.__pA.doAlign()
 
                                         myAlign = self.__pA.getAlignment(chain_id_)
@@ -19650,7 +19646,7 @@ class NmrDpUtility:
                                         __chain_id = chain_id_
                                         __offset_1 = offset_1
                                         __offset_2 = offset_2
-                                        __s1 = copy.copy(_s1)
+                                        __ps1 = copy.copy(_ps1)
 
                                         alt_chain = True
 
@@ -19675,17 +19671,17 @@ class NmrDpUtility:
                                 _matched = __matched
                                 unmapped = __unmapped
                                 conflict = __conflict
-                                chain_id = __s1['chain_id']
+                                chain_id = __ps1['chain_id']
                                 chain_id = __chain_id
                                 offset_1 = __offset_1
                                 offset_2 = __offset_2
-                                s1 = __s1
+                                ps1 = __ps1
 
                                 update_poly_seq = True
 
-                            if conflict == 0 and self.__alt_chain and not alt_chain and chain_id != s2['chain_id']\
+                            if conflict == 0 and self.__alt_chain and not alt_chain and chain_id != ps2['chain_id']\
                                and (sf_framecode2 not in dst_chain_ids or chain_id not in dst_chain_ids[sf_framecode2])\
-                               and (sf_framecode2 not in map_chain_ids or s2['chain_id'] not in map_chain_ids[sf_framecode2])\
+                               and (sf_framecode2 not in map_chain_ids or ps2['chain_id'] not in map_chain_ids[sf_framecode2])\
                                and unmapped != offset_1 + 1 and unmapped != offset_2 + 1\
                                and unmapped <= _matched + offset_1 and unmapped <= _matched + offset_2:
 
@@ -19697,32 +19693,32 @@ class NmrDpUtility:
                                 if sf_framecode2 not in map_chain_ids:
                                     map_chain_ids[sf_framecode2] = {}
 
-                                map_chain_ids[sf_framecode2][s2['chain_id']] = chain_id
+                                map_chain_ids[sf_framecode2][ps2['chain_id']] = chain_id
 
                                 alt_chain = True
 
-                            _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
-                            _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+                            _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1)
+                            _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
 
-                            if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
+                            if conflict > 0 and _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
 
                             if self.__tolerant_seq_align:  # and not alt_chain:
                                 seq_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2)
-                                                   in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
+                                                   in zip(_ps1['seq_id'], _ps2['seq_id'], _ps1['comp_id'], _ps2['comp_id'])
                                                    if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2)
                                 comp_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2)
-                                                    in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
+                                                    in zip(_ps1['seq_id'], _ps2['seq_id'], _ps1['comp_id'], _ps2['comp_id'])
                                                     if __c1 != '.' and __c2 != '.' and __c1 != __c2)
 
                                 if seq_mismatch or comp_mismatch:
-                                    if all(__c1 == _s2['comp_id'][_s2['seq_id'].index(__s1)] for __s1, __c1 in zip(_s1['seq_id'], _s1['comp_id'])
-                                           if _s1 != '.' and __c1 != '.' and __s1 in _s2['seq_id'] and _s2['comp_id'][_s2['seq_id'].index(__s1)] != '.'):
-                                        if all(__c2 == _s1['comp_id'][_s1['seq_id'].index(__s2)] for __s2, __c2 in zip(_s2['seq_id'], _s2['comp_id'])
-                                               if _s2 != '.' and __c2 != '.' and __s2 in _s1['seq_id'] and _s1['comp_id'][_s1['seq_id'].index(__s2)] != '.'):
+                                    if all(__c1 == _ps2['comp_id'][_ps2['seq_id'].index(__s1)] for __s1, __c1 in zip(_ps1['seq_id'], _ps1['comp_id'])
+                                           if __s1 != '.' and __c1 != '.' and __s1 in _ps2['seq_id'] and _ps2['comp_id'][_ps2['seq_id'].index(__s1)] != '.'):
+                                        if all(__c2 == _ps1['comp_id'][_ps1['seq_id'].index(__s2)] for __s2, __c2 in zip(_ps2['seq_id'], _ps2['comp_id'])
+                                               if __s2 != '.' and __c2 != '.' and __s2 in _ps1['seq_id'] and _ps1['comp_id'][_ps1['seq_id'].index(__s2)] != '.'):
                                             continue
 
-                                if 0 < _matched < 4 and unmapped // _matched > 20 and seq_mismatch and len(polymer_sequence) > 1:
+                                if 0 < _matched < 4 and unmapped // _matched > 20 and seq_mismatch and len(poly_seq) > 1:
                                     continue
 
                             if not alt_chain:
@@ -19736,13 +19732,13 @@ class NmrDpUtility:
 
                             ref_chain_ids[sf_framecode2].append(chain_id)
 
-                            ref_length = len(s1['seq_id'])
+                            ref_length = len(ps1['seq_id'])
 
-                            ref_code = getOneLetterCodeCanSequence(_s1['comp_id'])
-                            test_code = getOneLetterCodeCanSequence(_s2['comp_id'])
+                            ref_code = getOneLetterCodeCanSequence(_ps1['comp_id'])
+                            test_code = getOneLetterCodeCanSequence(_ps2['comp_id'])
                             mid_code = getMiddleCode(ref_code, test_code)
-                            ref_gauge_code = getGaugeCode(_s1['seq_id'])
-                            test_gauge_code = getGaugeCode(_s2['seq_id'])
+                            ref_gauge_code = getGaugeCode(_ps1['seq_id'])
+                            test_gauge_code = getGaugeCode(_ps2['seq_id'])
 
                             self.__alt_chain |= alt_chain
 
@@ -19750,16 +19746,16 @@ class NmrDpUtility:
                                 if sf_framecode2 not in map_seq_ids:
                                     map_seq_ids[sf_framecode2] = set()
                                 map_seq_ids[sf_framecode2].add(chain_id)
-                                if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
+                                if _ps2['seq_id'] == list(range(_ps2['seq_id'][0], _ps2['seq_id'][-1] + 1)):
                                     seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2
-                                                        in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
+                                                        in zip(_ps1['seq_id'], _ps2['seq_id']) if __s2 != '.'}
                                     if comp_mismatch:
                                         _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
-                                                                            chain_id, _s1, _s2, myAlign,
+                                                                            chain_id, _ps1, _ps2, myAlign,
                                                                             map_chain_ids.get(sf_framecode2),
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
-                                        _s2['seq_id'] = _seq_align['test_seq_id']
-                                        if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                        _ps2['seq_id'] = _seq_align['test_seq_id']
+                                        if _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:
                                             continue
                                         ref_gauge_code = _seq_align['ref_gauge_code']
                                         ref_code = _seq_align['ref_code']
@@ -19778,23 +19774,23 @@ class NmrDpUtility:
                                             self.__fixSeqIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, chain_id2, seq_id_conv_dict)
                                             proc_chain_ids[sf_framecode2].add(chain_id2)
 
-                                            if 'identical_chain_id' in s2:
-                                                for chain_id2_ in s2['identical_chain_id']:
+                                            if 'identical_chain_id' in ps2:
+                                                for chain_id2_ in ps2['identical_chain_id']:
                                                     if chain_id2_ not in proc_chain_ids[sf_framecode2]:
                                                         self.__fixSeqIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, chain_id2_, seq_id_conv_dict)
                                                         proc_chain_ids[sf_framecode2].add(chain_id2_)
 
-                                        _s2['seq_id'] = _s1['seq_id']
+                                        _ps2['seq_id'] = _ps1['seq_id']
                                         mid_code = getMiddleCode(ref_code, test_code)
                                         test_gauge_code = ref_gauge_code
                                 else:
                                     if seq_mismatch:
                                         _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
-                                                                            chain_id, _s1, _s2, myAlign,
+                                                                            chain_id, _ps1, _ps2, myAlign,
                                                                             map_chain_ids.get(sf_framecode2),
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
-                                        _s2['seq_id'] = _seq_align['test_seq_id']
-                                        if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                        _ps2['seq_id'] = _seq_align['test_seq_id']
+                                        if _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:
                                             continue
                                         ref_gauge_code = _seq_align['ref_gauge_code']
                                         ref_code = _seq_align['ref_code']
@@ -19802,10 +19798,10 @@ class NmrDpUtility:
                                         test_code = _seq_align['test_code']
                                         test_gauge_code = _seq_align['test_gauge_code']
                                     else:
-                                        _s2 = fillBlankCompId(_s1, _s2)
-                                        if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                        _ps2 = fillBlankCompId(_ps1, _ps2)
+                                        if _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:
                                             continue
-                                        test_code = getOneLetterCodeCanSequence(_s2['comp_id'])
+                                        test_code = getOneLetterCodeCanSequence(_ps2['comp_id'])
                                         mid_code = getMiddleCode(ref_code, test_code)
                                         test_gauge_code = ref_gauge_code
 
@@ -19813,14 +19809,14 @@ class NmrDpUtility:
 
                             matched = mid_code.count('|')
 
-                            if self.__tolerant_seq_align and len(polymer_sequence) > 1:  # and not alt_chain:
+                            if self.__tolerant_seq_align and len(poly_seq) > 1:  # and not alt_chain:
                                 if 0 < matched < 4 and unmapped // matched > 20:
                                     continue
 
-                            seq_align = {'list_id': ps_in_loop['list_id'], 'sf_framecode': sf_framecode2, 'chain_id': chain_id, 'length': ref_length,
+                            seq_align = {'list_id': _poly_seq_in_lp['list_id'], 'sf_framecode': sf_framecode2, 'chain_id': chain_id, 'length': ref_length,
                                          'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                                          'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
-                                         'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
+                                         'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
                                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                                          'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -19841,11 +19837,11 @@ class NmrDpUtility:
 
                                 asm = []
 
-                                for _s in polymer_sequence:
+                                for _ps in poly_seq:
 
-                                    ent = {'chain_id': _s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
+                                    ent = {'chain_id': _ps['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
-                                    for _seq_id, _comp_id in zip(_s['seq_id'], _s['comp_id']):
+                                    for _seq_id, _comp_id in zip(_ps['seq_id'], _ps['comp_id']):
 
                                         if _comp_id not in monDict3:
 
@@ -19869,24 +19865,24 @@ class NmrDpUtility:
 
                                 input_source.setItemValue('non_standard_residue', asm)
 
-                            for r_code, t_code, seq_id in zip(ref_code, test_code, s1['seq_id']):
+                            for r_code, t_code, seq_id in zip(ref_code, test_code, ps1['seq_id']):
                                 if r_code == 'X' and t_code == 'X':
                                     input_source.updateNonStandardResidueByExptlData(chain_id, seq_id, content_subtype)
 
-                for s1 in polymer_sequence:
+                for ps1 in poly_seq:
 
-                    chain_id = s1['chain_id']
+                    chain_id = ps1['chain_id']
 
-                    for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
-                        ps2 = ps_in_loop['polymer_sequence']
-                        sf_framecode2 = ps_in_loop['sf_framecode']
+                    for _poly_seq_in_lp in poly_seq_in_lp[content_subtype]:
+                        poly_seq2 = _poly_seq_in_lp['polymer_sequence']
+                        sf_framecode2 = _poly_seq_in_lp['sf_framecode']
 
-                        for s2 in ps2:
+                        for ps2 in poly_seq2:
 
                             if sf_framecode2 in ref_chain_ids and chain_id in ref_chain_ids[sf_framecode2]:
                                 continue
 
-                            chain_id2 = s2['chain_id']
+                            chain_id2 = ps2['chain_id']
 
                             if sf_framecode2 in dst_chain_ids and chain_id2 in dst_chain_ids[sf_framecode2]:
                                 continue
@@ -19894,13 +19890,13 @@ class NmrDpUtility:
                             if chain_id != chain_id2 and not self.__tolerant_seq_align:
                                 continue
 
-                            _s2 = fillBlankCompIdWithOffset(s2, 0)
+                            _ps2 = fillBlankCompIdWithOffset(ps2, 0)
 
-                            if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
-                                s2 = _s2
+                            if len(_ps2['seq_id']) > len(ps2['seq_id']) and len(_ps2['seq_id']) < len(ps1['seq_id']):
+                                ps2 = _ps2
 
-                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-                            self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                            self.__pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                            self.__pA.addTestSequence(ps2['comp_id'], chain_id)
                             self.__pA.doAlign()
 
                             myAlign = self.__pA.getAlignment(chain_id)
@@ -19915,28 +19911,28 @@ class NmrDpUtility:
                             alt_chain = False
 
                             if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0)\
-                               or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
+                               or (len(poly_seq) > 1 and _matched < 4 and offset_1 > 0):
 
-                                if self.__tolerant_seq_align and _matched <= conflict + (1 if length > 1 else 0) and len(polymer_sequence) > 1:
+                                if self.__tolerant_seq_align and _matched <= conflict + (1 if length > 1 else 0) and len(poly_seq) > 1:
 
                                     __length = length
                                     __matched = _matched
                                     __unmapped = unmapped
                                     __conflict = conflict
-                                    __chain_id = __s1 = __offset_1 = __offset_2 = None
+                                    __chain_id = __ps1 = __offset_1 = __offset_2 = None
 
-                                    for _s1 in polymer_sequence:
+                                    for _ps1 in poly_seq:
 
-                                        if _s1 == s1:
+                                        if _ps1 == ps1:
                                             continue
 
-                                        chain_id_ = _s1['chain_id']
+                                        chain_id_ = _ps1['chain_id']
 
                                         if sf_framecode2 in ref_chain_ids and chain_id_ in ref_chain_ids[sf_framecode2]:
                                             continue
 
-                                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id_)
-                                        self.__pA.addTestSequence(s2['comp_id'], chain_id_)
+                                        self.__pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id_)
+                                        self.__pA.addTestSequence(ps2['comp_id'], chain_id_)
                                         self.__pA.doAlign()
 
                                         myAlign = self.__pA.getAlignment(chain_id_)
@@ -19961,7 +19957,7 @@ class NmrDpUtility:
                                         __chain_id = chain_id_
                                         __offset_1 = offset_1
                                         __offset_2 = offset_2
-                                        __s1 = copy.copy(_s1)
+                                        __ps1 = copy.copy(_ps1)
 
                                         alt_chain = True
 
@@ -19986,36 +19982,36 @@ class NmrDpUtility:
                                 _matched = __matched
                                 unmapped = __unmapped
                                 conflict = __conflict
-                                chain_id = __s1['chain_id']
+                                chain_id = __ps1['chain_id']
                                 chain_id = __chain_id
                                 offset_1 = __offset_1
                                 offset_2 = __offset_2
-                                s1 = __s1
+                                ps1 = __ps1
 
                                 update_poly_seq = True
 
-                            _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
-                            _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+                            _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1)
+                            _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
 
-                            if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
+                            if conflict > 0 and _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                 continue
 
                             if self.__tolerant_seq_align:  # and not alt_chain:
                                 seq_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2)
-                                                   in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
+                                                   in zip(_ps1['seq_id'], _ps2['seq_id'], _ps1['comp_id'], _ps2['comp_id'])
                                                    if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2)
                                 comp_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2)
-                                                    in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
+                                                    in zip(_ps1['seq_id'], _ps2['seq_id'], _ps1['comp_id'], _ps2['comp_id'])
                                                     if __c1 != '.' and __c2 != '.' and __c1 != __c2)
 
                                 if seq_mismatch or comp_mismatch:
-                                    if all(__c1 == _s2['comp_id'][_s2['seq_id'].index(__s1)] for __s1, __c1 in zip(_s1['seq_id'], _s1['comp_id'])
-                                           if _s1 != '.' and __c1 != '.' and __s1 in _s2['seq_id'] and _s2['comp_id'][_s2['seq_id'].index(__s1)] != '.'):
-                                        if all(__c2 == _s1['comp_id'][_s1['seq_id'].index(__s2)] for __s2, __c2 in zip(_s2['seq_id'], _s2['comp_id'])
-                                               if _s2 != '.' and __c2 != '.' and __s2 in _s1['seq_id'] and _s1['comp_id'][_s1['seq_id'].index(__s2)] != '.'):
+                                    if all(__c1 == _ps2['comp_id'][_ps2['seq_id'].index(__s1)] for __s1, __c1 in zip(_ps1['seq_id'], _ps1['comp_id'])
+                                           if __s1 != '.' and __c1 != '.' and __s1 in _ps2['seq_id'] and _ps2['comp_id'][_ps2['seq_id'].index(__s1)] != '.'):
+                                        if all(__c2 == _ps1['comp_id'][_ps1['seq_id'].index(__s2)] for __s2, __c2 in zip(_ps2['seq_id'], _ps2['comp_id'])
+                                               if __s2 != '.' and __c2 != '.' and __s2 in _ps1['seq_id'] and _ps1['comp_id'][_ps1['seq_id'].index(__s2)] != '.'):
                                             continue
 
-                                if 0 < _matched < 4 and unmapped // _matched > 20 and seq_mismatch and len(polymer_sequence) > 1:
+                                if 0 < _matched < 4 and unmapped // _matched > 20 and seq_mismatch and len(poly_seq) > 1:
                                     continue
 
                             if sf_framecode2 not in ref_chain_ids:
@@ -20025,30 +20021,30 @@ class NmrDpUtility:
                                 map_chain_ids[sf_framecode2] = {}
 
                             if sf_framecode2 not in ref_chain_ids or chain_id not in ref_chain_ids[sf_framecode2]:
-                                map_chain_ids[sf_framecode2][s2['chain_id']] = chain_id
+                                map_chain_ids[sf_framecode2][ps2['chain_id']] = chain_id
 
                             ref_chain_ids[sf_framecode2].append(chain_id)
 
-                            ref_length = len(s1['seq_id'])
+                            ref_length = len(ps1['seq_id'])
 
-                            ref_code = getOneLetterCodeCanSequence(_s1['comp_id'])
-                            test_code = getOneLetterCodeCanSequence(_s2['comp_id'])
+                            ref_code = getOneLetterCodeCanSequence(_ps1['comp_id'])
+                            test_code = getOneLetterCodeCanSequence(_ps2['comp_id'])
                             mid_code = getMiddleCode(ref_code, test_code)
-                            ref_gauge_code = getGaugeCode(_s1['seq_id'])
-                            test_gauge_code = getGaugeCode(_s2['seq_id'])
+                            ref_gauge_code = getGaugeCode(_ps1['seq_id'])
+                            test_gauge_code = getGaugeCode(_ps2['seq_id'])
 
                             self.__alt_chain |= not alt_chain
 
                             matched = mid_code.count('|')
 
-                            if self.__tolerant_seq_align and len(polymer_sequence) > 1:  # and not alt_chain:
+                            if self.__tolerant_seq_align and len(poly_seq) > 1:  # and not alt_chain:
                                 if 0 < matched < 4 and unmapped // matched > 20:
                                     continue
 
-                            seq_align = {'list_id': ps_in_loop['list_id'], 'sf_framecode': sf_framecode2, 'chain_id': chain_id, 'length': ref_length,
+                            seq_align = {'list_id': _poly_seq_in_lp['list_id'], 'sf_framecode': sf_framecode2, 'chain_id': chain_id, 'length': ref_length,
                                          'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                                          'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
-                                         'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
+                                         'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
                                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                                          'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -20069,11 +20065,11 @@ class NmrDpUtility:
 
                                 asm = []
 
-                                for _s in polymer_sequence:
+                                for _ps in poly_seq:
 
-                                    ent = {'chain_id': _s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
+                                    ent = {'chain_id': _ps['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
-                                    for _seq_id, _comp_id in zip(_s['seq_id'], _s['comp_id']):
+                                    for _seq_id, _comp_id in zip(_ps['seq_id'], _ps['comp_id']):
 
                                         if _comp_id not in monDict3:
 
@@ -20097,7 +20093,7 @@ class NmrDpUtility:
 
                                 input_source.setItemValue('non_standard_residue', asm)
 
-                            for r_code, t_code, seq_id in zip(ref_code, test_code, s1['seq_id']):
+                            for r_code, t_code, seq_id in zip(ref_code, test_code, ps1['seq_id']):
                                 if r_code == 'X' and t_code == 'X':
                                     input_source.updateNonStandardResidueByExptlData(chain_id, seq_id, content_subtype)
 
@@ -20106,9 +20102,9 @@ class NmrDpUtility:
 
                 if self.__alt_chain:
 
-                    for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
-                        ps2 = ps_in_loop['polymer_sequence']
-                        sf_framecode2 = ps_in_loop['sf_framecode']
+                    for _poly_seq_in_lp in poly_seq_in_lp[content_subtype]:
+                        poly_seq2 = _poly_seq_in_lp['polymer_sequence']
+                        sf_framecode2 = _poly_seq_in_lp['sf_framecode']
 
                         if sf_framecode2 in map_chain_ids:
                             mapping = map_chain_ids[sf_framecode2]
@@ -20138,20 +20134,20 @@ class NmrDpUtility:
 
                                 else:
 
-                                    for s1 in polymer_sequence:
-                                        chain_id = s1['chain_id']
+                                    for ps1 in poly_seq:
+                                        chain_id = ps1['chain_id']
 
                                         if chain_id != dst_chain:
                                             continue
 
-                                        for s2 in ps2:
-                                            _s2 = fillBlankCompIdWithOffset(s2, 0)
+                                        for ps2 in poly_seq2:
+                                            _ps2 = fillBlankCompIdWithOffset(ps2, 0)
 
-                                            if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
-                                                s2 = _s2
+                                            if len(_ps2['seq_id']) > len(ps2['seq_id']) and len(_ps2['seq_id']) < len(ps1['seq_id']):
+                                                ps2 = _ps2
 
-                                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-                                            self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                                            self.__pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                                            self.__pA.addTestSequence(ps2['comp_id'], chain_id)
                                             self.__pA.doAlign()
 
                                             myAlign = self.__pA.getAlignment(chain_id)
@@ -20171,21 +20167,21 @@ class NmrDpUtility:
 
                                             break
 
-                            for s1 in polymer_sequence:
-                                chain_id = s1['chain_id']
+                            for ps1 in poly_seq:
+                                chain_id = ps1['chain_id']
 
-                                for s2 in ps2:
+                                for ps2 in poly_seq2:
 
-                                    if chain_id != s2['chain_id']:
+                                    if chain_id != ps2['chain_id']:
                                         continue
 
-                                    _s2 = fillBlankCompIdWithOffset(s2, 0)
+                                    _ps2 = fillBlankCompIdWithOffset(ps2, 0)
 
-                                    if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
-                                        s2 = _s2
+                                    if len(_ps2['seq_id']) > len(ps2['seq_id']) and len(_ps2['seq_id']) < len(ps1['seq_id']):
+                                        ps2 = _ps2
 
-                                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-                                    self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                                    self.__pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                                    self.__pA.addTestSequence(ps2['comp_id'], chain_id)
                                     self.__pA.doAlign()
 
                                     myAlign = self.__pA.getAlignment(chain_id)
@@ -20200,50 +20196,50 @@ class NmrDpUtility:
                                     if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0):
                                         continue
 
-                                    _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
-                                    _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+                                    _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1)
+                                    _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
 
-                                    if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
+                                    if conflict > 0 and _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:  # pylint: disable=chained-comparison
                                         continue
 
                                     if self.__tolerant_seq_align:
                                         seq_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2)
-                                                           in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
+                                                           in zip(_ps1['seq_id'], _ps2['seq_id'], _ps1['comp_id'], _ps2['comp_id'])
                                                            if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2)
                                         comp_mismatch = any((__s1, __s2) for (__s1, __s2, __c1, __c2)
-                                                            in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
+                                                            in zip(_ps1['seq_id'], _ps2['seq_id'], _ps1['comp_id'], _ps2['comp_id'])
                                                             if __c1 != '.' and __c2 != '.' and __c1 != __c2)
 
                                         if seq_mismatch or comp_mismatch:
-                                            if all(__c1 == _s2['comp_id'][_s2['seq_id'].index(__s1)] for __s1, __c1 in zip(_s1['seq_id'], _s1['comp_id'])
-                                                   if _s1 != '.' and __c1 != '.' and __s1 in _s2['seq_id'] and _s2['comp_id'][_s2['seq_id'].index(__s1)] != '.'):
-                                                if all(__c2 == _s1['comp_id'][_s1['seq_id'].index(__s2)] for __s2, __c2 in zip(_s2['seq_id'], _s2['comp_id'])
-                                                       if _s2 != '.' and __c2 != '.' and __s2 in _s1['seq_id'] and _s1['comp_id'][_s1['seq_id'].index(__s2)] != '.'):
+                                            if all(__c1 == _ps2['comp_id'][_ps2['seq_id'].index(__s1)] for __s1, __c1 in zip(_ps1['seq_id'], _ps1['comp_id'])
+                                                   if __s1 != '.' and __c1 != '.' and __s1 in _ps2['seq_id'] and _ps2['comp_id'][_ps2['seq_id'].index(__s1)] != '.'):
+                                                if all(__c2 == _ps1['comp_id'][_ps1['seq_id'].index(__s2)] for __s2, __c2 in zip(_ps2['seq_id'], _ps2['comp_id'])
+                                                       if __s2 != '.' and __c2 != '.' and __s2 in _ps1['seq_id'] and _ps1['comp_id'][_ps1['seq_id'].index(__s2)] != '.'):
                                                     continue
 
-                                        if 0 < _matched < 4 and unmapped // _matched > 20 and seq_mismatch and len(polymer_sequence) > 1:
+                                        if 0 < _matched < 4 and unmapped // _matched > 20 and seq_mismatch and len(poly_seq) > 1:
                                             continue
 
-                                    ref_length = len(s1['seq_id'])
+                                    ref_length = len(ps1['seq_id'])
 
-                                    ref_code = getOneLetterCodeCanSequence(_s1['comp_id'])
-                                    test_code = getOneLetterCodeCanSequence(_s2['comp_id'])
+                                    ref_code = getOneLetterCodeCanSequence(_ps1['comp_id'])
+                                    test_code = getOneLetterCodeCanSequence(_ps2['comp_id'])
                                     mid_code = getMiddleCode(ref_code, test_code)
-                                    ref_gauge_code = getGaugeCode(_s1['seq_id'])
-                                    test_gauge_code = getGaugeCode(_s2['seq_id'])
+                                    ref_gauge_code = getGaugeCode(_ps1['seq_id'])
+                                    test_gauge_code = getGaugeCode(_ps2['seq_id'])
 
                                     if self.__tolerant_seq_align and (seq_mismatch or comp_mismatch):
                                         if sf_framecode2 in map_seq_ids and chain_id in map_seq_ids[sf_framecode2]:
                                             continue
-                                        if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
+                                        if _ps2['seq_id'] == list(range(_ps2['seq_id'][0], _ps2['seq_id'][-1] + 1)):
                                             seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2
-                                                                in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
+                                                                in zip(_ps1['seq_id'], _ps2['seq_id']) if __s2 != '.'}
                                             if comp_mismatch:
                                                 _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
-                                                                                    chain_id, _s1, _s2, myAlign, mapping,
+                                                                                    chain_id, _ps1, _ps2, myAlign, mapping,
                                                                                     ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
-                                                _s2['seq_id'] = _seq_align['test_seq_id']
-                                                if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                                _ps2['seq_id'] = _seq_align['test_seq_id']
+                                                if _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:
                                                     continue
                                                 ref_gauge_code = _seq_align['ref_gauge_code']
                                                 ref_code = _seq_align['ref_code']
@@ -20262,22 +20258,22 @@ class NmrDpUtility:
                                                     self.__fixSeqIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, chain_id2, seq_id_conv_dict)
                                                     proc_chain_ids[sf_framecode2].add(chain_id2)
 
-                                                    if 'identical_chain_id' in s2:
-                                                        for chain_id2_ in s2['identical_chain_id']:
+                                                    if 'identical_chain_id' in ps2:
+                                                        for chain_id2_ in ps2['identical_chain_id']:
                                                             if chain_id2_ not in proc_chain_ids[sf_framecode2]:
                                                                 self.__fixSeqIdInLoop(fileListId, file_type, content_subtype, sf_framecode2, chain_id2_, seq_id_conv_dict)
                                                                 proc_chain_ids[sf_framecode2].add(chain_id2_)
 
-                                                _s2['seq_id'] = _s1['seq_id']
+                                                _ps2['seq_id'] = _ps1['seq_id']
                                                 mid_code = getMiddleCode(ref_code, test_code)
                                                 test_gauge_code = ref_gauge_code
                                         else:
                                             if seq_mismatch:
                                                 _seq_align = self.__getSeqAlignCode(fileListId, file_type, content_subtype, sf_framecode2,
-                                                                                    chain_id, _s1, _s2, myAlign, mapping,
+                                                                                    chain_id, _ps1, _ps2, myAlign, mapping,
                                                                                     ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
-                                                _s2['seq_id'] = _seq_align['test_seq_id']
-                                                if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                                _ps2['seq_id'] = _seq_align['test_seq_id']
+                                                if _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:
                                                     continue
                                                 ref_gauge_code = _seq_align['ref_gauge_code']
                                                 ref_code = _seq_align['ref_code']
@@ -20285,27 +20281,27 @@ class NmrDpUtility:
                                                 test_code = _seq_align['test_code']
                                                 test_gauge_code = _seq_align['test_gauge_code']
                                             else:
-                                                _s2 = fillBlankCompId(_s1, _s2)
-                                                if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                                _ps2 = fillBlankCompId(_ps1, _ps2)
+                                                if _ps1['seq_id'][0] < 0 and _ps2['seq_id'][0] < 0:
                                                     continue
-                                                test_code = getOneLetterCodeCanSequence(_s2['comp_id'])
+                                                test_code = getOneLetterCodeCanSequence(_ps2['comp_id'])
                                                 mid_code = getMiddleCode(ref_code, test_code)
                                                 test_gauge_code = ref_gauge_code
 
                                     matched = mid_code.count('|')
 
                                     _seq_align = next((_seq_align for _seq_align in seq_align_set
-                                                       if _seq_align['list_id'] == ps_in_loop['list_id']
+                                                       if _seq_align['list_id'] == _poly_seq_in_lp['list_id']
                                                        and _seq_align['sf_framecode'] == sf_framecode2
                                                        and _seq_align['chain_id'] == chain_id), None)
 
                                     if _seq_align is not None:
                                         seq_align_set.remove(_seq_align)
 
-                                    seq_align = {'list_id': ps_in_loop['list_id'], 'sf_framecode': sf_framecode2, 'chain_id': chain_id, 'length': ref_length,
+                                    seq_align = {'list_id': _poly_seq_in_lp['list_id'], 'sf_framecode': sf_framecode2, 'chain_id': chain_id, 'length': ref_length,
                                                  'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                                                  'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
-                                                 'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
+                                                 'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
                                                  'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                                                  'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -20317,12 +20313,12 @@ class NmrDpUtility:
                             if circular or cross:
                                 for k, v in mapping.items():
 
-                                    for s2 in ps2:
+                                    for ps2 in poly_seq2:
 
-                                        if s2['chain_id'] != k:
+                                        if ps2['chain_id'] != k:
                                             continue
 
-                                        s2['chain_id'] = v + '_'
+                                        ps2['chain_id'] = v + '_'
 
                                         break
 
@@ -20330,12 +20326,12 @@ class NmrDpUtility:
 
                                 for v in mapping.values():
 
-                                    for s2 in ps2:
+                                    for ps2 in poly_seq2:
 
-                                        if s2['chain_id'] != v + '_':
+                                        if ps2['chain_id'] != v + '_':
                                             continue
 
-                                        s2['chain_id'] = v
+                                        ps2['chain_id'] = v
 
                                         break
 
@@ -20344,12 +20340,12 @@ class NmrDpUtility:
                             else:
                                 for k, v in mapping.items():
 
-                                    for s2 in ps2:
+                                    for ps2 in poly_seq2:
 
-                                        if s2['chain_id'] != k:
+                                        if ps2['chain_id'] != k:
                                             continue
 
-                                        s2['chain_id'] = v
+                                        ps2['chain_id'] = v
 
                                         break
 
@@ -20362,14 +20358,14 @@ class NmrDpUtility:
         return is_done
 
     def __getSeqAlignCode(self, file_list_id: int, file_type: str, content_subtype: str, sf_framecode: str,
-                          chain_id: str, s1: dict, s2: dict, myAlign: list, mapping: dict,
+                          chain_id: str, ps1: dict, ps2: dict, myAlign: list, mapping: dict,
                           ref_gauge_code: str, ref_code: str, mid_code: str, test_code: str, test_gauge_code: str
                           ) -> dict:
         """ Return human-readable seq align codes.
         """
 
-        len_s1 = len(s1['seq_id'])
-        len_s2 = len(s2['seq_id'])
+        len_ps1 = len(ps1['seq_id'])
+        len_ps2 = len(ps2['seq_id'])
 
         length = len(myAlign)
 
@@ -20381,9 +20377,9 @@ class NmrDpUtility:
             myPr0 = str(myPr[0])
             myPr1 = str(myPr[1])
             if myPr0 != '.':
-                while idx1 < len_s1:
-                    if s1['comp_id'][idx1] == myPr0:
-                        seq_id1.append(s1['seq_id'][idx1])
+                while idx1 < len_ps1:
+                    if ps1['comp_id'][idx1] == myPr0:
+                        seq_id1.append(ps1['seq_id'][idx1])
                         comp_id1.append(myPr0)
                         idx1 += 1
                         break
@@ -20392,9 +20388,9 @@ class NmrDpUtility:
                 seq_id1.append(None)
                 comp_id1.append('.')
             if myPr1 != '.':
-                while idx2 < len_s2:
-                    if s2['comp_id'][idx2] == myPr1:
-                        seq_id2.append(s2['seq_id'][idx2])
+                while idx2 < len_ps2:
+                    if ps2['comp_id'][idx2] == myPr1:
+                        seq_id2.append(ps2['seq_id'][idx2])
                         comp_id2.append(myPr1)
                         idx2 += 1
                         break
@@ -20404,9 +20400,9 @@ class NmrDpUtility:
                 comp_id2.append('.')
         seq_id_conv_dict = {str(_s2): str(_s1) for _s1, _s2
                             in zip(seq_id1, seq_id2) if _s1 is not None and _s2 is not None}
-        if s1['seq_id'] != list(range(s1['seq_id'][0], s1['seq_id'][-1] + 1))\
+        if ps1['seq_id'] != list(range(ps1['seq_id'][0], ps1['seq_id'][-1] + 1))\
            and not any(k for k in seq_id_conv_dict.keys() if seq_id_conv_dict[k] != k):
-            s2['seq_id'] = s1['seq_id']
+            ps2['seq_id'] = ps1['seq_id']
             ref_code = test_code
             mid_code = getMiddleCode(ref_code, test_code)
             ref_gauge_code = test_gauge_code
@@ -20415,7 +20411,7 @@ class NmrDpUtility:
             if mapping is not None and chain_id in mapping.values():
                 chain_id2 = next(k for k, v in mapping.items() if v == chain_id)
             self.__fixSeqIdInLoop(file_list_id, file_type, content_subtype, sf_framecode, chain_id2, seq_id_conv_dict)
-            s2['seq_id'] = s1['seq_id']
+            ps2['seq_id'] = ps1['seq_id']
             ref_code = getOneLetterCodeCanSequence(comp_id1)
             test_code = getOneLetterCodeCanSequence(comp_id2)
             mid_code = getMiddleCode(ref_code, test_code)
@@ -20430,7 +20426,7 @@ class NmrDpUtility:
                     if g == ' ':
                         test_code = test_code[0:p] + '-' + test_code[p + 1:]
 
-        return {'ref_seq_id': s1['seq_id'], 'test_seq_id': s2['seq_id'],
+        return {'ref_seq_id': ps1['seq_id'], 'test_seq_id': ps2['seq_id'],
                 'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -20630,7 +20626,7 @@ class NmrDpUtility:
             if seq_id_alt_name is not None:
                 seq_id_alt_col = loop.tags.index(seq_id_alt_name) if seq_id_alt_name in loop.tags else -1
 
-            if chain_id_col == -1 or seq_id_col == -1:
+            if -1 in (chain_id_col, seq_id_col):
                 return
 
             for row in loop:
@@ -20665,7 +20661,7 @@ class NmrDpUtility:
                     _seq_id_alt_name = seq_id_alt_name + '_' + str(i)
                     seq_id_alt_col = loop.tags.index(_seq_id_alt_name) if _seq_id_alt_name in loop.tags else -1
 
-                if chain_id_col == -1 or seq_id_col == -1:
+                if -1 in (chain_id_col, seq_id_col):
                     continue
 
                 for row in loop:
@@ -20698,15 +20694,15 @@ class NmrDpUtility:
             file_name = input_source_dic['file_name']
             file_type = input_source_dic['file_type']
 
-            has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+            has_poly_seq_in_lp = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
-            if not has_poly_seq_in_loop:
+            if not has_poly_seq_in_lp:
                 continue
 
-            polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+            poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
 
             content_subtypes = ['poly_seq']
-            content_subtypes.extend(polymer_sequence_in_loop.keys())
+            content_subtypes.extend(poly_seq_in_lp.keys())
 
             for content_subtype in content_subtypes:
 
@@ -21427,7 +21423,7 @@ class NmrDpUtility:
             comp_id_col = loop.tags.index(comp_id_name) if comp_id_name in loop.tags else -1
             atom_id_col = loop.tags.index(atom_id_name) if atom_id_name in loop.tags else -1
 
-            if comp_id_col == -1 or atom_id_col == -1:
+            if -1 in (comp_id_col, atom_id_col):
                 return
 
             for row in loop:
@@ -21452,7 +21448,7 @@ class NmrDpUtility:
                 comp_id_col = loop.tags.index(_comp_id_name) if _comp_id_name in loop.tags else -1
                 atom_id_col = loop.tags.index(_atom_id_name) if _atom_id_name in loop.tags else -1
 
-                if comp_id_col == -1 or atom_id_col == -1:
+                if -1 in (comp_id_col, atom_id_col):
                     continue
 
                 for row in loop:
@@ -26301,9 +26297,9 @@ class NmrDpUtility:
 
         file_name = input_source_dic['file_name']
 
-        has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+        has_poly_seq_in_lp = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
-        if not has_poly_seq_in_loop:
+        if not has_poly_seq_in_lp:
             return False
 
         try:
@@ -26346,29 +26342,30 @@ class NmrDpUtility:
         except KeyError:
             pass
 
-        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+        poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
 
-        ps_common = input_source_dic['polymer_sequence']
+        poly_seq_common = input_source_dic['polymer_sequence']
 
-        ps = seq_align = chain_assign = br_seq_align = br_chain_assign = np_seq_align = np_chain_assign = None
+        poly_seq = seq_align = chain_assign = br_seq_align = br_chain_assign = np_seq_align = np_chain_assign = None
 
-        if content_subtype in polymer_sequence_in_loop and self.__caC is not None:
-            ps_in_loop = next((ps for ps in polymer_sequence_in_loop[content_subtype] if ps['sf_framecode'] == sf_framecode), None)
+        if content_subtype in poly_seq_in_lp and self.__caC is not None:
+            _poly_seq_in_lp = next((_poly_seq_in_lp for _poly_seq_in_lp in poly_seq_in_lp[content_subtype]
+                                    if _poly_seq_in_lp['sf_framecode'] == sf_framecode), None)
 
-            if ps_in_loop is not None:
-                list_id = ps_in_loop['list_id']
-                ps = ps_in_loop['polymer_sequence']
+            if _poly_seq_in_lp is not None:
+                list_id = _poly_seq_in_lp['list_id']
+                poly_seq = _poly_seq_in_lp['polymer_sequence']
 
-                seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['polymer_sequence'], ps, conservative=False)
-                chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['polymer_sequence'], ps, seq_align)
+                seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['polymer_sequence'], poly_seq, conservative=False)
+                chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['polymer_sequence'], poly_seq, seq_align)
 
                 if self.__caC['branched'] is not None:
-                    br_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['branched'], ps, conservative=False)
-                    br_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['branched'], ps, br_seq_align)
+                    br_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['branched'], poly_seq, conservative=False)
+                    br_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['branched'], poly_seq, br_seq_align)
 
                 if self.__caC['non_polymer'] is not None:
-                    np_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['non_polymer'], ps, conservative=False)
-                    np_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['non_polymer'], ps, np_seq_align)
+                    np_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['non_polymer'], poly_seq, conservative=False)
+                    np_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['non_polymer'], poly_seq, np_seq_align)
 
         def get_auth_seq_scheme(chain_id, seq_id):
             auth_asym_id = auth_seq_id = None
@@ -26461,14 +26458,14 @@ class NmrDpUtility:
 
         has_ins_code = False
 
-        if ps is not None:
+        if poly_seq is not None:
 
-            for s in ps:
+            for ps in poly_seq:
 
                 if has_ins_code:
                     break
 
-                auth_asym_id, _ = get_auth_seq_scheme(s['chain_id'], s['seq_id'][0])
+                auth_asym_id, _ = get_auth_seq_scheme(ps['chain_id'], ps['seq_id'][0])
 
                 if self.__caC['polymer_sequence'] is not None\
                    and any(cif_ps for cif_ps in self.__caC['polymer_sequence']
@@ -28092,7 +28089,8 @@ class NmrDpUtility:
 
                                 item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
-                                if item is not None and ps is not None and any(_ps for _ps in ps if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
+                                if item is not None and poly_seq is not None and any(_ps for _ps in poly_seq
+                                                                                     if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
                                     entity_assembly_id = item['entity_assembly_id']
                                     entity_id = item['entity_id']
 
@@ -28145,7 +28143,8 @@ class NmrDpUtility:
 
                                     item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
-                                    if item is not None and ps is not None and any(_ps for _ps in ps if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
+                                    if item is not None and poly_seq is not None and any(_ps for _ps in poly_seq
+                                                                                         if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
                                         entity_assembly_id = item['entity_assembly_id']
                                         entity_id = item['entity_id']
 
@@ -28308,7 +28307,8 @@ class NmrDpUtility:
 
                                         item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
-                                        if item is not None and ps is not None and any(_ps for _ps in ps if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
+                                        if item is not None and poly_seq is not None and any(_ps for _ps in poly_seq
+                                                                                             if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
                                             entity_assembly_id = item['entity_assembly_id']
                                             entity_id = item['entity_id']
 
@@ -28362,9 +28362,9 @@ class NmrDpUtility:
 
                                     item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
-                                    if item is not None and ps is not None and any(_ps for _ps in ps_common
-                                                                                   if _ps['chain_id'] == auth_asym_id
-                                                                                   and auth_seq_id in _ps['seq_id']):
+                                    if item is not None and poly_seq is not None and any(_ps for _ps in poly_seq_common
+                                                                                         if _ps['chain_id'] == auth_asym_id
+                                                                                         and auth_seq_id in _ps['seq_id']):
                                         entity_assembly_id = item['entity_assembly_id']
                                         entity_id = item['entity_id']
 
@@ -28478,9 +28478,9 @@ class NmrDpUtility:
 
                                 item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
-                                if item is not None and ps is not None and any(_ps for _ps in ps_common
-                                                                               if _ps['chain_id'] in (auth_asym_id, str(letterToDigit(auth_asym_id)))
-                                                                               and ref_auth_seq_id in _ps['seq_id']):
+                                if item is not None and poly_seq is not None and any(_ps for _ps in poly_seq_common
+                                                                                     if _ps['chain_id'] in (auth_asym_id, str(letterToDigit(auth_asym_id)))
+                                                                                     and ref_auth_seq_id in _ps['seq_id']):
                                     resolved = True
                                     found = False
 
@@ -28600,9 +28600,9 @@ class NmrDpUtility:
 
                                         item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
-                                        if item is not None and ps is not None and any(_ps for _ps in ps_common
-                                                                                       if _ps['chain_id'] == chain_id
-                                                                                       and label_seq_id in _ps['seq_id']):
+                                        if item is not None and poly_seq is not None and any(_ps for _ps in poly_seq_common
+                                                                                             if _ps['chain_id'] == chain_id
+                                                                                             and label_seq_id in _ps['seq_id']):
                                             entity_assembly_id = item['entity_assembly_id']
                                             entity_id = item['entity_id']
 
@@ -30844,11 +30844,11 @@ class NmrDpUtility:
 
                                 if has_cif_poly_seq:
 
-                                    cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+                                    cif_poly_seq = cif_input_source_dic['polymer_sequence']
 
                                     self.__symmetric = 'no'
 
-                                    for ps in cif_polymer_sequence:
+                                    for ps in cif_poly_seq:
 
                                         if 'identical_auth_chain_id' in ps:
 
@@ -31231,7 +31231,7 @@ class NmrDpUtility:
         if not has_poly_seq:
             return False
 
-        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+        cif_poly_seq = cif_input_source_dic['polymer_sequence']
 
         __errors = self.report.getTotalErrors()
 
@@ -31302,13 +31302,13 @@ class NmrDpUtility:
                 sf = self.__star_data[fileListId]
                 sf_framecode = ''
 
-                self.__testResidueVariant__(file_name, file_type, content_subtype, sf, sf_framecode, lp_category, cif_polymer_sequence, nmr2ca)
+                self.__testResidueVariant__(file_name, file_type, content_subtype, sf, sf_framecode, lp_category, cif_poly_seq, nmr2ca)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
                 sf = self.__star_data[fileListId]
                 sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                self.__testResidueVariant__(file_name, file_type, content_subtype, sf, sf_framecode, lp_category, cif_polymer_sequence, nmr2ca)
+                self.__testResidueVariant__(file_name, file_type, content_subtype, sf, sf_framecode, lp_category, cif_poly_seq, nmr2ca)
 
             else:
 
@@ -31318,13 +31318,13 @@ class NmrDpUtility:
                     if not any(loop for loop in sf.loops if loop.category == lp_category):
                         continue
 
-                    self.__testResidueVariant__(file_name, file_type, content_subtype, sf, sf_framecode, lp_category, cif_polymer_sequence, nmr2ca)
+                    self.__testResidueVariant__(file_name, file_type, content_subtype, sf, sf_framecode, lp_category, cif_poly_seq, nmr2ca)
 
         return self.report.getTotalErrors() == __errors
 
     def __testResidueVariant__(self, file_name: str, file_type: str, content_subtype: str,
                                sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                               sf_framecode: str, lp_category: str, cif_polymer_sequence: List[dict], nmr2ca: dict):
+                               sf_framecode: str, lp_category: str, cif_poly_seq: List[dict], nmr2ca: dict):
         """ Perform consistency test on residue variants.
         """
 
@@ -31370,7 +31370,7 @@ class NmrDpUtility:
                     if cif_seq_id is None:
                         continue
 
-                    cif_ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == cif_chain_id)
+                    cif_ps = next(ps for ps in cif_poly_seq if ps['chain_id'] == cif_chain_id)
 
                     cif_comp_id = next((_comp_id for _seq_id, _comp_id
                                         in zip(cif_ps['seq_id'], cif_ps['comp_id']) if _seq_id == cif_seq_id), None)
@@ -31924,30 +31924,31 @@ class NmrDpUtility:
             input_source = self.report.input_sources[file_list_id]
             input_source_dic = input_source.get()
 
-            has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+            has_poly_seq_in_lp = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
-            if has_poly_seq_in_loop and content_subtype != 'ph_param_data':
-                polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+            if has_poly_seq_in_lp and content_subtype != 'ph_param_data':
+                poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
 
-                ps = seq_align = chain_assign = br_seq_align = br_chain_assign = np_seq_align = np_chain_assign = None
+                poly_seq = seq_align = chain_assign = br_seq_align = br_chain_assign = np_seq_align = np_chain_assign = None
 
-                if has_poly_seq_in_loop and content_subtype in polymer_sequence_in_loop:
-                    ps_in_loop = next((ps for ps in polymer_sequence_in_loop[content_subtype] if ps['sf_framecode'] == _sf_framecode), None)
+                if has_poly_seq_in_lp and content_subtype in poly_seq_in_lp:
+                    _poly_seq_in_lp = next((_poly_seq_in_lp for _poly_seq_in_lp in poly_seq_in_lp[content_subtype]
+                                            if _poly_seq_in_lp['sf_framecode'] == _sf_framecode), None)
 
-                    if ps_in_loop is not None:
-                        list_id = ps_in_loop['list_id']
-                        ps = ps_in_loop['polymer_sequence']
+                    if _poly_seq_in_lp is not None:
+                        list_id = _poly_seq_in_lp['list_id']
+                        poly_seq = _poly_seq_in_lp['polymer_sequence']
 
-                        seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['polymer_sequence'], ps, conservative=False)
-                        chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['polymer_sequence'], ps, seq_align)
+                        seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['polymer_sequence'], poly_seq, conservative=False)
+                        chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['polymer_sequence'], poly_seq, seq_align)
 
                         if self.__caC['branched'] is not None:
-                            br_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['branched'], ps, conservative=False)
-                            br_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['branched'], ps, br_seq_align)
+                            br_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['branched'], poly_seq, conservative=False)
+                            br_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['branched'], poly_seq, br_seq_align)
 
                         if self.__caC['non_polymer'] is not None:
-                            np_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['non_polymer'], ps, conservative=False)
-                            np_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['non_polymer'], ps, np_seq_align)
+                            np_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['non_polymer'], poly_seq, conservative=False)
+                            np_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['non_polymer'], poly_seq, np_seq_align)
 
                 def get_auth_seq_scheme(chain_id, seq_id):
                     auth_asym_id = auth_seq_id = None
@@ -31991,14 +31992,14 @@ class NmrDpUtility:
 
                 has_ins_code = False
 
-                if ps is not None:
+                if poly_seq is not None:
 
-                    for s in ps:
+                    for ps in poly_seq:
 
                         if has_ins_code:
                             break
 
-                        auth_asym_id, _ = get_auth_seq_scheme(s['chain_id'], s['seq_id'][0])
+                        auth_asym_id, _ = get_auth_seq_scheme(ps['chain_id'], ps['seq_id'][0])
 
                         if self.__caC['polymer_sequence'] is not None\
                            and any(cif_ps for cif_ps in self.__caC['polymer_sequence']
@@ -32609,6 +32610,10 @@ class NmrDpUtility:
                                     if seq_key not in auth_to_star_seq:
                                         comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                                         if _auth_asym_id == chain_id and _auth_seq_id == seq_id), comp_id)
+                                        _auth_seq_id = next((_auth_seq_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
+                                                             if _auth_asym_id == chain_id and _auth_comp_id == comp_id), None)
+                                        if _auth_seq_id is not None:
+                                            seq_key = (chain_id, _auth_seq_id, comp_id)
 
                                 if has_auth_atom_name:
                                     auth_atom_id = row_[atom_dim_num * 4 + d]
@@ -32662,18 +32667,21 @@ class NmrDpUtility:
                                                                 if test_seq_id == seq_id), None)
 
                                 if None in (auth_asym_id, auth_seq_id):
-                                    entity_id_name = key_entity_id_names[d]
-                                    if entity_id_name not in loop.tags:
-                                        continue
-                                    try:
-                                        entity_assembly_id = int(chain_id)
-                                        entity_id = int(loop.data[idx][loop.tags.index(entity_id_name)])
-                                    except ValueError:
-                                        continue
-                                    k = next((k for k, v in auth_to_star_seq.items() if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
-                                    if k is None:
-                                        continue
-                                    auth_asym_id, auth_seq_id, _ = k
+                                    if seq_key in auth_to_star_seq:
+                                        auth_asym_id, auth_seq_id, _ = seq_key
+                                    else:
+                                        entity_id_name = key_entity_id_names[d]
+                                        if entity_id_name not in loop.tags:
+                                            continue
+                                        try:
+                                            entity_assembly_id = int(chain_id)
+                                            entity_id = int(loop.data[idx][loop.tags.index(entity_id_name)])
+                                        except ValueError:
+                                            continue
+                                        k = next((k for k, v in auth_to_star_seq.items() if v[0] == entity_assembly_id and v[1] == seq_id and v[2] == entity_id), None)
+                                        if k is None:
+                                            continue
+                                        auth_asym_id, auth_seq_id, _ = k
 
                                 chain_id, seq_id = auth_asym_id, auth_seq_id
 
@@ -32794,7 +32802,6 @@ class NmrDpUtility:
 
                                         if self.__verbose:
                                             self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ ValueError  - {idx_msg + warn}\n")
-
                                     continue
 
                             if any(d for d in range(atom_dim_num) if atom_sels[d] is None or len(atom_sels[d]) == 0):
@@ -32855,6 +32862,7 @@ class NmrDpUtility:
                                                               loop.tags, loop.data[idx],
                                                               auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
                                                               [atom1, atom2], self.__annotation_mode)
+
                                         lp.add_data(_row)
 
                                 elif atom_sels[0] is not None:
@@ -34447,11 +34455,11 @@ class NmrDpUtility:
                     if sa['conflict'] > 0 or sa['unmapped'] == 0:
                         continue
 
-                    s1 = next(s for s in nmr_poly_seq if s['chain_id'] == test_chain_id)
-                    s2 = next(s for s in cif_poly_seq if s['auth_chain_id'] == ref_chain_id)
+                    ps1 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == test_chain_id)
+                    ps2 = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == ref_chain_id)
 
-                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + test_chain_id)
-                    self.__pA.addTestSequence(s2['comp_id'], test_chain_id)
+                    self.__pA.setReferenceSequence(ps1['comp_id'], 'REF' + test_chain_id)
+                    self.__pA.addTestSequence(ps2['comp_id'], test_chain_id)
                     self.__pA.doAlign()
 
                     myAlign = self.__pA.getAlignment(test_chain_id)
@@ -34465,14 +34473,14 @@ class NmrDpUtility:
                         nmr_seq_ids, cif_auth_seq_ids = [], []
 
                         for i in range(length):
-                            if str(myAlign[i][0]) != '.' and i < len(s1['seq_id']):
-                                nmr_seq_ids.append(s1['seq_id'][i])
+                            if str(myAlign[i][0]) != '.' and i < len(ps1['seq_id']):
+                                nmr_seq_ids.append(ps1['seq_id'][i])
                             else:
                                 nmr_seq_ids.append(None)
 
                         for i in range(length):
-                            if str(myAlign[i][1]) != '.' and i < len(s2['seq_id']):
-                                cif_auth_seq_ids.append(s2['auth_seq_id'][i])
+                            if str(myAlign[i][1]) != '.' and i < len(ps2['seq_id']):
+                                cif_auth_seq_ids.append(ps2['auth_seq_id'][i])
                             else:
                                 cif_auth_seq_ids.append(None)
 
@@ -34502,7 +34510,7 @@ class NmrDpUtility:
 
                                     if offset is not None and cif_auth_seq_ids[i + offset] is not None:
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
-                                        self.__nmr_ext_poly_seq.append({'auth_chain_id': s2['auth_chain_id'],
+                                        self.__nmr_ext_poly_seq.append({'auth_chain_id': ps2['auth_chain_id'],
                                                                         'auth_seq_id': cif_auth_seq_id,
                                                                         'auth_comp_id': nmr_comp_id})
 
@@ -36275,11 +36283,11 @@ class NmrDpUtility:
                     if sa['conflict'] > 0 or sa['unmapped'] == 0:
                         continue
 
-                    s1 = next(s for s in nmr_poly_seq if s['chain_id'] == test_chain_id)
-                    s2 = next(s for s in cif_poly_seq if s['auth_chain_id'] == ref_chain_id)
+                    ps1 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == test_chain_id)
+                    ps2 = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == ref_chain_id)
 
-                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + test_chain_id)
-                    self.__pA.addTestSequence(s2['comp_id'], test_chain_id)
+                    self.__pA.setReferenceSequence(ps1['comp_id'], 'REF' + test_chain_id)
+                    self.__pA.addTestSequence(ps2['comp_id'], test_chain_id)
                     self.__pA.doAlign()
 
                     myAlign = self.__pA.getAlignment(test_chain_id)
@@ -36293,14 +36301,14 @@ class NmrDpUtility:
                         nmr_seq_ids, cif_auth_seq_ids = [], []
 
                         for i in range(length):
-                            if str(myAlign[i][0]) != '.' and i < len(s1['seq_id']):
-                                nmr_seq_ids.append(s1['seq_id'][i])
+                            if str(myAlign[i][0]) != '.' and i < len(ps1['seq_id']):
+                                nmr_seq_ids.append(ps1['seq_id'][i])
                             else:
                                 nmr_seq_ids.append(None)
 
                         for i in range(length):
-                            if str(myAlign[i][1]) != '.' and i < len(s2['seq_id']):
-                                cif_auth_seq_ids.append(s2['auth_seq_id'][i])
+                            if str(myAlign[i][1]) != '.' and i < len(ps2['seq_id']):
+                                cif_auth_seq_ids.append(ps2['auth_seq_id'][i])
                             else:
                                 cif_auth_seq_ids.append(None)
 
@@ -36330,7 +36338,7 @@ class NmrDpUtility:
 
                                     if offset is not None and cif_auth_seq_ids[i + offset] is not None:
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
-                                        self.__nmr_ext_poly_seq.append({'auth_chain_id': s2['auth_chain_id'],
+                                        self.__nmr_ext_poly_seq.append({'auth_chain_id': ps2['auth_chain_id'],
                                                                         'auth_seq_id': cif_auth_seq_id,
                                                                         'auth_comp_id': nmr_comp_id})
 
@@ -38074,9 +38082,9 @@ class NmrDpUtility:
         input_source = self.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
-        has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+        has_poly_seq_in_lp = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
-        if not has_poly_seq_in_loop:
+        if not has_poly_seq_in_lp:
             return False
 
         coord_atom_site = self.__caC['coord_atom_site']
@@ -38085,26 +38093,27 @@ class NmrDpUtility:
         auth_atom_name_to_id = self.__caC['auth_atom_name_to_id']
         auth_atom_name_to_id_ext = self.__caC['auth_atom_name_to_id_ext']
 
-        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+        poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
 
         seq_align = chain_assign = br_seq_align = br_chain_assign = np_seq_align = np_chain_assign = None
 
-        if content_subtype in polymer_sequence_in_loop:
-            ps_in_loop = next((ps for ps in polymer_sequence_in_loop[content_subtype] if ps['sf_framecode'] == sf_framecode), None)
+        if content_subtype in poly_seq_in_lp:
+            _poly_seq_in_lp = next((_poly_seq_in_lp for _poly_seq_in_lp in poly_seq_in_lp[content_subtype]
+                                    if _poly_seq_in_lp['sf_framecode'] == sf_framecode), None)
 
-            if ps_in_loop is not None:
-                ps = ps_in_loop['polymer_sequence']
+            if _poly_seq_in_lp is not None:
+                poly_seq = _poly_seq_in_lp['polymer_sequence']
 
-                seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['polymer_sequence'], ps, conservative=False)
-                chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['polymer_sequence'], ps, seq_align)
+                seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['polymer_sequence'], poly_seq, conservative=False)
+                chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['polymer_sequence'], poly_seq, seq_align)
 
                 if self.__caC['branched'] is not None:
-                    br_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['branched'], ps, conservative=False)
-                    br_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['branched'], ps, br_seq_align)
+                    br_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['branched'], poly_seq, conservative=False)
+                    br_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['branched'], poly_seq, br_seq_align)
 
                 if self.__caC['non_polymer'] is not None:
-                    np_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['non_polymer'], ps, conservative=False)
-                    np_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['non_polymer'], ps, np_seq_align)
+                    np_seq_align, _ = alignPolymerSequence(self.__pA, self.__caC['non_polymer'], poly_seq, conservative=False)
+                    np_chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, file_type, self.__caC['non_polymer'], poly_seq, np_seq_align)
 
         def get_auth_seq_scheme(chain_id, seq_id):
             auth_asym_id = auth_seq_id = None
@@ -39484,9 +39493,9 @@ class NmrDpUtility:
             if len(count) > 0:
                 ent['number_of_assignments'] = count
 
-            polymer_sequence = input_source_dic['polymer_sequence']
+            poly_seq = input_source_dic['polymer_sequence']
 
-            if polymer_sequence is None:
+            if poly_seq is None:
                 return
 
             if 'sequence_coverage' in ent:
@@ -39535,11 +39544,11 @@ class NmrDpUtility:
 
                         col += 1
 
-                    s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
+                    ps = next((ps for ps in poly_seq if ps['chain_id'] == chain_id), None)
 
-                    if s is not None:
+                    if ps is not None:
 
-                        for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+                        for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                             polypeptide_like = self.__csStat.peptideLike(comp_id)
 
@@ -39679,9 +39688,9 @@ class NmrDpUtility:
 
                         col += 1
 
-                    if s is not None:
+                    if ps is not None:
 
-                        for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+                        for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                             polypeptide_like = self.__csStat.peptideLike(comp_id)
 
@@ -39807,9 +39816,9 @@ class NmrDpUtility:
 
                         col += 1
 
-                    if s is not None:
+                    if ps is not None:
 
-                        for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+                        for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                             polypeptide_like = self.__csStat.peptideLike(comp_id)
 
@@ -39932,9 +39941,9 @@ class NmrDpUtility:
 
                         col += 1
 
-                    if s is not None:
+                    if ps is not None:
 
-                        for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+                        for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                             polypeptide_like = self.__csStat.peptideLike(comp_id)
 
@@ -40039,9 +40048,9 @@ class NmrDpUtility:
 
                         col += 1
 
-                    if s is not None:
+                    if ps is not None:
 
-                        for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+                        for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                             polypeptide_like = self.__csStat.peptideLike(comp_id)
 
@@ -40282,11 +40291,11 @@ class NmrDpUtility:
                     _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
                     _chain_id = chain_id_map.get(_chain_id, _chain_id)
 
-                    s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
+                    ps = next((ps for ps in poly_seq if ps['chain_id'] == chain_id), None)
 
-                    if s is not None:
+                    if ps is not None:
 
-                        for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+                        for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                             if comp_id not in ('CYS', 'DCY'):
                                 continue
@@ -40367,11 +40376,11 @@ class NmrDpUtility:
                     _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
                     _chain_id = chain_id_map.get(_chain_id, _chain_id)
 
-                    s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
+                    ps = next((ps for ps in poly_seq if ps['chain_id'] == chain_id), None)
 
-                    if s is not None:
+                    if ps is not None:
 
-                        for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+                        for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                             if comp_id != 'PRO':
                                 continue
@@ -40477,11 +40486,11 @@ class NmrDpUtility:
                     _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
                     _chain_id = chain_id_map.get(_chain_id, _chain_id)
 
-                    s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
+                    ps = next((ps for ps in poly_seq if ps['chain_id'] == chain_id), None)
 
-                    if s is not None:
+                    if ps is not None:
 
-                        for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+                        for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                             if comp_id != 'HIS':
                                 continue
@@ -40586,11 +40595,11 @@ class NmrDpUtility:
                     _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
                     _chain_id = chain_id_map.get(_chain_id, _chain_id)
 
-                    s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
+                    ps = next((ps for ps in poly_seq if ps['chain_id'] == chain_id), None)
 
-                    if s is not None:
+                    if ps is not None:
 
-                        for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+                        for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                             if comp_id not in ilv_comp_ids:
                                 continue
@@ -40885,13 +40894,13 @@ class NmrDpUtility:
                     _chain_id = chain_id if file_type == 'nef' or self.__remediation_mode else str(letterToDigit(chain_id))
                     _chain_id = chain_id_map.get(_chain_id, _chain_id)
 
-                    s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
+                    ps = next((ps for ps in poly_seq if ps['chain_id'] == chain_id), None)
 
-                    if s is not None:
+                    if ps is not None:
 
                         rci_residues, rci_assignments, seq_ids_wo_assign, oxidized_cys_seq_ids = [], [], [], []
 
-                        for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+                        for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
                             if comp_id not in emptyValue:
                                 if comp_id not in monDict3:
@@ -40996,11 +41005,11 @@ class NmrDpUtility:
                             if 'rci' in result and len(result['rci']) > 0:
                                 result['chain_id'] = chain_id
                                 result['comp_id'] = [res[0] for res in rci_residues]
-                                struct_conf = self.__extractCoordStructConf(chain_id, s['seq_id'])
+                                struct_conf = self.__extractCoordStructConf(chain_id, ps['seq_id'])
                                 len_struct_conf = len(struct_conf)
                                 result['struct_conf'] = []
                                 for seq_id in result['seq_id']:
-                                    pos = s['seq_id'].index(seq_id)
+                                    pos = ps['seq_id'].index(seq_id)
                                     if pos < len_struct_conf:
                                         result['struct_conf'].append(struct_conf[pos])
 
@@ -41162,24 +41171,24 @@ class NmrDpUtility:
 
             has_inter_chain_constraint = False
 
-            polymer_sequence = input_source_dic['polymer_sequence']
+            poly_seq = input_source_dic['polymer_sequence']
 
-            if polymer_sequence is not None:
+            if poly_seq is not None:
 
-                for s in polymer_sequence:
-                    struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
-                    count_per_residue.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'],
+                for ps in poly_seq:
+                    struct_conf = self.__extractCoordStructConf(ps['chain_id'], ps['seq_id'])
+                    count_per_residue.append({'chain_id': ps['chain_id'], 'seq_id': ps['seq_id'], 'comp_id': ps['comp_id'],
                                               'struct_conf': struct_conf})
-                    count_on_map.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'],
+                    count_on_map.append({'chain_id': ps['chain_id'], 'seq_id': ps['seq_id'], 'comp_id': ps['comp_id'],
                                          'struct_conf': struct_conf})
 
-                if len(polymer_sequence) > 1:
-                    for s, t in itertools.combinations(polymer_sequence, 2):
-                        count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'],
-                                                  'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'],
-                                                  'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id'],
-                                                  'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']),
-                                                  'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})
+                if len(poly_seq) > 1:
+                    for ps1, ps2 in itertools.combinations(poly_seq, 2):
+                        count_on_asym_map.append({'chain_id_1': ps1['chain_id'], 'chain_id_2': ps2['chain_id'],
+                                                  'seq_id_1': ps1['seq_id'], 'seq_id_2': ps2['seq_id'],
+                                                  'comp_id_1': ps1['comp_id'], 'comp_id_2': ps2['comp_id'],
+                                                  'struct_conf_1': self.__extractCoordStructConf(ps1['chain_id'], ps1['seq_id']),
+                                                  'struct_conf_2': self.__extractCoordStructConf(ps2['chain_id'], ps2['seq_id'])})
 
             _rest_id = -1
             _atom1 = _atom2 = None
@@ -41403,7 +41412,7 @@ class NmrDpUtility:
                         potential_types[data_type] = []
                     potential_types[data_type].append(potential_type)
 
-                if polymer_sequence is not None:
+                if poly_seq is not None:
 
                     # count per residue
 
@@ -41463,7 +41472,7 @@ class NmrDpUtility:
                 ent['number_of_inconsistent_constraints'] = inco_count
             if len(redu_count) > 0:
                 ent['number_of_redundant_constraints'] = redu_count
-            if polymer_sequence is not None:
+            if poly_seq is not None:
                 ent['constraints_per_residue'] = count_per_residue
                 ent['constraints_on_contact_map'] = count_on_map
             if has_inter_chain_constraint:
@@ -41770,22 +41779,22 @@ class NmrDpUtility:
 
             has_inter_chain_constraint = False
 
-            polymer_sequence = input_source_dic['polymer_sequence']
+            poly_seq = input_source_dic['polymer_sequence']
 
-            if polymer_sequence is not None:
+            if poly_seq is not None:
 
-                for s in polymer_sequence:
-                    struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
-                    count_on_map.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'],
+                for ps in poly_seq:
+                    struct_conf = self.__extractCoordStructConf(ps['chain_id'], ps['seq_id'])
+                    count_on_map.append({'chain_id': ps['chain_id'], 'seq_id': ps['seq_id'], 'comp_id': ps['comp_id'],
                                          'struct_conf': struct_conf})
 
-                if len(polymer_sequence) > 1:
-                    for s, t in itertools.combinations(polymer_sequence, 2):
-                        count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'],
-                                                  'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'],
-                                                  'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id'],
-                                                  'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']),
-                                                  'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})
+                if len(poly_seq) > 1:
+                    for ps1, ps2 in itertools.combinations(poly_seq, 2):
+                        count_on_asym_map.append({'chain_id_1': ps1['chain_id'], 'chain_id_2': ps2['chain_id'],
+                                                  'seq_id_1': ps1['seq_id'], 'seq_id_2': ps2['seq_id'],
+                                                  'comp_id_1': ps1['comp_id'], 'comp_id_2': ps2['comp_id'],
+                                                  'struct_conf_1': self.__extractCoordStructConf(ps1['chain_id'], ps1['seq_id']),
+                                                  'struct_conf_2': self.__extractCoordStructConf(ps2['chain_id'], ps2['seq_id'])})
 
             for idx, row in enumerate(lp_data):
                 chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
@@ -41865,7 +41874,7 @@ class NmrDpUtility:
                 else:
                     count[data_type] = 1
 
-                if polymer_sequence is not None:
+                if poly_seq is not None:
 
                     # count on map
 
@@ -41908,7 +41917,7 @@ class NmrDpUtility:
                 return
 
             ent['number_of_constraints'] = count
-            if polymer_sequence is not None:
+            if poly_seq is not None:
                 ent['constraints_on_contact_map'] = count_on_map
             if has_inter_chain_constraint:
                 ent['constraints_on_asym_contact_map'] = count_on_asym_map
@@ -42697,13 +42706,13 @@ class NmrDpUtility:
 
             phi_list, psi_list, chi1_list, chi2_list, value_per_residue = [], [], [], [], []
 
-            polymer_sequence = input_source_dic['polymer_sequence']
+            poly_seq = input_source_dic['polymer_sequence']
 
-            if polymer_sequence is not None:
+            if poly_seq is not None:
 
-                for s in polymer_sequence:
-                    struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
-                    value_per_residue.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'],
+                for ps in poly_seq:
+                    struct_conf = self.__extractCoordStructConf(ps['chain_id'], ps['seq_id'])
+                    value_per_residue.append({'chain_id': ps['chain_id'], 'seq_id': ps['seq_id'], 'comp_id': ps['comp_id'],
                                               'struct_conf': struct_conf})
 
             for row in lp_data:
@@ -42916,7 +42925,7 @@ class NmrDpUtility:
                         potential_types[data_type] = []
                     potential_types[data_type].append(potential_type)
 
-                if polymer_sequence is not None:
+                if poly_seq is not None:
 
                     # value per residue
 
@@ -42948,7 +42957,7 @@ class NmrDpUtility:
                 if len(redu_count) > 0:
                     ent['number_of_redundant_constraints'] = redu_count
                 ent['constraints_per_polymer_type'] = polymer_types
-                if polymer_sequence is not None:
+                if poly_seq is not None:
                     ent['constraints_per_residue'] = value_per_residue
                 if len(weights) > 0:
                     _weights = {}
@@ -43354,13 +43363,13 @@ class NmrDpUtility:
 
             value_per_residue = []
 
-            polymer_sequence = input_source_dic['polymer_sequence']
+            poly_seq = input_source_dic['polymer_sequence']
 
-            if polymer_sequence is not None:
+            if poly_seq is not None:
 
-                for s in polymer_sequence:
-                    struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
-                    value_per_residue.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'],
+                for ps in poly_seq:
+                    struct_conf = self.__extractCoordStructConf(ps['chain_id'], ps['seq_id'])
+                    value_per_residue.append({'chain_id': ps['chain_id'], 'seq_id': ps['seq_id'], 'comp_id': ps['comp_id'],
                                               'struct_conf': struct_conf})
 
             for row in lp_data:
@@ -43443,7 +43452,7 @@ class NmrDpUtility:
                         potential_types[data_type] = []
                     potential_types[data_type].append(potential_type)
 
-                if polymer_sequence is not None:
+                if poly_seq is not None:
 
                     # value per residue
 
@@ -43476,7 +43485,7 @@ class NmrDpUtility:
                 ent['number_of_inconsistent_constraints'] = inco_count
             if len(redu_count) > 0:
                 ent['number_of_redundant_constraints'] = redu_count
-            if polymer_sequence is not None:
+            if poly_seq is not None:
                 ent['constraints_per_residue'] = value_per_residue
             ent['range'] = {'max_value': float(f'{max_val_:.2f}'), 'min_value': float(f'{min_val_:.2f}')}
             if len(weights) > 0:
@@ -45414,21 +45423,21 @@ class NmrDpUtility:
         cif_input_source_dic = cif_input_source.get()
 
         has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
-        has_poly_seq_in_loop = has_key_value(cif_input_source_dic, 'polymer_sequence_in_loop')
+        has_poly_seq_in_lp = has_key_value(cif_input_source_dic, 'polymer_sequence_in_loop')
 
-        if has_poly_seq or (not has_poly_seq_in_loop):
+        if has_poly_seq or (not has_poly_seq_in_lp):
             return False
 
-        polymer_sequence_in_loop = cif_input_source_dic['polymer_sequence_in_loop']
+        poly_seq_in_lp = cif_input_source_dic['polymer_sequence_in_loop']
 
         chain_ids = set()
 
-        for content_subtype in polymer_sequence_in_loop.keys():
+        for content_subtype in poly_seq_in_lp.keys():
 
-            for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
-                polymer_sequence = ps_in_loop['polymer_sequence']
+            for _poly_seq_in_lp in poly_seq_in_lp[content_subtype]:
+                poly_seq = _poly_seq_in_lp['polymer_sequence']
 
-                for ps in polymer_sequence:
+                for ps in poly_seq:
                     chain_id = ps['chain_id']
                     chain_ids.add(chain_id)
 
@@ -45437,12 +45446,12 @@ class NmrDpUtility:
 
         _offset_seq_ids = {c: 0 for c in chain_ids}
 
-        for content_subtype in polymer_sequence_in_loop.keys():
+        for content_subtype in poly_seq_in_lp.keys():
 
-            for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
-                polymer_sequence = ps_in_loop['polymer_sequence']
+            for _poly_seq_in_lp in poly_seq_in_lp[content_subtype]:
+                poly_seq = _poly_seq_in_lp['polymer_sequence']
 
-                for ps in polymer_sequence:
+                for ps in poly_seq:
                     chain_id = ps['chain_id']
 
                     min_seq_id = min(ps['seq_id'])
@@ -45451,12 +45460,12 @@ class NmrDpUtility:
 
         offset_seq_ids = {k: (0 if v >= 0 else -v) for k, v in _offset_seq_ids.items()}
 
-        for content_subtype in polymer_sequence_in_loop.keys():
+        for content_subtype in poly_seq_in_lp.keys():
 
-            for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
-                polymer_sequence = ps_in_loop['polymer_sequence']
+            for _poly_seq_in_lp in poly_seq_in_lp[content_subtype]:
+                poly_seq = _poly_seq_in_lp['polymer_sequence']
 
-                for ps in polymer_sequence:
+                for ps in poly_seq:
                     chain_id = ps['chain_id']
 
                     for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
@@ -45502,11 +45511,11 @@ class NmrDpUtility:
         if not has_poly_seq:
             return False
 
-        polymer_sequence = cif_input_source_dic['polymer_sequence']
+        poly_seq = cif_input_source_dic['polymer_sequence']
 
         asm = []
 
-        for ps in polymer_sequence:
+        for ps in poly_seq:
 
             has_nstd_res = False
 
@@ -45556,40 +45565,40 @@ class NmrDpUtility:
         cif_input_source_dic = cif_input_source.get()
 
         has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
-        has_poly_seq_in_loop = has_key_value(cif_input_source_dic, 'polymer_sequence_in_loop')
+        has_poly_seq_in_lp = has_key_value(cif_input_source_dic, 'polymer_sequence_in_loop')
 
         if not has_poly_seq:
             return False
 
-        polymer_sequence = cif_input_source_dic['polymer_sequence']
+        cif_poly_seq = cif_input_source_dic['polymer_sequence']
 
-        if has_poly_seq_in_loop:
+        if has_poly_seq_in_lp:
 
-            polymer_sequence_in_loop = cif_input_source_dic['polymer_sequence_in_loop']
+            poly_seq_in_lp = cif_input_source_dic['polymer_sequence_in_loop']
 
-            for content_subtype in polymer_sequence_in_loop.keys():
+            for content_subtype in poly_seq_in_lp.keys():
 
                 if content_subtype in ('non_poly', 'branched'):
                     continue
 
                 seq_align_set = []
 
-                for i1, s1 in enumerate(polymer_sequence):
-                    chain_id = s1['chain_id']
+                for i1, ps1 in enumerate(cif_poly_seq):
+                    chain_id = ps1['chain_id']
 
                     if i1 >= LEN_MAJOR_ASYM_ID:  # to process large assembly avoiding forced timeout
                         continue
 
-                    for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
-                        ps2 = ps_in_loop['polymer_sequence']
+                    for _poly_seq_in_lp in poly_seq_in_lp[content_subtype]:
+                        poly_seq2 = _poly_seq_in_lp['polymer_sequence']
 
-                        for s2 in ps2:
+                        for ps2 in poly_seq2:
 
-                            if chain_id != s2['chain_id']:
+                            if chain_id != ps2['chain_id']:
                                 continue
 
-                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-                            self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                            self.__pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                            self.__pA.addTestSequence(ps2['comp_id'], chain_id)
                             self.__pA.doAlign()
 
                             myAlign = self.__pA.getAlignment(chain_id)
@@ -45604,23 +45613,23 @@ class NmrDpUtility:
                             if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0):
                                 continue
 
-                            _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
-                            _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+                            _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1)
+                            _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
 
-                            ref_length = len(s1['seq_id'])
+                            ref_length = len(ps1['seq_id'])
 
-                            ref_code = getOneLetterCodeCanSequence(_s1['comp_id'])
-                            test_code = getOneLetterCodeCanSequence(_s2['comp_id'])
+                            ref_code = getOneLetterCodeCanSequence(_ps1['comp_id'])
+                            test_code = getOneLetterCodeCanSequence(_ps2['comp_id'])
                             mid_code = getMiddleCode(ref_code, test_code)
-                            ref_gauge_code = getGaugeCode(_s1['seq_id'])
-                            test_gauge_code = getGaugeCode(_s2['seq_id'])
+                            ref_gauge_code = getGaugeCode(_ps1['seq_id'])
+                            test_gauge_code = getGaugeCode(_ps2['seq_id'])
 
                             matched = mid_code.count('|')
 
-                            seq_align = {'list_id': ps_in_loop['list_id'], 'chain_id': chain_id, 'length': ref_length,
+                            seq_align = {'list_id': _poly_seq_in_lp['list_id'], 'chain_id': chain_id, 'length': ref_length,
                                          'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                                          'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
-                                         'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
+                                         'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
                                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                                          'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -45639,24 +45648,24 @@ class NmrDpUtility:
         if not has_nmr_poly_seq:
             return False
 
-        nmr_polymer_sequence = nmr_input_source_dic['polymer_sequence']
+        nmr_poly_seq = nmr_input_source_dic['polymer_sequence']
 
         seq_align_set = []
 
-        for i1, s1 in enumerate(polymer_sequence):
-            chain_id = s1['chain_id']
+        for i1, ps1 in enumerate(cif_poly_seq):
+            chain_id = ps1['chain_id']
 
             if i1 >= LEN_MAJOR_ASYM_ID / 2:  # to process large assembly avoiding forced timeout
                 continue
 
-            for i2, s2 in enumerate(nmr_polymer_sequence):
-                chain_id2 = s2['chain_id']
+            for i2, ps2 in enumerate(nmr_poly_seq):
+                chain_id2 = ps2['chain_id']
 
                 if i2 >= LEN_MAJOR_ASYM_ID / 2:  # to process large assembly avoiding forced timeout
                     continue
 
-                self.__pA.setReferenceSequence(s1['auth_comp_id'] if 'auth_comp_id' in s1 else s2['comp_id'], 'REF' + chain_id)
-                self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                self.__pA.setReferenceSequence(ps1['auth_comp_id'] if 'auth_comp_id' in ps1 else ps2['comp_id'], 'REF' + chain_id)
+                self.__pA.addTestSequence(ps2['comp_id'], chain_id)
                 self.__pA.doAlign()
 
                 myAlign = self.__pA.getAlignment(chain_id)
@@ -45669,9 +45678,9 @@ class NmrDpUtility:
                 _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                 if length == unmapped + conflict:
-                    if len(s1['seq_id']) == 1 and 'alt_comp_id' in s1 and s1['alt_comp_id'][0] in s2['comp_id']:
-                        self.__pA.setReferenceSequence(s1['alt_comp_id'], 'REF' + chain_id)
-                        self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                    if len(ps1['seq_id']) == 1 and 'alt_comp_id' in ps1 and ps1['alt_comp_id'][0] in ps2['comp_id']:
+                        self.__pA.setReferenceSequence(ps1['alt_comp_id'], 'REF' + chain_id)
+                        self.__pA.addTestSequence(ps2['comp_id'], chain_id)
                         self.__pA.doAlign()
 
                         myAlign = self.__pA.getAlignment(chain_id)
@@ -45691,17 +45700,17 @@ class NmrDpUtility:
                     else:
                         continue
 
-                _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
-                _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+                _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1)
+                _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
 
-                if conflict > 0 and (hasLargeSeqGap(_s1, _s2) or (not hasLargeInnerSeqGap(s1) and hasLargeInnerSeqGap(s2))):  # DAOTHER-7465
-                    _s2 = self.__compensateLadderHistidinTag2(chain_id, _s1, _s2)
-                    __s1, __s2 = beautifyPolySeq(_s1, _s2)
-                    _s1_ = __s1
-                    _s2_ = __s2
+                if conflict > 0 and (hasLargeSeqGap(_ps1, _ps2) or (not hasLargeInnerSeqGap(ps1) and hasLargeInnerSeqGap(ps2))):  # DAOTHER-7465
+                    _ps2 = self.__compensateLadderHistidinTag2(chain_id, _ps1, _ps2)
+                    __ps1, __ps2 = beautifyPolySeq(_ps1, _ps2)
+                    _ps1_ = __ps1
+                    _ps2_ = __ps2
 
-                    self.__pA.setReferenceSequence(_s1_['comp_id'], 'REF' + chain_id)
-                    self.__pA.addTestSequence(_s2_['comp_id'], chain_id)
+                    self.__pA.setReferenceSequence(_ps1_['comp_id'], 'REF' + chain_id)
+                    self.__pA.addTestSequence(_ps2_['comp_id'], chain_id)
                     self.__pA.doAlign()
 
                     myAlign = self.__pA.getAlignment(chain_id)
@@ -45710,30 +45719,30 @@ class NmrDpUtility:
 
                     __matched, _unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if __matched > 0 and _conflict == 0:  # and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
+                    if __matched > 0 and _conflict == 0:  # and len(__ps2['comp_id']) - len(ps2['comp_id']) == conflict:
                         _matched, unmapped = __matched, _unmapped
                         conflict = 0
                         offset_1 = _offset_1
                         offset_2 = _offset_2
-                        _s1 = __s1
-                        _s2 = __s2
+                        _ps1 = __ps1
+                        _ps2 = __ps2
 
                 if _matched <= conflict + (1 if length > 1 else 0):
                     continue
 
-                ref_length = len(s1['seq_id'])
+                ref_length = len(ps1['seq_id'])
 
-                ref_code = getOneLetterCodeCanSequence(_s1['comp_id'])
-                test_code = getOneLetterCodeCanSequence(_s2['comp_id'])
+                ref_code = getOneLetterCodeCanSequence(_ps1['comp_id'])
+                test_code = getOneLetterCodeCanSequence(_ps2['comp_id'])
                 mid_code = getMiddleCode(ref_code, test_code)
-                ref_gauge_code = getGaugeCode(_s1['seq_id'])
-                test_gauge_code = getGaugeCode(_s2['seq_id'])
+                ref_gauge_code = getGaugeCode(_ps1['seq_id'])
+                test_gauge_code = getGaugeCode(_ps2['seq_id'])
 
                 if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
-                       in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
+                       in zip(_ps1['seq_id'], _ps2['seq_id'], _ps1['comp_id'], _ps2['comp_id'])
                        if __c1 != '.' and __c2 != '.' and __c1 != __c2):
-                    len_s1 = len(_s1['seq_id'])
-                    len_s2 = len(_s2['seq_id'])
+                    len_ps1 = len(_ps1['seq_id'])
+                    len_ps2 = len(_ps2['seq_id'])
 
                     seq_id1, seq_id2, comp_id1, comp_id2 = [], [], [], []
 
@@ -45743,9 +45752,9 @@ class NmrDpUtility:
                         myPr0 = str(myPr[0])
                         myPr1 = str(myPr[1])
                         if myPr0 != '.':
-                            while idx1 < len_s1:
-                                if _s1['comp_id'][idx1] == myPr0:
-                                    seq_id1.append(_s1['seq_id'][idx1])
+                            while idx1 < len_ps1:
+                                if _ps1['comp_id'][idx1] == myPr0:
+                                    seq_id1.append(_ps1['seq_id'][idx1])
                                     comp_id1.append(myPr0)
                                     idx1 += 1
                                     break
@@ -45754,9 +45763,9 @@ class NmrDpUtility:
                             seq_id1.append(None)
                             comp_id1.append('.')
                         if myPr1 != '.':
-                            while idx2 < len_s2:
-                                if _s2['comp_id'][idx2] == myPr1:
-                                    seq_id2.append(_s2['seq_id'][idx2])
+                            while idx2 < len_ps2:
+                                if _ps2['comp_id'][idx2] == myPr1:
+                                    seq_id2.append(_ps2['seq_id'][idx2])
                                     comp_id2.append(myPr1)
                                     idx2 += 1
                                     break
@@ -45783,7 +45792,7 @@ class NmrDpUtility:
                 seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length,
                              'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                              'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
-                             'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
+                             'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                              'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -45794,20 +45803,20 @@ class NmrDpUtility:
 
         seq_align_set = []
 
-        for i1, s1 in enumerate(nmr_polymer_sequence):
-            chain_id = s1['chain_id']
+        for i1, ps1 in enumerate(nmr_poly_seq):
+            chain_id = ps1['chain_id']
 
             if i1 >= LEN_MAJOR_ASYM_ID / 2:  # to process large assembly avoiding forced timeout
                 continue
 
-            for i2, s2 in enumerate(polymer_sequence):
-                chain_id2 = s2['chain_id']
+            for i2, ps2 in enumerate(cif_poly_seq):
+                chain_id2 = ps2['chain_id']
 
                 if i2 >= LEN_MAJOR_ASYM_ID / 2:  # to process large assembly avoiding forced timeout
                     continue
 
-                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-                self.__pA.addTestSequence(s2['auth_comp_id'] if 'auth_comp_id' in s2 else s2['comp_id'], chain_id)
+                self.__pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                self.__pA.addTestSequence(ps2['auth_comp_id'] if 'auth_comp_id' in ps2 else ps2['comp_id'], chain_id)
                 self.__pA.doAlign()
 
                 myAlign = self.__pA.getAlignment(chain_id)
@@ -45820,9 +45829,9 @@ class NmrDpUtility:
                 _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                 if length == unmapped + conflict:
-                    if len(s2['seq_id']) == 1 and 'alt_comp_id' in s2 and s2['alt_comp_id'][0] in s1['comp_id']:
-                        self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-                        self.__pA.addTestSequence(s2['alt_comp_id'], chain_id)
+                    if len(ps2['seq_id']) == 1 and 'alt_comp_id' in ps2 and ps2['alt_comp_id'][0] in ps1['comp_id']:
+                        self.__pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                        self.__pA.addTestSequence(ps2['alt_comp_id'], chain_id)
                         self.__pA.doAlign()
 
                         myAlign = self.__pA.getAlignment(chain_id)
@@ -45842,17 +45851,17 @@ class NmrDpUtility:
                     else:
                         continue
 
-                _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
-                _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+                _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1)
+                _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
 
-                if conflict > 0 and (hasLargeSeqGap(_s1, _s2) or (hasLargeInnerSeqGap(s1) and not hasLargeInnerSeqGap(s2))):  # DAOTHER-7465
-                    _s1 = self.__compensateLadderHistidinTag2(chain_id, _s2, _s1)
-                    __s1, __s2 = beautifyPolySeq(_s1, _s2)
-                    _s1_ = __s1
-                    _s2_ = __s2
+                if conflict > 0 and (hasLargeSeqGap(_ps1, _ps2) or (hasLargeInnerSeqGap(ps1) and not hasLargeInnerSeqGap(ps2))):  # DAOTHER-7465
+                    _ps1 = self.__compensateLadderHistidinTag2(chain_id, _ps2, _ps1)
+                    __ps1, __ps2 = beautifyPolySeq(_ps1, _ps2)
+                    _ps1_ = __ps1
+                    _ps2_ = __ps2
 
-                    self.__pA.setReferenceSequence(_s1_['comp_id'], 'REF' + chain_id)
-                    self.__pA.addTestSequence(_s2_['comp_id'], chain_id)
+                    self.__pA.setReferenceSequence(_ps1_['comp_id'], 'REF' + chain_id)
+                    self.__pA.addTestSequence(_ps2_['comp_id'], chain_id)
                     self.__pA.doAlign()
 
                     myAlign = self.__pA.getAlignment(chain_id)
@@ -45861,30 +45870,30 @@ class NmrDpUtility:
 
                     __matched, _unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if __matched > 0 and _conflict == 0:  # and len(__s1['comp_id']) - len(s1['comp_id']) == conflict:
+                    if __matched > 0 and _conflict == 0:  # and len(__ps1['comp_id']) - len(ps1['comp_id']) == conflict:
                         _matched, unmapped = __matched, _unmapped
                         conflict = 0
                         offset_1 = _offset_1
                         offset_2 = _offset_2
-                        _s1 = __s1
-                        _s2 = __s2
+                        _ps1 = __ps1
+                        _ps2 = __ps2
 
                 if _matched <= conflict + (1 if length > 1 else 0):
                     continue
 
-                ref_length = len(s1['seq_id'])
+                ref_length = len(ps1['seq_id'])
 
-                ref_code = getOneLetterCodeCanSequence(_s1['comp_id'])
-                test_code = getOneLetterCodeCanSequence(_s2['comp_id'])
+                ref_code = getOneLetterCodeCanSequence(_ps1['comp_id'])
+                test_code = getOneLetterCodeCanSequence(_ps2['comp_id'])
                 mid_code = getMiddleCode(ref_code, test_code)
-                ref_gauge_code = getGaugeCode(_s1['seq_id'])
-                test_gauge_code = getGaugeCode(_s2['seq_id'])
+                ref_gauge_code = getGaugeCode(_ps1['seq_id'])
+                test_gauge_code = getGaugeCode(_ps2['seq_id'])
 
                 if any((__s1, __s2) for (__s1, __s2, __c1, __c2)
-                       in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])
+                       in zip(_ps1['seq_id'], _ps2['seq_id'], _ps1['comp_id'], _ps2['comp_id'])
                        if __c1 != '.' and __c2 != '.' and __c1 != __c2):
-                    len_s1 = len(_s1['seq_id'])
-                    len_s2 = len(_s2['seq_id'])
+                    len_ps1 = len(_ps1['seq_id'])
+                    len_ps2 = len(_ps2['seq_id'])
 
                     seq_id1, seq_id2, comp_id1, comp_id2 = [], [], [], []
 
@@ -45894,9 +45903,9 @@ class NmrDpUtility:
                         myPr0 = str(myPr[0])
                         myPr1 = str(myPr[1])
                         if myPr0 != '.':
-                            while idx1 < len_s1:
-                                if _s1['comp_id'][idx1] == myPr0:
-                                    seq_id1.append(_s1['seq_id'][idx1])
+                            while idx1 < len_ps1:
+                                if _ps1['comp_id'][idx1] == myPr0:
+                                    seq_id1.append(_ps1['seq_id'][idx1])
                                     comp_id1.append(myPr0)
                                     idx1 += 1
                                     break
@@ -45905,9 +45914,9 @@ class NmrDpUtility:
                             seq_id1.append(None)
                             comp_id1.append('.')
                         if myPr1 != '.':
-                            while idx2 < len_s2:
-                                if _s2['comp_id'][idx2] == myPr1:
-                                    seq_id2.append(_s2['seq_id'][idx2])
+                            while idx2 < len_ps2:
+                                if _ps2['comp_id'][idx2] == myPr1:
+                                    seq_id2.append(_ps2['seq_id'][idx2])
                                     comp_id2.append(myPr1)
                                     idx2 += 1
                                     break
@@ -45934,7 +45943,7 @@ class NmrDpUtility:
                 seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length,
                              'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                              'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
-                             'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
+                             'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                              'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -45945,17 +45954,17 @@ class NmrDpUtility:
 
         return True
 
-    def __compensateLadderHistidinTag2(self, chain_id: str, s1: dict, s2: dict) -> dict:
+    def __compensateLadderHistidinTag2(self, chain_id: str, ps1: dict, ps2: dict) -> dict:
         """ Compensate ladder-like Histidin tag in polymer sequence 2.
         """
 
-        self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-        self.__pA.addTestSequence(s2['comp_id'], chain_id)
+        self.__pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+        self.__pA.addTestSequence(ps2['comp_id'], chain_id)
         self.__pA.doAlign()
 
-        _s2 = copy.copy(s2)
+        _ps2 = copy.copy(ps2)
 
-        len_s2 = len(s2['comp_id'])
+        len_ps2 = len(ps2['comp_id'])
 
         myAlign = self.__pA.getAlignment(chain_id)
 
@@ -45973,20 +45982,20 @@ class NmrDpUtility:
                 pass
 
             elif myPr0 == 'HIS' and myPr1 == '.' and _myPr0 == 'HIS':
-                if idx2 < len_s2:
-                    _s2['comp_id'][idx2] = 'HIS'
+                if idx2 < len_ps2:
+                    _ps2['comp_id'][idx2] = 'HIS'
                     idx2 += 1
 
             _myPr0 = myPr0
 
             if myPr1 != '.':
-                while idx2 < len_s2:
-                    if s2['comp_id'][idx2] == myPr1:
+                while idx2 < len_ps2:
+                    if ps2['comp_id'][idx2] == myPr1:
                         idx2 += 1
                         break
                     idx2 += 1
 
-        return _s2
+        return _ps2
 
     def __assignCoordPolymerSequence(self) -> bool:
         """ Assign polymer sequences of coordinate file.
@@ -46026,14 +46035,14 @@ class NmrDpUtility:
             if has_key_value(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq')\
                     and has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
 
-                cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
-                nmr_polymer_sequence = nmr_input_source_dic['polymer_sequence']
+                cif_poly_seq = cif_input_source_dic['polymer_sequence']
+                nmr_poly_seq = nmr_input_source_dic['polymer_sequence']
 
-                if nmr_polymer_sequence is None:
+                if nmr_poly_seq is None:
                     continue
 
-                cif_chains = len(cif_polymer_sequence)
-                nmr_chains = len(nmr_polymer_sequence)
+                cif_chains = len(cif_poly_seq)
+                nmr_chains = len(nmr_poly_seq)
 
                 # map polymer sequences between coordinate and NMR data using Hungarian algorithm
 
@@ -46043,22 +46052,22 @@ class NmrDpUtility:
 
                 mat, indices = [], []
 
-                for s1 in cif_polymer_sequence:
-                    chain_id = s1['chain_id']
+                for ps1 in cif_poly_seq:
+                    chain_id = ps1['chain_id']
 
                     cost = [0 for i in range(nmr_chains)]
 
-                    for s2 in nmr_polymer_sequence:
-                        chain_id2 = s2['chain_id']
+                    for ps2 in nmr_poly_seq:
+                        chain_id2 = ps2['chain_id']
 
                         result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                        if seq_align['ref_chain_id'] == chain_id
                                        and seq_align['test_chain_id'] == chain_id2), None)
 
                         if result is not None:
-                            cost[nmr_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
-                            if not self.__native_combined and result['length'] >= len(s1['seq_id']) - result['unmapped']:
-                                indices.append((cif_polymer_sequence.index(s1), nmr_polymer_sequence.index(s2)))
+                            cost[nmr_poly_seq.index(ps2)] = result['unmapped'] + result['conflict'] - result['length']
+                            if not self.__native_combined and result['length'] >= len(ps1['seq_id']) - result['unmapped']:
+                                indices.append((cif_poly_seq.index(ps1), nmr_poly_seq.index(ps2)))
 
                     mat.append(cost)
 
@@ -46086,14 +46095,14 @@ class NmrDpUtility:
                         if has_row and has_col:
                             continue
 
-                        _cif_chain_ids = [cif_polymer_sequence[_row]['chain_id'] for _row, _col in indices if col == _col]
+                        _cif_chain_ids = [cif_poly_seq[_row]['chain_id'] for _row, _col in indices if col == _col]
 
                         if len(_cif_chain_ids) > 1:
-                            chain_id2 = nmr_polymer_sequence[col]['chain_id']
+                            chain_id2 = nmr_poly_seq[col]['chain_id']
                             concatenated_nmr_chain[chain_id2] = _cif_chain_ids
 
-                    chain_id = cif_polymer_sequence[row]['chain_id']
-                    chain_id2 = nmr_polymer_sequence[col]['chain_id']
+                    chain_id = cif_poly_seq[row]['chain_id']
+                    chain_id2 = nmr_poly_seq[col]['chain_id']
 
                     result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                   if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
@@ -46119,15 +46128,15 @@ class NmrDpUtility:
                                     low_evid_chain_mapping = True
 
                     auth_chain_id = chain_id
-                    if 'auth_chain_id' in cif_polymer_sequence[row]:
-                        auth_chain_id = cif_polymer_sequence[row]['auth_chain_id']
+                    if 'auth_chain_id' in cif_poly_seq[row]:
+                        auth_chain_id = cif_poly_seq[row]['auth_chain_id']
                         ca['ref_auth_chain_id'] = auth_chain_id
 
-                    s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id)
-                    s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id2)
+                    ps1 = next(ps for ps in cif_poly_seq if ps['chain_id'] == chain_id)
+                    ps2 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == chain_id2)
 
-                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-                    self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                    self.__pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                    self.__pA.addTestSequence(ps2['comp_id'], chain_id)
                     self.__pA.doAlign()
 
                     myAlign = self.__pA.getAlignment(chain_id)
@@ -46136,25 +46145,25 @@ class NmrDpUtility:
 
                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
-                    _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+                    _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1)
+                    _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
 
                     if conflict == 0:
-                        has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
-                        has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
+                        has_inner_gap_1 = hasLargeInnerSeqGap(_ps1)
+                        has_inner_gap_2 = hasLargeInnerSeqGap(_ps2)
 
                         if has_inner_gap_2 and not has_inner_gap_1:
-                            _s2 = fillInnerBlankCompId(_s2)
+                            _ps2 = fillInnerBlankCompId(_ps2)
                         elif has_inner_gap_1 and not has_inner_gap_2:
-                            _s1 = fillInnerBlankCompId(_s1)
+                            _ps1 = fillInnerBlankCompId(_ps1)
 
-                    if conflict > 0 and (hasLargeSeqGap(_s1, _s2) or (not hasLargeInnerSeqGap(s1) and hasLargeInnerSeqGap(s2))):  # DAOTHER-7465
-                        __s1, __s2 = beautifyPolySeq(_s1, _s2)
-                        _s1 = __s1
-                        _s2 = __s2
+                    if conflict > 0 and (hasLargeSeqGap(_ps1, _ps2) or (not hasLargeInnerSeqGap(ps1) and hasLargeInnerSeqGap(ps2))):  # DAOTHER-7465
+                        __ps1, __ps2 = beautifyPolySeq(_ps1, _ps2)
+                        _ps1 = __ps1
+                        _ps2 = __ps2
 
-                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
-                        self.__pA.addTestSequence(_s2['comp_id'], chain_id)
+                        self.__pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id)
+                        self.__pA.addTestSequence(_ps2['comp_id'], chain_id)
                         self.__pA.doAlign()
 
                         myAlign = self.__pA.getAlignment(chain_id)
@@ -46163,19 +46172,19 @@ class NmrDpUtility:
 
                         _matched, unmapped, _conflict, _, _ = getScoreOfSeqAlign(myAlign)
 
-                        if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
+                        if _conflict == 0 and len(__ps2['comp_id']) - len(ps2['comp_id']) == conflict:
                             result['conflict'] = 0
-                            s2 = __s2
+                            ps2 = __ps2
 
                     # update residue name in CS loop to follow CCD replacement (6vu1)
-                    if conflict > 0 and ('alt_comp_id' in s1 or 'alt_comp_id' in s2) and len(s1['seq_id']) == len(s2['seq_id']):
+                    if conflict > 0 and ('alt_comp_id' in ps1 or 'alt_comp_id' in ps2) and len(ps1['seq_id']) == len(ps2['seq_id']):
                         for (k1, k2) in zip(['alt_comp_id', 'comp_id'], ['alt_comp_id', 'comp_id']):
 
-                            if k1 == k2 == 'comp_id' or k1 not in s1 or k2 not in s2:
+                            if k1 == k2 == 'comp_id' or k1 not in ps1 or k2 not in ps2:
                                 continue
 
-                            self.__pA.setReferenceSequence(s1[k1], 'REF' + chain_id)
-                            self.__pA.addTestSequence(s2[k2], chain_id)
+                            self.__pA.setReferenceSequence(ps1[k1], 'REF' + chain_id)
+                            self.__pA.addTestSequence(ps2[k2], chain_id)
                             self.__pA.doAlign()
 
                             myAlign = self.__pA.getAlignment(chain_id)
@@ -46185,21 +46194,21 @@ class NmrDpUtility:
                             _matched, unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(myAlign)
 
                             if _conflict == 0:
-                                self.__updateCompIdInCsLoop(fileListId, s1, s2)
+                                self.__updateCompIdInCsLoop(fileListId, ps1, ps2)
 
                                 result['conflict'] = _result['conflict'] = 0
-                                s2['comp_id'] = s1['comp_id']
+                                ps2['comp_id'] = ps1['comp_id']
 
                                 break
 
                     if conflict == 0:
                         # resolve unmapped author sequence in CS loop based on sequence alignment (2kxc)
-                        self.__resolveUnmappedAuthSequenceInCsLoop(fileListId, s1, s2)
+                        self.__resolveUnmappedAuthSequenceInCsLoop(fileListId, ps1, ps2)
 
-                    ref_code = getOneLetterCodeCanSequence(s1['comp_id'])
-                    test_code = getOneLetterCodeCanSequence(s2['comp_id'])
+                    ref_code = getOneLetterCodeCanSequence(ps1['comp_id'])
+                    test_code = getOneLetterCodeCanSequence(ps2['comp_id'])
 
-                    for r_code, t_code, seq_id, seq_id2 in zip(ref_code, test_code, s1['seq_id'], s2['seq_id']):
+                    for r_code, t_code, seq_id, seq_id2 in zip(ref_code, test_code, ps1['seq_id'], ps2['seq_id']):
                         if r_code == 'X' and t_code == 'X':
                             nmr_input_source.updateNonStandardResidueByExptlData(chain_id2, seq_id2, 'coordinate')
                             cif_input_source.updateNonStandardResidueByExptlData(chain_id, seq_id, 'coordinate')
@@ -46211,16 +46220,16 @@ class NmrDpUtility:
 
                         j = 0
                         for i in range(length):
-                            if j < len(s1['seq_id']) and (str(myAlign[i][0]) != '.' or s1['comp_id'][j] == '.'):
-                                seq_id1.append(s1['seq_id'][j])
+                            if j < len(ps1['seq_id']) and (str(myAlign[i][0]) != '.' or ps1['comp_id'][j] == '.'):
+                                seq_id1.append(ps1['seq_id'][j])
                                 j += 1
                             else:
                                 seq_id1.append(None)
 
                         j = 0
                         for i in range(length):
-                            if j < len(s2['seq_id']) and (str(myAlign[i][1]) != '.' or s2['comp_id'][j] == '.'):
-                                seq_id2.append(s2['seq_id'][j])
+                            if j < len(ps2['seq_id']) and (str(myAlign[i][1]) != '.' or ps2['comp_id'][j] == '.'):
+                                seq_id2.append(ps2['seq_id'][j])
                                 j += 1
                             else:
                                 seq_id2.append(None)
@@ -46313,21 +46322,21 @@ class NmrDpUtility:
 
                 mat, indices = [], []
 
-                for s1 in nmr_polymer_sequence:
-                    chain_id = s1['chain_id']
+                for ps1 in nmr_poly_seq:
+                    chain_id = ps1['chain_id']
 
                     cost = [0 for i in range(cif_chains)]
 
-                    for s2 in cif_polymer_sequence:
-                        chain_id2 = s2['chain_id']
+                    for ps2 in cif_poly_seq:
+                        chain_id2 = ps2['chain_id']
 
                         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                        if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2), None)
 
                         if result is not None:
-                            cost[cif_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
-                            if not self.__native_combined and result['length'] >= len(s2['seq_id']) - result['unmapped']:
-                                indices.append((nmr_polymer_sequence.index(s1), cif_polymer_sequence.index(s2)))
+                            cost[cif_poly_seq.index(ps2)] = result['unmapped'] + result['conflict'] - result['length']
+                            if not self.__native_combined and result['length'] >= len(ps2['seq_id']) - result['unmapped']:
+                                indices.append((nmr_poly_seq.index(ps1), cif_poly_seq.index(ps2)))
 
                     mat.append(cost)
 
@@ -46355,8 +46364,8 @@ class NmrDpUtility:
                         if has_row and has_col:
                             continue
 
-                    chain_id = nmr_polymer_sequence[row]['chain_id']
-                    chain_id2 = cif_polymer_sequence[col]['chain_id']
+                    chain_id = nmr_poly_seq[row]['chain_id']
+                    chain_id2 = cif_poly_seq[col]['chain_id']
 
                     result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                   if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
@@ -46382,15 +46391,15 @@ class NmrDpUtility:
                                     low_evid_chain_mapping = True
 
                     auth_chain_id2 = chain_id2
-                    if 'auth_chain_id' in cif_polymer_sequence[col]:
-                        auth_chain_id2 = cif_polymer_sequence[col]['auth_chain_id']
+                    if 'auth_chain_id' in cif_poly_seq[col]:
+                        auth_chain_id2 = cif_poly_seq[col]['auth_chain_id']
                         ca['test_auth_chain_id'] = auth_chain_id2
 
-                    s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id)
-                    s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id2)
+                    ps1 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == chain_id)
+                    ps2 = next(ps for ps in cif_poly_seq if ps['chain_id'] == chain_id2)
 
-                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-                    self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                    self.__pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                    self.__pA.addTestSequence(ps2['comp_id'], chain_id)
                     self.__pA.doAlign()
 
                     myAlign = self.__pA.getAlignment(chain_id)
@@ -46399,8 +46408,8 @@ class NmrDpUtility:
 
                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if conflict > 0 and any(len(c) > 3 for c in s2['comp_id']) and 'alt_comp_id' in s2:
-                        self.__pA.addTestSequence(s2['alt_comp_id'], chain_id)
+                    if conflict > 0 and any(len(c) > 3 for c in ps2['comp_id']) and 'alt_comp_id' in ps2:
+                        self.__pA.addTestSequence(ps2['alt_comp_id'], chain_id)
                         self.__pA.doAlign()
 
                         myAlign = self.__pA.getAlignment(chain_id)
@@ -46410,7 +46419,7 @@ class NmrDpUtility:
                         _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                         if conflict > 0:
-                            self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                            self.__pA.addTestSequence(ps2['comp_id'], chain_id)
                             self.__pA.doAlign()
 
                             myAlign = self.__pA.getAlignment(chain_id)
@@ -46419,25 +46428,25 @@ class NmrDpUtility:
 
                             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
-                    _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+                    _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1)
+                    _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
 
                     if conflict == 0:
-                        has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
-                        has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
+                        has_inner_gap_1 = hasLargeInnerSeqGap(_ps1)
+                        has_inner_gap_2 = hasLargeInnerSeqGap(_ps2)
 
                         if has_inner_gap_2 and not has_inner_gap_1:
-                            _s2 = fillInnerBlankCompId(_s2)
+                            _ps2 = fillInnerBlankCompId(_ps2)
                         elif has_inner_gap_1 and not has_inner_gap_2:
-                            _s1 = fillInnerBlankCompId(_s1)
+                            _ps1 = fillInnerBlankCompId(_ps1)
 
-                    if conflict > 0 and (hasLargeSeqGap(_s1, _s2) or (hasLargeInnerSeqGap(s1) and not hasLargeInnerSeqGap(s2))):  # DAOTHER-7465
-                        __s1, __s2 = beautifyPolySeq(_s1, _s2)
-                        _s1 = __s1
-                        _s2 = __s2
+                    if conflict > 0 and (hasLargeSeqGap(_ps1, _ps2) or (hasLargeInnerSeqGap(ps1) and not hasLargeInnerSeqGap(ps2))):  # DAOTHER-7465
+                        __ps1, __ps2 = beautifyPolySeq(_ps1, _ps2)
+                        _ps1 = __ps1
+                        _ps2 = __ps2
 
-                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
-                        self.__pA.addTestSequence(_s2['comp_id'], chain_id)
+                        self.__pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id)
+                        self.__pA.addTestSequence(_ps2['comp_id'], chain_id)
                         self.__pA.doAlign()
 
                         myAlign = self.__pA.getAlignment(chain_id)
@@ -46446,31 +46455,31 @@ class NmrDpUtility:
 
                         _matched, unmapped, _conflict, _, _ = getScoreOfSeqAlign(myAlign)
 
-                        if _conflict == 0 and len(__s1['comp_id']) - len(s1['comp_id']) == conflict:
+                        if _conflict == 0 and len(__ps1['comp_id']) - len(ps1['comp_id']) == conflict:
                             result['conflict'] = 0
-                            s1 = __s1
+                            ps1 = __ps1
 
-                    if conflict > 0 and 'gap_in_auth_seq' in _s2 and _s2['gap_in_auth_seq'] and 'auth_seq_id' in _s2:
-                        __s1 = copy.deepcopy(_s1)
-                        for p in range(len(_s2['auth_seq_id']) - 1):
-                            s_p = _s2['auth_seq_id'][p]
-                            s_q = _s2['auth_seq_id'][p + 1]
+                    if conflict > 0 and 'gap_in_auth_seq' in _ps2 and _ps2['gap_in_auth_seq'] and 'auth_seq_id' in _ps2:
+                        __ps1 = copy.deepcopy(_ps1)
+                        for p in range(len(_ps2['auth_seq_id']) - 1):
+                            s_p = _ps2['auth_seq_id'][p]
+                            s_q = _ps2['auth_seq_id'][p + 1]
                             if None in (s_p, s_q) or s_p + 1 == s_q:
                                 continue
                             for s_o in range(s_p + 1, s_q):
-                                if s_o in __s1['seq_id']:
-                                    idx = __s1['seq_id'].index(s_o)
-                                    if __s1['comp_id'][idx] in emptyValue:
-                                        __s1['seq_id'].pop(idx)
-                                        __s1['comp_id'].pop(idx)
+                                if s_o in __ps1['seq_id']:
+                                    idx = __ps1['seq_id'].index(s_o)
+                                    if __ps1['comp_id'][idx] in emptyValue:
+                                        __ps1['seq_id'].pop(idx)
+                                        __ps1['comp_id'].pop(idx)
 
-                        if len(_s1['seq_id']) != len(__s1['seq_id']):
-                            __s1, __s2 = beautifyPolySeq(__s1, _s2)
-                            _s1 = __s1
-                            _s2 = __s2
+                        if len(_ps1['seq_id']) != len(__ps1['seq_id']):
+                            __ps1, __ps2 = beautifyPolySeq(__ps1, _ps2)
+                            _ps1 = __ps1
+                            _ps2 = __ps2
 
-                            self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
-                            self.__pA.addTestSequence(_s2['comp_id'], chain_id)
+                            self.__pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id)
+                            self.__pA.addTestSequence(_ps2['comp_id'], chain_id)
                             self.__pA.doAlign()
 
                             myAlign = self.__pA.getAlignment(chain_id)
@@ -46481,7 +46490,7 @@ class NmrDpUtility:
 
                             if _conflict == 0:
                                 result['conflict'] = 0
-                                s1 = __s1
+                                ps1 = __ps1
 
                     if result['unmapped'] > 0 or result['conflict'] > 0:
 
@@ -46490,16 +46499,16 @@ class NmrDpUtility:
 
                         j = 0
                         for i in range(length):
-                            if j < len(s1['seq_id']) and (str(myAlign[i][0]) != '.' or s1['comp_id'][j] == '.'):  # DAOTHER-7421
-                                seq_id1.append(s1['seq_id'][j])
+                            if j < len(ps1['seq_id']) and (str(myAlign[i][0]) != '.' or ps1['comp_id'][j] == '.'):  # DAOTHER-7421
+                                seq_id1.append(ps1['seq_id'][j])
                                 j += 1
                             else:
                                 seq_id1.append(None)
 
                         j = 0
                         for i in range(length):
-                            if j < len(s2['seq_id']) and (str(myAlign[i][1]) != '.' or s2['comp_id'][j] == '.'):  # DAOTHER-7421
-                                seq_id2.append(s2['seq_id'][j])
+                            if j < len(ps2['seq_id']) and (str(myAlign[i][1]) != '.' or ps2['comp_id'][j] == '.'):  # DAOTHER-7421
+                                seq_id2.append(ps2['seq_id'][j])
                                 j += 1
                             else:
                                 seq_id2.append(None)
@@ -46607,7 +46616,7 @@ class NmrDpUtility:
 
                                 try:
                                     label_seq_id = _seq_id2
-                                    auth_seq_id = s2['auth_seq_id'][s2['seq_id'].index(_seq_id2)]
+                                    auth_seq_id = ps2['auth_seq_id'][ps2['seq_id'].index(_seq_id2)]
                                 except (KeyError, IndexError, ValueError):
                                     label_seq_id = _seq_id2
                                     auth_seq_id = label_seq_id
@@ -46615,7 +46624,7 @@ class NmrDpUtility:
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insertion error'
                                     # DAOTHER-9644: skip insertion error due to truncated loop
-                                    cif_ps = next(cif_ps for cif_ps in cif_polymer_sequence if cif_ps['chain_id'] == chain_id2)
+                                    cif_ps = next(cif_ps for cif_ps in cif_poly_seq if cif_ps['chain_id'] == chain_id2)
                                     if label_seq_id is None:
                                         if self.__caC is not None and 'missing_polymer_linkage' in self.__caC\
                                            and any(mis for mis in self.__caC['missing_polymer_linkage']
@@ -46675,7 +46684,7 @@ class NmrDpUtility:
 
                 if len(chain_assign) > 0 and fileListId == 0:
 
-                    if len(cif_polymer_sequence) > 1:
+                    if len(cif_poly_seq) > 1:
 
                         if len(self.__suspended_errors_for_lazy_eval) + len(self.__suspended_warnings_for_lazy_eval) > 0:
 
@@ -46719,7 +46728,7 @@ class NmrDpUtility:
                                             if msg_idx < len(self.__suspended_warnings_for_lazy_eval):
                                                 del self.__suspended_warnings_for_lazy_eval[msg_idx]
 
-                        if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
+                        if any(s for s in cif_poly_seq if 'identical_chain_id' in s):
 
                             _chain_assign = chain_assign.copy()
 
@@ -46732,7 +46741,7 @@ class NmrDpUtility:
                                 _auth_chain_id = ca.get('test_auth_chain_id')
 
                                 try:
-                                    identity = next(s['identical_chain_id'] for s in cif_polymer_sequence
+                                    identity = next(s['identical_chain_id'] for s in cif_poly_seq
                                                     if s['chain_id'] == _chain_id and 'identical_chain_id' in s)
 
                                     for _chain_id in identity:
@@ -46760,14 +46769,14 @@ class NmrDpUtility:
                                     cif_chain_id = ca['test_chain_id']
 
                                     try:
-                                        identity = next(s['identical_chain_id'] for s in nmr_polymer_sequence
+                                        identity = next(s['identical_chain_id'] for s in nmr_poly_seq
                                                         if s['chain_id'] == nmr_chain_id and 'identical_chain_id' in s)
                                         nmr_ident_chain_id.add(nmr_chain_id)
                                     except StopIteration:
                                         pass
 
                                     try:
-                                        identity = next(s['identical_chain_id'] for s in cif_polymer_sequence
+                                        identity = next(s['identical_chain_id'] for s in cif_poly_seq
                                                         if s['chain_id'] == cif_chain_id and 'identical_chain_id' in s)
                                         cif_ident_chain_id.add(cif_chain_id)
                                     except StopIteration:
@@ -46822,22 +46831,22 @@ class NmrDpUtility:
 
                 mat, indices = [], []
 
-                for s1 in cif_polymer_sequence:
-                    chain_id = s1['chain_id']
+                for ps1 in cif_poly_seq:
+                    chain_id = ps1['chain_id']
 
                     cost = [0 for i in range(nmr_chains)]
 
-                    for s2 in nmr_polymer_sequence:
-                        chain_id2 = s2['chain_id']
+                    for ps2 in nmr_poly_seq:
+                        chain_id2 = ps2['chain_id']
 
                         result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                        if seq_align['ref_chain_id'] == chain_id
                                        and seq_align['test_chain_id'] == chain_id2), None)
 
                         if result is not None:
-                            cost[nmr_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
-                            if not self.__native_combined and result['length'] >= len(s1['seq_id']) - result['unmapped']:
-                                indices.append((cif_polymer_sequence.index(s1), nmr_polymer_sequence.index(s2)))
+                            cost[nmr_poly_seq.index(ps2)] = result['unmapped'] + result['conflict'] - result['length']
+                            if not self.__native_combined and result['length'] >= len(ps1['seq_id']) - result['unmapped']:
+                                indices.append((cif_poly_seq.index(ps1), nmr_poly_seq.index(ps2)))
 
                     mat.append(cost)
 
@@ -46867,10 +46876,10 @@ class NmrDpUtility:
                         if has_row and has_col:
                             continue
 
-                        _cif_chain_ids = [cif_polymer_sequence[_row]['chain_id'] for _row, _col in indices if col == _col]
+                        _cif_chain_ids = [cif_poly_seq[_row]['chain_id'] for _row, _col in indices if col == _col]
 
                         if len(_cif_chain_ids) > 1:
-                            chain_id2 = nmr_polymer_sequence[col]['chain_id']
+                            chain_id2 = nmr_poly_seq[col]['chain_id']
                             concatenated_nmr_chain[chain_id2] = _cif_chain_ids
 
                             warn = f"The chain ID {chain_id2!r} of the sequences in the NMR data "\
@@ -46883,8 +46892,8 @@ class NmrDpUtility:
                             if self.__verbose:
                                 self.__lfh.write(f"+{self.__class_name__}.__assignCoordPolymerSequence() ++ Warning  - {warn}\n")
 
-                    chain_id = cif_polymer_sequence[row]['chain_id']
-                    chain_id2 = nmr_polymer_sequence[col]['chain_id']
+                    chain_id = cif_poly_seq[row]['chain_id']
+                    chain_id2 = nmr_poly_seq[col]['chain_id']
 
                     result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                   if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
@@ -46910,15 +46919,15 @@ class NmrDpUtility:
                                     low_evid_chain_mapping = True
 
                     auth_chain_id = chain_id
-                    if 'auth_chain_id' in cif_polymer_sequence[row]:
-                        auth_chain_id = cif_polymer_sequence[row]['auth_chain_id']
+                    if 'auth_chain_id' in cif_poly_seq[row]:
+                        auth_chain_id = cif_poly_seq[row]['auth_chain_id']
                         ca['ref_auth_chain_id'] = auth_chain_id
 
-                    s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id)
-                    s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id2)
+                    ps1 = next(ps for ps in cif_poly_seq if ps['chain_id'] == chain_id)
+                    ps2 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == chain_id2)
 
-                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
-                    self.__pA.addTestSequence(s2['comp_id'], chain_id)
+                    self.__pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
+                    self.__pA.addTestSequence(ps2['comp_id'], chain_id)
                     self.__pA.doAlign()
 
                     myAlign = self.__pA.getAlignment(chain_id)
@@ -46927,8 +46936,8 @@ class NmrDpUtility:
 
                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if conflict > 0 and any(len(c) > 3 for c in s1['comp_id']) and 'alt_comp_id' in s1:
-                        self.__pA.setReferenceSequence(s1['alt_comp_id'], 'REF' + chain_id)
+                    if conflict > 0 and any(len(c) > 3 for c in ps1['comp_id']) and 'alt_comp_id' in ps1:
+                        self.__pA.setReferenceSequence(ps1['alt_comp_id'], 'REF' + chain_id)
                         self.__pA.doAlign()
 
                         myAlign = self.__pA.getAlignment(chain_id)
@@ -46938,7 +46947,7 @@ class NmrDpUtility:
                         _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
                         if conflict > 0:
-                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                            self.__pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
                             self.__pA.doAlign()
 
                             myAlign = self.__pA.getAlignment(chain_id)
@@ -46947,25 +46956,25 @@ class NmrDpUtility:
 
                             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    _s1 = s1 if offset_1 == 0 else fillBlankCompIdWithOffset(s1, offset_1)
-                    _s2 = s2 if offset_2 == 0 else fillBlankCompIdWithOffset(s2, offset_2)
+                    _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1)
+                    _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
 
                     if conflict == 0:
-                        has_inner_gap_1 = hasLargeInnerSeqGap(_s1)
-                        has_inner_gap_2 = hasLargeInnerSeqGap(_s2)
+                        has_inner_gap_1 = hasLargeInnerSeqGap(_ps1)
+                        has_inner_gap_2 = hasLargeInnerSeqGap(_ps2)
 
                         if has_inner_gap_2 and not has_inner_gap_1:
-                            _s2 = fillInnerBlankCompId(_s2)
+                            _ps2 = fillInnerBlankCompId(_ps2)
                         elif has_inner_gap_1 and not has_inner_gap_2:
-                            _s1 = fillInnerBlankCompId(_s1)
+                            _ps1 = fillInnerBlankCompId(_ps1)
 
-                    if conflict > 0 and (hasLargeSeqGap(_s1, _s2) or (not hasLargeInnerSeqGap(s1) and hasLargeInnerSeqGap(s2))):  # DAOTHER-7465
-                        __s1, __s2 = beautifyPolySeq(_s1, _s2)
-                        _s1 = __s1
-                        _s2 = __s2
+                    if conflict > 0 and (hasLargeSeqGap(_ps1, _ps2) or (not hasLargeInnerSeqGap(ps1) and hasLargeInnerSeqGap(ps2))):  # DAOTHER-7465
+                        __ps1, __ps2 = beautifyPolySeq(_ps1, _ps2)
+                        _ps1 = __ps1
+                        _ps2 = __ps2
 
-                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
-                        self.__pA.addTestSequence(_s2['comp_id'], chain_id)
+                        self.__pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id)
+                        self.__pA.addTestSequence(_ps2['comp_id'], chain_id)
                         self.__pA.doAlign()
 
                         myAlign = self.__pA.getAlignment(chain_id)
@@ -46974,31 +46983,31 @@ class NmrDpUtility:
 
                         _matched, unmapped, _conflict, _, _ = getScoreOfSeqAlign(myAlign)
 
-                        if _conflict == 0 and len(__s2['comp_id']) - len(s2['comp_id']) == conflict:
+                        if _conflict == 0 and len(__ps2['comp_id']) - len(ps2['comp_id']) == conflict:
                             result['conflict'] = 0
-                            s2 = __s2
+                            ps2 = __ps2
 
-                    if conflict > 0 and 'gap_in_auth_seq' in _s1 and _s1['gap_in_auth_seq'] and 'auth_seq_id' in _s1:
-                        __s2 = copy.deepcopy(_s2)
-                        for p in range(len(_s1['auth_seq_id']) - 1):
-                            s_p = _s1['auth_seq_id'][p]
-                            s_q = _s1['auth_seq_id'][p + 1]
+                    if conflict > 0 and 'gap_in_auth_seq' in _ps1 and _ps1['gap_in_auth_seq'] and 'auth_seq_id' in _ps1:
+                        __ps2 = copy.deepcopy(_ps2)
+                        for p in range(len(_ps1['auth_seq_id']) - 1):
+                            s_p = _ps1['auth_seq_id'][p]
+                            s_q = _ps1['auth_seq_id'][p + 1]
                             if None in (s_p, s_q) or s_p + 1 == s_q:
                                 continue
                             for s_o in range(s_p + 1, s_q):
-                                if s_o in __s2['seq_id']:
-                                    idx = __s2['seq_id'].index(s_o)
-                                    if __s2['comp_id'][idx] in emptyValue:
-                                        __s2['seq_id'].pop(idx)
-                                        __s2['comp_id'].pop(idx)
+                                if s_o in __ps2['seq_id']:
+                                    idx = __ps2['seq_id'].index(s_o)
+                                    if __ps2['comp_id'][idx] in emptyValue:
+                                        __ps2['seq_id'].pop(idx)
+                                        __ps2['comp_id'].pop(idx)
 
-                        if len(_s2['seq_id']) != len(__s2['seq_id']):
-                            __s1, __s2 = beautifyPolySeq(_s1, __s2)
-                            _s1 = __s1
-                            _s2 = __s2
+                        if len(_ps2['seq_id']) != len(__ps2['seq_id']):
+                            __ps1, __ps2 = beautifyPolySeq(_ps1, __ps2)
+                            _ps1 = __ps1
+                            _ps2 = __ps2
 
-                            self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
-                            self.__pA.addTestSequence(_s2['comp_id'], chain_id)
+                            self.__pA.setReferenceSequence(_ps1['comp_id'], 'REF' + chain_id)
+                            self.__pA.addTestSequence(_ps2['comp_id'], chain_id)
                             self.__pA.doAlign()
 
                             myAlign = self.__pA.getAlignment(chain_id)
@@ -47009,12 +47018,12 @@ class NmrDpUtility:
 
                             if _conflict == 0:
                                 result['conflict'] = 0
-                                s2 = __s2
+                                ps2 = __ps2
 
-                    ref_code = getOneLetterCodeCanSequence(s1['comp_id'])
-                    test_code = getOneLetterCodeCanSequence(s2['comp_id'])
+                    ref_code = getOneLetterCodeCanSequence(ps1['comp_id'])
+                    test_code = getOneLetterCodeCanSequence(ps2['comp_id'])
 
-                    for r_code, t_code, seq_id, seq_id2 in zip(ref_code, test_code, s1['seq_id'], s2['seq_id']):
+                    for r_code, t_code, seq_id, seq_id2 in zip(ref_code, test_code, ps1['seq_id'], ps2['seq_id']):
                         if r_code == 'X' and t_code == 'X':
                             nmr_input_source.updateNonStandardResidueByExptlData(chain_id2, seq_id2, 'coordinate')
                             cif_input_source.updateNonStandardResidueByExptlData(chain_id, seq_id, 'coordinate')
@@ -47026,16 +47035,16 @@ class NmrDpUtility:
 
                         j = 0
                         for i in range(length):
-                            if j < len(s1['seq_id']) and (str(myAlign[i][0]) != '.' or s1['comp_id'][j] == '.'):
-                                seq_id1.append(s1['seq_id'][j])
+                            if j < len(ps1['seq_id']) and (str(myAlign[i][0]) != '.' or ps1['comp_id'][j] == '.'):
+                                seq_id1.append(ps1['seq_id'][j])
                                 j += 1
                             else:
                                 seq_id1.append(None)
 
                         j = 0
                         for i in range(length):
-                            if j < len(s2['seq_id']) and (str(myAlign[i][1]) != '.' or s2['comp_id'][j] == '.'):
-                                seq_id2.append(s2['seq_id'][j])
+                            if j < len(ps2['seq_id']) and (str(myAlign[i][1]) != '.' or ps2['comp_id'][j] == '.'):
+                                seq_id2.append(ps2['seq_id'][j])
                                 j += 1
                             else:
                                 seq_id2.append(None)
@@ -47103,7 +47112,7 @@ class NmrDpUtility:
 
                                 try:
                                     label_seq_id = seq_id1[i]
-                                    auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(label_seq_id)]
+                                    auth_seq_id = ps1['auth_seq_id'][ps1['seq_id'].index(label_seq_id)]
                                 except (KeyError, IndexError, ValueError):
                                     label_seq_id = seq_id1[i]
                                     auth_seq_id = label_seq_id
@@ -47134,7 +47143,7 @@ class NmrDpUtility:
 
                                 try:
                                     label_seq_id = _seq_id1
-                                    auth_seq_id = s1['auth_seq_id'][s1['seq_id'].index(label_seq_id)]
+                                    auth_seq_id = ps1['auth_seq_id'][ps1['seq_id'].index(label_seq_id)]
                                 except (KeyError, IndexError, ValueError):
                                     label_seq_id = _seq_id1
                                     auth_seq_id = label_seq_id
@@ -47143,7 +47152,7 @@ class NmrDpUtility:
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insertion error'
                                     # DAOTHER-9644: skip insertion error due to truncated loop
-                                    cif_ps = next(cif_ps for cif_ps in cif_polymer_sequence if cif_ps['chain_id'] == chain_id)
+                                    cif_ps = next(cif_ps for cif_ps in cif_poly_seq if cif_ps['chain_id'] == chain_id)
                                     if label_seq_id is None:
                                         if self.__caC is not None and 'missing_polymer_linkage' in self.__caC\
                                            and any(mis for mis in self.__caC['missing_polymer_linkage']
@@ -47202,7 +47211,7 @@ class NmrDpUtility:
 
                 if len(chain_assign) > 0 and fileListId == 0:
 
-                    if len(cif_polymer_sequence) > 1:
+                    if len(cif_poly_seq) > 1:
 
                         if len(self.__suspended_errors_for_lazy_eval) + len(self.__suspended_warnings_for_lazy_eval) > 0:
 
@@ -47246,7 +47255,7 @@ class NmrDpUtility:
                                             if msg_idx < len(self.__suspended_warnings_for_lazy_eval):
                                                 del self.__suspended_warnings_for_lazy_eval[msg_idx]
 
-                        if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
+                        if any(s for s in cif_poly_seq if 'identical_chain_id' in s):
 
                             _chain_assign = chain_assign.copy()
 
@@ -47259,7 +47268,7 @@ class NmrDpUtility:
                                 auth_chain_id = ca.get('ref_auth_chain_id')
 
                                 try:
-                                    identity = next(s['identical_chain_id'] for s in cif_polymer_sequence
+                                    identity = next(s['identical_chain_id'] for s in cif_poly_seq
                                                     if s['chain_id'] == chain_id and 'identical_chain_id' in s)
 
                                     for chain_id in identity:
@@ -47287,14 +47296,14 @@ class NmrDpUtility:
                                     cif_chain_id = ca['ref_chain_id']
 
                                     try:
-                                        identity = next(s['identical_chain_id'] for s in nmr_polymer_sequence
+                                        identity = next(s['identical_chain_id'] for s in nmr_poly_seq
                                                         if s['chain_id'] == nmr_chain_id and 'identical_chain_id' in s)
                                         nmr_ident_chain_id.add(nmr_chain_id)
                                     except StopIteration:
                                         pass
 
                                     try:
-                                        identity = next(s['identical_chain_id'] for s in cif_polymer_sequence
+                                        identity = next(s['identical_chain_id'] for s in cif_poly_seq
                                                         if s['chain_id'] == cif_chain_id and 'identical_chain_id' in s)
                                         cif_ident_chain_id.add(cif_chain_id)
                                     except StopIteration:
@@ -47368,7 +47377,7 @@ class NmrDpUtility:
 
         return self.report.getTotalErrors() == __errors
 
-    def __updateCompIdInCsLoop(self, file_list_id: int, cif_ps: List[dict], nmr_ps: List[dict]) -> bool:
+    def __updateCompIdInCsLoop(self, file_list_id: int, cif_ps: dict, nmr_ps: dict) -> bool:
         """ Update residue name in CS loop to follow CCD replacement.
         """
 
@@ -47392,20 +47401,20 @@ class NmrDpUtility:
             return False
 
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
-        has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+        has_poly_seq_in_lp = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
-        if (not has_poly_seq) or (not has_poly_seq_in_loop):
+        if (not has_poly_seq) or (not has_poly_seq_in_lp):
             return False
 
-        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+        poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
 
-        if content_subtype not in polymer_sequence_in_loop:
+        if content_subtype not in poly_seq_in_lp:
             return False
 
         sf_category = self.sf_categories[file_type][content_subtype]
         lp_category = self.lp_categories[file_type][content_subtype]
 
-        ps_in_loop = polymer_sequence_in_loop[content_subtype]
+        _poly_seq_in_lp = poly_seq_in_lp[content_subtype]
 
         modified = False
 
@@ -47415,12 +47424,12 @@ class NmrDpUtility:
             sf = self.__star_data[file_list_id]
 
             try:
-                ps = next(ps['polymer_sequence'] for ps in ps_in_loop if ps['list_id'] == list_id)
-                next(s for s in ps if s['chain_id'] == nmr_ps['chain_id'])
+                poly_seq = next(poly_seq['polymer_sequence'] for poly_seq in _poly_seq_in_lp if poly_seq['list_id'] == list_id)
+                next(ps for ps in poly_seq if ps['chain_id'] == nmr_ps['chain_id'])
             except StopIteration:
                 return False
 
-            allow_chain_id_mismatch = len(ps) == 1
+            allow_chain_id_mismatch = len(poly_seq) == 1
 
             modified |= self.__updateCompIdInCsLoop__(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
@@ -47428,12 +47437,12 @@ class NmrDpUtility:
             sf = self.__star_data[file_list_id]
 
             try:
-                ps = next(ps['polymer_sequence'] for ps in ps_in_loop if ps['list_id'] == list_id)
-                next(s for s in ps if s['chain_id'] == nmr_ps['chain_id'])
+                poly_seq = next(poly_seq['polymer_sequence'] for poly_seq in _poly_seq_in_lp if poly_seq['list_id'] == list_id)
+                next(ps for ps in poly_seq if ps['chain_id'] == nmr_ps['chain_id'])
             except StopIteration:
                 return False
 
-            allow_chain_id_mismatch = len(ps) == 1
+            allow_chain_id_mismatch = len(poly_seq) == 1
 
             modified |= self.__updateCompIdInCsLoop__(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
@@ -47445,12 +47454,12 @@ class NmrDpUtility:
                     continue
 
                 try:
-                    ps = next(ps['polymer_sequence'] for ps in ps_in_loop if ps['list_id'] == list_id)
-                    next(s for s in ps if s['chain_id'] == nmr_ps['chain_id'])
+                    poly_seq = next(poly_seq['polymer_sequence'] for poly_seq in _poly_seq_in_lp if poly_seq['list_id'] == list_id)
+                    next(ps for ps in poly_seq if ps['chain_id'] == nmr_ps['chain_id'])
                 except StopIteration:
                     continue
 
-                allow_chain_id_mismatch = len(ps) == 1
+                allow_chain_id_mismatch = len(poly_seq) == 1
 
                 modified |= self.__updateCompIdInCsLoop__(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
@@ -47458,7 +47467,7 @@ class NmrDpUtility:
 
     def __updateCompIdInCsLoop__(self, file_list_id: int,
                                  sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                 lp_category: str, cif_ps: List[dict], nmr_ps: List[dict], allow_chain_id_mismatch: bool) -> bool:
+                                 lp_category: str, cif_ps: dict, nmr_ps: dict, allow_chain_id_mismatch: bool) -> bool:
         """ Update residue name in CS loop to follow CCD replacement.
         """
 
@@ -47501,7 +47510,7 @@ class NmrDpUtility:
 
         return modified
 
-    def __resolveUnmappedAuthSequenceInCsLoop(self, file_list_id: int, cif_ps: List[dict], nmr_ps: List[dict]) -> bool:
+    def __resolveUnmappedAuthSequenceInCsLoop(self, file_list_id: int, cif_ps: dict, nmr_ps: dict) -> bool:
         """ Resolve unmapped author sequence in CS loop based on sequence alignment.
         """
 
@@ -47522,20 +47531,20 @@ class NmrDpUtility:
             return False
 
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
-        has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
+        has_poly_seq_in_lp = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
-        if (not has_poly_seq) or (not has_poly_seq_in_loop):
+        if (not has_poly_seq) or (not has_poly_seq_in_lp):
             return False
 
-        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+        poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
 
-        if content_subtype not in polymer_sequence_in_loop:
+        if content_subtype not in poly_seq_in_lp:
             return False
 
         sf_category = self.sf_categories[file_type][content_subtype]
         lp_category = self.lp_categories[file_type][content_subtype]
 
-        ps_in_loop = polymer_sequence_in_loop[content_subtype]
+        _poly_seq_in_lp = poly_seq_in_lp[content_subtype]
 
         modified = False
 
@@ -47545,12 +47554,12 @@ class NmrDpUtility:
             sf = self.__star_data[file_list_id]
 
             try:
-                ps = next(ps['polymer_sequence'] for ps in ps_in_loop if ps['list_id'] == list_id)
-                next(s for s in ps if s['chain_id'] == nmr_ps['chain_id'])
+                poly_seq = next(poly_seq['polymer_sequence'] for poly_seq in _poly_seq_in_lp if poly_seq['list_id'] == list_id)
+                next(ps for ps in poly_seq if ps['chain_id'] == nmr_ps['chain_id'])
             except StopIteration:
                 return False
 
-            allow_chain_id_mismatch = len(ps) == 1
+            allow_chain_id_mismatch = len(poly_seq) == 1
 
             modified |= self.__resolveUnmappedAuthSequenceInCsLoop__(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
@@ -47558,12 +47567,12 @@ class NmrDpUtility:
             sf = self.__star_data[file_list_id]
 
             try:
-                ps = next(ps['polymer_sequence'] for ps in ps_in_loop if ps['list_id'] == list_id)
-                next(s for s in ps if s['chain_id'] == nmr_ps['chain_id'])
+                poly_seq = next(poly_seq['polymer_sequence'] for poly_seq in _poly_seq_in_lp if poly_seq['list_id'] == list_id)
+                next(ps for ps in poly_seq if ps['chain_id'] == nmr_ps['chain_id'])
             except StopIteration:
                 return False
 
-            allow_chain_id_mismatch = len(ps) == 1
+            allow_chain_id_mismatch = len(poly_seq) == 1
 
             modified |= self.__resolveUnmappedAuthSequenceInCsLoop__(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
@@ -47575,12 +47584,12 @@ class NmrDpUtility:
                     continue
 
                 try:
-                    ps = next(ps['polymer_sequence'] for ps in ps_in_loop if ps['list_id'] == list_id)
-                    next(s for s in ps if s['chain_id'] == nmr_ps['chain_id'])
+                    poly_seq = next(poly_seq['polymer_sequence'] for poly_seq in _poly_seq_in_lp if poly_seq['list_id'] == list_id)
+                    next(ps for ps in poly_seq if ps['chain_id'] == nmr_ps['chain_id'])
                 except StopIteration:
                     continue
 
-                allow_chain_id_mismatch = len(ps) == 1
+                allow_chain_id_mismatch = len(poly_seq) == 1
 
                 modified |= self.__resolveUnmappedAuthSequenceInCsLoop__(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
@@ -47588,7 +47597,7 @@ class NmrDpUtility:
 
     def __resolveUnmappedAuthSequenceInCsLoop__(self, file_list_id: int,
                                                 sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                                lp_category: str, cif_ps: List[dict], nmr_ps: List[dict], allow_chain_id_mismatch: bool) -> bool:
+                                                lp_category: str, cif_ps: dict, nmr_ps: dict, allow_chain_id_mismatch: bool) -> bool:
         """ Resolve unmapped author sequence in CS loop based on sequence alignment.
         """
 
@@ -47687,7 +47696,7 @@ class NmrDpUtility:
         cif_input_source = self.report.input_sources[src_id]
         cif_input_source_dic = cif_input_source.get()
 
-        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+        cif_poly_seq = cif_input_source_dic['polymer_sequence']
 
         __errors = self.report.getTotalErrors()
 
@@ -47770,7 +47779,7 @@ class NmrDpUtility:
                     sf_framecode = ''
 
                     modified |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf,
-                                                                    list_id, sf_framecode, lp_category, cif_polymer_sequence,
+                                                                    list_id, sf_framecode, lp_category, cif_poly_seq,
                                                                     seq_align_dic, nmr2ca, ref_chain_id)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
@@ -47778,7 +47787,7 @@ class NmrDpUtility:
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                     modified |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf,
-                                                                    list_id, sf_framecode, lp_category, cif_polymer_sequence,
+                                                                    list_id, sf_framecode, lp_category, cif_poly_seq,
                                                                     seq_align_dic, nmr2ca, ref_chain_id)
 
                 else:
@@ -47790,7 +47799,7 @@ class NmrDpUtility:
                             continue
 
                         modified |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype,
-                                                                        sf, list_id, sf_framecode, lp_category, cif_polymer_sequence,
+                                                                        sf, list_id, sf_framecode, lp_category, cif_poly_seq,
                                                                         seq_align_dic, nmr2ca, ref_chain_id)
 
             if modified:
@@ -47800,7 +47809,7 @@ class NmrDpUtility:
 
     def __testCoordAtomIdConsistency__(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
                                        sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                       list_id: int, sf_framecode: str, lp_category: str, cif_polymer_sequence: List[dict],
+                                       list_id: int, sf_framecode: str, lp_category: str, cif_poly_seq: List[dict],
                                        seq_align_dic: dict, nmr2ca: dict, ref_chain_id: str) -> bool:
         """ Perform consistency test on atom names of coordinate file.
         """
@@ -48048,7 +48057,7 @@ class NmrDpUtility:
                 if cif_seq_id is None and ca['sequence_coverage'] >= LOW_SEQ_COVERAGE:
                     continue
 
-                cif_ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == cif_chain_id)
+                cif_ps = next(ps for ps in cif_poly_seq if ps['chain_id'] == cif_chain_id)
 
                 if ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-8751, issue #2
 
@@ -48190,7 +48199,7 @@ class NmrDpUtility:
                             if cif_seq_id is None:
                                 continue
 
-                            cif_ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == cif_chain_id)
+                            cif_ps = next(ps for ps in cif_poly_seq if ps['chain_id'] == cif_chain_id)
 
                             cif_comp_id = next((_comp_id for _seq_id, _comp_id
                                                 in zip(cif_ps['seq_id'], cif_ps['comp_id'])
@@ -49439,7 +49448,7 @@ class NmrDpUtility:
         if has_entry_id:
             loop.add_tag(lp_category + '.Entry_ID')
 
-        cif_polymer_sequence = self.__caC['polymer_sequence']
+        cif_poly_seq = self.__caC['polymer_sequence']
         entity_assembly = self.__caC['entity_assembly']
         auth_to_star_seq = self.__caC['auth_to_star_seq']
         auth_to_orig_seq = self.__caC['auth_to_orig_seq']
@@ -49530,7 +49539,7 @@ class NmrDpUtility:
                 row[comp_id_col] = auth_comp_id
 
                 if entity_type == 'polymer':
-                    ps = next(ps for ps in cif_polymer_sequence if ps['auth_chain_id'] == auth_asym_id)
+                    ps = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == auth_asym_id)
                     nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id, label_scheme=False)
                     if nmr_ps is None and 'identical_auth_chain_id' in ps:
                         nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0], label_scheme=False)
@@ -49792,7 +49801,7 @@ class NmrDpUtility:
                 row[comp_id_col], row[auth_asym_id_col], row[auth_seq_id_col], row[auth_comp_id_col] = auth_comp_id, auth_asym_id, auth_seq_id, auth_comp_id
 
                 if entity_type == 'polymer':
-                    ps = next(ps for ps in cif_polymer_sequence if ps['auth_chain_id'] == auth_asym_id)
+                    ps = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == auth_asym_id)
                     nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id, label_scheme=False)
                     if nmr_ps is None and 'identical_auth_chain_id' in ps:
                         nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0], label_scheme=False)
@@ -50624,7 +50633,7 @@ class NmrDpUtility:
                 one_letter_code = item['one_letter_code']
                 if self.__nmr_ext_poly_seq is not None and len(self.__nmr_ext_poly_seq) > 0\
                    and any(d for d in self.__nmr_ext_poly_seq if d['auth_chain_id'] in auth_asym_ids):
-                    ps = next(ps for ps in cif_polymer_sequence if ps['auth_chain_id'] in auth_asym_ids)
+                    ps = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] in auth_asym_ids)
                     auth_seq_ids = list(filter(None, ps['auth_seq_id']))
                     min_auth_seq_id = min(auth_seq_ids)
                     max_auth_seq_id = max(auth_seq_ids)
@@ -50667,7 +50676,7 @@ class NmrDpUtility:
             label_asym_ids = set(item[_label_asym_id].split(','))
             for chain_id in label_asym_ids:
                 if entity_type == 'polymer':
-                    ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id)
+                    ps = next(ps for ps in cif_poly_seq if ps['chain_id'] == chain_id)
                     cys_total += ps['comp_id'].count('CYS') + ps['comp_id'].count('DCY')
 
             if cys_total > 0:
@@ -50853,7 +50862,7 @@ class NmrDpUtility:
 
             for chain_id in label_asym_ids:
                 if entity_type == 'polymer':
-                    ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id)
+                    ps = next(ps for ps in cif_poly_seq if ps['chain_id'] == chain_id)
                     auth_seq_ids = list(filter(None, ps['auth_seq_id']))
                     seq_ids = list(filter(None, ps['seq_id']))
                     min_auth_seq_id = min(auth_seq_ids)
@@ -50958,7 +50967,7 @@ class NmrDpUtility:
                 label_asym_ids = list(set(item['label_asym_id'].split(',')))
                 for chain_id in sorted(sorted(label_asym_ids), key=len):
                     if entity_type == 'polymer':
-                        ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id)
+                        ps = next(ps for ps in cif_poly_seq if ps['chain_id'] == chain_id)
                         auth_seq_ids = list(filter(None, ps['auth_seq_id']))
                         seq_ids = list(filter(None, ps['seq_id']))
                         min_auth_seq_id = min(auth_seq_ids)
@@ -51264,11 +51273,11 @@ class NmrDpUtility:
                     if sa['conflict'] > 0 or sa['unmapped'] == 0:
                         continue
 
-                    s1 = next(s for s in nmr_poly_seq if s['chain_id'] == test_chain_id)
-                    s2 = next(s for s in cif_poly_seq if s['auth_chain_id'] == ref_chain_id)
+                    ps1 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == test_chain_id)
+                    ps2 = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == ref_chain_id)
 
-                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + test_chain_id)
-                    self.__pA.addTestSequence(s2['comp_id'], test_chain_id)
+                    self.__pA.setReferenceSequence(ps1['comp_id'], 'REF' + test_chain_id)
+                    self.__pA.addTestSequence(ps2['comp_id'], test_chain_id)
                     self.__pA.doAlign()
 
                     myAlign = self.__pA.getAlignment(test_chain_id)
@@ -51282,14 +51291,14 @@ class NmrDpUtility:
                         nmr_seq_ids, cif_auth_seq_ids = [], []
 
                         for i in range(length):
-                            if str(myAlign[i][0]) != '.' and i < len(s1['seq_id']):
-                                nmr_seq_ids.append(s1['seq_id'][i])
+                            if str(myAlign[i][0]) != '.' and i < len(ps1['seq_id']):
+                                nmr_seq_ids.append(ps1['seq_id'][i])
                             else:
                                 nmr_seq_ids.append(None)
 
                         for i in range(length):
-                            if str(myAlign[i][1]) != '.' and i < len(s2['seq_id']):
-                                cif_auth_seq_ids.append(s2['auth_seq_id'][i])
+                            if str(myAlign[i][1]) != '.' and i < len(ps2['seq_id']):
+                                cif_auth_seq_ids.append(ps2['auth_seq_id'][i])
                             else:
                                 cif_auth_seq_ids.append(None)
 
@@ -51319,7 +51328,7 @@ class NmrDpUtility:
 
                                     if offset is not None and cif_auth_seq_ids[i + offset] is not None:
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
-                                        self.__nmr_ext_poly_seq.append({'auth_chain_id': s2['auth_chain_id'],
+                                        self.__nmr_ext_poly_seq.append({'auth_chain_id': ps2['auth_chain_id'],
                                                                         'auth_seq_id': cif_auth_seq_id,
                                                                         'auth_comp_id': nmr_comp_id})
 
@@ -52460,10 +52469,10 @@ class NmrDpUtility:
 
         seqAlignMap = {}
 
-        polymer_sequence = input_source_dic['polymer_sequence']
+        poly_seq = input_source_dic['polymer_sequence']
 
-        for s in polymer_sequence:
-            chain_id = s['chain_id']
+        for ps in poly_seq:
+            chain_id = ps['chain_id']
             seqAlignMap[chain_id] = self.report.getSequenceAlignmentWithNmrChainId(chain_id)
 
         if len(seqAlignMap) == 0:
@@ -52787,7 +52796,7 @@ class NmrDpUtility:
             return False
 
         file_name = cif_input_source_dic['file_name']
-        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+        cif_poly_seq = cif_input_source_dic['polymer_sequence']
 
         if len(self.__cpC['tautomer_per_model']) > 0:
 
@@ -52837,14 +52846,14 @@ class NmrDpUtility:
 
         model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__coord_atom_site_tags else 'ndb_model'
 
-        for ps in cif_polymer_sequence:
+        for ps in cif_poly_seq:
             chain_id = ps['chain_id']
 
             auth_chain_id = chain_id
             if 'auth_chain_id' in ps:
                 auth_chain_id = ps['auth_chain_id']
 
-            if len(cif_polymer_sequence) >= LEN_MAJOR_ASYM_ID:
+            if len(cif_poly_seq) >= LEN_MAJOR_ASYM_ID:
                 if auth_chain_id not in LARGE_ASYM_ID:
                     continue
 
@@ -53553,12 +53562,12 @@ class NmrDpUtility:
                 cif_chain_id_2 = bond['chain_id_2']
                 cif_seq_id_2 = bond['seq_id_2']
 
-                s1 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_1)
+                ps1 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_1)
 
-                if s1 is None:
+                if ps1 is None:
                     continue
 
-                nmr_chain_id_1 = s1['chain_id']
+                nmr_chain_id_1 = ps1['chain_id']
 
                 result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)
@@ -53574,18 +53583,18 @@ class NmrDpUtility:
                     continue
 
                 nmr_comp_id_1 = next((comp_id for seq_id, comp_id
-                                      in zip(s1['seq_id'], s1['comp_id'])
+                                      in zip(ps1['seq_id'], ps1['comp_id'])
                                       if seq_id == nmr_seq_id_1), None)
 
                 if nmr_comp_id_1 is None:
                     continue
 
-                s2 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_2)
+                ps2 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_2)
 
-                if s2 is None:
+                if ps2 is None:
                     continue
 
-                nmr_chain_id_2 = s2['chain_id']
+                nmr_chain_id_2 = ps2['chain_id']
 
                 result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)
@@ -53601,7 +53610,7 @@ class NmrDpUtility:
                     continue
 
                 nmr_comp_id_2 = next((comp_id for seq_id, comp_id
-                                      in zip(s2['seq_id'], s2['comp_id'])
+                                      in zip(ps2['seq_id'], ps2['comp_id'])
                                       if seq_id == nmr_seq_id_2), None)
 
                 if nmr_comp_id_2 is None:
@@ -53948,12 +53957,12 @@ class NmrDpUtility:
                 cif_chain_id_2 = bond['chain_id_2']
                 cif_seq_id_2 = bond['seq_id_2']
 
-                s1 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_1)
+                ps1 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_1)
 
-                if s1 is None:
+                if ps1 is None:
                     continue
 
-                nmr_chain_id_1 = s1['chain_id']
+                nmr_chain_id_1 = ps1['chain_id']
 
                 result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)
@@ -53969,18 +53978,18 @@ class NmrDpUtility:
                     continue
 
                 nmr_comp_id_1 = next((comp_id for seq_id, comp_id
-                                      in zip(s1['seq_id'], s1['comp_id'])
+                                      in zip(ps1['seq_id'], ps1['comp_id'])
                                       if seq_id == nmr_seq_id_1), None)
 
                 if nmr_comp_id_1 is None:
                     continue
 
-                s2 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_2)
+                ps2 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_2)
 
-                if s2 is None:
+                if ps2 is None:
                     continue
 
-                nmr_chain_id_2 = s2['chain_id']
+                nmr_chain_id_2 = ps2['chain_id']
 
                 result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)
@@ -53996,7 +54005,7 @@ class NmrDpUtility:
                     continue
 
                 nmr_comp_id_2 = next((comp_id for seq_id, comp_id
-                                      in zip(s2['seq_id'], s2['comp_id'])
+                                      in zip(ps2['seq_id'], ps2['comp_id'])
                                       if seq_id == nmr_seq_id_2), None)
 
                 if nmr_comp_id_2 is None:
@@ -54336,12 +54345,12 @@ class NmrDpUtility:
 
                 _cif_chain_id = n['chain_id']
 
-                _s = self.report.getNmrPolymerSequenceWithModelChainId(_cif_chain_id)
+                _ps = self.report.getNmrPolymerSequenceWithModelChainId(_cif_chain_id)
 
-                if _s is None:
+                if _ps is None:
                     continue
 
-                _nmr_chain_id = _s['chain_id']
+                _nmr_chain_id = _ps['chain_id']
 
                 result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                if seq_align['ref_chain_id'] == _cif_chain_id and seq_align['test_chain_id'] == _nmr_chain_id), None)

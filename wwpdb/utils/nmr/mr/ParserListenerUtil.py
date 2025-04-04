@@ -4065,11 +4065,11 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                     if sa['conflict'] > 0 or sa['unmapped'] == 0:
                         continue
 
-                    s1 = next(s for s in nmrPolySeq if s['chain_id'] == test_chain_id)
-                    s2 = next(s for s in polySeq if s['auth_chain_id'] == ref_chain_id)
+                    ps1 = next(ps1 for ps1 in nmrPolySeq if ps1['chain_id'] == test_chain_id)
+                    ps2 = next(ps2 for ps2 in polySeq if ps2['auth_chain_id'] == ref_chain_id)
 
-                    pA.setReferenceSequence(s1['comp_id'], 'REF' + test_chain_id)
-                    pA.addTestSequence(s2['comp_id'], test_chain_id)
+                    pA.setReferenceSequence(ps1['comp_id'], 'REF' + test_chain_id)
+                    pA.addTestSequence(ps2['comp_id'], test_chain_id)
                     pA.doAlign()
 
                     myAlign = pA.getAlignment(test_chain_id)
@@ -4083,15 +4083,15 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         nmr_seq_ids, cif_auth_seq_ids, cif_label_seq_ids = [], [], []
 
                         for i in range(length):
-                            if str(myAlign[i][0]) != '.' and i < len(s1['seq_id']):
-                                nmr_seq_ids.append(s1['seq_id'][i])
+                            if str(myAlign[i][0]) != '.' and i < len(ps1['seq_id']):
+                                nmr_seq_ids.append(ps1['seq_id'][i])
                             else:
                                 nmr_seq_ids.append(None)
 
                         for i in range(length):
-                            if str(myAlign[i][1]) != '.' and i < len(s2['seq_id']):
-                                cif_auth_seq_ids.append(s2['auth_seq_id'][i])
-                                cif_label_seq_ids.append(s2['seq_id'][i])
+                            if str(myAlign[i][1]) != '.' and i < len(ps2['seq_id']):
+                                cif_auth_seq_ids.append(ps2['auth_seq_id'][i])
+                                cif_label_seq_ids.append(ps2['seq_id'][i])
                             else:
                                 cif_auth_seq_ids.append(None)
                                 cif_label_seq_ids.append(None)
@@ -4124,27 +4124,27 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         cif_label_seq_id = cif_label_seq_ids[i + offset] - offset - offset_2
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
 
-                                        s2_seq_id_list = list(filter(None, s2['seq_id']))
+                                        ps2_seq_id_list = list(filter(None, ps2['seq_id']))
 
-                                        if cif_label_seq_id < min(s2_seq_id_list):
+                                        if cif_label_seq_id < min(ps2_seq_id_list):
                                             pos = 0
-                                        elif cif_label_seq_id > max(s2_seq_id_list):
-                                            pos = len(s2['seq_id'])
+                                        elif cif_label_seq_id > max(ps2_seq_id_list):
+                                            pos = len(ps2['seq_id'])
                                         else:
-                                            for idx, _seq_id in enumerate(s2['seq_id']):
+                                            for idx, _seq_id in enumerate(ps2['seq_id']):
                                                 if _seq_id < cif_label_seq_id:
                                                     continue
                                                 pos = idx
                                                 break
 
-                                        s2['seq_id'].insert(pos, cif_label_seq_id)
-                                        s2['auth_seq_id'].insert(pos, cif_auth_seq_id)
-                                        s2['comp_id'].insert(pos, nmr_comp_id)
-                                        if s2['comp_id'] is not s2['auth_comp_id']:  # avoid doulble inserts to 'auth_comp_id'
-                                            s2['auth_comp_id'].insert(pos, nmr_comp_id)
+                                        ps2['seq_id'].insert(pos, cif_label_seq_id)
+                                        ps2['auth_seq_id'].insert(pos, cif_auth_seq_id)
+                                        ps2['comp_id'].insert(pos, nmr_comp_id)
+                                        if ps2['comp_id'] is not ps2['auth_comp_id']:  # avoid doulble inserts to 'auth_comp_id'
+                                            ps2['auth_comp_id'].insert(pos, nmr_comp_id)
 
-                                        nmrExtPolySeq.append({'auth_chain_id': s2['auth_chain_id'],
-                                                              'chain_id': s2['chain_id'],
+                                        nmrExtPolySeq.append({'auth_chain_id': ps2['auth_chain_id'],
+                                                              'chain_id': ps2['chain_id'],
                                                               'seq_id': cif_label_seq_id,
                                                               'auth_seq_id': cif_auth_seq_id,
                                                               'comp_id': nmr_comp_id,

@@ -1277,9 +1277,9 @@ class NmrDpReport:
             return None
 
         if label_scheme:
-            rmsd = [s[rmsd_label] for s in poly_seq if s['seq_id'] >= cif_beg_seq_id and s['seq_id'] <= cif_end_seq_id and s[rmsd_label] is not None]
+            rmsd = [ps[rmsd_label] for ps in poly_seq if ps['seq_id'] >= cif_beg_seq_id and ps['seq_id'] <= cif_end_seq_id and ps[rmsd_label] is not None]
         else:
-            rmsd = [s[rmsd_label] for s in poly_seq if s['auth_seq_id'] >= cif_beg_seq_id and s['auth_seq_id'] <= cif_end_seq_id and s[rmsd_label] is not None]
+            rmsd = [ps[rmsd_label] for ps in poly_seq if ps['auth_seq_id'] >= cif_beg_seq_id and ps['auth_seq_id'] <= cif_end_seq_id and ps[rmsd_label] is not None]
 
         if len(rmsd) == 0:
             return None

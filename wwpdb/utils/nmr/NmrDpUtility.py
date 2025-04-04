@@ -19152,15 +19152,15 @@ class NmrDpUtility:
 
                 seq = set()
 
-                for s in _dat:
+                for _row in _dat:
 
-                    if s[0] in emptyValue or s[1] in emptyValue or s[2] in emptyValue:
+                    if _row[0] in emptyValue or _row[1] in emptyValue or _row[2] in emptyValue:
                         return False
 
                     try:
-                        seq_id = int(s[0])
-                        comp_id = s[1]
-                        _entity_id = int(s[2])
+                        seq_id = int(_row[0])
+                        comp_id = _row[1]
+                        _entity_id = int(_row[2])
                     except ValueError:
                         return False
 
@@ -46738,7 +46738,7 @@ class NmrDpUtility:
                                             if msg_idx < len(self.__suspended_warnings_for_lazy_eval):
                                                 del self.__suspended_warnings_for_lazy_eval[msg_idx]
 
-                        if any(s for s in cif_poly_seq if 'identical_chain_id' in s):
+                        if any(ps for ps in cif_poly_seq if 'identical_chain_id' in ps):
 
                             _chain_assign = chain_assign.copy()
 
@@ -46751,8 +46751,8 @@ class NmrDpUtility:
                                 _auth_chain_id = ca.get('test_auth_chain_id')
 
                                 try:
-                                    identity = next(s['identical_chain_id'] for s in cif_poly_seq
-                                                    if s['chain_id'] == _chain_id and 'identical_chain_id' in s)
+                                    identity = next(ps['identical_chain_id'] for ps in cif_poly_seq
+                                                    if ps['chain_id'] == _chain_id and 'identical_chain_id' in ps)
 
                                     for _chain_id in identity:
 
@@ -46779,15 +46779,15 @@ class NmrDpUtility:
                                     cif_chain_id = ca['test_chain_id']
 
                                     try:
-                                        identity = next(s['identical_chain_id'] for s in nmr_poly_seq
-                                                        if s['chain_id'] == nmr_chain_id and 'identical_chain_id' in s)
+                                        identity = next(ps['identical_chain_id'] for ps in nmr_poly_seq
+                                                        if ps['chain_id'] == nmr_chain_id and 'identical_chain_id' in ps)
                                         nmr_ident_chain_id.add(nmr_chain_id)
                                     except StopIteration:
                                         pass
 
                                     try:
-                                        identity = next(s['identical_chain_id'] for s in cif_poly_seq
-                                                        if s['chain_id'] == cif_chain_id and 'identical_chain_id' in s)
+                                        identity = next(ps['identical_chain_id'] for ps in cif_poly_seq
+                                                        if ps['chain_id'] == cif_chain_id and 'identical_chain_id' in ps)
                                         cif_ident_chain_id.add(cif_chain_id)
                                     except StopIteration:
                                         pass
@@ -47265,7 +47265,7 @@ class NmrDpUtility:
                                             if msg_idx < len(self.__suspended_warnings_for_lazy_eval):
                                                 del self.__suspended_warnings_for_lazy_eval[msg_idx]
 
-                        if any(s for s in cif_poly_seq if 'identical_chain_id' in s):
+                        if any(ps for ps in cif_poly_seq if 'identical_chain_id' in ps):
 
                             _chain_assign = chain_assign.copy()
 
@@ -47278,8 +47278,8 @@ class NmrDpUtility:
                                 auth_chain_id = ca.get('ref_auth_chain_id')
 
                                 try:
-                                    identity = next(s['identical_chain_id'] for s in cif_poly_seq
-                                                    if s['chain_id'] == chain_id and 'identical_chain_id' in s)
+                                    identity = next(ps['identical_chain_id'] for ps in cif_poly_seq
+                                                    if ps['chain_id'] == chain_id and 'identical_chain_id' in ps)
 
                                     for chain_id in identity:
 
@@ -47306,15 +47306,15 @@ class NmrDpUtility:
                                     cif_chain_id = ca['ref_chain_id']
 
                                     try:
-                                        identity = next(s['identical_chain_id'] for s in nmr_poly_seq
-                                                        if s['chain_id'] == nmr_chain_id and 'identical_chain_id' in s)
+                                        identity = next(ps['identical_chain_id'] for ps in nmr_poly_seq
+                                                        if ps['chain_id'] == nmr_chain_id and 'identical_chain_id' in ps)
                                         nmr_ident_chain_id.add(nmr_chain_id)
                                     except StopIteration:
                                         pass
 
                                     try:
-                                        identity = next(s['identical_chain_id'] for s in cif_poly_seq
-                                                        if s['chain_id'] == cif_chain_id and 'identical_chain_id' in s)
+                                        identity = next(ps['identical_chain_id'] for ps in cif_poly_seq
+                                                        if ps['chain_id'] == cif_chain_id and 'identical_chain_id' in ps)
                                         cif_ident_chain_id.add(cif_chain_id)
                                     except StopIteration:
                                         pass

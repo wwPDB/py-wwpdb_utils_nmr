@@ -857,8 +857,8 @@ class XeasyPROTParserListener(ParseTreeListener):
         if not self.__hasNonPolyModel:
             return
 
-        metals = collections.Counter(s2['comp_id'][0] for s2 in self.__polySeqPrmTop
-                                     if len(s2['seq_id']) == 1 and s2['comp_id'][0].title() in NAMES_ELEMENT).most_common()
+        metals = collections.Counter(ps['comp_id'][0] for ps in self.__polySeqPrmTop
+                                     if len(ps['seq_id']) == 1 and ps['comp_id'][0].title() in NAMES_ELEMENT).most_common()
 
         for metal in metals:
             compId = metal[0]

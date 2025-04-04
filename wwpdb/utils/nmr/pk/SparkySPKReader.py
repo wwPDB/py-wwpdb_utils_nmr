@@ -1,9 +1,9 @@
 ##
-# SparkyPKReader.py
+# SparkySPKReader.py
 #
 # Update:
 ##
-""" A collection of classes for parsing SPARKY PK files.
+""" A collection of classes for parsing SPARKY SPK files.
 """
 __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
@@ -20,9 +20,9 @@ from typing import IO, List, Tuple, Optional
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-    from wwpdb.utils.nmr.pk.SparkyPKLexer import SparkyPKLexer
-    from wwpdb.utils.nmr.pk.SparkyPKParser import SparkyPKParser
-    from wwpdb.utils.nmr.pk.SparkyPKParserListener import SparkyPKParserListener
+    from wwpdb.utils.nmr.pk.SparkySPKLexer import SparkySPKLexer
+    from wwpdb.utils.nmr.pk.SparkySPKParser import SparkySPKParser
+    from wwpdb.utils.nmr.pk.SparkySPKParserListener import SparkySPKParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID,
@@ -34,9 +34,9 @@ try:
 except ImportError:
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
-    from nmr.pk.SparkyPKLexer import SparkyPKLexer
-    from nmr.pk.SparkyPKParser import SparkyPKParser
-    from nmr.pk.SparkyPKParserListener import SparkyPKParserListener
+    from nmr.pk.SparkySPKLexer import SparkySPKLexer
+    from nmr.pk.SparkySPKParser import SparkySPKParser
+    from nmr.pk.SparkySPKParserListener import SparkySPKParserListener
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID,
@@ -47,8 +47,8 @@ except ImportError:
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
-class SparkyPKReader:
-    """ Accessor methods for parsing SPARKY PK files.
+class SparkySPKReader:
+    """ Accessor methods for parsing SPARKY SPK files.
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -105,9 +105,9 @@ class SparkyPKReader:
     def parse(self, pkFilePath: str, cifFilePath: Optional[str] = None, isFilePath: bool = True,
               createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None,
               reservedListIds: Optional[dict] = None, entryId: Optional[str] = None, csLoops: Optional[List[dict]] = None
-              ) -> Tuple[Optional[SparkyPKParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
-        """ Parse SPARKY PK file.
-            @return: SparkyPKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
+              ) -> Tuple[Optional[SparkySPKParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
+        """ Parse SPARKY SPK file.
+            @return: SparkySPKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
         ifh = None
@@ -146,7 +146,7 @@ class SparkyPKReader:
                     if not self.__cR.parse(cifFilePath):
                         return None, None, None
 
-            lexer = SparkyPKLexer(input)
+            lexer = SparkySPKLexer(input)
             lexer.removeErrorListeners()
 
             lexer_error_listener = LexerErrorListener(pkFilePath, maxErrorReport=self.__maxLexerErrorReport, ignoreCodicError=True)
@@ -162,22 +162,22 @@ class SparkyPKReader:
                         self.__lfh.write(f"{description['marker']}\n")
 
             stream = CommonTokenStream(lexer)
-            parser = SparkyPKParser(stream)
+            parser = SparkySPKParser(stream)
             # try with simpler/faster SLL prediction mode
             # parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(pkFilePath, maxErrorReport=self.__maxParserErrorReport, ignoreCodicError=True)
             parser.addErrorListener(parser_error_listener)
-            tree = parser.sparky_pk()
+            tree = parser.sparky_spk()
 
             walker = ParseTreeWalker()
-            listener = SparkyPKParserListener(self.__verbose, self.__lfh,
-                                              self.__representativeModelId,
-                                              self.__representativeAltId,
-                                              self.__mrAtomNameMapping,
-                                              self.__cR, self.__caC,
-                                              self.__ccU, self.__csStat, self.__nefT,
-                                              self.__reasons)
+            listener = SparkySPKParserListener(self.__verbose, self.__lfh,
+                                               self.__representativeModelId,
+                                               self.__representativeAltId,
+                                               self.__mrAtomNameMapping,
+                                               self.__cR, self.__caC,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               self.__reasons)
             listener.setDebugMode(self.__debug)
             listener.createSfDict(createSfDict)
             if createSfDict:
@@ -220,72 +220,7 @@ class SparkyPKReader:
 
 
 if __name__ == "__main__":
-    reader = SparkyPKReader(True)
+    reader = SparkySPKReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/5z8f/bmr36160/work/data/D_1300006644_nmr-peaks-upload_P1.dat.V3',
-                 '../../tests-nmr/mock-data-remediation/5z8f/5z8f.cif')
-
-    reader = SparkyPKReader(True)
-    reader.setDebugMode(True)
-    reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_nmr-peaks-upload_P4.dat.V1',
-                     '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')
-    reader = SparkyPKReader(True, reasons=reader_listener.getReasonsForReparsing())
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_nmr-peaks-upload_P4.dat.V1',
-                 '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')
-
-    reader = SparkyPKReader(True)
-    reader.setDebugMode(True)
-    reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_nmr-peaks-upload_P3.dat.V2',
-                     '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')
-    reader = SparkyPKReader(True, reasons=reader_listener.getReasonsForReparsing())
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_nmr-peaks-upload_P3.dat.V2',
-                 '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')
-
-    reader = SparkyPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/8e1d/bmr31038/work/data/D_1000267621_nmr-peaks-upload_P6.dat.V1',
-                 '../../tests-nmr/mock-data-remediation/8e1d/8e1d.cif')
-
-    reader = SparkyPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2js7/2js7-trimmed-div_dst.mr',
-                 '../../tests-nmr/mock-data-remediation/2js7/2js7.cif')
-
-    reader = SparkyPKReader(True)
-    reader.setDebugMode(True)
-    reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_nmr-peaks-upload_P2.dat.V3',
-                     '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')
-    reader = SparkyPKReader(True, reasons=reader_listener.getReasonsForReparsing())
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_nmr-peaks-upload_P2.dat.V3',
-                 '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')
-
-    reader = SparkyPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_nmr-peaks-upload_P1.dat.V4',
-                 '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')
-
-    reader = SparkyPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6uz5/bmr30687/work/data/D_1000245462_nmr-peaks-upload_P2.dat.V1',
-                 '../../tests-nmr/mock-data-remediation/6uz5/6uz5.cif')
-
-    reader = SparkyPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6uz5/bmr30687/work/data/D_1000245462_nmr-peaks-upload_P1.dat.V1',
-                 '../../tests-nmr/mock-data-remediation/6uz5/6uz5.cif')
-
-    reader = SparkyPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2k5w/2k5w-corrected-div_dst.mr',
-                 '../../tests-nmr/mock-data-remediation/2k5w/2k5w.cif')
-
-    reader = SparkyPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2js7/2js7-trimmed-div_ext.mr',
-                 '../../tests-nmr/mock-data-remediation/2js7/2js7.cif')
+    reader.parse('../../tests-nmr/mock-data-remediation/6oqp/bmr30607/work/data/D_1000240674_nmr-peaks-upload_P1.dat.V1',
+                 '../../tests-nmr/mock-data-remediation/6oqp/6oqp.cif')

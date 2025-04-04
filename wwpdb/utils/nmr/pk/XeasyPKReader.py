@@ -239,6 +239,18 @@ class XeasyPKReader:
 if __name__ == "__main__":
     reader = XeasyPKReader(True)
     reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/7jyz/bmr30791/work/data/D_1000251588_nmr-peaks-upload_P2.dat.V1',
+                     '../../tests-nmr/mock-data-remediation/7jyz/7jyz.cif')
+    assert reader_listener.getReasonsForReparsing() is None
+
+    reader = XeasyPKReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2n6r/bmr25778/work/data/SF6_ali.peaks',
+                 '../../tests-nmr/mock-data-remediation/2n6r/2n6r.cif')
+
+    reader = XeasyPKReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/7cq1/bmr36368/work/data/D_1300017932_nmr-peaks-upload_P2.dat.V2',
                  '../../tests-nmr/mock-data-remediation/7cq1/7cq1.cif')
 

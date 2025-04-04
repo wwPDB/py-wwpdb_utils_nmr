@@ -73,7 +73,7 @@ Dev_0:			'Dev. 0';
 Dev_1:			'Dev. 1';
 Dev_2:			'Dev. 2';
 Dev_3:			'Dev. 3';
-Amplitude_LA:		('Amplitude' | 'Intensity');
+Amplitude_LA:		'Amplitude' | 'Intensity';
 Volume_LA:		'Volume';
 Assignment:		'Assignment';
 
@@ -89,7 +89,7 @@ X_ppm:			('X' | 'F1') ' '? '(ppm)'?;
 Y_ppm:			('Y' | 'F2') ' '? '(ppm)'?;
 Z_ppm:			('Z' | 'F3') ' '? '(ppm)'?;
 A_ppm:			('A' | 'F4') ' '? '(ppm)'?;
-Amplitude:		('Amplitude' | 'Intensity');
+Amplitude:		'Amplitude' | 'Intensity';
 Volume:			'Volume';
 Linewidth_X:		'Linewidth' ('_' | ' ')? ('X' | 'F'? '1') ' '? '(Hz)'?;
 Linewidth_Y:		'Linewidth' ('_' | ' ')? ('Y' | 'F'? '2') ' '? '(Hz)'?;

@@ -22,7 +22,8 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.XeasyPKParser import XeasyPKParser
-    from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
+    from wwpdb.utils.nmr.pk.BasePKParserListener import (BasePKParserListener,
+                                                         PEAK_ASSIGNMENT_SEPARATOR_PAT)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
@@ -33,7 +34,8 @@ try:
 except ImportError:
     from nmr.io.CifReader import CifReader
     from nmr.pk.XeasyPKParser import XeasyPKParser
-    from nmr.pk.BasePKParserListener import BasePKParserListener
+    from nmr.pk.BasePKParserListener import (BasePKParserListener,
+                                             PEAK_ASSIGNMENT_SEPARATOR_PAT)
     from nmr.mr.ParserListenerUtil import (ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
@@ -589,20 +591,81 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             else:
                 break
         self.__last_comment = None if len(comment) == 0 else ' '.join(comment)
-        assignments = self.extractPeakAssignment(self.num_of_dim, self.__last_comment,
-                                                 self.__index - 1 if isinstance(self.__index, int) else 1)
-        if assignments is not None and self.__atomNumberDict is None:
-            if self.ass_expr_debug:
-                print(f'{self.__last_comment!r} -> {assignments}')
-            if isinstance(self.__comment_offset, int):
-                for idx, factor in enumerate(assignments, start=self.__comment_offset):
-                    if idx >= len(self.assignmentSelection):
-                        self.assignmentSelection.append(factor)
-                    elif self.assignmentSelection[idx] is None:
-                        self.assignmentSelection[idx] = factor
-            self.__last_comment = None
-            self.__g.clear()
-        self.__comment_offset = len(self.assignmentSelection)
+
+        if self.__last_comment is None:
+            return
+
+        __last_comment = self.__last_comment if isinstance(self.__last_comment, str) else str(self.__last_comment)
+
+        has_split = False
+
+        if '/' in __last_comment:
+            for last_comment in __last_comment.split('/'):
+                if len(PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
+                    assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
+                                                             self.__index - 1 if isinstance(self.__index, int) else 1)
+                    if assignments is not None and self.__atomNumberDict is None:
+                        if self.ass_expr_debug:
+                            print(f'{last_comment!r} -> {assignments}')
+                        if isinstance(self.__comment_offset, int):
+                            for idx, factor in enumerate(assignments, start=self.__comment_offset):
+                                if idx >= len(self.assignmentSelection):
+                                    self.assignmentSelection.append(factor)
+                                elif self.assignmentSelection[idx] is None:
+                                    self.assignmentSelection[idx] = factor
+                    self.__comment_offset = len(self.assignmentSelection)
+                    has_split = True
+
+        if not has_split and '|' in __last_comment:
+            for last_comment in __last_comment.split('|'):
+                if len(PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
+                    assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
+                                                             self.__index - 1 if isinstance(self.__index, int) else 1)
+                    if assignments is not None and self.__atomNumberDict is None:
+                        if self.ass_expr_debug:
+                            print(f'{last_comment!r} -> {assignments}')
+                        if isinstance(self.__comment_offset, int):
+                            for idx, factor in enumerate(assignments, start=self.__comment_offset):
+                                if idx >= len(self.assignmentSelection):
+                                    self.assignmentSelection.append(factor)
+                                elif self.assignmentSelection[idx] is None:
+                                    self.assignmentSelection[idx] = factor
+                    self.__comment_offset = len(self.assignmentSelection)
+                    has_split = True
+
+        if not has_split and ',' in __last_comment:
+            for last_comment in __last_comment.split(','):
+                if len(PEAK_ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
+                    assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
+                                                             self.__index - 1 if isinstance(self.__index, int) else 1)
+                    if assignments is not None and self.__atomNumberDict is None:
+                        if self.ass_expr_debug:
+                            print(f'{last_comment!r} -> {assignments}')
+                        if isinstance(self.__comment_offset, int):
+                            for idx, factor in enumerate(assignments, start=self.__comment_offset):
+                                if idx >= len(self.assignmentSelection):
+                                    self.assignmentSelection.append(factor)
+                                elif self.assignmentSelection[idx] is None:
+                                    self.assignmentSelection[idx] = factor
+                    self.__comment_offset = len(self.assignmentSelection)
+                    has_split = True
+
+        if not has_split:
+            assignments = self.extractPeakAssignment(self.num_of_dim, __last_comment,
+                                                     self.__index - 1 if isinstance(self.__index, int) else 1)
+            if assignments is not None and self.__atomNumberDict is None:
+                if self.ass_expr_debug:
+                    print(f'{__last_comment!r} -> {assignments}')
+                if isinstance(self.__comment_offset, int):
+                    for idx, factor in enumerate(assignments, start=self.__comment_offset):
+                        if idx >= len(self.assignmentSelection):
+                            self.assignmentSelection.append(factor)
+                        elif self.assignmentSelection[idx] is None:
+                            self.assignmentSelection[idx] = factor
+                self.__comment_offset = len(self.assignmentSelection)
+
+        self.__last_comment = None
+        self.__g.clear()
 
     def fillSpectralDimWithLabels(self):
         if self.__labels is None or len(self.__labels) == 0:

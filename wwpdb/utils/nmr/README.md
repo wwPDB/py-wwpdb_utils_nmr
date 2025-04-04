@@ -333,6 +333,7 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-pea-pip`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in NMRPIPE format
 `nm-pea-pon`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in PONDEROSA format
 `nm-pea-spa`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in SPARKY format
+`nm-pea-sps`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in SPARKY's `save` format (aka. ornament)
 `nm-pea-top`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in TOPSPIN format
 `nm-pea-vie`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in NMRVIEW format
 `nm-pea-vnm`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in VNMR format

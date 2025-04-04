@@ -10913,18 +10913,19 @@ class AmberMRParserListener(ParseTreeListener):
             ambigCode = str(ctx.Simple_name_MP(0)).upper()
             i = 1
 
-        mapName = []
+        if self.__hasCoord:
+            mapName = []
 
-        j = 0
-        while ctx.Simple_name_MP(i):
-            mapName.append({'atom_name': str(ctx.Simple_name_MP(i)).upper(),
-                            'seq_id': int(str(ctx.Integer_MP(j)))})
-            i += 1
-            j += 1
+            j = 0
+            while ctx.Simple_name_MP(i):
+                mapName.append({'atom_name': str(ctx.Simple_name_MP(i)).upper(),
+                                'seq_id': int(str(ctx.Integer_MP(j)))})
+                i += 1
+                j += 1
 
-        if self.__cur_resname_for_mapping not in self.ambigAtomNameMapping:
-            self.ambigAtomNameMapping[self.__cur_resname_for_mapping] = {}
-        self.ambigAtomNameMapping[self.__cur_resname_for_mapping][ambigCode] = mapName
+            if self.__cur_resname_for_mapping not in self.ambigAtomNameMapping:
+                self.ambigAtomNameMapping[self.__cur_resname_for_mapping] = {}
+            self.ambigAtomNameMapping[self.__cur_resname_for_mapping][ambigCode] = mapName
 
     def updateAmbigAtomNameMapping(self):
         if (not self.__hasPolySeq and not self.__hasNonPolySeq) or len(self.ambigAtomNameMapping) == 0:

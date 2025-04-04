@@ -2793,6 +2793,9 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
             if atomId == 'HNE':
                 return 'HE2'
 
+        elif refCompId == 'ARG' and atomId == 'HNE':  # 8dhz, peak list
+            return 'HE'
+
         elif refCompId in ('HIS', 'OUH'):
             if atomId == 'HNE':  # 2k4w
                 return 'HE2'
@@ -4062,11 +4065,11 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                     if sa['conflict'] > 0 or sa['unmapped'] == 0:
                         continue
 
-                    s1 = next(s for s in nmrPolySeq if s['chain_id'] == test_chain_id)
-                    s2 = next(s for s in polySeq if s['auth_chain_id'] == ref_chain_id)
+                    ps1 = next(ps1 for ps1 in nmrPolySeq if ps1['chain_id'] == test_chain_id)
+                    ps2 = next(ps2 for ps2 in polySeq if ps2['auth_chain_id'] == ref_chain_id)
 
-                    pA.setReferenceSequence(s1['comp_id'], 'REF' + test_chain_id)
-                    pA.addTestSequence(s2['comp_id'], test_chain_id)
+                    pA.setReferenceSequence(ps1['comp_id'], 'REF' + test_chain_id)
+                    pA.addTestSequence(ps2['comp_id'], test_chain_id)
                     pA.doAlign()
 
                     myAlign = pA.getAlignment(test_chain_id)
@@ -4080,15 +4083,15 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         nmr_seq_ids, cif_auth_seq_ids, cif_label_seq_ids = [], [], []
 
                         for i in range(length):
-                            if str(myAlign[i][0]) != '.' and i < len(s1['seq_id']):
-                                nmr_seq_ids.append(s1['seq_id'][i])
+                            if str(myAlign[i][0]) != '.' and i < len(ps1['seq_id']):
+                                nmr_seq_ids.append(ps1['seq_id'][i])
                             else:
                                 nmr_seq_ids.append(None)
 
                         for i in range(length):
-                            if str(myAlign[i][1]) != '.' and i < len(s2['seq_id']):
-                                cif_auth_seq_ids.append(s2['auth_seq_id'][i])
-                                cif_label_seq_ids.append(s2['seq_id'][i])
+                            if str(myAlign[i][1]) != '.' and i < len(ps2['seq_id']):
+                                cif_auth_seq_ids.append(ps2['auth_seq_id'][i])
+                                cif_label_seq_ids.append(ps2['seq_id'][i])
                             else:
                                 cif_auth_seq_ids.append(None)
                                 cif_label_seq_ids.append(None)
@@ -4121,27 +4124,27 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         cif_label_seq_id = cif_label_seq_ids[i + offset] - offset - offset_2
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
 
-                                        s2_seq_id_list = list(filter(None, s2['seq_id']))
+                                        ps2_seq_id_list = list(filter(None, ps2['seq_id']))
 
-                                        if cif_label_seq_id < min(s2_seq_id_list):
+                                        if cif_label_seq_id < min(ps2_seq_id_list):
                                             pos = 0
-                                        elif cif_label_seq_id > max(s2_seq_id_list):
-                                            pos = len(s2['seq_id'])
+                                        elif cif_label_seq_id > max(ps2_seq_id_list):
+                                            pos = len(ps2['seq_id'])
                                         else:
-                                            for idx, _seq_id in enumerate(s2['seq_id']):
+                                            for idx, _seq_id in enumerate(ps2['seq_id']):
                                                 if _seq_id < cif_label_seq_id:
                                                     continue
                                                 pos = idx
                                                 break
 
-                                        s2['seq_id'].insert(pos, cif_label_seq_id)
-                                        s2['auth_seq_id'].insert(pos, cif_auth_seq_id)
-                                        s2['comp_id'].insert(pos, nmr_comp_id)
-                                        if s2['comp_id'] is not s2['auth_comp_id']:  # avoid doulble inserts to 'auth_comp_id'
-                                            s2['auth_comp_id'].insert(pos, nmr_comp_id)
+                                        ps2['seq_id'].insert(pos, cif_label_seq_id)
+                                        ps2['auth_seq_id'].insert(pos, cif_auth_seq_id)
+                                        ps2['comp_id'].insert(pos, nmr_comp_id)
+                                        if ps2['comp_id'] is not ps2['auth_comp_id']:  # avoid doulble inserts to 'auth_comp_id'
+                                            ps2['auth_comp_id'].insert(pos, nmr_comp_id)
 
-                                        nmrExtPolySeq.append({'auth_chain_id': s2['auth_chain_id'],
-                                                              'chain_id': s2['chain_id'],
+                                        nmrExtPolySeq.append({'auth_chain_id': ps2['auth_chain_id'],
+                                                              'chain_id': ps2['chain_id'],
                                                               'seq_id': cif_label_seq_id,
                                                               'auth_seq_id': cif_auth_seq_id,
                                                               'comp_id': nmr_comp_id,
@@ -8310,8 +8313,10 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, atom2, asis=asis1)
         if star_atom1 is None:
             star_atom1 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom1, asis=asis1)
-        if isinstance(ambig_code1, int):
-            atom1['atom_id'] = atom1['auth_atom_id']
+        if isinstance(ambig_code1, int) and star_atom1 is not None:
+            star_atom1['atom_id'] = atom1['auth_atom_id']
+            if 'orig_atom_id' in atom1:
+                atom1['atom_id'] = atom1['orig_atom_id']
 
     if atom2 is not None:
         if 'asis' in atom2:
@@ -8319,8 +8324,10 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, atom1, asis=asis2)
         if star_atom2 is None:
             star_atom2 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom2, asis=asis2)
-        if isinstance(ambig_code2, int):
-            atom2['atom_id'] = atom2['auth_atom_id']
+        if isinstance(ambig_code2, int) and star_atom2 is not None:
+            star_atom2['atom_id'] = atom2['auth_atom_id']
+            if 'orig_atom_id' in atom2:
+                atom2['atom_id'] = atom2['orig_atom_id']
 
     if atom3 is not None:
         if 'asis' in atom3:
@@ -8328,8 +8335,10 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, atom1, asis=asis3)
         if star_atom3 is None:
             star_atom3 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom3, asis=asis3)
-        if isinstance(ambig_code3, int):
-            atom3['atom_id'] = atom3['auth_atom_id']
+        if isinstance(ambig_code3, int) and star_atom3 is not None:
+            star_atom3['atom_id'] = atom3['auth_atom_id']
+            if 'orig_atom_id' in atom3:
+                atom3['atom_id'] = atom3['orig_atom_id']
 
     if atom4 is not None:
         if 'asis' in atom4:
@@ -8337,8 +8346,10 @@ def getPkRow(pkSubtype: str, id: int, indexId: int,
         star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, atom1, asis=asis4)
         if star_atom4 is None:
             star_atom4 = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom4, asis=asis4)
-        if isinstance(ambig_code4, int):
-            atom4['atom_id'] = atom4['auth_atom_id']
+        if isinstance(ambig_code4, int) and star_atom4 is not None:
+            star_atom4['atom_id'] = atom4['auth_atom_id']
+            if 'orig_atom_id' in atom4:
+                atom4['atom_id'] = atom4['orig_atom_id']
 
     row[key_size] = indexId
 
@@ -8578,6 +8589,10 @@ def getPkChemShiftRow(pkSubtype: str, indexId: int, listId: int, entryId: str, d
             asis = True
         star_atom = getStarAtom(authToStarSeq, authToOrigSeq, offsetHolder, atom, asis=asis)
         if star_atom is not None:
+            if isinstance(ambig_code, int):
+                star_atom['atom_id'] = atom['auth_atom_id']
+                if 'orig_atom_id' in atom:
+                    atom['atom_id'] = atom['orig_atom_id']
             row[8], row[9], row[10], row[11], row[12] =\
                 star_atom['chain_id'], star_atom['entity_id'], star_atom['seq_id'], star_atom['comp_id'], star_atom['atom_id']
         row[13] = ambig_code
@@ -10367,6 +10382,11 @@ def testCoordAtomIdConsistency(caC: dict, ccU, authChainId: str, chainId: str, s
                             return 'Ignorable hydroxyl group'
                 if enableWarning:
                     if chainId in LARGE_ASYM_ID:
+                        if seqKey in caC['coord_unobs_atom']\
+                                and (atomId in caC['coord_unobs_atom'][seqKey]['atom_ids']
+                                     or (atomId[0] in protonBeginCode and any(bondedTo for bondedTo in ccU.getBondedAtoms(compId, atomId, exclProton=True)
+                                                                              if bondedTo in caC['coord_unobs_atom'][seqKey]['atom_ids']))):
+                            return 'Ignorable missing atom'
                         return f"[Atom not found] "\
                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates."
 

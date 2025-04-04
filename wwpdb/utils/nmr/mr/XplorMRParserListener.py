@@ -1153,8 +1153,8 @@ class XplorMRParserListener(ParseTreeListener):
                                 and 'label_seq_offset' in self.reasonsForReParsing:
                             chainIdRemap = {}
                             valid = True
-                            for s in self.__seqAtmRstFailed:
-                                chainId = s['chain_id']
+                            for item in self.__seqAtmRstFailed:
+                                chainId = item['chain_id']
                                 ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
                                 if chainId in self.reasonsForReParsing['label_seq_offset']:
                                     for auth_seq_id in ps['auth_seq_id']:
@@ -1163,8 +1163,8 @@ class XplorMRParserListener(ParseTreeListener):
                                             break
                                         chainIdRemap[auth_seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
                                     continue
-                                if all(seqId in ps['seq_id'] and seqId not in ps['auth_seq_id'] for seqId in s['seq_id']):
-                                    for seqId, atoms in zip(s['seq_id'], s['atom_id']):
+                                if all(seqId in ps['seq_id'] and seqId not in ps['auth_seq_id'] for seqId in item['seq_id']):
+                                    for seqId, atoms in zip(item['seq_id'], item['atom_id']):
                                         compId = ps['comp_id'][ps['seq_id'].index(seqId)]
                                         for atom in atoms:
                                             _, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atom, leave_unmatched=True)

@@ -10307,6 +10307,16 @@ def getCoordAtomSiteOf(caC: dict, authChainId: str, chainId: str, seqId: int,
                     coordAtomSite = coordAtomSites[_seqKey]
                 elif seqKey in coordAtomSites:
                     coordAtomSite = coordAtomSites[seqKey]
+            else:
+                ps = next((ps for ps in caC['polymer_sequence'] if ps['auth_chain_id'] == chainId), None)
+                if ps is not None and seqId in ps['auth_seq_id']:
+                    seqKey = (chainId, ps['seq_id'][ps['auth_seq_id'].index(seqId)])
+                    _seqKey = (seqKey[0], seqKey[1], compId)
+                    if compId is not None and _seqKey in coordAtomSites:
+                        coordAtomSite = coordAtomSites[_seqKey]
+                    elif seqKey in coordAtomSites:
+                        coordAtomSite = coordAtomSites[seqKey]
+
     return seqKey, coordAtomSite
 
 

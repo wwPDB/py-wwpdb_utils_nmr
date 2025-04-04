@@ -27589,7 +27589,7 @@ class NmrDpUtility:
                                     seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                                     if seq_key in auth_to_star_seq:
                                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
-                                    else:
+                                    elif seq_key in auth_to_star_seq_ann:
                                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq_ann[seq_key]
 
                             self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
@@ -27851,7 +27851,7 @@ class NmrDpUtility:
                                 seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                                 if seq_key in auth_to_star_seq:
                                     entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
-                                else:
+                                elif seq_key in auth_to_star_seq_ann:
                                     entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq_ann[seq_key]
 
                         self.__ent_asym_id_with_exptl_data.add(entity_assembly_id)
@@ -32214,7 +32214,17 @@ class NmrDpUtility:
                                 seq_key = (chain_id, seq_id, comp_id)
 
                                 try:
-                                    auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
+                                    entity_assembly_id, comp_index_id, _, _ = auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
+
+                                    if self.__annotation_mode or self.__native_combined:
+                                        _auth_asym_id, _auth_seq_id =\
+                                            next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
+                                                  if v[0] == entity_assembly_id and v[1] == comp_index_id and k[2] == comp_id), (None, None))
+                                        if _auth_asym_id is not None:
+                                            seq_key = (_auth_asym_id, _auth_seq_id, comp_id)
+                                            if seq_key in auth_to_star_seq:
+                                                chain_id, seq_id = _auth_asym_id, _auth_seq_id
+
                                 except KeyError:
                                     if self.__annotation_mode or self.__native_combined:
                                         _auth_asym_id, _auth_seq_id =\
@@ -32528,6 +32538,15 @@ class NmrDpUtility:
 
                                     try:
                                         auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
+
+                                        _auth_asym_id, _auth_seq_id =\
+                                            next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
+                                                  if v[0] == entity_assembly_id and v[1] == comp_index_id and k[2] == comp_id), (None, None))
+                                        if _auth_asym_id is not None:
+                                            seq_key = (_auth_asym_id, _auth_seq_id, comp_id)
+                                            if seq_key in auth_to_star_seq:
+                                                chain_id, seq_id = _auth_asym_id, _auth_seq_id
+
                                     except KeyError:
                                         _auth_asym_id, _auth_seq_id =\
                                             next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
@@ -32605,6 +32624,16 @@ class NmrDpUtility:
 
                                 try:
                                     auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
+
+                                    if self.__annotation_mode or self.__native_combined:
+                                        _auth_asym_id, _auth_seq_id =\
+                                            next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
+                                                  if v[0] == entity_assembly_id and v[1] == comp_index_id and k[2] == comp_id), (None, None))
+                                        if _auth_asym_id is not None:
+                                            seq_key = (_auth_asym_id, _auth_seq_id, comp_id)
+                                            if seq_key in auth_to_star_seq:
+                                                chain_id, seq_id = _auth_asym_id, _auth_seq_id
+
                                 except KeyError:
                                     if self.__annotation_mode or self.__native_combined:
                                         _auth_asym_id, _auth_seq_id =\

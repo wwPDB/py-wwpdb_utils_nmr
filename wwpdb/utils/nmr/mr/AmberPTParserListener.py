@@ -1645,13 +1645,14 @@ class AmberPTParserListener(ParseTreeListener):
     # Exit a parse tree produced by AmberPTParser#radius_set_statement.
     def exitRadius_set_statement(self, ctx: AmberPTParser.Radius_set_statementContext):
         if ctx.Simple_name(0):
-            radiusSet = []
-            i = 0
-            while ctx.Simple_name(i):
-                radiusSet.append(str(ctx.Simple_name(i)))
-                i += 1
+            if self.__hasCoord:
+                radiusSet = []
+                i = 0
+                while ctx.Simple_name(i):
+                    radiusSet.append(str(ctx.Simple_name(i)))
+                    i += 1
 
-            self.__radiusSet = ' '.join(radiusSet)
+                self.__radiusSet = ' '.join(radiusSet)
             return
         self.radiusSetStatements -= 1
 
@@ -1685,10 +1686,11 @@ class AmberPTParserListener(ParseTreeListener):
     # Exit a parse tree produced by AmberPTParser#residue_pointer_statement.
     def exitResidue_pointer_statement(self, ctx: AmberPTParser.Residue_pointer_statementContext):
         if ctx.Integer(0):
-            i = 0
-            while ctx.Integer(i):
-                self.__residuePointer.append(int(str(ctx.Integer(i))))
-                i += 1
+            if self.__hasCoord:
+                i = 0
+                while ctx.Integer(i):
+                    self.__residuePointer.append(int(str(ctx.Integer(i))))
+                    i += 1
             return
         self.residueLabelStatements -= 1
 
@@ -1749,13 +1751,14 @@ class AmberPTParserListener(ParseTreeListener):
     # Exit a parse tree produced by AmberPTParser#title_statement.
     def exitTitle_statement(self, ctx: AmberPTParser.Title_statementContext):
         if ctx.Simple_name(0):
-            title = []
-            i = 0
-            while ctx.Simple_name(i):
-                title.append(str(ctx.Simple_name(i)))
-                i += 1
+            if self.__hasCoord:
+                title = []
+                i = 0
+                while ctx.Simple_name(i):
+                    title.append(str(ctx.Simple_name(i)))
+                    i += 1
 
-            self.__title = ' '.join(title)
+                self.__title = ' '.join(title)
             return
         self.titleStatements -= 1
 

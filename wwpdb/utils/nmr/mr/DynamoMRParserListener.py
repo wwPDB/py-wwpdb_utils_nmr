@@ -801,10 +801,11 @@ class DynamoMRParserListener(ParseTreeListener):
             self.__first_resid = int(str(ctx.Integer_DA()))
 
         if ctx.Sequence():
-            i = 0
-            while ctx.One_letter_code(i):
-                self.__cur_sequence += str(ctx.One_letter_code(i))
-                i += 1
+            if self.__hasCoord:
+                i = 0
+                while ctx.One_letter_code(i):
+                    self.__cur_sequence += str(ctx.One_letter_code(i))
+                    i += 1
 
         self.__open_sequence = True
 

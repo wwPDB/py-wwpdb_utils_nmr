@@ -162,12 +162,13 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
         annotation = None
         if ctx.Annotation(0):
-            annotation = []
-            i = 0
-            while ctx.Annotation(i):
-                annotation.append(str(ctx.Annotation(i)))
-                i += 1
-            annotation = ' '.join(annotation)
+            if self.__hasCoord:
+                annotation = []
+                i = 0
+                while ctx.Annotation(i):
+                    annotation.append(str(ctx.Annotation(i)))
+                    i += 1
+                annotation = ' '.join(annotation)
 
         dstFunc = self.validatePeak2D(index, f1_ppm, f2_ppm, None, None, None, None,
                                       None, None, None, None, intensity, None, volume, None)
@@ -239,12 +240,13 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
         annotation = None
         if ctx.Annotation(0):
-            annotation = []
-            i = 0
-            while ctx.Annotation(i):
-                annotation.append(str(ctx.Annotation(i)))
-                i += 1
-            annotation = ' '.join(annotation)
+            if self.__hasCoord:
+                annotation = []
+                i = 0
+                while ctx.Annotation(i):
+                    annotation.append(str(ctx.Annotation(i)))
+                    i += 1
+                annotation = ' '.join(annotation)
 
         dstFunc = self.validatePeak3D(index, f1_ppm, f2_ppm, f3_ppm, None, None, None, None, None, None,
                                       None, None, None, None, None, None, intensity, None, volume, None)
@@ -323,12 +325,13 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
 
         annotation = None
         if ctx.Annotation(0):
-            annotation = []
-            i = 0
-            while ctx.Annotation(i):
-                annotation.append(str(ctx.Annotation(i)))
-                i += 1
-            annotation = ' '.join(annotation)
+            if self.__hasCoord:
+                annotation = []
+                i = 0
+                while ctx.Annotation(i):
+                    annotation.append(str(ctx.Annotation(i)))
+                    i += 1
+                annotation = ' '.join(annotation)
 
         dstFunc = self.validatePeak4D(index, f1_ppm, f2_ppm, f3_ppm, f4_ppm, None, None, None, None, None, None, None, None,
                                       None, None, None, None, None, None, None, None, intensity, None, volume, None)

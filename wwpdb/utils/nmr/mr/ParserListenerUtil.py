@@ -183,7 +183,7 @@ DIST_AMBIG_MED = 6.0
 
 DIST_AMBIG_UP = 12.0
 
-DIST_AMBIG_UNCERT = 0.1
+DIST_AMBIG_UNCERT = 0.05
 
 
 # @see: https://x3dna.org/highlights/torsion-angles-of-nucleic-acid-structures for nucleic acids

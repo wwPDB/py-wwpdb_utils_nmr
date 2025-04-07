@@ -3212,6 +3212,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
         if 'atom_id' not in _factor or len(_factor['atom_id']) == 0:
             _compIdSelect = set()
+            _repNstdResidueInstance = {}
             _nonPolyCompIdSelect = []
             for chainId in _factor['chain_id']:
                 ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
@@ -3230,6 +3231,8 @@ class CharmmMRParserListener(ParseTreeListener):
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         _compIdSelect.add(realCompId)
+                        if realCompId not in monDict3:
+                            _repNstdResidueInstance[realCompId] = (chainId, realSeqId)
             if self.__hasNonPolySeq:
                 for chainId in _factor['chain_id']:
                     npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
@@ -3260,6 +3263,11 @@ class CharmmMRParserListener(ParseTreeListener):
                         if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                             realAtomId = cca[self.__ccU.ccaAtomId]
                             _atomIdSelect.add(realAtomId)
+                    if compId in _repNstdResidueInstance:
+                        chainId, seqId = _repNstdResidueInstance[compId]
+                        _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
+                        if coordAtomSite is not None:
+                            _atomIdSelect |= set(coordAtomSite['atom_id'])  # D_1300057999
 
             for nonPolyCompId in _nonPolyCompIdSelect:
                 _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], nonPolyCompId['seq_id'], cifCheck=cifCheck)
@@ -3296,6 +3304,7 @@ class CharmmMRParserListener(ParseTreeListener):
                 self.__preferAuthSeq = not self.__preferAuthSeq
 
                 _compIdSelect = set()
+                _repNstdResidueInstance = {}
                 _nonPolyCompIdSelect = []
                 for chainId in _factor['chain_id']:
                     ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
@@ -3314,6 +3323,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                 if realCompId not in _compIdList and origCompId not in _compIdList:
                                     continue
                             _compIdSelect.add(realCompId)
+                            if realCompId not in monDict3:
+                                _repNstdResidueInstance[realCompId] = (chainId, realSeqId)
                 if self.__hasNonPolySeq:
                     for chainId in _factor['chain_id']:
                         npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
@@ -3344,6 +3355,11 @@ class CharmmMRParserListener(ParseTreeListener):
                             if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                 realAtomId = cca[self.__ccU.ccaAtomId]
                                 _atomIdSelect.add(realAtomId)
+                        if compId in _repNstdResidueInstance:
+                            chainId, seqId = _repNstdResidueInstance[compId]
+                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
+                            if coordAtomSite is not None:
+                                _atomIdSelect |= set(coordAtomSite['atom_id'])  # D_1300057999
 
                 for nonPolyCompId in _nonPolyCompIdSelect:
                     _, coordAtomSite = self.getCoordAtomSiteOf(nonPolyCompId['chain_id'], nonPolyCompId['seq_id'], cifCheck=cifCheck)
@@ -4163,7 +4179,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                             if self.__ccU.updateChemCompDict(compId):
                                                 cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId), None)
                                                 if cca is None or (cca is not None and cca[self.__ccU.ccaLeavingAtomFlag] == 'Y'):
-                                                    continue
+                                                    if atomSiteAtomId is None or _atomId not in atomSiteAtomId:
+                                                        continue
                                         _atomSelection.append(selection)
                                 else:
                                     ccdCheck = True
@@ -4181,6 +4198,41 @@ class CharmmMRParserListener(ParseTreeListener):
                                 continue
 
                             origAtomId0 = origAtomId[0] if isinstance(origAtomId, list) else origAtomId
+
+                            if isPolySeq and len(_factor['chain_id']) > 1 and self.__con_union_expr:  # D_1300057999: verify if another polymer can take over in union expression
+                                hasAltPolymer = False
+                                for chainId1, chainId2 in itertools.combinations(_factor['chain_id'], 2):
+                                    ps1 = next((ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == chainId1), None)
+                                    if ps1 is not None:
+                                        if 'identical_auth_chain_id' in ps1 and chainId2 in ps1['identical_auth_chain_id']:
+                                            continue
+                                    ps2 = next((ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == chainId2), None)
+                                    if ps2 is not None and ps1['comp_id'] != ps2['comp_id']:
+                                        hasAltPolymer = True
+                                        break
+                                if hasAltPolymer:
+                                    hasAltPolymer = False
+                                    for chainId2 in _factor['chain_id']:
+                                        if chainId2 == chainId:
+                                            continue
+                                        ps2 = next((ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == chainId2), None)
+                                        if ps2 is None or ('identical_auth_chain_id' in ps2 and chainId in ps2['identical_auth_chain_id']):
+                                            continue
+                                        if seqId in ps2['auth_seq_id']:
+                                            _, _coordAtomSite = self.getCoordAtomSiteOf(chainId2, seqId, cifCheck=cifCheck)
+                                            if _coordAtomSite is not None:
+                                                _atomSiteAtomId = _coordAtomSite['atom_id']
+                                                if origAtomId0 in _atomSiteAtomId:
+                                                    hasAltPolymer = True
+                                                    break
+                                                _compId = ps2['comp_id'][ps2['auth_seq_id'].index(seqId)]
+                                                _origAtomId0 = translateToStdAtomName(origAtomId0, _compId, _atomSiteAtomId, self.__ccU, False)
+                                                __origAtomId0, _, details = self.__nefT.get_valid_star_atom(_compId, _origAtomId0, leave_unmatched=True)
+                                                if details is None and __origAtomId0[0] in _atomSiteAtomId:
+                                                    hasAltPolymer = True
+                                                    break
+                                    if hasAltPolymer:
+                                        continue
 
                             if ccdCheck and compId is not None:
                                 _compIdList = None if 'comp_id' not in _factor else [translateToStdResName(_compId, ccU=self.__ccU) for _compId in _factor['comp_id']]
@@ -5069,14 +5121,20 @@ class CharmmMRParserListener(ParseTreeListener):
 
                 if simpleNameIndex == 0 and ctx.Simple_names(0):
                     chainId = str(ctx.Simple_names(0))
-                    _chainId = toRegEx(chainId)
-                    self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
-                                               if re.match(_chainId, ps['auth_chain_id'])]
-                    if self.__hasNonPolySeq:
-                        for np in self.__nonPolySeq:
-                            __chainId = np['auth_chain_id']
-                            if re.match(_chainId, __chainId) and __chainId not in self.factor['chain_id']:
-                                self.factor['chain_id'].append(__chainId)
+                    if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and chainId in self.__reasons['segment_id_mismatch']\
+                       and self.__reasons['segment_id_mismatch'][chainId] in self.__reasons['segment_id_match_stats'][chainId]:
+                        _chainId = self.__reasons['segment_id_mismatch'][chainId]
+                        _stats = self.__reasons['segment_id_match_stats'][chainId]
+                        self.factor['chain_id'] = sorted([k for k, v in _stats.items() if v == _stats[_chainId]])
+                    else:
+                        _chainId = toRegEx(chainId)
+                        self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
+                                                   if re.match(_chainId, ps['auth_chain_id'])]
+                        if self.__hasNonPolySeq:
+                            for np in self.__nonPolySeq:
+                                __chainId = np['auth_chain_id']
+                                if re.match(_chainId, __chainId) and __chainId not in self.factor['chain_id']:
+                                    self.factor['chain_id'].append(__chainId)
                     simpleNamesIndex += 1
 
                 if len(self.factor['chain_id']) == 0:
@@ -6243,14 +6301,20 @@ class CharmmMRParserListener(ParseTreeListener):
                         self.factor['segment_id'] = chainId
                     if ctx.Simple_names(0):
                         chainId = str(ctx.Simple_names(0))
-                        _chainId = toRegEx(chainId)
-                        self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
-                                                   if re.match(_chainId, ps['auth_chain_id'])]
-                        if self.__hasNonPolySeq:
-                            for np in self.__nonPolySeq:
-                                __chainId = np['auth_chain_id']
-                                if re.match(_chainId, __chainId) and __chainId not in self.factor['chain_id']:
-                                    self.factor['chain_id'].append(__chainId)
+                        if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and chainId in self.__reasons['segment_id_mismatch']\
+                           and self.__reasons['segment_id_mismatch'][chainId] in self.__reasons['segment_id_match_stats'][chainId]:
+                            _chainId = self.__reasons['segment_id_mismatch'][chainId]
+                            _stats = self.__reasons['segment_id_match_stats'][chainId]
+                            self.factor['chain_id'] = sorted([k for k, v in _stats.items() if v == _stats[_chainId]])
+                        else:
+                            _chainId = toRegEx(chainId)
+                            self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
+                                                       if re.match(_chainId, ps['auth_chain_id'])]
+                            if self.__hasNonPolySeq:
+                                for np in self.__nonPolySeq:
+                                    __chainId = np['auth_chain_id']
+                                    if re.match(_chainId, __chainId) and __chainId not in self.factor['chain_id']:
+                                        self.factor['chain_id'].append(__chainId)
                     if ctx.Symbol_name():
                         symbol_name = chainId = str(ctx.Symbol_name())
                         if symbol_name in self.evaluate:

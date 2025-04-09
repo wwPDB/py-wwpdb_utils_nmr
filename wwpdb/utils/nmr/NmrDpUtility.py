@@ -213,6 +213,7 @@
 # 05-Mar-2025  M. Yokochi - add support for bare spectral peak list (DAOTHER-8905, 9785)
 # 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR data remediation Phase 2)
 # 28-Mar-2025  M. Yokochi - add support for SPARKY's 'save' (aka. ornament) peak list (DAOTHER-8905, 9785, NMR data remediation Phase 2)
+# 09-Apr-2025  M. Yokochi - enable to convert chemical shifts in any software-native format in the standalone NMR data conversion service (v4.4.0, DAOTHER-9785)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -221,7 +222,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "4.3.0"
+__version__ = "4.4.0"
 
 import sys
 import os
@@ -286,6 +287,7 @@ try:
                                            letterToDigit,
                                            getRestraintFormatName,
                                            getRestraintFormatNames,
+                                           getChemShiftFormatName,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
                                            alignPolymerSequence,
@@ -399,6 +401,7 @@ try:
                                                          C_ALIPHATIC_CENTER_MAX, C_ALIPHATIC_CENTER_MIN,
                                                          C_METHYL_CENTER_MAX, C_METHYL_CENTER_MIN,
                                                          guess_primary_dim_transfer_type)
+    from wwpdb.utils.nmr.cs.BareCSReader import BareCSReader
     from wwpdb.utils.nmr.ann.OneDepAnnTasks import OneDepAnnTasks
     from wwpdb.utils.nmr.ann.BMRBAnnTasks import BMRBAnnTasks
 
@@ -441,6 +444,7 @@ except ImportError:
                                letterToDigit,
                                getRestraintFormatName,
                                getRestraintFormatNames,
+                               getChemShiftFormatName,
                                updatePolySeqRst,
                                sortPolySeqRst,
                                alignPolymerSequence,
@@ -554,6 +558,7 @@ except ImportError:
                                              C_ALIPHATIC_CENTER_MAX, C_ALIPHATIC_CENTER_MIN,
                                              C_METHYL_CENTER_MAX, C_METHYL_CENTER_MIN,
                                              guess_primary_dim_transfer_type)
+    from nmr.cs.BareCSReader import BareCSReader
     from nmr.ann.OneDepAnnTasks import OneDepAnnTasks
     from nmr.ann.BMRBAnnTasks import BMRBAnnTasks
 
@@ -1833,6 +1838,8 @@ class NmrDpUtility:
         self.__check_auth_seq = False
         # whether to skip missing_mandatory_content error for validation server (DAOTHER-8658)
         self.__validation_server = False
+        # whether to skip missing_mandatory_content error for data conversion server (DAOTHER-9785)
+        self.__conversion_server = False
         # whether to translate conventional pseudo atom nomenclature in combined NMR-STAR file
         self.__transl_pseudo_name = False
         # whether to enable tolerant sequence alignment for residue variants
@@ -1992,6 +1999,7 @@ class NmrDpUtility:
                              self.__validateStrMr,
                              self.__validateLegacyMr,
                              self.__validateLegacyPk,
+                             self.__validateLegacyCs,
                              self.__validateSaxsMr,
                              self.__validateStrPk,
                              self.__updateConstraintStats,
@@ -7702,6 +7710,16 @@ class NmrDpUtility:
             else:
                 self.__validation_server = self.__inputParamDict['validation_server'] in trueValue
 
+        if has_key_value(self.__inputParamDict, 'conversion_server'):
+            if isinstance(self.__inputParamDict['conversion_server'], bool):
+                self.__conversion_server = self.__inputParamDict['conversion_server']
+            else:
+                self.__conversion_server = self.__inputParamDict['conversion_server'] in trueValue
+
+        if self.__conversion_server:
+            self.__nefT.allow_missing_chem_shift(True)
+            self.__bmrb_only = self.__internal_mode = True
+
         if has_key_value(self.__inputParamDict, 'transl_pseudo_name'):
             if isinstance(self.__inputParamDict['transl_pseudo_name'], bool):
                 self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name']
@@ -8269,6 +8287,25 @@ class NmrDpUtility:
                         input_source.setItemValue('original_file_name', ar['original_file_name'])
                     input_source.setItemValue('ignore_error', False if 'ignore_error' not in ar else ar['ignore_error'])
 
+            acs_file_path_list = 'atypical_chem_shift_file_path_list'
+
+            if acs_file_path_list in self.__inputParamDict and self.__bmrb_only and self.__conversion_server:
+
+                for acs in self.__inputParamDict[acs_file_path_list]:
+
+                    self.report.appendInputSource()
+
+                    input_source = self.report.input_sources[-1]
+
+                    acsPath = acs['file_name']
+
+                    input_source.setItemValue('file_name', os.path.basename(acsPath))
+                    input_source.setItemValue('file_type', acs['file_type'])
+                    input_source.setItemValue('content_type', 'nmr-chemical-shifts')
+                    if 'original_file_name' in acs:
+                        input_source.setItemValue('original_file_name', acs['original_file_name'])
+                    input_source.setItemValue('ignore_error', False if 'ignore_error' not in acs else acs['ignore_error'])
+
             if self.__bmrb_only and self.__internal_mode and 'nmr_cif_file_path' in self.__inputParamDict:
 
                 nmr_cif = self.__inputParamDict['nmr_cif_file_path']
@@ -8804,6 +8841,27 @@ class NmrDpUtility:
                         arPath = arPath_
 
                     ar['file_name'] = arPath
+
+            acs_file_path_list = 'atypical_chem_shift_file_path_list'
+
+            if acs_file_path_list in self.__inputParamDict and self.__bmrb_only and self.__conversion_server:
+
+                for acs in self.__inputParamDict[acs_file_path_list]:
+                    acsPath = acs['file_name']
+
+                    codec = detect_bom(acsPath, 'utf-8')
+
+                    if codec != 'utf-8':
+                        acsPath_ = acsPath + '~'
+                        convert_codec(acsPath, acsPath_, codec, 'utf-8')
+                        acsPath = acsPath_
+
+                    if is_rtf_file(acsPath):
+                        acsPath_ = acsPath + '.rtf2txt'
+                        convert_rtf_to_ascii(acsPath, acsPath_)
+                        acsPath = acsPath_
+
+                    acs['file_name'] = acsPath
 
             if self.__bmrb_only and self.__internal_mode and len(self.__inputParamDict[cs_file_path_list]) > 1:
                 for csListId, cs in enumerate(self.__inputParamDict[cs_file_path_list]):
@@ -18850,7 +18908,7 @@ class NmrDpUtility:
             has_poly_seq_in_lp = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
             # pass if poly_seq exists
-            if has_poly_seq or (not has_poly_seq_in_lp):
+            if has_poly_seq or (not has_poly_seq_in_lp and not self.__conversion_server):
 
                 if not has_poly_seq or not has_poly_seq_in_lp:
                     continue
@@ -37770,6 +37828,432 @@ class NmrDpUtility:
                                                             'auth_comp_id': unknown_residue})
 
             self.__nmr_ext_poly_seq = sorted(self.__nmr_ext_poly_seq, key=itemgetter('auth_chain_id', 'auth_seq_id'))
+
+        return not self.report.isError()
+
+    def __validateLegacyCs(self) -> bool:
+        """ Validate data content of legacy NMR chemical shift files and merge them if possible.
+        """
+
+        if self.__combined_mode or not self.__conversion_server:
+            return True
+
+        acs_file_path_list = 'atypical_chem_shift_file_path_list'
+
+        if acs_file_path_list not in self.__inputParamDict:
+            return True
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+
+        if not has_poly_seq:
+            return False
+
+        nmr_poly_seq = input_source_dic['polymer_sequence']
+        entity_assembly = None
+
+        file_type = 'nmr-star'
+        content_subtype = 'chem_shift'
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+
+        _rlist_ids = []
+        if len(self.__star_data) > 0 and isinstance(self.__star_data[0], pynmrstar.Entry):
+            for idx, sf in enumerate(self.__star_data[0].get_saveframes_by_category(sf_category), start=1):
+                list_id = get_first_sf_tag(sf, 'ID')
+                _rlist_ids.append({'list_id': int(list_id) if list_id not in emptyValue else idx, 'data_file_name': get_first_sf_tag(sf, 'Data_file_name')})
+            for sf in self.__star_data[0].get_saveframes_by_category('assembly'):
+                try:
+                    lp = sf.get_loop('_Entity_assembly')
+                    has_pdb_chain_id = 'PDB_chain_ID' in lp.tags
+                    if has_pdb_chain_id:
+                        tags = ['ID', 'Entity_ID', 'PDB_chain_ID']
+                        data = lp.get_tag(tags)
+                        for row in data:
+                            entity_assembly_id = row[0] if isinstance(row[0], str) else str(row[0])
+                            entity_id = row[1] if isinstance(row[1], int) else int(row[1]) if row[1].isdigit() else None
+                            pdb_chain_id = row[2].split(',')[0]
+                            if entity_assembly is None:
+                                entity_assembly = {}
+                            entity_assembly[entity_assembly_id] = {'entity_id': entity_id, 'auth_asym_id': pdb_chain_id}
+                    else:
+                        tags = ['ID', 'Entity_ID']
+                        data = lp.get_tag(tags)
+                        for row in data:
+                            entity_assembly_id = row[0] if isinstance(row[0], str) else str(row[0])
+                            entity_id = row[1] if isinstance(row[1], int) else int(row[1]) if row[1].isdigit() else None
+                            if entity_assembly is None:
+                                entity_assembly = {}
+                            entity_assembly[entity_assembly_id] = {'entity_id': entity_id, 'auth_asym_id': None}
+                except KeyError:
+                    pass
+
+        if self.__caC is not None:
+            nmr_poly_seq = self.__caC['polymer_sequence']
+            if self.__caC['branched'] is not None:
+                nmr_poly_seq.extend(self.__caC['branched'])
+            if self.__caC['non_polymer'] is not None:
+                nmr_poly_seq.extend(self.__caC['non_polymer'])
+            entity_assembly = {}
+            for item in self.__caC['entity_assembly']:
+                _auth_asym_id = 'auth_asym_id' if 'fixed_auth_asym_id' not in item else 'fixed_auth_asym_id'
+                entity_assembly[str(item['entity_assembly_id'])] = {'entity_id': item['entity_id'], 'auth_asym_id': item[_auth_asym_id].split(',')[0]}
+
+        create_sf_dict = True
+
+        if self.__list_id_counter is None:
+            self.__list_id_counter = {}
+
+        cs_sf_dict_holder = {}
+
+        suspended_errors_for_lazy_eval = []
+
+        def deal_lexer_or_parser_error(a_cs_format_name, file_name, lexer_err_listener, parser_err_listener):
+            _err = ''
+            if lexer_err_listener is not None:
+                messageList = lexer_err_listener.getMessageList()
+
+                if messageList is not None:
+                    for description in messageList:
+                        _err = f"[Syntax error as {a_cs_format_name} file] "\
+                               f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            is_not_ascii = False
+                            if enc is not None and enc != 'ascii':
+                                _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                is_not_ascii = True
+                            else:
+                                _err += f"{description['input']}\n"
+                            _err += f"{description['marker']}\n"
+                            if is_not_ascii:
+                                _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} and must be 'ascii'.\n"
+
+            if parser_err_listener is not None and len(_err) == 0:
+                messageList = parser_err_listener.getMessageList()
+
+                if messageList is not None:
+                    for description in messageList:
+                        _err += f"[Syntax error as {a_cs_format_name} file] "\
+                                f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                        if 'input' in description:
+                            _err += f"{description['input']}\n"
+                            _err += f"{description['marker']}\n"
+
+            if len(_err) == 0:
+                return False
+
+            err = f"The assigned chemical shift file {file_name!r} looks like {a_cs_format_name} file. "\
+                "Please re-upload the assigned chemical shift file.\n"\
+                "The following issues need to be fixed before re-upload.\n" + _err[:-1]
+
+            self.report.error.appendDescription('format_issue',
+                                                {'file_name': file_name, 'description': err})
+            self.report.setError()
+
+            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ Error  - {file_name} {err}\n")
+
+            return True
+
+        def consume_suspended_message():
+
+            if len(suspended_errors_for_lazy_eval) > 0:
+                for msg in suspended_errors_for_lazy_eval:
+                    for k, v in msg.items():
+                        self.report.error.appendDescription(k, v)
+                        self.report.setError()
+                suspended_errors_for_lazy_eval.clear()
+
+        def deal_shi_warn_message(listener, ignore_error):
+
+            if listener.warningMessage is not None:
+
+                for warn in listener.warningMessage:
+
+                    if warn.startswith('[Concatenated sequence]'):
+                        self.report.warning.appendDescription('concatenated_sequence',
+                                                              {'file_name': data_file_name,
+                                                               'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Sequence mismatch]'):
+                        # consume_suspended_message()
+
+                        self.report.error.appendDescription('sequence_mismatch',
+                                                            {'file_name': data_file_name,
+                                                             'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Atom not found]'):
+                        self.report.warning.appendDescription('sequence_mismatch',
+                                                              {'file_name': data_file_name,
+                                                               'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Invalid atom nomenclature]'):
+                        consume_suspended_message()
+
+                        self.report.error.appendDescription('invalid_atom_nomenclature',
+                                                            {'file_name': data_file_name,
+                                                             'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                        consume_suspended_message()
+
+                        self.report.error.appendDescription('invalid_data',
+                                                            {'file_name': data_file_name,
+                                                             'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ ValueError  - {warn}\n")
+
+                    elif warn.startswith('[Sequence mismatch warning]'):
+                        self.report.warning.appendDescription('sequence_mismatch',
+                                                              {'file_name': data_file_name,
+                                                               'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ Warning  - {warn}\n")
+
+                        if seq_mismatch_warning_pattern.match(warn):
+                            g = seq_mismatch_warning_pattern.search(warn).groups()
+                            d = {'auth_chain_id': g[2],
+                                 'auth_seq_id': int(g[0]),
+                                 'auth_comp_id': g[1]}
+                            if d not in self.__nmr_ext_poly_seq:
+                                self.__nmr_ext_poly_seq.append(d)
+
+                    elif warn.startswith('[Missing data]'):
+                        self.report.warning.appendDescription('missing_data',
+                                                              {'file_name': data_file_name,
+                                                               'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Range value error]') and not self.__remediation_mode:
+                        # consume_suspended_message()
+
+                        self.report.error.appendDescription('anomalous_data',
+                                                            {'file_name': data_file_name,
+                                                             'description': warn})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ ValueError  - {warn}\n")
+
+                    elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
+                        self.report.warning.appendDescription('inconsistent_mr_data',
+                                                              {'file_name': data_file_name,
+                                                               'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ Warning  - {warn}\n")
+
+                    elif not ignore_error:
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyCs() ++ KeyError  - " + warn)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ KeyError  - {warn}\n")
+
+        def deal_shi_warn_message_for_lazy_eval(listener):
+
+            if listener.warningMessage is not None:
+
+                for warn in listener.warningMessage:
+
+                    if warn.startswith('[Sequence mismatch]'):
+                        suspended_errors_for_lazy_eval.append({'sequence_mismatch':
+                                                               {'file_name': data_file_name,
+                                                                'description': warn}})
+
+                    # elif warn.startswith('[Atom not found]'):
+                    #     if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                    #         suspended_errors_for_lazy_eval.append({'atom_not_found':
+                    #                                                {'file_name': data_file_name,
+                    #                                                 'description': warn}})
+
+                    # elif warn.startswith('[Hydrogen not instantiated]'):
+                    #     if self.__remediation_mode:
+                    #         pass
+                    #     else:
+                    #         suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated':
+                    #                                                {'file_name': data_file_name,
+                    #                                                 'description': warn}})
+
+                    # elif warn.startswith('[Coordinate issue]'):
+                    #     suspended_errors_for_lazy_eval.append({'coordinate_issue':
+                    #                                            {'file_name': data_file_name,
+                    #                                             'description': warn}})
+
+                    # elif warn.startswith('[Invalid atom nomenclature]'):
+                    #     suspended_errors_for_lazy_eval.append({'invalid_atom_nomenclature':
+                    #                                            {'file_name': data_file_name,
+                    #                                             'description': warn}})
+
+                    elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                        suspended_errors_for_lazy_eval.append({'invalid_data':
+                                                               {'file_name': data_file_name,
+                                                                'description': warn}})
+
+                    # elif warn.startswith('[Range value error]') and not self.__remediation_mode:
+                    #     suspended_errors_for_lazy_eval.append({'anomalous_data':
+                    #                                            {'file_name': data_file_name,
+                    #                                             'description': warn}})
+
+        fileListId = self.__file_path_list_len
+
+        for acs in self.__inputParamDict[acs_file_path_list]:
+            file_path = acs['file_name']
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+
+            ignore_error = False if 'ignore_error' not in input_source_dic else input_source_dic['ignore_error']
+
+            fileListId += 1
+
+            if not file_type.startswith('nm-shi-') and file_type != 'nm-aux-xea':
+                continue
+
+            if self.__remediation_mode and os.path.exists(file_path + '-ignored'):
+                continue
+
+            if os.path.exists(file_path + '-corrected'):
+                file_path = file_path + '-corrected'
+
+            file_name = input_source_dic['file_name']
+
+            original_file_name = None
+            if 'original_file_name' in input_source_dic:
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+            if original_file_name in emptyValue:
+                original_file_name = file_name
+
+            reserved_list_ids = None
+            if len(_rlist_ids) > 0:
+                rlist_ids = [item['list_id'] for item in _rlist_ids if item['data_file_name'] != original_file_name]
+                if len(rlist_ids) > 0:
+                    reserved_list_ids = {content_subtype: rlist_ids}
+
+            _cs_format_name = getChemShiftFormatName(file_type)
+            cs_format_name = _cs_format_name.split()[0]
+            a_cs_format_name = ('an ' if cs_format_name[0] in ('AINMX') else 'a ') + _cs_format_name
+
+            suspended_errors_for_lazy_eval.clear()
+
+            if file_type == 'nm-shi-bar':
+                reader = BareCSReader(self.__verbose, self.__lfh,
+                                      nmr_poly_seq, entity_assembly,
+                                      self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                # ignore lexer error beacuse of imcomplete XML file format
+                listener, parser_err_listener, _ =\
+                    reader.parse(file_path,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                if None not in (parser_err_listener, listener)\
+                   and parser_err_listener.getMessageList() is None:
+                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_shi_warn_message_for_lazy_eval(listener)
+
+                        reader = BareCSReader(self.__verbose, self.__lfh,
+                                              nmr_poly_seq, entity_assembly,
+                                              self.__ccU, self.__csStat, self.__nefT,
+                                              reasons)
+
+                        listener, _, _ = reader.parse(file_path,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                    deal_shi_warn_message(listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate assigned chemical shift file {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyCs() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in cs_sf_dict_holder:
+                                    cs_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in cs_sf_dict_holder[content_subtype]:
+                                        cs_sf_dict_holder[content_subtype].append(sf)
+
+        if content_subtype in cs_sf_dict_holder:
+
+            master_entry = self.__star_data[0]
+
+            for sf in cs_sf_dict_holder[content_subtype]:
+
+                data_file_name = get_first_sf_tag(sf['saveframe'], 'Data_file_name')
+
+                if data_file_name not in emptyValue:
+
+                    _sf_list = master_entry.get_saveframes_by_tag_and_value('Data_file_name', data_file_name)
+
+                    if len(_sf_list) == 1:
+
+                        _sf = _sf_list[0]
+
+                        try:
+
+                            _lp = _sf.get_loop('_Atom_chem_shift')
+
+                            del _sf[_lp]
+
+                        except KeyError:
+                            pass
+
+                        _sf.add_loop(sf['loop'])
+
+                    continue
+
+                master_entry.add_saveframe(sf['saveframe'])
 
         return not self.report.isError()
 

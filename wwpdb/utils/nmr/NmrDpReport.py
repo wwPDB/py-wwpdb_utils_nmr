@@ -97,6 +97,7 @@
 # 05-Mar-2025  M. Yokochi - add 'nm-pea-bar' file type for bare spectral peak list file (DAOTHER-8905, 9785, NMR data remediation)
 # 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR data remediation Phase 2)
 # 28-Mar-2025  M. Yokochi - add 'nm-pea-sps' file type for SPARKY's 'save' (aka. ornament) peak list file (DAOTHER-8905, 9785, NMR data remediation Phase 2)
+# 09-Apr-2025  M. Yokochi - add 'nm-shi-ari', 'nm-shi-bar', and 'nm-shi-xea' file_type for standalone NMR data conversion service (v4.4.0, DAOTHER-9785)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -105,7 +106,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "4.3.0"
+__version__ = "4.4.0"
 
 import sys
 import json
@@ -1777,7 +1778,8 @@ class NmrDpReportInputSource:
                            'nm-res-xpl',
                            'nm-pea-any', 'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-pip',
                            'nm-pea-pon', 'nm-pea-spa', 'nm-pea-sps', 'nm-pea-top', 'nm-pea-vie',
-                           'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi')
+                           'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi',
+                           'nm-shi-ari', 'nm-shi-bar', 'nm-shi-xea')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',
                               'nmr-chemical-shifts', 'nmr-restraints', 'nmr-peaks')

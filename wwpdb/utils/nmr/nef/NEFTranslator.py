@@ -105,6 +105,7 @@
 # 27-Dec-2024  M. Yokochi - change class path and visibility of class method (v4.1.1)
 # 19-Feb-2025  M. Yokochi - try to extract sequence using Seq_ID_# tags if necessary (v4.2.0)
 # 12-Mar-2025  M. Yokochi - allow to reset auth_seq_id of cs loop if necessary (v4.3.0, DAOTHER-9927)
+# 09-Apr-2025  M. Yokochi - allow missing of chemical shift loop for standalone NMR data conversion service (v4.4.0, DAOTHER-9785)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -113,7 +114,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "4.3.0"
+__version__ = "4.4.0"
 
 import sys
 import os
@@ -625,6 +626,8 @@ class NEFTranslator:
         self.__bmrb_only = False
         # whether allow missing distance restraints
         self.__allow_missing_dist_restraint = False
+        # whether to skip missing_mandatory_content error for data conversion server (DAOTHER-9785)
+        self.__allow_missing_chem_shift = False
 
         # libDirPath = os.path.dirname(__file__) + '/lib/'
 
@@ -1562,6 +1565,12 @@ class NEFTranslator:
 
         self.__allow_missing_dist_restraint = flag
 
+    def allow_missing_chem_shift(self, flag: bool):
+        """ Whether allow missing assigned chemical shift.
+        """
+
+        self.__allow_missing_chem_shift = flag
+
     def set_chem_comp_dict(self, chem_comp_atom: dict, chem_comp_bond: dict, chem_comp_topo: dict):
         """ Set chem_comp dictionary derived from ParserListerUtil.coordAssemblyChecker().
             DAOTHER-8817: construct pseudo CCD from the coordinates
@@ -1754,7 +1763,7 @@ class NEFTranslator:
                 minimal_lp_category_nef_r = ['_nef_distance_restraint']
 
                 minimal_lp_category_star_a = ['_Atom_chem_shift', '_Gen_dist_constraint']
-                minimal_lp_category_star_s = ['_Atom_chem_shift']
+                minimal_lp_category_star_s = [] if self.__allow_missing_chem_shift else ['_Atom_chem_shift']
                 minimal_lp_category_star_r = ['_Gen_dist_constraint']
                 allowed_lp_category_star_o = ['_Gen_dist_constraint', '_Torsion_angle_constraint', '_RDC_constraint',
                                               '_Homonucl_NOE', '_J_three_bond_constraint', '_RDC',
@@ -1773,7 +1782,7 @@ class NEFTranslator:
                 minimal_sf_category_nef_r = ['nef_distance_restraint_list']
 
                 minimal_sf_category_star_a = ['assigned_chemical_shifts', 'general_distance_constraints']
-                minimal_sf_category_star_s = ['assigned_chemical_shifts']
+                minimal_sf_category_star_s = [] if self.__allow_missing_chem_shift else ['assigned_chemical_shifts']
                 minimal_sf_category_star_r = ['general_distance_constraints']
                 allowed_sf_category_star_o = ['general_distance_constraints', 'torsion_angle_constraints', 'RDC_constraints',
                                               'homonucl_NOEs', 'J_three_bond_constraints', 'RDCs',

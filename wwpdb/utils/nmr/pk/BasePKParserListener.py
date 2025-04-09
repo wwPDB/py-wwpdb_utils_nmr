@@ -928,6 +928,8 @@ class BasePKParserListener():
     isFirstResidueAla = False
     __preferAuthSeq = True
     __extendAuthSeq = False
+    __preferAuthSeqCount = 0
+    __preferLabelSeqCount = 0
 
     # chain number dictionary
     chainNumberDict = None

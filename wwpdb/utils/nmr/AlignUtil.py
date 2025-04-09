@@ -689,6 +689,40 @@ def getRestraintFormatNames(fileTypes: str, ambig: bool = False) -> str:
     return ', or '.join(nameList)
 
 
+def getChemShiftFormatName(fileType: str) -> str:
+    """ Return chemical shift format name.
+    """
+
+    if fileType == 'nmr-star':
+        return 'NMR-STAR data'
+
+    if fileType == 'nef':
+        return 'NEF data'
+
+    if fileType in ('nm-aux-xea', 'nm-shi-xea'):
+        return 'XEASY PROT assignment'
+
+    if fileType == 'nm-shi-ari':
+        return 'ARIA chemical shift assignment'
+
+    return 'other chemical shift assignment'
+
+
+def getChemShiftFormatNames(fileTypes: str) -> str:
+    """ Return chemical shift format name.
+    """
+
+    if len(fileTypes) == 0:
+        return None
+
+    if isinstance(fileTypes, str):
+        return getChemShiftFormatName(fileTypes)
+
+    nameList = [getRestraintFormatName(fileType) for fileType in set(fileTypes)]
+
+    return ', or '.join(nameList)
+
+
 def updatePolySeqRst(polySeqRst: List[dict], chainId: str, seqId: int, compId: str, authCompId: Optional[str] = None):
     """ Update polymer sequence of the current MR file.
     """

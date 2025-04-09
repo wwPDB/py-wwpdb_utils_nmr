@@ -335,7 +335,8 @@ NMR_STAR_SF_TAG_PREFIXES = {'dist_restraint': '_Gen_dist_constraint_list',
                             'fchiral_restraint': '_Floating_chirality_assign',
                             'saxs_restraint': '_SAXS_constraint_list',
                             'other_restraint': '_Other_data_type_list',
-                            'spectral_peak': '_Spectral_peak_list'
+                            'spectral_peak': '_Spectral_peak_list',
+                            'chem_shift': '_Assigned_chem_shift_list'
                             }
 
 NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
@@ -363,7 +364,8 @@ NMR_STAR_SF_CATEGORIES = {'dist_restraint': 'general_distance_constraints',
                           'fchiral_restraint': 'floating_chiral_stereo_assign',
                           'saxs_restraint': 'saxs_constraints',
                           'other_restraint': 'other_data_types',
-                          'spectral_peak': 'spectral_peak_list'
+                          'spectral_peak': 'spectral_peak_list',
+                          'chem_shift': 'assigned_chemical_shifts'
                           }
 
 NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
@@ -662,7 +664,13 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                            {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                            {'name': 'ID', 'type': 'int', 'mandatory': True},  # allows to have software-native id starting from zero
                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
-                                           ]
+                                           ],
+                         'chem_shift': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                        {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                        {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
+                                        {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                        {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                        ]
                          }
 
 NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
@@ -690,7 +698,8 @@ NMR_STAR_LP_CATEGORIES = {'dist_restraint': '_Gen_dist_constraint',
                           'fchiral_restraint': '_Floating_chirality',
                           'saxs_restraint': '_SAXS_constraint',
                           'other_restraint': '_Other_data',
-                          'spectral_peak': '_Peak_row_format'
+                          'spectral_peak': '_Peak_row_format',
+                          'chem_shift': '_Atom_chem_shift'
                           }
 
 NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
@@ -985,7 +994,15 @@ NMR_STAR_LP_KEY_ITEMS = {'dist_restraint': [{'name': 'ID', 'type': 'positive-int
                                              {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                              {'name': 'Atom_ID', 'type': 'str'}
                                              ],
-                         'spectral_peak': [{'name': 'ID', 'type': 'int', 'auto-increment': True}]  # allows to have software-native id starting from zero
+                         'spectral_peak': [{'name': 'ID', 'type': 'int', 'auto-increment': True}],  # allows to have software-native id starting from zero
+                         'chem_shift': [{'name': 'ID', 'type': 'positive-int', 'auto-increment': True},
+                                        {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'Auth_asym_ID'},
+                                        {'name': 'Entity_ID', 'type': 'positive-int'},
+                                        {'name': 'Comp_index_ID', 'type': 'int', 'default-from': 'Seq_ID_1'},
+                                        {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                        {'name': 'Atom_ID', 'type': 'str'},
+                                        {'name': 'Occupancy', 'type': 'positive-float', 'default': '.'}
+                                        ]
                          }
 
 NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
@@ -2181,7 +2198,34 @@ NMR_STAR_LP_DATA_ITEMS = {'dist_restraint': [{'name': 'Index_ID', 'type': 'index
                                      {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True,
                                       'default': '1', 'default-from': 'parent'},
                                      {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
-                                     ]
+                                     ],
+                          'chem_shift': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
+                                          'enum': set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys()),
+                                          'enforce-enum': True},
+                                         {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
+                                          'enum': set(ALLOWED_ISOTOPE_NUMBERS),
+                                          'enforce-enum': True},
+                                         {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                          'remove-bad-patter': True,
+                                          'range': CS_RESTRAINT_RANGE},
+                                         {'name': 'Val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                          'clear-bad-pattern': True,
+                                          'range': CS_UNCERTAINTY_RANGE},
+                                         {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
+                                          'enum': ALLOWED_AMBIGUITY_CODES,
+                                          'enforce-enum': True},
+                                         {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False,
+                                          'enforce-non-zero': True},
+                                         {'name': 'Seq_ID', 'type': 'int', 'mandatory': False},
+                                         {'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
+                                         {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                         {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                         {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                         {'name': 'Details', 'type': 'str', 'mandatory': False},
+                                         {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': True,
+                                          'default': '1', 'default-from': 'parent'},
+                                         {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
+                                         ]
                           }
 
 NMR_STAR_LP_DATA_ITEMS_INS_CODE = {'dist_restraint': copy.copy(NMR_STAR_LP_DATA_ITEMS['dist_restraint'][:-2]),
@@ -7234,6 +7278,8 @@ def getRestraintName(mrSubtype: str, title: bool = False) -> str:
         return "3D spectral peak list"
     if mrSubtype == 'peak4d':
         return "4D spectral peak list"
+    if mrSubtype == 'chem_shift':
+        return "Assigned chemical shift list" if title else "assigned chemical shift list"
 
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
@@ -7270,6 +7316,9 @@ def contentSubtypeOf(mrSubtype: str) -> str:
        or mrSubtype == 'spectral_peak':  # for getAltLoops() and getAuxLoops()
         return 'spectral_peak'
 
+    if mrSubtype == 'chem_shift':
+        return 'chem_shift'
+
     raise KeyError(f'Internal restraint subtype {mrSubtype!r} is not defined.')
 
 
@@ -7304,7 +7353,8 @@ def incListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True,
                          'fchiral_restraint': 0,
                          'saxs_restraint': 0,
                          'other_restraint': 0,
-                         'spectral_peak': 0
+                         'spectral_peak': 0,
+                         'chem_shift': 0
                          }
 
     contentSubtype = (contentSubtypeOf(mrSubtype) if reduced else mrSubtype) if mrSubtype is not None else 'other_restraint'
@@ -7354,7 +7404,8 @@ def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True,
                          'fchiral_restraint': 0,
                          'saxs_restraint': 0,
                          'other_restraint': 0,
-                         'spectral_peak': 0
+                         'spectral_peak': 0,
+                         'chem_shift': 0
                          }
 
     contentSubtype = (contentSubtypeOf(mrSubtype) if reduced else mrSubtype) if mrSubtype is not None else 'other_restraint'
@@ -8659,6 +8710,57 @@ def getSpectralDimTransferRow(listId: int, entryId: str, meta: dict) -> List[Any
         if data_name in meta:
             row[idx] = meta[data_name]
 
+    row[-2] = listId
+    row[-1] = entryId
+
+    return row
+
+
+def getCsRow(csSubtype: str, indexId: int,
+             listId: int, entryId: str, dstFunc: dict,
+             entityAssembly: Optional[dict],
+             atom: dict, ambig_code: Optional[int] = None,
+             details: Optional[str] = None) -> Optional[List[Any]]:
+    """ Return row data for _Atom_chem_shift loop.
+        @return: data array
+    """
+
+    contentSubtype = contentSubtypeOf(csSubtype)
+
+    if contentSubtype is None:
+        return None
+
+    key_size = len(NMR_STAR_LP_KEY_ITEMS[contentSubtype])
+    data_size = len(NMR_STAR_LP_DATA_ITEMS[contentSubtype])
+
+    row = [None] * (key_size + data_size)
+    row[0] = indexId
+    row[1] = atom['chain_id']
+    if entityAssembly is not None and atom['chain_id'] in entityAssembly:
+        row[2] = entityAssembly[atom['chain_id']]['entity_id']
+    row[3], row[4], row[5] = atom['seq_id'], atom['comp_id'], atom['atom_id']
+    if has_key_value(dstFunc, 'occupancy'):
+        row[6] = dstFunc['occupancy']
+
+    row[key_size] = atomType = atom['atom_id'][0]
+    row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+    row[key_size + 2] = dstFunc['position']
+    if has_key_value(dstFunc, 'position_uncertainty'):
+        row[key_size + 3] = dstFunc['position_uncertainty']
+    row[key_size + 4] = ambig_code
+    # row[key_size + 5]: Ambiguity_set_ID
+    row[key_size + 6] = atom['seq_id']
+    if entityAssembly is not None and atom['chain_id'] in entityAssembly:
+        authAsymId = entityAssembly[atom['chain_id']]['auth_asym_id']
+        if authAsymId not in emptyValue:
+            row[key_size + 7] = authAsymId
+    row[key_size + 8], row[key_size + 9], row[key_size + 10] =\
+        atom['auth_seq_id' if 'auth_seq_id' in atom else 'seq_id'], \
+        atom['auth_comp_id' if 'auth_comp_id' in atom else 'comp_id'], \
+        atom['auth_atom_id' if 'auth_atom_id' in atom else 'atom_id']
+
+    if details is not None:
+        row[-3] = details
     row[-2] = listId
     row[-1] = entryId
 

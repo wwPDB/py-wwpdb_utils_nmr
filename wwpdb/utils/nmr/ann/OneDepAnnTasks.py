@@ -114,8 +114,8 @@ def get_nmr_software(name: str) -> str:
     for software in NMR_SOFTWERE_LIST:
         _software = software.lower()
 
-        pA.setReferenceSequence([c for c in _software], 'REFNAME')
-        pA.addTestSequence([c for c in _name], 'NAME')
+        pA.setReferenceSequence([c for c in _software], 'REFNAME')  # pylint: disable=unnecessary-comprehension
+        pA.addTestSequence([c for c in _name], 'NAME')  # pylint: disable=unnecessary-comprehension
         pA.doAlign()
 
         myAlign = pA.getAlignment('NAME')

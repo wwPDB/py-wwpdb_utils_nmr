@@ -117,11 +117,12 @@ def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
         if len(value) == 0:
             value = None
 
-        while value.startswith('$$'):
-            value = value[1:]
+        if value is not None:
+            while value.startswith('$$'):
+                value = value[1:]
 
-        if len(value) == 0 or value == '$':
-            value = None
+            if len(value) == 0 or value == '$':
+                value = None
 
     if tag not in tagNames:
         sf.add_tag(tag, value)

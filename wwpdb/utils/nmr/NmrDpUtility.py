@@ -37891,7 +37891,7 @@ class NmrDpUtility:
                     pass
 
         if self.__caC is not None:
-            nmr_poly_seq = self.__caC['polymer_sequence']
+            nmr_poly_seq = copy.deepcopy(self.__caC['polymer_sequence'])
             if self.__caC['branched'] is not None:
                 nmr_poly_seq.extend(self.__caC['branched'])
             if self.__caC['non_polymer'] is not None:

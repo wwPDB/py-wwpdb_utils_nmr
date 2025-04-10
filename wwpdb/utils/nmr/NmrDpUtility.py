@@ -38091,11 +38091,11 @@ class NmrDpUtility:
                                                                {'file_name': data_file_name,
                                                                 'description': warn}})
 
-                    # elif warn.startswith('[Atom not found]'):
-                    #     if not self.__remediation_mode or 'Macromolecules page' not in warn:
-                    #         suspended_errors_for_lazy_eval.append({'atom_not_found':
-                    #                                                {'file_name': data_file_name,
-                    #                                                 'description': warn}})
+                    elif warn.startswith('[Atom not found]'):
+                        if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                            suspended_errors_for_lazy_eval.append({'atom_not_found':
+                                                                   {'file_name': data_file_name,
+                                                                    'description': warn}})
 
                     # elif warn.startswith('[Hydrogen not instantiated]'):
                     #     if self.__remediation_mode:

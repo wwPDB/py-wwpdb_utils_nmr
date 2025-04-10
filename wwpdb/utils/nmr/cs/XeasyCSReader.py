@@ -1,9 +1,9 @@
 ##
-# AriaCSReader.py
+# XeasyCSReader.py
 #
 # Update:
 ##
-""" A collection of classes for parsing ARIA CS files.
+""" A collection of classes for parsing XEASY CS files.
 """
 __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
@@ -20,9 +20,9 @@ from typing import IO, List, Tuple, Optional
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-    from wwpdb.utils.nmr.pk.XMLLexer import XMLLexer
-    from wwpdb.utils.nmr.pk.XMLParser import XMLParser
-    from wwpdb.utils.nmr.cs.AriaCSParserListener import AriaCSParserListener
+    from wwpdb.utils.nmr.pk.XeasyPROTLexer import XeasyPROTLexer
+    from wwpdb.utils.nmr.pk.XeasyPROTParser import XeasyPROTParser
+    from wwpdb.utils.nmr.cs.XeasyCSParserListener import XeasyCSParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import MAX_ERROR_REPORT
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -30,17 +30,17 @@ try:
 except ImportError:
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
-    from nmr.pk.XMLLexer import XMLLexer
-    from nmr.pk.XMLParser import XMLParser
-    from nmr.cs.AriaCSParserListener import AriaCSParserListener
+    from nmr.pk.XeasyPROTLexer import XeasyPROTLexer
+    from nmr.pk.XeasyPROTParser import XeasyPROTParser
+    from nmr.cs.XeasyCSParserListener import XeasyCSParserListener
     from nmr.mr.ParserListenerUtil import MAX_ERROR_REPORT
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
-class AriaCSReader:
-    """ Accessor methods for parsing ARIA CS files.
+class XeasyCSReader:
+    """ Accessor methods for parsing XEASY CS files.
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -86,9 +86,9 @@ class AriaCSReader:
     def parse(self, csFilePath: str, isFilePath: bool = True,
               createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None,
               reservedListIds: Optional[dict] = None, entryId: Optional[str] = None
-              ) -> Tuple[Optional[AriaCSParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
-        """ Parse ARIA CS file.
-            @return: AriaCSParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
+              ) -> Tuple[Optional[XeasyCSParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
+        """ Parse XEASY CS file.
+            @return: XeasyCSParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
         ifh = None
@@ -116,7 +116,7 @@ class AriaCSReader:
 
                 input = InputStream(csString)
 
-            lexer = XMLLexer(input)
+            lexer = XeasyPROTLexer(input)
             lexer.removeErrorListeners()
 
             lexer_error_listener = LexerErrorListener(csFilePath, maxErrorReport=self.__maxLexerErrorReport, ignoreCodicError=True)
@@ -132,19 +132,19 @@ class AriaCSReader:
                         self.__lfh.write(f"{description['marker']}\n")
 
             stream = CommonTokenStream(lexer)
-            parser = XMLParser(stream)
+            parser = XeasyPROTParser(stream)
             # try with simpler/faster SLL prediction mode
             # parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(csFilePath, maxErrorReport=self.__maxParserErrorReport, ignoreCodicError=True)
             parser.addErrorListener(parser_error_listener)
-            tree = parser.document()
+            tree = parser.xeasy_prot()
 
             walker = ParseTreeWalker()
-            listener = AriaCSParserListener(self.__verbose, self.__lfh,
-                                            self.__polySeq, self.__entityAssembly,
-                                            self.__ccU, self.__csStat, self.__nefT,
-                                            self.__reasons)
+            listener = XeasyCSParserListener(self.__verbose, self.__lfh,
+                                             self.__polySeq, self.__entityAssembly,
+                                             self.__ccU, self.__csStat, self.__nefT,
+                                             self.__reasons)
             listener.setDebugMode(self.__debug)
             listener.createSfDict(createSfDict)
             if createSfDict:
@@ -186,20 +186,16 @@ class AriaCSReader:
 
 if __name__ == "__main__":
     nmr_poly_seq = [{'chain_id': '1',
-                     'seq_id': list(range(1, 120)),
-                     'comp_id': ['SER', 'ALA', 'LYS', 'ASP', 'ILE', 'LYS', 'ASP', 'GLU', 'LYS', 'ILE', 'GLN', 'GLN', 'TYR', 'ARG', 'LYS', 'THR', 'LEU', 'THR', 'LYS', 'ILE',
-                                 'VAL', 'LYS', 'ILE', 'LYS', 'THR', 'ALA', 'ILE', 'PHE', 'HIS', 'GLU', 'THR', 'VAL', 'LYS', 'VAL', 'THR', 'CYS', 'SER', 'LYS', 'ASP', 'GLY',
-                                 'LYS', 'MET', 'LEU', 'GLU', 'TRP', 'TYR', 'LYS', 'GLY', 'LYS', 'ASN', 'ASP', 'SER', 'ASP', 'GLY', 'LYS', 'LYS', 'LYS', 'PRO', 'ILE', 'GLY',
-                                 'SER', 'PHE', 'PRO', 'LEU', 'ASN', 'LYS', 'ILE', 'THR', 'SER', 'ILE', 'ARG', 'THR', 'LYS', 'VAL', 'ASP', 'ASN', 'LEU', 'LYS', 'SER', 'LEU',
-                                 'GLU', 'ILE', 'SER', 'VAL', 'SER', 'SER', 'VAL', 'HIS', 'ILE', 'SER', 'THR', 'TYR', 'LEU', 'PHE', 'THR', 'PHE', 'LYS', 'THR', 'ARG', 'GLU',
-                                 'GLU', 'ARG', 'GLU', 'SER', 'TRP', 'GLN', 'ASN', 'ASN', 'LEU', 'GLU', 'SER', 'PHE', 'ARG', 'LYS', 'ILE', 'MET', 'SER', 'MET', 'LYS']
+                     'seq_id': list(range(1, 82)),
+                     'comp_id': ['ALA', 'MET', 'GLY', 'ASN', 'LYS', 'ILE', 'TYR', 'VAL', 'GLY', 'GLY', 'LEU', 'PRO', 'THR', 'CYS', 'LEU', 'ASN', 'GLN', 'ASP', 'GLN', 'VAL',
+                                 'LYS', 'GLU', 'LEU', 'LEU', 'GLN', 'SER', 'PHE', 'GLY', 'GLU', 'LEU', 'LYS', 'GLY', 'LEU', 'ASN', 'LEU', 'VAL', 'MET', 'ASP', 'THR', 'ASN',
+                                 'THR', 'ASN', 'LEU', 'ASN', 'LYS', 'GLY', 'PHE', 'ALA', 'PHE', 'PHE', 'GLU', 'TYR', 'CYS', 'ASP', 'PRO', 'SER', 'VAL', 'THR', 'ASP', 'HIS',
+                                 'ALA', 'ILE', 'ALA', 'GLY', 'LEU', 'HIS', 'GLY', 'MET', 'LEU', 'LEU', 'GLY', 'ASP', 'ARG', 'ARG', 'LEU', 'VAL', 'VAL', 'GLN', 'ARG', 'SER',
+                                 'ILE']
                      }]
-    entity_assembly = {'1': {'entity_id': 1, 'auth_asym_id': 'A'}}
-    reader = AriaCSReader(True, polySeq=nmr_poly_seq, entityAssembly=entity_assembly)
+    entity_assembly = {'1': {'entity_id': 1, 'auth_asym_id': '.'}}
+    reader = XeasyCSReader(True, polySeq=nmr_poly_seq, entityAssembly=entity_assembly)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-remediation/6f24/bmr34202/work/data/D_1200007358_nmr-peaks-upload_P1.dat.V1')
+        reader.parse('../../tests-nmr/mock-data-remediation/7aaf/bmr34555/work/data/D_1292111069_nmr-peaks-upload_P2.dat.V1')
     print(reader_listener.getReasonsForReparsing())
-    reader = AriaCSReader(True, polySeq=nmr_poly_seq, entityAssembly=entity_assembly, reasons=reader_listener.getReasonsForReparsing())
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6f24/bmr34202/work/data/D_1200007358_nmr-peaks-upload_P1.dat.V1')

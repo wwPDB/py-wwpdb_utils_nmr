@@ -812,7 +812,7 @@ class BaseCSParserListener():
                 elif resIdSpan[idx][1] + 1 == len(term):
                     term = _str[idx] = term[0:resIdSpan[idx][1]]
 
-            for elem in reversed(CHEM_SHIFT_HALF_SPIN_NUCLEUS):
+            for elem in reversed(CHEM_SHIFT_HALF_SPIN_NUCLEUS) if 'NH' in term else CHEM_SHIFT_HALF_SPIN_NUCLEUS:
                 if len(elem) == 1 and ligAtomId is None:
                     if elem in term:
 
@@ -944,7 +944,7 @@ class BaseCSParserListener():
 
             if atomNameLike[idx]:
                 _term = term[0:atomNameSpan[idx][0]]
-                for elem in reversed(CHEM_SHIFT_HALF_SPIN_NUCLEUS):
+                for elem in reversed(CHEM_SHIFT_HALF_SPIN_NUCLEUS) if 'NH' in _term else CHEM_SHIFT_HALF_SPIN_NUCLEUS:
                     if len(elem) == 1 and ligAtomId is None:
                         if elem in _term:
                             index = _term.rindex(elem)
@@ -999,7 +999,7 @@ class BaseCSParserListener():
 
             if numOfDim >= 3 and _atomNameLike[idx]:
                 __term = term[0:_atomNameSpan[idx][0]]
-                for elem in reversed(CHEM_SHIFT_HALF_SPIN_NUCLEUS):
+                for elem in reversed(CHEM_SHIFT_HALF_SPIN_NUCLEUS) if 'NH' in __term else CHEM_SHIFT_HALF_SPIN_NUCLEUS:
                     if len(elem) == 1 and ligAtomId is None:
                         if elem in __term:
                             index = __term.rindex(elem)
@@ -1054,7 +1054,7 @@ class BaseCSParserListener():
 
             if numOfDim >= 4 and __atomNameLike[idx]:
                 ___term = term[0:__atomNameSpan[idx][0]]
-                for elem in reversed(CHEM_SHIFT_HALF_SPIN_NUCLEUS):
+                for elem in reversed(CHEM_SHIFT_HALF_SPIN_NUCLEUS) if 'NH' in ___term else CHEM_SHIFT_HALF_SPIN_NUCLEUS:
                     if len(elem) == 1 and ligAtomId is None:
                         if elem in ___term:
                             index = ___term.rindex(elem)

@@ -28808,7 +28808,7 @@ class NmrDpUtility:
                                     _row[6] = atom_ids[-1]
 
                                 if fill_auth_atom_id:
-                                    _row[19] = _row[6]
+                                    _row[19] = _row[6] if self.__caC is not None or row[auth_atom_id_col] in emptyValue else row[auth_atom_id_col]
 
                     # DAOTHER-9065
                     if isinstance(_row[1], int) and str(_row[1]) not in seq_id_offset_for_unmapped and _row[24] in emptyValue:

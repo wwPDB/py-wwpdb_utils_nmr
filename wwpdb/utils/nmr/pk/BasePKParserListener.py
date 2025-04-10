@@ -6082,7 +6082,7 @@ class BasePKParserListener():
                 elif resIdSpan[idx][1] + 1 == len(term):
                     term = _str[idx] = term[0:resIdSpan[idx][1]]
 
-            for elem in PEAK_HALF_SPIN_NUCLEUS:
+            for elem in reversed(PEAK_HALF_SPIN_NUCLEUS):
                 if len(elem) == 1 and ligAtomId is None:
                     if elem in term:
 
@@ -6214,7 +6214,7 @@ class BasePKParserListener():
 
             if atomNameLike[idx]:
                 _term = term[0:atomNameSpan[idx][0]]
-                for elem in PEAK_HALF_SPIN_NUCLEUS:
+                for elem in reversed(PEAK_HALF_SPIN_NUCLEUS):
                     if len(elem) == 1 and ligAtomId is None:
                         if elem in _term:
                             index = _term.rindex(elem)
@@ -6269,7 +6269,7 @@ class BasePKParserListener():
 
             if numOfDim >= 3 and _atomNameLike[idx]:
                 __term = term[0:_atomNameSpan[idx][0]]
-                for elem in PEAK_HALF_SPIN_NUCLEUS:
+                for elem in reversed(PEAK_HALF_SPIN_NUCLEUS):
                     if len(elem) == 1 and ligAtomId is None:
                         if elem in __term:
                             index = __term.rindex(elem)
@@ -6324,7 +6324,7 @@ class BasePKParserListener():
 
             if numOfDim >= 4 and __atomNameLike[idx]:
                 ___term = term[0:__atomNameSpan[idx][0]]
-                for elem in PEAK_HALF_SPIN_NUCLEUS:
+                for elem in reversed(PEAK_HALF_SPIN_NUCLEUS):
                     if len(elem) == 1 and ligAtomId is None:
                         if elem in ___term:
                             index = ___term.rindex(elem)

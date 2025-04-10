@@ -57868,7 +57868,7 @@ class NmrDpUtility:
 
         if not self.__combined_mode:
 
-            if self.__bmrb_only or self.__internal_mode:
+            if (self.__bmrb_only or self.__internal_mode) and self.__dstPath is not None:
                 master_entry = self.__star_data[0]
 
                 master_entry = self.__c2S.normalize(master_entry)

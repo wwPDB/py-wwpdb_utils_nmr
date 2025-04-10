@@ -3,7 +3,7 @@
 #
 # Update:
 ##
-""" A collection of classes for parsing XEASY CS files.
+""" A collection of classes for parsing XEASY CS (aka. PROT) files.
 """
 __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
@@ -40,7 +40,7 @@ except ImportError:
 
 
 class XeasyCSReader:
-    """ Accessor methods for parsing XEASY CS files.
+    """ Accessor methods for parsing XEASY CS (aka. PROT) files.
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,

@@ -1,9 +1,9 @@
 ##
-# File: XeasuyCSParserListener.py
+# File: XeasyCSParserListener.py
 # Date: 10-Apr-2025
 #
 # Updates:
-""" ParserLister class for Xeasuy CS (aka. PROT) files.
+""" ParserLister class for XEASY CS (aka. PROT) files.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"

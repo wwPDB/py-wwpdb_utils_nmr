@@ -83,7 +83,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
             elif (col_name.endswith('%') or col_name.endswith('#')) and col_name[:-1] + '2' in cs_atom_like_names:
                 self.__col_order.append('atom_name_instance')
             elif 'RES' in col_name or 'SEQ' in col_name or 'COMP' in col_name:
-                if 'NUM' not in col_name or 'COMP_ID' in col_name:
+                if 'COMP_ID' in col_name or 'NAME' in col_name or 'TYPE' in col_name:
                     self.__col_order.append('residue_name')
                 else:
                     self.__col_order.append('sequence_code')
@@ -134,6 +134,16 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
     # Exit a parse tree produced by BareCSParser#cs_raw_list.
     def exitCs_raw_list(self, ctx: BareCSParser.Cs_raw_listContext):  # pylint: disable=unused-argument
+
+        def cancat_assignment(chain, seq, comp, atom):
+            L = ''
+            if chain is not None:
+                L = chain + ':'
+            L += str(seq) + ':'
+            if comp is not None:
+                L += comp + ':'
+            L += atom
+            return L
 
         try:
 
@@ -215,13 +225,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                     if dstFunc is None:
                         continue
 
-                    L = ''
-                    if chain_id is not None:
-                        L = chain_id + ':'
-                    L += str(seq_id) + ':'
-                    if comp_id is not None:
-                        L += comp_id + ':'
-                    L += atom_id
+                    L = cancat_assignment(chain_id, seq_id, comp_id, atom_id)
 
                     assignment = self.extractAssignment(1, L, self.cur_line_num, chain_id is not None)
 
@@ -313,13 +317,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                     if dstFunc is None:
                         continue
 
-                    L = ''
-                    if chain_id is not None:
-                        L = chain_id + ':'
-                    L += str(seq_id) + ':'
-                    if comp_id is not None:
-                        L += comp_id + ':'
-                    L += atom_id
+                    L = cancat_assignment(chain_id, seq_id, comp_id, atom_id)
 
                     assignment = self.extractAssignment(1, L, self.cur_line_num, chain_id is not None)
 

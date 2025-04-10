@@ -1319,7 +1319,14 @@ class BasePKParserListener():
                                and not any(k for k, v in seq_id_mapping.items()
                                            if v in poly_seq_model['seq_id']
                                            and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
-                                seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
+                                offsets = [v - k for k, v in seq_id_mapping.items()]
+                                offsets = collections.Counter(offsets).most_common()
+                                if len(offsets) == 1:
+                                    offset = offsets[0][0]
+                                    seq_id_mapping = {ref_seq_id - offset: ref_seq_id for ref_seq_id in poly_seq_model['auth_seq_id']}
+                                item = {'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping}
+                                if item not in seqIdRemap:
+                                    seqIdRemap.append(item)
 
                         if len(seqIdRemap) > 0:
                             if 'seq_id_remap' not in self.reasonsForReParsing:
@@ -1428,8 +1435,14 @@ class BasePKParserListener():
                                        and not any(k for k, v in seq_id_mapping.items()
                                                    if v in poly_seq_model['seq_id']
                                                    and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
-                                        seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
-                                                                 'comp_id_set': list(set(poly_seq_model['comp_id']))})
+                                        offsets = [v - k for k, v in seq_id_mapping.items()]
+                                        offsets = collections.Counter(offsets).most_common()
+                                        if len(offsets) == 1:
+                                            offset = offsets[0][0]
+                                            seq_id_mapping = {ref_seq_id - offset: ref_seq_id for ref_seq_id in poly_seq_model['auth_seq_id']}
+                                        item = {'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping, 'comp_id_set': list(set(poly_seq_model['comp_id']))}
+                                        if item not in seqIdRemap:
+                                            seqIdRemapFailed.append(item)
 
                                 if len(seqIdRemapFailed) > 0:
                                     if 'chain_seq_id_remap' not in self.reasonsForReParsing:

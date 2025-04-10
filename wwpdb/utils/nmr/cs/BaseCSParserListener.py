@@ -385,9 +385,10 @@ class BaseCSParserListener():
                                     continue
                                 if mid_code == '|':
                                     try:
-                                        seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
-                                                                           in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
-                                                                           if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
+                                        seq_id_mapping[test_seq_id] =\
+                                            next(auth_seq_id for auth_seq_id, seq_id
+                                                 in zip(poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model else 'seq_id'], poly_seq_model['seq_id'])
+                                                 if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                         if offset is None:
                                             offset = seq_id_mapping[test_seq_id] - test_seq_id
                                     except StopIteration:
@@ -395,9 +396,10 @@ class BaseCSParserListener():
                                 elif mid_code == ' ' and test_seq_id in poly_seq_rst['seq_id']:
                                     idx = poly_seq_rst['seq_id'].index(test_seq_id)
                                     if poly_seq_rst['comp_id'][idx] == '.' and poly_seq_rst['auth_comp_id'][idx] not in emptyValue:
-                                        seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
-                                                                           in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
-                                                                           if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
+                                        seq_id_mapping[test_seq_id] =\
+                                            next(auth_seq_id for auth_seq_id, seq_id
+                                                 in zip(poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model else 'seq_id'], poly_seq_model['seq_id'])
+                                                 if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
 
                             if offset is not None and all(v - k == offset for k, v in seq_id_mapping.items()):
                                 test_seq_id_list = list(seq_id_mapping.keys())
@@ -410,8 +412,16 @@ class BaseCSParserListener():
                             if any(k for k, v in seq_id_mapping.items() if k != v)\
                                and not any(k for k, v in seq_id_mapping.items()
                                            if v in poly_seq_model['seq_id']
-                                           and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
-                                seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
+                                           and k == poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model else 'seq_id'][poly_seq_model['seq_id'].index(v)]):
+                                offsets = [v - k for k, v in seq_id_mapping.items()]
+                                offsets = collections.Counter(offsets).most_common()
+                                if len(offsets) == 1:
+                                    offset = offsets[0][0]
+                                    seq_id_mapping = {ref_seq_id - offset: ref_seq_id for ref_seq_id
+                                                      in poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model else 'seq_id']}
+                                item = {'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping}
+                                if item not in seqIdRemap:
+                                    seqIdRemap.append(item)
 
                         if len(seqIdRemap) > 0:
                             if 'seq_id_remap' not in self.reasonsForReParsing:
@@ -462,9 +472,10 @@ class BaseCSParserListener():
                                             continue
                                         if mid_code == '|':
                                             try:
-                                                seq_id_mapping[test_seq_id] = next(auth_seq_id for auth_seq_id, seq_id
-                                                                                   in zip(poly_seq_model['auth_seq_id'], poly_seq_model['seq_id'])
-                                                                                   if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
+                                                seq_id_mapping[test_seq_id] =\
+                                                    next(auth_seq_id for auth_seq_id, seq_id
+                                                         in zip(poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model else 'seq_id'], poly_seq_model['seq_id'])
+                                                         if seq_id == ref_seq_id and isinstance(auth_seq_id, int))
                                             except StopIteration:
                                                 if uniq_ps:
                                                     seq_id_mapping[test_seq_id] = ref_seq_id
@@ -493,9 +504,16 @@ class BaseCSParserListener():
                                     if any(k for k, v in seq_id_mapping.items() if k != v)\
                                        and not any(k for k, v in seq_id_mapping.items()
                                                    if v in poly_seq_model['seq_id']
-                                                   and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
-                                        seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
-                                                                 'comp_id_set': list(set(poly_seq_model['comp_id']))})
+                                                   and k == poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model else 'seq_id'][poly_seq_model['seq_id'].index(v)]):
+                                        offsets = [v - k for k, v in seq_id_mapping.items()]
+                                        offsets = collections.Counter(offsets).most_common()
+                                        if len(offsets) == 1:
+                                            offset = offsets[0][0]
+                                            seq_id_mapping = {ref_seq_id - offset: ref_seq_id for ref_seq_id
+                                                              in poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model else 'seq_id']}
+                                        item = {'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping, 'comp_id_set': list(set(poly_seq_model['comp_id']))}
+                                        if item not in seqIdRemapFailed:
+                                            seqIdRemapFailed.append(item)
 
                                 if len(seqIdRemapFailed) > 0:
                                     if 'chain_seq_id_remap' not in self.reasonsForReParsing:
@@ -534,7 +552,8 @@ class BaseCSParserListener():
                                                     comp_id_mapping[seq_id] = comp_id
                                             if any(k for k, v in seq_id_mapping.items() if k != v)\
                                                or ('label_seq_scheme' not in self.reasonsForReParsing
-                                                   and all(v not in poly_seq_model['auth_seq_id'] for v in seq_id_mapping.values())):
+                                                   and all(v not in poly_seq_model['auth_seq_id' if 'auth_seq_id' in poly_seq_model else 'seq_id']
+                                                           for v in seq_id_mapping.values())):
                                                 seqIdRemapFailed.append({'chain_id': ref_chain_id, 'seq_id_dict': seq_id_mapping,
                                                                          'comp_id_dict': comp_id_mapping})
 
@@ -645,7 +664,7 @@ class BaseCSParserListener():
         return has_assignments, has_multiple_assignments
 
     def addCsRow(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
-                 debug_label: Optional[str], details: Optional[str]):
+                 debug_label: Optional[str], details: Optional[str] = None, default_ambig_code: Optional[int] = None):
 
         if self.debug:
             if not has_assignments:
@@ -665,8 +684,8 @@ class BaseCSParserListener():
             if sf is not None:
                 sf['id'] = index
                 sf['index_id'] += 1
-                ambig_code = None
-                if has_assignments and not has_multiple_assignments:
+                ambig_code = default_ambig_code
+                if has_assignments and not has_multiple_assignments and default_ambig_code is None:
                     atom = self.atomSelectionSet[0][0]
                     if len(self.atomSelectionSet[0]) > 1:
                         ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom['comp_id'], atom['atom_id'])

@@ -2934,7 +2934,7 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel: List[dict], polySeqRst: List[d
 
         ref_chain_id = ref_chain_ids[0]
 
-        ref_ps = next(ps for ps in polySeqModel if ps['auth_chain_id'] == ref_chain_id)
+        ref_ps = next(ps for ps in polySeqModel if ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'] == ref_chain_id)
         len_ref_ps = len(ref_ps['seq_id'])
 
         test_ps = next(ps for ps in _polySeqRst if ps['chain_id'] == test_chain_id)

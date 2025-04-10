@@ -69,12 +69,12 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
         cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))
         cs_atom_like_names.extend(['HN', 'CO'])
 
+        self.software_name = None
+
         self.__col_name = []
         self.__col_order = []
 
-        i = 0
-        while ctx.Simple_name(i):
-            col_name = str(ctx.Simple_name(i)).upper()
+        def register_column_info(col_name):
             self.__col_name.append(col_name)
             if col_name in cs_atom_like_names or col_name.endswith('#') or col_name.endswith('#'):
                 self.__col_order.append('atom_name_instance')
@@ -82,8 +82,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 self.__col_order.append('atom_name_instance')
             elif (col_name.endswith('%') or col_name.endswith('#')) and col_name[:-1] + '2' in cs_atom_like_names:
                 self.__col_order.append('atom_name_instance')
-            elif 'RES' in col_name or 'SEQ' in col_name or 'COMP' in col_name:
-                if 'COMP_ID' in col_name or 'NAME' in col_name or 'TYPE' in col_name:
+            elif 'RES' in col_name or 'SEQ' in col_name or 'COMP' in col_name or 'GROUP' in col_name or 'LABEL' in col_name:
+                if 'COMP_ID' in col_name or 'NAME' in col_name or 'TYPE' in col_name or 'GROUP' in col_name or 'LABEL' in col_name:
                     self.__col_order.append('residue_name')
                 else:
                     self.__col_order.append('sequence_code')
@@ -91,19 +91,19 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 self.__col_order.append('chain_code')
             elif 'ATOM' in col_name and 'TYPE' not in col_name and 'ISOTOPE' not in col_name and 'NUM' not in col_name:
                 self.__col_order.append('atom_name')
-            elif 'ASS' in col_name:
+            elif 'ASS' in col_name and 'ASSIGNMENTS' not in col_name:
                 self.__col_order.append('assignment')
             elif 'ID' in col_name or 'NUM' in col_name or 'INDEX' in col_name:
                 self.__col_order.append('index')
-            elif 'SHIFT' in col_name or 'VAL' in col_name and 'ERR' not in col_name and 'UNCERT' not in col_name:
+            elif ('SHIFT' in col_name or 'VAL' in col_name) and 'ERR' not in col_name and 'UNCERT' not in col_name:
                 self.__col_order.append('value')
-            elif 'ERR' in col_name and 'UNCERT' in col_name:
+            elif 'ERR' in col_name or 'UNCERT' in col_name or 'DEV' in col_name:
                 self.__col_order.append('value_uncertainty')
-            elif ('ATOM' in col_name and 'TYPE' in col_name) or 'ELEM' in col_name:
+            elif ('ATOM' in col_name and 'TYPE' in col_name) or 'ELEM' in col_name or 'NUC' in col_name:
                 self.__col_order.append('element')
             elif 'ISOTOPE' in col_name:
                 self.__col_order.append('isotope_number')
-            elif 'LABEL' in col_name or 'COMMENT' in col_name or 'DETAIL' in col_name or 'MEMO' in col_name:
+            elif 'COMMENT' in col_name or 'DETAIL' in col_name or 'MEMO' in col_name:
                 self.__col_order.append('details')
             elif 'OCC' in col_name:
                 self.__col_order.append('occupancy')
@@ -116,7 +116,22 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                     self.__col_order.append('ambiguity_set_id')
             else:
                 self.__col_order.append('unknown')
-            i += 1
+
+        if ctx.Simple_name(0):
+            i = 0
+            while ctx.Simple_name(i):
+                register_column_info(str(ctx.Simple_name(i)).upper())
+                i += 1
+
+        elif ctx.Double_quote_string(0):
+            i = 0
+            while ctx.Double_quote_string(i):
+                register_column_info(str(ctx.Double_quote_string(i)).strip('"').upper())
+                i += 1
+
+        sparky_resonance_columns = ('GROUP', 'ATOM', 'NUC', 'SHIFT', 'SDEV')
+        if all(col_name in self.__col_name for col_name in sparky_resonance_columns):
+            self.software_name = 'SPARKY'
 
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
@@ -139,7 +154,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
             L = ''
             if chain is not None:
                 L = chain + ':'
-            L += str(seq) + ':'
+            if seq is not None:
+                L += str(seq) + ':'
             if comp is not None:
                 L += comp + ':'
             L += atom
@@ -165,16 +181,15 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 self.__col_name.insert(0, 'N/A')
                 len_ord += 1
 
-            if not (('sequence_code' in self.__col_order and 'atom_name_instance' in self.__col_order)
-                    or ('value' in self.__col_order and (('sequence_code' in self.__col_order and 'atom_name' in self.__col_order)
-                                                         or ('assignment' in self.__col_order
-                                                             and 'sequence_code' not in self.__col_order and 'atom_name' not in self.__col_order)))):
+            if not ((('sequence_code' in self.__col_order or 'residue_name' in self.__col_order) and 'atom_name_instance' in self.__col_order)
+                    or ('value' in self.__col_order and ((('sequence_code' in self.__col_order or 'residue_name' in self.__col_order) and 'atom_name' in self.__col_order)
+                                                         or ('assignment' in self.__col_order and 'atom_name' not in self.__col_order)))):
                 return
 
             if not self.hasPolySeq:
                 return
 
-            if 'sequence_code' in self.__col_order and 'atom_name_instance' in self.__col_order:
+            if ('sequence_code' in self.__col_order or 'residue_name' in self.__col_order) and 'atom_name_instance' in self.__col_order:
 
                 chain_id = seq_id = comp_id = None
                 atom_ids, values, details = [], [], []
@@ -190,9 +205,13 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                         elif order == 'sequence_code':
                             if isinstance(self.anySelection[idx], int):
                                 seq_id = self.anySelection[idx]
+                            elif isinstance(self.anySelection[idx], str):
+                                comp_id = self.anySelection[idx]
                         elif order == 'residue_name':
                             if isinstance(self.anySelection[idx], str):
                                 comp_id = self.anySelection[idx]
+                            elif isinstance(self.anySelection[idx], int):
+                                seq_id = self.anySelection[idx]
                         elif order == 'atom_name_instance':
                             if isinstance(self.anySelection[idx], float):
                                 value = self.anySelection[idx]
@@ -238,7 +257,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                     self.chemShifts += 1
 
-            elif 'sequence_code' in self.__col_order and 'atom_name' in self.__col_order:
+            elif ('sequence_code' in self.__col_order or 'residue_name' in self.__col_order) and 'atom_name' in self.__col_order:
 
                 chain_id = seq_id = comp_id = None
                 atom_ids, values, value_uncertainties, occupancies, figure_of_merits, details = [], [], [], [], [], []
@@ -254,9 +273,13 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                         elif order == 'sequence_code':
                             if isinstance(self.anySelection[idx], int):
                                 seq_id = self.anySelection[idx]
+                            elif isinstance(self.anySelection[idx], str):
+                                comp_id = self.anySelection[idx]
                         elif order == 'residue_name':
                             if isinstance(self.anySelection[idx], str):
                                 comp_id = self.anySelection[idx]
+                            elif isinstance(self.anySelection[idx], int):
+                                seq_id = self.anySelection[idx]
                         elif order == 'atom_name':
                             if isinstance(self.anySelection[idx], str):
                                 atom_ids.append(self.anySelection[idx])
@@ -433,8 +456,19 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 value = str(ctx.Integer())
                 self.anySelection.append(int(value))
 
+            elif ctx.Simple_name():
+                self.anySelection.append(str(ctx.Simple_name()))
+
+            elif ctx.Double_quote_float():
+                value = str(ctx.Double_quote_float()).strip('"')
+                self.anySelection.append(float(value))
+
+            elif ctx.Double_quote_integer():
+                value = str(ctx.Double_quote_integer()).strip('"')
+                self.anySelection.append(int(value))
+
             else:
-                self.anySelection.append(ctx.Simple_name())
+                self.anySelection.append(str(ctx.Double_quote_string()).strip('"'))
 
         except ValueError:
             self.anySelection.append(None)

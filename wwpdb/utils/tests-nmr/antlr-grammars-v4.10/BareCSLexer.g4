@@ -40,6 +40,10 @@ fragment NAME_CHAR:	START_CHAR | '\'' | '"' | ',' | ';' | '#' | '%' | '|' | '/' 
 //fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
+Double_quote_string:	'"' SIMPLE_NAME '"';
+Double_quote_integer:	'"' Integer '"';
+Double_quote_float:	'"' Float '"';
+
 SPACE:			[, \t]+ -> skip;
 RETURN:			[\r\n]+;
 

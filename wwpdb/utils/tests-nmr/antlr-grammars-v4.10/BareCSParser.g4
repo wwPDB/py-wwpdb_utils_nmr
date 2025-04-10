@@ -27,12 +27,12 @@ bare_cs:
 	EOF;
 
 cs_raw_format:
-	Simple_name+ RETURN
+	(Simple_name+ | Double_quote_string+) RETURN
 	cs_raw_list+;
 
 cs_raw_list:
 	any+ (RETURN | EOF);
 
 /* any data expression in peak list */
-any:	Float | Integer | Simple_name;
+any:	Float | Integer | Simple_name | Double_quote_float | Double_quote_integer | Double_quote_string;
 

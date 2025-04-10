@@ -1,5 +1,5 @@
 ##
-# File: BasePKParserListener.py
+# File: BaseCSParserListener.py
 # Date: 08-Apr-2025
 #
 # Updates:
@@ -3649,7 +3649,7 @@ class BaseCSParserListener():
         return self.sfDict[key][-1]
 
     def getContentSubtype(self) -> dict:
-        """ Return content subtype of PK file.
+        """ Return content subtype of CS file.
         """
 
         n = self.cur_list_id
@@ -3657,25 +3657,25 @@ class BaseCSParserListener():
         return {'chem_shift': n} if n > 0 else {}
 
     def getPolymerSequence(self) -> Optional[List[dict]]:
-        """ Return polymer sequence of PK file.
+        """ Return polymer sequence of CS file.
         """
 
         return None if self.polySeqCs is None or len(self.polySeqCs) == 0 else self.polySeqCs
 
     def getSequenceAlignment(self) -> Optional[List[dict]]:
-        """ Return sequence alignment between coordinates and PK.
+        """ Return sequence alignment between (coordinates or nmr_data) and CS.
         """
 
         return None if self.seqAlign is None or len(self.seqAlign) == 0 else self.seqAlign
 
     def getChainAssignment(self) -> Optional[List[dict]]:
-        """ Return chain assignment between coordinates and PK.
+        """ Return chain assignment between (coordinates or nmr_data) and CS.
         """
 
         return None if self.chainAssign is None or len(self.chainAssign) == 0 else self.chainAssign
 
     def getReasonsForReparsing(self) -> Optional[dict]:
-        """ Return reasons for re-parsing PK file.
+        """ Return reasons for re-parsing CS file.
         """
 
         return None if len(self.reasonsForReParsing) == 0 else self.reasonsForReParsing

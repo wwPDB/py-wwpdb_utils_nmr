@@ -1,5 +1,5 @@
 /*
- Bare CS (Assigned chemical shift - residue per line or atom per line) lexer grammar for ANTLR v4.
+ PPM (Assigned chemical shift) lexer grammar for ANTLR v4.
  Copyright 2025 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-lexer grammar BareCSLexer;
+lexer grammar PpmCSLexer;
 
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
@@ -23,10 +23,14 @@ Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
+fragment SEPARATOR:	[,:|/];
 
 SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 //SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
+
+Atom_selection_2d_ex:	(Integer | SIMPLE_NAME) SEPARATOR SIMPLE_NAME;
+Atom_selection_3d_ex:	(Integer | SIMPLE_NAME) SEPARATOR (Integer | SIMPLE_NAME) SEPARATOR SIMPLE_NAME;
 
 Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;
@@ -40,11 +44,7 @@ fragment NAME_CHAR:	START_CHAR | '\'' | '"' | ',' | ';' | '#' | '%' | '|' | '/' 
 //fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
-Double_quote_string:	'"' SIMPLE_NAME '"';
-Double_quote_integer:	'"' Integer '"';
-Double_quote_float:	'"' Float '"';
-
-SPACE:			[, \t]+ -> skip;
+SPACE:			[ \t]+ -> skip;
 RETURN:			[\r\n]+;
 
 fragment COMMENT_START_CHAR:	('#' | '!' | '\\' | '&' | '/' | '=');

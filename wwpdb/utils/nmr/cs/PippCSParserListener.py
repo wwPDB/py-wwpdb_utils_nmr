@@ -3,7 +3,7 @@
 # Date: 11-Apr-2025
 #
 # Updates:
-""" ParserLister class for PPM CS files.
+""" ParserLister class for PIPP CS files.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"

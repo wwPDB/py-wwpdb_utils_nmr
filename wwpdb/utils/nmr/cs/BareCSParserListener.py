@@ -3,7 +3,7 @@
 # Date: 08-Apr-2025
 #
 # Updates:
-""" ParserLister class for Bare CS files.
+""" ParserLister class for Bare CSV/TSV CS files.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"

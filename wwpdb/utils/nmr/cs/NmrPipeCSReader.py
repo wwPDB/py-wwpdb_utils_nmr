@@ -1,9 +1,9 @@
 ##
-# BareCSReader.py
+# NmrPipeCSReader.py
 #
 # Update:
 ##
-""" A collection of classes for parsing Bare CSV/TSV CS files.
+""" A collection of classes for parsing NMRPIPE CS files.
 """
 __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
@@ -20,9 +20,9 @@ from typing import IO, List, Tuple, Optional
 try:
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
-    from wwpdb.utils.nmr.cs.BareCSLexer import BareCSLexer
-    from wwpdb.utils.nmr.cs.BareCSParser import BareCSParser
-    from wwpdb.utils.nmr.cs.BareCSParserListener import BareCSParserListener
+    from wwpdb.utils.nmr.cs.NmrPipeCSLexer import NmrPipeCSLexer
+    from wwpdb.utils.nmr.cs.NmrPipeCSParser import NmrPipeCSParser
+    from wwpdb.utils.nmr.cs.NmrPipeCSParserListener import NmrPipeCSParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import MAX_ERROR_REPORT
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -30,17 +30,17 @@ try:
 except ImportError:
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
-    from nmr.cs.BareCSLexer import BareCSLexer
-    from nmr.cs.BareCSParser import BareCSParser
-    from nmr.cs.BareCSParserListener import BareCSParserListener
+    from nmr.cs.NmrPipeCSLexer import NmrPipeCSLexer
+    from nmr.cs.NmrPipeCSParser import NmrPipeCSParser
+    from nmr.cs.NmrPipeCSParserListener import NmrPipeCSParserListener
     from nmr.mr.ParserListenerUtil import MAX_ERROR_REPORT
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
 
 
-class BareCSReader:
-    """ Accessor methods for parsing Bare CSV/TSV CSV files.
+class NmrPipeCSReader:
+    """ Accessor methods for parsing NMRPIPE CS files.
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -86,9 +86,9 @@ class BareCSReader:
     def parse(self, csFilePath: str, isFilePath: bool = True,
               createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None,
               reservedListIds: Optional[dict] = None, entryId: Optional[str] = None
-              ) -> Tuple[Optional[BareCSParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
-        """ Parse Bare CSV/TSV CS file.
-            @return: BareCSParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
+              ) -> Tuple[Optional[NmrPipeCSParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
+        """ Parse NMRPIPE CS file.
+            @return: NmrPipeCSParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 
         ifh = None
@@ -116,7 +116,7 @@ class BareCSReader:
 
                 input = InputStream(csString)
 
-            lexer = BareCSLexer(input)
+            lexer = NmrPipeCSLexer(input)
             lexer.removeErrorListeners()
 
             lexer_error_listener = LexerErrorListener(csFilePath, maxErrorReport=self.__maxLexerErrorReport, ignoreCodicError=True)
@@ -132,19 +132,19 @@ class BareCSReader:
                         self.__lfh.write(f"{description['marker']}\n")
 
             stream = CommonTokenStream(lexer)
-            parser = BareCSParser(stream)
+            parser = NmrPipeCSParser(stream)
             # try with simpler/faster SLL prediction mode
             # parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
             parser.removeErrorListeners()
             parser_error_listener = ParserErrorListener(csFilePath, maxErrorReport=self.__maxParserErrorReport, ignoreCodicError=True)
             parser.addErrorListener(parser_error_listener)
-            tree = parser.bare_cs()
+            tree = parser.nmrpipe_cs()
 
             walker = ParseTreeWalker()
-            listener = BareCSParserListener(self.__verbose, self.__lfh,
-                                            self.__polySeq, self.__entityAssembly,
-                                            self.__ccU, self.__csStat, self.__nefT,
-                                            self.__reasons)
+            listener = NmrPipeCSParserListener(self.__verbose, self.__lfh,
+                                               self.__polySeq, self.__entityAssembly,
+                                               self.__ccU, self.__csStat, self.__nefT,
+                                               self.__reasons)
             listener.setDebugMode(self.__debug)
             listener.createSfDict(createSfDict)
             if createSfDict:
@@ -185,11 +185,11 @@ class BareCSReader:
 
 
 if __name__ == "__main__":
-    from wwpdb.utils.nmr.NmrVrptUtility import load_from_pickle  # pylint: disable=ungrouped-imports
-
-    nmr_poly_seq = load_from_pickle('../../tests-nmr/mock-data-atypical-cs/bmr26356/upload/nmr_poly_seq.pkl')
+    nmr_poly_seq = [{'chain_id': '1',
+                     'seq_id': [1, 2, 3, 4, 5, 6],
+                     'comp_id': ['PRO', 'GLY', 'ALA', 'ARG', 'GLN', 'GLU']
+                     }]
     entity_assembly = {'1': {'entity_id': 1, 'auth_asym_id': '.'}}
-    reader = BareCSReader(True, polySeq=nmr_poly_seq, entityAssembly=entity_assembly)
+    reader = NmrPipeCSReader(True, polySeq=nmr_poly_seq, entityAssembly=entity_assembly)
     reader.setDebugMode(True)
-    reader_listener, _, _ =\
-        reader.parse('../../tests-nmr/mock-data-atypical-cs/bmr26356/upload/AssignmentTable')
+    reader.parse('../../tests-nmr/mock-data-atypical-cs/nmrpipe/nmrpipe_example.tbl')

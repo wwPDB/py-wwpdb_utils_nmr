@@ -186,6 +186,7 @@ class BaseCSParserListener():
     cur_subtype = ''
     cur_list_id = -1
     cur_line_num = -1
+    offset = None
 
     # whether to allow extended sequence temporary
     __allow_ext_seq = False
@@ -618,6 +619,75 @@ class BaseCSParserListener():
 
         return dstFunc
 
+    def predictSequenceNumberOffsetByFirstResidue(self, chain_id: Optional[str], seq_id: int, comp_id: Optional[str]):
+        if self.reasons is not None:
+            return
+
+        if chain_id is not None and any(ps for ps in self.polySeq if ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id']):
+
+            if chain_id in self.offset:
+                return
+
+            ps = next(ps for ps in self.polySeq if ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'])
+            seq_ids = ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']
+            min_seq_id = seq_ids[0]
+            max_seq_id = seq_ids[-1]
+
+            if seq_id < min_seq_id or seq_id > max_seq_id:
+                offset = min_seq_id - seq_id
+
+                if comp_id is not None:
+                    _seq_id = seq_id + offset
+                    if _seq_id in seq_ids and comp_id == ps['comp_id'][seq_ids.index(_seq_id)]:
+                        self.offset[chain_id] = offset
+                        return
+
+                    for shift in range(1, 10):
+                        _seq_id = seq_id + offset + shift
+                        if _seq_id in seq_ids and comp_id == ps['comp_id'][seq_ids.index(_seq_id)]:
+                            self.offset[chain_id] = offset + shift
+                            return
+
+                self.offset[chain_id] = offset
+
+            return
+
+        if None in self.offset:
+            return
+
+        min_seq_id = 1000
+        max_seq_id = -1000
+        for ps in self.polySeq:
+            min_seq_id = min(min_seq_id, ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'][0])
+            max_seq_id = max(max_seq_id, ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'][-1])
+
+        if seq_id < min_seq_id or seq_id > max_seq_id:
+            offset = min_seq_id - seq_id
+
+            if comp_id is not None:
+                for ps in self.polySeq:
+                    seq_ids = ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']
+                    min_seq_id = seq_ids[0]
+                    offset = min_seq_id - seq_id
+
+                    _seq_id = seq_id + offset
+                    if _seq_id in seq_ids and comp_id == ps['comp_id'][seq_ids.index(_seq_id)]:
+                        self.offset[None] = offset
+                        return
+
+                for shift in range(1, 10):
+                    for ps in self.polySeq:
+                        seq_ids = ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']
+                        min_seq_id = seq_ids[0]
+                        offset = min_seq_id - seq_id
+
+                        _seq_id = seq_id + offset + shift
+                        if _seq_id in seq_ids and comp_id == ps['comp_id'][seq_ids.index(_seq_id)]:
+                            self.offset[None] = offset + shift
+                            return
+
+            self.offset[None] = offset
+
     def checkAssignment(self, index: int, assignment: List[dict]) -> Tuple[bool, bool, Optional[bool]]:
         has_assignments = has_multiple_assignments = False
 
@@ -663,7 +733,7 @@ class BaseCSParserListener():
 
         return has_assignments, has_multiple_assignments
 
-    def addCsRow(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
+    def addCsRow(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool, auth_seq_id_map: dict,
                  debug_label: Optional[str], details: Optional[str] = None, default_ambig_code: Optional[int] = None):
 
         if self.debug:
@@ -693,6 +763,10 @@ class BaseCSParserListener():
                             ambig_code = None
                 else:
                     atom = None
+                    return
+
+                if len(auth_seq_id_map) > 0 and atom['seq_id'] in auth_seq_id_map:
+                    atom['auth_seq_id'] = auth_seq_id_map[atom['seq_id']]
 
                 row = getCsRow(self.cur_subtype, sf['index_id'], sf['list_id'], self.entryId,
                                dstFunc, self.entityAssembly,

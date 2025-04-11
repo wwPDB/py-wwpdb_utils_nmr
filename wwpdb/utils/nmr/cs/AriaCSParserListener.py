@@ -92,9 +92,12 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         if self.__cur_path == '/chemical_shift_list':
             self.cur_subtype = 'chem_shift'
+
             self.cur_list_id = max(self.cur_list_id, 0)
             self.cur_list_id += 1
+
             self.chemShifts = 0
+            self.offset = {}
 
         elif self.__cur_path == '/chemical_shift_list/shift_assignment':
             self.__spin_system = []
@@ -135,6 +138,8 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
                     if len(self.__spin_system) == 0:
                         return
 
+                    auth_seq_id_map = {}
+
                     index = self.chemShifts + 1
 
                     if self.__method == 'EQUIVALENT':
@@ -151,8 +156,16 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
                         if dstFunc is None:
                             return
 
+                        auth_seq_id_map.clear()
+
                         for atom in spin_system['atom']:
                             self.atomSelectionSets.clear()
+
+                            self.predictSequenceNumberOffsetByFirstResidue(None, atom['residue'], None)
+                            if None in self.offset:
+                                _residue = atom['residue']
+                                atom['residue'] += self.offset[None]
+                                auth_seq_id_map[_residue] = atom['residue']
 
                             chain_id, L = concat_assignment(atom)
 
@@ -168,7 +181,8 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                             has_assignments, has_multiple_assignments = self.checkAssignment(index, assignment)
 
-                            self.addCsRow(index, dstFunc, has_assignments, has_multiple_assignments, f'{L} -> ', None, ambig_code)
+                            self.addCsRow(index, dstFunc, has_assignments, has_multiple_assignments, auth_seq_id_map,
+                                          f'{L} -> ', None, ambig_code)
 
                             self.chemShifts += 1
 
@@ -189,6 +203,11 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
                             max_ambig_code_in_res = 0
                             for spin_system in self.__spin_system:
                                 for atom in spin_system['atom']:
+
+                                    self.predictSequenceNumberOffsetByFirstResidue(None, atom['residue'], None)
+                                    if None in self.offset:
+                                        atom['residue'] += self.offset[None]
+
                                     chain_id, L = concat_assignment(atom)
 
                                     assignment = self.extractAssignment(1, L, index, chain_id is not None)
@@ -219,8 +238,16 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
                             if dstFunc is None:
                                 continue
 
+                            auth_seq_id_map.clear()
+
                             for atom in spin_system['atom']:
                                 self.atomSelectionSets.clear()
+
+                                self.predictSequenceNumberOffsetByFirstResidue(None, atom['residue'], None)
+                                if None in self.offset:
+                                    _residue = atom['residue']
+                                    atom['residue'] += self.offset[None]
+                                    auth_seq_id_map[_residue] = atom['residue']
 
                                 chain_id, L = concat_assignment(atom)
 
@@ -231,7 +258,8 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                                 has_assignments, has_multiple_assignments = self.checkAssignment(index, assignment)
 
-                                self.addCsRow(index, dstFunc, has_assignments, has_multiple_assignments, f'{L} -> ', None, max_ambig_code)
+                                self.addCsRow(index, dstFunc, has_assignments, has_multiple_assignments, auth_seq_id_map,
+                                              f'{L} -> ', None, max_ambig_code)
 
                                 self.chemShifts += 1
 
@@ -249,9 +277,17 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
                         if dstFunc is None:
                             return
 
+                        auth_seq_id_map.clear()
+
                         atom = spin_system['atom'][0]
 
                         self.atomSelectionSets.clear()
+
+                        self.predictSequenceNumberOffsetByFirstResidue(None, atom['residue'], None)
+                        if None in self.offset:
+                            _residue = atom['residue']
+                            atom['residue'] += self.offset[None]
+                            auth_seq_id_map[_residue] = atom['residue']
 
                         chain_id, L = concat_assignment(atom)
 
@@ -262,7 +298,8 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                         has_assignments, has_multiple_assignments = self.checkAssignment(index, assignment)
 
-                        self.addCsRow(index, dstFunc, has_assignments, has_multiple_assignments, f'{L} -> ')
+                        self.addCsRow(index, dstFunc, has_assignments, has_multiple_assignments, auth_seq_id_map,
+                                      f'{L} -> ')
 
                         self.chemShifts += 1
 

@@ -135,8 +135,11 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
+
         self.cur_line_num = 0
+
         self.chemShifts = 0
+        self.offset = {}
 
     # Exit a parse tree produced by BareCSParser#cs_raw_format.
     def exitCs_raw_format(self, ctx: BareCSParser.Cs_raw_formatContext):  # pylint: disable=unused-argument
@@ -236,6 +239,9 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 if seq_id is None or len(atom_ids) == 0:
                     return
 
+                _seq_id = seq_id
+                auth_seq_id_map = {}
+
                 for atom_id, value in zip(atom_ids, values):
                     self.atomSelectionSets.clear()
 
@@ -243,6 +249,12 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                     if dstFunc is None:
                         continue
+
+                    self.predictSequenceNumberOffsetByFirstResidue(chain_id, _seq_id, comp_id)
+
+                    if chain_id in self.offset:
+                        seq_id = _seq_id + self.offset[chain_id]
+                        auth_seq_id_map[seq_id] = _seq_id
 
                     L = cancat_assignment(chain_id, seq_id, comp_id, atom_id)
 
@@ -253,7 +265,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                     has_assignments, has_multiple_assignments = self.checkAssignment(self.cur_line_num, assignment)
 
-                    self.addCsRow(self.cur_line_num, dstFunc, has_assignments, has_multiple_assignments, f'{L} -> ', details)
+                    self.addCsRow(self.cur_line_num, dstFunc, has_assignments, has_multiple_assignments, auth_seq_id_map,
+                                  f'{L} -> ', details)
 
                     self.chemShifts += 1
 
@@ -332,6 +345,9 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 if seq_id is None or len(atom_ids) == 0:
                     return
 
+                _seq_id = seq_id
+                auth_seq_id_map = {}
+
                 for atom_id, value, value_uncertainty, occupancy, figure_of_merit in zip(atom_ids, values, value_uncertainties, occupancies, figure_of_merits):
                     self.atomSelectionSets.clear()
 
@@ -339,6 +355,12 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                     if dstFunc is None:
                         continue
+
+                    self.predictSequenceNumberOffsetByFirstResidue(chain_id, _seq_id, comp_id)
+
+                    if chain_id in self.offset:
+                        seq_id = _seq_id + self.offset[chain_id]
+                        auth_seq_id_map[seq_id] = _seq_id
 
                     L = cancat_assignment(chain_id, seq_id, comp_id, atom_id)
 
@@ -349,7 +371,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                     has_assignments, has_multiple_assignments = self.checkAssignment(self.cur_line_num, assignment)
 
-                    self.addCsRow(self.cur_line_num, dstFunc, has_assignments, has_multiple_assignments, f'{L} -> ', details)
+                    self.addCsRow(self.cur_line_num, dstFunc, has_assignments, has_multiple_assignments, auth_seq_id_map,
+                                  f'{L} -> ', details)
 
                     self.chemShifts += 1
 

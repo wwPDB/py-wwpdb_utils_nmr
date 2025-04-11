@@ -36,7 +36,8 @@ class XeasyCSParserListener(ParseTreeListener, BaseCSParserListener):
 
     # residue
     __cur_residue = None
-    __offset = None
+
+    __auth_seq_id_map = None
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
@@ -52,10 +53,14 @@ class XeasyCSParserListener(ParseTreeListener, BaseCSParserListener):
         self.enter()
 
         self.cur_subtype = 'chem_shift'
+
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
+
         self.chemShifts = 0
-        self.__offset = None
+        self.offset = {}
+
+        self.__auth_seq_id_map = {}
 
     # Exit a parse tree produced by XeasyPROTParser#xeasy_prot.
     def exitXeasy_prot(self, ctx: XeasyPROTParser.Xeasy_protContext):  # pylint: disable=unused-argument
@@ -95,7 +100,8 @@ class XeasyCSParserListener(ParseTreeListener, BaseCSParserListener):
 
             has_assignments, has_multiple_assignments = self.checkAssignment(index, assignment)
 
-            self.addCsRow(index, dstFunc, has_assignments, has_multiple_assignments, f'{L} -> ')
+            self.addCsRow(index, dstFunc, has_assignments, has_multiple_assignments, self.__auth_seq_id_map,
+                          f'{L} -> ')
 
         except (ValueError, TypeError):
             self.chemShifts -= 1
@@ -108,18 +114,13 @@ class XeasyCSParserListener(ParseTreeListener, BaseCSParserListener):
             residue = int(self.__cur_residue)
 
             if self.chemShifts == 1 and self.hasPolySeq:
-                min_residue = 1000
-                max_residue = -1000
-                for ps in self.polySeq:
-                    min_residue = min(min_residue, min(ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']))  # pylint: disable=nested-min-max
-                    max_residue = max(max_residue, max(ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']))  # pylint: disable=nested-min-max
+                self.predictSequenceNumberOffsetByFirstResidue(None, residue, None)
 
-                if residue < min_residue or residue > max_residue:
-                    self.__offset = min_residue - residue
-
-            if self.__offset is not None:
-                residue += self.__offset
+            if None in self.offset:
+                _residue = residue
+                residue += self.offset[None]
                 self.__cur_residue = str(residue)
+                self.__auth_seq_id_map[_residue] = residue
 
         else:
             self.__cur_residue = str(ctx.Simple_name())

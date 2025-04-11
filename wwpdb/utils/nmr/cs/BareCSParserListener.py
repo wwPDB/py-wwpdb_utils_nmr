@@ -459,7 +459,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                     has_assignments, has_multiple_assignments = self.checkAssignment(self.cur_line_num, assignment)
 
-                    self.addCsRow(self.cur_line_num, dstFunc, has_assignments, has_multiple_assignments, f'{L} -> ', details)
+                    self.addCsRow(self.cur_line_num, dstFunc, has_assignments, has_multiple_assignments, {},
+                                  f'{L} -> ', details)
 
                     self.chemShifts += 1
 

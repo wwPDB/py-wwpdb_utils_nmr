@@ -34273,7 +34273,7 @@ class NmrDpUtility:
 
         cyanaUplDistRest = cyanaLolDistRest = 0
 
-        def deal_aux_warn_message(listener):
+        def deal_aux_warn_message(file_name, listener):
 
             if listener.warningMessage is not None:
 
@@ -34363,7 +34363,7 @@ class NmrDpUtility:
 
                     if listener is not None:
 
-                        deal_aux_warn_message(listener)
+                        deal_aux_warn_message(file_name, listener)
 
                         amberAtomNumberDict = listener.getAtomNumberDict()
 
@@ -34401,7 +34401,7 @@ class NmrDpUtility:
 
                     if listener is not None:
 
-                        deal_aux_warn_message(listener)
+                        deal_aux_warn_message(file_name, listener)
 
                         charmmAtomNumberDict = listener.getAtomNumberDict()
 
@@ -34439,7 +34439,7 @@ class NmrDpUtility:
 
                     if listener is not None:
 
-                        deal_aux_warn_message(listener)
+                        deal_aux_warn_message(file_name, listener)
 
                         gromacsAtomNumberDict = listener.getAtomNumberDict()
 
@@ -34628,7 +34628,7 @@ class NmrDpUtility:
                         self.report.setError()
                 suspended_errors_for_lazy_eval.clear()
 
-        def deal_res_warn_message(listener, ignore_error):
+        def deal_res_warn_message(file_name, listener, ignore_error):
 
             if listener.warningMessage is not None:
 
@@ -34864,7 +34864,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ KeyError  - {warn}\n")
 
-        def deal_res_warn_message_for_lazy_eval(listener):
+        def deal_res_warn_message_for_lazy_eval(file_name, listener):
 
             if listener.warningMessage is not None:
 
@@ -35010,7 +35010,7 @@ class NmrDpUtility:
                     reasons = reader.getReasons()
 
                     if reasons is not None and _reasons is not None and listener.warningMessage is not None and len(listener.warningMessage) > 0:
-                        deal_res_warn_message_for_lazy_eval(listener)
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         reader = AmberMRReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
@@ -35033,7 +35033,7 @@ class NmrDpUtility:
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
 
-                    deal_res_warn_message(listener, ignore_error)
+                    deal_res_warn_message(file_name, listener, ignore_error)
 
                     cur_dict = listener.getAtomNumberDict()
                     if cur_dict is not None:
@@ -35091,7 +35091,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -35110,7 +35110,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
-                    deal_res_warn_message(listener, ignore_error)
+                    deal_res_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -35159,7 +35159,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -35178,7 +35178,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
-                    deal_res_warn_message(listener, ignore_error)
+                    deal_res_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -35248,7 +35248,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -35271,7 +35271,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    deal_res_warn_message(listener, ignore_error)
+                    deal_res_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -35339,7 +35339,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -35361,7 +35361,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    deal_res_warn_message(listener, ignore_error)
+                    deal_res_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -35449,7 +35449,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -35472,7 +35472,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    deal_res_warn_message(listener, ignore_error)
+                    deal_res_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -35524,7 +35524,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -35543,7 +35543,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
-                    deal_res_warn_message(listener, ignore_error)
+                    deal_res_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -35592,7 +35592,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -35611,7 +35611,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
-                    deal_res_warn_message(listener, ignore_error)
+                    deal_res_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -35656,7 +35656,7 @@ class NmrDpUtility:
                                               listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
 
                 if listener is not None:
-                    deal_res_warn_message(listener, ignore_error)
+                    deal_res_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -35724,7 +35724,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -35746,7 +35746,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    deal_res_warn_message(listener, ignore_error)
+                    deal_res_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -35819,7 +35819,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -35842,7 +35842,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    deal_res_warn_message(listener, ignore_error)
+                    deal_res_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -35891,7 +35891,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'model_chain_id_ext' in reasons:
                             self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
@@ -35910,7 +35910,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, entryId=self.__entry_id)
 
-                    deal_res_warn_message(listener, ignore_error)
+                    deal_res_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -35980,7 +35980,7 @@ class NmrDpUtility:
                             reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(listener)
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'dist_restraint' in content_subtype.keys():
                             reasons_dict[file_type] = reasons
@@ -36003,7 +36003,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter, entryId=self.__entry_id)
 
-                    deal_res_warn_message(listener, ignore_error)
+                    deal_res_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -36242,7 +36242,7 @@ class NmrDpUtility:
 
             return True, _type
 
-        def deal_aux_warn_message(listener):
+        def deal_aux_warn_message(file_name, listener):
 
             if listener.warningMessage is not None:
 
@@ -36340,7 +36340,7 @@ class NmrDpUtility:
 
                     if listener is not None:
 
-                        deal_aux_warn_message(listener)
+                        deal_aux_warn_message(file_name, listener)
 
                         xeasyAtomNumberDict = listener.getAtomNumberDict()
 
@@ -36454,7 +36454,7 @@ class NmrDpUtility:
                         self.report.setError()
                 suspended_errors_for_lazy_eval.clear()
 
-        def deal_pea_warn_message(listener, ignore_error):
+        def deal_pea_warn_message(file_name, listener, ignore_error):
 
             if listener.warningMessage is not None:
 
@@ -36617,7 +36617,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ KeyError  - {warn}\n")
 
-        def deal_pea_warn_message_for_lazy_eval(listener):
+        def deal_pea_warn_message_for_lazy_eval(file_name, listener):
 
             if listener.warningMessage is not None:
 
@@ -36733,7 +36733,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(listener)
+                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
                         reader = AriaPKReader(self.__verbose, self.__lfh,
                                               self.__representative_model_id,
@@ -36748,7 +36748,7 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                       csLoops=self.__lp_data['chem_shift'])
 
-                    deal_pea_warn_message(listener, ignore_error)
+                    deal_pea_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -36807,7 +36807,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(listener)
+                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
                         reader = BarePKReader(self.__verbose, self.__lfh,
                                               self.__representative_model_id,
@@ -36823,7 +36823,7 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                       csLoops=self.__lp_data['chem_shift'])
 
-                    deal_pea_warn_message(listener, ignore_error)
+                    deal_pea_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -36884,7 +36884,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(listener)
+                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
                         reader = CcpnPKReader(self.__verbose, self.__lfh,
                                               self.__representative_model_id,
@@ -36899,7 +36899,7 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                       csLoops=self.__lp_data['chem_shift'])
 
-                    deal_pea_warn_message(listener, ignore_error)
+                    deal_pea_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -36960,7 +36960,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(listener)
+                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
                         reader = NmrPipePKReader(self.__verbose, self.__lfh,
                                                  self.__representative_model_id,
@@ -36975,7 +36975,7 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                       csLoops=self.__lp_data['chem_shift'])
 
-                    deal_pea_warn_message(listener, ignore_error)
+                    deal_pea_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -37036,7 +37036,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(listener)
+                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
                         reader = PonderosaPKReader(self.__verbose, self.__lfh,
                                                    self.__representative_model_id,
@@ -37051,7 +37051,7 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                       csLoops=self.__lp_data['chem_shift'])
 
-                    deal_pea_warn_message(listener, ignore_error)
+                    deal_pea_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -37173,7 +37173,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(listener)
+                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
                         if spa_type == 'reverse':
                             reader = SparkyRPKReader(self.__verbose, self.__lfh,
@@ -37206,7 +37206,7 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                       csLoops=self.__lp_data['chem_shift'])
 
-                    deal_pea_warn_message(listener, ignore_error)
+                    deal_pea_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -37267,7 +37267,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(listener)
+                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
                         reader = SparkySPKReader(self.__verbose, self.__lfh,
                                                  self.__representative_model_id,
@@ -37282,7 +37282,7 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                       csLoops=self.__lp_data['chem_shift'])
 
-                    deal_pea_warn_message(listener, ignore_error)
+                    deal_pea_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -37338,7 +37338,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(listener)
+                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
                         reader = TopSpinPKReader(self.__verbose, self.__lfh,
                                                  self.__representative_model_id,
@@ -37352,7 +37352,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                    deal_pea_warn_message(listener, ignore_error)
+                    deal_pea_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -37445,7 +37445,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(listener)
+                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
                         if vie_type == 'default':
                             reader = NmrViewPKReader(self.__verbose, self.__lfh,
@@ -37469,7 +37469,7 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                       csLoops=self.__lp_data['chem_shift'])
 
-                    deal_pea_warn_message(listener, ignore_error)
+                    deal_pea_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -37530,7 +37530,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(listener)
+                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
                         reader = VnmrPKReader(self.__verbose, self.__lfh,
                                               self.__representative_model_id,
@@ -37545,7 +37545,7 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                       csLoops=self.__lp_data['chem_shift'])
 
-                    deal_pea_warn_message(listener, ignore_error)
+                    deal_pea_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -37607,7 +37607,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None and listener.warningMessage is not None and len(listener.warningMessage) > 0:
-                        deal_pea_warn_message_for_lazy_eval(listener)
+                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
                         reader = XeasyPKReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
@@ -37623,7 +37623,7 @@ class NmrDpUtility:
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                       csLoops=self.__lp_data['chem_shift'])
 
-                    deal_pea_warn_message(listener, ignore_error)
+                    deal_pea_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -37683,7 +37683,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(listener)
+                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
                         reader = XwinNmrPKReader(self.__verbose, self.__lfh,
                                                  self.__representative_model_id,
@@ -37697,7 +37697,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                    deal_pea_warn_message(listener, ignore_error)
+                    deal_pea_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -37970,7 +37970,7 @@ class NmrDpUtility:
                         self.report.setError()
                 suspended_errors_for_lazy_eval.clear()
 
-        def deal_shi_warn_message(listener, ignore_error):
+        def deal_shi_warn_message(file_name, listener, ignore_error):
 
             if listener.warningMessage is not None:
 
@@ -37978,7 +37978,7 @@ class NmrDpUtility:
 
                     if warn.startswith('[Concatenated sequence]'):
                         self.report.warning.appendDescription('concatenated_sequence',
-                                                              {'file_name': data_file_name,
+                                                              {'file_name': file_name,
                                                                'description': warn})
                         self.report.setWarning()
 
@@ -37989,7 +37989,7 @@ class NmrDpUtility:
                         # consume_suspended_message()
 
                         self.report.error.appendDescription('sequence_mismatch',
-                                                            {'file_name': data_file_name,
+                                                            {'file_name': file_name,
                                                              'description': warn})
                         self.report.setError()
 
@@ -37998,7 +37998,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Atom not found]'):
                         self.report.warning.appendDescription('sequence_mismatch',
-                                                              {'file_name': data_file_name,
+                                                              {'file_name': file_name,
                                                                'description': warn})
                         self.report.setWarning()
 
@@ -38009,7 +38009,7 @@ class NmrDpUtility:
                         consume_suspended_message()
 
                         self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                            {'file_name': data_file_name,
+                                                            {'file_name': file_name,
                                                              'description': warn})
                         self.report.setError()
 
@@ -38020,7 +38020,7 @@ class NmrDpUtility:
                         consume_suspended_message()
 
                         self.report.error.appendDescription('invalid_data',
-                                                            {'file_name': data_file_name,
+                                                            {'file_name': file_name,
                                                              'description': warn})
                         self.report.setError()
 
@@ -38029,7 +38029,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Sequence mismatch warning]'):
                         self.report.warning.appendDescription('sequence_mismatch',
-                                                              {'file_name': data_file_name,
+                                                              {'file_name': file_name,
                                                                'description': warn})
                         self.report.setWarning()
 
@@ -38046,7 +38046,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Missing data]'):
                         self.report.warning.appendDescription('missing_data',
-                                                              {'file_name': data_file_name,
+                                                              {'file_name': file_name,
                                                                'description': warn})
                         self.report.setWarning()
 
@@ -38057,7 +38057,7 @@ class NmrDpUtility:
                         # consume_suspended_message()
 
                         self.report.error.appendDescription('anomalous_data',
-                                                            {'file_name': data_file_name,
+                                                            {'file_name': file_name,
                                                              'description': warn})
                         self.report.setError()
 
@@ -38066,7 +38066,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                         self.report.warning.appendDescription('inconsistent_mr_data',
-                                                              {'file_name': data_file_name,
+                                                              {'file_name': file_name,
                                                                'description': warn})
                         self.report.setWarning()
 
@@ -38080,7 +38080,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ KeyError  - {warn}\n")
 
-        def deal_shi_warn_message_for_lazy_eval(listener):
+        def deal_shi_warn_message_for_lazy_eval(file_name, listener):
 
             if listener.warningMessage is not None:
 
@@ -38088,13 +38088,13 @@ class NmrDpUtility:
 
                     if warn.startswith('[Sequence mismatch]'):
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch':
-                                                               {'file_name': data_file_name,
+                                                               {'file_name': file_name,
                                                                 'description': warn}})
 
                     elif warn.startswith('[Atom not found]'):
                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                             suspended_errors_for_lazy_eval.append({'atom_not_found':
-                                                                   {'file_name': data_file_name,
+                                                                   {'file_name': file_name,
                                                                     'description': warn}})
 
                     # elif warn.startswith('[Hydrogen not instantiated]'):
@@ -38102,27 +38102,27 @@ class NmrDpUtility:
                     #         pass
                     #     else:
                     #         suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated':
-                    #                                                {'file_name': data_file_name,
+                    #                                                {'file_name': file_name,
                     #                                                 'description': warn}})
 
                     # elif warn.startswith('[Coordinate issue]'):
                     #     suspended_errors_for_lazy_eval.append({'coordinate_issue':
-                    #                                            {'file_name': data_file_name,
+                    #                                            {'file_name': file_name,
                     #                                             'description': warn}})
 
                     # elif warn.startswith('[Invalid atom nomenclature]'):
                     #     suspended_errors_for_lazy_eval.append({'invalid_atom_nomenclature':
-                    #                                            {'file_name': data_file_name,
+                    #                                            {'file_name': file_name,
                     #                                             'description': warn}})
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         suspended_errors_for_lazy_eval.append({'invalid_data':
-                                                               {'file_name': data_file_name,
+                                                               {'file_name': file_name,
                                                                 'description': warn}})
 
                     # elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                     #     suspended_errors_for_lazy_eval.append({'anomalous_data':
-                    #                                            {'file_name': data_file_name,
+                    #                                            {'file_name': file_name,
                     #                                             'description': warn}})
 
         fileListId = self.__file_path_list_len
@@ -38191,7 +38191,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(listener)
+                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
                         reader = AriaCSReader(self.__verbose, self.__lfh,
                                               nmr_poly_seq, entity_assembly,
@@ -38202,7 +38202,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                    deal_shi_warn_message(listener, ignore_error)
+                    deal_shi_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -38250,7 +38250,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(listener)
+                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
                         reader = BareCSReader(self.__verbose, self.__lfh,
                                               nmr_poly_seq, entity_assembly,
@@ -38261,7 +38261,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                    deal_shi_warn_message(listener, ignore_error)
+                    deal_shi_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -38309,7 +38309,7 @@ class NmrDpUtility:
                     reasons = listener.getReasonsForReparsing()
 
                     if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(listener)
+                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
                         reader = XeasyCSReader(self.__verbose, self.__lfh,
                                                nmr_poly_seq, entity_assembly,
@@ -38320,7 +38320,7 @@ class NmrDpUtility:
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                    deal_shi_warn_message(listener, ignore_error)
+                    deal_shi_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
                     if poly_seq is not None:
@@ -51988,7 +51988,7 @@ class NmrDpUtility:
                         self.report.setError()
                 suspended_errors_for_lazy_eval.clear()
 
-        def deal_pea_warn_message(listener):
+        def deal_pea_warn_message(file_name, listener):
 
             if listener.warningMessage is not None:
 
@@ -51996,7 +51996,7 @@ class NmrDpUtility:
 
                     if warn.startswith('[Concatenated sequence]'):
                         self.report.warning.appendDescription('concatenated_sequence',
-                                                              {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                'description': warn})
                         self.report.setWarning()
 
@@ -52007,7 +52007,7 @@ class NmrDpUtility:
                         # consume_suspended_message()
 
                         self.report.error.appendDescription('sequence_mismatch',
-                                                            {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                              'description': warn})
                         self.report.setError()
 
@@ -52019,7 +52019,7 @@ class NmrDpUtility:
                             consume_suspended_message()
 
                             self.report.warning.appendDescription('assigned_peak_atom_not_found',
-                                                                  {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                    'description': warn})
                             self.report.setWarning()
 
@@ -52027,7 +52027,7 @@ class NmrDpUtility:
                                 self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
                         else:
                             self.report.warning.appendDescription('sequence_mismatch',
-                                                                  {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                    'description': warn})
                             self.report.setWarning()
 
@@ -52037,7 +52037,7 @@ class NmrDpUtility:
                     elif warn.startswith('[Hydrogen not instantiated]'):
                         if self.__remediation_mode:
                             self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                  {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                    'description': warn})
                             self.report.setWarning()
 
@@ -52047,7 +52047,7 @@ class NmrDpUtility:
                             consume_suspended_message()
 
                             self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                  'description': warn})
                             self.report.setError()
 
@@ -52060,7 +52060,7 @@ class NmrDpUtility:
                         if self.__internal_mode:
 
                             self.report.warning.appendDescription('coordinate_issue',
-                                                                  {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                    'description': warn})
                             self.report.setWarning()
 
@@ -52070,7 +52070,7 @@ class NmrDpUtility:
                         else:
 
                             self.report.error.appendDescription('coordinate_issue',
-                                                                {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                  'description': warn})
                             self.report.setError()
 
@@ -52081,7 +52081,7 @@ class NmrDpUtility:
                         consume_suspended_message()
 
                         self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                            {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                              'description': warn})
                         self.report.setError()
 
@@ -52092,7 +52092,7 @@ class NmrDpUtility:
                         consume_suspended_message()
 
                         self.report.error.appendDescription('invalid_data',
-                                                            {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                              'description': warn})
                         self.report.setError()
 
@@ -52101,7 +52101,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Sequence mismatch warning]'):
                         self.report.warning.appendDescription('sequence_mismatch',
-                                                              {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                'description': warn})
                         self.report.setWarning()
 
@@ -52118,7 +52118,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Inconsistent assigned peak]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',
-                                                              {'file_name': data_file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -52126,7 +52126,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Missing data]'):
                         self.report.warning.appendDescription('missing_data',
-                                                              {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                'description': warn})
                         self.report.setWarning()
 
@@ -52137,7 +52137,7 @@ class NmrDpUtility:
                         # consume_suspended_message()
 
                         self.report.error.appendDescription('anomalous_data',
-                                                            {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                              'description': warn})
                         self.report.setError()
 
@@ -52146,7 +52146,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                         self.report.warning.appendDescription('inconsistent_mr_data',
-                                                              {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                'description': warn})
                         self.report.setWarning()
 
@@ -52160,7 +52160,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ KeyError  - {warn}\n")
 
-        def deal_pea_warn_message_for_lazy_eval(listener):
+        def deal_pea_warn_message_for_lazy_eval(file_name, listener):
 
             if listener.warningMessage is not None:
 
@@ -52168,13 +52168,13 @@ class NmrDpUtility:
 
                     if warn.startswith('[Sequence mismatch]'):
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch':
-                                                               {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                 'description': warn}})
 
                     # elif warn.startswith('[Atom not found]'):
                     #     if not self.__remediation_mode or 'Macromolecules page' not in warn:
                     #         suspended_errors_for_lazy_eval.append({'atom_not_found':
-                    #                                                {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                    #                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
                     #                                                 'description': warn}})
 
                     # elif warn.startswith('[Hydrogen not instantiated]'):
@@ -52182,27 +52182,27 @@ class NmrDpUtility:
                     #         pass
                     #     else:
                     #         suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated':
-                    #                                                {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                    #                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
                     #                                                 'description': warn}})
 
                     # elif warn.startswith('[Coordinate issue]'):
                     #     suspended_errors_for_lazy_eval.append({'coordinate_issue':
-                    #                                            {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                    #                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
                     #                                             'description': warn}})
 
                     # elif warn.startswith('[Invalid atom nomenclature]'):
                     #     suspended_errors_for_lazy_eval.append({'invalid_atom_nomenclature':
-                    #                                            {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                    #                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
                     #                                             'description': warn}})
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         suspended_errors_for_lazy_eval.append({'invalid_data':
-                                                               {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                 'description': warn}})
 
                     # elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                     #     suspended_errors_for_lazy_eval.append({'anomalous_data':
-                    #                                            {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                    #                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
                     #                                             'description': warn}})
 
         if file_type == 'nm-pea-ari':
@@ -52224,7 +52224,7 @@ class NmrDpUtility:
                 reasons = listener.getReasonsForReparsing()
 
                 if reasons is not None:
-                    deal_pea_warn_message_for_lazy_eval(listener)
+                    deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
                     reader = AriaPKReader(self.__verbose, self.__lfh,
                                           self.__representative_model_id,
@@ -52239,7 +52239,7 @@ class NmrDpUtility:
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                   csLoops=self.__lp_data['chem_shift'])
 
-                deal_pea_warn_message(listener)
+                deal_pea_warn_message(data_file_name, listener)
 
                 poly_seq = listener.getPolymerSequence()
                 if poly_seq is not None:
@@ -52289,7 +52289,7 @@ class NmrDpUtility:
                 reasons = listener.getReasonsForReparsing()
 
                 if reasons is not None:
-                    deal_pea_warn_message_for_lazy_eval(listener)
+                    deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
                     reader = BarePKReader(self.__verbose, self.__lfh,
                                           self.__representative_model_id,
@@ -52305,7 +52305,7 @@ class NmrDpUtility:
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                   csLoops=self.__lp_data['chem_shift'])
 
-                deal_pea_warn_message(listener)
+                deal_pea_warn_message(data_file_name, listener)
 
                 poly_seq = listener.getPolymerSequence()
                 if poly_seq is not None:
@@ -52354,7 +52354,7 @@ class NmrDpUtility:
                 reasons = listener.getReasonsForReparsing()
 
                 if reasons is not None:
-                    deal_pea_warn_message_for_lazy_eval(listener)
+                    deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
                     reader = CcpnPKReader(self.__verbose, self.__lfh,
                                           self.__representative_model_id,
@@ -52369,7 +52369,7 @@ class NmrDpUtility:
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                   csLoops=self.__lp_data['chem_shift'])
 
-                deal_pea_warn_message(listener)
+                deal_pea_warn_message(data_file_name, listener)
 
                 poly_seq = listener.getPolymerSequence()
                 if poly_seq is not None:
@@ -52418,7 +52418,7 @@ class NmrDpUtility:
                 reasons = listener.getReasonsForReparsing()
 
                 if reasons is not None:
-                    deal_pea_warn_message_for_lazy_eval(listener)
+                    deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
                     reader = NmrPipePKReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
@@ -52433,7 +52433,7 @@ class NmrDpUtility:
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                   csLoops=self.__lp_data['chem_shift'])
 
-                deal_pea_warn_message(listener)
+                deal_pea_warn_message(data_file_name, listener)
 
                 poly_seq = listener.getPolymerSequence()
                 if poly_seq is not None:
@@ -52482,7 +52482,7 @@ class NmrDpUtility:
                 reasons = listener.getReasonsForReparsing()
 
                 if reasons is not None:
-                    deal_pea_warn_message_for_lazy_eval(listener)
+                    deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
                     reader = PonderosaPKReader(self.__verbose, self.__lfh,
                                                self.__representative_model_id,
@@ -52497,7 +52497,7 @@ class NmrDpUtility:
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                   csLoops=self.__lp_data['chem_shift'])
 
-                deal_pea_warn_message(listener)
+                deal_pea_warn_message(data_file_name, listener)
 
                 poly_seq = listener.getPolymerSequence()
                 if poly_seq is not None:
@@ -52546,7 +52546,7 @@ class NmrDpUtility:
                 reasons = listener.getReasonsForReparsing()
 
                 if reasons is not None:
-                    deal_pea_warn_message_for_lazy_eval(listener)
+                    deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
                     reader = SparkyPKReader(self.__verbose, self.__lfh,
                                             self.__representative_model_id,
@@ -52561,7 +52561,7 @@ class NmrDpUtility:
                                                   listIdCounter=_list_id_counter, entryId=self.__entry_id,
                                                   csLoops=self.__lp_data['chem_shift'])
 
-                deal_pea_warn_message(listener)
+                deal_pea_warn_message(data_file_name, listener)
 
                 poly_seq = listener.getPolymerSequence()
                 if poly_seq is not None:
@@ -52610,7 +52610,7 @@ class NmrDpUtility:
                 reasons = listener.getReasonsForReparsing()
 
                 if reasons is not None:
-                    deal_pea_warn_message_for_lazy_eval(listener)
+                    deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
                     reader = SparkySPKReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
@@ -52625,7 +52625,7 @@ class NmrDpUtility:
                                                   listIdCounter=_list_id_counter, entryId=self.__entry_id,
                                                   csLoops=self.__lp_data['chem_shift'])
 
-                deal_pea_warn_message(listener)
+                deal_pea_warn_message(data_file_name, listener)
 
                 poly_seq = listener.getPolymerSequence()
                 if poly_seq is not None:
@@ -52673,7 +52673,7 @@ class NmrDpUtility:
                 reasons = listener.getReasonsForReparsing()
 
                 if reasons is not None:
-                    deal_pea_warn_message_for_lazy_eval(listener)
+                    deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
                     reader = TopSpinPKReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
@@ -52687,7 +52687,7 @@ class NmrDpUtility:
                                                   createSfDict=True, originalFileName=data_file_name,
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                deal_pea_warn_message(listener)
+                deal_pea_warn_message(data_file_name, listener)
 
                 poly_seq = listener.getPolymerSequence()
                 if poly_seq is not None:
@@ -52736,7 +52736,7 @@ class NmrDpUtility:
                 reasons = listener.getReasonsForReparsing()
 
                 if reasons is not None:
-                    deal_pea_warn_message_for_lazy_eval(listener)
+                    deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
                     reader = NmrViewPKReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
@@ -52751,7 +52751,7 @@ class NmrDpUtility:
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                   csLoops=self.__lp_data['chem_shift'])
 
-                deal_pea_warn_message(listener)
+                deal_pea_warn_message(data_file_name, listener)
 
                 poly_seq = listener.getPolymerSequence()
                 if poly_seq is not None:
@@ -52800,7 +52800,7 @@ class NmrDpUtility:
                 reasons = listener.getReasonsForReparsing()
 
                 if reasons is not None:
-                    deal_pea_warn_message_for_lazy_eval(listener)
+                    deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
                     reader = VnmrPKReader(self.__verbose, self.__lfh,
                                           self.__representative_model_id,
@@ -52815,7 +52815,7 @@ class NmrDpUtility:
                                                   listIdCounter=_list_id_counter, entryId=self.__entry_id,
                                                   csLoops=self.__lp_data['chem_shift'])
 
-                deal_pea_warn_message(listener)
+                deal_pea_warn_message(data_file_name, listener)
 
                 poly_seq = listener.getPolymerSequence()
                 if poly_seq is not None:
@@ -52865,7 +52865,7 @@ class NmrDpUtility:
                 reasons = listener.getReasonsForReparsing()
 
                 if reasons is not None and listener.warningMessage is not None and len(listener.warningMessage) > 0:
-                    deal_pea_warn_message_for_lazy_eval(listener)
+                    deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
                     reader = XeasyPKReader(self.__verbose, self.__lfh,
                                            self.__representative_model_id,
@@ -52881,7 +52881,7 @@ class NmrDpUtility:
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
                                                   csLoops=self.__lp_data['chem_shift'])
 
-                deal_pea_warn_message(listener)
+                deal_pea_warn_message(data_file_name, listener)
 
                 poly_seq = listener.getPolymerSequence()
                 if poly_seq is not None:
@@ -52929,7 +52929,7 @@ class NmrDpUtility:
                 reasons = listener.getReasonsForReparsing()
 
                 if reasons is not None:
-                    deal_pea_warn_message_for_lazy_eval(listener)
+                    deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
                     reader = XwinNmrPKReader(self.__verbose, self.__lfh,
                                              self.__representative_model_id,
@@ -52943,7 +52943,7 @@ class NmrDpUtility:
                                                   createSfDict=True, originalFileName=data_file_name,
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
 
-                deal_pea_warn_message(listener)
+                deal_pea_warn_message(data_file_name, listener)
 
                 poly_seq = listener.getPolymerSequence()
                 if poly_seq is not None:

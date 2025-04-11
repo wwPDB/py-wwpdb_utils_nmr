@@ -1,0 +1,1 @@
+../antlr-grammars-v4.10/NmrStar2CSLexer.g4

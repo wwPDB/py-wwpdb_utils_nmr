@@ -720,6 +720,9 @@ def getChemShiftFormatName(fileType: str) -> str:
     if fileType == 'nm-shi-ppm':
         return 'PPM chemical shift assignment'
 
+    if fileType == 'nm-shi-st2':
+        return 'NMR-STAR V2.1 chemical shift assignment'
+
     return 'other chemical shift assignment'
 
 

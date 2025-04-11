@@ -407,6 +407,7 @@ try:
     from wwpdb.utils.nmr.cs.NmrPipeCSReader import NmrPipeCSReader
     from wwpdb.utils.nmr.cs.PippCSReader import PippCSReader
     from wwpdb.utils.nmr.cs.PpmCSReader import PpmCSReader
+    from wwpdb.utils.nmr.cs.NmrStar2CSReader import NmrStar2CSReader
     from wwpdb.utils.nmr.cs.XeasyCSReader import XeasyCSReader
     from wwpdb.utils.nmr.ann.OneDepAnnTasks import OneDepAnnTasks
     from wwpdb.utils.nmr.ann.BMRBAnnTasks import BMRBAnnTasks
@@ -570,6 +571,7 @@ except ImportError:
     from nmr.cs.NmrPipeCSReader import NmrPipeCSReader
     from nmr.cs.PippCSReader import PippCSReader
     from nmr.cs.PpmCSReader import PpmCSReader
+    from nmr.cs.NmrStar2CSReader import NmrStar2CSReader
     from nmr.cs.XeasyCSReader import XeasyCSReader
     from nmr.ann.OneDepAnnTasks import OneDepAnnTasks
     from nmr.ann.BMRBAnnTasks import BMRBAnnTasks
@@ -38153,7 +38155,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if not file_type.startswith('nm-shi') and file_type != 'nm-aux-xea':
+            if not file_type.startswith('nm-shi-') and file_type != 'nm-aux-xea':
                 continue
 
             if self.__remediation_mode and os.path.exists(file_path + '-ignored'):
@@ -38520,6 +38522,65 @@ class NmrDpUtility:
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (PPM) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyCs() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in cs_sf_dict_holder:
+                                    cs_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in cs_sf_dict_holder[content_subtype]:
+                                        cs_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-shi-st2':
+                reader = NmrStar2CSReader(self.__verbose, self.__lfh,
+                                          nmr_poly_seq, entity_assembly,
+                                          self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                # ignore lexer error beacuse of imcomplete XML file format
+                listener, parser_err_listener, _ =\
+                    reader.parse(file_path,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                if None not in (parser_err_listener, listener)\
+                   and parser_err_listener.getMessageList() is None:
+                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
+
+                        reader = NmrStar2CSReader(self.__verbose, self.__lfh,
+                                                  nmr_poly_seq, entity_assembly,
+                                                  self.__ccU, self.__csStat, self.__nefT,
+                                                  reasons)
+
+                        listener, _, _ = reader.parse(file_path,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                    deal_shi_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate assigned chemical shift file (NMR-STAR V2.1) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyCs() ++ Error  - " + err)
                             self.report.setError()

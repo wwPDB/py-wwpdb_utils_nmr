@@ -350,4 +350,5 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-shi-npi`|**internal use**|`nmr-chemical-shifts` / `any`|NMRPIPE chemical shift file
 `nm-shi-pip`|**internal use**|`nmr-chemical-shifts` / `any`|PIPP chemical shift file
 `nm-shi-ppm`|**internal use**|`nmr-chemical-shifts` / `any`|PPM chemical shift file (NMRVIEW, CAMRA)
+`nm-shi-st2`|**internal use**|`nmr-chemical-shifts` / `any`|NMR-STAR V2.1 chemical shift file (loop only)
 `nm-shi-xea`|**internal use**|`nmr-chemical-shifts` / `any`|XEASY chemical shift file same as `nm-aux-xea`

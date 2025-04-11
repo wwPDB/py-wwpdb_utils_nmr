@@ -153,7 +153,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
     # Exit a parse tree produced by BareCSParser#cs_raw_list.
     def exitCs_raw_list(self, ctx: BareCSParser.Cs_raw_listContext):  # pylint: disable=unused-argument
 
-        def cancat_assignment(chain, seq, comp, atom):
+        def concat_assignment(chain, seq, comp, atom):
             L = ''
             if chain is not None:
                 L = chain + ':'
@@ -256,7 +256,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                         seq_id = _seq_id + self.offset[chain_id]
                         auth_seq_id_map[seq_id] = _seq_id
 
-                    L = cancat_assignment(chain_id, seq_id, comp_id, atom_id)
+                    L = concat_assignment(chain_id, seq_id, comp_id, atom_id)
 
                     assignment = self.extractAssignment(1, L, self.cur_line_num, chain_id is not None)
 
@@ -362,7 +362,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                         seq_id = _seq_id + self.offset[chain_id]
                         auth_seq_id_map[seq_id] = _seq_id
 
-                    L = cancat_assignment(chain_id, seq_id, comp_id, atom_id)
+                    L = concat_assignment(chain_id, seq_id, comp_id, atom_id)
 
                     assignment = self.extractAssignment(1, L, self.cur_line_num, chain_id is not None)
 

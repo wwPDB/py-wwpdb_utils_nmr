@@ -6112,6 +6112,8 @@ class BasePKParserListener():
                                             if _atomId not in siblingAtomName[_idx]:
                                                 siblingAtomName[_idx].append(_atomId)
                                             break
+                                    if _atomId == 'MET':
+                                        continue
                                     _atomId = translateToStdAtomName(_atomId, _compId, ccU=self.ccU)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
                                     if details is None:
@@ -6196,6 +6198,8 @@ class BasePKParserListener():
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                         resNameLike[idx] = False
                                     break
+                                if atomId == 'MET':
+                                    continue
                                 _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                                 if details is None:
@@ -6210,6 +6214,8 @@ class BasePKParserListener():
                                 atomNameLike[idx] = True
                                 atomNameSpan[idx] = (index, len(term))
                                 break
+                            if atomId == 'MET':
+                                continue
                             _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                             if details is None:
@@ -6251,6 +6257,8 @@ class BasePKParserListener():
                                         if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
                                         break
+                                    if atomId == 'MET':
+                                        continue
                                     _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                                     if details is None:
@@ -6265,6 +6273,8 @@ class BasePKParserListener():
                                     _atomNameLike[idx] = True
                                     _atomNameSpan[idx] = (index, len(_term))
                                     break
+                                if atomId == 'MET':
+                                    continue
                                 _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                                 if details is None:
@@ -6306,6 +6316,8 @@ class BasePKParserListener():
                                         if resNameSpan[idx][0] == __atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
                                         break
+                                    if atomId == 'MET':
+                                        continue
                                     _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                                     if details is None:
@@ -6320,6 +6332,8 @@ class BasePKParserListener():
                                     __atomNameLike[idx] = True
                                     __atomNameSpan[idx] = (index, len(__term))
                                     break
+                                if atomId == 'MET':
+                                    continue
                                 _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                                 if details is None:
@@ -6361,6 +6375,8 @@ class BasePKParserListener():
                                         if resNameSpan[idx][0] == ___atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
                                         break
+                                    if atomId == 'MET':
+                                        continue
                                     _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                                     if details is None:
@@ -6375,6 +6391,8 @@ class BasePKParserListener():
                                     ___atomNameLike[idx] = True
                                     ___atomNameSpan[idx] = (index, len(___term))
                                     break
+                                if atomId == 'MET':
+                                    continue
                                 _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                                 if details is None:

@@ -344,7 +344,8 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-pea-xwi`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in XWINNMR format
 `nm-pea-any`|`nm-pea-any`|`nmr-peaks` / `any`|Any spectral peak list file
 `nmrif`|**internal use**|`nmrif` / `pdbx`|NMR metadata file in PDBx/mmCIF format (aka. NMRIF)
-`nm-shi-ari`|**internal use**|`nmr-chemical-shifts` / `any`|Assignment file in ARIA format
-`nm-shi-bar`|**internal use**|`nmr-chemical-shifts` / `any`|Bare chemical shift file (residue per line, atom per line, SPARKY resonance list)
+`nm-shi-ari`|**internal use**|`nmr-chemical-shifts` / `any`|ARIA chemical shift file
+`nm-shi-bar`|**internal use**|`nmr-chemical-shifts` / `any`|Bare TSV/CSV chemical shift file (residue per line, atom per line, SPARKY's resonance list)
+`nm-shi-gar`|**internal use**|`nmr-chemical-shifts` / `any`|GARRET chemical shift file (CAMRA)
 `nm-shi-ppm`|**internal use**|`nmr-chemical-shifts` / `any`|PPM chemical shift file (NMRVIEW, CAMRA)
-`nm-shi-xea`|**internal use**|`nmr-chemical-shifts` / `any`|Assignment file in XEASY format same as `nm-aux-xea`
+`nm-shi-xea`|**internal use**|`nmr-chemical-shifts` / `any`|XEASY chemical shift file same as `nm-aux-xea`

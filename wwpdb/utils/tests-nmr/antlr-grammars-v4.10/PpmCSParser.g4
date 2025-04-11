@@ -20,14 +20,12 @@ options { tokenVocab=PpmCSLexer; }
 
 ppm_cs:
 	RETURN?
-	(
-	ppm_list+ |
-	RETURN
-	)*
+	ppm_list+
+	RETURN*
 	EOF;
 
 ppm_list:
-	(Simple_name | Atom_selection_2d_ex | Atom_selection_3d_ex) number Integer? (RETURN | EOF);
+	(Simple_name | Atom_selection_2d_ex | Atom_selection_3d_ex) number Integer? (RETURN | EOF)?;
 
 /* number expression in chemical shift */
 number: Float | Integer | Simple_name;

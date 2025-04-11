@@ -198,4 +198,4 @@ if __name__ == "__main__":
     reader.setDebugMode(True)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/7aaf/bmr34555/work/data/D_1292111069_nmr-peaks-upload_P2.dat.V1')
-    print(reader_listener.getReasonsForReparsing())
+    assert reader_listener.getReasonsForReparsing() is None

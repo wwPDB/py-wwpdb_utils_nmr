@@ -1083,18 +1083,25 @@ class BasePKParserListener():
 
         if self.hasPolySeq:
             self.authAsymIdSet = set(ps['auth_chain_id'] for ps in self.polySeq)
+
             self.compIdSet = set()
             self.altCompIdSet = set()
+
+            def is_data(array: list) -> bool:
+                return not any(d in emptyValue for d in array)
+
             for ps in self.polySeq:
-                self.compIdSet.update(set(ps['comp_id']))
+                self.compIdSet.update(set(filter(is_data, ps['comp_id'])))
                 if 'auth_comp_id' in ps and ps['comp_id'] != ps['auth_comp_id']:
-                    self.altCompIdSet.update(set(ps['auth_comp_id']))
+                    self.altCompIdSet.update(set(filter(is_data, ps['auth_comp_id'])))
+
             if self.hasNonPolySeq:
                 for np in self.nonPolySeq:
-                    self.compIdSet.update(set(np['comp_id']))
+                    self.compIdSet.update(set(filter(is_data, np['comp_id'])))
                     if 'auth_comp_id' in np and np['comp_id'] != np['auth_comp_id']:
-                        self.altCompIdSet.update(set(np['auth_comp_id']))
+                        self.altCompIdSet.update(set(filter(is_data, np['auth_comp_id'])))
                 self.authAsymIdSet.update(set(np['auth_chain_id'] for np in self.nonPolySeq))
+
             for entity in self.__entityAssembly:
                 if 'entity_poly_type' in entity:
                     poly_type = entity['entity_poly_type']

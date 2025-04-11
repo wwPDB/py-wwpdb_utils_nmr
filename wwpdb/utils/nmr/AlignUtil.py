@@ -705,6 +705,18 @@ def getChemShiftFormatName(fileType: str) -> str:
     if fileType == 'nm-shi-ari':
         return 'ARIA chemical shift assignment'
 
+    if fileType == 'nm-shi-bar':
+        return 'Bare CSV/TSV chemical shift assignment'
+
+    if fileType == 'nm-shi-gar':
+        return 'GARRET chemical shift assignment'
+
+    if fileType == 'nm-shi-pip':
+        return 'PIPP chemical shift assignment'
+
+    if fileType == 'nm-shi-ppm':
+        return 'PPM chemical shift assignment'
+
     return 'other chemical shift assignment'
 
 

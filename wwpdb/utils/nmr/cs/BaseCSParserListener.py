@@ -253,8 +253,12 @@ class BaseCSParserListener():
 
             self.chainIdSet = set(ps['chain_id'] for ps in self.polySeq)
             self.compIdSet = set()
+
+            def is_data(array: list) -> bool:
+                return not any(d in emptyValue for d in array)
+
             for ps in self.polySeq:
-                self.compIdSet.update(set(ps['comp_id']))
+                self.compIdSet.update(set(filter(is_data, ps['comp_id'])))
 
             for compId in self.compIdSet:
                 if compId in monDict3:
@@ -967,7 +971,6 @@ class BaseCSParserListener():
                                         atomNameSpan[idx] = (_index - 1, len(term))
                                         resIdSpan[idx] = (resIdSpan[idx][0], resIdSpan[idx][1] - 1)
                                         break
-
                         index = term.rindex(elem)
                         atomId = term[index:len(term)]
                         if index - 1 >= 0 and term[index - 1] in CHEM_SHIFT_HALF_SPIN_NUCLEUS:
@@ -2495,7 +2498,7 @@ class BaseCSParserListener():
                     or (compId == 'ACE' and seqId == min_auth_seq_id - 1)
                     or (compId == 'NH2' and seqId == max_auth_seq_id + 1)
                     or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT)):
-                refChainId = self.polySeq[0]['auth_chain_id']
+                refChainId = self.polySeq[0]['auth_chain_id' if 'auth_chain_id' in self.polySeq[0] else 'chain_id']
                 if (compId == 'ACE' and seqId == min_auth_seq_id - 1)\
                    or (compId == 'NH2' and seqId == max_auth_seq_id + 1)\
                    or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
@@ -2842,7 +2845,7 @@ class BaseCSParserListener():
                     or (compId == 'ACE' and seqId == min_auth_seq_id - 1)
                     or (compId == 'NH2' and seqId == max_auth_seq_id + 1)
                     or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT)):
-                refChainId = self.polySeq[0]['auth_chain_id']
+                refChainId = self.polySeq[0]['auth_chain_id' if 'auth_chain_id' in self.polySeq[0] else 'chain_id']
                 if (compId == 'ACE' and seqId == min_auth_seq_id - 1)\
                    or (compId == 'NH2' and seqId == max_auth_seq_id + 1)\
                    or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
@@ -3048,7 +3051,7 @@ class BaseCSParserListener():
                                   f"{_seqId}:?:{atomId} is not present in the coordinates.")
             elif atomId is not None:
                 if len(self.polySeq) == 1 and seqId < 1:
-                    refChainId = self.polySeq[0]['auth_chain_id']
+                    refChainId = self.polySeq[0]['auth_chain_id' if 'auth_chain_id' in self.polySeq[0] else 'chain_id']
                     if self.no_extra_comment:
                         self.f.append(f"[Atom not found] {self.getCurrentAssignment(n=index)}"
                                       f"{_seqId}:?:{atomId} is not present in the coordinates. "
@@ -3209,7 +3212,7 @@ class BaseCSParserListener():
                                   f"{fixedChainId}:{_seqId}:?:{atomId} is not present in the coordinates.")
             else:
                 if len(self.polySeq) == 1 and seqId < 1:
-                    refChainId = self.polySeq[0]['auth_chain_id']
+                    refChainId = self.polySeq[0]['auth_chain_id' if 'auth_chain_id' in self.polySeq[0] else 'chain_id']
                     if self.no_extra_comment:
                         self.f.append(f"[Atom not found] {self.getCurrentAssignment(n=index)}"
                                       f"{_seqId}:?:{atomId} is not present in the coordinates. "

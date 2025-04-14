@@ -1311,8 +1311,10 @@ class AriaMRParserListener(ParseTreeListener):
                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                         chainAssign.add((chainId, seqId, cifCompId, True))
-                elif self.__nefT.get_valid_star_atom(cifCompId, atomId)[2] is None:
-                    chainAssign.add((chainId, seqId, cifCompId, True))
+                else:
+                    _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                    if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                        chainAssign.add((chainId, seqId, cifCompId, True))
 
             elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
@@ -1351,8 +1353,10 @@ class AriaMRParserListener(ParseTreeListener):
                                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
-                                    elif self.__nefT.get_valid_star_atom(cifCompId, atomId)[2] is None:
-                                        chainAssign.add((chainId, seqId_, cifCompId, True))
+                                    else:
+                                        _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                                        if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                            chainAssign.add((chainId, seqId_, cifCompId, True))
                             except IndexError:
                                 pass
 
@@ -1903,10 +1907,12 @@ class AriaMRParserListener(ParseTreeListener):
                         chainAssign.add((chainId, seqId, cifCompId, True))
                         if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                             self.__chainNumberDict[refChainId] = chainId
-                elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                    chainAssign.add((chainId, seqId, cifCompId, True))
-                    if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
-                        self.__chainNumberDict[refChainId] = chainId
+                else:
+                    _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                    if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                        chainAssign.add((chainId, seqId, cifCompId, True))
+                        if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                            self.__chainNumberDict[refChainId] = chainId
 
             elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
@@ -1945,8 +1951,10 @@ class AriaMRParserListener(ParseTreeListener):
                                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
                                     if len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
-                                    elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                        chainAssign.add((chainId, seqId_, cifCompId, True))
+                                    else:
+                                        _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                                        if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                            chainAssign.add((chainId, seqId_, cifCompId, True))
                             except IndexError:
                                 pass
 

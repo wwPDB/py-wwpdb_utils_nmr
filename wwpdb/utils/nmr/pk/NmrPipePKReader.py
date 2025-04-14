@@ -225,8 +225,8 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/5jyv/bmr30093/work/data/D_1000220417_nmr-peaks-upload_P1.dat.V5',
                  '../../tests-nmr/mock-data-remediation/5jyv/5jyv.cif')
 
-    reader = NmrPipePKReader(True)
-    reader.setDebugMode(True)
+    reader = NmrPipePKReader(False)
+    reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-D_1300056761/e5_nnoesy_pipp.PCK',
                      '../../tests-nmr/mock-data-D_1300056761/D_800802_model_P1.cif.V5')

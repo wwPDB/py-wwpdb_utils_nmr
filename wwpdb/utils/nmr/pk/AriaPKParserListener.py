@@ -400,6 +400,12 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
             elif self.__cur_path == '/spectrum/peak/proton1/shift' and len(string) > 0:
 
+                if string == self.__volume:
+                    self.__volume = None
+
+                if string == self.__intensity:
+                    self.__intensity = None
+
                 if name == 'value':
                     self.__proton1_ppm = float(string)
 
@@ -407,6 +413,12 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                     self.__proton1_ppm_error = float(string)
 
             elif self.__cur_path == '/spectrum/peak/proton2/shift' and len(string) > 0:
+
+                if string == self.__volume:
+                    self.__volume = None
+
+                if string == self.__intensity:
+                    self.__intensity = None
 
                 if name == 'value':
                     self.__proton2_ppm = float(string)
@@ -416,6 +428,12 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
 
             elif self.__cur_path == '/spectrum/peak/hetero1/shift' and len(string) > 0:
 
+                if string == self.__volume:
+                    self.__volume = None
+
+                if string == self.__intensity:
+                    self.__intensity = None
+
                 if name == 'value':
                     self.__hetero1_ppm = float(string)
 
@@ -423,6 +441,12 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                     self.__hetero1_ppm_error = float(string)
 
             elif self.__cur_path == '/spectrum/peak/hetero2/shift' and len(string) > 0:
+
+                if string == self.__volume:
+                    self.__volume = None
+
+                if string == self.__intensity:
+                    self.__intensity = None
 
                 if name == 'value':
                     self.__hetero2_ppm = float(string)

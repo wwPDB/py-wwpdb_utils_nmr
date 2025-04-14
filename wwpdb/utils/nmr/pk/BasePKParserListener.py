@@ -1094,12 +1094,16 @@ class BasePKParserListener():
                 self.compIdSet.update(set(filter(is_data, ps['comp_id'])))
                 if 'auth_comp_id' in ps and ps['comp_id'] != ps['auth_comp_id']:
                     self.altCompIdSet.update(set(filter(is_data, ps['auth_comp_id'])))
+                if 'alt_comp_id' in ps and ps['comp_id'] != ps['alt_comp_id']:
+                    self.altCompIdSet.update(set(filter(is_data, ps['alt_comp_id'])))
 
             if self.hasNonPolySeq:
                 for np in self.nonPolySeq:
                     self.compIdSet.update(set(filter(is_data, np['comp_id'])))
                     if 'auth_comp_id' in np and np['comp_id'] != np['auth_comp_id']:
                         self.altCompIdSet.update(set(filter(is_data, np['auth_comp_id'])))
+                    if 'alt_comp_id' in np and np['comp_id'] != np['alt_comp_id']:
+                        self.altCompIdSet.update(set(filter(is_data, np['alt_comp_id'])))
                 self.authAsymIdSet.update(set(np['auth_chain_id'] for np in self.nonPolySeq))
 
             for entity in self.__entityAssembly:

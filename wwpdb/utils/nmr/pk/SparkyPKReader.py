@@ -225,8 +225,8 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/5z8f/bmr36160/work/data/D_1300006644_nmr-peaks-upload_P1.dat.V3',
                  '../../tests-nmr/mock-data-remediation/5z8f/5z8f.cif')
 
-    reader = SparkyPKReader(True)
-    reader.setDebugMode(True)
+    reader = SparkyPKReader(False)
+    reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_nmr-peaks-upload_P4.dat.V1',
                      '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')
@@ -235,8 +235,8 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_nmr-peaks-upload_P4.dat.V1',
                  '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')
 
-    reader = SparkyPKReader(True)
-    reader.setDebugMode(True)
+    reader = SparkyPKReader(False)
+    reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_nmr-peaks-upload_P3.dat.V2',
                      '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')
@@ -250,13 +250,8 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/8e1d/bmr31038/work/data/D_1000267621_nmr-peaks-upload_P6.dat.V1',
                  '../../tests-nmr/mock-data-remediation/8e1d/8e1d.cif')
 
-    reader = SparkyPKReader(True)
-    reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2js7/2js7-trimmed-div_dst.mr',
-                 '../../tests-nmr/mock-data-remediation/2js7/2js7.cif')
-
-    reader = SparkyPKReader(True)
-    reader.setDebugMode(True)
+    reader = SparkyPKReader(False)
+    reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_nmr-peaks-upload_P2.dat.V3',
                      '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')

@@ -195,8 +195,8 @@ if __name__ == "__main__":
                                  'GLU', 'ARG', 'GLU', 'SER', 'TRP', 'GLN', 'ASN', 'ASN', 'LEU', 'GLU', 'SER', 'PHE', 'ARG', 'LYS', 'ILE', 'MET', 'SER', 'MET', 'LYS']
                      }]
     entity_assembly = {'1': {'entity_id': 1, 'auth_asym_id': 'A'}}
-    reader = AriaCSReader(True, polySeq=nmr_poly_seq, entityAssembly=entity_assembly)
-    reader.setDebugMode(True)
+    reader = AriaCSReader(False, polySeq=nmr_poly_seq, entityAssembly=entity_assembly)
+    reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/6f24/bmr34202/work/data/D_1200007358_nmr-peaks-upload_P1.dat.V1')
     print(reader_listener.getReasonsForReparsing())

@@ -1531,10 +1531,10 @@ class BiosymMRParserListener(ParseTreeListener):
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
                                         if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                             self.__chainNumberDict[refChainId] = chainId
-                                elif self.__nefT.get_valid_star_atom(cifCompId, atomId)[2] is None:
-                                    chainAssign.add((chainId, seqId_, cifCompId, True))
-                                    if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
-                                        self.__chainNumberDict[refChainId] = chainId
+                                    else:
+                                        _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                                        if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                            chainAssign.add((chainId, seqId_, cifCompId, True))
                             except IndexError:
                                 pass
 

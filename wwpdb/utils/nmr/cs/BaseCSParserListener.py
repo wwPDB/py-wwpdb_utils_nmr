@@ -153,8 +153,8 @@ class BaseCSParserListener():
 
     polySeq = None
     entityAssembly = None  # key=Entity_assembly_ID (str), value=dictionary of 'entity_id' (int) and 'auth_asym_id' (str)
-    __labelToAuthSeq = None
-    __authToLabelSeq = None
+    labelToAuthSeq = None
+    authToLabelSeq = None
 
     chainIdSet = None
     compIdSet = None
@@ -249,7 +249,7 @@ class BaseCSParserListener():
                 else:
                     for seqId, authSeqId in zip(ps['seq_id'], ps['auth_seq_id']):
                         self.__labelToAuthSeq[(chainId, seqId)] = (authChainId, authSeqId)
-            self.__authToLabelSeq = {v: k for k, v in self.__labelToAuthSeq.items()}
+            self.authToLabelSeq = {v: k for k, v in self.__labelToAuthSeq.items()}
 
             self.chainIdSet = set(ps['chain_id'] for ps in self.polySeq)
             self.compIdSet = set()
@@ -777,7 +777,9 @@ class BaseCSParserListener():
                                atom, ambig_code=ambig_code, details=details)
                 sf['loop'].add_data(row)
 
-    def extractAssignment(self, numOfDim: int, string: str, src_index: int, with_seqid: bool, hint: Optional[List[dict]] = None) -> Optional[List[dict]]:
+    def extractAssignment(self, numOfDim: int, string: str, src_index: int,
+                          with_segid: Optional[str] = None, with_compid: Optional[str] = None,
+                          hint: Optional[List[dict]] = None) -> Optional[List[dict]]:
         """ Extract assignment from a given string.
         """
 
@@ -812,7 +814,7 @@ class BaseCSParserListener():
 
         for idx, term in enumerate(_str):
             for segId in self.chainIdSet:
-                if term.startswith(segId) and with_seqid:
+                if term.startswith(segId) and (with_segid is None or term.startswith(with_segid)):
                     segIdLike[idx] = True
                     segIdSpan[idx] = (0, len(segId))
                     break
@@ -913,7 +915,7 @@ class BaseCSParserListener():
                                             if _atomId not in siblingAtomName[_idx]:
                                                 siblingAtomName[_idx].append(_atomId)
                                             break
-                                    if _atomId == 'MET':
+                                    if (with_compid is not None and _atomId.startswith(with_compid)) or _atomId.startswith('MET'):
                                         continue
                                     _atomId = translateToStdAtomName(_atomId, _compId, ccU=self.ccU)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
@@ -982,8 +984,8 @@ class BaseCSParserListener():
                                 continue
                         if atomId[0] in ('Q', 'M') and index + 1 < len(term) and term[index + 1].isdigit():
                             continue
-                        if atomId.startswith('MET') and ((index + 3 < len(term) and term[index + 3].isdigit()
-                                                         or (index + 4 < len(term) and term[index + 4].isdigit()))):
+                        if ((with_compid is not None and atomId.startswith(with_compid)) or atomId.startswith('MET'))\
+                           and ((index + 3 < len(term) and term[index + 3].isdigit() or (index + 4 < len(term) and term[index + 4].isdigit()))):
                             continue
                         if resNameLike[idx] and len(compId) > 1 and compId[-1] == elem and index + 1 == resNameSpan[idx][1]:
                             continue
@@ -998,7 +1000,7 @@ class BaseCSParserListener():
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                         resNameLike[idx] = False
                                     break
-                                if atomId == 'MET':
+                                if with_compid is not None and atomId.startswith(with_compid):
                                     continue
                                 _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
@@ -1014,7 +1016,7 @@ class BaseCSParserListener():
                                 atomNameLike[idx] = True
                                 atomNameSpan[idx] = (index, len(term))
                                 break
-                            if atomId == 'MET':
+                            if with_compid is not None and atomId.startswith(with_compid):
                                 continue
                             _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
@@ -1039,8 +1041,8 @@ class BaseCSParserListener():
                                     continue
                             if atomId[0] in ('Q', 'M') and index + 1 < len(_term) and _term[index + 1].isdigit():
                                 continue
-                            if atomId.startswith('MET') and ((index + 3 < len(_term) and _term[index + 3].isdigit()
-                                                              or (index + 4 < len(_term) and _term[index + 4].isdigit()))):
+                            if ((with_compid is not None and atomId.startswith(with_compid)) or atomId.startswith('MET'))\
+                               and ((index + 3 < len(_term) and _term[index + 3].isdigit() or (index + 4 < len(_term) and _term[index + 4].isdigit()))):
                                 continue
                             if resNameLike[idx] and len(compId) > 1 and compId[-1] == elem and index + 1 == resNameSpan[idx][1]:
                                 continue
@@ -1057,7 +1059,7 @@ class BaseCSParserListener():
                                         if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
                                         break
-                                    if atomId == 'MET':
+                                    if with_compid is not None and atomId.startswith(with_compid):
                                         continue
                                     _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
@@ -1073,7 +1075,7 @@ class BaseCSParserListener():
                                     _atomNameLike[idx] = True
                                     _atomNameSpan[idx] = (index, len(_term))
                                     break
-                                if atomId == 'MET':
+                                if with_compid is not None and atomId.startswith(with_compid):
                                     continue
                                 _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
@@ -1098,8 +1100,8 @@ class BaseCSParserListener():
                                     continue
                             if atomId[0] in ('Q', 'M') and index + 1 < len(__term) and __term[index + 1].isdigit():
                                 continue
-                            if atomId.startswith('MET') and ((index + 3 < len(__term) and __term[index + 3].isdigit()
-                                                              or (index + 4 < len(__term) and __term[index + 4].isdigit()))):
+                            if ((with_compid is not None and atomId.startswith(with_compid)) or atomId.startswith('MET'))\
+                               and ((index + 3 < len(__term) and __term[index + 3].isdigit() or (index + 4 < len(__term) and __term[index + 4].isdigit()))):
                                 continue
                             if resNameLike[idx] and len(compId) > 1 and compId[-1] == elem and index + 1 == resNameSpan[idx][1]:
                                 continue
@@ -1116,7 +1118,7 @@ class BaseCSParserListener():
                                         if resNameSpan[idx][0] == __atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
                                         break
-                                    if atomId == 'MET':
+                                    if with_compid is not None and atomId.startswith(with_compid):
                                         continue
                                     _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
@@ -1132,7 +1134,7 @@ class BaseCSParserListener():
                                     __atomNameLike[idx] = True
                                     __atomNameSpan[idx] = (index, len(__term))
                                     break
-                                if atomId == 'MET':
+                                if with_compid is not None and atomId.startswith(with_compid):
                                     continue
                                 _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
@@ -1157,8 +1159,8 @@ class BaseCSParserListener():
                                     continue
                             if atomId[0] in ('Q', 'M') and index + 1 < len(___term) and ___term[index + 1].isdigit():
                                 continue
-                            if atomId.startswith('MET') and ((index + 3 < len(___term) and ___term[index + 3].isdigit()
-                                                              or (index + 4 < len(___term) and ___term[index + 4].isdigit()))):
+                            if ((with_compid is not None and atomId.startswith(with_compid)) or atomId.startswith('MET'))\
+                               and ((index + 3 < len(___term) and ___term[index + 3].isdigit() or (index + 4 < len(___term) and ___term[index + 4].isdigit()))):
                                 continue
                             if resNameLike[idx] and len(compId) > 1 and compId[-1] == elem and index + 1 == resNameSpan[idx][1]:
                                 continue
@@ -1175,7 +1177,7 @@ class BaseCSParserListener():
                                         if resNameSpan[idx][0] == ___atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
                                         break
-                                    if atomId == 'MET':
+                                    if with_compid is not None and atomId.startswith(with_compid):
                                         continue
                                     _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
@@ -1191,7 +1193,7 @@ class BaseCSParserListener():
                                     ___atomNameLike[idx] = True
                                     ___atomNameSpan[idx] = (index, len(___term))
                                     break
-                                if atomId == 'MET':
+                                if with_compid is not None and atomId.startswith(with_compid):
                                     continue
                                 _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
@@ -2433,8 +2435,8 @@ class BaseCSParserListener():
                 if fixedChainId is not None and fixedChainId != chainId:
                     continue
                 seqKey = (chainId, _seqId)
-                if seqKey in self.__authToLabelSeq:
-                    _, seqId = self.__authToLabelSeq[seqKey]
+                if seqKey in self.authToLabelSeq:
+                    _, seqId = self.authToLabelSeq[seqKey]
                     if seqId in ps['seq_id']:
                         idx = ps['seq_id'].index(seqId)
                         cifCompId = ps['comp_id'][idx]
@@ -2780,8 +2782,8 @@ class BaseCSParserListener():
                 if fixedChainId is not None and fixedChainId != chainId:
                     continue
                 seqKey = (chainId, _seqId)
-                if seqKey in self.__authToLabelSeq:
-                    _, seqId = self.__authToLabelSeq[seqKey]
+                if seqKey in self.authToLabelSeq:
+                    _, seqId = self.authToLabelSeq[seqKey]
                     if seqId in ps['seq_id']:
                         idx = ps['seq_id'].index(seqId)
                         cifCompId = ps['comp_id'][idx]
@@ -3038,8 +3040,8 @@ class BaseCSParserListener():
                 if fixedChainId is not None and fixedChainId != chainId:
                     continue
                 seqKey = (chainId, _seqId)
-                if seqKey in self.__authToLabelSeq:
-                    _, seqId = self.__authToLabelSeq[seqKey]
+                if seqKey in self.authToLabelSeq:
+                    _, seqId = self.authToLabelSeq[seqKey]
                     if seqId in ps['seq_id']:
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         updatePolySeqRst(self.polySeqCs, chainId, _seqId, cifCompId)
@@ -3199,8 +3201,8 @@ class BaseCSParserListener():
                 if chainId != fixedChainId:
                     continue
                 seqKey = (chainId, _seqId)
-                if seqKey in self.__authToLabelSeq:
-                    _, seqId = self.__authToLabelSeq[seqKey]
+                if seqKey in self.authToLabelSeq:
+                    _, seqId = self.authToLabelSeq[seqKey]
                     if seqId in ps['seq_id']:
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         updatePolySeqRst(self.polySeqCs, fixedChainId, _seqId, cifCompId)

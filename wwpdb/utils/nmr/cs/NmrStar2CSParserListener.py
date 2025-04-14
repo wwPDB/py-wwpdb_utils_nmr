@@ -20,12 +20,14 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.cs.NmrStar2CSParser import NmrStar2CSParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
+    from wwpdb.utils.nmr.AlignUtil import (emptyValue, monDict3)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
     from nmr.cs.NmrStar2CSParser import NmrStar2CSParser
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
+    from nmr.AlignUtil import (emptyValue, monDict3)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
@@ -94,6 +96,38 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
 
     # Enter a parse tree produced by NmrStar2CSParser#cs_loop.
     def enterCs_loop(self, ctx: NmrStar2CSParser.Cs_loopContext):  # pylint: disable=unused-argument
+
+        if not self.hasPolySeq and self.__first_seq_id is not None:
+            self.hasPolySeq = True
+
+            self.polySeq = [{'chain_id': '1', 'seq_id': self.__current_seq_ids, 'comp_id': self.__current_comp_ids}]
+            self.entityAssembly = {'1': {'entity_id': 1, 'auth_asym_id': '.'}}
+
+            self.labelToAuthSeq = {}
+            for ps in self.polySeq:
+                chainId = ps['chain_id']
+                for seqId in ps['seq_id']:
+                    self.labelToAuthSeq[(chainId, seqId)] = (chainId, seqId)
+            self.authToLabelSeq = {v: k for k, v in self.labelToAuthSeq.items()}
+
+            self.chainIdSet = set(ps['chain_id'] for ps in self.polySeq)
+            self.compIdSet = set()
+
+            def is_data(array: list) -> bool:
+                return not any(d in emptyValue for d in array)
+
+            for ps in self.polySeq:
+                self.compIdSet.update(set(filter(is_data, ps['comp_id'])))
+
+            for compId in self.compIdSet:
+                if compId in monDict3:
+                    if len(compId) == 3:
+                        self.polyPeptide = True
+                    elif len(compId) == 2 and compId.startswith('D'):
+                        self.polyDeoxyribonucleotide = True
+                    elif len(compId) == 1:
+                        self.polyRibonucleotide = True
+
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
 
@@ -141,7 +175,6 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
 
     # Exit a parse tree produced by NmrStar2CSParser#cs_data.
     def exitCs_data(self, ctx: NmrStar2CSParser.Cs_dataContext):  # pylint: disable=unused-argument
-        print(self.anySelection)
 
         def concat_assignment(seq, comp, atom):
             L = f'{str(seq)}:'
@@ -225,7 +258,7 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
 
             L = concat_assignment(seq_id, comp_id, atom_id)
 
-            assignment = self.extractAssignment(1, L, index, False)
+            assignment = self.extractAssignment(1, L, index, with_compid=comp_id)
 
             if assignment is None:
                 return

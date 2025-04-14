@@ -20,17 +20,17 @@ from typing import IO, List, Optional
 try:
     from wwpdb.utils.nmr.cs.NmrPipeCSParser import NmrPipeCSParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
+    from wwpdb.utils.nmr.AlignUtil import (emptyValue, monDict3)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
-    from wwpdb.utils.nmr.AlignUtil import monDict3
 except ImportError:
     from nmr.cs.NmrPipeCSParser import NmrPipeCSParser
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
+    from nmr.AlignUtil import (emptyValue, monDict3)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.nef.NEFTranslator import NEFTranslator
-    from nmr.AlignUtil import monDict3
 
 
 # This class defines a complete listener for a parse tree produced by NmrPipeCSParser.
@@ -70,11 +70,10 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
             self.__first_resid = int(str(ctx.Integer_DA()))
 
         if ctx.Sequence():
-            if self.hasPolySeq:
-                i = 0
-                while ctx.One_letter_code(i):
-                    self.__cur_sequence += str(ctx.One_letter_code(i))
-                    i += 1
+            i = 0
+            while ctx.One_letter_code(i):
+                self.__cur_sequence += str(ctx.One_letter_code(i))
+                i += 1
 
         self.__open_sequence = True
 
@@ -89,6 +88,41 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
         self.__has_sequence = len(self.__cur_sequence) > 0
 
         self.__open_sequence = False
+
+        if self.__has_sequence and not self.hasPolySeq:
+            def get_comp_id(one_letter_code: str):
+                return next((k for k, v in monDict3.items() if v == one_letter_code and len(k) == 3), one_letter_code)
+
+            comp_ids = [get_comp_id(one_letter_code) for one_letter_code in self.__cur_sequence]
+            seq_ids = list(range(self.__first_resid, self.__first_resid + len(comp_ids) + 1))
+
+            self.polySeq = [{'chain_id': '1', 'seq_id': seq_ids, 'comp_id': comp_ids}]
+            self.entityAssembly = {'1': {'entity_id': 1, 'auth_asym_id': '.'}}
+
+            self.labelToAuthSeq = {}
+            for ps in self.polySeq:
+                chainId = ps['chain_id']
+                for seqId in ps['seq_id']:
+                    self.labelToAuthSeq[(chainId, seqId)] = (chainId, seqId)
+            self.authToLabelSeq = {v: k for k, v in self.labelToAuthSeq.items()}
+
+            self.chainIdSet = set(ps['chain_id'] for ps in self.polySeq)
+            self.compIdSet = set()
+
+            def is_data(array: list) -> bool:
+                return not any(d in emptyValue for d in array)
+
+            for ps in self.polySeq:
+                self.compIdSet.update(set(filter(is_data, ps['comp_id'])))
+
+            for compId in self.compIdSet:
+                if compId in monDict3:
+                    if len(compId) == 3:
+                        self.polyPeptide = True
+                    elif len(compId) == 2 and compId.startswith('D'):
+                        self.polyDeoxyribonucleotide = True
+                    elif len(compId) == 1:
+                        self.polyRibonucleotide = True
 
     # Enter a parse tree produced by NmrPipeCSParser#chemical_shifts.
     def enterChemical_shifts(self, ctx: NmrPipeCSParser.Chemical_shiftsContext):  # pylint: disable=unused-argument
@@ -147,7 +181,7 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         L = f'{seq_id}:{comp_id}:{atom_id}'
 
-        assignment = self.extractAssignment(1, L, index, False)
+        assignment = self.extractAssignment(1, L, index, with_compid=comp_id)
 
         if assignment is None:
             return
@@ -217,7 +251,7 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         L = f'{chain_id}:{seq_id}:{comp_id}:{atom_id}'
 
-        assignment = self.extractAssignment(1, L, index, True)
+        assignment = self.extractAssignment(1, L, index, chain_id, comp_id)
 
         if assignment is None:
             return
@@ -287,7 +321,7 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         L = f'{chain_id}:{seq_id}:{comp_id}:{atom_id}'
 
-        assignment = self.extractAssignment(1, L, index, True)
+        assignment = self.extractAssignment(1, L, index, chain_id, comp_id)
 
         if assignment is None:
             return

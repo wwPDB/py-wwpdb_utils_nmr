@@ -258,7 +258,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                     L = concat_assignment(chain_id, seq_id, comp_id, atom_id)
 
-                    assignment = self.extractAssignment(1, L, self.cur_line_num, chain_id is not None)
+                    assignment = self.extractAssignment(1, L, self.cur_line_num, chain_id, comp_id)
 
                     if assignment is None:
                         continue
@@ -364,7 +364,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                     L = concat_assignment(chain_id, seq_id, comp_id, atom_id)
 
-                    assignment = self.extractAssignment(1, L, self.cur_line_num, chain_id is not None)
+                    assignment = self.extractAssignment(1, L, self.cur_line_num, chain_id, comp_id)
 
                     if assignment is None:
                         continue
@@ -452,7 +452,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                     if chain_id is not None:
                         L = f'{chain_id}:{L}'
 
-                    assignment = self.extractAssignment(1, L, self.cur_line_num, chain_id is not None)
+                    assignment = self.extractAssignment(1, L, self.cur_line_num, chain_id)
 
                     if assignment is None:
                         continue

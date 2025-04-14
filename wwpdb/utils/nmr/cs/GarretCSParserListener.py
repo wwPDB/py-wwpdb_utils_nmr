@@ -97,7 +97,7 @@ class GarretCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         L = f'{self.__seq_id}:{self.__comp_id}:{str(ctx.Simple_name())}'
 
-        assignment = self.extractAssignment(1, L, self.cur_line_num, False)
+        assignment = self.extractAssignment(1, L, self.cur_line_num, with_compid=self.__comp_id)
 
         if assignment is None:
             return

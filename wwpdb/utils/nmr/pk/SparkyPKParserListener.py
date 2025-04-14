@@ -257,7 +257,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 assignments = []
                 hint = None
                 for _ass in ass.split('-'):
-                    assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                    assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
                     hint = assignments[-1] if assignments[-1] is not None else None
 
                 has_assignments, has_multiple_assignments, asis1, asis2 =\
@@ -387,7 +387,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 assignments = []
                 hint = None
                 for _ass in ass.split('-'):
-                    assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                    assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
                     hint = assignments[-1] if assignments[-1] is not None else None
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
@@ -528,7 +528,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 assignments = []
                 hint = None
                 for _ass in ass.split('-'):
-                    assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                    assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
                     hint = assignments[-1] if assignments[-1] is not None else None
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\

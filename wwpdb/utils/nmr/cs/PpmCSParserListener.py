@@ -68,7 +68,7 @@ class PpmCSParserListener(ParseTreeListener, BaseCSParserListener):
     # Exit a parse tree produced by PpmCSParser#ppm_list.
     def exitPpm_list(self, ctx: PpmCSParser.Ppm_listContext):
 
-        with_segid = False
+        chain_id = None
 
         if ctx.Simple_name():
             L = str(ctx.Simple_name())
@@ -76,7 +76,7 @@ class PpmCSParserListener(ParseTreeListener, BaseCSParserListener):
             L = str(ctx.Atom_selection_2d_ex())
         else:
             L = str(ctx.Atom_selection_3d_ex())
-            with_segid = True
+            chain_id = L.split(':', maxsplit=1)[0]
 
         value = self.__number
 
@@ -90,7 +90,7 @@ class PpmCSParserListener(ParseTreeListener, BaseCSParserListener):
         if dstFunc is None:
             return
 
-        assignment = self.extractAssignment(1, L, self.cur_line_num, with_segid)
+        assignment = self.extractAssignment(1, L, self.cur_line_num, chain_id)
 
         if assignment is None:
             return

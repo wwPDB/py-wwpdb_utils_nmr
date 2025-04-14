@@ -106,8 +106,13 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            L1 = f'{str(ctx.Simple_name(0))}:{str(ctx.Integer(0))}:{str(ctx.Simple_name(1))}:{str(ctx.Simple_name(2))}'
-            L2 = f'{str(ctx.Simple_name(3))}:{str(ctx.Integer(1))}:{str(ctx.Simple_name(4))}:{str(ctx.Simple_name(5))}'
+            chain_id1 = str(ctx.Simple_name(0))
+            comp_id1 = str(ctx.Simple_name(1))
+            chain_id2 = str(ctx.Simple_name(3))
+            comp_id2 = str(ctx.Simple_name(4))
+
+            L1 = f'{chain_id1}:{str(ctx.Integer(0))}:{comp_id1}:{str(ctx.Simple_name(2))}'
+            L2 = f'{chain_id2}:{str(ctx.Integer(1))}:{comp_id2}:{str(ctx.Simple_name(5))}'
 
             height = self.originalNumberSelection[0] if len(self.numberSelection) > 0 else None
             volume = self.originalNumberSelection[1] if len(self.numberSelection) > 1 else None
@@ -121,10 +126,10 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             if isinstance(P1, list):
-                P1 = self.selectProbablePosition(index, L1, P1)
+                P1 = self.selectProbablePosition(index, L1, P1, chain_id1, comp_id1)
 
             if isinstance(P2, list):
-                P2 = self.selectProbablePosition(index, L2, P2)
+                P2 = self.selectProbablePosition(index, L2, P2, chain_id1, comp_id1)
 
             dstFunc = self.validatePeak2D(index, P1, P2, None, None, None, None,
                                           None, None, None, None, height, None, volume, None)
@@ -144,7 +149,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             if None not in (L1, L2):
                 assignments = [None] * self.num_of_dim
                 if L1 is not None:
-                    ext = self.extractPeakAssignment(1, L1, index)
+                    ext = self.extractPeakAssignment(1, L1, index, chain_id1, comp_id1)
                     if ext is not None:
                         status, _L1 = self.testAssignment(1, ext, L1)
                         if status:
@@ -152,11 +157,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L1 is not None:
                             if details is None:
                                 details = f'Assign 1:{L1} -> {_L1}'
-                            ext = self.extractPeakAssignment(1, _L1, index)
+                            ext = self.extractPeakAssignment(1, _L1, index, chain_id1, comp_id1)
                             if ext is not None:
                                 assignments[0] = ext
                 if L2 is not None:
-                    ext = self.extractPeakAssignment(1, L2, index)
+                    ext = self.extractPeakAssignment(1, L2, index, chain_id2, comp_id2)
                     if ext is not None:
                         status, _L2 = self.testAssignment(2, ext, L2)
                         if status:
@@ -164,7 +169,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L2 is not None:
                             if details is None:
                                 details = f'Assign 2:{L2} -> {_L2}'
-                            ext = self.extractPeakAssignment(1, _L2, index)
+                            ext = self.extractPeakAssignment(1, _L2, index, chain_id2, comp_id2)
                             if ext is not None:
                                 assignments[1] = ext
 
@@ -219,9 +224,16 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            L1 = f'{str(ctx.Simple_name(0))}:{str(ctx.Integer(0))}:{str(ctx.Simple_name(1))}:{str(ctx.Simple_name(2))}'
-            L2 = f'{str(ctx.Simple_name(3))}:{str(ctx.Integer(1))}:{str(ctx.Simple_name(4))}:{str(ctx.Simple_name(5))}'
-            L3 = f'{str(ctx.Simple_name(6))}:{str(ctx.Integer(2))}:{str(ctx.Simple_name(7))}:{str(ctx.Simple_name(8))}'
+            chain_id1 = str(ctx.Simple_name(0))
+            comp_id1 = str(ctx.Simple_name(1))
+            chain_id2 = str(ctx.Simple_name(3))
+            comp_id2 = str(ctx.Simple_name(4))
+            chain_id3 = str(ctx.Simple_name(6))
+            comp_id3 = str(ctx.Simple_name(7))
+
+            L1 = f'{chain_id1}:{str(ctx.Integer(0))}:{comp_id1}:{str(ctx.Simple_name(2))}'
+            L2 = f'{chain_id2}:{str(ctx.Integer(1))}:{comp_id2}:{str(ctx.Simple_name(5))}'
+            L3 = f'{chain_id3}:{str(ctx.Integer(2))}:{comp_id3}:{str(ctx.Simple_name(8))}'
 
             height = self.originalNumberSelection[0] if len(self.numberSelection) > 0 else None
             volume = self.originalNumberSelection[1] if len(self.numberSelection) > 1 else None
@@ -235,13 +247,13 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             if isinstance(P1, list):
-                P1 = self.selectProbablePosition(index, L1, P1)
+                P1 = self.selectProbablePosition(index, L1, P1, chain_id1, comp_id1)
 
             if isinstance(P2, list):
-                P2 = self.selectProbablePosition(index, L2, P2)
+                P2 = self.selectProbablePosition(index, L2, P2, chain_id2, comp_id2)
 
             if isinstance(P3, list):
-                P3 = self.selectProbablePosition(index, L3, P3)
+                P3 = self.selectProbablePosition(index, L3, P3, chain_id3, comp_id3)
 
             dstFunc = self.validatePeak3D(index, P1, P2, P3, None, None, None, None, None, None,
                                           None, None, None, None, None, None, height, None, volume, None)
@@ -262,7 +274,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             if None not in (L1, L2, L3):
                 assignments = [None] * self.num_of_dim
                 if L1 is not None:
-                    ext = self.extractPeakAssignment(1, L1, index)
+                    ext = self.extractPeakAssignment(1, L1, index, chain_id1, comp_id1)
                     if ext is not None:
                         status, _L1 = self.testAssignment(1, ext, L1)
                         if status:
@@ -270,11 +282,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L1 is not None:
                             if details is None:
                                 details = f'Assign 1:{L1} -> {_L1}'
-                            ext = self.extractPeakAssignment(1, _L1, index)
+                            ext = self.extractPeakAssignment(1, _L1, index, chain_id1, comp_id1)
                             if ext is not None:
                                 assignments[0] = ext
                 if L2 is not None:
-                    ext = self.extractPeakAssignment(1, L2, index)
+                    ext = self.extractPeakAssignment(1, L2, index, chain_id2, comp_id2)
                     if ext is not None:
                         status, _L2 = self.testAssignment(2, ext, L2)
                         if status:
@@ -282,11 +294,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L2 is not None:
                             if details is None:
                                 details = f'Assign 2:{L2} -> {_L2}'
-                            ext = self.extractPeakAssignment(1, _L2, index)
+                            ext = self.extractPeakAssignment(1, _L2, index, chain_id2, comp_id2)
                             if ext is not None:
                                 assignments[1] = ext
                 if L3 is not None:
-                    ext = self.extractPeakAssignment(1, L3, index)
+                    ext = self.extractPeakAssignment(1, L3, index, chain_id3, comp_id3)
                     if ext is not None:
                         status, _L3 = self.testAssignment(3, ext, L3)
                         if status:
@@ -294,7 +306,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L3 is not None:
                             if details is None:
                                 details = f'Assign 3:{L3} -> {_L3}'
-                            ext = self.extractPeakAssignment(1, _L3, index)
+                            ext = self.extractPeakAssignment(1, _L3, index, chain_id3, comp_id3)
                             if ext is not None:
                                 assignments[2] = ext
 
@@ -350,10 +362,19 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            L1 = f'{str(ctx.Simple_name(0))}:{str(ctx.Integer(0))}:{str(ctx.Simple_name(1))}:{str(ctx.Simple_name(2))}'
-            L2 = f'{str(ctx.Simple_name(3))}:{str(ctx.Integer(1))}:{str(ctx.Simple_name(4))}:{str(ctx.Simple_name(5))}'
-            L3 = f'{str(ctx.Simple_name(6))}:{str(ctx.Integer(2))}:{str(ctx.Simple_name(7))}:{str(ctx.Simple_name(8))}'
-            L4 = f'{str(ctx.Simple_name(9))}:{str(ctx.Integer(3))}:{str(ctx.Simple_name(10))}:{str(ctx.Simple_name(11))}'
+            chain_id1 = str(ctx.Simple_name(0))
+            comp_id1 = str(ctx.Simple_name(1))
+            chain_id2 = str(ctx.Simple_name(3))
+            comp_id2 = str(ctx.Simple_name(4))
+            chain_id3 = str(ctx.Simple_name(6))
+            comp_id3 = str(ctx.Simple_name(7))
+            chain_id4 = str(ctx.Simple_name(9))
+            comp_id4 = str(ctx.Simple_name(10))
+
+            L1 = f'{chain_id1}:{str(ctx.Integer(0))}:{comp_id1}:{str(ctx.Simple_name(2))}'
+            L2 = f'{chain_id2}:{str(ctx.Integer(1))}:{comp_id2}:{str(ctx.Simple_name(5))}'
+            L3 = f'{chain_id3}:{str(ctx.Integer(2))}:{comp_id3}:{str(ctx.Simple_name(8))}'
+            L4 = f'{chain_id4}:{str(ctx.Integer(3))}:{comp_id4}:{str(ctx.Simple_name(11))}'
 
             height = self.originalNumberSelection[0] if len(self.numberSelection) > 0 else None
             volume = self.originalNumberSelection[1] if len(self.numberSelection) > 1 else None
@@ -367,16 +388,16 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             if isinstance(P1, list):
-                P1 = self.selectProbablePosition(index, L1, P1)
+                P1 = self.selectProbablePosition(index, L1, P1, chain_id1, comp_id1)
 
             if isinstance(P2, list):
-                P2 = self.selectProbablePosition(index, L2, P2)
+                P2 = self.selectProbablePosition(index, L2, P2, chain_id2, comp_id2)
 
             if isinstance(P3, list):
-                P3 = self.selectProbablePosition(index, L3, P3)
+                P3 = self.selectProbablePosition(index, L3, P3, chain_id3, comp_id3)
 
             if isinstance(P4, list):
-                P4 = self.selectProbablePosition(index, L4, P4)
+                P4 = self.selectProbablePosition(index, L4, P4, chain_id4, comp_id4)
 
             dstFunc = self.validatePeak4D(index, P1, P2, P3, P4, None, None, None, None, None, None, None, None,
                                           None, None, None, None, None, None, None, None, height, None, volume, None)
@@ -398,7 +419,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             if None not in (L1, L2, L3, L4):
                 assignments = [None] * self.num_of_dim
                 if L1 is not None:
-                    ext = self.extractPeakAssignment(1, L1, index)
+                    ext = self.extractPeakAssignment(1, L1, index, chain_id1, comp_id1)
                     if ext is not None:
                         status, _L1 = self.testAssignment(1, ext, L1)
                         if status:
@@ -406,11 +427,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L1 is not None:
                             if details is None:
                                 details = f'Assign 1:{L1} -> {_L1}'
-                            ext = self.extractPeakAssignment(1, _L1, index)
+                            ext = self.extractPeakAssignment(1, _L1, index, chain_id1, comp_id1)
                             if ext is not None:
                                 assignments[0] = ext
                 if L2 is not None:
-                    ext = self.extractPeakAssignment(1, L2, index)
+                    ext = self.extractPeakAssignment(1, L2, index, chain_id2, comp_id2)
                     if ext is not None:
                         status, _L2 = self.testAssignment(2, ext, L2)
                         if status:
@@ -418,11 +439,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L2 is not None:
                             if details is None:
                                 details = f'Assign 2:{L2} -> {_L2}'
-                            ext = self.extractPeakAssignment(1, _L2, index)
+                            ext = self.extractPeakAssignment(1, _L2, index, chain_id2, comp_id2)
                             if ext is not None:
                                 assignments[1] = ext
                 if L3 is not None:
-                    ext = self.extractPeakAssignment(1, L3, index)
+                    ext = self.extractPeakAssignment(1, L3, index, chain_id3, comp_id3)
                     if ext is not None:
                         status, _L3 = self.testAssignment(3, ext, L3)
                         if status:
@@ -430,11 +451,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L3 is not None:
                             if details is None:
                                 details = f'Assign 3:{L3} -> {_L3}'
-                            ext = self.extractPeakAssignment(1, _L3, index)
+                            ext = self.extractPeakAssignment(1, _L3, index, chain_id3, comp_id3)
                             if ext is not None:
                                 assignments[2] = ext
                 if L4 is not None:
-                    ext = self.extractPeakAssignment(1, L4, index)
+                    ext = self.extractPeakAssignment(1, L4, index, chain_id4, comp_id4)
                     if ext is not None:
                         status, _L4 = self.testAssignment(4, ext, L4)
                         if status:
@@ -442,7 +463,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L4 is not None:
                             if details is None:
                                 details = f'Assign 4:{L4} -> {_L4}'
-                            ext = self.extractPeakAssignment(1, _L4, index)
+                            ext = self.extractPeakAssignment(1, _L4, index, chain_id4, comp_id4)
                             if ext is not None:
                                 assignments[3] = ext
 
@@ -496,8 +517,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            L1 = f'{str(ctx.Integer(0))}:{str(ctx.Simple_name(0))}:{str(ctx.Simple_name(1))}'
-            L2 = f'{str(ctx.Integer(1))}:{str(ctx.Simple_name(2))}:{str(ctx.Simple_name(3))}'
+            comp_id1 = str(ctx.Simple_name(0))
+            comp_id2 = str(ctx.Simple_name(2))
+
+            L1 = f'{str(ctx.Integer(0))}:{comp_id1}:{str(ctx.Simple_name(1))}'
+            L2 = f'{str(ctx.Integer(1))}:{comp_id2}:{str(ctx.Simple_name(3))}'
 
             height = self.originalNumberSelection[0] if len(self.numberSelection) > 0 else None
             volume = self.originalNumberSelection[1] if len(self.numberSelection) > 1 else None
@@ -511,10 +535,10 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             if isinstance(P1, list):
-                P1 = self.selectProbablePosition(index, L1, P1)
+                P1 = self.selectProbablePosition(index, L1, P1, with_compid=comp_id1)
 
             if isinstance(P2, list):
-                P2 = self.selectProbablePosition(index, L2, P2)
+                P2 = self.selectProbablePosition(index, L2, P2, with_compid=comp_id2)
 
             dstFunc = self.validatePeak2D(index, P1, P2, None, None, None, None,
                                           None, None, None, None, height, None, volume, None)
@@ -534,7 +558,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             if None not in (L1, L2):
                 assignments = [None] * self.num_of_dim
                 if L1 is not None:
-                    ext = self.extractPeakAssignment(1, L1, index)
+                    ext = self.extractPeakAssignment(1, L1, index, with_compid=comp_id1)
                     if ext is not None:
                         status, _L1 = self.testAssignment(1, ext, L1)
                         if status:
@@ -542,11 +566,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L1 is not None:
                             if details is None:
                                 details = f'Assign 1:{L1} -> {_L1}'
-                            ext = self.extractPeakAssignment(1, _L1, index)
+                            ext = self.extractPeakAssignment(1, _L1, index, with_compid=comp_id1)
                             if ext is not None:
                                 assignments[0] = ext
                 if L2 is not None:
-                    ext = self.extractPeakAssignment(1, L2, index)
+                    ext = self.extractPeakAssignment(1, L2, index, with_compid=comp_id2)
                     if ext is not None:
                         status, _L2 = self.testAssignment(2, ext, L2)
                         if status:
@@ -554,7 +578,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L2 is not None:
                             if details is None:
                                 details = f'Assign 2:{L2} -> {_L2}'
-                            ext = self.extractPeakAssignment(1, _L2, index)
+                            ext = self.extractPeakAssignment(1, _L2, index, with_compid=comp_id2)
                             if ext is not None:
                                 assignments[1] = ext
 
@@ -609,9 +633,13 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            L1 = f'{str(ctx.Integer(0))}:{str(ctx.Simple_name(0))}:{str(ctx.Simple_name(1))}'
-            L2 = f'{str(ctx.Integer(1))}:{str(ctx.Simple_name(2))}:{str(ctx.Simple_name(3))}'
-            L3 = f'{str(ctx.Integer(2))}:{str(ctx.Simple_name(4))}:{str(ctx.Simple_name(5))}'
+            comp_id1 = str(ctx.Simple_name(0))
+            comp_id2 = str(ctx.Simple_name(2))
+            comp_id3 = str(ctx.Simple_name(4))
+
+            L1 = f'{str(ctx.Integer(0))}:{comp_id1}:{str(ctx.Simple_name(1))}'
+            L2 = f'{str(ctx.Integer(1))}:{comp_id2}:{str(ctx.Simple_name(3))}'
+            L3 = f'{str(ctx.Integer(2))}:{comp_id3}:{str(ctx.Simple_name(5))}'
 
             height = self.originalNumberSelection[0] if len(self.numberSelection) > 0 else None
             volume = self.originalNumberSelection[1] if len(self.numberSelection) > 1 else None
@@ -625,13 +653,13 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             if isinstance(P1, list):
-                P1 = self.selectProbablePosition(index, L1, P1)
+                P1 = self.selectProbablePosition(index, L1, P1, with_compid=comp_id1)
 
             if isinstance(P2, list):
-                P2 = self.selectProbablePosition(index, L2, P2)
+                P2 = self.selectProbablePosition(index, L2, P2, with_compid=comp_id2)
 
             if isinstance(P3, list):
-                P3 = self.selectProbablePosition(index, L3, P3)
+                P3 = self.selectProbablePosition(index, L3, P3, with_compid=comp_id3)
 
             dstFunc = self.validatePeak3D(index, P1, P2, P3, None, None, None, None, None, None,
                                           None, None, None, None, None, None, height, None, volume, None)
@@ -652,7 +680,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             if None not in (L1, L2, L3):
                 assignments = [None] * self.num_of_dim
                 if L1 is not None:
-                    ext = self.extractPeakAssignment(1, L1, index)
+                    ext = self.extractPeakAssignment(1, L1, index, with_compid=comp_id1)
                     if ext is not None:
                         status, _L1 = self.testAssignment(1, ext, L1)
                         if status:
@@ -660,11 +688,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L1 is not None:
                             if details is None:
                                 details = f'Assign 1:{L1} -> {_L1}'
-                            ext = self.extractPeakAssignment(1, _L1, index)
+                            ext = self.extractPeakAssignment(1, _L1, index, with_compid=comp_id1)
                             if ext is not None:
                                 assignments[0] = ext
                 if L2 is not None:
-                    ext = self.extractPeakAssignment(1, L2, index)
+                    ext = self.extractPeakAssignment(1, L2, index, with_compid=comp_id2)
                     if ext is not None:
                         status, _L2 = self.testAssignment(2, ext, L2)
                         if status:
@@ -672,11 +700,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L2 is not None:
                             if details is None:
                                 details = f'Assign 2:{L2} -> {_L2}'
-                            ext = self.extractPeakAssignment(1, _L2, index)
+                            ext = self.extractPeakAssignment(1, _L2, index, with_compid=comp_id2)
                             if ext is not None:
                                 assignments[1] = ext
                 if L3 is not None:
-                    ext = self.extractPeakAssignment(1, L3, index)
+                    ext = self.extractPeakAssignment(1, L3, index, with_compid=comp_id3)
                     if ext is not None:
                         status, _L3 = self.testAssignment(3, ext, L3)
                         if status:
@@ -684,7 +712,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L3 is not None:
                             if details is None:
                                 details = f'Assign 3:{L3} -> {_L3}'
-                            ext = self.extractPeakAssignment(1, _L3, index)
+                            ext = self.extractPeakAssignment(1, _L3, index, with_compid=comp_id3)
                             if ext is not None:
                                 assignments[2] = ext
 
@@ -740,10 +768,15 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            L1 = f'{str(ctx.Integer(0))}:{str(ctx.Simple_name(0))}:{str(ctx.Simple_name(1))}'
-            L2 = f'{str(ctx.Integer(1))}:{str(ctx.Simple_name(2))}:{str(ctx.Simple_name(3))}'
-            L3 = f'{str(ctx.Integer(2))}:{str(ctx.Simple_name(4))}:{str(ctx.Simple_name(4))}'
-            L4 = f'{str(ctx.Integer(3))}:{str(ctx.Simple_name(6))}:{str(ctx.Simple_name(7))}'
+            comp_id1 = str(ctx.Simple_name(0))
+            comp_id2 = str(ctx.Simple_name(2))
+            comp_id3 = str(ctx.Simple_name(4))
+            comp_id4 = str(ctx.Simple_name(6))
+
+            L1 = f'{str(ctx.Integer(0))}:{comp_id1}:{str(ctx.Simple_name(1))}'
+            L2 = f'{str(ctx.Integer(1))}:{comp_id2}:{str(ctx.Simple_name(3))}'
+            L3 = f'{str(ctx.Integer(2))}:{comp_id3}:{str(ctx.Simple_name(5))}'
+            L4 = f'{str(ctx.Integer(3))}:{comp_id4}:{str(ctx.Simple_name(7))}'
 
             height = self.originalNumberSelection[0] if len(self.numberSelection) > 0 else None
             volume = self.originalNumberSelection[1] if len(self.numberSelection) > 1 else None
@@ -757,16 +790,16 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 return
 
             if isinstance(P1, list):
-                P1 = self.selectProbablePosition(index, L1, P1)
+                P1 = self.selectProbablePosition(index, L1, P1, with_compid=comp_id1)
 
             if isinstance(P2, list):
-                P2 = self.selectProbablePosition(index, L2, P2)
+                P2 = self.selectProbablePosition(index, L2, P2, with_compid=comp_id2)
 
             if isinstance(P3, list):
-                P3 = self.selectProbablePosition(index, L3, P3)
+                P3 = self.selectProbablePosition(index, L3, P3, with_compid=comp_id3)
 
             if isinstance(P4, list):
-                P4 = self.selectProbablePosition(index, L4, P4)
+                P4 = self.selectProbablePosition(index, L4, P4, with_compid=comp_id4)
 
             dstFunc = self.validatePeak4D(index, P1, P2, P3, P4, None, None, None, None, None, None, None, None,
                                           None, None, None, None, None, None, None, None, height, None, volume, None)
@@ -788,7 +821,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
             if None not in (L1, L2, L3, L4):
                 assignments = [None] * self.num_of_dim
                 if L1 is not None:
-                    ext = self.extractPeakAssignment(1, L1, index)
+                    ext = self.extractPeakAssignment(1, L1, index, with_compid=comp_id1)
                     if ext is not None:
                         status, _L1 = self.testAssignment(1, ext, L1)
                         if status:
@@ -796,11 +829,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L1 is not None:
                             if details is None:
                                 details = f'Assign 1:{L1} -> {_L1}'
-                            ext = self.extractPeakAssignment(1, _L1, index)
+                            ext = self.extractPeakAssignment(1, _L1, index, with_compid=comp_id1)
                             if ext is not None:
                                 assignments[0] = ext
                 if L2 is not None:
-                    ext = self.extractPeakAssignment(1, L2, index)
+                    ext = self.extractPeakAssignment(1, L2, index, with_compid=comp_id2)
                     if ext is not None:
                         status, _L2 = self.testAssignment(2, ext, L2)
                         if status:
@@ -808,11 +841,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L2 is not None:
                             if details is None:
                                 details = f'Assign 2:{L2} -> {_L2}'
-                            ext = self.extractPeakAssignment(1, _L2, index)
+                            ext = self.extractPeakAssignment(1, _L2, index, with_compid=comp_id2)
                             if ext is not None:
                                 assignments[1] = ext
                 if L3 is not None:
-                    ext = self.extractPeakAssignment(1, L3, index)
+                    ext = self.extractPeakAssignment(1, L3, index, with_compid=comp_id3)
                     if ext is not None:
                         status, _L3 = self.testAssignment(3, ext, L3)
                         if status:
@@ -820,11 +853,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L3 is not None:
                             if details is None:
                                 details = f'Assign 3:{L3} -> {_L3}'
-                            ext = self.extractPeakAssignment(1, _L3, index)
+                            ext = self.extractPeakAssignment(1, _L3, index, with_compid=comp_id3)
                             if ext is not None:
                                 assignments[2] = ext
                 if L4 is not None:
-                    ext = self.extractPeakAssignment(1, L4, index)
+                    ext = self.extractPeakAssignment(1, L4, index, with_compid=comp_id4)
                     if ext is not None:
                         status, _L4 = self.testAssignment(4, ext, L4)
                         if status:
@@ -832,7 +865,7 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                         elif _L4 is not None:
                             if details is None:
                                 details = f'Assign 4:{L4} -> {_L4}'
-                            ext = self.extractPeakAssignment(1, _L4, index)
+                            ext = self.extractPeakAssignment(1, _L4, index, with_compid=comp_id4)
                             if ext is not None:
                                 assignments[3] = ext
 
@@ -1010,22 +1043,22 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 if len(ass.split('-')) == self.num_of_dim:
                     hint = None
                     for _ass in ass.split('-'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(':')) == self.num_of_dim:
                     hint = None
                     for _ass in ass.split(':'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(';')) == self.num_of_dim:
                     hint = None
                     for _ass in ass.split(';'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(',')) == self.num_of_dim:
                     hint = None
                     for _ass in ass.split(','):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 else:
                     assignments = [None] * self.num_of_dim
@@ -1125,22 +1158,22 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 if len(ass.split('-')) == self.num_of_dim:
                     hint = None
                     for _ass in ass.split('-'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(':')) == self.num_of_dim:
                     hint = None
                     for _ass in ass.split(':'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(';')) == self.num_of_dim:
                     hint = None
                     for _ass in ass.split(';'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(',')) == self.num_of_dim:
                     hint = None
                     for _ass in ass.split(','):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 else:
                     assignments = [None] * self.num_of_dim
@@ -1242,22 +1275,22 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                 if len(ass.split('-')) == self.num_of_dim:
                     hint = None
                     for _ass in ass.split('-'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(':')) == self.num_of_dim:
                     hint = None
                     for _ass in ass.split(':'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(';')) == self.num_of_dim:
                     hint = None
                     for _ass in ass.split(';'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(',')) == self.num_of_dim:
                     hint = None
                     for _ass in ass.split(','):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint))
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 else:
                     assignments = [None] * self.num_of_dim

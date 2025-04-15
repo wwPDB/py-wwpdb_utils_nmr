@@ -6697,8 +6697,9 @@ class NEFTranslator:
                                 atom_list, ambiguity_code, details = protons, 2 if aliphatic else 3, None
                                 resolved = True
                     # 5lig, comp_id=6XM, atom_id=HA' -> ["HA1'", "HA2'"]
-                    # proton only because of peak list (5z80. D_1300006579_nmr-peaks-upload_P2.dat.V5)
-                    elif details is not None and atom_id[0] in protonBeginCode and atom_id.endswith("'") and not atom_id.endswith("''"):
+                    # c' should not be propagated: peak list (5z80. D_1300006579_nmr-peaks-upload_P2.dat.V5)
+                    # c7' should be allowed: 6gpi, Dihedral_res.tbl
+                    elif details is not None and atom_id.endswith("'") and not atom_id.endswith("''") and (atom_id[0] in protonBeginCode or atom_id[1].isdigit()):
                         _atom_list, _ambiguity_code, _details = self.get_valid_star_atom_for_ligand_remap(comp_id, atom_id[:-1] + "%'", coord_atom_site, methyl_only)
                         if _details is None:
                             atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
@@ -7327,8 +7328,9 @@ class NEFTranslator:
                                     atom_list, ambiguity_code, details = protons, 2 if aliphatic else 3, None
                                     resolved = True
                         # 5lig, comp_id=6XM, atom_id=HA' -> ["HA1'", "HA2'"]
-                        # proton only because of peak list (5z80. D_1300006579_nmr-peaks-upload_P2.dat.V5)
-                        elif details is not None and atom_id[0] in protonBeginCode and atom_id.endswith("'") and not atom_id.endswith("''"):
+                        # c' should not be propagated: peak list (5z80. D_1300006579_nmr-peaks-upload_P2.dat.V5)
+                        # c7' should be allowed: 6gpi, Dihedral_res.tbl
+                        elif details is not None and atom_id.endswith("'") and not atom_id.endswith("''") and (atom_id[0] in protonBeginCode or atom_id[1].isdigit()):
                             _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, atom_id[:-1] + "%'", None, leave_unmatched, methyl_only)
                             if _details is None:
                                 atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details

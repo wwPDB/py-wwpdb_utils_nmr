@@ -907,7 +907,7 @@ class BaseCSParserListener():
                     atomNameSpan[idx] = (0, len(term) + 1)
                     ligAtomId = term
 
-            if _ligCompId is not None:
+            if _ligCompId is not None and resNameLike[idx] and len(term[resNameSpan[idx][1]:]) > 0:
                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(_ligCompId, term[resNameSpan[idx][1]:], leave_unmatched=True)
                 if details is None or term[resNameSpan[idx][1]] in CHEM_SHIFT_HALF_SPIN_NUCLEUS:
                     atomNameLike[idx] = True

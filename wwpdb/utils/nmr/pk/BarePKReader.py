@@ -3,7 +3,7 @@
 #
 # Update:
 ##
-""" A collection of classes for parsing Bare PK files.
+""" A collection of classes for parsing Bare WSV/TSV PK files.
 """
 __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
@@ -48,7 +48,7 @@ except ImportError:
 
 
 class BarePKReader:
-    """ Accessor methods for parsing Bare PK files.
+    """ Accessor methods for parsing Bare WSV/TSV PK files.
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -110,7 +110,7 @@ class BarePKReader:
               createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None,
               reservedListIds: Optional[dict] = None, entryId: Optional[str] = None, csLoops: Optional[List[dict]] = None
               ) -> Tuple[Optional[BarePKParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
-        """ Parse Bare PK file.
+        """ Parse Bare WSV/TSV PK file.
             @return: BarePKParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 

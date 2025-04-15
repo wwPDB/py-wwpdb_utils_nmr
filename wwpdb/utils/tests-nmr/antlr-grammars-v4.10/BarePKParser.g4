@@ -1,5 +1,5 @@
 /*
- Bare PK (Spectral peak list) parser grammar for ANTLR v4.
+ Bare PK (Spectral peak list - WSV/TSV with a header) parser grammar for ANTLR v4.
  Copyright 2025 Masashi Yokochi
 
 you may not use this file except in compliance with the License.

@@ -1,5 +1,5 @@
 /*
- Bare PK (Spectral peak list) lexer grammar for ANTLR v4.
+ Bare PK (Spectral peak list - WSV/TSV with a header) lexer grammar for ANTLR v4.
  Copyright 2025 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ Peak:			'Peak' ([ _] ('Number' | 'Id'))? -> pushMode(PEAK_MODE);
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
 Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('E' ('+' | '-')? DECIMAL)?;
-Ambig_float:		(Float | Integer) (( ',' | ';' | '|' | '/') (Float | Integer))+;
+Ambig_float:		(Float | Integer) ((',' | ';' | '|' | '/') (Float | Integer))+;
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;

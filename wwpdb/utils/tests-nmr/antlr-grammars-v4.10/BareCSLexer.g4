@@ -1,5 +1,5 @@
 /*
- Bare CS (Assigned chemical shift - residue per line or atom per line) lexer grammar for ANTLR v4.
+ Bare CS (Assigned chemical shift - WSV/TSV/CSV; residue per line, atom per line, SPARKY's resonance list) lexer grammar for ANTLR v4.
  Copyright 2025 Masashi Yokochi
 
 you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ lexer grammar BareCSLexer;
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
 // Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ([Ee] ('+' | '-')? DECIMAL)?;
-// Ambig_float:		(Float | Integer) (( ',' | ';' | '|' | '/') (Float | Integer))+;
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
@@ -36,7 +35,7 @@ Simple_name:		SIMPLE_NAME;
 fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_' | '-' | '+' | '.' | '*' | '?' | '(' | '{';
-fragment NAME_CHAR:	START_CHAR | '\'' | '"' | ',' | ';' | '#' | '%' | '|' | '/' | ')' | '}';
+fragment NAME_CHAR:	START_CHAR | '\'' | '"' | ';' | '#' | '%' | '|' | '/' | ')' | '}';
 //fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 

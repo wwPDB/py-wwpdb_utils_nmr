@@ -3,7 +3,7 @@
 #
 # Update:
 ##
-""" A collection of classes for parsing Bare CSV/TSV CS files.
+""" A collection of classes for parsing Bare WSV/TSV/CSV CS files.
 """
 __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
@@ -40,7 +40,7 @@ except ImportError:
 
 
 class BareCSReader:
-    """ Accessor methods for parsing Bare CSV/TSV CSV files.
+    """ Accessor methods for parsing Bare WSV/TSV/CSV CS files.
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -87,7 +87,7 @@ class BareCSReader:
               createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None,
               reservedListIds: Optional[dict] = None, entryId: Optional[str] = None
               ) -> Tuple[Optional[BareCSParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
-        """ Parse Bare CSV/TSV CS file.
+        """ Parse Bare WSV/TSV/CSV CS file.
             @return: BareCSParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
         """
 

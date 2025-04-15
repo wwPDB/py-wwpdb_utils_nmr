@@ -1,5 +1,5 @@
 /*
- Bare CS (Assigned chemical shift - residue per line or atom per line) parser grammar for ANTLR v4.
+ Bare CS (Assigned chemical shift - WSV/TSV/CSV; residue per line, atom per line, SPARKY's resonance list) parser grammar for ANTLR v4.
  Copyright 2025 Masashi Yokochi
 
 you may not use this file except in compliance with the License.

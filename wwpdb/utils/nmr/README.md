@@ -330,7 +330,7 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-res-mr`|**internal use**|`nmr-restraints` / `pdb-mr`|Restraint file in PDB-MR format
 `nm-res-sax`|**internal use**|`nmr-restraints` / `any`|SAX CSV file
 `nm-pea-ari`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in ARIA format
-`nm-pea-bar`|**internal use**|`nmr-peaks` / `any`|Bare spectral peak list file
+`nm-pea-bar`|**internal use**|`nmr-peaks` / `any`|Bare WSV/TSV spectral peak list file with a header
 `nm-pea-ccp`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in CCPN format
 `nm-pea-pip`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in NMRPIPE/PIPP format
 `nm-pea-pon`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in PONDEROSA format
@@ -345,7 +345,7 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-pea-any`|`nm-pea-any`|`nmr-peaks` / `any`|Any spectral peak list file
 `nmrif`|**internal use**|`nmrif` / `pdbx`|NMR metadata file in PDBx/mmCIF format (aka. NMRIF)
 `nm-shi-ari`|**internal use**|`nmr-chemical-shifts` / `any`|ARIA chemical shift file
-`nm-shi-bar`|**internal use**|`nmr-chemical-shifts` / `any`|Bare TSV/CSV chemical shift file (residue per line, atom per line, SPARKY's resonance list)
+`nm-shi-bar`|**internal use**|`nmr-chemical-shifts` / `any`|Bare WSV/TSV/CSV chemical shift file (residue per line, atom per line, SPARKY's resonance list)
 `nm-shi-gar`|**internal use**|`nmr-chemical-shifts` / `any`|GARRET chemical shift file (CAMRA)
 `nm-shi-npi`|**internal use**|`nmr-chemical-shifts` / `any`|NMRPIPE chemical shift file
 `nm-shi-pip`|**internal use**|`nmr-chemical-shifts` / `any`|PIPP chemical shift file

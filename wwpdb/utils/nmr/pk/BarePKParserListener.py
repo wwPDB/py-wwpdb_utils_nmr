@@ -3,7 +3,7 @@
 # Date: 05-Mar-2025
 #
 # Updates:
-""" ParserLister class for Bare PK files.
+""" ParserLister class for Bare WSV/TSV PK files.
     @author: Masashi Yokochi
 """
 __docformat__ = "restructuredtext en"

@@ -6111,7 +6111,7 @@ class BasePKParserListener():
                     ligAtomId = term
 
             if _ligCompId is not None:
-                _, _, details = self.nefT.get_valid_star_atom_in_xplor(ligCompId, term[resNameSpan[idx][1]:], leave_unmatched=True)
+                _, _, details = self.nefT.get_valid_star_atom_in_xplor(_ligCompId, term[resNameSpan[idx][1]:], leave_unmatched=True)
                 if details is None or term[resNameSpan[idx][1]] in PEAK_HALF_SPIN_NUCLEUS:
                     atomNameLike[idx] = True
                     atomNameSpan[idx] = (resNameSpan[idx][1], len(term) + 1)

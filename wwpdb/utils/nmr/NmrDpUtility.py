@@ -214,6 +214,7 @@
 # 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR data remediation Phase 2)
 # 28-Mar-2025  M. Yokochi - add support for SPARKY's 'save' (aka. ornament) peak list (DAOTHER-8905, 9785, NMR data remediation Phase 2)
 # 09-Apr-2025  M. Yokochi - enable to convert chemical shifts in any software-native format in the standalone NMR data conversion service (v4.4.0, DAOTHER-9785)
+# 16-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors (DAOTHER-9785)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -7957,7 +7958,7 @@ class NmrDpUtility:
         """
 
         if self.report_prev is not None:
-            self.report.inheritFormatIssueErrors(self.report_prev)
+            self.report.inheritPreviousErrors(self.report_prev)
             self.report.inheritCorrectedFormatIssueWarnings(self.report_prev)
             self.report.inheritCorrectedSaveframeNameWarnings(self.report_prev)
 
@@ -7990,6 +7991,15 @@ class NmrDpUtility:
                 srcName = self.__srcName
 
         self.report = NmrDpReport(self.__verbose, self.__lfh)
+
+        if 'report_file_path' in self.__inputParamDict:
+            fPath = self.__inputParamDict['report_file_path']
+
+            if os.access(fPath, os.F_OK) and os.path.getsize(fPath) > 0:
+                self.report_prev = NmrDpReport(self.__verbose, self.__lfh)
+                self.report_prev.loadFile(fPath)
+                self.report.inheritFormatIssueErrors(self.report_prev)
+                self.report.inheritPreviousWarnings(self.report_prev)
 
         input_source = None
 
@@ -34297,7 +34307,7 @@ class NmrDpUtility:
 
                     if warn.startswith('[Concatenated sequence]'):
                         self.report.warning.appendDescription('concatenated_sequence',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34305,7 +34315,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Sequence mismatch]'):
                         self.report.error.appendDescription('sequence_mismatch',
-                                                            {'file_name': file_name, 'description': warn})
+                                                            {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setError()
 
                         if self.__verbose:
@@ -34313,7 +34323,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Unknown atom name]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34321,7 +34331,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Unknown residue name]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34652,7 +34662,7 @@ class NmrDpUtility:
 
                     if warn.startswith('[Concatenated sequence]'):
                         self.report.warning.appendDescription('concatenated_sequence',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34662,7 +34672,7 @@ class NmrDpUtility:
                         # consume_suspended_message()
 
                         self.report.error.appendDescription('sequence_mismatch',
-                                                            {'file_name': file_name, 'description': warn})
+                                                            {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setError()
 
                         if self.__verbose:
@@ -34674,14 +34684,14 @@ class NmrDpUtility:
                             consume_suspended_message()
 
                             self.report.error.appendDescription('atom_not_found',
-                                                                {'file_name': file_name, 'description': warn})
+                                                                {'file_name': file_name, 'description': warn, 'inheritable': True})
                             self.report.setError()
 
                             if self.__verbose:
                                 self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {warn}\n")
                         else:
                             self.report.warning.appendDescription('sequence_mismatch',
-                                                                  {'file_name': file_name, 'description': warn})
+                                                                  {'file_name': file_name, 'description': warn, 'inheritable': True})
                             self.report.setWarning()
 
                             if self.__verbose:
@@ -34692,7 +34702,7 @@ class NmrDpUtility:
                         if self.__remediation_mode:
 
                             self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                  {'file_name': file_name, 'description': warn})
+                                                                  {'file_name': file_name, 'description': warn, 'inheritable': True})
                             self.report.setWarning()
 
                             if self.__verbose:
@@ -34702,7 +34712,7 @@ class NmrDpUtility:
                             consume_suspended_message()
 
                             self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                {'file_name': file_name, 'description': warn})
+                                                                {'file_name': file_name, 'description': warn, 'inheritable': True})
                             self.report.setError()
 
                             if self.__verbose:
@@ -34714,7 +34724,7 @@ class NmrDpUtility:
                         if self.__internal_mode:
 
                             self.report.warning.appendDescription('coordinate_issue',
-                                                                  {'file_name': file_name, 'description': warn})
+                                                                  {'file_name': file_name, 'description': warn, 'inheritable': True})
                             self.report.setWarning()
 
                             if self.__verbose:
@@ -34723,7 +34733,7 @@ class NmrDpUtility:
                         else:
 
                             self.report.error.appendDescription('coordinate_issue',
-                                                                {'file_name': file_name, 'description': warn})
+                                                                {'file_name': file_name, 'description': warn, 'inheritable': True})
                             self.report.setError()
 
                             if self.__verbose:
@@ -34733,7 +34743,7 @@ class NmrDpUtility:
                         consume_suspended_message()
 
                         self.report.error.appendDescription('invalid_atom_nomenclature',
-                                                            {'file_name': file_name, 'description': warn})
+                                                            {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setError()
 
                         if self.__verbose:
@@ -34743,7 +34753,7 @@ class NmrDpUtility:
                         consume_suspended_message()
 
                         self.report.error.appendDescription('invalid_data',
-                                                            {'file_name': file_name, 'description': warn})
+                                                            {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setError()
 
                         if self.__verbose:
@@ -34751,7 +34761,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Sequence mismatch warning]'):
                         self.report.warning.appendDescription('sequence_mismatch',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34769,7 +34779,7 @@ class NmrDpUtility:
                         # consume_suspended_message()
 
                         self.report.error.appendDescription('missing_data',
-                                                            {'file_name': file_name, 'description': warn})
+                                                            {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setError()
 
                         if self.__verbose:
@@ -34777,7 +34787,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Enum mismatch]'):
                         self.report.warning.appendDescription('enum_mismatch',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34785,7 +34795,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Enum mismatch ignorable]'):
                         self.report.warning.appendDescription('enum_mismatch_ignorable',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34793,7 +34803,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Unmatched atom type]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34801,7 +34811,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Inconsistent dihedral angle atoms]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34811,7 +34821,7 @@ class NmrDpUtility:
                         # consume_suspended_message()
 
                         self.report.error.appendDescription('anomalous_data',
-                                                            {'file_name': file_name, 'description': warn})
+                                                            {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setError()
 
                         if self.__verbose:
@@ -34819,7 +34829,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                         self.report.warning.appendDescription('inconsistent_mr_data',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34827,7 +34837,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Insufficient atom selection]') or warn.startswith('[Insufficient angle selection]'):
                         self.report.warning.appendDescription('insufficient_mr_data',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34835,7 +34845,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Redundant data]'):
                         self.report.warning.appendDescription('redundant_mr_data',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34843,7 +34853,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Ambiguous dihedral angle]'):
                         self.report.warning.appendDescription('ambiguous_dihedral_angle',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34851,7 +34861,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Anomalous RDC vector]'):
                         self.report.warning.appendDescription('anomalous_rdc_vector',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34859,7 +34869,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Anomalous data]'):
                         self.report.warning.appendDescription('anomalous_data',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34867,7 +34877,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Unsupported data]'):
                         self.report.warning.appendDescription('unsupported_mr_data',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -34888,13 +34898,13 @@ class NmrDpUtility:
 
                     if warn.startswith('[Sequence mismatch]'):
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch':
-                                                               {'file_name': file_name, 'description': warn}})
+                                                               {'file_name': file_name, 'description': warn, 'inheritable': True}})
 
                     elif warn.startswith('[Atom not found]'):
 
                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                             suspended_errors_for_lazy_eval.append({'atom_not_found':
-                                                                   {'file_name': file_name, 'description': warn}})
+                                                                   {'file_name': file_name, 'description': warn, 'inheritable': True}})
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
 
@@ -34902,27 +34912,27 @@ class NmrDpUtility:
                             pass
                         else:
                             suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated':
-                                                                   {'file_name': file_name, 'description': warn}})
+                                                                   {'file_name': file_name, 'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Coordinate issue]'):
                     #     suspended_errors_for_lazy_eval.append({'coordinate_issue':
-                    #                                            {'file_name': file_name, 'description': warn}})
+                    #                                            {'file_name': file_name, 'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Invalid atom nomenclature]'):
                     #     suspended_errors_for_lazy_eval.append({'invalid_atom_nomenclature':
-                    #                                            {'file_name': file_name, 'description': warn}})
+                    #                                            {'file_name': file_name, 'description': warn, 'inheritable': True}})
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         suspended_errors_for_lazy_eval.append({'invalid_data':
-                                                               {'file_name': file_name, 'description': warn}})
+                                                               {'file_name': file_name, 'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Missing data]'):
                     #     suspended_errors_for_lazy_eval.append({'missing_data':
-                    #                                            {'file_name': file_name, 'description': warn}})
+                    #                                            {'file_name': file_name, 'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                     #     suspended_errors_for_lazy_eval.append({'anomalous_data':
-                    #                                            {'file_name': file_name, 'description': warn}})
+                    #                                            {'file_name': file_name, 'description': warn, 'inheritable': True}})
 
         for input_source, ar, _ in ar_file_order:
             file_path = ar['file_name']
@@ -36266,7 +36276,7 @@ class NmrDpUtility:
 
                     if warn.startswith('[Concatenated sequence]'):
                         self.report.warning.appendDescription('concatenated_sequence',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -36274,7 +36284,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Sequence mismatch]'):
                         self.report.error.appendDescription('sequence_mismatch',
-                                                            {'file_name': file_name, 'description': warn})
+                                                            {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setError()
 
                         if self.__verbose:
@@ -36282,7 +36292,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Unknown atom name]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -36290,7 +36300,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Unknown residue name]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -36478,7 +36488,7 @@ class NmrDpUtility:
 
                     if warn.startswith('[Concatenated sequence]'):
                         self.report.warning.appendDescription('concatenated_sequence',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -36488,7 +36498,7 @@ class NmrDpUtility:
                         # consume_suspended_message()
 
                         self.report.error.appendDescription('sequence_mismatch',
-                                                            {'file_name': file_name, 'description': warn})
+                                                            {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setError()
 
                         if self.__verbose:
@@ -36499,14 +36509,14 @@ class NmrDpUtility:
                             consume_suspended_message()
 
                             self.report.warning.appendDescription('assigned_peak_atom_not_found',
-                                                                  {'file_name': file_name, 'description': warn})
+                                                                  {'file_name': file_name, 'description': warn, 'inheritable': True})
                             self.report.setWarning()
 
                             if self.__verbose:
                                 self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
                         else:
                             self.report.warning.appendDescription('sequence_mismatch',
-                                                                  {'file_name': file_name, 'description': warn})
+                                                                  {'file_name': file_name, 'description': warn, 'inheritable': True})
                             self.report.setWarning()
 
                             if self.__verbose:
@@ -36517,7 +36527,7 @@ class NmrDpUtility:
                         if self.__remediation_mode or self.__internal_mode:
 
                             self.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                  {'file_name': file_name, 'description': warn})
+                                                                  {'file_name': file_name, 'description': warn, 'inheritable': True})
                             self.report.setWarning()
 
                             if self.__verbose:
@@ -36527,7 +36537,7 @@ class NmrDpUtility:
                             consume_suspended_message()
 
                             self.report.error.appendDescription('hydrogen_not_instantiated',
-                                                                {'file_name': file_name, 'description': warn})
+                                                                {'file_name': file_name, 'description': warn, 'inheritable': True})
                             self.report.setError()
 
                             if self.__verbose:
@@ -36539,7 +36549,7 @@ class NmrDpUtility:
                         if self.__internal_mode:
 
                             self.report.warning.appendDescription('coordinate_issue',
-                                                                  {'file_name': file_name, 'description': warn})
+                                                                  {'file_name': file_name, 'description': warn, 'inheritable': True})
                             self.report.setWarning()
 
                             if self.__verbose:
@@ -36548,7 +36558,7 @@ class NmrDpUtility:
                         else:
 
                             self.report.error.appendDescription('coordinate_issue',
-                                                                {'file_name': file_name, 'description': warn})
+                                                                {'file_name': file_name, 'description': warn, 'inheritable': True})
                             self.report.setError()
 
                             if self.__verbose:
@@ -36560,7 +36570,7 @@ class NmrDpUtility:
                         # DAOTHER-8905: change warning level from 'invalid_atom_nomenclature' error to 'atom_nomenclature_mismatch' warning
                         # because we accept atom nomenclature provided by depositor for peak list
                         self.report.warning.appendDescription('atom_nomenclature_mismatch',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -36570,7 +36580,7 @@ class NmrDpUtility:
                         consume_suspended_message()
 
                         self.report.error.appendDescription('invalid_data',
-                                                            {'file_name': file_name, 'description': warn})
+                                                            {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setError()
 
                         if self.__verbose:
@@ -36578,7 +36588,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Sequence mismatch warning]'):
                         self.report.warning.appendDescription('sequence_mismatch',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -36594,7 +36604,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Inconsistent assigned peak]'):
                         self.report.warning.appendDescription('inconsistent_mr_data',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -36602,7 +36612,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Missing data]'):
                         self.report.warning.appendDescription('missing_data',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -36612,7 +36622,7 @@ class NmrDpUtility:
                         # consume_suspended_message()
 
                         self.report.error.appendDescription('anomalous_data',
-                                                            {'file_name': file_name, 'description': warn})
+                                                            {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setError()
 
                         if self.__verbose:
@@ -36620,7 +36630,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                         self.report.warning.appendDescription('inconsistent_mr_data',
-                                                              {'file_name': file_name, 'description': warn})
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -36641,35 +36651,35 @@ class NmrDpUtility:
 
                     if warn.startswith('[Sequence mismatch]'):
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch':
-                                                               {'file_name': file_name, 'description': warn}})
+                                                               {'file_name': file_name, 'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Atom not found]'):
                     #     if not self.__remediation_mode or 'Macromolecules page' not in warn:
                     #         suspended_errors_for_lazy_eval.append({'atom_not_found':
-                    #                                                {'file_name': file_name, 'description': warn}})
+                    #                                                {'file_name': file_name, 'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Hydrogen not instantiated]'):
                     #     if self.__remediation_mode:
                     #         pass
                     #     else:
                     #         suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated':
-                    #                                                 {'file_name': file_name, 'description': warn}})
+                    #                                                 {'file_name': file_name, 'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Coordinate issue]'):
                     #     suspended_errors_for_lazy_eval.append({'coordinate_issue':
-                    #                                            {'file_name': file_name, 'description': warn}})
+                    #                                            {'file_name': file_name, 'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Invalid atom nomenclature]'):
                     #     suspended_errors_for_lazy_eval.append({'invalid_atom_nomenclature':
-                    #                                            {'file_name': file_name, 'description': warn}})
+                    #                                            {'file_name': file_name, 'description': warn, 'inheritable': True}})
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         suspended_errors_for_lazy_eval.append({'invalid_data':
-                                                               {'file_name': file_name, 'description': warn}})
+                                                               {'file_name': file_name, 'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                     #     suspended_errors_for_lazy_eval.append({'anomalous_data':
-                    #                                            {'file_name': file_name, 'description': warn}})
+                    #                                            {'file_name': file_name, 'description': warn, 'inheritable': True}})
 
         fileListId = self.__file_path_list_len
 
@@ -37995,7 +38005,7 @@ class NmrDpUtility:
                     if warn.startswith('[Concatenated sequence]'):
                         self.report.warning.appendDescription('concatenated_sequence',
                                                               {'file_name': file_name,
-                                                               'description': warn})
+                                                               'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -38006,7 +38016,7 @@ class NmrDpUtility:
 
                         self.report.error.appendDescription('sequence_mismatch',
                                                             {'file_name': file_name,
-                                                             'description': warn})
+                                                             'description': warn, 'inheritable': True})
                         self.report.setError()
 
                         if self.__verbose:
@@ -38015,7 +38025,7 @@ class NmrDpUtility:
                     elif warn.startswith('[Atom not found]'):
                         self.report.warning.appendDescription('sequence_mismatch',
                                                               {'file_name': file_name,
-                                                               'description': warn})
+                                                               'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -38026,7 +38036,7 @@ class NmrDpUtility:
 
                         self.report.error.appendDescription('invalid_atom_nomenclature',
                                                             {'file_name': file_name,
-                                                             'description': warn})
+                                                             'description': warn, 'inheritable': True})
                         self.report.setError()
 
                         if self.__verbose:
@@ -38037,7 +38047,7 @@ class NmrDpUtility:
 
                         self.report.error.appendDescription('invalid_data',
                                                             {'file_name': file_name,
-                                                             'description': warn})
+                                                             'description': warn, 'inheritable': True})
                         self.report.setError()
 
                         if self.__verbose:
@@ -38046,7 +38056,7 @@ class NmrDpUtility:
                     elif warn.startswith('[Sequence mismatch warning]'):
                         self.report.warning.appendDescription('sequence_mismatch',
                                                               {'file_name': file_name,
-                                                               'description': warn})
+                                                               'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -38063,7 +38073,7 @@ class NmrDpUtility:
                     elif warn.startswith('[Missing data]'):
                         self.report.warning.appendDescription('missing_data',
                                                               {'file_name': file_name,
-                                                               'description': warn})
+                                                               'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -38074,7 +38084,7 @@ class NmrDpUtility:
 
                         self.report.error.appendDescription('anomalous_data',
                                                             {'file_name': file_name,
-                                                             'description': warn})
+                                                             'description': warn, 'inheritable': True})
                         self.report.setError()
 
                         if self.__verbose:
@@ -38083,7 +38093,7 @@ class NmrDpUtility:
                     elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
                         self.report.warning.appendDescription('inconsistent_mr_data',
                                                               {'file_name': file_name,
-                                                               'description': warn})
+                                                               'description': warn, 'inheritable': True})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -38105,13 +38115,13 @@ class NmrDpUtility:
                     if warn.startswith('[Sequence mismatch]'):
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch':
                                                                {'file_name': file_name,
-                                                                'description': warn}})
+                                                                'description': warn, 'inheritable': True}})
 
                     elif warn.startswith('[Atom not found]'):
                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                             suspended_errors_for_lazy_eval.append({'atom_not_found':
                                                                    {'file_name': file_name,
-                                                                    'description': warn}})
+                                                                    'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Hydrogen not instantiated]'):
                     #     if self.__remediation_mode:
@@ -38119,27 +38129,27 @@ class NmrDpUtility:
                     #     else:
                     #         suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated':
                     #                                                {'file_name': file_name,
-                    #                                                 'description': warn}})
+                    #                                                 'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Coordinate issue]'):
                     #     suspended_errors_for_lazy_eval.append({'coordinate_issue':
                     #                                            {'file_name': file_name,
-                    #                                             'description': warn}})
+                    #                                             'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Invalid atom nomenclature]'):
                     #     suspended_errors_for_lazy_eval.append({'invalid_atom_nomenclature':
                     #                                            {'file_name': file_name,
-                    #                                             'description': warn}})
+                    #                                             'description': warn, 'inheritable': True}})
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         suspended_errors_for_lazy_eval.append({'invalid_data':
                                                                {'file_name': file_name,
-                                                                'description': warn}})
+                                                                'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                     #     suspended_errors_for_lazy_eval.append({'anomalous_data':
                     #                                            {'file_name': file_name,
-                    #                                             'description': warn}})
+                    #                                             'description': warn, 'inheritable': True}})
 
         fileListId = self.__file_path_list_len
 
@@ -38285,7 +38295,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (Bare TSV/CSV or Sparky resonance list) {file_name!r}."
+                            err = f"Failed to validate assigned chemical shift file (Bare WSV/TSV/CSV or Sparky resonance list) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyCs() ++ Error  - " + err)
                             self.report.setError()
@@ -52480,13 +52490,13 @@ class NmrDpUtility:
                     if warn.startswith('[Sequence mismatch]'):
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch':
                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                'description': warn}})
+                                                                'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Atom not found]'):
                     #     if not self.__remediation_mode or 'Macromolecules page' not in warn:
                     #         suspended_errors_for_lazy_eval.append({'atom_not_found':
                     #                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                    #                                                 'description': warn}})
+                    #                                                 'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Hydrogen not instantiated]'):
                     #     if self.__remediation_mode:
@@ -52494,27 +52504,27 @@ class NmrDpUtility:
                     #     else:
                     #         suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated':
                     #                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                    #                                                 'description': warn}})
+                    #                                                 'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Coordinate issue]'):
                     #     suspended_errors_for_lazy_eval.append({'coordinate_issue':
                     #                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
-                    #                                             'description': warn}})
+                    #                                             'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Invalid atom nomenclature]'):
                     #     suspended_errors_for_lazy_eval.append({'invalid_atom_nomenclature':
                     #                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
-                    #                                             'description': warn}})
+                    #                                             'description': warn, 'inheritable': True}})
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         suspended_errors_for_lazy_eval.append({'invalid_data':
                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                'description': warn}})
+                                                                'description': warn, 'inheritable': True}})
 
                     # elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                     #     suspended_errors_for_lazy_eval.append({'anomalous_data':
                     #                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
-                    #                                             'description': warn}})
+                    #                                             'description': warn, 'inheritable': True}})
 
         if file_type == 'nm-pea-ari':
             reader = AriaPKReader(self.__verbose, self.__lfh,
@@ -52628,7 +52638,7 @@ class NmrDpUtility:
                     self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
-                    err = f"Failed to validate NMR spectral peak list file {data_file_name!r}."
+                    err = f"Failed to validate NMR spectral peak list file (Bare WSV/TSV) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()

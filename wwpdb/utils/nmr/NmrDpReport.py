@@ -98,6 +98,7 @@
 # 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR data remediation Phase 2)
 # 28-Mar-2025  M. Yokochi - add 'nm-pea-sps' file type for SPARKY's 'save' (aka. ornament) peak list file (DAOTHER-8905, 9785, NMR data remediation Phase 2)
 # 09-Apr-2025  M. Yokochi - add 'nm-shi-ari', 'nm-shi-bar', 'nm-shi-gar', 'nm-shi-npi', 'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2', and 'nm-shi-xea' file_types (v4.4.0, DAOTHER-9785)
+# 16-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors (DAOTHER-9785)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1601,6 +1602,29 @@ class NmrDpReport:
                 self.__lfh.write(f'+{self.__class_name__}.inheritFormatIssueErrors() ++ Warning  - No effects on NMR data processing report because the report is immutable\n')
             raise UserWarning(f'+{self.__class_name__}.inheritFormatIssueErrors() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
+    def inheritPreviousErrors(self, prev_report):
+        """ Inherit the previous errors.
+        """
+
+        if not self.__immutable:
+
+            for item in prev_report.error.get():
+
+                value_list = prev_report.error.getInheritableValueList(item)
+
+                if value_list is None:
+                    continue
+
+                for c in value_list:
+                    self.error.appendDescription(item, c)
+
+        else:
+            if self.__verbose:
+                self.__lfh.write(f'+{self.__class_name__}.inheritPreviousNameErrors() ++ Warning  - '
+                                 'No effects on NMR data processing report because the report is immutable\n')
+            raise UserWarning(f'+{self.__class_name__}.inheritPreviousNameErrors() ++ Warning  - '
+                              'No effects on NMR data processing report because the report is immutable')
+
     def inheritCorrectedFormatIssueWarnings(self, prev_report):
         """ Inherit corrected format issue warnings from the previous report (e.g. nmr-*-consistency-check workflow operation).
         """
@@ -1659,6 +1683,29 @@ class NmrDpReport:
                 self.__lfh.write(f'+{self.__class_name__}.inheritCorrectedSaveframeNameWarnings() ++ Warning  - '
                                  'No effects on NMR data processing report because the report is immutable\n')
             raise UserWarning(f'+{self.__class_name__}.inheritCorrectedSaveframeNameWarnings() ++ Warning  - '
+                              'No effects on NMR data processing report because the report is immutable')
+
+    def inheritPreviousWarnings(self, prev_report):
+        """ Inherit the previous warnings.
+        """
+
+        if not self.__immutable:
+
+            for item in prev_report.warning.get():
+
+                value_list = prev_report.warning.getInheritableValueList(item)
+
+                if value_list is None:
+                    continue
+
+                for c in value_list:
+                    self.warning.appendDescription(item, c)
+
+        else:
+            if self.__verbose:
+                self.__lfh.write(f'+{self.__class_name__}.inheritPreviousNameWarnings() ++ Warning  - '
+                                 'No effects on NMR data processing report because the report is immutable\n')
+            raise UserWarning(f'+{self.__class_name__}.inheritPreviousNameWarnings() ++ Warning  - '
                               'No effects on NMR data processing report because the report is immutable')
 
     def setCorrectedError(self, prev_report):
@@ -2128,6 +2175,15 @@ class NmrDpReportError:
         return [c for c in self.__contents[item]
                 if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode and (key is None or key in c['description'])]
 
+    def getInheritableValueList(self, item: str) -> Optional[List[dict]]:
+        """ Return list of error values with inheritable flag.
+        """
+
+        if item == 'total' or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+            return None
+
+        return [c for c in self.__contents[item] if 'inheritable' in c and c['inheritable']]
+
     def getUniqueValueList(self, item: str, file_name: str) -> Optional[List[dict]]:
         """ Return list of error values having unique sf_framecode and description.
         """
@@ -2418,6 +2474,15 @@ class NmrDpReportWarning:
 
         return [c for c in self.__contents[item]
                 if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode and (key is None or key in c['description'])]
+
+    def getInheritableValueList(self, item: str) -> Optional[List[dict]]:
+        """ Return list of warning values with inheritable flag.
+        """
+
+        if item == 'total' or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+            return None
+
+        return [c for c in self.__contents[item] if 'inheritable' in c and c['inheritable']]
 
     def getUniqueValueList(self, item: str, file_name: str) -> Optional[List[dict]]:
         """ Return list of warning values having unique sf_framecode and description.

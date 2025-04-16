@@ -4377,6 +4377,10 @@
                 }
               }
             }
+          },
+          "inheritable": {
+            "destriction": "This message should be inherited to the next workflow.",
+            "type": "boolean"
           }
         },
         "additionalProperties": false,

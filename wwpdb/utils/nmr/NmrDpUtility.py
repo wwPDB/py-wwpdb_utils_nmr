@@ -7958,7 +7958,7 @@ class NmrDpUtility:
         """
 
         if self.report_prev is not None:
-            self.report.inheritPreviousErrors(self.report_prev)
+            self.report.inheritFormatIssueErrors(self.report_prev)
             self.report.inheritCorrectedFormatIssueWarnings(self.report_prev)
             self.report.inheritCorrectedSaveframeNameWarnings(self.report_prev)
 

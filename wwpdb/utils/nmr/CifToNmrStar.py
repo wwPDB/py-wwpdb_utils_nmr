@@ -600,8 +600,18 @@ class CifToNmrStar:
                             _value[entry_id_idx] = _entry_id
                         lp.add_data(_value)
 
-                    if sf is not None:
-                        sf.add_loop(lp)
+                    if sf is None:
+                        sf = pynmrstar.Saveframe.from_scratch(block_name)
+                        sf.set_tag_prefix(sf_tag_prefix)
+                        sf.add_tag('Sf_category', sf_category)
+                        sf.add_tag('Sf_framecode', block_name)
+                        if sf_category != 'entry_information':
+                            sf.add_tag('Entry_ID', _entry_id)
+                            sf.add_tag('ID', _cur_list_id)
+                        else:
+                            sf.add_tag('ID', _entry_id)
+
+                    sf.add_loop(lp)
 
                     if list_id_idx == -1:
                         set_lp_tag(lp, sf_tag_prefix + '_ID', _cur_list_id)

@@ -32292,6 +32292,7 @@ class NmrDpUtility:
                                 seq_key = (chain_id, seq_id, comp_id)
 
                                 try:
+
                                     entity_assembly_id, comp_index_id, _, _ = auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
 
                                     if self.__annotation_mode or self.__native_combined:
@@ -32615,7 +32616,8 @@ class NmrDpUtility:
                                     seq_key = (chain_id, seq_id, comp_id)
 
                                     try:
-                                        auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
+
+                                        entity_assembly_id, comp_index_id, _, _ = auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
 
                                         _auth_asym_id, _auth_seq_id =\
                                             next(((k[0], k[1]) for k, v in auth_to_star_seq.items()
@@ -32701,7 +32703,8 @@ class NmrDpUtility:
                                 seq_key = (chain_id, seq_id, comp_id)
 
                                 try:
-                                    auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
+
+                                    entity_assembly_id, comp_index_id, _, _ = auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
 
                                     if self.__annotation_mode or self.__native_combined:
                                         _auth_asym_id, _auth_seq_id =\
@@ -61414,7 +61417,7 @@ class NmrDpUtility:
                 if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'paramagnetic relaxation':
                     Derived_paramag_relax_tot_num += sf_item[sf_framecode]['id']
             except KeyError:
-                passs
+                pass
 
         if Derived_paramag_relax_tot_num > 0:
             cst_sf.add_tag('Derived_paramag_relax_tot_num', Derived_paramag_relax_tot_num)

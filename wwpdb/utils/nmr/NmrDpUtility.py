@@ -61384,8 +61384,11 @@ class NmrDpUtility:
         H_bonds_constrained_tot_num = 0
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
-            if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'hydrogen bond':
-                H_bonds_constrained_tot_num += sf_item[sf_framecode]['id']
+            try:
+                if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'hydrogen bond':
+                    H_bonds_constrained_tot_num += sf_item[sf_framecode]['id']
+            except KeyError:
+                pass
 
         if H_bonds_constrained_tot_num > 0:
             cst_sf.add_tag('H_bonds_constrained_tot_num', H_bonds_constrained_tot_num)
@@ -61393,8 +61396,11 @@ class NmrDpUtility:
         SS_bonds_constrained_tot_num = 0
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
-            if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'disulfide bond':
-                SS_bonds_constrained_tot_num += sf_item[sf_framecode]['id']
+            try:
+                if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'disulfide bond':
+                    SS_bonds_constrained_tot_num += sf_item[sf_framecode]['id']
+            except KeyError:
+                pass
 
         if SS_bonds_constrained_tot_num > 0:
             cst_sf.add_tag('SS_bonds_constrained_tot_num', SS_bonds_constrained_tot_num)
@@ -61402,8 +61408,11 @@ class NmrDpUtility:
         Derived_photo_cidnps_tot_num = 0
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
-            if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'photo cidnp':
-                Derived_photo_cidnps_tot_num += sf_item[sf_framecode]['id']
+            try:
+                if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'photo cidnp':
+                    Derived_photo_cidnps_tot_num += sf_item[sf_framecode]['id']
+            except KeyError:
+                pass
 
         if Derived_photo_cidnps_tot_num > 0:
             cst_sf.add_tag('Derived_photo_cidnps_tot_num', Derived_photo_cidnps_tot_num)
@@ -61411,8 +61420,11 @@ class NmrDpUtility:
         Derived_paramag_relax_tot_num = 0
         for sf in master_entry.get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
-            if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'paramagnetic relaxation':
-                Derived_paramag_relax_tot_num += sf_item[sf_framecode]['id']
+            try:
+                if 'constraint_subtype' in sf_item[sf_framecode] and sf_item[sf_framecode]['constraint_subtype'] == 'paramagnetic relaxation':
+                    Derived_paramag_relax_tot_num += sf_item[sf_framecode]['id']
+            except KeyError:
+                pass
 
         if Derived_paramag_relax_tot_num > 0:
             cst_sf.add_tag('Derived_paramag_relax_tot_num', Derived_paramag_relax_tot_num)

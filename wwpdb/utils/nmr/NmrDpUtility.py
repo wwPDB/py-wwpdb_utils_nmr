@@ -20982,7 +20982,8 @@ class NmrDpUtility:
                         if not self.__nefT.validate_comp_atom(comp_id, atom_id_):
 
                             if self.__csStat.peptideLike(comp_id) and atom_id_.startswith('H') and atom_id_.endswith('1')\
-                               and self.__nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '2') and self.__nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '3'):
+                               and self.__nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '2') and self.__nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '3')\
+                               and not content_subtype.startswith('spectral_peak'):
 
                                 _atom_id_ = atom_id_[:-1]
                                 _atom_id_1 = _atom_id_ + '1'
@@ -21118,7 +21119,8 @@ class NmrDpUtility:
 
                             atom_id_ = atom_id
 
-                            if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and self.__isNmrAtomName(comp_id, atom_id):
+                            if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and self.__isNmrAtomName(comp_id, atom_id)\
+                               and not content_subtype.startswith('spectral_peak'):
                                 atom_id_ = self.__getRepAtomId(comp_id, atom_id)
 
                                 if file_type == 'nmr-star' and self.__combined_mode and self.__transl_pseudo_name and atom_id != atom_id_:

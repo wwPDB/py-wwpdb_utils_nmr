@@ -4351,7 +4351,7 @@
         },
         "processed_site": {
           "description": "Host name of processed server.",
-          "type": "string"
+          "type": "hostname"
         },
         "assembly_name": {
           "description": "Summary of the molecular system.",
@@ -4364,8 +4364,45 @@
           "minimum": 0
         },
         "md5_checksum": {
-          "description": "The MD5 hash related to the output file",
-          "type": "string"
+          "description": "The MD5 hash related to the output file.",
+          "type": "string",
+          "pattern": "[a-f0-9]{32}"
+        },
+        "model": {
+          "type" : [
+          	"object",
+          	"null"
+          ],
+          "properties": {
+            "file_name": {
+              "description": "File name of model file.",
+              "type": "string",
+              "minLength": 1
+            },
+            "file_type": {
+              "description": "File format of model file.",
+              "type": "string",
+              "const": "pdbx"
+            },
+            "struct_title": {
+              "description": "Title of the structure.",
+              "type": "string"
+        	},
+        	"audit_authors": {
+              "description": "Concatenated author name list of the entry.",
+              "type": "string"
+        	},
+            "total_number_of_lines": {
+              "description": "The total number of lines of the model file.",
+              "type": "integer",
+              "minimum": 0
+            },
+            "md5_checksum": {
+              "description": "The MD5 hash related to the model file.",
+              "type": "string",
+              "pattern": "^[a-f0-9]{32}$"
+            }
+          }
         },
         "validation_software": {
           "description": "List of software used for validation report.",

@@ -4309,6 +4309,88 @@
         "sequence_coverage"
       ]
     },
+    "validation_report": {
+      "description": "Template for validation report for output file.",
+      "type": "object",
+      "properties": {
+        "file_name": {
+          "description": "File name of output file.",
+          "type": "string",
+          "minLength": 1
+        },
+        "file_type": {
+          "description": "File format of output file.",
+          "type": "string",
+          "enum": [
+            "nef",
+            "nmr-star"
+          ]
+        },
+        "entry_id": {
+          "description": "Unique entry ID.",
+          "type": "string",
+          "minLength": 1
+        },
+        "entry_title": {
+          "description": "Entry title.",
+          "type": "string",
+          "minLength": 1
+        },
+        "entry_authors": {
+          "description": "Concatenated author name list of the entry.",
+          "type": "string",
+          "minLength": 1
+        },
+        "deposition_date": {
+          "description": "Deposition date.",
+          "type": "date"
+        },
+        "processed_date": {
+          "description": "Processed date.",
+          "type": "date"
+        },
+        "processed_site": {
+          "description": "Host name of processed server.",
+          "type": "string"
+        },
+        "assembly_name": {
+          "description": "Summary of the molecular system.",
+          "type": "string",
+          "minLength": 1
+        },
+        "total_number_of_lines": {
+          "description": "The total number of lines of the output file.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "md5_checksum": {
+          "description": "The MD5 hash related to the output file",
+          "type": "string"
+        },
+        "validation_software": {
+          "description": "List of software used for validation report.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "software_name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "software_version": {
+               "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "software_name",
+              "software_version"
+            ]
+          }
+        }
+      }
+    },
     "common_message": {
       "description": "Template for common structure for error/warning message.",
       "type": "array",
@@ -5188,6 +5270,10 @@
             "model_poly_seq_vs_nmr_poly_seq",
             "nmr_poly_seq_vs_model_poly_seq"
           ]
+        },
+        "validation_report": {
+          "description": "This array provides statistics and validation metrics of output NMR data file.",
+          "$ref": "#/definitions/validation_report"
         },
         "diamagnetic": {
           "destriction": "Diamagnetism of the molecular assembly, except for Oxygen.",

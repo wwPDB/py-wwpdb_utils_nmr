@@ -3075,8 +3075,11 @@ class BasePKParserListener():
                         len_atom_id_ = len(_atom_id_)
                         len_atom_id2_ = len(_atom_id2_)
 
-                        _common_atom_id_ = _atom_id_[0]
-                        _common_atom_id2_ = _atom_id2_[0]
+                        try:
+                            _common_atom_id_ = _atom_id_[0]
+                            _common_atom_id2_ = _atom_id2_[0]
+                        except IndexError:
+                            continue
 
                         position, position2 = row[4], row[9]
 
@@ -3339,8 +3342,11 @@ class BasePKParserListener():
                             len_atom_id_ = len(_atom_id_)
                             len_atom_id2_ = len(_atom_id2_)
 
-                            _common_atom_id_ = _atom_id_[0]
-                            _common_atom_id2_ = _atom_id2_[0]
+                            try:
+                                _common_atom_id_ = _atom_id_[0]
+                                _common_atom_id2_ = _atom_id2_[0]
+                            except IndexError:
+                                continue
 
                             shift_ = shift2_ = None
                             if len_atom_id_ > 0 and _common_atom_id_[0] == _atom_id[0]:
@@ -3621,8 +3627,11 @@ class BasePKParserListener():
                         len_atom_id_ = len(_atom_id_)
                         len_atom_id2_ = len(_atom_id2_)
 
-                        _common_atom_id_ = _atom_id_[0]
-                        _common_atom_id2_ = _atom_id2_[0]
+                        try:
+                            _common_atom_id_ = _atom_id_[0]
+                            _common_atom_id2_ = _atom_id2_[0]
+                        except IndexError:
+                            continue
 
                         position, position2 = positions[_dim_id_1], positions[_dim_id_2]
 
@@ -3877,8 +3886,11 @@ class BasePKParserListener():
                             len_atom_id_ = len(_atom_id_)
                             len_atom_id2_ = len(_atom_id2_)
 
-                            _common_atom_id_ = _atom_id_[0]
-                            _common_atom_id2_ = _atom_id2_[0]
+                            try:
+                                _common_atom_id_ = _atom_id_[0]
+                                _common_atom_id2_ = _atom_id2_[0]
+                            except IndexError:
+                                continue
 
                             shift_ = shift2_ = None
                             if len_atom_id_ > 0 and _common_atom_id_[0] == _atom_id[0]:

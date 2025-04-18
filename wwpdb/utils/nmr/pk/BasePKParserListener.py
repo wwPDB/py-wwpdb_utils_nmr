@@ -3075,6 +3075,9 @@ class BasePKParserListener():
                         len_atom_id_ = len(_atom_id_)
                         len_atom_id2_ = len(_atom_id2_)
 
+                        _common_atom_id_ = _atom_id_[0]
+                        _common_atom_id2_ = _atom_id2_[0]
+
                         position, position2 = row[4], row[9]
 
                         if isinstance(position, str):
@@ -3087,28 +3090,54 @@ class BasePKParserListener():
                         shift2, weight2 = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2)
 
                         shift_ = shift2_ = None
-                        if len_atom_id_ > 0 and _atom_id_[0][0] == _atom_id[0]:
-                            shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id_[0])
-                        if len_atom_id2_ > 0 and _atom_id2_[0][0] == _atom_id2[0]:
-                            shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
+                        if len_atom_id_ > 0 and _common_atom_id_[0] == _atom_id[0]:
+                            shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id_)
+                        if len_atom_id2_ > 0 and _common_atom_id2_[0] == _atom_id2[0]:
+                            shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id2_)
 
-                        if shift_ is not None and not self.ccU.hasBond(comp_id, _atom_id_[0], _atom_id2):
+                        if shift_ is not None and not self.ccU.hasBond(comp_id, _common_atom_id_, _atom_id2):
                             shift_ = None
 
-                        if shift2_ is not None and not self.ccU.hasBond(comp_id, _atom_id, _atom_id2_[0]):
+                        if shift2_ is not None and not self.ccU.hasBond(comp_id, _atom_id, _common_atom_id2_):
                             shift2_ = None
 
                         # pylint: disable=cell-var-from-loop
-                        def swap_atom_id_1():
+                        def swap_atom_id_1(atom_id_list):
+                            common_atom_id = atom_id_list[0]
+                            if len(atom_id_list) > 1 or len(_atom_ids2) > 1:
+                                atom_sel = [{'atom_id': _a_} for _a_ in atom_id_list]
+                                if len(_atom_ids2) > 1:
+                                    for _atom_id2 in _atom_ids2[1:]:
+                                        __atom_id__ = self.ccU.getBondedAtoms(comp_id, _atom_id2,
+                                                                              exclProton=_atom_id2[0] in protonBeginCode, onlyProton=_atom_id2[0] not in protonBeginCode)
+                                        for __a__ in __atom_id__:
+                                            atom_sel.append({'atom_id': __a__})
+                                try:
+                                    common_atom_id = self.__extractCommonAtom(atom_sel)['auth_atom_id']
+                                except KeyError:
+                                    pass
                             if loop.data[idx][details_col] in emptyValue:
-                                loop.data[idx][details_col] = f'{atom_id} -> {_atom_id_[0]}'
-                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_1}')] = _atom_id_[0]
+                                loop.data[idx][details_col] = f'{atom_id} -> {common_atom_id}'
+                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_1}')] = common_atom_id
 
                         # pylint: disable=cell-var-from-loop
-                        def swap_atom_id_2():
+                        def swap_atom_id_2(atom_id2_list):
+                            common_atom_id2 = atom_id2_list[0]
+                            if len(atom_id2_list) > 1 or len(_atom_ids) > 1:
+                                atom_sel = [{'atom_id': _a_} for _a_ in atom_id2_list]
+                                if len(_atom_ids) > 1:
+                                    for _atom_id in _atom_ids[1:]:
+                                        __atom_id2__ = self.ccU.getBondedAtoms(comp_id, _atom_id,
+                                                                               exclProton=_atom_id[0] in protonBeginCode, onlyProton=_atom_id[0] not in protonBeginCode)
+                                        for __a__ in __atom_id2__:
+                                            atom_sel.append({'atom_id': __a__})
+                                try:
+                                    common_atom_id2 = self.__extractCommonAtom(atom_sel)['auth_atom_id']
+                                except KeyError:
+                                    pass
                             if loop.data[idx][details_col] in emptyValue:
-                                loop.data[idx][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
-                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = _atom_id2_[0]
+                                loop.data[idx][details_col] = f'{atom_id2} -> {common_atom_id2}'
+                            loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = common_atom_id2
 
                         if None not in (shift, shift2):
                             diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
@@ -3123,49 +3152,49 @@ class BasePKParserListener():
                             if diff_ is not None and diff2_ is not None:
                                 if diff_ < diff and diff2_ < diff:
                                     if diff_ < diff2_ and len_atom_id_ > 0:
-                                        swap_atom_id_1()
+                                        swap_atom_id_1(_atom_id_)
                                         continue
                                     if diff_ > diff2_ and len_atom_id2_ > 0:
-                                        swap_atom_id_2()
+                                        swap_atom_id_2(_atom_id2_)
                                         continue
                                 elif diff_ < diff and len_atom_id_ > 0:
-                                    swap_atom_id_1()
+                                    swap_atom_id_1(_atom_id_)
                                     continue
                                 elif diff2_ < diff and len_atom_id2_ > 0:
-                                    swap_atom_id_2()
+                                    swap_atom_id_2(_atom_id2_)
                                     continue
                                 else:
                                     if diff_ < diff2_ and diff_ < 1.0 and len_atom_id_ > 0:
-                                        swap_atom_id_1()
+                                        swap_atom_id_1(_atom_id_)
                                         continue
                                     if diff_ > diff2_ and diff2_ < 1.0 and len_atom_id2_ > 0:
-                                        swap_atom_id_2()
+                                        swap_atom_id_2(_atom_id2_)
                                         continue
 
                             elif diff_ is not None and (diff_ < diff or diff_ < 1.0) and len_atom_id_ > 0:
-                                swap_atom_id_1()
+                                swap_atom_id_1(_atom_id_)
                                 continue
 
                             elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0) and len_atom_id2_ > 0:
-                                swap_atom_id_2()
+                                swap_atom_id_2(_atom_id2_)
                                 continue
 
                             if is_reparsable:
                                 self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
                                 is_reparsable = False
 
-                        if len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] != _atom_id_[0][0] and atom_id2[0] == _atom_id2_[0][0]:
-                            swap_atom_id_2()
-                        elif len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] == _atom_id_[0][0] and atom_id2[0] != _atom_id2_[0][0]:
-                            swap_atom_id_1()
+                        if len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] != _common_atom_id_[0] and atom_id2[0] == _common_atom_id2_[0]:
+                            swap_atom_id_2(_atom_id2_)
+                        elif len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] == _common_atom_id_[0] and atom_id2[0] != _common_atom_id2_[0]:
+                            swap_atom_id_1(_atom_id_)
                         elif 0 < len_atom_id2_ < len_atom_id_:
-                            swap_atom_id_2()
+                            swap_atom_id_2(_atom_id2_)
                         elif 0 < len_atom_id_ < len_atom_id2_:
-                            swap_atom_id_1()
+                            swap_atom_id_1(_atom_id_)
                         elif len(atom_id2) < len(atom_id) and len_atom_id2_ > 0:
-                            swap_atom_id_2()
+                            swap_atom_id_2(_atom_id2_)
                         elif len(atom_id) < len(atom_id2) and len_atom_id_ > 0:
-                            swap_atom_id_1()
+                            swap_atom_id_1(_atom_id_)
                         else:
 
                             if is_reparsable:
@@ -3173,9 +3202,9 @@ class BasePKParserListener():
                                 is_reparsable = False
 
                             if _atom_id2[0] in protonBeginCode and len_atom_id2_ > 0:
-                                swap_atom_id_2()
+                                swap_atom_id_2(_atom_id2_)
                             elif _atom_id[0] in protonBeginCode and len_atom_id_ > 0:
-                                swap_atom_id_1()
+                                swap_atom_id_1(_atom_id_)
                             else:
                                 self.f.append(f"[Inconsistent assigned peak] [Check row of Index_ID {loop.data[idx][loop.tags.index('Index_ID')]}] "
                                               f"Inconsistent assignments of spectral peak with onebond coherence transfer type, ({chain_id}:{seq_id}:{comp_id}:{atom_id}) vs "
@@ -3310,31 +3339,60 @@ class BasePKParserListener():
                             len_atom_id_ = len(_atom_id_)
                             len_atom_id2_ = len(_atom_id2_)
 
+                            _common_atom_id_ = _atom_id_[0]
+                            _common_atom_id2_ = _atom_id2_[0]
+
                             shift_ = shift2_ = None
-                            if len_atom_id_ > 0 and _atom_id_[0][0] == _atom_id[0]:
-                                shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, _atom_id_[0])
-                            if len_atom_id2_ > 0 and _atom_id2_[0][0] == _atom_id2[0]:
-                                shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
+                            if len_atom_id_ > 0 and _common_atom_id_[0] == _atom_id[0]:
+                                shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, _common_atom_id_)
+                            if len_atom_id2_ > 0 and _common_atom_id2_[0] == _atom_id2[0]:
+                                shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id2_)
 
                             # pylint: disable=cell-var-from-loop
-                            def swap_seq_atom_id_1():
+                            def swap_seq_atom_id_1(atom_id_list):
+                                common_atom_id = atom_id_list[0]
+                                if len(atom_id_list) > 1 or len(_atom_ids2) > 1:
+                                    atom_sel = [{'atom_id': _a_} for _a_ in atom_id_list]
+                                    if len(_atom_ids2) > 1:
+                                        for _atom_id2 in _atom_ids2[1:]:
+                                            __atom_id__ = self.ccU.getBondedAtoms(comp_id, _atom_id2,
+                                                                                  exclProton=_atom_id2[0] in protonBeginCode, onlyProton=_atom_id2[0] not in protonBeginCode)
+                                            for __a__ in __atom_id__:
+                                                atom_sel.append({'atom_id': __a__})
+                                    try:
+                                        common_atom_id = self.__extractCommonAtom(atom_sel)['auth_atom_id']
+                                    except KeyError:
+                                        pass
                                 if loop.data[idx][details_col] in emptyValue:
-                                    loop.data[idx][details_col] = f'{seq_id}:{comp_id}:{atom_id} -> {seq_id2}:{comp_id2}:{_atom_id_[0]}'
+                                    loop.data[idx][details_col] = f'{seq_id}:{comp_id}:{atom_id} -> {seq_id2}:{comp_id2}:{common_atom_id}'
                                 loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')]
                                 loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')]
                                 loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')]
                                 loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')]
-                                loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_1}')] = _atom_id_[0]
+                                loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_1}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_1}')] = common_atom_id
 
                             # pylint: disable=cell-var-from-loop
-                            def swap_seq_atom_id_2():
+                            def swap_seq_atom_id_2(atom_id2_list):
+                                common_atom_id2 = atom_id2_list[0]
+                                if len(atom_id2_list) > 1 or len(_atom_ids) > 1:
+                                    atom_sel = [{'atom_id': _a_} for _a_ in atom_id2_list]
+                                    if len(_atom_ids) > 1:
+                                        for _atom_id in _atom_ids[1:]:
+                                            __atom_id2__ = self.ccU.getBondedAtoms(comp_id, _atom_id,
+                                                                                   exclProton=_atom_id[0] in protonBeginCode, onlyProton=_atom_id[0] not in protonBeginCode)
+                                            for __a__ in __atom_id2__:
+                                                atom_sel.append({'atom_id': __a__})
+                                    try:
+                                        common_atom_id2 = self.__extractCommonAtom(atom_sel)['auth_atom_id']
+                                    except KeyError:
+                                        pass
                                 if loop.data[idx][details_col] in emptyValue:
-                                    loop.data[idx][details_col] = f'{seq_id2}:{comp_id2}:{atom_id2} -> {seq_id}:{comp_id}:{_atom_id2_[0]}'
+                                    loop.data[idx][details_col] = f'{seq_id2}:{comp_id2}:{atom_id2} -> {seq_id}:{comp_id}:{common_atom_id2}'
                                 loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_index_ID_{dim_id_1}')]
                                 loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Comp_ID_{dim_id_1}')]
                                 loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_seq_ID_{dim_id_1}')]
                                 loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_comp_ID_{dim_id_1}')]
-                                loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = _atom_id2_[0]
+                                loop.data[idx][loop.tags.index(f'Atom_ID_{dim_id_2}')] = loop.data[idx][loop.tags.index(f'Auth_atom_ID_{dim_id_2}')] = common_atom_id2
 
                             diff_ = diff2_ = None
                             if shift_ is not None:
@@ -3345,31 +3403,31 @@ class BasePKParserListener():
                             if diff_ is not None and diff2_ is not None:
                                 if diff_ < diff and diff2_ < diff:
                                     if diff_ < diff2_ and len_atom_id_ > 0:
-                                        swap_seq_atom_id_1()
+                                        swap_seq_atom_id_1(_atom_id_)
                                         continue
                                     if diff_ > diff2_ and len_atom_id2_ > 0:
-                                        swap_seq_atom_id_2()
+                                        swap_seq_atom_id_2(_atom_id2_)
                                         continue
                                 elif diff_ < diff and len_atom_id_ > 0:
-                                    swap_seq_atom_id_1()
+                                    swap_seq_atom_id_1(_atom_id_)
                                     continue
                                 elif diff2_ < diff and len_atom_id2_ > 0:
-                                    swap_seq_atom_id_2()
+                                    swap_seq_atom_id_2(_atom_id2_)
                                     continue
                                 else:
                                     if diff_ < diff2_ and diff_ < 1.0 and len_atom_id_ > 0:
-                                        swap_seq_atom_id_1()
+                                        swap_seq_atom_id_1(_atom_id_)
                                         continue
                                     if diff_ > diff2_ and diff2_ < 1.0 and len_atom_id2_ > 0:
-                                        swap_seq_atom_id_2()
+                                        swap_seq_atom_id_2(_atom_id2_)
                                         continue
 
                             elif diff_ is not None and (diff_ < diff or diff_ < 1.0) and len_atom_id_ > 0:
-                                swap_seq_atom_id_1()
+                                swap_seq_atom_id_1(_atom_id_)
                                 continue
 
                             elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0) and len_atom_id2_ > 0:
-                                swap_seq_atom_id_2()
+                                swap_seq_atom_id_2(_atom_id2_)
                                 continue
 
                             if is_reparsable:
@@ -3563,34 +3621,63 @@ class BasePKParserListener():
                         len_atom_id_ = len(_atom_id_)
                         len_atom_id2_ = len(_atom_id2_)
 
+                        _common_atom_id_ = _atom_id_[0]
+                        _common_atom_id2_ = _atom_id2_[0]
+
                         position, position2 = positions[_dim_id_1], positions[_dim_id_2]
 
                         shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id)
                         shift2, weight2 = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2)
 
                         shift_ = shift2_ = None
-                        if len_atom_id_ > 0 and _atom_id_[0][0] == _atom_id[0]:
-                            shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id_[0])
-                        if len_atom_id2_ > 0 and _atom_id2_[0][0] == _atom_id2[0]:
-                            shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
+                        if len_atom_id_ > 0 and _common_atom_id_[0] == _atom_id[0]:
+                            shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id_)
+                        if len_atom_id2_ > 0 and _common_atom_id2_[0] == _atom_id2[0]:
+                            shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id2_)
 
-                        if shift_ is not None and not self.ccU.hasBond(comp_id, _atom_id_[0], _atom_id2):
+                        if shift_ is not None and not self.ccU.hasBond(comp_id, _common_atom_id_, _atom_id2):
                             shift_ = None
 
-                        if shift2_ is not None and not self.ccU.hasBond(comp_id, _atom_id, _atom_id2_[0]):
+                        if shift2_ is not None and not self.ccU.hasBond(comp_id, _atom_id, _common_atom_id2_):
                             shift2_ = None
 
                         # pylint: disable=cell-var-from-loop
-                        def alt_swap_atom_id_1():
+                        def alt_swap_atom_id_1(atom_id_list):
+                            common_atom_id = atom_id_list[0]
+                            if len(atom_id_list) > 1 or len(_atom_ids2) > 1:
+                                atom_sel = [{'atom_id': _a_} for _a_ in atom_id_list]
+                                if len(_atom_ids2) > 1:
+                                    for _atom_id2 in _atom_ids2[1:]:
+                                        __atom_id__ = self.ccU.getBondedAtoms(comp_id, _atom_id2,
+                                                                              exclProton=_atom_id2[0] in protonBeginCode, onlyProton=_atom_id2[0] not in protonBeginCode)
+                                        for __a__ in __atom_id__:
+                                            atom_sel.append({'atom_id': __a__})
+                                try:
+                                    common_atom_id = self.__extractCommonAtom(atom_sel)['auth_atom_id']
+                                except KeyError:
+                                    pass
                             if loop.data[idx - num_of_dim + dim_id_1][details_col] in emptyValue:
-                                loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{atom_id} -> {_atom_id_[0]}'
-                            loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] = _atom_id_[0]
+                                loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{atom_id} -> {_common_atom_id_}'
+                            loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] = common_atom_id
 
                         # pylint: disable=cell-var-from-loop
-                        def alt_swap_atom_id_2():
+                        def alt_swap_atom_id_2(atom_id2_list):
+                            common_atom_id2 = atom_id2_list[0]
+                            if len(atom_id2_list) > 1 or len(_atom_ids) > 1:
+                                atom_sel = [{'atom_id': _a_} for _a_ in atom_id2_list]
+                                if len(_atom_ids) > 1:
+                                    for _atom_id in _atom_ids[1:]:
+                                        __atom_id2__ = self.ccU.getBondedAtoms(comp_id, _atom_id,
+                                                                               exclProton=_atom_id[0] in protonBeginCode, onlyProton=_atom_id[0] not in protonBeginCode)
+                                        for __a__ in __atom_id2__:
+                                            atom_sel.append({'atom_id': __a__})
+                                try:
+                                    common_atom_id2 = self.__extractCommonAtom(atom_sel)['auth_atom_id']
+                                except KeyError:
+                                    pass
                             if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
-                                loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{atom_id2} -> {_atom_id2_[0]}'
-                            loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = _atom_id2_[0]
+                                loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{atom_id2} -> {common_atom_id2}'
+                            loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = common_atom_id2
 
                         if None not in (shift, shift2):
                             diff = ((position - shift) * weight) ** 2 + ((position2 - shift2) * weight2) ** 2
@@ -3605,23 +3692,23 @@ class BasePKParserListener():
                             if diff_ is not None and diff2_ is not None:
                                 if diff_ < diff and diff2_ < diff:
                                     if diff_ < diff2_ and len_atom_id_ > 0:
-                                        alt_swap_atom_id_1()
+                                        alt_swap_atom_id_1(_atom_id_)
                                         continue
                                     if diff_ > diff2_ and len_atom_id2_ > 0:
-                                        alt_swap_atom_id_2()
+                                        alt_swap_atom_id_2(_atom_id2_)
                                         continue
                                 elif diff_ < diff and len_atom_id_ > 0:
-                                    alt_swap_atom_id_1()
+                                    alt_swap_atom_id_1(_atom_id_)
                                     continue
                                 elif diff2_ < diff and len_atom_id2_ > 0:
-                                    alt_swap_atom_id_2()
+                                    alt_swap_atom_id_2(_atom_id2_)
                                     continue
                                 else:
                                     if diff_ < diff2_ and diff_ < 1.0 and len_atom_id_ > 0:
-                                        alt_swap_atom_id_1()
+                                        alt_swap_atom_id_1(_atom_id_)
                                         continue
                                     if diff_ > diff2_ and diff2_ < 1.0 and len_atom_id2_ > 0:
-                                        alt_swap_atom_id_2()
+                                        alt_swap_atom_id_2(_atom_id2_)
                                         continue
 
                                 if is_reparsable:
@@ -3631,25 +3718,25 @@ class BasePKParserListener():
                                 continue
 
                             if diff_ is not None and (diff_ < diff or diff_ < 1.0) and len_atom_id_ > 0:
-                                alt_swap_atom_id_1()
+                                alt_swap_atom_id_1(_atom_id_)
                                 continue
 
                             if diff2_ is not None and (diff2_ < diff or diff2_ < 1.0) and len_atom_id2_ > 0:
-                                alt_swap_atom_id_2()
+                                alt_swap_atom_id_2(_atom_id2_)
                                 continue
 
-                        if len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] != _atom_id_[0][0] and atom_id2[0] == _atom_id2_[0][0]:
-                            alt_swap_atom_id_2()
-                        elif len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] == _atom_id_[0][0] and atom_id2[0] != _atom_id2_[0][0]:
-                            alt_swap_atom_id_1()
+                        if len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] != _common_atom_id_[0] and atom_id2[0] == _common_atom_id2_[0]:
+                            alt_swap_atom_id_2(_atom_id2_)
+                        elif len_atom_id_ > 0 and len_atom_id2_ > 0 and atom_id[0] == _common_atom_id_[0] and atom_id2[0] != _common_atom_id2_[0]:
+                            alt_swap_atom_id_1(_atom_id_)
                         elif 0 < len_atom_id2_ < len_atom_id_:
-                            alt_swap_atom_id_2()
+                            alt_swap_atom_id_2(_atom_id2_)
                         elif 0 < len_atom_id_ < len_atom_id2_:
-                            alt_swap_atom_id_1()
+                            alt_swap_atom_id_1(_atom_id_)
                         elif len(atom_id2) < len(atom_id) and len_atom_id2_ > 0:
-                            alt_swap_atom_id_2()
+                            alt_swap_atom_id_2(_atom_id2_)
                         elif len(atom_id) < len(atom_id2) and len_atom_id_ > 0:
-                            alt_swap_atom_id_1()
+                            alt_swap_atom_id_1(_atom_id_)
                         else:
 
                             if is_reparsable:
@@ -3657,9 +3744,9 @@ class BasePKParserListener():
                                 is_reparsable = False
 
                             if _atom_id2[0] in protonBeginCode and len_atom_id2_ > 0:
-                                alt_swap_atom_id_2()
+                                alt_swap_atom_id_2(_atom_id2_)
                             elif _atom_id[0] in protonBeginCode and len_atom_id_ > 0:
-                                alt_swap_atom_id_1()
+                                alt_swap_atom_id_1(_atom_id_)
                             else:
                                 self.f.append(f"[Inconsistent assigned peak] [Check row of Peak_ID {loop.data[idx][loop.tags.index('Peak_ID')]}] "
                                               f"Inconsistent assignments of spectral peak with onebond coherence transfer type, ({chain_id}:{seq_id}:{comp_id}:{atom_id}) vs "
@@ -3790,31 +3877,60 @@ class BasePKParserListener():
                             len_atom_id_ = len(_atom_id_)
                             len_atom_id2_ = len(_atom_id2_)
 
+                            _common_atom_id_ = _atom_id_[0]
+                            _common_atom_id2_ = _atom_id2_[0]
+
                             shift_ = shift2_ = None
-                            if len_atom_id_ > 0 and _atom_id_[0][0] == _atom_id[0]:
-                                shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, _atom_id_[0])
-                            if len_atom_id2_ > 0 and _atom_id2_[0][0] == _atom_id2[0]:
-                                shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2_[0])
+                            if len_atom_id_ > 0 and _common_atom_id_[0] == _atom_id[0]:
+                                shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, _common_atom_id_)
+                            if len_atom_id2_ > 0 and _common_atom_id2_[0] == _atom_id2[0]:
+                                shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id2_)
 
                             # pylint: disable=cell-var-from-loop
-                            def alt_swap_seq_atom_id_1():
+                            def alt_swap_seq_atom_id_1(atom_id_list):
+                                common_atom_id = atom_id_list[0]
+                                if len(atom_id_list) > 1 or len(_atom_ids2) > 1:
+                                    atom_sel = [{'atom_id': _a_} for _a_ in atom_id_list]
+                                    if len(_atom_ids2) > 1:
+                                        for _atom_id2 in _atom_ids2[1:]:
+                                            __atom_id__ = self.ccU.getBondedAtoms(comp_id, _atom_id2,
+                                                                                  exclProton=_atom_id2[0] in protonBeginCode, onlyProton=_atom_id2[0] not in protonBeginCode)
+                                            for __a__ in __atom_id__:
+                                                atom_sel.append({'atom_id': __a__})
+                                    try:
+                                        common_atom_id = self.__extractCommonAtom(atom_sel)['auth_atom_id']
+                                    except KeyError:
+                                        pass
                                 if loop.data[idx][details_col] in emptyValue:
-                                    loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{seq_id}:{comp_id}:{atom_id} -> {seq_id2}:{comp_id2}:{_atom_id_[0]}'
+                                    loop.data[idx - num_of_dim + dim_id_1][details_col] = f'{seq_id}:{comp_id}:{atom_id} -> {seq_id2}:{comp_id2}:{common_atom_id}'
                                 loop.data[idx - num_of_dim + dim_id_1][seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][seq_id_col]
                                 loop.data[idx - num_of_dim + dim_id_1][comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][comp_id_col]
                                 loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col]
                                 loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col]
-                                loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] = _atom_id_[0]
+                                loop.data[idx - num_of_dim + dim_id_1][atom_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_atom_id_col] = common_atom_id
 
                             # pylint: disable=cell-var-from-loop
-                            def alt_swap_seq_atom_id_2():
+                            def alt_swap_seq_atom_id_2(atom_id2_list):
+                                common_atom_id2 = atom_id2_list[0]
+                                if len(atom_id2_list) > 1 or len(_atom_ids) > 1:
+                                    atom_sel = [{'atom_id': _a_} for _a_ in atom_id2_list]
+                                    if len(_atom_ids) > 1:
+                                        for _atom_id in _atom_ids[1:]:
+                                            __atom_id2__ = self.ccU.getBondedAtoms(comp_id, _atom_id,
+                                                                                   exclProton=_atom_id[0] in protonBeginCode, onlyProton=_atom_id[0] not in protonBeginCode)
+                                            for __a__ in __atom_id2__:
+                                                atom_sel.append({'atom_id': __a__})
+                                    try:
+                                        common_atom_id2 = self.__extractCommonAtom(atom_sel)['auth_atom_id']
+                                    except KeyError:
+                                        pass
                                 if loop.data[idx - num_of_dim + dim_id_2][details_col] in emptyValue:
-                                    loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{seq_id2}:{comp_id2}:{atom_id2} -> {seq_id}:{comp_id}:{_atom_id2_[0]}'
+                                    loop.data[idx - num_of_dim + dim_id_2][details_col] = f'{seq_id2}:{comp_id2}:{atom_id2} -> {seq_id}:{comp_id}:{common_atom_id2}'
                                 loop.data[idx - num_of_dim + dim_id_2][seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][seq_id_col]
                                 loop.data[idx - num_of_dim + dim_id_2][comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][comp_id_col]
                                 loop.data[idx - num_of_dim + dim_id_2][auth_seq_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_seq_id_col]
                                 loop.data[idx - num_of_dim + dim_id_2][auth_comp_id_col] = loop.data[idx - num_of_dim + dim_id_1][auth_comp_id_col]
-                                loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = _atom_id2_[0]
+                                loop.data[idx - num_of_dim + dim_id_2][atom_id_col] = loop.data[idx - num_of_dim + dim_id_2][auth_atom_id_col] = common_atom_id2
 
                             diff_ = diff2_ = None
                             if shift_ is not None:
@@ -3825,31 +3941,31 @@ class BasePKParserListener():
                             if diff_ is not None and diff2_ is not None:
                                 if diff_ < diff and diff2_ < diff:
                                     if diff_ < diff2_ and len_atom_id_ > 0:
-                                        alt_swap_seq_atom_id_1()
+                                        alt_swap_seq_atom_id_1(_atom_id_)
                                         continue
                                     if diff_ > diff2_ and len_atom_id2_ > 0:
-                                        alt_swap_seq_atom_id_2()
+                                        alt_swap_seq_atom_id_2(_atom_id2_)
                                         continue
                                 elif diff_ < diff and len_atom_id_ > 0:
-                                    alt_swap_seq_atom_id_1()
+                                    alt_swap_seq_atom_id_1(_atom_id_)
                                     continue
                                 elif diff2_ < diff and len_atom_id2_ > 0:
-                                    alt_swap_seq_atom_id_2()
+                                    alt_swap_seq_atom_id_2(_atom_id2_)
                                     continue
                                 else:
                                     if diff_ < diff2_ and diff_ < 1.0 and len_atom_id_ > 0:
-                                        alt_swap_seq_atom_id_1()
+                                        alt_swap_seq_atom_id_1(_atom_id_)
                                         continue
                                     if diff_ > diff2_ and diff2_ < 1.0 and len_atom_id2_ > 0:
-                                        alt_swap_seq_atom_id_2()
+                                        alt_swap_seq_atom_id_2(_atom_id2_)
                                         continue
 
                             elif diff_ is not None and (diff_ < diff or diff_ < 1.0) and len_atom_id_ > 0:
-                                alt_swap_seq_atom_id_1()
+                                alt_swap_seq_atom_id_1(_atom_id_)
                                 continue
 
                             elif diff2_ is not None and (diff2_ < diff or diff2_ < 1.0) and len_atom_id2_ > 0:
-                                alt_swap_seq_atom_id_2()
+                                alt_swap_seq_atom_id_2(_atom_id2_)
                                 continue
 
                         if is_reparsable:
@@ -5507,7 +5623,8 @@ class BasePKParserListener():
             common_name = common_name.replace('**', '*')
 
         _atom_sel = copy.copy(atom_sel[0])
-        _atom_sel['orig_atom_id'] = _atom_sel['auth_atom_id']
+        if 'auth_atom_id' in _atom_sel:
+            _atom_sel['orig_atom_id'] = _atom_sel['auth_atom_id']
         _atom_sel['auth_atom_id'] = common_name
 
         return _atom_sel

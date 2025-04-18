@@ -4358,8 +4358,8 @@
           "type": "string",
           "minLength": 1
         },
-        "total_number_of_lines": {
-          "description": "The total number of lines of the output file.",
+        "file_size": {
+          "description": "File size of the output file.",
           "type": "integer",
           "minimum": 0
         },
@@ -4392,8 +4392,8 @@
               "description": "Concatenated author name list of the entry.",
               "type": "string"
         	},
-            "total_number_of_lines": {
-              "description": "The total number of lines of the model file.",
+            "file_size": {
+              "description": "File size of the model file.",
               "type": "integer",
               "minimum": 0
             },

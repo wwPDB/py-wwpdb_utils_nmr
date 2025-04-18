@@ -4267,11 +4267,15 @@ class NEFTranslator:
                 return True
             if is_nef_dihed_lp and 'name' in lp.tags and lp.data[idx][lp.tags.index('name')] == 'PPA':
                 return True
+            if (is_nef_dist_lp or is_nef_dihed_lp) and 'restraint_combination_id' in lp.tags and lp.data[idx][lp.tags.index('restraint_combination_id')] in emptyValue:
+                return True
             if is_star_dist_lp and 'Auth_comp_ID_1' in lp.tags and 'Auth_comp_ID_2' in lp.tags\
                and (lp.data[idx][lp.tags.index('Auth_comp_ID_1')] == 'HOH'
                     or lp.data[idx][lp.tags.index('Auth_comp_ID_2')] == 'HOH'):
                 return True
             if is_star_dihed_lp and 'Torsion_angle_name' in lp.tags and lp.data[idx][lp.tags.index('Torsion_angle_name')] == 'PPA':
+                return True
+            if (is_star_dist_lp or is_star_dihed_lp) and 'Combination_ID' in lp.tags and lp.data[idx][lp.tags.index('Combination_ID')] in emptyValue:
                 return True
             return False
 
@@ -4284,42 +4288,56 @@ class NEFTranslator:
             item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'positive-int-as-str', 'pointer-index',
                           'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
-            key_names = [k['name'] for k in key_items]
-            data_names = [d['name'] for d in data_items]
-            mand_data_names = [d['name'] for d in data_items if d['mandatory']]
-            _mand_data_names = [d['name'] for d in data_items if d['mandatory'] and 'default-from' in d]
+            for loop in loops:
 
-            key_len = len(key_items)
+                if is_target_lp:
+                    if (is_nef_dist_lp or is_nef_dihed_lp) and 'restraint_combination_id' in loop.tags:
+                        key_items = copy.deepcopy(key_items)
+                        data_items = copy.deepcopy(data_items)
+                        comb_item = next(item for item in data_items if item['name'] == 'restraint_combination_id')
+                        key_items.insert(1, comb_item)
+                        data_items.remove(comb_item)
+                    elif (is_star_dist_lp or is_star_dihed_lp) and 'Combination_ID' in loop.tags:
+                        key_items = copy.deepcopy(key_items)
+                        data_items = copy.deepcopy(data_items)
+                        comb_item = next(item for item in data_items if item['name'] == 'Combination_ID')
+                        key_items.insert(1, comb_item)
+                        data_items.remove(comb_item)
 
-            for k in key_items:
-                if k['type'] not in item_types:
-                    raise TypeError(f"Type {k['type']} of data item {k['name']} must be one of {item_types}.")
+                key_names = [k['name'] for k in key_items]
+                data_names = [d['name'] for d in data_items]
+                mand_data_names = [d['name'] for d in data_items if d['mandatory']]
+                _mand_data_names = [d['name'] for d in data_items if d['mandatory'] and 'default-from' in d]
 
-            for d in data_items:
-                if d['type'] not in item_types:
-                    raise TypeError(f"Type {d['type']} of data item {d['name']} must be one of {item_types}.")
+                key_len = len(key_items)
 
-            if allowed_tags is not None:
-
-                if len(key_names) > 0 and (set(key_names) | set(allowed_tags)) != set(allowed_tags):
-                    raise LookupError(f"Key items {((set(key_names) | set(allowed_tags)) - set(allowed_tags))} must not exists.")
-
-                if len(data_names) > 0 and (set(data_names) | set(allowed_tags)) != set(allowed_tags):
-                    raise LookupError(f"Data items {((set(data_names) | set(allowed_tags)) - set(allowed_tags))} must not exists.")
+                for k in key_items:
+                    if k['type'] not in item_types:
+                        raise TypeError(f"Type {k['type']} of data item {k['name']} must be one of {item_types}.")
 
                 for d in data_items:
-                    if 'group-mandatory' in d and d['group-mandatory']:
-                        group = d['group']
-                        if group['member-with'] is not None:
-                            for mw in group['member-with']:
-                                if mw not in allowed_tags:
-                                    raise ValueError(f"Member data item {mw} of {d['name']} must exists in allowed tags.")
-                        if group['coexist-with'] is not None:
-                            for cw in group['coexist-with']:
-                                if cw not in allowed_tags:
-                                    raise ValueError(f"Coexisting data item {cw} of {d['name']} must exists in allowed tags.")
+                    if d['type'] not in item_types:
+                        raise TypeError(f"Type {d['type']} of data item {d['name']} must be one of {item_types}.")
 
-            for loop in loops:
+                if allowed_tags is not None:
+
+                    if len(key_names) > 0 and (set(key_names) | set(allowed_tags)) != set(allowed_tags):
+                        raise LookupError(f"Key items {((set(key_names) | set(allowed_tags)) - set(allowed_tags))} must not exists.")
+
+                    if len(data_names) > 0 and (set(data_names) | set(allowed_tags)) != set(allowed_tags):
+                        raise LookupError(f"Data items {((set(data_names) | set(allowed_tags)) - set(allowed_tags))} must not exists.")
+
+                    for d in data_items:
+                        if 'group-mandatory' in d and d['group-mandatory']:
+                            group = d['group']
+                            if group['member-with'] is not None:
+                                for mw in group['member-with']:
+                                    if mw not in allowed_tags:
+                                        raise ValueError(f"Member data item {mw} of {d['name']} must exists in allowed tags.")
+                            if group['coexist-with'] is not None:
+                                for cw in group['coexist-with']:
+                                    if cw not in allowed_tags:
+                                        raise ValueError(f"Coexisting data item {cw} of {d['name']} must exists in allowed tags.")
 
                 _test_on_index = test_on_index
                 if self.__remediation_mode and len(loop) > MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
@@ -5803,16 +5821,32 @@ class NEFTranslator:
         else:
             loops = [star_data]
 
+        is_nef_dist_lp = 'nef_distance_restraint' in lp_category
+        is_nef_dihed_lp = 'nef_dihedral_restraint' in lp_category
+        is_star_dist_lp = 'Gen_dist_constraint' in lp_category
+        is_star_dihed_lp = 'Torsion_angle_constraint' in lp_category
+        is_target_lp = is_nef_dist_lp or is_nef_dihed_lp or is_star_dist_lp or is_star_dihed_lp
+
         data = []  # data of all loops
-
-        key_names = [k['name'] for k in key_items]
-        uppercases = [('uppercase' in k and k['uppercase']) for k in key_items]
-
-        key_len = len(key_items)
 
         with io.StringIO() as key_f:
 
             for loop in loops:
+
+                if is_target_lp:
+                    if (is_nef_dist_lp or is_nef_dihed_lp) and 'restraint_combination_id' in loop.tags:
+                        key_items = copy.deepcopy(key_items)
+                        key_items.insert(1, {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
+                                             'enforce-non-zero': True})
+                    elif (is_star_dist_lp or is_star_dihed_lp) and 'Combination_ID' in loop.tags:
+                        key_items = copy.deepcopy(key_items)
+                        key_items.insert(1, {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
+                                             'enforce-non-zero': True})
+
+                key_names = [k['name'] for k in key_items]
+                uppercases = [('uppercase' in k and k['uppercase']) for k in key_items]
+
+                key_len = len(key_items)
 
                 if len(key_names) > 0 and set(key_names) & set(loop.tags) != set(key_names):
                     missing_tags = list(set(key_names) - set(loop.tags))
@@ -5865,16 +5899,32 @@ class NEFTranslator:
         else:
             loops = [star_data]
 
+        is_nef_dist_lp = 'nef_distance_restraint' in lp_category
+        is_nef_dihed_lp = 'nef_dihedral_restraint' in lp_category
+        is_star_dist_lp = 'Gen_dist_constraint' in lp_category
+        is_star_dihed_lp = 'Torsion_angle_constraint' in lp_category
+        is_target_lp = is_nef_dist_lp or is_nef_dihed_lp or is_star_dist_lp or is_star_dihed_lp
+
         data = []  # data of all loops
-
-        key_names = [k['name'] for k in key_items]
-        uppercases = [('uppercase' in k and k['uppercase']) for k in key_items]
-
-        key_len = len(key_items)
 
         with io.StringIO() as key_f:
 
             for loop in loops:
+
+                if is_target_lp:
+                    if (is_nef_dist_lp or is_nef_dihed_lp) and 'restraint_combination_id' in loop.tags:
+                        key_items = copy.deepcopy(key_items)
+                        key_items.insert(1, {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
+                                             'enforce-non-zero': True})
+                    elif (is_star_dist_lp or is_star_dihed_lp) and 'Combination_ID' in loop.tags:
+                        key_items = copy.deepcopy(key_items)
+                        key_items.insert(1, {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
+                                             'enforce-non-zero': True})
+
+                key_names = [k['name'] for k in key_items]
+                uppercases = [('uppercase' in k and k['uppercase']) for k in key_items]
+
+                key_len = len(key_items)
 
                 if len(key_names) > 0 and set(key_names) & set(loop.tags) != set(key_names):
                     missing_tags = list(set(key_names) - set(loop.tags))

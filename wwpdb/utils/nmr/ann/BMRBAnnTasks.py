@@ -371,6 +371,7 @@ class BMRBAnnTasks:
 
                     try:
                         exp_lp = exp_list_sf.get_loop(exp_lp_category)
+                        exp_lp.sort_rows('ID')
                     except KeyError:
                         exp_lp = None
 
@@ -388,7 +389,6 @@ class BMRBAnnTasks:
                                 try:
 
                                     lp = sf.get_loop(lp_category)
-
                                     lp.sort_rows('Experiment_ID')
 
                                     tags = ['Experiment_ID', 'Experiment_name', 'Sample_ID', 'Sample_label', 'Sample_state']
@@ -405,8 +405,7 @@ class BMRBAnnTasks:
 
                                         for idx, cs_exp in enumerate(cs_exp_list):
                                             if cs_exp[0] not in emptyValue:
-                                                exp = next((exp for exp in exp_list
-                                                            if exp[0] == cs_exp[0] and exp[1] not in reserved_names), None)
+                                                exp = next((exp for exp in exp_list if exp[0] == cs_exp[0]), None)
                                                 if exp is not None:
                                                     if cs_exp[2:5] != exp[2:5]:
                                                         lp.data[idx][exp_name_col] = exp[1]
@@ -415,8 +414,7 @@ class BMRBAnnTasks:
                                                         lp.data[idx][sample_state_col] = exp[4]
                                                     reserved_names.append(exp[1])
                                             else:
-                                                exp = next((exp for exp in exp_list
-                                                            if cs_exp[1] not in emptyValue and exp[1] in cs_exp[1] and exp[1] not in reserved_names), None)
+                                                exp = next((exp for exp in exp_list if exp[1] not in reserved_names), None)
                                                 if exp is not None:
                                                     lp.data[idx][exp_id_col] = exp_list.index(exp) + 1
                                                     lp.data[idx][exp_name_col] = exp[1]

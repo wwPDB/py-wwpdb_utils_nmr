@@ -5634,6 +5634,9 @@ class BasePKParserListener():
         if '**' in common_name:
             common_name = common_name.replace('**', '*')
 
+        if len(common_name) == 2 and common_name.endswith('*'):  # avoid 'H*' for amide proton
+            return atom_sel[0]
+
         _atom_sel = copy.copy(atom_sel[0])
         if 'auth_atom_id' in _atom_sel:
             _atom_sel['orig_atom_id'] = _atom_sel['auth_atom_id']

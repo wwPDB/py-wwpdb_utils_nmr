@@ -10772,6 +10772,9 @@ class NmrDpUtility:
             if lp_category in self.lp_categories[file_type].values():
                 lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
 
+        if file_type == 'nmr-star' and lp_counts['spectral_peak'] + lp_counts['spectral_peak_alt'] == 0 and '_Spectral_dim' in self.__lp_category_list:
+            lp_counts['spectral_peak'] = self.__lp_category_list.count('_Spectral_dim')
+
         content_subtype = 'poly_seq'
 
         lp_category = self.lp_categories[file_type][content_subtype]
@@ -40149,7 +40152,8 @@ class NmrDpUtility:
                         sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                         if not any(loop for loop in sf.loops if loop.category == lp_category):
-                            continue
+                            if content_subtype != 'spectral_peak':
+                                continue
 
                         self.__calculateStatsOfExptlData__(fileListId, file_name, file_type, content_subtype, sf, list_id, sf_framecode, lp_category, seq_align_dic, asm)
 
@@ -40187,6 +40191,42 @@ class NmrDpUtility:
                            if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode and lp['category'] == lp_category), None)
 
         if lp_data is None or len(lp_data) == 0:
+
+            if content_subtype == 'spectral_peak':
+
+                ent = {'list_id': _list_id, 'sf_framecode': sf_framecode}
+
+                try:
+
+                    _num_dim = get_first_sf_tag(sf, self.num_dim_items[file_type])
+                    num_dim = int(_num_dim)
+
+                    if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
+                        raise ValueError()
+
+                except ValueError:  # raised error already at __testIndexConsistency()
+                    return
+
+                self.__calculateStatsOfSpectralPeak(file_list_id, sf_framecode, num_dim, lp_data, ent)
+
+                has_err = self.report.error.exists(file_name, sf_framecode)
+                has_warn = self.report.warning.exists(file_name, sf_framecode)
+
+                if has_err:
+                    status = 'Error'
+                    ent['error_descriptions'] = self.report.error.getCombinedDescriptions(file_name, sf_framecode)
+                    if has_warn:
+                        ent['warning_descriptions'] = self.report.warning.getCombinedDescriptions(file_name, sf_framecode)
+                elif has_warn:
+                    status = 'Warning'
+                    ent['warning_descriptions'] = self.report.warning.getCombinedDescriptions(file_name, sf_framecode)
+                else:
+                    status = 'OK'
+
+                ent['status'] = status
+
+                asm.append(ent)
+
             return
 
         ambig = False
@@ -44761,7 +44801,7 @@ class NmrDpUtility:
 
         return vector_type + '_bond_vectors'
 
-    def __calculateStatsOfSpectralPeak(self, file_list_id: int, sf_framecode: str, num_dim: int, lp_data: List[dict], ent: dict):
+    def __calculateStatsOfSpectralPeak(self, file_list_id: int, sf_framecode: str, num_dim: int, lp_data: Optional[List[dict]], ent: dict):
         """ Calculate statistics of spectral peaks.
         """
 
@@ -44998,39 +45038,41 @@ class NmrDpUtility:
 
                         break
 
-            count = {'assigned_spectral_peaks': 0, 'unassigned_spectral_peaks': 0}
+            if lp_data is not None:
 
-            for j in range(num_dim):
-                chain_id_names.append(item_names[j]['chain_id'])
-                seq_id_names.append(item_names[j]['seq_id'])
-                comp_id_names.append(item_names[j]['comp_id'])
-                atom_id_names.append(item_names[j]['atom_id'])
-
-            for row in lp_data:
-
-                has_assignment = True
+                count = {'assigned_spectral_peaks': 0, 'unassigned_spectral_peaks': 0}
 
                 for j in range(num_dim):
+                    chain_id_names.append(item_names[j]['chain_id'])
+                    seq_id_names.append(item_names[j]['seq_id'])
+                    comp_id_names.append(item_names[j]['comp_id'])
+                    atom_id_names.append(item_names[j]['atom_id'])
 
-                    if not (chain_id_names[j] in row and seq_id_names[j] in row and comp_id_names[j] in row and atom_id_names[j] in row):
-                        has_assignment = False
-                        break
+                for row in lp_data:
 
-                    chain_id = row[chain_id_names[j]]
-                    seq_id = row[seq_id_names[j]]
-                    comp_id = row[comp_id_names[j]]
-                    atom_id = row[atom_id_names[j]]
+                    has_assignment = True
 
-                    if chain_id in emptyValue or seq_id in emptyValue or comp_id in emptyValue or atom_id in emptyValue:
-                        has_assignment = False
-                        break
+                    for j in range(num_dim):
 
-                if has_assignment:
-                    count['assigned_spectral_peaks'] += 1
-                else:
-                    count['unassigned_spectral_peaks'] += 1
+                        if not (chain_id_names[j] in row and seq_id_names[j] in row and comp_id_names[j] in row and atom_id_names[j] in row):
+                            has_assignment = False
+                            break
 
-            ent['number_of_spectral_peaks'] = count
+                        chain_id = row[chain_id_names[j]]
+                        seq_id = row[seq_id_names[j]]
+                        comp_id = row[comp_id_names[j]]
+                        atom_id = row[atom_id_names[j]]
+
+                        if chain_id in emptyValue or seq_id in emptyValue or comp_id in emptyValue or atom_id in emptyValue:
+                            has_assignment = False
+                            break
+
+                    if has_assignment:
+                        count['assigned_spectral_peaks'] += 1
+                    else:
+                        count['unassigned_spectral_peaks'] += 1
+
+                ent['number_of_spectral_peaks'] = count
 
         except Exception as e:
 

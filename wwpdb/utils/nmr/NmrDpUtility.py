@@ -59881,6 +59881,13 @@ class NmrDpUtility:
                                 continue
 
                         master_entry.add_saveframe(sf)
+
+                        _lp = next((lp for lp in self.__lp_data[content_subtype] if lp['sf_framecode'] == sf_framecode), None)
+                        if _lp is not None:
+                            self.__lp_data[content_subtype].remove(_lp)
+                            data_file_name = get_first_sf_tag(sf, 'Data_file_name')
+                            self.__testDataConsistencyInLoop__(0, data_file_name, 'nmr-star', content_subtype, sf, sf_framecode, lp_category, sf_item['list_id'])
+
                 else:
                     for sf_item in self.__mr_sf_dict_holder[content_subtype]:
                         sf = sf_item['saveframe']

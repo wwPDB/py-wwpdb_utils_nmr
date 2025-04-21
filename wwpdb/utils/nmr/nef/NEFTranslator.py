@@ -5836,11 +5836,11 @@ class NEFTranslator:
                 if is_target_lp:
                     if (is_nef_dist_lp or is_nef_dihed_lp) and 'restraint_combination_id' in loop.tags:
                         key_items = copy.deepcopy(key_items)
-                        key_items.insert(1, {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
+                        key_items.insert(0, {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                              'enforce-non-zero': True})
                     elif (is_star_dist_lp or is_star_dihed_lp) and 'Combination_ID' in loop.tags:
                         key_items = copy.deepcopy(key_items)
-                        key_items.insert(1, {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
+                        key_items.insert(0, {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                              'enforce-non-zero': True})
 
                 key_names = [k['name'] for k in key_items]
@@ -5914,11 +5914,11 @@ class NEFTranslator:
                 if is_target_lp:
                     if (is_nef_dist_lp or is_nef_dihed_lp) and 'restraint_combination_id' in loop.tags:
                         key_items = copy.deepcopy(key_items)
-                        key_items.insert(1, {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
+                        key_items.insert(0, {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                              'enforce-non-zero': True})
                     elif (is_star_dist_lp or is_star_dihed_lp) and 'Combination_ID' in loop.tags:
                         key_items = copy.deepcopy(key_items)
-                        key_items.insert(1, {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
+                        key_items.insert(0, {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                              'enforce-non-zero': True})
 
                 key_names = [k['name'] for k in key_items]

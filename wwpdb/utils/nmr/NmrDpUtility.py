@@ -40194,7 +40194,7 @@ class NmrDpUtility:
 
             if content_subtype == 'spectral_peak':
 
-                ent = {'list_id': _list_id, 'sf_framecode': sf_framecode}
+                ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': 0}
 
                 try:
 

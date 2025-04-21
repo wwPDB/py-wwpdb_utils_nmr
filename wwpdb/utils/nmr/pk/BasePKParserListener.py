@@ -3075,12 +3075,6 @@ class BasePKParserListener():
                         len_atom_id_ = len(_atom_id_)
                         len_atom_id2_ = len(_atom_id2_)
 
-                        try:
-                            _common_atom_id_ = _atom_id_[0]
-                            _common_atom_id2_ = _atom_id2_[0]
-                        except IndexError:
-                            continue
-
                         position, position2 = row[4], row[9]
 
                         if isinstance(position, str):
@@ -3092,11 +3086,15 @@ class BasePKParserListener():
                         shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id)
                         shift2, weight2 = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2)
 
-                        shift_ = shift2_ = None
-                        if len_atom_id_ > 0 and _common_atom_id_[0] == _atom_id[0]:
-                            shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id_)
-                        if len_atom_id2_ > 0 and _common_atom_id2_[0] == _atom_id2[0]:
-                            shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id2_)
+                        _common_atom_id_ = _common_atom_id2_ = shift_ = shift2_ = None
+                        if len_atom_id_ > 0:
+                            _common_atom_id_ = _atom_id_[0]
+                            if _common_atom_id_[0] == _atom_id[0]:
+                                shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id_)
+                        if len_atom_id2_ > 0:
+                            _common_atom_id2_ = _atom_id2_[0]
+                            if _common_atom_id2_[0] == _atom_id2[0]:
+                                shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id2_)
 
                         if shift_ is not None and not self.ccU.hasBond(comp_id, _common_atom_id_, _atom_id2):
                             shift_ = None
@@ -3342,17 +3340,15 @@ class BasePKParserListener():
                             len_atom_id_ = len(_atom_id_)
                             len_atom_id2_ = len(_atom_id2_)
 
-                            try:
+                            _common_atom_id_ = _common_atom_id2_ = shift_ = shift2_ = None
+                            if len_atom_id_ > 0:
                                 _common_atom_id_ = _atom_id_[0]
+                                if _common_atom_id_[0] == _atom_id[0]:
+                                    shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, _common_atom_id_)
+                            if len_atom_id2_ > 0:
                                 _common_atom_id2_ = _atom_id2_[0]
-                            except IndexError:
-                                continue
-
-                            shift_ = shift2_ = None
-                            if len_atom_id_ > 0 and _common_atom_id_[0] == _atom_id[0]:
-                                shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, _common_atom_id_)
-                            if len_atom_id2_ > 0 and _common_atom_id2_[0] == _atom_id2[0]:
-                                shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id2_)
+                                if _common_atom_id2_[0] == _atom_id2[0]:
+                                    shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id2_)
 
                             # pylint: disable=cell-var-from-loop
                             def swap_seq_atom_id_1(atom_id_list):
@@ -3627,22 +3623,20 @@ class BasePKParserListener():
                         len_atom_id_ = len(_atom_id_)
                         len_atom_id2_ = len(_atom_id2_)
 
-                        try:
-                            _common_atom_id_ = _atom_id_[0]
-                            _common_atom_id2_ = _atom_id2_[0]
-                        except IndexError:
-                            continue
-
                         position, position2 = positions[_dim_id_1], positions[_dim_id_2]
 
                         shift, weight = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id)
                         shift2, weight2 = self.__getCsValue(chain_id, seq_id, comp_id, _atom_id2)
 
-                        shift_ = shift2_ = None
-                        if len_atom_id_ > 0 and _common_atom_id_[0] == _atom_id[0]:
-                            shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id_)
-                        if len_atom_id2_ > 0 and _common_atom_id2_[0] == _atom_id2[0]:
-                            shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id2_)
+                        _common_atom_id_ = _common_atom_id2_ = shift_ = shift2_ = None
+                        if len_atom_id_ > 0:
+                            _common_atom_id_ = _atom_id_[0]
+                            if _common_atom_id_[0] == _atom_id[0]:
+                                shift_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id_)
+                        if len_atom_id2_ > 0:
+                            _common_atom_id2_ = _atom_id2_[0]
+                            if _common_atom_id2_[0] == _atom_id2[0]:
+                                shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id2_)
 
                         if shift_ is not None and not self.ccU.hasBond(comp_id, _common_atom_id_, _atom_id2):
                             shift_ = None
@@ -3886,17 +3880,15 @@ class BasePKParserListener():
                             len_atom_id_ = len(_atom_id_)
                             len_atom_id2_ = len(_atom_id2_)
 
-                            try:
+                            _common_atom_id_ = _common_atom_id2_ = shift_ = shift2_ = None
+                            if len_atom_id_ > 0:
                                 _common_atom_id_ = _atom_id_[0]
+                                if _common_atom_id_[0] == _atom_id[0]:
+                                    shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, _common_atom_id_)
+                            if len_atom_id2_ > 0:
                                 _common_atom_id2_ = _atom_id2_[0]
-                            except IndexError:
-                                continue
-
-                            shift_ = shift2_ = None
-                            if len_atom_id_ > 0 and _common_atom_id_[0] == _atom_id[0]:
-                                shift_, _ = self.__getCsValue(chain_id, seq_id2, comp_id2, _common_atom_id_)
-                            if len_atom_id2_ > 0 and _common_atom_id2_[0] == _atom_id2[0]:
-                                shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id2_)
+                                if _common_atom_id2_[0] == _atom_id2[0]:
+                                    shift2_, _ = self.__getCsValue(chain_id, seq_id, comp_id, _common_atom_id2_)
 
                             # pylint: disable=cell-var-from-loop
                             def alt_swap_seq_atom_id_1(atom_id_list):

@@ -7180,19 +7180,21 @@ class NEFTranslator:
         ambiguity_code = details = None
 
         if sepPattern.search(atom_id):
-            atom_ids = sepPattern.sub(' ', atom_id).split()
+            atom_ids = sepPattern.sub(' ', atom_id.strip()).split()
             _atom_list = []
+            _ambiguity_code = 1
             valid = True
             for _atom_id in atom_ids:
-                _atom_list_, _ambiguity_code, _details = self.get_valid_star_atom_in_xplor(comp_id, _atom_id, details, leave_unmatched)
+                _atom_list_, _ambiguity_code_, _details = self.get_valid_star_atom_in_xplor(comp_id, _atom_id.strip(), details, leave_unmatched)
                 if _details is not None:
                     valid = False
                     break
                 _atom_list.extend(_atom_list_)
+                _ambiguity_code = max(_ambiguity_code, _ambiguity_code_)
             if valid and len(_atom_list) > 0:
                 _atom_list = sorted(set(_atom_list))
-                for _atom_id in atom_ids:
-                    _ambiguity_code = max(_ambiguity_code, self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _atom_id))
+                if len(_atom_list) > 1 and _ambiguity_code < 2:
+                    _ambiguity_code = 4
                 atom_list, ambiguity_code = _atom_list, _ambiguity_code
                 return (atom_list, ambiguity_code, details)
 

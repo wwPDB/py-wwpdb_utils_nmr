@@ -23916,6 +23916,41 @@ class NmrDpUtility:
                 max_limits = [None] * num_dim
                 abs_positions = [None] * num_dim
 
+                first_point_in_hz = True
+                for i in range(1, max_dim):
+
+                    for sp_dim in aux_data:
+
+                        if file_type == 'nef':
+
+                            if sp_dim['dimension_id'] != i:
+                                continue
+
+                            first_point = sp_dim.get('value_first_point')
+                            sp_width = sp_dim.get('spectral_width')
+                            sp_freq = sp_dim.get('spectrometer_frequency')
+
+                            if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz'\
+                               and None not in (sp_freq, first_point, sp_width):
+                                if first_point / sp_freq - sp_width / sp_freq < -1.0:
+                                    first_point_in_hz = False
+                                    break
+
+                        else:
+
+                            if sp_dim['ID'] != i:
+                                continue
+
+                            first_point = sp_dim.get('Value_first_point')
+                            sp_width = sp_dim.get('Sweep_width')
+                            sp_freq = sp_dim.get('Spectrometer_frequency')
+
+                            if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
+                               and None not in (sp_freq, first_point, sp_width):
+                                if first_point / sp_freq - sp_width / sp_freq < -1.0:
+                                    first_point_in_hz = False
+                                    break
+
                 for i in range(1, max_dim):
 
                     for sp_dim in aux_data:
@@ -23932,7 +23967,8 @@ class NmrDpUtility:
 
                             if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz'\
                                and None not in (sp_freq, first_point, sp_width):
-                                first_point /= sp_freq
+                                if first_point_in_hz:
+                                    first_point /= sp_freq
                                 sp_width /= sp_freq
 
                         else:
@@ -23947,7 +23983,8 @@ class NmrDpUtility:
 
                             if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
                                and None not in (sp_freq, first_point, sp_width):
-                                first_point /= sp_freq
+                                if first_point_in_hz:
+                                    first_point /= sp_freq
                                 sp_width /= sp_freq
 
                         min_point = max_point = min_limit = max_limit = None
@@ -24093,6 +24130,24 @@ class NmrDpUtility:
                 max_limits = [None] * num_dim
                 abs_positions = [None] * num_dim
 
+                first_point_in_hz = True
+                for i in range(1, max_dim):
+
+                    for sp_dim in aux_data:
+
+                        if sp_dim['ID'] != i:
+                            continue
+
+                        first_point = sp_dim.get('Value_first_point')
+                        sp_width = sp_dim.get('Sweep_width')
+                        sp_freq = sp_dim.get('Spectrometer_frequency')
+
+                        if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
+                           and None not in (sp_freq, first_point, sp_width):
+                            if first_point / sp_freq - sp_width / sp_freq < -1.0:
+                                first_point_in_hz = False
+                                break
+
                 for i in range(1, max_dim):
 
                     for sp_dim in aux_data:
@@ -24107,7 +24162,8 @@ class NmrDpUtility:
 
                         if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz'\
                            and None not in (sp_freq, first_point, sp_width):
-                            first_point /= sp_freq
+                            if first_point_in_hz:
+                                first_point /= sp_freq
                             sp_width /= sp_freq
 
                         min_point = max_point = min_limit = max_limit = None

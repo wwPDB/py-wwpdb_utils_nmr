@@ -251,6 +251,9 @@ intPattern = re.compile(r'^([+-]?[1-9]\d*|0)$')
 # bad pattern
 badPattern = re.compile(r'.*[\!\$\&\(\)\=\~\^\\\|\`\@\{\}\[\]\;\:\<\>\,\/].*')
 
+# separator pattern
+sepPattern = re.compile(r'[\&\\\|\;\:\,\/]')
+
 
 # alternative dictionary of constraint type
 altDistanceConstraintType = {'nef': {'NOE': 'noe',
@@ -7175,6 +7178,23 @@ class NEFTranslator:
 
         atom_list = []
         ambiguity_code = details = None
+
+        if sepPattern.search(atom_id):
+            atom_ids = sepPattern.sub(' ', atom_id).split()
+            _atom_list = []
+            valid = True
+            for _atom_id in atom_ids:
+                _atom_list_, _ambiguity_code, _details = self.get_valid_star_atom_in_xplor(comp_id, _atom_id, details, leave_unmatched)
+                if _details is not None:
+                    valid = False
+                    break
+                _atom_list.extend(_atom_list_)
+            if valid and len(_atom_list) > 0:
+                _atom_list = sorted(set(_atom_list))
+                for _atom_id in atom_ids:
+                    _ambiguity_code = max(_ambiguity_code, self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _atom_id))
+                atom_list, ambiguity_code = _atom_list, _ambiguity_code
+                return (atom_list, ambiguity_code, details)
 
         try:
 

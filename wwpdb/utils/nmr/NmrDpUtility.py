@@ -27002,7 +27002,7 @@ class NmrDpUtility:
                     _row[5] = _row[18] = comp_id = _coord_atom_site['comp_id']
                     valid = True
                     missing_ch3 = []
-                    if not self.__annotation_mode and atom_id in self.__csStat.getRepMethylProtons(comp_id):
+                    if not self.__annotation_mode and atom_id in self.__csStat.getMethylProtons(comp_id):
                         missing_ch3 = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
                         valid = self.__sail_flag
                         row_src = src_lp.data[src_idx]
@@ -27114,6 +27114,7 @@ class NmrDpUtility:
                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                         else:
                             methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+                            atom_ids = sorted(atom_ids)
                             _row[6] = atom_ids[0]
                             _row[19] = None
                             fill_auth_atom_id = _row[18] not in emptyValue
@@ -27248,7 +27249,7 @@ class NmrDpUtility:
                     _row[5] = comp_id
                     valid = True
                     missing_ch3 = []
-                    if atom_id in self.__csStat.getRepMethylProtons(comp_id):
+                    if atom_id in self.__csStat.getMethylProtons(comp_id):
                         missing_ch3 = self.__csStat.getProtonsInSameGroup(comp_id, atom_id, True)
                         valid = self.__sail_flag
                         for offset in range(1, 10):
@@ -27309,6 +27310,7 @@ class NmrDpUtility:
                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                     else:
                         methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+                        atom_ids = sorted(atom_ids)
                         _row[6] = atom_ids[0]
                         _row[19] = None
                         fill_auth_atom_id = _row[18] not in emptyValue

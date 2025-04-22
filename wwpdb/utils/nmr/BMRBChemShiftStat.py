@@ -116,6 +116,7 @@ class BMRBChemShiftStat:
         self.__cachedDictForPeptideLike = {}
         self.__cachedDictForTypeOfCompId = {}
         self.__cachedDictForSimilarCompId = {}
+        self.__cachedDictForMethylAtoms = {}
         self.__cachedDictForMethylProtons = {}
         self.__cachedDictForRepMethylProtons = {}
         self.__cachedDictForNonRepMethylProtons = {}
@@ -602,10 +603,26 @@ class BMRBChemShiftStat:
         if comp_id in emptyValue:
             return []
 
+        if comp_id in self.__cachedDictForMethylAtoms:
+            return copy.deepcopy(self.__cachedDictForMethylAtoms[comp_id])
+
+        result = self.__ccU.getMethylAtoms(comp_id)
+
+        self.__cachedDictForMethylAtoms[comp_id] = result
+
+        return copy.deepcopy(result)
+
+    def getMethylProtons(self, comp_id: str) -> List[str]:
+        """ Return all protons in methyl group of a given comp_id.
+        """
+
+        if comp_id in emptyValue:
+            return []
+
         if comp_id in self.__cachedDictForMethylProtons:
             return copy.deepcopy(self.__cachedDictForMethylProtons[comp_id])
 
-        result = self.__ccU.getMethylAtoms(comp_id)
+        result = self.__ccU.getMethylProtons(comp_id)
 
         self.__cachedDictForMethylProtons[comp_id] = result
 

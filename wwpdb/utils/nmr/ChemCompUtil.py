@@ -220,6 +220,28 @@ class ChemCompUtil:
 
         return atmList
 
+    def getMethylProtons(self, compId: str) -> List[str]:
+        """ Return all protons in methyl group of a given comp_id.
+        """
+
+        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+            return []
+
+        atmList = []
+
+        carbons = (a[self.ccaAtomId] for a in self.lastAtomList if a[self.ccaTypeSymbol] == 'C')
+
+        for carbon in carbons:
+            protons = [(b[self.ccbAtomId1] if b[self.ccbAtomId1] != carbon else b[self.ccbAtomId2])
+                       for b in self.lastBonds
+                       if (b[self.ccbAtomId1] == carbon and b[self.ccbAtomId2][0] in protonBeginCode)
+                       or (b[self.ccbAtomId2] == carbon and b[self.ccbAtomId1][0] in protonBeginCode)]
+            if len(protons) != 3:
+                continue
+            atmList.extend(protons)
+
+        return atmList
+
     def getRepMethylProtons(self, compId: str) -> List[str]:
         """ Return representative protons in methyl group of a given comp_id.
         """

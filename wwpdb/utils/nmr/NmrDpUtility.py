@@ -24330,7 +24330,7 @@ class NmrDpUtility:
 
             for content_subtype in input_source_dic['content_subtype']:
 
-                if self.__op == 'nmr-cs-mr-merge' and content_subtype == 'entity':
+                if self.__op == 'nmr-cs-mr-merge' or content_subtype == 'entity':
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]

@@ -5695,7 +5695,7 @@ class NEFTranslator:
                                             if 'default-from' in d and d['default-from'] == 'self':
                                                 val = indexToLetter(letterToDigit(val, 1) - 1)
                                             elif 'default-from' in d and d['default-from'] in tags and row[tags.index(d['default-from'])] not in emptyValue:
-                                                val = row[tags.index(k['default-from'])]
+                                                val = row[tags.index(d['default-from'])]
                                             elif 'default-from' in d and d['default-from'].startswith('Auth_asym_ID'):
                                                 val = indexToLetter(letterToDigit(val, 1) - 1)
                                             elif 'default' in d:

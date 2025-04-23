@@ -98,7 +98,7 @@
 # 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR data remediation Phase 2)
 # 28-Mar-2025  M. Yokochi - add 'nm-pea-sps' file type for SPARKY's 'save' (aka. ornament) peak list file (DAOTHER-8905, 9785, NMR data remediation Phase 2)
 # 09-Apr-2025  M. Yokochi - add 'nm-shi-ari', 'nm-shi-bar', 'nm-shi-gar', 'nm-shi-npi', 'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2', and 'nm-shi-xea' file_types (v4.4.0, DAOTHER-9785)
-# 16-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors (DAOTHER-9785)
+# 23-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors (DAOTHER-9785)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -2111,7 +2111,7 @@ class NmrDpReportError:
 
                         return
 
-                    value['subtotal'] = 1
+                    value['subtotal'] = len(value['description'].split('\n')) if 'inheritable' in value else 1
 
                 self.__contents[item].append(value)
 
@@ -2151,7 +2151,8 @@ class NmrDpReportError:
             if item in ('total', 'internal_error') or self.__contents[item] is None:
                 continue
 
-            if any(c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
+            if any(c for c in self.__contents[item]
+                   if (c['file_name'] == file_name or file_name in emptyValue) and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
                 return True
 
         return False
@@ -2230,7 +2231,7 @@ class NmrDpReportError:
         except StopIteration:
             return None
 
-    def getCombinedDescriptions(self, file_name: str, sf_framecode: str) -> Optional[List[str]]:
+    def getCombinedDescriptions(self, file_name: str, sf_framecode: str, original_file_name: Optional[str] = None) -> Optional[List[str]]:
         """ Return combined error descriptions specified by file name and saveframe.
         """
 
@@ -2246,7 +2247,8 @@ class NmrDpReportError:
 
             for c in self.__contents[item]:
 
-                if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode:
+                if (c['file_name'] == file_name or original_file_name not in emptyValue)\
+                   and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode:
                     d.append(item + ': ' + c['description'])
 
         if len(d) == 0:
@@ -2411,7 +2413,7 @@ class NmrDpReportWarning:
 
                         return
 
-                    value['subtotal'] = 1
+                    value['subtotal'] = len(value['description'].split('\n')) if 'inheritable' in value else 1
 
                 self.__contents[item].append(value)
 
@@ -2451,7 +2453,8 @@ class NmrDpReportWarning:
             if item in ('total', 'enum_mismatch_ignorable') or self.__contents[item] is None:
                 continue
 
-            if any(c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
+            if any(c for c in self.__contents[item]
+                   if (c['file_name'] == file_name or file_name in emptyValue) and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
                 return True
 
         return False
@@ -2530,7 +2533,7 @@ class NmrDpReportWarning:
         except StopIteration:
             return None
 
-    def getCombinedDescriptions(self, file_name: str, sf_framecode: str) -> Optional[List[str]]:
+    def getCombinedDescriptions(self, file_name: str, sf_framecode: str, original_file_name: Optional[str] = None) -> Optional[List[str]]:
         """ Return combined warning descriptions specified by file name and saveframe.
         """
 
@@ -2546,7 +2549,8 @@ class NmrDpReportWarning:
 
             for c in self.__contents[item]:
 
-                if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode:
+                if (c['file_name'] == file_name or original_file_name not in emptyValue)\
+                   and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode:
                     d.append(item + ': ' + c['description'])
 
         if len(d) == 0:

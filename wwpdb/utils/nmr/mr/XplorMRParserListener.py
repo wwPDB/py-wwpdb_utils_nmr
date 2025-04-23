@@ -613,6 +613,9 @@ class XplorMRParserListener(ParseTreeListener):
     # current constraint type
     __cur_constraint_type = None
 
+    # default saveframe name for error handling
+    __def_err_sf_framecode = None
+
     # last edited pynmrstar saveframe
     __lastSfDict = {}
 
@@ -14454,47 +14457,47 @@ class XplorMRParserListener(ParseTreeListener):
 
     def __getCurrentRestraint(self) -> str:
         if self.__cur_subtype == 'dist':
-            return f"[Check the {self.distRestraints}th row of distance restraints] "
+            return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'dihed':
-            return f"[Check the {self.dihedRestraints}th row of dihedral angle restraints] "
+            return f"[Check the {self.dihedRestraints}th row of dihedral angle restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'rdc':
-            return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints] "
+            return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'plane':
-            return f"[Check the {self.planeRestraints}th row of planarity restraints] "
+            return f"[Check the {self.planeRestraints}th row of planarity restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'adist':
-            return f"[Check the {self.adistRestraints}th row of antidistance restraints] "
+            return f"[Check the {self.adistRestraints}th row of antidistance restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'jcoup':
-            return f"[Check the {self.jcoupRestraints}th row of scalar J-coupling restraints] "
+            return f"[Check the {self.jcoupRestraints}th row of scalar J-coupling restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'hvycs':
-            return f"[Check the {self.hvycsRestraints}th row of carbon chemical shift restraints] "
+            return f"[Check the {self.hvycsRestraints}th row of carbon chemical shift restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'procs':
-            return f"[Check the {self.procsRestraints}th row of proton chemical shift restraints] "
+            return f"[Check the {self.procsRestraints}th row of proton chemical shift restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'rama':
-            return f"[Check the {self.ramaRestraints}th row of dihedral angle database restraints] "
+            return f"[Check the {self.ramaRestraints}th row of dihedral angle database restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'radi':
-            return f"[Check the {self.radiRestraints}th row of radius of gyration restraints] "
+            return f"[Check the {self.radiRestraints}th row of radius of gyration restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'diff':
-            return f"[Check the {self.diffRestraints}th row of duffusion anisotropy restraints] "
+            return f"[Check the {self.diffRestraints}th row of duffusion anisotropy restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'nbase':
-            return f"[Check the {self.nbaseRestraints}th row of residue-residue position/orientation database restraints] "
+            return f"[Check the {self.nbaseRestraints}th row of residue-residue position/orientation database restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'csa':
-            return f"[Check the {self.csaRestraints}th row of (pseudo) chemical shift anisotropy restraints] "
+            return f"[Check the {self.csaRestraints}th row of (pseudo) chemical shift anisotropy restraints, {self.__def_err_sf_framecode}] "
         # if self.__cur_subtype == 'ang':
-        #     return f"[Check the {self.angRestraints}th row of angle database restraints] "
+        #     return f"[Check the {self.angRestraints}th row of angle database restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'pre':
-            return f"[Check the {self.preRestraints}th row of paramagnetic relaxation enhancement restraints] "
+            return f"[Check the {self.preRestraints}th row of paramagnetic relaxation enhancement restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'pcs':
-            return f"[Check the {self.pcsRestraints}th row of paramagnetic pseudocontact shift restraints] "
+            return f"[Check the {self.pcsRestraints}th row of paramagnetic pseudocontact shift restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'prdc':
-            return f"[Check the {self.prdcRestraints}th row of paramagnetic residual dipolar coupling restraints] "
+            return f"[Check the {self.prdcRestraints}th row of paramagnetic residual dipolar coupling restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'pang':
-            return f"[Check the {self.pangRestraints}th row of paramagnetic orientation restraints] "
+            return f"[Check the {self.pangRestraints}th row of paramagnetic orientation restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'pccr':
-            return f"[Check the {self.pccrRestraints}th row of paramagnetic cross-correlation rate restraints] "
+            return f"[Check the {self.pccrRestraints}th row of paramagnetic cross-correlation rate restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'hbond':
-            return f"[Check the {self.hbondRestraints}th row of hydrogen bond geometry restraints] "
+            return f"[Check the {self.hbondRestraints}th row of hydrogen bond geometry restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'geo':
-            return f"[Check the {self.geoRestraints}th row of harmonic coordinate/NCS restraints] "
+            return f"[Check the {self.geoRestraints}th row of harmonic coordinate/NCS restraints, {self.__def_err_sf_framecode}] "
         return ''
 
     def __setLocalSeqScheme(self):
@@ -14663,7 +14666,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         item = {'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
                 'id': 0, 'index_id': 0,
-                'constraint_type': ' '.join(_restraint_name[:-1])}
+                'constraint_type': ' '.join(_restraint_name[:-1]),
+                'sf_framecode': sf_framecode}
 
         if not_valid:
             item['tags'] = []
@@ -14714,6 +14718,9 @@ class XplorMRParserListener(ParseTreeListener):
                              alignCenter=alignCenter)
 
         self.__cur_constraint_type = constraintType
+
+        _key = next((_key for _key in self.sfDict if _key[0] == 'dist' and _key[1] is None), key) if self.__cur_subtype == 'dist' else key
+        self.__def_err_sf_framecode = self.sfDict[_key][-1]['sf_framecode']
 
         return self.sfDict[key][-1]
 

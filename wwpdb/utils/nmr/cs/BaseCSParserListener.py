@@ -223,6 +223,9 @@ class BaseCSParserListener():
     # dictionary of pynmrstar saveframes
     sfDict = {}
 
+    # default saveframe name for error handling
+    __def_err_sf_framecode = None
+
     __cachedDictForStarAtom = {}
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -3703,7 +3706,7 @@ class BaseCSParserListener():
 
     def getCurrentAssignment(self, n: int) -> str:
         if self.cur_subtype == 'chem_shift':
-            return f"[Check the {self.chemShifts + 1}th row of assigned chemical shifts (list_id={self.cur_list_id}, index={n})] "
+            return f"[Check the {self.chemShifts + 1}th row of assigned chemical shifts (list_id={self.cur_list_id}, index={n}), {self.__def_err_sf_framecode}] "
         return ''
 
     def __setLocalSeqScheme(self):
@@ -3766,7 +3769,8 @@ class BaseCSParserListener():
         lp = getLoop(self.cur_subtype)
 
         item = {'file_type': self.file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
-                'id': 0, 'index_id': 0}
+                'id': 0, 'index_id': 0,
+                'sf_framecode': sf_framecode}
 
         self.sfDict[key].append(item)
 
@@ -3776,7 +3780,11 @@ class BaseCSParserListener():
         if key not in self.sfDict:
             self.__addSf()
 
-        return self.sfDict[key][-1]
+        cur_sf = self.sfDict[key][-1]
+
+        self.__def_err_sf_framecode = cur_sf['sf_framecode']
+
+        return cur_sf
 
     def getContentSubtype(self) -> dict:
         """ Return content subtype of CS file.

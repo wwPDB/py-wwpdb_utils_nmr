@@ -1019,6 +1019,9 @@ class BasePKParserListener():
     # tentative chemical shift values
     __tempCsValues = []
 
+    # default saveframe name for error handling
+    __def_err_sf_framecode = None
+
     __cachedDictForStarAtom = {}
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -9914,11 +9917,11 @@ class BasePKParserListener():
 
     def getCurrentRestraint(self, n: int) -> str:
         if self.cur_subtype == 'peak2d':
-            return f"[Check the {self.peaks2D}th row of 2D spectral peaks (list_id={self.cur_list_id}, index={n})] "
+            return f"[Check the {self.peaks2D}th row of 2D spectral peaks (list_id={self.cur_list_id}, index={n}), {self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'peak3d':
-            return f"[Check the {self.peaks3D}th row of 3D spectral peaks (list_id={self.cur_list_id}, index={n})] "
+            return f"[Check the {self.peaks3D}th row of 3D spectral peaks (list_id={self.cur_list_id}, index={n}), {self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'peak4d':
-            return f"[Check the {self.peaks4D}th row of 4D spectral peaks (list_id={self.cur_list_id}, index~{n})] "
+            return f"[Check the {self.peaks4D}th row of 4D spectral peaks (list_id={self.cur_list_id}, index~{n}), {self.__def_err_sf_framecode}] "
         return ''
 
     def __setLocalSeqScheme(self):
@@ -9992,7 +9995,8 @@ class BasePKParserListener():
         alt_loops = getAltLoops(content_subtype)
 
         item = {'file_type': self.file_type, 'saveframe': sf, 'loop': lp, 'alt_loops': alt_loops, 'list_id': list_id,
-                'id': 0, 'index_id': 0, 'num_of_dim': self.num_of_dim, 'peak_row_format': True}
+                'id': 0, 'index_id': 0, 'num_of_dim': self.num_of_dim, 'peak_row_format': True,
+                'sf_framecode': sf_framecode}
 
         self.sfDict[key].append(item)
 
@@ -10002,7 +10006,11 @@ class BasePKParserListener():
         if key not in self.sfDict:
             self.__addSf()
 
-        return self.sfDict[key][-1]
+        cur_sf = self.sfDict[key][-1]
+
+        self.__def_err_sf_framecode = cur_sf['sf_framecode']
+
+        return cur_sf
 
     def getContentSubtype(self) -> dict:
         """ Return content subtype of PK file.

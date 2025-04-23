@@ -529,6 +529,9 @@ class AmberMRParserListener(ParseTreeListener):
     # current constraint type
     __cur_constraint_type = None
 
+    # default saveframe name for error handling
+    __def_err_sf_framecode = None
+
     # last edited pynmrstar saveframe
     __lastSfDict = {}
 
@@ -11358,36 +11361,36 @@ class AmberMRParserListener(ParseTreeListener):
 
     def __getCurrentRestraint(self, dataset: Optional[str] = None, n: Optional[int] = None) -> str:
         if self.__cur_subtype == 'dist':
-            return f"[Check the {self.distRestraints}th row of distance restraints] "
+            return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'ang':
-            return f"[Check the {self.angRestraints}th row of angle restraints] "
+            return f"[Check the {self.angRestraints}th row of angle restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'dihed':
-            return f"[Check the {self.dihedRestraints}th row of torsional angle restraints] "
+            return f"[Check the {self.dihedRestraints}th row of torsional angle restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'rdc':
             if None in (dataset, n):
-                return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints] "
-            return f"[Check the {n}th row of residual dipolar coupling restraints (dataset={dataset})] "
+                return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints, {self.__def_err_sf_framecode}] "
+            return f"[Check the {n}th row of residual dipolar coupling restraints (dataset={dataset}), {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'plane':
-            return f"[Check the {self.planeRestraints}th row of plane-point/plane angle restraints] "
+            return f"[Check the {self.planeRestraints}th row of plane-point/plane angle restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'noepk':
             if None in (dataset, n):
-                return f"[Check the {self.noepkRestraints}th row of NOESY volume restraints] "
-            return f"[Check the {n}th row of NOESY volume restraints (dataset={dataset})] "
+                return f"[Check the {self.noepkRestraints}th row of NOESY volume restraints, {self.__def_err_sf_framecode}] "
+            return f"[Check the {n}th row of NOESY volume restraints (dataset={dataset}), {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'procs':
             if n is None:
-                return f"[Check the {self.procsRestraints}th row of chemical shift restraints] "
-            return f"[Check the {n}th row of chemical shift restraints] "
+                return f"[Check the {self.procsRestraints}th row of chemical shift restraints, {self.__def_err_sf_framecode}] "
+            return f"[Check the {n}th row of chemical shift restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'pcs':
             if None in (dataset, n):
-                return f"[Check the {self.pcsRestraints}th row of pseudocontact shift restraints] "
-            return f"[Check the {n}th row of pseudocontact shift restraints (name of paramagnetic center={dataset})] "
+                return f"[Check the {self.pcsRestraints}th row of pseudocontact shift restraints, {self.__def_err_sf_framecode}] "
+            return f"[Check the {n}th row of pseudocontact shift restraints (name of paramagnetic center={dataset}), {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'csa':
             if None in (dataset, n):
-                return f"[Check the {self.csaRestraints}th row of residual CSA or pseudo-CSA restraints] "
-            return f"[Check the {n}th row of residual CSA or pseudo-CSA restraints (dataset={dataset})] "
+                return f"[Check the {self.csaRestraints}th row of residual CSA or pseudo-CSA restraints, {self.__def_err_sf_framecode}] "
+            return f"[Check the {n}th row of residual CSA or pseudo-CSA restraints (dataset={dataset}), {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'geo':
-            return f"[Check the {self.geoRestraints}th row of generalized distance restraints] "
-        return f"[Check the {self.nmrRestraints}th row of NMR restraints] "
+            return f"[Check the {self.geoRestraints}th row of generalized distance restraints, {self.__def_err_sf_framecode}] "
+        return f"[Check the {self.nmrRestraints}th row of NMR restraints, {self.__def_err_sf_framecode}] "
 
     def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None, rdcCode: Optional[str] = None):
         content_subtype = contentSubtypeOf(self.__cur_subtype)
@@ -11426,7 +11429,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         item = {'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
                 'id': 0, 'index_id': 0,
-                'constraint_type': ' '.join(_restraint_name[:-1])}
+                'constraint_type': ' '.join(_restraint_name[:-1]),
+                'sf_framecode': sf_framecode}
 
         if not_valid:
             item['tags'] = []
@@ -11467,6 +11471,9 @@ class AmberMRParserListener(ParseTreeListener):
                 self.__addSf(constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)
 
         self.__cur_constraint_type = constraintType
+
+        _key = next((_key for _key in self.sfDict if _key[0] == 'dist' and _key[1] is None), key) if self.__cur_subtype == 'dist' else key
+        self.__def_err_sf_framecode = self.sfDict[_key][-1]['sf_framecode']
 
         return self.sfDict[key][-1]
 

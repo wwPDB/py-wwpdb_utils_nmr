@@ -292,6 +292,9 @@ class SybylMRParserListener(ParseTreeListener):
     # current constraint type
     __cur_constraint_type = None
 
+    # default saveframe name for error handling
+    __def_err_sf_framecode = None
+
     __cachedDictForStarAtom = {}
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -2267,7 +2270,7 @@ class SybylMRParserListener(ParseTreeListener):
 
     def __getCurrentRestraint(self) -> str:
         if self.__cur_subtype == 'dist':
-            return f"[Check the {self.distRestraints}th row of distance restraints] "
+            return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
         return ''
 
     def __setLocalSeqScheme(self):
@@ -2336,7 +2339,8 @@ class SybylMRParserListener(ParseTreeListener):
 
         item = {'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
                 'id': 0, 'index_id': 0,
-                'constraint_type': ' '.join(_restraint_name[:-1])}
+                'constraint_type': ' '.join(_restraint_name[:-1]),
+                'sf_framecode': sf_framecode}
 
         if self.__cur_subtype == 'dist':
             item['constraint_subsubtype'] = 'simple'
@@ -2365,6 +2369,9 @@ class SybylMRParserListener(ParseTreeListener):
                 self.__addSf(constraintType=constraintType, potentialType=potentialType)
 
         self.__cur_constraint_type = constraintType
+
+        _key = next((_key for _key in self.sfDict if _key[0] == 'dist' and _key[1] is None), key) if self.__cur_subtype == 'dist' else key
+        self.__def_err_sf_framecode = self.sfDict[_key][-1]['sf_framecode']
 
         return self.sfDict[key][-1]
 

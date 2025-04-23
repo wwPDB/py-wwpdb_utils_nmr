@@ -4425,6 +4425,21 @@
               "software_version"
             ]
           }
+        },
+        "summary": {
+          "description": "Section for validation summary."
+        },
+        "chem_shift": {
+          "description": "Section for chemical shift validation."
+        },
+        "dist_restraint": {
+          "description": "Section for distance restraint validation."
+        },
+        "dihed_restraint": {
+          "description": "Section for dihedral angle restraint validation."
+        },
+        "rdc_restraint": {
+          "description": "Section for RDC restraint validation."
         }
       }
     },

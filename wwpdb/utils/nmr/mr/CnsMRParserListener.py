@@ -514,6 +514,9 @@ class CnsMRParserListener(ParseTreeListener):
     # current constraint type
     __cur_constraint_type = None
 
+    # default saveframe name for error handling
+    __def_err_sf_framecode = None
+
     # last edited pynmrstar saveframe
     __lastSfDict = {}
 
@@ -10041,27 +10044,27 @@ class CnsMRParserListener(ParseTreeListener):
 
     def __getCurrentRestraint(self) -> str:
         if self.__cur_subtype == 'dist':
-            return f"[Check the {self.distRestraints}th row of distance restraints] "
+            return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'dihed':
-            return f"[Check the {self.dihedRestraints}th row of dihedral angle restraints] "
+            return f"[Check the {self.dihedRestraints}th row of dihedral angle restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'rdc':
-            return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints] "
+            return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'plane':
-            return f"[Check the {self.planeRestraints}th row of plane restraints] "
+            return f"[Check the {self.planeRestraints}th row of plane restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'jcoup':
-            return f"[Check the {self.jcoupRestraints}th row of scalar J-coupling restraints] "
+            return f"[Check the {self.jcoupRestraints}th row of scalar J-coupling restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'hvycs':
-            return f"[Check the {self.hvycsRestraints}th row of carbon chemical shift restraints] "
+            return f"[Check the {self.hvycsRestraints}th row of carbon chemical shift restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'procs':
-            return f"[Check the {self.procsRestraints}th row of proton chemical shift restraints] "
+            return f"[Check the {self.procsRestraints}th row of proton chemical shift restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'rama':
-            return f"[Check the {self.ramaRestraints}th row of conformation database restraints] "
+            return f"[Check the {self.ramaRestraints}th row of conformation database restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'diff':
-            return f"[Check the {self.diffRestraints}th row of duffusion anisotropy restraints] "
+            return f"[Check the {self.diffRestraints}th row of duffusion anisotropy restraints, {self.__def_err_sf_framecode}] "
         # if self.__cur_subtype == 'ang':
-        #     return f"[Check the {self.angRestraints}th row of angle database restraints] "
+        #     return f"[Check the {self.angRestraints}th row of angle database restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'geo':
-            return f"[Check the {self.geoRestraints}th row of harmonic coordinate/NCS restraints] "
+            return f"[Check the {self.geoRestraints}th row of harmonic coordinate/NCS restraints, {self.__def_err_sf_framecode}] "
         return ''
 
     def __setLocalSeqScheme(self):
@@ -10185,7 +10188,8 @@ class CnsMRParserListener(ParseTreeListener):
 
         item = {'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
                 'id': 0, 'index_id': 0,
-                'constraint_type': ' '.join(_restraint_name[:-1])}
+                'constraint_type': ' '.join(_restraint_name[:-1]),
+                'sf_framecode': sf_framecode}
 
         if not_valid:
             item['tags'] = []
@@ -10235,6 +10239,9 @@ class CnsMRParserListener(ParseTreeListener):
                 self.__addSf(constraintType=constraintType, potentialType=potentialType, rdcCode=rdcCode)
 
         self.__cur_constraint_type = constraintType
+
+        _key = next((_key for _key in self.sfDict if _key[0] == 'dist' and _key[1] is None), key) if self.__cur_subtype == 'dist' else key
+        self.__def_err_sf_framecode = self.sfDict[_key][-1]['sf_framecode']
 
         return self.sfDict[key][-1]
 

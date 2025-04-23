@@ -425,6 +425,9 @@ class CyanaMRParserListener(ParseTreeListener):
     # current constraint type
     __cur_constraint_type = None
 
+    # default saveframe name for error handling
+    __def_err_sf_framecode = None
+
     # last edited pynmrstar saveframe
     __lastSfDict = {}
 
@@ -10595,25 +10598,25 @@ class CyanaMRParserListener(ParseTreeListener):
 
     def __getCurrentRestraint(self) -> str:
         if self.__cur_subtype == 'dist':
-            return f"[Check the {self.distRestraints}th row of distance restraints] "
+            return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'dihed':
-            return f"[Check the {self.dihedRestraints}th row of torsion angle restraints] "
+            return f"[Check the {self.dihedRestraints}th row of torsion angle restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'rdc':
-            return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints] "
+            return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'pcs':
-            return f"[Check the {self.pcsRestraints}th row of pseudocontact shift restraints] "
+            return f"[Check the {self.pcsRestraints}th row of pseudocontact shift restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'noepk':
-            return f"[Check the {self.noepkRestraints}th row of NOESY volume restraints] "
+            return f"[Check the {self.noepkRestraints}th row of NOESY volume restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'jcoup':
-            return f"[Check the {self.jcoupRestraints}th row of scalar coupling constant restraints] "
+            return f"[Check the {self.jcoupRestraints}th row of scalar coupling constant restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'geo':
-            return f"[Check the {self.geoRestraints}th row of coordinate geometry restraints] "
+            return f"[Check the {self.geoRestraints}th row of coordinate geometry restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'hbond':
-            return f"[Check the {self.hbondRestraints}th row of hydrogen bond restraints] "
+            return f"[Check the {self.hbondRestraints}th row of hydrogen bond restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'ssbond':
-            return f"[Check the {self.ssbondRestraints}th row of disulfide bond restraints] "
+            return f"[Check the {self.ssbondRestraints}th row of disulfide bond restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'fchiral':
-            return f"[Check the {self.fchiralRestraints}th row of floating chiral stereo assignments] "
+            return f"[Check the {self.fchiralRestraints}th row of floating chiral stereo assignments, {self.__def_err_sf_framecode}] "
         return ''
 
     def __setLocalSeqScheme(self):
@@ -10726,7 +10729,8 @@ class CyanaMRParserListener(ParseTreeListener):
 
         item = {'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
                 'id': 0, 'index_id': 0,
-                'constraint_type': ' '.join(_restraint_name[:-1])}
+                'constraint_type': ' '.join(_restraint_name[:-1]),
+                'sf_framecode': sf_framecode}
 
         if not_valid:
             item['tags'] = []
@@ -10769,6 +10773,9 @@ class CyanaMRParserListener(ParseTreeListener):
                              orientationId=orientationId, cyanaParameter=cyanaParameter)
 
         self.__cur_constraint_type = constraintType
+
+        _key = next((_key for _key in self.sfDict if _key[0] == 'dist' and _key[1] is None), key) if self.__cur_subtype == 'dist' else key
+        self.__def_err_sf_framecode = self.sfDict[_key][-1]['sf_framecode']
 
         return self.sfDict[key][-1]
 

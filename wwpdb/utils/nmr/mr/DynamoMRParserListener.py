@@ -368,6 +368,9 @@ class DynamoMRParserListener(ParseTreeListener):
     # current constraint type
     __cur_constraint_type = None
 
+    # default saveframe name for error handling
+    __def_err_sf_framecode = None
+
     __cachedDictForStarAtom = {}
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
@@ -5600,18 +5603,18 @@ class DynamoMRParserListener(ParseTreeListener):
     def __getCurrentRestraint(self, n: Optional[int] = None, g: Optional[int] = None) -> str:
         if self.__cur_subtype == 'dist':
             if None in (n, g):
-                return f"[Check the {self.distRestraints}th row of distance restraints] "
-            return f"[Check the {self.distRestraints}th row of distance restraints (index={n}, group={g})] "
+                return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
+            return f"[Check the {self.distRestraints}th row of distance restraints (index={n}, group={g}), {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'dihed':
             if n is None:
-                return f"[Check the {self.dihedRestraints}th row of torsion angle restraints] "
-            return f"[Check the {self.dihedRestraints}th row of torsion angle restraints (index={n})] "
+                return f"[Check the {self.dihedRestraints}th row of torsion angle restraints, {self.__def_err_sf_framecode}] "
+            return f"[Check the {self.dihedRestraints}th row of torsion angle restraints (index={n}), {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'rdc':
-            return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints] "
+            return f"[Check the {self.rdcRestraints}th row of residual dipolar coupling restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'jcoup':
             if n is None:
-                return f"[Check the {self.jcoupRestraints}th row of scalar coupling constant restraints] "
-            return f"[Check the {self.jcoupRestraints}th row of scalar coupling constant restraints (index={n})] "
+                return f"[Check the {self.jcoupRestraints}th row of scalar coupling constant restraints, {self.__def_err_sf_framecode}] "
+            return f"[Check the {self.jcoupRestraints}th row of scalar coupling constant restraints (index={n}), {self.__def_err_sf_framecode}] "
         return ''
 
     def __setLocalSeqScheme(self):
@@ -5696,7 +5699,8 @@ class DynamoMRParserListener(ParseTreeListener):
 
         item = {'file_type': self.__file_type, 'saveframe': sf, 'loop': lp, 'list_id': list_id,
                 'id': 0, 'index_id': 0,
-                'constraint_type': ' '.join(_restraint_name[:-1])}
+                'constraint_type': ' '.join(_restraint_name[:-1]),
+                'sf_framecode': sf_framecode}
 
         if not_valid:
             item['tags'] = []
@@ -5736,6 +5740,9 @@ class DynamoMRParserListener(ParseTreeListener):
                              softwareName=softwareName)
 
         self.__cur_constraint_type = constraintType
+
+        _key = next((_key for _key in self.sfDict if _key[0] == 'dist' and _key[1] is None), key) if self.__cur_subtype == 'dist' else key
+        self.__def_err_sf_framecode = self.sfDict[_key][-1]['sf_framecode']
 
         return self.sfDict[key][-1]
 

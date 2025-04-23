@@ -4309,8 +4309,8 @@
         "sequence_coverage"
       ]
     },
-    "validation_report": {
-      "description": "Template for validation report for output file.",
+    "output_statistics": {
+      "description": "Template for statistics and validation metrics of output NMR data file.",
       "type": "object",
       "properties": {
         "file_name": {
@@ -4341,8 +4341,8 @@
           "type": "string",
           "minLength": 1
         },
-        "deposition_date": {
-          "description": "Deposition date.",
+        "submission_date": {
+          "description": "Initial submission date.",
           "type": "date"
         },
         "processed_date": {
@@ -4404,8 +4404,8 @@
             }
           }
         },
-        "validation_software": {
-          "description": "List of software used for validation report.",
+        "software": {
+          "description": "List of software used for validation.",
           "type": "array",
           "items": {
             "type": "object",
@@ -4427,7 +4427,7 @@
           }
         },
         "summary": {
-          "description": "Section for validation summary."
+          "description": "Section for summary of NMR data file."
         },
         "chem_shift": {
           "description": "Section for chemical shift validation."
@@ -4440,6 +4440,9 @@
         },
         "rdc_restraint": {
           "description": "Section for RDC restraint validation."
+        },
+        "spectral_peak": {
+          "description": "Section for spectral peak list validation."
         }
       }
     },
@@ -5323,9 +5326,9 @@
             "nmr_poly_seq_vs_model_poly_seq"
           ]
         },
-        "validation_report": {
+        "output_statistics": {
           "description": "This array provides statistics and validation metrics of output NMR data file.",
-          "$ref": "#/definitions/validation_report"
+          "$ref": "#/definitions/output_statistics"
         },
         "diamagnetic": {
           "destriction": "Diamagnetism of the molecular assembly, except for Oxygen.",

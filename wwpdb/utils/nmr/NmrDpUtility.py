@@ -245,6 +245,7 @@ from munkres import Munkres
 from operator import itemgetter
 from striprtf.striprtf import rtf_to_text
 from typing import Any, IO, List, Set, Tuple, Union, Optional
+from datetime import datetime
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -10893,9 +10894,7 @@ class NmrDpUtility:
                             cs_file_path = os.path.join(dir_path, cs_file_name)
 
                             if not os.path.exists(cs_file_path):
-                                master_entry = self.__star_data[0]
-
-                                master_entry.write_to_file(cs_file_path, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
+                                self.__star_data[0].write_to_file(cs_file_path, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
 
                                 compress_as_gzip_file(cs_file_path, cs_file_path + '.gz')
 
@@ -58342,9 +58341,7 @@ class NmrDpUtility:
         if not self.__combined_mode:
 
             if (self.__bmrb_only or self.__internal_mode) and self.__dstPath is not None:
-                master_entry = self.__star_data[0]
-
-                master_entry = self.__c2S.normalize(master_entry)
+                master_entry = self.__c2S.normalize(self.__star_data[0])
 
                 master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
@@ -58370,16 +58367,117 @@ class NmrDpUtility:
         if len(self.__star_data) == 0 or self.__star_data[0] is None:
             return False
 
-        master_entry = self.__star_data[0]
-
-        if self.__star_data[0] == 'nmr-star':
-            self.__c2S.set_entry_id(master_entry, self.__entry_id)
-
-        master_entry = self.__c2S.normalize(master_entry)
+        master_entry = self.__c2S.normalize(self.__star_data[0])
 
         if not self.__submission_mode and not self.__annotation_mode or self.__dstPath != self.__srcPath:
 
             master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
+            file_type = 'nef' if master_entry.frame_list[0].category.startswith('nef') else 'nmr-star'
+
+            self.report.output_statistics.setItemValue('file_name', os.path.basename(self.__dstPath))
+            self.report.output_statistics.setItemValue('file_type', file_type)
+            self.report.output_statistics.setItemValue('entry_id', self.__entry_id)
+            self.report.output_statistics.setItemValue('processed_date', datetime.today().strftime('%Y-%m-%d'))
+            self.report.output_statistics.setItemValue('processed_site', os.uname()[1])
+
+            self.report.output_statistics.setItemValue('file_size', os.path.getsize(self.__dstPath))
+            with open(self.__dstPath, 'r', encoding='utf-8', errors='ignore') as ifh:
+                self.report.output_statistics.setItemValue('md5_checksum', hashlib.md5(ifh.read().encode('utf-8')).hexdigest())
+
+            entry_title = entry_authors = submission_date = assembly_name = None
+
+            if file_type == 'nmr-star':
+
+                sf_category = 'entry_information'
+
+                try:
+
+                    sf = master_entry.get_saveframes_by_category(sf_category)[0]
+
+                    entry_title = get_first_sf_tag(sf, 'Title', None)
+                    if entry_title is not None:
+                        self.report.output_statistics.setItemValue('entry_title', entry_title)
+
+                    submission_date = get_first_sf_tag(sf, 'Submission_date', None)
+                    if submission_date is not None:
+                        self.report.output_statistics.setItemValue('submission_date', submission_date)
+
+                    lp_category = '_Entry_author'
+
+                    try:
+
+                        lp = sf.get_loop(lp_category)
+
+                        tags = ['Given_name', 'Family_name']
+
+                        author_list = []
+
+                        if set(tags) & set(lp.tags) == set(tags):
+
+                            for row in lp:
+
+                                if row[1] in emptyValue:
+                                    continue
+
+                                author_name = row[1].title()
+                                if row[0] not in emptyValue:
+                                    author_name += f', {row[0].upper()}.'
+
+                                if author_name not in author_list:
+                                    author_list.append(author_name)
+
+                            if len(author_list) > 0:
+                                entry_authors = ', '.join(author_list)
+                                self.report.output_statistics.setItemValue('entry_authors', entry_authors)
+
+                    except KeyError:
+                        pass
+
+                except IndexError:
+                    pass
+
+                sf_category = 'assembly'
+
+                try:
+
+                    sf = master_entry.get_saveframes_by_category(sf_category)[0]
+
+                    assembly_name = get_first_sf_tag(sf, 'Name', None)
+                    if assembly_name is not None:
+                        self.report.output_statistics.setItemValue('assembly_name', assembly_name)
+
+                except IndexError:
+                    pass
+
+                if self.report.getInputSourceIdOfCoord() >= 0:
+                    model_info = {'file_name': os.path.basename(self.__cifPath),
+                                  'file_type': 'pdbx',
+                                  'file_size': os.path.getsize(self.__cifPath),
+                                  'md5_checksum': self.__cR.getHashCode()
+                                  }
+
+                    struct = self.__cR.getDictList('struct')
+                    if len(struct) > 0 and 'title' in struct[0]:
+                        struct_title = struct[0]['title']
+                        if struct_title not in emptyValue:
+                            model_info['struct_title'] = struct_title
+                            if entry_title is None:
+                                self.report.output_statistics.setItemValue('entry_title', struct_title)
+
+                    audit = self.__cR.getDictList('audit')
+                    if len(audit) > 0 and 'name' in audit[0]:
+                        author_list = []
+                        for row in audit:
+                            if row['name'] not in emptyValue:
+                                if row['name'] not in author_list:
+                                    author_list.append(row['name'])
+                        if len(author_list) > 0:
+                            audit_authors = ', '.join(author_list)
+                            model_info['audit_authors'] = audit_authors
+                            if entry_authors is None:
+                                self.report.output_statistics.setItemValue('entry_authors', audit_authors)
+
+                    self.report.output_statistics.setItemValue('model', model_info)
 
         if self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2cif-annotate') and self.__remediation_mode:
 
@@ -62247,9 +62345,7 @@ class NmrDpUtility:
                     break
 
         if modified:
-            master_entry = self.__star_data[0]
-
-            master_entry = self.__c2S.normalize(master_entry)
+            master_entry = self.__c2S.normalize(self.__star_data[0])
 
             master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 

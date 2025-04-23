@@ -99,6 +99,7 @@
 # 28-Mar-2025  M. Yokochi - add 'nm-pea-sps' file type for SPARKY's 'save' (aka. ornament) peak list file (DAOTHER-8905, 9785, NMR data remediation Phase 2)
 # 09-Apr-2025  M. Yokochi - add 'nm-shi-ari', 'nm-shi-bar', 'nm-shi-gar', 'nm-shi-npi', 'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2', and 'nm-shi-xea' file_types (v4.4.0, DAOTHER-9785)
 # 23-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors (DAOTHER-9785)
+# 23-Apr-2025  M. Yokochi - add NmrDpReportOutputStatistics class for standalone NMR data conversion service (DAOTHER-9785)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -147,6 +148,7 @@ class NmrDpReport:
         self.__report = {'information': {'input_sources': [],
                                          'sequence_alignments': None,
                                          'chain_assignments': None,
+                                         'output_statistics': None,
                                          'diamagnetic': True,
                                          'disulfide_bond': False,
                                          'other_bond': False,
@@ -163,6 +165,7 @@ class NmrDpReport:
         self.input_sources = [NmrDpReportInputSource(self.__verbose, self.__lfh)]
         self.sequence_alignment = NmrDpReportSequenceAlignment(self.__verbose, self.__lfh)
         self.chain_assignment = NmrDpReportChainAssignment(self.__verbose, self.__lfh)
+        self.output_statistics = NmrDpReportOutputStatistics(self.__verbose, self.__lfh)
         self.error = NmrDpReportError(self.__verbose, self.__lfh)
         self.warning = NmrDpReportWarning(self.__verbose, self.__lfh)
         self.corrected_warning = None
@@ -1504,6 +1507,7 @@ class NmrDpReport:
             self.__report['information']['input_sources'] = [input_source.get() for input_source in self.input_sources]
             self.__report['information']['sequence_alignments'] = self.sequence_alignment.get()
             self.__report['information']['chain_assignments'] = self.chain_assignment.get()
+            self.__report['information']['output_statistics'] = self.output_statistics.get()
 
             self.__immutable = True
 
@@ -1530,6 +1534,7 @@ class NmrDpReport:
 
         self.sequence_alignment.put(self.__report['information']['sequence_alignments'])
         self.chain_assignment.put(self.__report['information']['chain_assignments'])
+        self.output_statistics.put(self.__report['information']['output_statistics'])
 
         if self.__report['error'] is None:
             self.error = NmrDpReportError(self.__verbose, self.__lfh)
@@ -1992,6 +1997,49 @@ class NmrDpReportChainAssignment:
         self.__lfh = log
 
         self.items = ('model_poly_seq_vs_nmr_poly_seq', 'nmr_poly_seq_vs_model_poly_seq')
+
+        self.__contents = {item: None for item in self.items}
+
+    def setItemValue(self, item: str, value: Any):
+        """ Set an item with a given value.
+        """
+
+        if item in self.items:
+            self.__contents[item] = value
+
+        else:
+            if self.__verbose:
+                self.__lfh.write(f'+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}\n')
+            raise KeyError(f"+{self.__class_name__}.setItemValue() ++ Error  - Unknown item type {item}")
+
+    def get(self) -> dict:
+        """ Retrieve contents.
+        """
+
+        return self.__contents
+
+    def put(self, contents: dict):
+        """ Set contents.
+        """
+
+        self.__contents = contents
+
+
+class NmrDpReportOutputStatistics:
+    """ Wrapper class for data processing report of NMR data (output statistics).
+    """
+
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout):
+        self.__class_name__ = self.__class__.__name__
+
+        self.__verbose = verbose
+        self.__lfh = log
+
+        self.items = ('file_name', 'file_type', 'entry_id', 'entry_title', 'entry_authors'
+                      'submission_date', 'processed_date', 'processed_site'
+                      'assembly_name', 'file_size', 'md5_checksum',
+                      'model', 'software', 'summary',
+                      'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
         self.__contents = {item: None for item in self.items}
 

@@ -10057,7 +10057,7 @@ class NmrDpUtility:
 
                     self.__rescueFormerNef__(file_name, file_type, content_subtype, sf, sf_framecode, sf_category, lp_category)
 
-                else:  # if self.__star_data_type[file_list_id] == 'Saveframe':
+                else:
 
                     if content_subtype not in content_subtypes:
                         continue
@@ -61956,8 +61956,6 @@ class NmrDpUtility:
         if is_valid:
 
             if 'deposit' in self.__op and 'nmr_cif_file_path' in self.__outputParamDict:
-
-                # if self.__remediation_mode:
 
                 try:
 

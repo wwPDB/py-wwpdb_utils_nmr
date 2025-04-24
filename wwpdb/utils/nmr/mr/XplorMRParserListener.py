@@ -9905,10 +9905,10 @@ class XplorMRParserListener(ParseTreeListener):
                     if cifCheck:
                         if self.__cur_union_expr:
                             self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                                            f"The {clauseName} has no effect for a factor {__factor}.")
+                                            f"The {clauseName} has no effect for a factor {str(__factor).replace('[', '').replace(']', '')}.")
                         else:
                             self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                                            f"The {clauseName} has no effect for a factor {__factor}.")
+                                            f"The {clauseName} has no effect for a factor {str(__factor).replace('[', '').replace(']', '')}.")
                             if 'alt_chain_id' in _factor:  # 2mnz
                                 for chainId in _factor['chain_id']:
                                     self.updateSegmentIdDict(_factor, chainId, None, False)
@@ -10018,14 +10018,14 @@ class XplorMRParserListener(ParseTreeListener):
                                     self.__setLocalSeqScheme()
                     else:
                         self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                                        f"The {clauseName} has no effect for a factor {__factor}. "
+                                        f"The {clauseName} has no effect for a factor {str(__factor).replace('[', '').replace(']', '')}. "
                                         "Please update the sequence in the Macromolecules page.")
                 elif self.__cur_subtype == 'plane':
                     if 'atom_id' not in _factor or ('H5T' not in _factor['atom_id'] and 'H3T' not in _factor['atom_id']):
                         hint = f" Please verify that the planarity restraints match with the residue {_factor['comp_id'][0]!r}"\
                             if 'comp_id' in _factor and len(_factor['comp_id']) == 1 else ''
                         self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                                        f"The {clauseName} has no effect for a factor {__factor}.{hint}")
+                                        f"The {clauseName} has no effect for a factor {str(__factor).replace('[', '').replace(']', '')}.{hint}")
 
         elif len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
             compIds = guessCompIdFromAtomId(_factor['atom_id'], self.__polySeq, self.__nefT)
@@ -12588,7 +12588,8 @@ class XplorMRParserListener(ParseTreeListener):
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
                             self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                                            f"The 'name' clause has no effect for a conjunction of factor {__factor} and {_factor}.")
+                                            f"The 'name' clause has no effect for a conjunction of factor {str(__factor).replace('[', '').replace(']', '')} "
+                                            f"and {str(_factor).replace('[', '').replace(']', '')}.")
 
             elif ctx.Not_op():
                 if self.__sel_expr_debug:
@@ -12892,7 +12893,8 @@ class XplorMRParserListener(ParseTreeListener):
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
                             self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                                            f"The 'residue' clause has no effect for a conjunction of factor {__factor} and {_factor}.")
+                                            f"The 'residue' clause has no effect for a conjunction of factor {str(__factor).replace('[', '').replace(']', '')} "
+                                            f"and {str(_factor).replace('[', '').replace(']', '')}.")
 
             elif ctx.Resname():
                 if self.__sel_expr_debug:
@@ -12949,7 +12951,8 @@ class XplorMRParserListener(ParseTreeListener):
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
                             self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                                            f"The 'resname' clause has no effect for a conjunction of factor {__factor} and {_factor}.")
+                                            f"The 'resname' clause has no effect for a conjunction of factor {str(__factor).replace('[', '').replace(']', '')} "
+                                            f"and {str(_factor).replace('[', '').replace(']', '')}.")
 
             elif ctx.SegIdentifier():
                 if self.__sel_expr_debug:
@@ -13096,7 +13099,8 @@ class XplorMRParserListener(ParseTreeListener):
                                 del __factor['atom_selection']
                             del _factor['atom_selection']
                             self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                                            f"The 'segidentifier' clause has no effect for a conjunction of factor {__factor} and {_factor}.")
+                                            f"The 'segidentifier' clause has no effect for a conjunction of factor {str(__factor).replace('[', '').replace(']', '')} "
+                                            f"and {str(_factor).replace('[', '').replace(']', '')}.")
 
             elif ctx.Store1():
                 set_store(1)

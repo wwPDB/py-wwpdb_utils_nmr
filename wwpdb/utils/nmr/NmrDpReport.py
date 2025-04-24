@@ -2035,8 +2035,8 @@ class NmrDpReportOutputStatistics:
         self.__verbose = verbose
         self.__lfh = log
 
-        self.items = ('file_name', 'file_type', 'entry_id', 'entry_title', 'entry_authors'
-                      'submission_date', 'processed_date', 'processed_site'
+        self.items = ('file_name', 'file_type', 'entry_id', 'entry_title', 'entry_authors',
+                      'submission_date', 'processed_date', 'processed_site',
                       'assembly_name', 'file_size', 'md5_checksum',
                       'model', 'software', 'summary',
                       'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')

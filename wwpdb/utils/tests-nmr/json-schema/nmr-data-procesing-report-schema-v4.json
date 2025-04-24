@@ -991,12 +991,12 @@
       "type": "object",
       "properties": {
         "list_id": {
-          "description": "Ordinal number of a data loop.",
+          "description": "Ordinal number of a saveframe.",
           "type": "integer",
           "minimum": 1
         },
         "sf_framecode": {
-          "description": "Saveframe code of a data loop.",
+          "description": "Saveframe code of a saveframe.",
           "type": "string",
           "minLength": 1
         },
@@ -1628,12 +1628,12 @@
       "type": "object",
       "properties": {
         "list_id": {
-          "description": "Ordinal number of a data loop.",
+          "description": "Ordinal number of a saveframe.",
           "type": "integer",
           "minimum": 1
         },
         "sf_framecode": {
-          "description": "Saveframe code of a data loop.",
+          "description": "Saveframe code of a saveframe.",
           "type": "string",
           "minLength": 1
         },
@@ -4131,7 +4131,7 @@
       "type": "object",
       "properties": {
         "list_id": {
-          "description": "Ordinal number of a data loop.",
+          "description": "Ordinal number of a saveframe.",
           "type": "integer",
           "minimum": 1
         },
@@ -4166,7 +4166,7 @@
       "type": "object",
       "properties": {
         "list_id": {
-          "description": "Ordinal number of a data loop.",
+          "description": "Ordinal number of a saveframe.",
           "type": "integer",
           "minimum": 1
         },
@@ -4176,7 +4176,7 @@
           "minLength": 1
         },
         "sf_framecode": {
-          "description": "Saveframe code of a data loop.",
+          "description": "Saveframe code of a saveframe.",
           "type": "string",
           "minLength": 1
         }
@@ -4429,29 +4429,112 @@
             ]
           }
         },
-        "summary": {
-          "description": "Section for summary of NMR data file.",
+        "assembly": {
+          "description": "Section for the molecular assembly.",
+          "type": "null"
+        },
+        "entity": {
+          "description": "Section for entities.",
           "type": "null"
         },
         "chem_shift": {
           "description": "Section for chemical shift validation.",
-          "type": "null"
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/output_stats_common_bookkeeping",
+            "minItems": 1
+          }
         },
         "dist_restraint": {
           "description": "Section for distance restraint validation.",
-          "type": "null"
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/output_stats_common_bookkeeping",
+            "minItems": 1
+          }
         },
         "dihed_restraint": {
           "description": "Section for dihedral angle restraint validation.",
-          "type": "null"
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/output_stats_common_bookkeeping",
+            "minItems": 1
+          }
         },
         "rdc_restraint": {
           "description": "Section for RDC restraint validation.",
-          "type": "null"
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/output_stats_common_bookkeeping",
+            "minItems": 1
+          }
         },
         "spectral_peak": {
           "description": "Section for spectral peak list validation.",
-          "type": "null"
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/output_stats_common_bookkeeping",
+            "minItems": 1
+          }
+        }
+      }
+    },
+    "output_stats_common_bookkeeping": {
+      "description": "Template for common bookkeeping structure for output statistics.",
+      "type": "object",
+      "properties": {
+        "original_file_name": {
+          "description": "Original file name of input source.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "list_id": {
+          "description": "Ordinal number of a saveframe.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "sf_framecode": {
+          "description": "Saveframe code of a saveframe.",
+          "type": "string",
+          "minLength": 1
+        },
+        "number_of_parsed": {
+          "description": "Total number of parsed item (chemical shifts, restraints, spectral peaks).",
+          "type": "integer",
+          "minimum": 0
+        },
+        "number_of_mapped_to_model": {
+          "description": "Total number of mapped item to model (chemical shifts, restraints, spectral peaks).",
+          "type": "integer",
+          "minimum": 0
+        },
+        "number_of_unmapped_to_model": {
+          "description": "Total number of unmapped item to model (chemical shifts, restraints, spectral peaks).",
+          "type": "integer",
+          "minimum": 0
+        },
+        "number_of_unparsed": {
+          "description": "Total number of unparsed item (chemical shifts, restraints, spectral peaks).",
+          "type": "integer",
+          "minimum": 0
         }
       }
     },

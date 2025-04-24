@@ -5604,7 +5604,7 @@ class DynamoMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'dist':
             if None in (n, g):
                 return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
-            return f"[Check the {self.distRestraints}th row of distance restraints (index={n}, group={g}), {self.__def_err_sf_framecode}] "
+            return f"[Check the {self.distRestraints}th row of distance restraints (index={n} group={g}), {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'dihed':
             if n is None:
                 return f"[Check the {self.dihedRestraints}th row of torsion angle restraints, {self.__def_err_sf_framecode}] "

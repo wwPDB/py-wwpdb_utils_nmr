@@ -1884,7 +1884,7 @@ class GromacsMRParserListener(ParseTreeListener):
     def __getCurrentRestraint(self, dataset: Optional[int] = None, n: Optional[int] = None) -> str:
         if self.__cur_subtype == 'dist':
             if n is None:
-                return f"[Check the {self.distRestraints}th row of distance restraints), {self.__def_err_sf_framecode}] "
+                return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
             return f"[Check the {self.distRestraints}th row of distance restraints (index={n}), {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'ang':
             return f"[Check the {self.angRestraints}th row of angle restraints, {self.__def_err_sf_framecode}] "

@@ -672,7 +672,7 @@ xplor_expecting_seg_id_pattern = re.compile("expecting \\{.*SegIdentifier.*\\}")
 seq_mismatch_warning_pattern = re.compile(r"\[Sequence mismatch warning\] \[.*\] The residue '(\d+):([0-9A-Z]+)' is not present "
                                           r"in polymer sequence of chain (\S+) of the coordinates. Please update the sequence in the Macromolecules page.")
 
-inconsistent_restraint_warning_pattern = re.compile(r"^\[[^\]]+\] \[Check the [^,]+, (\S+)\] .*$")
+inconsistent_restraint_warning_pattern = re.compile(r"^\[[^\]]+\] \[Check the (\d+)th row of [^,]+s ?.*, (\S+)\] .*$")
 
 gromacs_tag_pattern = re.compile(r'\s*[\s+[0-9a-z_]+\s+\]')
 
@@ -2635,7 +2635,8 @@ class NmrDpUtility:
                                         'saxs_restraint': None,
                                         'other_restraint': None
                                         },
-                                'nmr-star': {'dist_restraint': 'ID',
+                                'nmr-star': {'chem_shift': 'ID',
+                                             'dist_restraint': 'ID',
                                              'dihed_restraint': 'ID',
                                              'rdc_restraint': 'ID',
                                              'spectral_peak': 'ID',
@@ -8009,6 +8010,7 @@ class NmrDpUtility:
                 self.report_prev = NmrDpReport(self.__verbose, self.__lfh)
                 self.report_prev.loadFile(fPath)
                 self.report.inheritFormatIssueErrors(self.report_prev)
+                self.report.inheritPreviousErrors(self.report_prev)
                 self.report.inheritPreviousWarnings(self.report_prev)
 
         input_source = None
@@ -34736,8 +34738,8 @@ class NmrDpUtility:
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
                         if g not in emptyValue:
-                            msg_dict['sf_framecode'] = g[0]
-                            msg_dict['description'] = warn.replace(f', {g[0]}', '')
+                            msg_dict['sf_framecode'] = g[1]
+                            msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Concatenated sequence]'):
                         self.report.warning.appendDescription('concatenated_sequence', msg_dict)
@@ -34955,8 +34957,8 @@ class NmrDpUtility:
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
                         if g not in emptyValue:
-                            msg_dict['sf_framecode'] = g[0]
-                            msg_dict['description'] = warn.replace(f', {g[0]}', '')
+                            msg_dict['sf_framecode'] = g[1]
+                            msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Sequence mismatch]'):
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch': msg_dict})
@@ -36542,8 +36544,8 @@ class NmrDpUtility:
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
                         if g not in emptyValue:
-                            msg_dict['sf_framecode'] = g[0]
-                            msg_dict['description'] = warn.replace(f', {g[0]}', '')
+                            msg_dict['sf_framecode'] = g[1]
+                            msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Concatenated sequence]'):
                         self.report.warning.appendDescription('concatenated_sequence', msg_dict)
@@ -36697,8 +36699,8 @@ class NmrDpUtility:
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
                         if g not in emptyValue:
-                            msg_dict['sf_framecode'] = g[0]
-                            msg_dict['description'] = warn.replace(f', {g[0]}', '')
+                            msg_dict['sf_framecode'] = g[1]
+                            msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Sequence mismatch]'):
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch': msg_dict})
@@ -38050,8 +38052,8 @@ class NmrDpUtility:
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
                         if g not in emptyValue:
-                            msg_dict['sf_framecode'] = g[0]
-                            msg_dict['description'] = warn.replace(f', {g[0]}', '')
+                            msg_dict['sf_framecode'] = g[1]
+                            msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Concatenated sequence]'):
                         self.report.warning.appendDescription('concatenated_sequence', msg_dict)
@@ -38149,8 +38151,8 @@ class NmrDpUtility:
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
                         if g not in emptyValue:
-                            msg_dict['sf_framecode'] = g[0]
-                            msg_dict['description'] = warn.replace(f', {g[0]}', '')
+                            msg_dict['sf_framecode'] = g[1]
+                            msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Sequence mismatch]'):
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch': msg_dict})
@@ -58464,7 +58466,9 @@ class NmrDpUtility:
                     except IndexError:
                         pass
 
-                    if self.report.getInputSourceIdOfCoord() >= 0:
+                    has_coordinate = self.report.getInputSourceIdOfCoord() >= 0
+
+                    if has_coordinate:
                         model_info = {'file_name': os.path.basename(self.__cifPath),
                                       'file_type': 'pdbx',
                                       'file_size': os.path.getsize(self.__cifPath),
@@ -58493,6 +58497,170 @@ class NmrDpUtility:
                                     self.output_statistics.setItemValue('entry_authors', audit_authors)
 
                         self.output_statistics.setItemValue('model', model_info)
+
+                    for content_subtype in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
+
+                        sf_category = self.sf_categories[file_type][content_subtype]
+
+                        sf_list = master_entry.get_saveframes_by_category(sf_category)
+
+                        if len(sf_list) == 0:
+                            continue
+
+                        sf_info_list = []
+
+                        for sf in sf_list:
+
+                            list_id = get_first_sf_tag(sf, 'ID')
+                            if isinstance(list_id, str):
+                                list_id = int(list_id)
+
+                            sf_info = {'list_id': list_id,
+                                       'sf_framecode': get_first_sf_tag(sf, "Sf_framecode")
+                                       }
+
+                            data_file_name = get_first_sf_tag(sf, 'Data_file_name', None)
+                            if data_file_name is not None:
+                                sf_info['original_file_name'] = data_file_name
+
+                            consist_id_tag = self.consist_id_tags[file_type][content_subtype]
+                            lp_category = self.lp_categories[file_type][content_subtype]
+
+                            _content_subtype = content_subtype
+                            if content_subtype == 'spectral_peak':
+                                try:
+                                    sf.get_loop(lp_category)
+                                except KeyError:
+                                    _content_subtype = 'spectral_peak_alt'
+                                    lp_category = self.lp_categories[file_type][_content_subtype]
+
+                            lp = sf.get_loop(lp_category)
+
+                            consist_ids = set(row for row in lp.get_tag([consist_id_tag]))
+
+                            sf_info['number_of_parsed'] = len(consist_ids)
+
+                            if has_coordinate:
+
+                                if content_subtype == 'chem_shift':
+                                    tags = ['ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Details']
+
+                                    if set(tags) & set(lp.tags) != set(tags):
+                                        sf_info['number_of_mapped_to_model'] = 0
+                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+
+                                    else:
+
+                                        dat = lp.get_tag(tags)
+
+                                        mapped_ids = set()
+                                        for row in dat:
+
+                                            if row[5] == 'UNMAPPED':
+                                                continue
+
+                                            if all(row[col] not in emptyValue for col in range(1, 5)):
+                                                mapped_ids.add(row[0])
+
+                                        sf_info['number_of_mapped_to_model'] = len(mapped_ids)
+                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+
+                                elif _content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
+
+                                    if content_subtype in ('dist_restraint', 'rdc_restraint'):
+                                        max_dim = 3
+
+                                    elif content_subtype == 'dihed_restraint':
+                                        max_dim = 5
+
+                                    else:  # 'spectral_peak'
+
+                                        try:
+
+                                            _num_dim = get_first_sf_tag(sf, self.num_dim_items[file_type])
+                                            num_dim = int(_num_dim)
+
+                                            if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
+                                                raise ValueError()
+
+                                        except ValueError:  # raised error already at __testIndexConsistency()
+                                            continue
+
+                                        max_dim = num_dim + 1
+
+                                    tags = [consist_id_tag]
+                                    for j in range(1, max_dim):
+                                        tags.extend([f'Auth_asym_ID_{j}', f'Auth_seq_ID_{j}', f'Auth_comp_ID_{j}', f'Auth_atom_ID_{j}'])
+
+                                    if set(tags) & set(lp.tags) != set(tags):
+                                        sf_info['number_of_mapped_to_model'] = 0
+                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+
+                                    else:
+
+                                        max_col = (max_dim - 1) * 4 + 1
+
+                                        dat = lp.get_tag(tags)
+
+                                        mapped_ids = set()
+                                        for row in dat:
+                                            if all(row[col] not in emptyValue for col in range(1, max_col)):
+                                                mapped_ids.add(row[0])
+
+                                        sf_info['number_of_mapped_to_model'] = len(mapped_ids)
+                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+
+                                else:  # 'spectral_peak_alt'
+
+                                    try:
+
+                                        _num_dim = get_first_sf_tag(sf, self.num_dim_items[file_type])
+                                        num_dim = int(_num_dim)
+
+                                        if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
+                                            raise ValueError()
+
+                                    except ValueError:  # raised error already at __testIndexConsistency()
+                                        continue
+
+                                    max_dim = num_dim + 1
+
+                                    try:
+
+                                        lp = sf.get_loop('_Assigned_peak_chem_shift')
+
+                                        tags = ['Peak_ID', 'Auth_entity_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID']
+
+                                        if set(tags) & set(lp.tags) != set(tags):
+                                            sf_info['number_of_mapped_to_model'] = 0
+                                            sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+
+                                        else:
+
+                                            dat = lp.get_tag(tags)
+
+                                            mapped_ids = set()
+                                            unmapped_ids = set()
+                                            for row in dat:
+                                                if all(row[col] not in emptyValue for col in range(1, 5)):
+                                                    mapped_ids.add(row[0])
+                                                else:
+                                                    unmapped_ids.add(row[0])
+
+                                            sf_info['number_of_mapped_to_model'] = len(mapped_ids) - len(unmapped_ids)
+                                            sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+
+                                    except KeyError:
+                                        sf_info['number_of_mapped_to_model'] = 0
+                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+
+                            else:
+                                sf_info['number_of_mapped_to_model'] = 0
+                                sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+
+                            sf_info_list.append(sf_info)
+
+                        self.output_statistics.setItemValue(content_subtype, sf_info_list)
 
         if self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2cif-annotate') and self.__remediation_mode:
 

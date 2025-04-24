@@ -4311,7 +4311,10 @@
     },
     "output_statistics": {
       "description": "Template for statistics and validation metrics of output NMR data file.",
-      "type": "object",
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {
         "file_name": {
           "description": "File name of output file.",
@@ -4370,8 +4373,8 @@
         },
         "model": {
           "type" : [
-          	"object",
-          	"null"
+            "object",
+            "null"
           ],
           "properties": {
             "file_name": {
@@ -4387,11 +4390,11 @@
             "struct_title": {
               "description": "Title of the structure.",
               "type": "string"
-        	},
-        	"audit_authors": {
+            },
+            "audit_authors": {
               "description": "Concatenated author name list of the entry.",
               "type": "string"
-        	},
+            },
             "file_size": {
               "description": "File size of the model file.",
               "type": "integer",
@@ -4427,22 +4430,28 @@
           }
         },
         "summary": {
-          "description": "Section for summary of NMR data file."
+          "description": "Section for summary of NMR data file.",
+          "type": "null"
         },
         "chem_shift": {
-          "description": "Section for chemical shift validation."
+          "description": "Section for chemical shift validation.",
+          "type": "null"
         },
         "dist_restraint": {
-          "description": "Section for distance restraint validation."
+          "description": "Section for distance restraint validation.",
+          "type": "null"
         },
         "dihed_restraint": {
-          "description": "Section for dihedral angle restraint validation."
+          "description": "Section for dihedral angle restraint validation.",
+          "type": "null"
         },
         "rdc_restraint": {
-          "description": "Section for RDC restraint validation."
+          "description": "Section for RDC restraint validation.",
+          "type": "null"
         },
         "spectral_peak": {
-          "description": "Section for spectral peak list validation."
+          "description": "Section for spectral peak list validation.",
+          "type": "null"
         }
       }
     },

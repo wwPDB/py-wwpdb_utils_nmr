@@ -262,7 +262,8 @@ try:
                                                    MAX_DIM_NUM_OF_SPECTRA,
                                                    MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK)
     from wwpdb.utils.nmr.NmrDpReport import (NmrDpReport,
-                                             NmrDpReportInputSource)
+                                             NmrDpReportInputSource,
+                                             NmrDpReportOutputStatistics)
     from wwpdb.utils.nmr.AlignUtil import (LOW_SEQ_COVERAGE,
                                            MIN_SEQ_COVERAGE_W_CONFLICT,
                                            LARGE_ASYM_ID,
@@ -426,7 +427,8 @@ except ImportError:
                                        MAX_DIM_NUM_OF_SPECTRA,
                                        MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK)
     from nmr.NmrDpReport import (NmrDpReport,
-                                 NmrDpReportInputSource)
+                                 NmrDpReportInputSource,
+                                 NmrDpReportOutputStatistics)
     from nmr.AlignUtil import (LOW_SEQ_COVERAGE,
                                MIN_SEQ_COVERAGE_W_CONFLICT,
                                LARGE_ASYM_ID,
@@ -2159,6 +2161,8 @@ class NmrDpUtility:
         # data processing report
         self.report = None
         self.report_prev = None
+
+        self.output_statistics = None
 
         # CCD accessing utility
         self.__ccU = ChemCompUtil(self.__verbose, self.__lfh)
@@ -7970,6 +7974,9 @@ class NmrDpUtility:
 
             if self.report_prev.warning.get() is not None:
                 self.report.setCorrectedWarning(self.report_prev)
+
+        if self.output_statistics is not None:
+            self.report.setOutputStatistics(self.output_statistics)
 
         self.report.error.sortFormatIssueError()
         self.report.warning.sortChemicalShiftValidation()
@@ -29388,7 +29395,7 @@ class NmrDpUtility:
 
                         self.__syncMrLoop__(fileListId, file_type, content_subtype, sf, lp_category)
 
-                self.__depositNmrData()
+                # self.__depositNmrData()
 
             return self.report.getTotalErrors() == __errors
 
@@ -29882,7 +29889,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+{self.__class_name__}.__testCsPseudoAtomNameConsistencyInMrLoop() ++ Error  - {str(e)}\n")
 
-                self.__depositNmrData()
+                # self.__depositNmrData()
 
         return self.report.getTotalErrors() == __errors
 
@@ -58197,13 +58204,16 @@ class NmrDpUtility:
             else:
                 self.__star_data[0].entry_id = f'nef_{self.__entry_id.lower()}'
 
+        if file_type == 'nmr-star':
+            self.__c2S.set_entry_id(self.__star_data[0], self.__entry_id)
+
         self.__sortCsLoop()
 
         if file_type == 'nef':
             return True
 
-        if self.__c2S.set_entry_id(self.__star_data[0], self.__entry_id):
-            self.__depositNmrData()
+        # if self.__c2S.set_entry_id(self.__star_data[0], self.__entry_id):
+        #     self.__depositNmrData()
 
         return True
 
@@ -58242,7 +58252,7 @@ class NmrDpUtility:
         atom_id_name = item_names['atom_id']
         idx_name = 'ID'
 
-        modified = False
+        # modified = False
 
         for sf in self.__star_data[0].get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
@@ -58327,10 +58337,10 @@ class NmrDpUtility:
 
                 sf.add_loop(lp)
 
-                modified = True
+                # modified = True
 
-        if modified:
-            self.__depositNmrData()
+        # if modified:
+        #     self.__depositNmrData()
 
         return True
 
@@ -58372,112 +58382,117 @@ class NmrDpUtility:
         if not self.__submission_mode and not self.__annotation_mode or self.__dstPath != self.__srcPath:
 
             master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
-            file_type = 'nef' if master_entry.frame_list[0].category.startswith('nef') else 'nmr-star'
 
-            self.report.output_statistics.setItemValue('file_name', os.path.basename(self.__dstPath))
-            self.report.output_statistics.setItemValue('file_type', file_type)
-            self.report.output_statistics.setItemValue('entry_id', self.__entry_id)
-            self.report.output_statistics.setItemValue('processed_date', datetime.today().strftime('%Y-%m-%d'))
-            self.report.output_statistics.setItemValue('processed_site', os.uname()[1])
+            if not self.__op.endswith('consistency-check'):
 
-            self.report.output_statistics.setItemValue('file_size', os.path.getsize(self.__dstPath))
-            with open(self.__dstPath, 'r', encoding='utf-8', errors='ignore') as ifh:
-                self.report.output_statistics.setItemValue('md5_checksum', hashlib.md5(ifh.read().encode('utf-8')).hexdigest())
+                file_type = 'nef' if master_entry.frame_list[0].category.startswith('nef') else 'nmr-star'
 
-            entry_title = entry_authors = submission_date = assembly_name = None
+                self.output_statistics = NmrDpReportOutputStatistics(self.__verbose, self.__lfh)
 
-            if file_type == 'nmr-star':
+                self.output_statistics.setItemValue('file_name', os.path.basename(self.__dstPath))
+                self.output_statistics.setItemValue('file_type', file_type)
+                self.output_statistics.setItemValue('entry_id', self.__entry_id)
+                self.output_statistics.setItemValue('processed_date', datetime.today().strftime('%Y-%m-%d'))
+                self.output_statistics.setItemValue('processed_site', os.uname()[1])
 
-                sf_category = 'entry_information'
+                self.output_statistics.setItemValue('file_size', os.path.getsize(self.__dstPath))
+                with open(self.__dstPath, 'r', encoding='utf-8', errors='ignore') as ifh:
+                    self.output_statistics.setItemValue('md5_checksum', hashlib.md5(ifh.read().encode('utf-8')).hexdigest())
 
-                try:
+                entry_title = entry_authors = submission_date = assembly_name = None
 
-                    sf = master_entry.get_saveframes_by_category(sf_category)[0]
+                if file_type == 'nmr-star':
 
-                    entry_title = get_first_sf_tag(sf, 'Title', None)
-                    if entry_title is not None:
-                        self.report.output_statistics.setItemValue('entry_title', entry_title)
-
-                    submission_date = get_first_sf_tag(sf, 'Submission_date', None)
-                    if submission_date is not None:
-                        self.report.output_statistics.setItemValue('submission_date', submission_date)
-
-                    lp_category = '_Entry_author'
+                    sf_category = 'entry_information'
 
                     try:
 
-                        lp = sf.get_loop(lp_category)
+                        sf = master_entry.get_saveframes_by_category(sf_category)[0]
 
-                        tags = ['Given_name', 'Family_name']
+                        entry_title = get_first_sf_tag(sf, 'Title', None)
+                        if entry_title is not None:
+                            self.output_statistics.setItemValue('entry_title', entry_title)
 
-                        author_list = []
+                        submission_date = get_first_sf_tag(sf, 'Submission_date', None)
+                        if submission_date is not None:
+                            self.output_statistics.setItemValue('submission_date', submission_date)
 
-                        if set(tags) & set(lp.tags) == set(tags):
+                        lp_category = '_Entry_author'
 
-                            for row in lp:
+                        try:
 
-                                if row[1] in emptyValue:
-                                    continue
+                            lp = sf.get_loop(lp_category)
 
-                                author_name = row[1].title()
-                                if row[0] not in emptyValue:
-                                    author_name += f', {row[0].upper()}.'
+                            tags = ['Given_name', 'Family_name']
 
-                                if author_name not in author_list:
-                                    author_list.append(author_name)
+                            author_list = []
 
-                            if len(author_list) > 0:
-                                entry_authors = ', '.join(author_list)
-                                self.report.output_statistics.setItemValue('entry_authors', entry_authors)
+                            if set(tags) & set(lp.tags) == set(tags):
 
-                    except KeyError:
+                                for row in lp:
+
+                                    if row[1] in emptyValue:
+                                        continue
+
+                                    author_name = row[1].title()
+                                    if row[0] not in emptyValue:
+                                        author_name += f', {row[0].upper()}.'
+
+                                    if author_name not in author_list:
+                                        author_list.append(author_name)
+
+                                if len(author_list) > 0:
+                                    entry_authors = ', '.join(author_list)
+                                    self.output_statistics.setItemValue('entry_authors', entry_authors)
+
+                        except KeyError:
+                            pass
+
+                    except IndexError:
                         pass
 
-                except IndexError:
-                    pass
+                    sf_category = 'assembly'
 
-                sf_category = 'assembly'
+                    try:
 
-                try:
+                        sf = master_entry.get_saveframes_by_category(sf_category)[0]
 
-                    sf = master_entry.get_saveframes_by_category(sf_category)[0]
+                        assembly_name = get_first_sf_tag(sf, 'Name', None)
+                        if assembly_name is not None:
+                            self.output_statistics.setItemValue('assembly_name', assembly_name)
 
-                    assembly_name = get_first_sf_tag(sf, 'Name', None)
-                    if assembly_name is not None:
-                        self.report.output_statistics.setItemValue('assembly_name', assembly_name)
+                    except IndexError:
+                        pass
 
-                except IndexError:
-                    pass
+                    if self.report.getInputSourceIdOfCoord() >= 0:
+                        model_info = {'file_name': os.path.basename(self.__cifPath),
+                                      'file_type': 'pdbx',
+                                      'file_size': os.path.getsize(self.__cifPath),
+                                      'md5_checksum': self.__cR.getHashCode()
+                                      }
 
-                if self.report.getInputSourceIdOfCoord() >= 0:
-                    model_info = {'file_name': os.path.basename(self.__cifPath),
-                                  'file_type': 'pdbx',
-                                  'file_size': os.path.getsize(self.__cifPath),
-                                  'md5_checksum': self.__cR.getHashCode()
-                                  }
+                        struct = self.__cR.getDictList('struct')
+                        if len(struct) > 0 and 'title' in struct[0]:
+                            struct_title = struct[0]['title']
+                            if struct_title not in emptyValue:
+                                model_info['struct_title'] = struct_title
+                                if entry_title is None:
+                                    self.output_statistics.setItemValue('entry_title', struct_title)
 
-                    struct = self.__cR.getDictList('struct')
-                    if len(struct) > 0 and 'title' in struct[0]:
-                        struct_title = struct[0]['title']
-                        if struct_title not in emptyValue:
-                            model_info['struct_title'] = struct_title
-                            if entry_title is None:
-                                self.report.output_statistics.setItemValue('entry_title', struct_title)
+                        audit = self.__cR.getDictList('audit')
+                        if len(audit) > 0 and 'name' in audit[0]:
+                            author_list = []
+                            for row in audit:
+                                if row['name'] not in emptyValue:
+                                    if row['name'] not in author_list:
+                                        author_list.append(row['name'])
+                            if len(author_list) > 0:
+                                audit_authors = ', '.join(author_list)
+                                model_info['audit_authors'] = audit_authors
+                                if entry_authors is None:
+                                    self.output_statistics.setItemValue('entry_authors', audit_authors)
 
-                    audit = self.__cR.getDictList('audit')
-                    if len(audit) > 0 and 'name' in audit[0]:
-                        author_list = []
-                        for row in audit:
-                            if row['name'] not in emptyValue:
-                                if row['name'] not in author_list:
-                                    author_list.append(row['name'])
-                        if len(author_list) > 0:
-                            audit_authors = ', '.join(author_list)
-                            model_info['audit_authors'] = audit_authors
-                            if entry_authors is None:
-                                self.report.output_statistics.setItemValue('entry_authors', audit_authors)
-
-                    self.report.output_statistics.setItemValue('model', model_info)
+                        self.output_statistics.setItemValue('model', model_info)
 
         if self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2cif-annotate') and self.__remediation_mode:
 
@@ -62197,8 +62212,9 @@ class NmrDpUtility:
 
         is_done = ann.merge(master_entry, self.__cR)
 
-        if is_done:
-            self.__depositNmrData()
+        # the following __performBMRBAnnTasks() will deposit, instead
+        # if is_done:
+        #     self.__depositNmrData()
 
         return is_done
 
@@ -62227,8 +62243,9 @@ class NmrDpUtility:
 
         is_done = ann.merge(master_entry, self.__nmrIfR)
 
-        if is_done:
-            self.__depositNmrData()
+        # the following __performBMRBAnnTasks() will deposit, instead
+        # if is_done:
+        #     self.__depositNmrData()
 
         return is_done
 

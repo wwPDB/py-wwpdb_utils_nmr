@@ -99,7 +99,7 @@
 # 28-Mar-2025  M. Yokochi - add 'nm-pea-sps' file type for SPARKY's 'save' (aka. ornament) peak list file (DAOTHER-8905, 9785, NMR data remediation Phase 2)
 # 09-Apr-2025  M. Yokochi - add 'nm-shi-ari', 'nm-shi-bar', 'nm-shi-gar', 'nm-shi-npi', 'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2', and 'nm-shi-xea' file_types (v4.4.0, DAOTHER-9785)
 # 23-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors (DAOTHER-9785)
-# 23-Apr-2025  M. Yokochi - add NmrDpReportOutputStatistics class for standalone NMR data conversion service (DAOTHER-9785)
+# 24-Apr-2025  M. Yokochi - add NmrDpReportOutputStatistics class for standalone NMR data conversion service (DAOTHER-9785)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -165,7 +165,7 @@ class NmrDpReport:
         self.input_sources = [NmrDpReportInputSource(self.__verbose, self.__lfh)]
         self.sequence_alignment = NmrDpReportSequenceAlignment(self.__verbose, self.__lfh)
         self.chain_assignment = NmrDpReportChainAssignment(self.__verbose, self.__lfh)
-        self.output_statistics = NmrDpReportOutputStatistics(self.__verbose, self.__lfh)
+        self.output_statistics = None
         self.error = NmrDpReportError(self.__verbose, self.__lfh)
         self.warning = NmrDpReportWarning(self.__verbose, self.__lfh)
         self.corrected_warning = None
@@ -1493,6 +1493,19 @@ class NmrDpReport:
                 self.__lfh.write(f'+{self.__class_name__}.setCyclicPolymer() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type\n')
             raise UserWarning(f'+{self.__class_name__}.setCyclicPolymer() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
 
+    def setOutputStatistics(self, output_statistics: Any):
+        """ Set output statistics.
+        """
+
+        if isinstance(output_statistics, NmrDpReportOutputStatistics):
+            self.output_statistics = output_statistics
+            self.__report['information']['output_statistics'] = output_statistics.get()
+
+        else:
+            if self.__verbose:
+                self.__lfh.write(f'+{self.__class_name__}.setOutputStatistics() ++ Warning  - No effects on NMR data processing report because input variable is not target type\n')
+            raise UserWarning(f'+{self.__class_name__}.setOutputStatistics() ++ Warning  - No effects on NMR data processing report because input variable is not target_type')
+
     def setMutable(self):
         """ Enable to mute the report.
         """
@@ -1507,7 +1520,8 @@ class NmrDpReport:
             self.__report['information']['input_sources'] = [input_source.get() for input_source in self.input_sources]
             self.__report['information']['sequence_alignments'] = self.sequence_alignment.get()
             self.__report['information']['chain_assignments'] = self.chain_assignment.get()
-            self.__report['information']['output_statistics'] = self.output_statistics.get()
+            if self.output_statistics is not None:
+                self.__report['information']['output_statistics'] = self.output_statistics.get()
 
             self.__immutable = True
 
@@ -1534,7 +1548,8 @@ class NmrDpReport:
 
         self.sequence_alignment.put(self.__report['information']['sequence_alignments'])
         self.chain_assignment.put(self.__report['information']['chain_assignments'])
-        self.output_statistics.put(self.__report['information']['output_statistics'])
+        if self.output_statistics is not None:
+            self.output_statistics.put(self.__report['information']['output_statistics'])
 
         if self.__report['error'] is None:
             self.error = NmrDpReportError(self.__verbose, self.__lfh)
@@ -2358,7 +2373,7 @@ class NmrDpReportError:
 
 
 class NmrDpReportWarning:
-    """ Wrapper class for data processing report of NMR unified data (warning).
+    """ Wrapper class for data processing report of NMR data (warning).
     """
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout):

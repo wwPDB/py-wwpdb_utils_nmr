@@ -673,7 +673,7 @@ seq_mismatch_warning_pattern = re.compile(r"\[Sequence mismatch warning\] \[.*\]
                                           r"in polymer sequence of chain (\S+) of the coordinates. Please update the sequence in the Macromolecules page.")
 
 inconsistent_restraint_warning_pattern = re.compile(r"^\[[^\]]+\] \[Check the (\d+)th row of [^,]+s ?.*, (\S+)\] .*$")
-inconsistent_restraint_warning_wo_sf_pattern = re.compile(r"^\[[^\]]+\] \[Check the (\d+)th row of [^,]+s.*\] .*$")
+inconsistent_restraint_warning_wo_sf_pattern = re.compile(r"^\[[^\]]+\] \[Check the (\d+)th row of ([^,]+)s.*\] .*$")
 
 gromacs_tag_pattern = re.compile(r'\s*[\s+[0-9a-z_]+\s+\]')
 
@@ -38116,14 +38116,14 @@ class NmrDpUtility:
                     elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                         # consume_suspended_message()
 
-                        self.report.error.appendDescription('anomalous_data', msg_dict)
-                        self.report.setError()
+                        self.report.warning.appendDescription('anomalous_chemical_shift', msg_dict)
+                        self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ ValueError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                        self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                        self.report.warning.appendDescription('unusual_chemical_shift', msg_dict)
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -58426,6 +58426,8 @@ class NmrDpUtility:
         if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
             return False
 
+        __errors = self.report.getTotalErrors()
+
         master_entry = self.__star_data[0]
 
         file_type = 'nef' if master_entry.frame_list[0].category.startswith('nef') else 'nmr-star'
@@ -58581,6 +58583,8 @@ class NmrDpUtility:
                             _content_subtype = 'spectral_peak_alt'
                             lp_category = self.lp_categories[file_type][_content_subtype]
 
+                    err_data_type = ''
+
                     try:
 
                         lp = sf.get_loop(lp_category)
@@ -58722,6 +58726,8 @@ class NmrDpUtility:
                                             g = inconsistent_restraint_warning_wo_sf_pattern.search(msg).groups()
                                             if g not in emptyValue:
                                                 err_ordinals.add(g[0])
+                                                if len(err_data_type) == 0:
+                                                    err_data_type = g[1]
 
                             sf_info['number_of_unparsed_with_error'] = len(err_ordinals)
 
@@ -58742,6 +58748,8 @@ class NmrDpUtility:
                                             if g not in emptyValue:
                                                 if is_err:
                                                     err_ordinals.add(g[0])
+                                                    if len(err_data_type) == 0:
+                                                        err_data_type = g[1]
                                                 else:
                                                     warn_ordinals.add(g[0])
 
@@ -58755,11 +58763,23 @@ class NmrDpUtility:
                             sf_info['number_of_unparsed_with_error'] =\
                             sf_info['number_of_parsed_with_warning'] = 0
 
+                    if self.__conversion_server and 'number_of_unparsed_with_error' in sf_info\
+                       and sf_info['number_of_unparsed_with_error'] > 0:
+
+                        err = f"Failed in data conversion of {sf_info['number_of_unparsed_with_error']} {err_data_type}s of {data_file_name!r}."
+
+                        self.report.error.appendDescription('unparsed_data',
+                                                            {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                             'description': err})
+                        self.report.setError()
+
+                        self.__lfh.write(f"+{self.__class_name__}.__calculateOutputStats() ++ Error  - {err}\n")
+
                     sf_info_list.append(sf_info)
 
                 self.output_statistics.setItemValue(content_subtype, sf_info_list)
 
-        return True
+        return self.report.getTotalErrors() == __errors
 
     def __depositLegacyNmrData(self) -> bool:
         """ Deposit next NMR legacy data files.

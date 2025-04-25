@@ -4689,6 +4689,9 @@
         "anomalous_data": {
           "$ref": "#/definitions/common_message"
         },
+        "unparsed_data": {
+          "$ref": "#/definitions/common_message"
+        },
         "total": {
           "type": "integer",
           "minumum": 0

@@ -100,6 +100,7 @@
 # 09-Apr-2025  M. Yokochi - add 'nm-shi-ari', 'nm-shi-bar', 'nm-shi-gar', 'nm-shi-npi', 'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2', and 'nm-shi-xea' file_types (v4.4.0, DAOTHER-9785)
 # 23-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors (DAOTHER-9785)
 # 24-Apr-2025  M. Yokochi - add NmrDpReportOutputStatistics class for standalone NMR data conversion service (DAOTHER-9785)
+# 25-Apr-2025  M. Yokochi - add 'unparsed_data' error to block conversion due to unparsed data with error in standalone NMR data conversion service (DAOTHER-9785)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -2097,7 +2098,8 @@ class NmrDpReportError:
                       'missing_mandatory_content', 'missing_mandatory_item',
                       'content_mismatch', 'sequence_mismatch',
                       'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
-                      'atom_not_found', 'hydrogen_not_instantiated', 'multiple_data', 'missing_data', 'duplicated_index', 'anomalous_data')
+                      'atom_not_found', 'hydrogen_not_instantiated', 'multiple_data', 'missing_data', 'duplicated_index', 'anomalous_data',
+                      'unparsed_data')
 
         self.group_items = ('sequence_mismatch',
                             'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',

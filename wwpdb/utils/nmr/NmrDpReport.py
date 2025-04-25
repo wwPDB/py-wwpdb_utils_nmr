@@ -2248,6 +2248,32 @@ class NmrDpReportError:
 
         return [c for c in self.__contents[item] if 'inheritable' in c and c['inheritable']]
 
+    def getInheritableDictBySf(self, sf_framecode: str) -> Optional[dict]:
+        """ Return dictionary of list of error values with inheritable flag for a given sf_framecode.
+        """
+
+        if sf_framecode in emptyValue or self.__contents is None:
+            return None
+
+        d = {}
+
+        for k, v in self.__contents.items():
+
+            if k == 'total' or v is None:
+                continue
+
+            dlist = [c for c in v if 'inheritable' in c and c['inheritable'] and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode]
+
+            if len(dlist) == 0:
+                continue
+
+            d[k] = dlist
+
+        if len(d) == 0:
+            return None
+
+        return d
+
     def getUniqueValueList(self, item: str, file_name: str) -> Optional[List[dict]]:
         """ Return list of error values having unique sf_framecode and description.
         """
@@ -2405,6 +2431,10 @@ class NmrDpReportWarning:
                             'insufficient_mr_data', 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data',
                             'hydrogen_not_instantiated')
 
+        self.mr_err_items = ('hydrogen_not_instantiated', 'coordinate_issue',
+                             'ambiguous_dihedral_angle', 'anomalous_rdc_vector', 'anomalous_data',
+                             'insufficient_mr_data', 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data')
+
         self.__contents = {item: None for item in self.items}
 
         self.__contents['total'] = 0
@@ -2549,6 +2579,32 @@ class NmrDpReportWarning:
             return None
 
         return [c for c in self.__contents[item] if 'inheritable' in c and c['inheritable']]
+
+    def getInheritableDictBySf(self, sf_framecode: str) -> Optional[dict]:
+        """ Return dictionary of list of warning values with inheritable flag for a given sf_framecode.
+        """
+
+        if sf_framecode in emptyValue or self.__contents is None:
+            return None
+
+        d = {}
+
+        for k, v in self.__contents.items():
+
+            if k == 'total' or v is None:
+                continue
+
+            dlist = [c for c in v if 'inheritable' in c and c['inheritable'] and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode]
+
+            if len(dlist) == 0:
+                continue
+
+            d[k] = dlist
+
+        if len(d) == 0:
+            return None
+
+        return d
 
     def getUniqueValueList(self, item: str, file_name: str) -> Optional[List[dict]]:
         """ Return list of warning values having unique sf_framecode and description.

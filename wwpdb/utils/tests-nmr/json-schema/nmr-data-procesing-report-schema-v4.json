@@ -4531,8 +4531,13 @@
           "type": "integer",
           "minimum": 0
         },
-        "number_of_unparsed": {
-          "description": "Total number of unparsed item (chemical shifts, restraints, spectral peaks).",
+        "number_of_unparsed_with_error": {
+          "description": "Total number of unparsed item (chemical shifts, restraints, spectral peaks) with errors.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "number_of_parsed_with_warning": {
+          "description": "Total number of parsed item (chemical shifts, restraints, spectral peaks) with warnings.",
           "type": "integer",
           "minimum": 0
         }

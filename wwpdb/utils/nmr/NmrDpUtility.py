@@ -673,6 +673,7 @@ seq_mismatch_warning_pattern = re.compile(r"\[Sequence mismatch warning\] \[.*\]
                                           r"in polymer sequence of chain (\S+) of the coordinates. Please update the sequence in the Macromolecules page.")
 
 inconsistent_restraint_warning_pattern = re.compile(r"^\[[^\]]+\] \[Check the (\d+)th row of [^,]+s ?.*, (\S+)\] .*$")
+inconsistent_restraint_warning_wo_sf_pattern = re.compile(r"^\[[^\]]+\] \[Check the (\d+)th row of [^,]+s.*\] .*$")
 
 gromacs_tag_pattern = re.compile(r'\s*[\s+[0-9a-z_]+\s+\]')
 
@@ -7991,7 +7992,7 @@ class NmrDpUtility:
 
         return self.report.writeFile(self.__logPath)
 
-    def __initializeDpReport(self, srcPath: str = None) -> bool:
+    def __initializeDpReport(self, srcPath: str = None, calcOutputStats: bool = False) -> bool:
         """ Initialize NMR data processing report.
         """
 
@@ -8012,6 +8013,16 @@ class NmrDpUtility:
                 self.report.inheritFormatIssueErrors(self.report_prev)
                 self.report.inheritPreviousErrors(self.report_prev)
                 self.report.inheritPreviousWarnings(self.report_prev)
+
+                if calcOutputStats and self.__combined_mode and self.__dstPath is not None:
+
+                    if self.__dstPath == self.__srcPath and self.__release_mode:
+                        pass
+
+                    elif not self.__submission_mode and not self.__annotation_mode or self.__dstPath != self.__srcPath:
+
+                        if not self.__op.endswith('consistency-check'):
+                            self.__calculateOutputStats()
 
         input_source = None
 
@@ -8364,8 +8375,6 @@ class NmrDpUtility:
         self.__original_error_message = []
 
         self.__testDiamagnetism()
-
-        self.output_statistics = None
 
         return input_source is not None
 
@@ -36584,40 +36593,24 @@ class NmrDpUtility:
                     elif warn.startswith('[Hydrogen not instantiated]'):
 
                         if self.__remediation_mode or self.__internal_mode:
-
-                            self.report.warning.appendDescription('hydrogen_not_instantiated', msg_dict)
-                            self.report.setWarning()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
-
+                            pass
                         else:
                             consume_suspended_message()
 
-                            self.report.error.appendDescription('hydrogen_not_instantiated', msg_dict)
-                            self.report.setError()
+                        self.report.warning.appendDescription('hydrogen_not_instantiated', msg_dict)
+                        self.report.setWarning()
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Coordinate issue]'):
                         # consume_suspended_message()
 
-                        if self.__internal_mode:
+                        self.report.warning.appendDescription('coordinate_issue', msg_dict)
+                        self.report.setWarning()
 
-                            self.report.warning.appendDescription('coordinate_issue', msg_dict)
-                            self.report.setWarning()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
-
-                        else:
-
-                            self.report.error.appendDescription('coordinate_issue', msg_dict)
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         consume_suspended_message()
@@ -36633,11 +36626,11 @@ class NmrDpUtility:
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         consume_suspended_message()
 
-                        self.report.error.appendDescription('invalid_data', msg_dict)
-                        self.report.setError()
+                        self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                        self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ ValueError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch warning]'):
                         self.report.warning.appendDescription('sequence_mismatch', msg_dict)
@@ -36662,11 +36655,11 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Missing data]'):
-                        self.report.warning.appendDescription('missing_data', msg_dict)
-                        self.report.setWarning()
+                        self.report.error.appendDescription('missing_data', msg_dict)
+                        self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                         # consume_suspended_message()
@@ -52430,56 +52423,44 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
                         if self.__remediation_mode:
-                            self.report.warning.appendDescription('hydrogen_not_instantiated', msg_dict)
-                            self.report.setWarning()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
+                            pass
                         else:
                             consume_suspended_message()
 
-                            self.report.error.appendDescription('hydrogen_not_instantiated', msg_dict)
-                            self.report.setError()
+                        self.report.warning.appendDescription('hydrogen_not_instantiated', msg_dict)
+                        self.report.setWarning()
 
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {warn}\n")
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Coordinate issue]'):
                         # consume_suspended_message()
 
-                        if self.__internal_mode:
+                        self.report.warning.appendDescription('coordinate_issue', msg_dict)
+                        self.report.setWarning()
 
-                            self.report.warning.appendDescription('coordinate_issue', msg_dict)
-                            self.report.setWarning()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
-
-                        else:
-
-                            self.report.error.appendDescription('coordinate_issue', msg_dict)
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {warn}\n")
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         consume_suspended_message()
 
-                        self.report.error.appendDescription('invalid_atom_nomenclature', msg_dict)
-                        self.report.setError()
+                        # DAOTHER-8905: change warning level from 'invalid_atom_nomenclature' error to 'atom_nomenclature_mismatch' warning
+                        # because we accept atom nomenclature provided by depositor for peak list
+                        self.report.warning.appendDescription('atom_nomenclature_mismatch', msg_dict)
+                        self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         consume_suspended_message()
 
-                        self.report.error.appendDescription('invalid_data', msg_dict)
-                        self.report.setError()
+                        self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                        self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ ValueError  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch warning]'):
                         self.report.warning.appendDescription('sequence_mismatch', msg_dict)
@@ -52504,11 +52485,11 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Missing data]'):
-                        self.report.warning.appendDescription('missing_data', msg_dict)
-                        self.report.setWarning()
+                        self.report.error.appendDescription('missing_data', msg_dict)
+                        self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                         # consume_suspended_message()
@@ -58384,11 +58365,7 @@ class NmrDpUtility:
         master_entry = self.__c2S.normalize(self.__star_data[0])
 
         if not self.__submission_mode and not self.__annotation_mode or self.__dstPath != self.__srcPath:
-
             master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
-
-            if not self.__op.endswith('consistency-check'):
-                self.__calculateOutputStats()
 
         if self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2cif-annotate') and self.__remediation_mode:
 
@@ -58583,8 +58560,10 @@ class NmrDpUtility:
                     if isinstance(list_id, str):
                         list_id = int(list_id)
 
+                    sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
+
                     sf_info = {'list_id': list_id,
-                               'sf_framecode': get_first_sf_tag(sf, "Sf_framecode")
+                               'sf_framecode': sf_framecode
                                }
 
                     data_file_name = get_first_sf_tag(sf, 'Data_file_name', None)
@@ -58725,14 +58704,56 @@ class NmrDpUtility:
                                     sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
 
                         else:
-                            sf_info['number_of_mapped_to_model'] = 0
-                            sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+                            sf_info['number_of_mapped_to_model'] = sf_info['number_of_unmapped_to_model'] = 0
+
+                        errors = self.report.error.getInheritableDictBySf(sf_framecode)
+
+                        err_ordinals = set()
+
+                        if errors is None:
+                            sf_info['number_of_unparsed_with_error'] = 0
+
+                        else:
+
+                            for k, v in errors.items():
+                                for item in v:
+                                    for msg in item['description'].split('\n'):
+                                        if inconsistent_restraint_warning_wo_sf_pattern.match(msg):
+                                            g = inconsistent_restraint_warning_wo_sf_pattern.search(msg).groups()
+                                            if g not in emptyValue:
+                                                err_ordinals.add(g[0])
+
+                            sf_info['number_of_unparsed_with_error'] = len(err_ordinals)
+
+                        warnings = self.report.warning.getInheritableDictBySf(sf_framecode)
+
+                        if warnings is None:
+                            sf_info['number_of_parsed_with_warning'] = 0
+
+                        else:
+
+                            warn_ordinals = set()
+                            for k, v in warnings.items():
+                                is_err = 'restraint' in content_subtype and k in self.report.warning.mr_err_items
+                                for item in v:
+                                    for msg in item['description'].split('\n'):
+                                        if inconsistent_restraint_warning_wo_sf_pattern.match(msg):
+                                            g = inconsistent_restraint_warning_wo_sf_pattern.search(msg).groups()
+                                            if g not in emptyValue:
+                                                if is_err:
+                                                    err_ordinals.add(g[0])
+                                                else:
+                                                    warn_ordinals.add(g[0])
+
+                            sf_info['number_of_parsed_with_warning'] = len(warn_ordinals)
+                            sf_info['number_of_unparsed_with_error'] = len(err_ordinals)
 
                     except KeyError:
                         sf_info['number_of_parsed'] = \
                             sf_info['number_of_mapped_to_model'] = \
                             sf_info['number_of_unmapped_to_model'] = \
-                            sf_info['number_of_unparsed'] = 0
+                            sf_info['number_of_unparsed_with_error'] =\
+                            sf_info['number_of_parsed_with_warning'] = 0
 
                     sf_info_list.append(sf_info)
 
@@ -62103,7 +62124,7 @@ class NmrDpUtility:
         """ Initialize NMR data processing report using the next version of NMR unified data.
         """
 
-        return self.__initializeDpReport(srcPath=self.__dstPath)
+        return self.__initializeDpReport(srcPath=self.__dstPath, calcOutputStats=True)
 
     def __validateInputSourceForNext(self) -> bool:
         """ Validate the next version of NMR unified data as primary input source.

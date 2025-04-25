@@ -3910,6 +3910,17 @@
             "assigned_spectral_peaks",
             "unassigned_spectral_peaks"
           ]
+        },
+        "atom_name_mapping": {
+          "description": "Atom name mapping information from author-provided names to cannonical names during data conversion.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/atom_name_mapping",
+            "minItems": 1
+          }
         }
       }
     },

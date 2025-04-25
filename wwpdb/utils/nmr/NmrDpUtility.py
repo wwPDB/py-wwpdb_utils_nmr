@@ -45046,13 +45046,24 @@ class NmrDpUtility:
             if file_type == 'nmr-star' and self.__star_data_type[file_list_id] == 'Entry':
                 lp_category = self.lp_categories[file_type][content_subtype]
                 sf = self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
-                lp = next(lp for lp in sf.loops if lp.category == lp_category)
 
-                list_of_tags = []
-                for dim in range(1, max_dim):
-                    list_of_tags.append([f'Comp_ID_{dim}', f'Atom_ID_{dim}', f'Auth_atom_ID_{dim}'])
+                try:
 
-                ent['atom_name_mapping'] = get_atom_name_mapping(lp, list_of_tags)
+                    lp = next(lp for lp in sf.loops if lp.category == lp_category)
+
+                    list_of_tags = []
+                    for dim in range(1, max_dim):
+                        list_of_tags.append([f'Comp_ID_{dim}', f'Atom_ID_{dim}', f'Auth_atom_ID_{dim}'])
+
+                    ent['atom_name_mapping'] = get_atom_name_mapping(lp, list_of_tags)
+
+                except StopIteration:
+
+                    lp_category = '_Assigned_peak_chem_shift'
+                    lp = next((lp for lp in sf.loops if lp.category == lp_category), None)
+
+                    if lp is not None:
+                        ent['atom_name_mapping'] = get_atom_name_mapping(lp, [['Comp_ID', 'Atom_ID', 'Auth_atom_ID']])
 
         except Exception as e:
 

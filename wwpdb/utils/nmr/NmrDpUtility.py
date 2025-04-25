@@ -8365,6 +8365,8 @@ class NmrDpUtility:
 
         self.__testDiamagnetism()
 
+        self.output_statistics = None
+
         return input_source is not None
 
     def __testDiamagnetism(self):
@@ -58386,281 +58388,7 @@ class NmrDpUtility:
             master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
             if not self.__op.endswith('consistency-check'):
-
-                file_type = 'nef' if master_entry.frame_list[0].category.startswith('nef') else 'nmr-star'
-
-                self.output_statistics = NmrDpReportOutputStatistics(self.__verbose, self.__lfh)
-
-                self.output_statistics.setItemValue('file_name', os.path.basename(self.__dstPath))
-                self.output_statistics.setItemValue('file_type', file_type)
-                self.output_statistics.setItemValue('entry_id', self.__entry_id)
-                self.output_statistics.setItemValue('processed_date', datetime.today().strftime('%Y-%m-%d'))
-                self.output_statistics.setItemValue('processed_site', os.uname()[1])
-
-                self.output_statistics.setItemValue('file_size', os.path.getsize(self.__dstPath))
-                with open(self.__dstPath, 'r', encoding='utf-8', errors='ignore') as ifh:
-                    self.output_statistics.setItemValue('md5_checksum', hashlib.md5(ifh.read().encode('utf-8')).hexdigest())
-
-                entry_title = entry_authors = submission_date = assembly_name = None
-
-                if file_type == 'nmr-star':
-
-                    sf_category = 'entry_information'
-
-                    try:
-
-                        sf = master_entry.get_saveframes_by_category(sf_category)[0]
-
-                        entry_title = get_first_sf_tag(sf, 'Title', None)
-                        if entry_title is not None:
-                            self.output_statistics.setItemValue('entry_title', entry_title)
-
-                        submission_date = get_first_sf_tag(sf, 'Submission_date', None)
-                        if submission_date is not None:
-                            self.output_statistics.setItemValue('submission_date', submission_date)
-
-                        lp_category = '_Entry_author'
-
-                        try:
-
-                            lp = sf.get_loop(lp_category)
-
-                            tags = ['Given_name', 'Family_name']
-
-                            author_list = []
-
-                            if set(tags) & set(lp.tags) == set(tags):
-
-                                for row in lp:
-
-                                    if row[1] in emptyValue:
-                                        continue
-
-                                    author_name = row[1].title()
-                                    if row[0] not in emptyValue:
-                                        author_name += f', {row[0].upper()}.'
-
-                                    if author_name not in author_list:
-                                        author_list.append(author_name)
-
-                                if len(author_list) > 0:
-                                    entry_authors = ', '.join(author_list)
-                                    self.output_statistics.setItemValue('entry_authors', entry_authors)
-
-                        except KeyError:
-                            pass
-
-                    except IndexError:
-                        pass
-
-                    sf_category = 'assembly'
-
-                    try:
-
-                        sf = master_entry.get_saveframes_by_category(sf_category)[0]
-
-                        assembly_name = get_first_sf_tag(sf, 'Name', None)
-                        if assembly_name is not None:
-                            self.output_statistics.setItemValue('assembly_name', assembly_name)
-
-                    except IndexError:
-                        pass
-
-                    has_coordinate = self.report.getInputSourceIdOfCoord() >= 0
-
-                    if has_coordinate:
-                        model_info = {'file_name': os.path.basename(self.__cifPath),
-                                      'file_type': 'pdbx',
-                                      'file_size': os.path.getsize(self.__cifPath),
-                                      'md5_checksum': self.__cR.getHashCode()
-                                      }
-
-                        struct = self.__cR.getDictList('struct')
-                        if len(struct) > 0 and 'title' in struct[0]:
-                            struct_title = struct[0]['title']
-                            if struct_title not in emptyValue:
-                                model_info['struct_title'] = struct_title
-                                if entry_title is None:
-                                    self.output_statistics.setItemValue('entry_title', struct_title)
-
-                        audit = self.__cR.getDictList('audit')
-                        if len(audit) > 0 and 'name' in audit[0]:
-                            author_list = []
-                            for row in audit:
-                                if row['name'] not in emptyValue:
-                                    if row['name'] not in author_list:
-                                        author_list.append(row['name'])
-                            if len(author_list) > 0:
-                                audit_authors = ', '.join(author_list)
-                                model_info['audit_authors'] = audit_authors
-                                if entry_authors is None:
-                                    self.output_statistics.setItemValue('entry_authors', audit_authors)
-
-                        self.output_statistics.setItemValue('model', model_info)
-
-                    for content_subtype in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
-
-                        sf_category = self.sf_categories[file_type][content_subtype]
-
-                        sf_list = master_entry.get_saveframes_by_category(sf_category)
-
-                        if len(sf_list) == 0:
-                            continue
-
-                        sf_info_list = []
-
-                        for sf in sf_list:
-
-                            list_id = get_first_sf_tag(sf, 'ID')
-                            if isinstance(list_id, str):
-                                list_id = int(list_id)
-
-                            sf_info = {'list_id': list_id,
-                                       'sf_framecode': get_first_sf_tag(sf, "Sf_framecode")
-                                       }
-
-                            data_file_name = get_first_sf_tag(sf, 'Data_file_name', None)
-                            if data_file_name is not None:
-                                sf_info['original_file_name'] = data_file_name
-
-                            consist_id_tag = self.consist_id_tags[file_type][content_subtype]
-                            lp_category = self.lp_categories[file_type][content_subtype]
-
-                            _content_subtype = content_subtype
-                            if content_subtype == 'spectral_peak':
-                                try:
-                                    sf.get_loop(lp_category)
-                                except KeyError:
-                                    _content_subtype = 'spectral_peak_alt'
-                                    lp_category = self.lp_categories[file_type][_content_subtype]
-
-                            lp = sf.get_loop(lp_category)
-
-                            consist_ids = set(row for row in lp.get_tag([consist_id_tag]))
-
-                            sf_info['number_of_parsed'] = len(consist_ids)
-
-                            if has_coordinate:
-
-                                if content_subtype == 'chem_shift':
-                                    tags = ['ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Details']
-
-                                    if set(tags) & set(lp.tags) != set(tags):
-                                        sf_info['number_of_mapped_to_model'] = 0
-                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
-
-                                    else:
-
-                                        dat = lp.get_tag(tags)
-
-                                        mapped_ids = set()
-                                        for row in dat:
-
-                                            if row[5] == 'UNMAPPED':
-                                                continue
-
-                                            if all(row[col] not in emptyValue for col in range(1, 5)):
-                                                mapped_ids.add(row[0])
-
-                                        sf_info['number_of_mapped_to_model'] = len(mapped_ids)
-                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
-
-                                elif _content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
-
-                                    if content_subtype in ('dist_restraint', 'rdc_restraint'):
-                                        max_dim = 3
-
-                                    elif content_subtype == 'dihed_restraint':
-                                        max_dim = 5
-
-                                    else:  # 'spectral_peak'
-
-                                        try:
-
-                                            _num_dim = get_first_sf_tag(sf, self.num_dim_items[file_type])
-                                            num_dim = int(_num_dim)
-
-                                            if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
-                                                raise ValueError()
-
-                                        except ValueError:  # raised error already at __testIndexConsistency()
-                                            continue
-
-                                        max_dim = num_dim + 1
-
-                                    tags = [consist_id_tag]
-                                    for j in range(1, max_dim):
-                                        tags.extend([f'Auth_asym_ID_{j}', f'Auth_seq_ID_{j}', f'Auth_comp_ID_{j}', f'Auth_atom_ID_{j}'])
-
-                                    if set(tags) & set(lp.tags) != set(tags):
-                                        sf_info['number_of_mapped_to_model'] = 0
-                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
-
-                                    else:
-
-                                        max_col = (max_dim - 1) * 4 + 1
-
-                                        dat = lp.get_tag(tags)
-
-                                        mapped_ids = set()
-                                        for row in dat:
-                                            if all(row[col] not in emptyValue for col in range(1, max_col)):
-                                                mapped_ids.add(row[0])
-
-                                        sf_info['number_of_mapped_to_model'] = len(mapped_ids)
-                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
-
-                                else:  # 'spectral_peak_alt'
-
-                                    try:
-
-                                        _num_dim = get_first_sf_tag(sf, self.num_dim_items[file_type])
-                                        num_dim = int(_num_dim)
-
-                                        if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
-                                            raise ValueError()
-
-                                    except ValueError:  # raised error already at __testIndexConsistency()
-                                        continue
-
-                                    max_dim = num_dim + 1
-
-                                    try:
-
-                                        lp = sf.get_loop('_Assigned_peak_chem_shift')
-
-                                        tags = ['Peak_ID', 'Auth_entity_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID']
-
-                                        if set(tags) & set(lp.tags) != set(tags):
-                                            sf_info['number_of_mapped_to_model'] = 0
-                                            sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
-
-                                        else:
-
-                                            dat = lp.get_tag(tags)
-
-                                            mapped_ids = set()
-                                            unmapped_ids = set()
-                                            for row in dat:
-                                                if all(row[col] not in emptyValue for col in range(1, 5)):
-                                                    mapped_ids.add(row[0])
-                                                else:
-                                                    unmapped_ids.add(row[0])
-
-                                            sf_info['number_of_mapped_to_model'] = len(mapped_ids) - len(unmapped_ids)
-                                            sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
-
-                                    except KeyError:
-                                        sf_info['number_of_mapped_to_model'] = 0
-                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
-
-                            else:
-                                sf_info['number_of_mapped_to_model'] = 0
-                                sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
-
-                            sf_info_list.append(sf_info)
-
-                        self.output_statistics.setItemValue(content_subtype, sf_info_list)
+                self.__calculateOutputStats()
 
         if self.__op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2cif-annotate') and self.__remediation_mode:
 
@@ -58713,6 +58441,304 @@ class NmrDpUtility:
                 self.__lfh.write(f"+{self.__class_name__}.__depositNmrData() ++ Error  - {str(e)}\n")
 
         return not self.report.isError()
+
+    def __calculateOutputStats(self) -> bool:
+        """ Calculate statistics and validation metrics of output NMR data file.
+        """
+
+        if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
+            return False
+
+        master_entry = self.__star_data[0]
+
+        file_type = 'nef' if master_entry.frame_list[0].category.startswith('nef') else 'nmr-star'
+
+        self.output_statistics = NmrDpReportOutputStatistics(self.__verbose, self.__lfh)
+
+        self.output_statistics.setItemValue('file_name', os.path.basename(self.__dstPath))
+        self.output_statistics.setItemValue('file_type', file_type)
+        self.output_statistics.setItemValue('entry_id', self.__entry_id)
+        self.output_statistics.setItemValue('processed_date', datetime.today().strftime('%Y-%m-%d'))
+        self.output_statistics.setItemValue('processed_site', os.uname()[1])
+
+        self.output_statistics.setItemValue('file_size', os.path.getsize(self.__dstPath))
+        with open(self.__dstPath, 'r', encoding='utf-8', errors='ignore') as ifh:
+            self.output_statistics.setItemValue('md5_checksum', hashlib.md5(ifh.read().encode('utf-8')).hexdigest())
+
+        entry_title = entry_authors = submission_date = assembly_name = None
+
+        if file_type == 'nmr-star':
+
+            sf_category = 'entry_information'
+
+            try:
+
+                sf = master_entry.get_saveframes_by_category(sf_category)[0]
+
+                entry_title = get_first_sf_tag(sf, 'Title', None)
+                if entry_title is not None:
+                    self.output_statistics.setItemValue('entry_title', entry_title)
+
+                submission_date = get_first_sf_tag(sf, 'Submission_date', None)
+                if submission_date is not None:
+                    self.output_statistics.setItemValue('submission_date', submission_date)
+
+                lp_category = '_Entry_author'
+
+                try:
+
+                    lp = sf.get_loop(lp_category)
+
+                    tags = ['Given_name', 'Family_name']
+
+                    author_list = []
+
+                    if set(tags) & set(lp.tags) == set(tags):
+
+                        for row in lp:
+
+                            if row[1] in emptyValue:
+                                continue
+
+                            author_name = row[1].title()
+                            if row[0] not in emptyValue:
+                                author_name += f', {row[0].upper()}.'
+
+                            if author_name not in author_list:
+                                author_list.append(author_name)
+
+                        if len(author_list) > 0:
+                            entry_authors = ', '.join(author_list)
+                            self.output_statistics.setItemValue('entry_authors', entry_authors)
+
+                except KeyError:
+                    pass
+
+            except IndexError:
+                pass
+
+            sf_category = 'assembly'
+
+            try:
+
+                sf = master_entry.get_saveframes_by_category(sf_category)[0]
+
+                assembly_name = get_first_sf_tag(sf, 'Name', None)
+                if assembly_name is not None:
+                    self.output_statistics.setItemValue('assembly_name', assembly_name)
+
+            except IndexError:
+                pass
+
+            has_coordinate = self.report.getInputSourceIdOfCoord() >= 0
+
+            if has_coordinate:
+                model_info = {'file_name': os.path.basename(self.__cifPath),
+                              'file_type': 'pdbx',
+                              'file_size': os.path.getsize(self.__cifPath),
+                              'md5_checksum': self.__cR.getHashCode()
+                              }
+
+                struct = self.__cR.getDictList('struct')
+                if len(struct) > 0 and 'title' in struct[0]:
+                    struct_title = struct[0]['title']
+                    if struct_title not in emptyValue:
+                        model_info['struct_title'] = struct_title
+                        if entry_title is None:
+                            self.output_statistics.setItemValue('entry_title', struct_title)
+
+                audit = self.__cR.getDictList('audit')
+                if len(audit) > 0 and 'name' in audit[0]:
+                    author_list = []
+                    for row in audit:
+                        if row['name'] not in emptyValue:
+                            if row['name'] not in author_list:
+                                author_list.append(row['name'])
+                    if len(author_list) > 0:
+                        audit_authors = ', '.join(author_list)
+                        model_info['audit_authors'] = audit_authors
+                        if entry_authors is None:
+                            self.output_statistics.setItemValue('entry_authors', audit_authors)
+
+                self.output_statistics.setItemValue('model', model_info)
+
+            for content_subtype in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+
+                sf_list = master_entry.get_saveframes_by_category(sf_category)
+
+                if len(sf_list) == 0:
+                    continue
+
+                sf_info_list = []
+
+                for sf in sf_list:
+
+                    list_id = get_first_sf_tag(sf, 'ID', None)
+
+                    if list_id is None:
+                        continue
+
+                    if isinstance(list_id, str):
+                        list_id = int(list_id)
+
+                    sf_info = {'list_id': list_id,
+                               'sf_framecode': get_first_sf_tag(sf, "Sf_framecode")
+                               }
+
+                    data_file_name = get_first_sf_tag(sf, 'Data_file_name', None)
+                    if data_file_name is not None:
+                        sf_info['original_file_name'] = data_file_name
+
+                    consist_id_tag = self.consist_id_tags[file_type][content_subtype]
+                    lp_category = self.lp_categories[file_type][content_subtype]
+
+                    _content_subtype = content_subtype
+                    if content_subtype == 'spectral_peak':
+                        try:
+                            sf.get_loop(lp_category)
+                        except KeyError:
+                            _content_subtype = 'spectral_peak_alt'
+                            lp_category = self.lp_categories[file_type][_content_subtype]
+
+                    try:
+
+                        lp = sf.get_loop(lp_category)
+
+                        consist_ids = set(row for row in lp.get_tag([consist_id_tag]))
+
+                        sf_info['number_of_parsed'] = len(consist_ids)
+
+                        if has_coordinate:
+
+                            if content_subtype == 'chem_shift':
+                                tags = ['ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Details']
+
+                                if set(tags) & set(lp.tags) != set(tags):
+                                    sf_info['number_of_mapped_to_model'] = 0
+                                    sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+
+                                else:
+
+                                    dat = lp.get_tag(tags)
+
+                                    mapped_ids = set()
+                                    for row in dat:
+
+                                        if row[5] == 'UNMAPPED':
+                                            continue
+
+                                        if all(row[col] not in emptyValue for col in range(1, 5)):
+                                            mapped_ids.add(row[0])
+
+                                    sf_info['number_of_mapped_to_model'] = len(mapped_ids)
+                                    sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+
+                            elif _content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
+
+                                if content_subtype in ('dist_restraint', 'rdc_restraint'):
+                                    max_dim = 3
+
+                                elif content_subtype == 'dihed_restraint':
+                                    max_dim = 5
+
+                                else:  # 'spectral_peak'
+
+                                    try:
+
+                                        _num_dim = get_first_sf_tag(sf, self.num_dim_items[file_type])
+                                        num_dim = int(_num_dim)
+
+                                        if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
+                                            raise ValueError()
+
+                                    except ValueError:  # raised error already at __testIndexConsistency()
+                                        continue
+
+                                    max_dim = num_dim + 1
+
+                                tags = [consist_id_tag]
+                                for j in range(1, max_dim):
+                                    tags.extend([f'Auth_asym_ID_{j}', f'Auth_seq_ID_{j}', f'Auth_comp_ID_{j}', f'Auth_atom_ID_{j}'])
+
+                                if set(tags) & set(lp.tags) != set(tags):
+                                    sf_info['number_of_mapped_to_model'] = 0
+                                    sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+
+                                else:
+
+                                    max_col = (max_dim - 1) * 4 + 1
+
+                                    dat = lp.get_tag(tags)
+
+                                    mapped_ids = set()
+                                    for row in dat:
+                                        if all(row[col] not in emptyValue for col in range(1, max_col)):
+                                            mapped_ids.add(row[0])
+
+                                    sf_info['number_of_mapped_to_model'] = len(mapped_ids)
+                                    sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+
+                            else:  # 'spectral_peak_alt'
+
+                                try:
+
+                                    _num_dim = get_first_sf_tag(sf, self.num_dim_items[file_type])
+                                    num_dim = int(_num_dim)
+
+                                    if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
+                                        raise ValueError()
+
+                                except ValueError:  # raised error already at __testIndexConsistency()
+                                    continue
+
+                                max_dim = num_dim + 1
+
+                                try:
+
+                                    lp = sf.get_loop('_Assigned_peak_chem_shift')
+
+                                    tags = ['Peak_ID', 'Auth_entity_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID']
+
+                                    if set(tags) & set(lp.tags) != set(tags):
+                                        sf_info['number_of_mapped_to_model'] = 0
+                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+
+                                    else:
+
+                                        dat = lp.get_tag(tags)
+
+                                        mapped_ids = set()
+                                        unmapped_ids = set()
+                                        for row in dat:
+                                            if all(row[col] not in emptyValue for col in range(1, 5)):
+                                                mapped_ids.add(row[0])
+                                            else:
+                                                unmapped_ids.add(row[0])
+
+                                        sf_info['number_of_mapped_to_model'] = len(mapped_ids) - len(unmapped_ids)
+                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+
+                                except KeyError:
+                                    sf_info['number_of_mapped_to_model'] = 0
+                                    sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+
+                        else:
+                            sf_info['number_of_mapped_to_model'] = 0
+                            sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+
+                    except KeyError:
+                        sf_info['number_of_parsed'] = \
+                            sf_info['number_of_mapped_to_model'] = \
+                            sf_info['number_of_unmapped_to_model'] = \
+                            sf_info['number_of_unparsed'] = 0
+
+                    sf_info_list.append(sf_info)
+
+                self.output_statistics.setItemValue(content_subtype, sf_info_list)
+
+        return True
 
     def __depositLegacyNmrData(self) -> bool:
         """ Deposit next NMR legacy data files.

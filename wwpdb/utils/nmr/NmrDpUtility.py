@@ -34807,7 +34807,7 @@ class NmrDpUtility:
                     elif warn.startswith('[Coordinate issue]'):
                         # consume_suspended_message()
 
-                        if self.__internal_mode:
+                        if self.__internal_mode and not self.__conversion_server:
 
                             self.report.warning.appendDescription('coordinate_issue', msg_dict)
                             self.report.setWarning()
@@ -34975,12 +34975,10 @@ class NmrDpUtility:
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch': msg_dict})
 
                     elif warn.startswith('[Atom not found]'):
-
                         if not self.__remediation_mode or 'Macromolecules page' not in warn:
                             suspended_errors_for_lazy_eval.append({'atom_not_found': msg_dict})
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
-
                         if self.__remediation_mode:
                             pass
                         else:
@@ -36591,8 +36589,7 @@ class NmrDpUtility:
                                 self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
-
-                        if self.__remediation_mode or self.__internal_mode:
+                        if (self.__remediation_mode or self.__internal_mode) and not self.__conversion_server:
                             pass
                         else:
                             consume_suspended_message()
@@ -36655,11 +36652,14 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Missing data]'):
-                        self.report.error.appendDescription('missing_data', msg_dict)
-                        self.report.setError()
+                        if (self.__remediation_mode or self.__internal_mode) and not self.__conversion_server:
+                            pass
+                        else:
+                            self.report.error.appendDescription('missing_data', msg_dict)
+                            self.report.setError()
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                         # consume_suspended_message()
@@ -52515,11 +52515,14 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Missing data]'):
-                        self.report.error.appendDescription('missing_data', msg_dict)
-                        self.report.setError()
+                        if (self.__remediation_mode or self.__internal_mode) and not self.__conversion_server:
+                            pass
+                        else:
+                            self.report.error.appendDescription('missing_data', msg_dict)
+                            self.report.setError()
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {warn}\n")
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Range value error]') and not self.__remediation_mode:
                         # consume_suspended_message()
@@ -53839,7 +53842,7 @@ class NmrDpUtility:
                     err = f'{cif_seq_code} has been instantiated with different tautomeric states across models, {tautomer_per_model}. '\
                         'Please re-upload the model file.'
 
-                    if self.__internal_mode:
+                    if self.__internal_mode and not self.__conversion_server:
 
                         self.report.warning.appendDescription('coordinate_issue',
                                                               {'file_name': file_name, 'category': 'atom_site',
@@ -53966,7 +53969,7 @@ class NmrDpUtility:
                         err = f'{cif_seq_code} has been instantiated with different tautomeric states across models, {tautomer_per_model}. '\
                             'Please re-upload the model file.'
 
-                        if self.__internal_mode:
+                        if self.__internal_mode and not self.__conversion_server:
 
                             self.report.warning.appendDescription('coordinate_issue',
                                                                   {'file_name': file_name, 'category': 'atom_site',

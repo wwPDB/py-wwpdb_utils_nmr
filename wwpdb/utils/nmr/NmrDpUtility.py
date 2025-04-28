@@ -33016,6 +33016,7 @@ class NmrDpUtility:
 
                                         if self.__verbose:
                                             self.__lfh.write(f"+{self.__class_name__}.__validateStrMr() ++ ValueError  - {idx_msg + warn}\n")
+
                                     continue
 
                             if any(d for d in range(atom_dim_num) if atom_sels[d] is None or len(atom_sels[d]) == 0):
@@ -34770,7 +34771,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Atom not found]'):
 
-                        if not self.__remediation_mode or 'Macromolecules page' not in warn:
+                        if not self.__remediation_mode or 'Macromolecules page' not in warn or self.__conversion_server:
                             consume_suspended_message()
 
                             self.report.error.appendDescription('atom_not_found', msg_dict)
@@ -34787,7 +34788,7 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
 
-                        if self.__remediation_mode:
+                        if self.__remediation_mode and not self.__conversion_server:
 
                             self.report.warning.appendDescription('hydrogen_not_instantiated', msg_dict)
                             self.report.setWarning()
@@ -38067,11 +38068,11 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Atom not found]'):
-                        self.report.warning.appendDescription('sequence_mismatch', msg_dict)
-                        self.report.setWarning()
+                        self.report.error.appendDescription('atom_not_found', msg_dict)
+                        self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ Warning  - {warn}\n")
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         consume_suspended_message()

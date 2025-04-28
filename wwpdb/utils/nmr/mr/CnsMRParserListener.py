@@ -6767,6 +6767,10 @@ class CnsMRParserListener(ParseTreeListener):
                                                                         f"The residue '{seqId}:{compId}' is not present in polymer sequence "
                                                                         f"of chain {chainId} of the coordinates. "
                                                                         "Please update the sequence in the Macromolecules page.")
+                                                        if 'expected_comp_id' not in _factor:
+                                                            _factor['expected_comp_id'] = [compId]
+                                                        if compId not in _factor['expected_comp_id']:
+                                                            _factor['expected_comp_id'].append(compId)
                                                         continue
                                                     warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                         and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\

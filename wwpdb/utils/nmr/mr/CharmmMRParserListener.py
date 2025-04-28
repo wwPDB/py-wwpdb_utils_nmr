@@ -3786,6 +3786,16 @@ class CharmmMRParserListener(ParseTreeListener):
                             pass
 
                     if compId is None:
+                        if not isPolySeq and _factor['atom_id'][0] in SYMBOLS_ELEMENT and self.__hasNonPoly:
+                            elemCount = 0
+                            for np in self.__nonPoly:
+                                if np['comp_id'][0] == _factor['atom_id'][0]:
+                                    elemCount += 1
+                            if elemCount == 1 and _factor['atom_id'][0] in ps['comp_id']:
+                                compId = _factor['atom_id'][0]
+                                seqId = ps['auth_seq_id'][0]
+
+                    if compId is None:
                         if isPolySeq and isChainSpecified and self.__reasons is None and self.__preferAuthSeq:
                             self.__preferAuthSeq = False
                             seqId, _compId_, _ = self.getRealSeqId(ps, seqId, isPolySeq)

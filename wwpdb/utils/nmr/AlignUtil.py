@@ -3265,7 +3265,10 @@ def splitPolySeqRstForNonPoly(ccU, nonPolyModel: List[dict], polySeqRst: List[di
                                                          'seq_id': candidate['seq_id'],
                                                          'original_chain_id': test_chain_id}
 
+        if len(_nonPolyMapping[comp_id]) == sum(np['comp_id'].count(comp_id) for np in nonPolyModel):
             split = True
+        else:
+            del _nonPolyMapping[comp_id]
 
     if not split:
         return None, None

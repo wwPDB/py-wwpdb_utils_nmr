@@ -5827,7 +5827,8 @@ class CnsMRParserListener(ParseTreeListener):
                                         f"The {clauseName} has no effect for a factor {str(__factor).replace('[', '').replace(']', '')}. "
                                         "Please update the sequence in the Macromolecules page.")
                 else:
-                    if 'atom_id' not in _factor or ('H5T' not in _factor['atom_id'] and 'H3T' not in _factor['atom_id']):
+                    if 'atom_id' not in _factor or ('H5T' not in _factor['atom_id'] and 'H3T' not in _factor['atom_id']
+                                                    and 'HOP2' not in _factor['atom_id'] and "HO3'" not in _factor['atom_id']):
                         hint = f" Please verify that the planarity restraints match with the residue {_factor['comp_id'][0]!r}"\
                             if 'comp_id' in _factor and len(_factor['comp_id']) == 1 else ''
                         self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"

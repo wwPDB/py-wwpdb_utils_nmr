@@ -50461,9 +50461,10 @@ class NmrDpUtility:
                         end_model_id = self.__total_models // conformational_states
                         seq_ids = [k for k, v in self.__auth_seq_ids_with_chem_exch.items()
                                    if v['chain_id'] == auth_asym_id]
-                        row[12] = f'Conformational isomer 1, PDB_model_num range: {beg_model_id}-{end_model_id}, '\
-                            f'original sequence number range: {min(seq_ids)}-{max(seq_ids)}'
-                        set_sf_tag(asm_sf, 'Molecules_in_chemical_exchange', 'yes')
+                        if len(seq_ids) > 0:
+                            row[12] = f'Conformational isomer 1, PDB_model_num range: {beg_model_id}-{end_model_id}, '\
+                                f'original sequence number range: {min(seq_ids)}-{max(seq_ids)}'
+                            set_sf_tag(asm_sf, 'Molecules_in_chemical_exchange', 'yes')
 
                 ea_loop.add_data(row)
 
@@ -50488,8 +50489,9 @@ class NmrDpUtility:
                             end_model_id = model_ids_per_state * offset
                             seq_ids = [k for k, v in self.__auth_seq_ids_with_chem_exch.items()
                                        if v['chain_id'] == _auth_asym_id]
-                            _row[12] = f'Conformational isomer {offset}, PDB_model_num range: {beg_model_id}-{end_model_id}, '\
-                                f'original sequence number range: {min(seq_ids)}-{max(seq_ids)}'
+                            if len(seq_ids) > 0:
+                                _row[12] = f'Conformational isomer {offset}, PDB_model_num range: {beg_model_id}-{end_model_id}, '\
+                                    f'original sequence number range: {min(seq_ids)}-{max(seq_ids)}'
 
                             ea_loop.add_data(_row)
 

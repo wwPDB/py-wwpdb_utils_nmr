@@ -10139,7 +10139,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 continue
                         elif 'chain_id_clone' in self.__reasons and seqId in self.__reasons['chain_id_clone']:
                             fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['chain_id_clone'], seqId)
-                            if fixedChainId != chainId:
+                            if fixedChainId != chainId and isPolySeq:
                                 continue
                         elif 'seq_id_remap' in self.__reasons:
                             _, seqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, seqId)
@@ -10216,15 +10216,31 @@ class XplorMRParserListener(ParseTreeListener):
                         except ValueError:
                             pass
 
-                    if compId is None:
-                        if not isPolySeq and _factor['atom_id'][0] in SYMBOLS_ELEMENT and self.__hasNonPoly:
+                    if self.__hasNonPoly:
+                        if isPolySeq and len(_factor['atom_id'][0]) == 4\
+                           and _factor['atom_id'][0][:2] in SYMBOLS_ELEMENT\
+                           and _factor['atom_id'][0][2:] in ('+1', '+2', '+3', '1+', '2+', '3+'):
+                            elemName = _factor['atom_id'][0][:2]
                             elemCount = 0
                             for np in self.__nonPoly:
-                                if np['comp_id'][0] == _factor['atom_id'][0]:
+                                if np['comp_id'][0] == elemName:
                                     elemCount += 1
-                            if elemCount == 1 and _factor['atom_id'][0] in ps['comp_id']:
-                                compId = _factor['atom_id'][0]
+                            if elemCount > 0:
+                                continue
+
+                        elif not isPolySeq and len(_factor['atom_id'][0]) >= 2\
+                                and (_factor['atom_id'][0] in SYMBOLS_ELEMENT
+                                     or (len(_factor['atom_id'][0]) == 4 and _factor['atom_id'][0][:2] in SYMBOLS_ELEMENT
+                                         and _factor['atom_id'][0][2:] in ('+1', '+2', '+3', '1+', '2+', '3+'))):
+                            elemName = _factor['atom_id'][0][:2]
+                            elemCount = 0
+                            for np in self.__nonPoly:
+                                if np['comp_id'][0] == elemName:
+                                    elemCount += 1
+                            if elemCount == 1 and elemName in ps['comp_id']:
+                                compId = elemName
                                 seqId = ps['auth_seq_id'][0]
+                                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, cifCheck=cifCheck)
 
                     if compId is None:
                         if isPolySeq and isChainSpecified and self.__reasons is None and self.__preferAuthSeq:

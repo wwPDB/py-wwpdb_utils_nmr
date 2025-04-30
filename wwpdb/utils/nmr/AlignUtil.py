@@ -2958,6 +2958,9 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel: List[dict], polySeqRst: List[d
         test_ps = next(ps for ps in _polySeqRst if ps['chain_id'] == test_chain_id)
         len_test_ps = len(test_ps['seq_id'])
 
+        if 'gap_in_auth_seq' in ref_ps and ref_ps['gap_in_auth_seq']:
+            continue
+
         if len_ref_ps * 1.5 < len_test_ps:
 
             total_gaps = len_test_ps // len_ref_ps - 1

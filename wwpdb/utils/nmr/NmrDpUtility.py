@@ -34911,11 +34911,20 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Insufficient atom selection]') or warn.startswith('[Insufficient angle selection]'):
-                        self.report.warning.appendDescription('insufficient_mr_data', msg_dict)
-                        self.report.setWarning()
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
+                        if self.__conversion_server:
+                            self.report.error.appendDescription('unparsed_data', msg_dict)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {warn}\n")
+
+                        else:
+                            self.report.warning.appendDescription('insufficient_mr_data', msg_dict)
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Redundant data]'):
                         self.report.warning.appendDescription('redundant_mr_data', msg_dict)

@@ -1455,7 +1455,7 @@ class XplorMRParserListener(ParseTreeListener):
                 elif all('[Anomalous data]' in f for f in self.__f):
                     pass
 
-                elif not any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f)\
+                elif not any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f or '[Insufficient atom selection]' in f)\
                         and 'non_poly_remap' not in self.reasonsForReParsing\
                         and 'branch_remap' not in self.reasonsForReParsing:
 
@@ -10016,9 +10016,14 @@ class XplorMRParserListener(ParseTreeListener):
                                     self.__preferAuthSeq = not self.__preferAuthSeq
                                     self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                                     self.__setLocalSeqScheme()
-                                    if trial < 3:
+                                    # ad hoc sequence scheme switching is possible for the first restraint, otherwise the entire restraints should be re-parsed
+                                    if trial < 3 and 'Check the 1th row of' in self.__getCurrentRestraint() and self.__cur_subtype != 'dist':
                                         del _factor['atom_selection']
                                         return self.__consumeFactor_expressions(_factor, clauseName, cifCheck, trial + 1)
+                                    elif not self.__preferAuthSeq and self.__reasons is None:
+                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                                        self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                             self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {str(__factor).replace('[', '').replace(']', '')}.")
                     else:

@@ -4997,7 +4997,7 @@ class CnsMRParserListener(ParseTreeListener):
 
         self.factor = self.__consumeFactor_expressions(self.factor, clauseName, cifCheck)
 
-    def __consumeFactor_expressions(self, _factor: dict, clauseName: str = 'atom selection expression', cifCheck: bool = True) -> dict:
+    def __consumeFactor_expressions(self, _factor: dict, clauseName: str = 'atom selection expression', cifCheck: bool = True, trial: int = 1) -> dict:
         """ Consume factor expressions as atom selection if possible.
         """
 
@@ -5713,8 +5713,8 @@ class CnsMRParserListener(ParseTreeListener):
                             self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {str(__factor).replace('[', '').replace(']', '')}.")
                         else:
-                            self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                                            f"The {clauseName} has no effect for a factor {str(__factor).replace('[', '').replace(']', '')}.")
+                            # self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                            #                 f"The {clauseName} has no effect for a factor {str(__factor).replace('[', '').replace(']', '')}.")
                             if 'alt_chain_id' in _factor:  # 2mnz
                                 for chainId in _factor['chain_id']:
                                     self.updateSegmentIdDict(_factor, chainId, None, False)
@@ -5822,6 +5822,11 @@ class CnsMRParserListener(ParseTreeListener):
                                     self.__preferAuthSeq = not self.__preferAuthSeq
                                     self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                                     self.__setLocalSeqScheme()
+                                    if trial < 3:
+                                        del _factor['atom_selection']
+                                        return self.__consumeFactor_expressions(_factor, clauseName, cifCheck, trial + 1)
+                            self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
+                                            f"The {clauseName} has no effect for a factor {str(__factor).replace('[', '').replace(']', '')}.")
                     else:
                         self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                         f"The {clauseName} has no effect for a factor {str(__factor).replace('[', '').replace(']', '')}. "

@@ -226,8 +226,10 @@ class XplorMRReader:
 if __name__ == "__main__":
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/7kbv/distance.xplor',
-                 '../../tests-nmr/mock-data-remediation/7kbv/7kbv.cif')
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/7kbv/distance.xplor',
+                     '../../tests-nmr/mock-data-remediation/7kbv/7kbv.cif')
+    print(reader_listener.getReasonsForReparsing())
 
     reader = XplorMRReader(True)
     reader.setDebugMode(True)

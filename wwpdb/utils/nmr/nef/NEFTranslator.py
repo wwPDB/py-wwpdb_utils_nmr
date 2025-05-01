@@ -2381,7 +2381,7 @@ class NEFTranslator:
             return False
 
         for loop in loops:
-            cmp_dict, seq_dict = {}, {}
+            cmp_dict, seq_dict, lig_to_chain_id = {}, {}, {}
 
             seq_data = []
 
@@ -2408,6 +2408,18 @@ class NEFTranslator:
                             col1 = loop.tags.index(tags[1])
                             for row in loop:
                                 row[col0], row[col1] = row[col1], row[col0]
+
+                if coord_assembly_checker is not None:
+                    cif_np = coord_assembly_checker['non_polymer']
+                    if cif_np is not None:
+                        ligands = []
+                        for np in cif_np:
+                            ligands.extend(np['comp_id'])
+                            if np['comp_id'] != np['auth_comp_id']:
+                                ligands.extend(np['auth_comp_id'])
+                        for _comp_id in set(ligands):
+                            if ligands.count(_comp_id) == 1:
+                                lig_to_chain_id[_comp_id] = next(np['auth_chain_id'] for np in cif_np if _comp_id in np['comp_id'] or _comp_id in np['auth_comp_id'])
 
                 # convert protonated DC -> DNR, protonated C -> CH
                 if 'Atom_ID' in loop.tags and 'Auth_comp_ID' not in loop.tags\
@@ -2998,7 +3010,10 @@ class NEFTranslator:
                 if not has_valid_chain_id:
                     seq_data = loop.get_tag(tags__)
                     for row in seq_data:
-                        row[2] = def_chain_id if row[2] in emptyValue else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
+                        if row[1] in lig_to_chain_id:
+                            row[2] = lig_to_chain_id[row[1]]
+                        else:
+                            row[2] = def_chain_id if row[2] in emptyValue else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
 
             elif lp_category == '_Atom_chem_shift' and self.__remediation_mode\
                     and set(tags) & set(loop.tags) == set(tags)\
@@ -3277,23 +3292,30 @@ class NEFTranslator:
                 if not has_valid_chain_id:
                     seq_data = loop.get_tag(tags__)
                     for row in seq_data:
-                        row[2] = def_chain_id if row[2] in emptyValue else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
+                        if row[1] in lig_to_chain_id:
+                            row[2] = lig_to_chain_id[row[1]]
+                        else:
+                            row[2] = def_chain_id if row[2] in emptyValue else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
 
             elif set(tags) & set(loop.tags) == set(tags):
                 seq_data = loop.get_tag(tags)
                 for row in seq_data:
                     if row[2] in emptyValue:
-                        row[2] = def_chain_id
+                        row[2] = def_chain_id if row[1] not in lig_to_chain_id else lig_to_chain_id[row[1]]
             elif set(tags__) & set(loop.tags) == set(tags__):  # DAOTHER-7421
                 seq_data = loop.get_tag(tags__)
                 for row in seq_data:
-                    row[2] = def_chain_id if row[2] in emptyValue else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
+                    if row[1] in lig_to_chain_id:
+                        row[2] = lig_to_chain_id[row[1]]
+                    else:
+                        row[2] = def_chain_id if row[2] in emptyValue else str(row[2] if self.__remediation_mode else letterToDigit(row[2], 1))
             elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_assembly_ID tag case
                 seq_data = loop.get_tag(tags_)
                 for row in seq_data:
-                    row.append(def_chain_id)
+                    row.append(def_chain_id if row[1] not in lig_to_chain_id else lig_to_chain_id[row[1]])
+                comp_id_col = loop.tags.index('Comp_ID')
                 for row in loop:
-                    row.append(def_chain_id)
+                    row.append(def_chain_id if row[comp_id_col] not in lig_to_chain_id else lig_to_chain_id[row[comp_id_col]])
                 loop.add_tag(chain_id)
             else:
                 _tags_exist = _normal_chain_tag = False
@@ -3313,14 +3335,17 @@ class NEFTranslator:
                             if alt_seq_id_offset != 0:
                                 row_[0] += alt_seq_id_offset
                             if row_[2] in emptyValue:
-                                row_[2] = def_chain_id
+                                row_[2] = def_chain_id if row_[1] not in lig_to_chain_id else lig_to_chain_id[row_[1]]
                         seq_data += seq_data_
                         _normal_chain_tag = True
                     elif set(_tags__) & set(loop.tags) == set(_tags__):  # DAOTHER-7421
                         _tags_exist = True
                         seq_data_ = loop.get_tag(_tags__)
                         for row_ in seq_data_:
-                            row_[2] = def_chain_id if row_[2] in emptyValue else str(row_[2] if self.__remediation_mode else letterToDigit(row_[2], 1))
+                            if row_[1] in lig_to_chain_id:
+                                row_[2] = lig_to_chain_id[row_[1]]
+                            else:
+                                row_[2] = def_chain_id if row_[2] in emptyValue else str(row_[2] if self.__remediation_mode else letterToDigit(row_[2], 1))
                         seq_data += seq_data_
                         if _normal_chain_tag:
                             raise LookupError(f"Missing mandatory {_tags[2]!r} loop tag.")
@@ -3328,7 +3353,7 @@ class NEFTranslator:
                         _tags_exist = True
                         seq_data_ = loop.get_tag(_tags_)
                         for row_ in seq_data_:
-                            row_.append(def_chain_id)
+                            row_.append(def_chain_id if row_[1] not in lig_to_chain_id else lig_to_chain_id[row_[1]])
                         seq_data += seq_data_
 
                     elif set(_alt_tags) & set(loop.tags) == set(_alt_tags):
@@ -3338,14 +3363,17 @@ class NEFTranslator:
                             if alt_seq_id_offset != 0:
                                 row_[0] += alt_seq_id_offset
                             if row_[2] in emptyValue:
-                                row_[2] = def_chain_id
+                                row_[2] = def_chain_id if row_[1] not in lig_to_chain_id else lig_to_chain_id[row_[1]]
                         seq_data += seq_data_
                         _normal_chain_tag = True
                     elif set(_alt_tags__) & set(loop.tags) == set(_alt_tags__):  # DAOTHER-7421
                         _tags_exist = True
                         seq_data_ = loop.get_tag(_alt_tags__)
                         for row_ in seq_data_:
-                            row_[2] = def_chain_id if row_[2] in emptyValue else str(row_[2] if self.__remediation_mode else letterToDigit(row_[2], 1))
+                            if row_[1] in lig_to_chain_id:
+                                row_[2] = lig_to_chain_id[row_[1]]
+                            else:
+                                row_[2] = def_chain_id if row_[2] in emptyValue else str(row_[2] if self.__remediation_mode else letterToDigit(row_[2], 1))
                         seq_data += seq_data_
                         if _normal_chain_tag:
                             raise LookupError(f"Missing mandatory {_alt_tags[2]!r} loop tag.")
@@ -3353,7 +3381,7 @@ class NEFTranslator:
                         _tags_exist = True
                         seq_data_ = loop.get_tag(_alt_tags_)
                         for row_ in seq_data_:
-                            row_.append(def_chain_id)
+                            row_.append(def_chain_id if row_[1] not in lig_to_chain_id else lig_to_chain_id[row_[1]])
                         seq_data += seq_data_
 
                 if not _tags_exist:
@@ -5277,7 +5305,7 @@ class NEFTranslator:
                                 if 'uppercase' in k and k['uppercase']:
                                     ent[name] = val.upper()
                                 else:
-                                    ent[name] = val
+                                    ent[name] = val if isinstance(val, str) else str(val)
 
                         else:
                             for d in data_items:
@@ -5728,7 +5756,7 @@ class NEFTranslator:
                                         if 'uppercase' in d and d['uppercase']:
                                             ent[name] = val.upper()
                                         else:
-                                            ent[name] = val
+                                            ent[name] = val if isinstance(val, str) else str(val)
 
                     for d in data_items:
                         if 'group-mandatory' in d and d['group-mandatory']:

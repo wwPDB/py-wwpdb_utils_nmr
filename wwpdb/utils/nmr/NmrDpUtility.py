@@ -25227,7 +25227,7 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
-                            elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
+                            elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03 and self.__exptl_method != 'SOLID-STATE NMR':
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                     + f"] {full_value_name} {value} is an unusual/rare assignment. "\
@@ -25791,7 +25791,7 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"+{self.__class_name__}.__validateCsValue() ++ Warning  - {warn}\n")
 
-                        elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
+                        elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03 and self.__exptl_method != 'SOLID-STATE NMR':
 
                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name)\
                                 + f"] {full_value_name} {value} is an unusual/rare assignment. "\
@@ -40087,7 +40087,7 @@ class NmrDpUtility:
                 if content_subtype in ('entry_info', 'entity', 'ph_param_data'):
                     continue
 
-                if self.report_prev is not None:
+                if self.report_prev is not None and content_subtype != 'chem_shift':
                     prev_stats = self.report_prev.getNmrLegacyStatsOfExptlData(fileListId, content_subtype)
                     if prev_stats is not None:
                         stats[content_subtype] = prev_stats
@@ -47458,6 +47458,10 @@ class NmrDpUtility:
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
                           'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
                           'sequence_coverage': result['sequence_coverage']}
+                    if 'auth_chain_id' in cif_poly_seq[col]:
+                        ca['test_auth_chain_id'] = cif_poly_seq[col]['auth_chain_id']
+                    else:
+                        ca['test_auth_chain_id'] = chain_id2
 
                     # DAOTHER-8751
                     low_evid_chain_mapping = result['sequence_coverage'] < LOW_SEQ_COVERAGE
@@ -47986,6 +47990,10 @@ class NmrDpUtility:
                     ca = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'],
                           'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'],
                           'sequence_coverage': result['sequence_coverage']}
+                    if 'auth_chain_id' in cif_poly_seq[row]:
+                        ca['ref_auth_chain_id'] = cif_poly_seq[row]['auth_chain_id']
+                    else:
+                        ca['ref_auth_chain_id'] = chain_id
 
                     # DAOTHER-8751
                     low_evid_chain_mapping = result['sequence_coverage'] < LOW_SEQ_COVERAGE

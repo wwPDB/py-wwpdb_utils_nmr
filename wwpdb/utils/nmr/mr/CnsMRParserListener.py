@@ -1313,11 +1313,12 @@ class CnsMRParserListener(ParseTreeListener):
                 elif all('[Anomalous data]' in f for f in self.__f):
                     pass
 
-                elif not any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f or '[Insufficient atom selection]' in f)\
+                elif not any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f)\
                         and 'non_poly_remap' not in self.reasonsForReParsing\
                         and 'branch_remap' not in self.reasonsForReParsing:
 
-                    if len(self.reasonsForReParsing) > 0:
+                    # ad hoc sequence scheme switching of distance restraints should be inherited
+                    if len(self.reasonsForReParsing) > 0 and not any(f for f in self.__f if 'Check the 1th row of distance restraints' in f):
                         self.reasonsForReParsing = {}
 
                     if any(f for f in self.__f if '[Sequence mismatch]' in f):
@@ -5823,10 +5824,11 @@ class CnsMRParserListener(ParseTreeListener):
                                     self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                                     self.__setLocalSeqScheme()
                                     # ad hoc sequence scheme switching is possible for the first restraint, otherwise the entire restraints should be re-parsed
-                                    if trial < 3 and 'Check the 1th row of' in self.__getCurrentRestraint() and self.__cur_subtype != 'dist':
+                                    if trial < 3 and 'Check the 1th row of' in self.__getCurrentRestraint()\
+                                       and self.__cur_subtype != 'dist':  # skip ad hoc sequence scheme switching should be inherited to the other restraints
                                         del _factor['atom_selection']
                                         return self.__consumeFactor_expressions(_factor, clauseName, cifCheck, trial + 1)
-                                    elif not self.__preferAuthSeq and self.__reasons is None:
+                                    if not self.__preferAuthSeq and self.__reasons is None and self.__cur_subtype != 'dist':
                                         if 'label_seq_scheme' not in self.reasonsForReParsing:
                                             self.reasonsForReParsing['label_seq_scheme'] = {}
                                         self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True

@@ -1460,10 +1460,13 @@ class XplorMRParserListener(ParseTreeListener):
                         and 'branch_remap' not in self.reasonsForReParsing:
 
                     # ad hoc sequence scheme switching of distance restraints should be inherited
-                    if len(self.reasonsForReParsing) == 0\
-                       and any(f for f in self.__f if '[Insufficient atom selection]' in f and 'Check the 1th row of distance restraints' in f and '_distance_' in f)\
-                       and not any(f for f in self.__f if 'Check the 1th row of distance restraints' in f
-                                   and ('[Atom not found]' in f or '[Hydrogen not instantiated]' in f or '[Coordinate issue]' in f)):
+                    insuff_dist_atom_sel_warnings = [f for f in self.__f if '[Insufficient atom selection]' in f and 'distance restraints' in f]
+                    insuff_dist_atom_sel_in_1st_row_warnings = [f for f in insuff_dist_atom_sel_warnings if 'Check the 1th row of distance restraints' in f]
+                    invalid_dist_atom_sel_in_1st_row = any(f for f in self.__f if 'Check the 1th row of distance restraints' in f
+                                                           and ('[Atom not found]' in f or '[Hydrogen not instantiated]' in f or '[Coordinate issue]' in f))
+                    if len(self.reasonsForReParsing) == 0 and len(insuff_dist_atom_sel_in_1st_row_warnings) > 0 and not invalid_dist_atom_sel_in_1st_row\
+                       and (any(f for f in insuff_dist_atom_sel_in_1st_row_warnings if '_distance_' in f)
+                            or (len(insuff_dist_atom_sel_warnings) == 1 and any(f for f in insuff_dist_atom_sel_in_1st_row_warnings if 'None' in f))):
                         if 'label_seq_scheme' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['label_seq_scheme'] = {}
                         self.reasonsForReParsing['label_seq_scheme']['dist'] = True

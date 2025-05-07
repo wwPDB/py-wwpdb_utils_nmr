@@ -1318,7 +1318,16 @@ class CnsMRParserListener(ParseTreeListener):
                         and 'branch_remap' not in self.reasonsForReParsing:
 
                     # ad hoc sequence scheme switching of distance restraints should be inherited
-                    if len(self.reasonsForReParsing) > 0 and not any(f for f in self.__f if 'Check the 1th row of distance restraints' in f):
+                    if len(self.reasonsForReParsing) == 0\
+                       and any(f for f in self.__f if '[Insufficient atom selection]' in f and 'Check the 1th row of distance restraints' in f and '_distance_' in f)\
+                       and not any(f for f in self.__f if 'Check the 1th row of distance restraints' in f
+                                   and ('[Atom not found]' in f or '[Hydrogen not instantiated]' in f or '[Coordinate issue]' in f)):
+                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                        self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                        set_label_seq_scheme()
+
+                    elif len(self.reasonsForReParsing) > 0 and self.distRestraints > 0:
                         self.reasonsForReParsing = {}
 
                     if any(f for f in self.__f if '[Sequence mismatch]' in f):

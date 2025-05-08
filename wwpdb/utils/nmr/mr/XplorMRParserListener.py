@@ -856,6 +856,11 @@ class XplorMRParserListener(ParseTreeListener):
 
         try:
 
+            pro_hn_atom_not_found_pattern = re.compile(r"^\[Atom not found\] \[Check the \d+th row of [^,]+s.*\] (\S+):(\d+):PRO:[Hh][Nn]? is not present in the coordinates\.$")
+            gly_hb_atom_not_found_pattern = re.compile(r"^\[Atom not found\] \[Check the \d+th row of [^,]+s.*\] (\S+):(\d+):GLY:[Hh][Bb]\S* is not present in the coordinates\.$")
+            pro_hn_atom_not_found_warnings = [f for f in self.__f if pro_hn_atom_not_found_pattern.match(f)]
+            gly_hb_atom_not_found_warnings = [f for f in self.__f if gly_hb_atom_not_found_pattern.match(f)]
+
             _seqIdRemap = []
 
             if self.__hasPolySeq and self.__polySeqRst is not None:
@@ -1165,7 +1170,8 @@ class XplorMRParserListener(ParseTreeListener):
                                             valid = False
                                             break
                                         chainIdRemap[auth_seq_id] = {'chain_id': chainId, 'seq_id': auth_seq_id}
-                                    continue
+                                    if len(pro_hn_atom_not_found_warnings) + len(gly_hb_atom_not_found_warnings) == 0:
+                                        continue
                                 if all(seqId in ps['seq_id'] and seqId not in ps['auth_seq_id'] for seqId in item['seq_id']):
                                     for seqId, atoms in zip(item['seq_id'], item['atom_id']):
                                         compId = ps['comp_id'][ps['seq_id'].index(seqId)]
@@ -1493,6 +1499,37 @@ class XplorMRParserListener(ParseTreeListener):
                         for f in __f:
                             if '[Sequence mismatch]' in f:
                                 self.__f.remove(f)
+
+                else:
+                    insuff_dist_atom_sel_warnings = [f for f in self.__f if '[Insufficient atom selection]' in f and 'distance restraints' in f]
+                    insuff_dist_atom_sel_in_1st_row_warnings = [f for f in insuff_dist_atom_sel_warnings if 'Check the 1th row of distance restraints' in f]
+                    invalid_dist_atom_sel_in_1st_row = any(f for f in self.__f if 'Check the 1th row of distance restraints' in f
+                                                           and ('[Atom not found]' in f or '[Hydrogen not instantiated]' in f or '[Coordinate issue]' in f))
+                    if 'label_seq_offset' in self.reasonsForReParsing and len(insuff_dist_atom_sel_in_1st_row_warnings) > 0 and not invalid_dist_atom_sel_in_1st_row\
+                       and (any(f for f in insuff_dist_atom_sel_in_1st_row_warnings if '_distance_' in f)
+                            or (len(insuff_dist_atom_sel_warnings) >= 1 and any(f for f in insuff_dist_atom_sel_in_1st_row_warnings if 'None' in f))):
+                        if len(pro_hn_atom_not_found_warnings) + len(gly_hb_atom_not_found_warnings) > 0:
+                            for chain_id in self.reasonsForReParsing['label_seq_offset']:
+                                pro_seq_ids, gly_seq_ids = set(), set()
+                                for f in pro_hn_atom_not_found_warnings:
+                                    g = pro_hn_atom_not_found_pattern.search(f).groups()
+                                    if g[0] != chain_id:
+                                        continue
+                                    pro_seq_ids.add(int(g[1]))
+                                for f in gly_hb_atom_not_found_warnings:
+                                    g = gly_hb_atom_not_found_pattern.search(f).groups()
+                                    if g[0] != chain_id:
+                                        continue
+                                    gly_seq_ids.add(int(g[1]))
+                                if len(pro_seq_ids) + len(gly_seq_ids) == 0:
+                                    continue
+                                ps = next(ps for ps in self.__polySeq if ps['chain_id'] == chain_id)
+                                if ps['comp_id'][0] == 'ACE':
+                                    self.reasonsForReParsing['label_seq_offset'][chain_id] = 1
+                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                        self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                        set_label_seq_scheme()
 
             elif self.__reasons is None and len(self.reasonsForReParsing) == 0 and all('[Insufficient atom selection]' in f for f in self.__f):
                 set_label_seq_scheme()

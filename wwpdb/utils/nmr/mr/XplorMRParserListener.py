@@ -11384,18 +11384,44 @@ class XplorMRParserListener(ParseTreeListener):
         elif isinstance(atomSelection[0], str) and atomSelection[0] == '*':
             return _factor
 
+        factor_has_is_poly = factor_has_auth_atom_id = atomsel_has_is_poly = atomsel_has_auth_atom_id = None
+        if len(_factor['atom_selection']) > 0:
+            factor_has_is_poly = 'is_poly' in _factor['atom_selection'][0]
+            factor_has_auth_atom_id = 'auth_atom_id' in _factor['atom_selection'][0]
+        if atomSelection is not None and len(atomSelection) > 0:
+            atomsel_has_is_poly = 'is_poly' in atomSelection[0]
+            atomsel_has_auth_atom_id = 'auth_atom_id' in atomSelection[0]
+
+        refAtomSelection = _factor['atom_selection']
+        if factor_has_is_poly != atomsel_has_is_poly or factor_has_auth_atom_id != atomsel_has_auth_atom_id:
+            refAtomSelection = copy.deepcopy(_factor['atom_selection'])
+            if factor_has_is_poly != atomsel_has_is_poly:
+                if factor_has_is_poly:
+                    for _atom in refAtomSelection:
+                        del _atom['is_poly']
+                if atomsel_has_is_poly:
+                    for _atom in atomSelection:
+                        del _atom['is_poly']
+            if factor_has_auth_atom_id != atomsel_has_auth_atom_id:
+                if factor_has_auth_atom_id:
+                    for _atom in refAtomSelection:
+                        del _atom['auth_atom_id']
+                if atomsel_has_auth_atom_id:
+                    for _atom in atomSelection:
+                        del _atom['auth_atom_id']
+
         _atomSelection = []
-        for _atom in _factor['atom_selection']:
+        for _atom, _atom_ in zip(refAtomSelection, _factor['atom_selection']):
             if isinstance(_atom, str) and _atom == '*':
                 _factor['atom_selection'] = atomSelection
                 return _factor
             if _atom in atomSelection:
-                _atomSelection.append(_atom)
+                _atomSelection.append(_atom_)
             elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
                 chain_id = _atom['chain_id']
                 seq_id = _atom['seq_id']
                 if any(_atom2 for _atom2 in atomSelection if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
-                    _atomSelection.append(_atom)
+                    _atomSelection.append(_atom_)
 
         _factor['atom_selection'] = _atomSelection
 
@@ -11488,7 +11514,7 @@ class XplorMRParserListener(ParseTreeListener):
             if len(self.factor) > 0:
                 self.factor = self.__consumeFactor_expressions(self.factor, cifCheck=True)
                 if 'atom_selection' in self.factor:
-                    self.stackTerms.append(self.factor['atom_selection'])
+                    self.stackFactors.append(self.factor)
                 self.factor = {}
 
         elif ctx.Point():
@@ -12583,6 +12609,9 @@ class XplorMRParserListener(ParseTreeListener):
                     self.consumeFactor_expressions("'name' clause", False)
                     eval_factor = True
 
+                if not eval_factor and 'atom_selection' in self.factor:
+                    self.factor = {}
+
                 if ctx.Colon():  # range expression
                     if ctx.Simple_name(0):
                         begAtomId = str(ctx.Simple_name(0))
@@ -12675,7 +12704,12 @@ class XplorMRParserListener(ParseTreeListener):
                     self.factor = self.__consumeFactor_expressions(self.factor, cifCheck=True)
 
                     if 'atom_selection' in self.factor:
-                        _refAtomSelection = self.factor['atom_selection']
+                        _refAtomSelection = copy.deepcopy(self.factor['atom_selection'])
+                        for atom in _refAtomSelection:
+                            if 'is_poly' in atom:
+                                del atom['is_poly']
+                            if 'auth_atom_id' in atom:
+                                del atom['auth_atom_id']
 
                         try:
 
@@ -12721,7 +12755,15 @@ class XplorMRParserListener(ParseTreeListener):
                         if self.__verbose:
                             self.__lfh.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
-                    _refAtomSelection = [atom for atom in self.factor['atom_selection'] if atom in _atomSelection]
+                    _refAtomSelection = copy.deepcopy(self.factor['atom_selection'])
+                    for atom in _refAtomSelection:
+                        if 'is_poly' in atom:
+                            del atom['is_poly']
+                        if 'auth_atom_id' in atom:
+                            del atom['auth_atom_id']
+
+                    _refAtomSelection = [atom for atom in _refAtomSelection if atom in _atomSelection]
+
                     self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
 
                     if len(self.factor['atom_selection']) == 0:
@@ -12903,6 +12945,9 @@ class XplorMRParserListener(ParseTreeListener):
                     self.consumeFactor_expressions("'residue' clause", False)
                     eval_factor = True
 
+                if not eval_factor and 'atom_selection' in self.factor:
+                    self.factor = {}
+
                 if ctx.Colon():  # range expression
                     self.factor['seq_id'] = list(range(int(str(ctx.Integer(0))), int(str(ctx.Integer(0))) + 1))
 
@@ -12960,6 +13005,9 @@ class XplorMRParserListener(ParseTreeListener):
                     __factor = copy.copy(self.factor)
                     self.consumeFactor_expressions("'resname' clause", False)
                     eval_factor = True
+
+                if not eval_factor and 'atom_selection' in self.factor:
+                    self.factor = {}
 
                 if ctx.Colon():  # range expression
                     self.factor['comp_ids'] = [str(ctx.Simple_name(0)).upper(), str(ctx.Simple_name(1)).upper()]
@@ -13020,6 +13068,9 @@ class XplorMRParserListener(ParseTreeListener):
                     __factor = copy.copy(self.factor)
                     self.consumeFactor_expressions("'segidentifier' clause", False)
                     eval_factor = True
+
+                if not eval_factor and 'atom_selection' in self.factor:
+                    self.factor = {}
 
                 if ctx.Colon():  # range expression
                     if ctx.Simple_name(0):

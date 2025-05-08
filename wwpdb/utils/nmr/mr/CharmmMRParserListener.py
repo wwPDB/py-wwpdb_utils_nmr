@@ -4029,6 +4029,10 @@ class CharmmMRParserListener(ParseTreeListener):
                             elif seqId == 1 and atomId == 'H1' and self.__csStat.peptideLike(compId) and 'H' in atomSiteAtomId:
                                 atomIds = ['H']
 
+                        if atomId.startswith('CEN'):
+                            peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+                            atomIds = self.__csStat.getCentroidAtoms(compId, False, peptide, nucleotide, carbohydrate)
+
                         for _atomId in atomIds:
                             ccdCheck = not cifCheck
 

@@ -1116,7 +1116,8 @@ class RosettaMRParserListener(ParseTreeListener):
             memberId = '.'
             if self.__createSfDict:
                 if memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1 and not isNested:
-                    if self.atomSelectionSet[0][0]['auth_atom_id'] != 'CEN' and self.atomSelectionSet[1][0]['auth_atom_id'] != 'CEN':
+                    if not self.atomSelectionSet[0][0]['auth_atom_id'].upper().startswith('CEN')\
+                       and not self.atomSelectionSet[1][0]['auth_atom_id'].upper().startswith('CEN'):
                         memberLogicCode = '.'
 
                 if memberLogicCode == 'OR':
@@ -1819,7 +1820,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 elif seqId == 1 and atomId == 'H1' and self.__csStat.peptideLike(cifCompId) and 'H' in coordAtomSite['atom_id']:
                     _atomId = ['H']
 
-            if authAtomId == 'CEN' and len(_atomId) == 0:
+            if authAtomId.upper().startswith('CEN') and len(_atomId) == 0:
                 peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(cifCompId)
                 _atomId = self.__csStat.getCentroidAtoms(cifCompId, False, peptide, nucleotide, carbohydrate)
 
@@ -5052,7 +5053,8 @@ class RosettaMRParserListener(ParseTreeListener):
             memberId = '.'
             if self.__createSfDict:
                 if memberLogicCode == 'OR' and has_intra_chain and len(rep_chain_id_set) == 1 and not isNested:
-                    if self.atomSelectionSet[0][0]['auth_atom_id'] != 'CEN' and self.atomSelectionSet[1][0]['auth_atom_id'] != 'CEN':
+                    if not self.atomSelectionSet[0][0]['auth_atom_id'].upper().startswith('CEN')\
+                       and not self.atomSelectionSet[1][0]['auth_atom_id'].upper().startswith('CEN'):
                         memberLogicCode = '.'
 
                 if memberLogicCode == 'OR':

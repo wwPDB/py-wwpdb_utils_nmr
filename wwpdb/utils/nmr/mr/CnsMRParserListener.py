@@ -1241,10 +1241,10 @@ class CnsMRParserListener(ParseTreeListener):
                 if 'label_seq_offset' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_offset']
                 if 'label_seq_scheme' in self.reasonsForReParsing:
-                    del self.reasonsForReParsing['label_seq_scheme']
                     if 'global_auth_sequence_offset' not in self.reasonsForReParsing:
                         self.reasonsForReParsing['global_auth_sequence_offset'] = self.reasonsForReParsing['global_sequence_offset']
                         del self.reasonsForReParsing['global_sequence_offset']
+                    no_gap = True
                     for ps in self.__polySeq:
                         if ps['auth_chain_id'] not in self.reasonsForReParsing['global_auth_sequence_offset']:
                             if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
@@ -1264,6 +1264,13 @@ class CnsMRParserListener(ParseTreeListener):
                                             break
                                 if safe:
                                     seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+                            elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
+                                del self.reasonsForReParsing['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                if len(self.reasonsForReParsing['global_auth_sequence_offset']) == 0:
+                                    del self.reasonsForReParsing['global_auth_sequence_offset']
+                                no_gap = False
+                    if no_gap:
+                        del self.reasonsForReParsing['label_seq_scheme']
                 if 'inhibit_label_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['inhibit_label_seq_scheme']
                 if 'seq_id_remap' in self.reasonsForReParsing:
@@ -1273,7 +1280,7 @@ class CnsMRParserListener(ParseTreeListener):
                 if 'local_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
                 if 'label_seq_scheme' in self.reasonsForReParsing:
-                    del self.reasonsForReParsing['label_seq_scheme']
+                    no_gap = True
                     for ps in self.__polySeq:
                         if ps['auth_chain_id'] not in self.reasonsForReParsing['global_auth_sequence_offset']:
                             if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
@@ -1293,6 +1300,13 @@ class CnsMRParserListener(ParseTreeListener):
                                             break
                                 if safe:
                                     seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+                        elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
+                            del self.reasonsForReParsing['global_auth_sequence_offset'][ps['auth_chain_id']]
+                            if len(self.reasonsForReParsing['global_auth_sequence_offset']) == 0:
+                                del self.reasonsForReParsing['global_auth_sequence_offset']
+                            no_gap = False
+                    if no_gap:
+                        del self.reasonsForReParsing['label_seq_scheme']
                 if 'label_seq_offset' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_offset']
                 if 'inhibit_label_seq_scheme' in self.reasonsForReParsing:

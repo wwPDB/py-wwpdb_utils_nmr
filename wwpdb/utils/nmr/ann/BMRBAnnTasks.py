@@ -425,7 +425,7 @@ class BMRBAnnTasks:
 
                                 except KeyError:
                                     items = ['Experiment_ID', 'Experiment_name', 'Sample_ID', 'Sample_label', 'Sample_state',
-                                             'Extry_ID', 'Assigned_chem_shift_list_ID']
+                                             'Entry_ID', 'Assigned_chem_shift_list_ID']
 
                                     cs_list_id = get_first_sf_tag(sf, 'ID')
 

@@ -1090,7 +1090,7 @@ class CharmmMRParserListener(ParseTreeListener):
                     if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
                         del self.reasonsForReParsing['global_sequence_offset']
 
-            seqIdRemapForRemainingLargeGap = []
+            seqIdRemapForRemaining = []
             if 'global_sequence_offset' in self.reasonsForReParsing:
                 if 'local_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
@@ -1102,15 +1102,24 @@ class CharmmMRParserListener(ParseTreeListener):
                         self.reasonsForReParsing['global_auth_sequence_offset'] = self.reasonsForReParsing['global_sequence_offset']
                         del self.reasonsForReParsing['global_sequence_offset']
                     for ps in self.__polySeq:
-                        if ps['auth_chain_id'] not in self.reasonsForReParsing['global_auth_sequence_offset']\
-                           and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
-                            offset = next(seq_id - auth_seq_id for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']))
-                            if any(abs(seq_id - auth_seq_id - offset) > 20 for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id'])):
-                                failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed if failed_ps['chain_id'] == ps['auth_chain_id']), None)
-                                if failed_ps is None:
-                                    continue
-                                if any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in failed_ps['seq_id']):
-                                    seqIdRemapForRemainingLargeGap.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+                        if ps['auth_chain_id'] not in self.reasonsForReParsing['global_auth_sequence_offset']:
+                            if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
+                                offset = next(seq_id - auth_seq_id for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']))
+                                if any(abs(seq_id - auth_seq_id - offset) > 20 for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id'])):
+                                    failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed if failed_ps['chain_id'] == ps['auth_chain_id']), None)
+                                    if failed_ps is None:
+                                        continue
+                                    if any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in failed_ps['seq_id']):
+                                        seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+                            elif any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in ps['seq_id']):
+                                safe = True
+                                for _ps in self.__polySeq:
+                                    if _ps['auth_chain_id'] in self.reasonsForReParsing['global_auth_sequence_offset']:
+                                        if any(seq_id in ps['seq_id'] and seq_id in _ps['auth_seq_id'] for seq_id in ps['seq_id']):
+                                            safe = False
+                                            break
+                                if safe:
+                                    seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
                 if 'inhibit_label_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['inhibit_label_seq_scheme']
                 if 'seq_id_remap' in self.reasonsForReParsing:
@@ -1121,6 +1130,25 @@ class CharmmMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['local_seq_scheme']
                 if 'label_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_scheme']
+                    for ps in self.__polySeq:
+                        if ps['auth_chain_id'] not in self.reasonsForReParsing['global_auth_sequence_offset']:
+                            if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
+                                offset = next(seq_id - auth_seq_id for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']))
+                                if any(abs(seq_id - auth_seq_id - offset) > 20 for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id'])):
+                                    failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed if failed_ps['chain_id'] == ps['auth_chain_id']), None)
+                                    if failed_ps is None:
+                                        continue
+                                    if any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in failed_ps['seq_id']):
+                                        seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+                            elif any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in ps['seq_id']):
+                                safe = True
+                                for _ps in self.__polySeq:
+                                    if _ps['auth_chain_id'] in self.reasonsForReParsing['global_auth_sequence_offset']:
+                                        if any(seq_id in ps['seq_id'] and seq_id in _ps['auth_seq_id'] for seq_id in ps['seq_id']):
+                                            safe = False
+                                            break
+                                if safe:
+                                    seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
                 if 'label_seq_offset' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_offset']
                 if 'inhibit_label_seq_scheme' in self.reasonsForReParsing:
@@ -1164,8 +1192,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                 del self.reasonsForReParsing['global_sequence_offset']
                             del self.reasonsForReParsing['global_auth_sequence_offset']
                             self.reasonsForReParsing['chain_id_remap'] = chainIdRemap
-                if len(seqIdRemapForRemainingLargeGap) > 0:
-                    self.reasonsForReParsing['seq_id_remap'] = seqIdRemapForRemainingLargeGap
+
+            if len(seqIdRemapForRemaining) > 0:
+                self.reasonsForReParsing['seq_id_remap'] = seqIdRemapForRemaining
 
             if 'local_seq_scheme' in self.reasonsForReParsing and len(self.reasonsForReParsing) == 1:
                 mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
@@ -1197,7 +1226,8 @@ class CharmmMRParserListener(ParseTreeListener):
                     insuff_dist_atom_sel_in_1st_row_warnings = [f for f in insuff_dist_atom_sel_warnings if 'Check the 1th row of distance restraints' in f]
                     invalid_dist_atom_sel_in_1st_row = any(f for f in self.__f if 'Check the 1th row of distance restraints' in f
                                                            and ('[Atom not found]' in f or '[Hydrogen not instantiated]' in f or '[Coordinate issue]' in f))
-                    if len(self.reasonsForReParsing) == 0 and len(insuff_dist_atom_sel_in_1st_row_warnings) > 0 and not invalid_dist_atom_sel_in_1st_row\
+                    if len(insuff_dist_atom_sel_in_1st_row_warnings) > 0 and not invalid_dist_atom_sel_in_1st_row\
+                       and (len(self.reasonsForReParsing) == 0 or (len(self.reasonsForReParsing) == 1 and 'label_seq_scheme' in self.reasonsForReParsing))\
                        and (any(f for f in insuff_dist_atom_sel_in_1st_row_warnings if '_distance_' in f)
                             or (len(insuff_dist_atom_sel_warnings) == 1 and any(f for f in insuff_dist_atom_sel_in_1st_row_warnings if 'None' in f))):
                         if 'label_seq_scheme' not in self.reasonsForReParsing:
@@ -1205,7 +1235,8 @@ class CharmmMRParserListener(ParseTreeListener):
                         self.reasonsForReParsing['label_seq_scheme']['dist'] = True
                         set_label_seq_scheme()
 
-                    elif len(self.reasonsForReParsing) > 0 and self.distRestraints > 0:
+                    elif len(self.reasonsForReParsing) > 0 and self.distRestraints > 0\
+                            and 'global_auth_sequence_offset' not in self.reasonsForReParsing:
                         self.reasonsForReParsing = {}
 
                     if any(f for f in self.__f if '[Sequence mismatch]' in f):
@@ -1278,6 +1309,31 @@ class CharmmMRParserListener(ParseTreeListener):
                             src_chain_id_set.sort()
                             for src_chain_id, dst_chain_id in zip(src_chain_id_set, dst_chain_id_set):
                                 self.reasonsForReParsing['segment_id_mismatch'][src_chain_id] = dst_chain_id
+
+                for chain_id in self.reasonsForReParsing['segment_id_mismatch'].values():
+                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id), None)
+                    if ps is None:
+                        continue
+                    if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
+                        offset = next(seq_id - auth_seq_id for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']))
+                        if any(abs(seq_id - auth_seq_id - offset) > 20 for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id'])):
+                            failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed if failed_ps['chain_id'] == ps['auth_chain_id']), None)
+                            if failed_ps is None:
+                                continue
+                            if any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in failed_ps['seq_id']):
+                                seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+                    elif any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in ps['seq_id']):
+                        safe = True
+                        for _ps in self.__polySeq:
+                            if _ps['auth_chain_id'] != ps['auth_chain_id']:
+                                if any(seq_id in ps['seq_id'] and seq_id in _ps['auth_seq_id'] for seq_id in ps['seq_id']):
+                                    safe = False
+                                    break
+                        if safe:
+                            seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+
+                if len(seqIdRemapForRemaining) > 0:
+                    self.reasonsForReParsing['seq_id_remap'] = seqIdRemapForRemaining
 
                 if len(self.__f) == 0 and len(self.reasonsForReParsing) > 0:
                     self.reasonsForReParsing = {}

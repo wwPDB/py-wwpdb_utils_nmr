@@ -100,20 +100,20 @@ name|type|description
 
 After the input and output resources are complete, calling **op()** for a particular workflow operation performs a series of data processing.
 
-workflow operation|role
-------------------|----
-`nmr-nef-consistency-check`|Validate NEF data file
-`nmr-str-consistency-check`|Validate NMR-STAR data file
-`nmr-nef2str-deposit`|Convert NEF to NMR-STAR file
-`nmr-nef2cif-deposit`|Convert NEF to NMR-STAR and CIF formatted NMR-STAR file for OneDep system
-`nmr-str2str-deposit`|Convert NMR-STAR file
-`nmr-str2cif-deposit`|Convert NMR-STAR file and generate CIF formatted NMR-STAR file for OneDep system
-`nmr-str2nef-release`|Convert NMR-STAR file to NEF for OneDep release module.
-`nmr-cs-nef-consistency-check`|**Deprecated.**
-`nmr-cs-str-consistency-check`|**Deprecated.**
-`nmr-cs-mr-merge`|Combine assigned chemical shifts and NMR restraints into an NMR unified data file.
-`nmr-str2cif-annotate`|OneDep system only, Update NMR-STAR file based on annotated model file.
-`nmr-if-merge-deposit`|Merge NMR metadata (aka. NMRIF) to NMR-STAR file on OneDep submission.
+workflow operation|role|primary output file(s) and its file path API
+------------------|----|-----------------------------------------
+`nmr-nef-consistency-check`|Validate NEF file|Report file: **addOutput('`report_file_path`', '`file`', file_path)**
+`nmr-str-consistency-check`|Validate NMR-STAR file|Report file: **addOutput('`report_file_path`', '`file`', file_path)**
+`nmr-nef2str-deposit`|Convert NEF file to NMR-STAR file|NMR-STAR file: **addOutput('`report_file_path`', '`file`', file_path)**
+`nmr-nef2cif-deposit`|Convert NEF file to NMR-STAR and generate CIF formatted NMR-STAR file for OneDep system|NMR-STAR file: **setDestination(file_path)**,<br />CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
+`nmr-str2str-deposit`|Convert NMR-STAR file|NMR-STAR file: **setDestination(file_path)**
+`nmr-str2cif-deposit`|Convert NMR-STAR file and generate CIF formatted NMR-STAR file for OneDep system|NMR-STAR file: **setDestination(file_path)**,<br />CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
+`nmr-str2nef-release`|Convert NMR-STAR file to NEF file for OneDep release module.|NEF file: **setDestination(file_path)**
+`nmr-cs-nef-consistency-check`|**Deprecated.**|Report file: **addOutput('`report_file_path`', '`file`', file_path)**
+`nmr-cs-str-consistency-check`|**Deprecated.**|Report file: **addOutput('`report_file_path`', '`file`', file_path)**
+`nmr-cs-mr-merge`|Combine assigned chemical shifts and NMR restraints. Optionally, validate spectral peak lists and insert them as raw text data using `_Spectral_peak_list.Text_data` tag, otherwise convert them using regular NMR-STAR loops and tags|NMR-STAR file: **setDestination(file_path)**,<br />CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
+`nmr-str2cif-annotate`|OneDep system only, Update NMR-STAR file based on annotated model file|CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
+`nmr-if-merge-deposit`|Merge available NMR metadata (aka. NMRIF) to NMR-STAR file|CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
 
 ## Typical workflow operations
 

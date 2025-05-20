@@ -36746,7 +36746,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if file_type.startswith('nm-res') or file_type.startswith('nm-aux') or file_type == 'nm-pea-any':
+            if file_type.startswith('nm-res') or file_type.startswith('nm-aux'):
                 continue
 
             if self.__remediation_mode and os.path.exists(file_path + '-ignored'):
@@ -36765,6 +36765,20 @@ class NmrDpUtility:
                     file_name = f"{original_file_name} ({file_name})"
             if original_file_name in emptyValue:
                 original_file_name = file_name
+
+            if file_type == 'nm-pea-any':
+
+                warn = f'We could not identify peak list file format of {file_name!r}. '\
+                    'The contents are stored as is within _Spectral_peak_list.Text_data tag for future remediation.'
+
+                self.report.warning.appendDescription('unsupported_mr_data',
+                                                      {'file_name': file_name, 'description': warn, 'inheritable': True})
+                self.report.setWarning()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
+
+                continue
 
             if file_type == 'nm-pea-xea' and not has_nm_aux_xea_file:
 

@@ -60291,16 +60291,34 @@ class NmrDpUtility:
 
                 ext_mr_sf_holder.append(sf)
 
-                if not os.path.exists(sel_res_cif_file) and not os.path.exists(sel_res_oth_file) and self.__internal_mode:
+                if not os.path.exists(sel_res_cif_file) and not os.path.exists(sel_res_oth_file):
 
-                    err = f"Uninterpreted NMR restraints are stored in {sf_framecode} saveframe as raw text format. "\
-                        "@todo: It needs to be reviewed."
+                    if self.__internal_mode:
 
-                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - {err}")
-                    self.report.setError()
+                        err = f"Uninterpreted NMR restraints are stored in {sf_framecode} saveframe as raw text format. "\
+                            "@todo: It needs to be reviewed."
 
-                    if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - {err}\n")
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - {err}")
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - {err}\n")
+
+                    else:
+
+                        file_name = input_source_dic['file_name']
+                        if file_name != original_file_name and original_file_name is not None:
+                            file_name = f"{original_file_name} ({file_name})"
+
+                        warn = f'We could not identify restraint file format of {file_name!r}. '\
+                               'The contents are stored as is within _Other_data_type_list.Text_data tag for future remediation.'
+
+                        self.report.warning.appendDescription('unsupported_mr_data',
+                                                              {'file_name': file_name, 'description': warn, 'inheritable': True})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Warning  - {warn}\n")
 
         cst_sf.add_loop(cf_loop)
 

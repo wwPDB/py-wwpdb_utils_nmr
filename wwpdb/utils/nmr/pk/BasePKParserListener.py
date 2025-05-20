@@ -5686,6 +5686,10 @@ class BasePKParserListener():
                                details=details)
                 sf['loop'].add_data(row)
 
+                if not has_assignments and details is not None:
+                    self.f.append(f"[Conflicted assigned peak] {self.getCurrentRestraint(n=index)}"
+                                  f"Peak assignments {details!r} could not map to the coordinates.")
+
                 row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.entryId, dstFunc)
                 if row is not None:
                     sf['alt_loops'][0].add_data(row)
@@ -5835,6 +5839,10 @@ class BasePKParserListener():
                                ambig_code3=ambig_code3,
                                details=details)
                 sf['loop'].add_data(row)
+
+                if not has_assignments and details is not None:
+                    self.f.append(f"[Conflicted assigned peak] {self.getCurrentRestraint(n=index)}"
+                                  f"Peak assignments {details!r} could not map to the coordinates.")
 
                 row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.entryId, dstFunc)
                 if row is not None:
@@ -5993,6 +6001,10 @@ class BasePKParserListener():
                                ambig_code3=ambig_code3, ambig_code4=ambig_code4,
                                details=details)
                 sf['loop'].add_data(row)
+
+                if not has_assignments and details is not None:
+                    self.f.append(f"[Conflicted assigned peak] {self.getCurrentRestraint(n=index)}"
+                                  f"Peak assignments {details!r} could not map to the coordinates.")
 
                 row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.entryId, dstFunc)
                 if row is not None:

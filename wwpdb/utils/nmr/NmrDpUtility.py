@@ -36661,6 +36661,13 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
+                    elif warn.startswith('[Conflicted assigned peak]'):
+                        self.report.warning.appendDescription('conflicted_mr_data', msg_dict)
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
+
                     elif warn.startswith('[Missing data]'):
                         if (self.__remediation_mode or self.__internal_mode) and not self.__conversion_server:
                             pass
@@ -52543,6 +52550,13 @@ class NmrDpUtility:
 
                     elif warn.startswith('[Inconsistent assigned peak]'):
                         self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Conflicted assigned peak]'):
+                        self.report.warning.appendDescription('conflicted_mr_data', msg_dict)
                         self.report.setWarning()
 
                         if self.__verbose:

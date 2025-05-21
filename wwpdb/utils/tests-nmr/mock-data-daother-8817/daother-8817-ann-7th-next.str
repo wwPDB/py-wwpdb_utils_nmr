@@ -737,11 +737,15 @@ save_entity_7ZC
 save_
 
 save_3C11
-   _Assigned_chem_shift_list.Sf_category     assigned_chemical_shifts
-   _Assigned_chem_shift_list.Sf_framecode    3C11
-   _Assigned_chem_shift_list.Entry_ID        NEED_ACC_NO
-   _Assigned_chem_shift_list.ID              1
-   _Assigned_chem_shift_list.Data_file_name  D_1292133086_nmr-data-original_P1.str
+   _Assigned_chem_shift_list.Sf_category                  assigned_chemical_shifts
+   _Assigned_chem_shift_list.Sf_framecode                 3C11
+   _Assigned_chem_shift_list.Entry_ID                     NEED_ACC_NO
+   _Assigned_chem_shift_list.ID                           1
+   _Assigned_chem_shift_list.Data_file_name               D_1292133086_nmr-data-original_P1.str
+   _Assigned_chem_shift_list.Sample_condition_list_ID     1
+   _Assigned_chem_shift_list.Sample_condition_list_label  ?
+   _Assigned_chem_shift_list.Chem_shift_reference_ID      1
+   _Assigned_chem_shift_list.Chem_shift_reference_label   ?
 
    loop_
       _Atom_chem_shift.ID

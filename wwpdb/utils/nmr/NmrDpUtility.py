@@ -2137,6 +2137,7 @@ class NmrDpUtility:
         __annotateTasks.extend(__crossCheckTasks)
         __annotateTasks.append(self.__updatePolymerSequence)
         __annotateTasks.append(self.__remediateRawTextPk)
+        __annotateTasks.append(self.__performBMRBAnnTasks)
         __annotateTasks.append(self.__depositNmrData)
         __annotateTasks.extend(__depositTasks)
         __annotateTasks.append(self.__depositNmrData)
@@ -26254,8 +26255,25 @@ class NmrDpUtility:
 
         ann = BMRBAnnTasks(self.__verbose, self.__lfh,
                            self.__sf_category_list, self.__entry_id,
-                           self.__internal_mode, self.__sail_flag, self.report,
+                           self.__annotation_mode, self.__internal_mode, self.__sail_flag, self.report,
                            ccU=self.__ccU, csStat=self.__csStat, c2S=self.__c2S)
+
+        if not self.__internal_mode and self.report.getInputSourceIdOfCoord() >= 0 and self.__cR.hasCategory('database_2'):
+            database_code = self.__cR.getDictListWithFilter('database_2',
+                                                            [{'name': 'database_code', 'type': 'str'}],
+                                                            [{'name': 'database_id', 'type': 'str', 'value': 'BMRB'}])
+
+            if len(database_code) > 0:
+                derived_entry_id = database_code[0]['database_code']
+                derived_entry_title = None
+
+                sf_category = 'entry_information'
+
+                if sf_category in self.__sf_category_list:
+                    sf = master_entry.get_saveframes_by_category(sf_category)[0]
+                    derived_entry_title = get_first_sf_tag(sf, 'Title', None)
+
+                ann.setProvenanceInfo(derived_entry_id, derived_entry_title)
 
         ann.perform(master_entry)
 
@@ -62605,8 +62623,25 @@ class NmrDpUtility:
 
         ann = BMRBAnnTasks(self.__verbose, self.__lfh,
                            self.__sf_category_list, self.__entry_id,
-                           self.__internal_mode, self.__sail_flag, self.report,
+                           self.__annotation_mode, self.__internal_mode, self.__sail_flag, self.report,
                            ccU=self.__ccU, csStat=self.__csStat, c2S=self.__c2S)
+
+        if not self.__internal_mode and self.report.getInputSourceIdOfCoord() >= 0 and self.__cR.hasCategory('database_2'):
+            database_code = self.__cR.getDictListWithFilter('database_2',
+                                                            [{'name': 'database_code', 'type': 'str'}],
+                                                            [{'name': 'database_id', 'type': 'str', 'value': 'BMRB'}])
+
+            if len(database_code) > 0:
+                derived_entry_id = database_code[0]['database_code']
+                derived_entry_title = None
+
+                sf_category = 'entry_information'
+
+                if sf_category in self.__sf_category_list:
+                    sf = master_entry.get_saveframes_by_category(sf_category)[0]
+                    derived_entry_title = get_first_sf_tag(sf, 'Title', None)
+
+                ann.setProvenanceInfo(derived_entry_id, derived_entry_title)
 
         is_done = ann.perform(master_entry)
 

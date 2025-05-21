@@ -83,7 +83,7 @@ class BMRBAnnTasks:
 
     def __init__(self, verbose: bool, log: IO,
                  sfCategoryList: List[str], entryId: str,
-                 internalMode: bool, sailFlag: bool, report: NmrDpReport,
+                 annotationMode: bool, internalMode: bool, sailFlag: bool, report: NmrDpReport,
                  ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
                  c2S: Optional[CifToNmrStar] = None):
         self.__class_name__ = self.__class__.__name__
@@ -95,6 +95,7 @@ class BMRBAnnTasks:
         self.__sfCategoryList = sfCategoryList
         self.__entryId = entryId
 
+        self.__annotationMode = annotationMode
         self.__internalMode = internalMode
         self.__sailFlag = sailFlag
         self.__report = report
@@ -108,6 +109,10 @@ class BMRBAnnTasks:
         # CifToNmrStar
         self.__c2S = CifToNmrStar(log) if c2S is None else c2S
 
+        # provenance information to be included in _Related_entries loop if it is not exists
+        self.__derivedEntryId = None
+        self.__derivedEntryTitle = None
+
         self.__defSfLabelTag = ['_Assigned_chem_shift_list.Sample_condition_list_label',
                                 '_Assigned_chem_shift_list.Chem_shift_reference_label',
                                 '_Spectral_peak_list.Sample_label',
@@ -116,6 +121,13 @@ class BMRBAnnTasks:
                                 '_Conformer_stat_list.Representative_conformer_label',
                                 '_Conformer_family_coord_set.Sample_condition_list_label'
                                 ]
+
+    def setProvenanceInfo(self, derivedEntryId: Optional[str], derivedEntryTitle: Optional[str]):
+        """ Set provenance information.
+        """
+
+        self.__derivedEntryId = derivedEntryId
+        self.__derivedEntryTitle = derivedEntryTitle
 
     def perform(self, master_entry: pynmrstar.Entry) -> bool:
         """ Perform a series of BMRB annotation tasks.
@@ -218,6 +230,51 @@ class BMRBAnnTasks:
 
             except KeyError:
                 pass
+
+            if not self.__internalMode and self.__derivedEntryId not in emptyValue:
+
+                lp_category = '_Related_entries'
+
+                try:
+
+                    lp = ent_sf.get_loop(lp_category)
+
+                    tags = ['Database_name', 'Database_accession_code']
+
+                    if set(tags) & set(lp.tags) == set(tags):
+                        related_entries = lp.get_tag(tags)
+
+                        has_provenance = False
+                        for row in related_entries:
+                            if row == ['BMRB', self.__derivedEntryId]:
+                                has_provenance = True
+                                break
+
+                        if not has_provenance:
+                            row = [None] * len(lp.tags)
+                            row[lp.tags.index('Database_name')] = 'BMRB'
+                            row[lp.tags.index('Database_accession_code')] = self.__derivedEntryId
+                            if self.__derivedEntryTitle not in emptyValue:
+                                row[lp.tags.index('Relationship')] = self.__derivedEntryTitle
+                            row[lp.tags.index('Entry_ID')] = self.__entryId
+
+                            lp.add_data(row)
+
+                            lp.sort_rows(['Database_name', 'Database_accession_code'])
+
+                except KeyError:
+                    # items = ['Database_name', 'Database_accession_code', 'Relationship', 'Entry_ID']
+                    #
+                    # lp = pynmrstar.Loop.from_scratch(lp_category)
+                    #
+                    # tags = [lp_category + '.' + item for item in items]
+                    #
+                    # lp.add_tag(tags)
+                    #
+                    # lp.add_data(['BMRB', self.__derivedEntryId, self.__derivedEntryTitle, self.__entryId])
+                    #
+                    # ent_sf.add_loop(lp)
+                    pass
 
         sf_category = 'experiment_list'
 
@@ -3101,8 +3158,9 @@ class BMRBAnnTasks:
                             set_sf_tag(sf, label_tag, '?')
 
         # cleanup
-        self.__c2S.cleanup_str(master_entry)
-        self.__c2S.set_entry_id(master_entry, self.__entryId)
-        self.__c2S.normalize_str(master_entry)
+        if not self.__annotationMode:
+            self.__c2S.cleanup_str(master_entry)
+            self.__c2S.set_entry_id(master_entry, self.__entryId)
+            self.__c2S.normalize_str(master_entry)
 
         return True

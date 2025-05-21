@@ -401,10 +401,14 @@ class BMRBAnnTasks:
                                         sample_state_col = lp.tags.index('Sample_state')
 
                                         cs_exp_list = lp.get_tag(tags)
-                                        reserved_names = []
+                                        reserved_ids, duplicated_idxs, reserved_names = [], [], []
 
                                         for idx, cs_exp in enumerate(cs_exp_list):
                                             if cs_exp[0] not in emptyValue:
+                                                if cs_exp[0] not in reserved_ids:
+                                                    reserved_ids.append(cs_exp[0])
+                                                else:
+                                                    duplicated_idxs.append(idx)
                                                 exp = next((exp for exp in exp_list if exp[0] == cs_exp[0]), None)
                                                 if exp is not None:
                                                     if cs_exp[2:5] != exp[2:5]:
@@ -422,6 +426,10 @@ class BMRBAnnTasks:
                                                     lp.data[idx][sample_label_col] = exp[3]
                                                     lp.data[idx][sample_state_col] = exp[4]
                                                     reserved_names.append(exp[1])
+
+                                        if len(duplicated_idxs) > 0:
+                                            for idx in reversed(duplicated_idxs):
+                                                del lp.data[idx]
 
                                 except KeyError:
                                     items = ['Experiment_ID', 'Experiment_name', 'Sample_ID', 'Sample_label', 'Sample_state',

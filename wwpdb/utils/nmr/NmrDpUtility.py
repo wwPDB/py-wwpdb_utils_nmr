@@ -26859,7 +26859,7 @@ class NmrDpUtility:
                 auth_dat = loop.get_tag(auth_pdb_tags)
                 if len(auth_dat) > 0:
                     has_auth_seq = valid_auth_seq = True
-                    if not self.__annotation_mode:
+                    if not self.__annotation_mode or len(coord_unobs_res) > 0:
                         for row in auth_dat:
                             try:
                                 seq_key = (row[0], int(row[1]), row[2])
@@ -26899,7 +26899,7 @@ class NmrDpUtility:
                         aux_auth_atom_id_col = loop.tags.index(_auth_pdb_tags[3])
 
                         valid_auth_seq = True
-                        if not self.__annotation_mode:
+                        if not self.__annotation_mode or len(coord_unobs_res) > 0:
                             for row in auth_dat:
                                 try:
                                     seq_key = (row[0], int(row[1]), row[2])
@@ -26913,7 +26913,7 @@ class NmrDpUtility:
                             for row in auth_dat:
                                 if row[0] not in valid_auth_seq_per_chain:
                                     valid_auth_seq_per_chain.append(row[0])
-                            if not self.__annotation_mode:
+                            if not self.__annotation_mode or len(coord_unobs_res) > 0:
                                 for row in auth_dat:
                                     try:
                                         seq_key = (row[0], int(row[1]), row[2])

@@ -2421,10 +2421,12 @@ class NEFTranslator:
                             if ligands.count(_comp_id) == 1:
                                 lig_to_chain_id[_comp_id] = next(np['auth_chain_id'] for np in cif_np if _comp_id in np['comp_id'] or _comp_id in np['auth_comp_id'])
 
-                    if chain_id not in loop.tags and len(coord_assembly_checker['polymer_sequence']) > 1:
+                    if 'Auth_asym_ID' not in loop.tags and 'Entity_assembly_ID' not in loop.tags\
+                       and len(coord_assembly_checker['polymer_sequence']) > 1\
+                       and coord_assembly_checker['non_polymer'] is None:
                         for row in loop:
                             row.append(def_chain_id)
-                        loop.add_tag(chain_id)
+                        loop.add_tag('Entity_assembly_ID')
 
                 # convert protonated DC -> DNR, protonated C -> CH
                 if 'Atom_ID' in loop.tags and 'Auth_comp_ID' not in loop.tags\
@@ -3187,7 +3189,8 @@ class NEFTranslator:
                                                                 r[alt_seq_id_col] = str(_seq_id)
                                                             if entity_id_col != -1:
                                                                 r[entity_id_col] = str(_entity_id)
-                                                            r[comp_id_col] = _comp_id
+                                                            if _comp_id not in monDict3:
+                                                                r[comp_id_col] = _comp_id
                                     else:
 
                                         valid = False
@@ -3254,7 +3257,7 @@ class NEFTranslator:
                                                                          in zip(ps['seq_id'], ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'],
                                                                                 ps['alt_comp_id'] if 'alt_comp_id' in ps else ps['auth_comp_id'])
                                                                          if _k[1] in (_seq_id, _auth_seq_id) and _k[2] in (_comp_id, _auth_comp_id, _alt_comp_id)), None)
-                                                        if _comp_id is not None:
+                                                        if _comp_id is not None and _comp_id not in monDict3:
                                                             _k = (_rev_seq[0], _rev_seq[1], _comp_id)
                                                             if _k in auth_to_star_seq:
                                                                 _entity_assembly_id, _seq_id, _entity_id, _ = auth_to_star_seq[_k]
@@ -3295,7 +3298,8 @@ class NEFTranslator:
                                                                         r[alt_seq_id_col] = str(_seq_id)
                                                                     if entity_id_col != -1:
                                                                         r[entity_id_col] = str(_entity_id)
-                                                                    r[comp_id_col] = _comp_id
+                                                                    if _comp_id not in monDict3:
+                                                                        r[comp_id_col] = _comp_id
 
                                                     else:
                                                         r[chain_id_col] = str(_entity_assembly_id)

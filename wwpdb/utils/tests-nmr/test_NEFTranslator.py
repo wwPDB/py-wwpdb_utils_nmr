@@ -3411,6 +3411,7 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertEqual(self.neft.get_valid_star_atom_in_xplor('48L', 'QM2'), (['HM21', 'HM22', 'HM23'], 1, None))
         self.assertEqual(self.neft.get_valid_star_atom_in_xplor('48L', 'QM3'), (['HM31', 'HM32', 'HM33'], 1, None))
         self.assertEqual(self.neft.get_valid_star_atom_in_xplor('48L', 'QQM'), (['HM21', 'HM22', 'HM23', 'HM31', 'HM32', 'HM33'], 2, None))
+        self.assertEqual(self.neft.get_valid_star_atom('ACE', 'QA'), (['H1', 'H2', 'H3'], 1, None))
 
 
 if __name__ == "__main__":

@@ -4833,14 +4833,21 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                     altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId and c['comp_id'] == compId), None)
                     if chainId in authToLabelChain and altSeqId is not None and altSeqId.isdigit():
                         if isinstance(authToLabelChain[chainId], str):
-                            labelToAuthSeq[(authToLabelChain[chainId], int(altSeqId))] = seqKey
+                            _seqKey = (authToLabelChain[chainId], int(altSeqId))
+                            if _seqKey in labelToAuthSeq:
+                                continue
+                            labelToAuthSeq[_seqKey] = seqKey
                         else:
                             for _chainId in authToLabelChain[chainId]:  # DAOTHER-8572: select possible auth_asym_id(s)
                                 ps = next((ps for ps in polySeq if ps['chain_id'] == _chainId), None)
                                 if seqId in ps['auth_seq_id']:
-                                    labelToAuthSeq[(_chainId, int(altSeqId))] = seqKey
+                                    _seqKey = (_chainId, int(altSeqId))
+                                    if _seqKey in labelToAuthSeq:
+                                        continue
+                                    labelToAuthSeq[_seqKey] = seqKey
                     else:
-                        labelToAuthSeq[seqKey] = seqKey
+                        if seqKey not in labelToAuthSeq:
+                            labelToAuthSeq[seqKey] = seqKey
                         if chainId != authChainId:
                             altKey = (authChainId, seqId)
                             coordAtomSite[altKey] = coordAtomSite[seqKey]
@@ -4878,15 +4885,22 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                             altSeqId = next((c['alt_seq_id'] for c in coord if c['chain_id'] == chainId and c['seq_id'] == seqId and c['comp_id'] == compId), None)
                             if chainId in authToLabelChain and altSeqId is not None and altSeqId.isdigit():
                                 if isinstance(authToLabelChain[chainId], str):
+                                    _seqKey = (authToLabelChain[chainId], int(altSeqId))
+                                    if _seqKey in labelToAuthSeq:
+                                        continue
                                     labelToAuthSeq[(authToLabelChain[chainId], int(altSeqId))] = (chainId, seqId)
                                 else:
                                     for _chainId in authToLabelChain[chainId]:  # DAOTHER-8572: select possible auth_asym_id(s)
                                         ps = next((ps for ps in polySeq if ps['chain_id'] == _chainId), None)
                                         if seqId in ps['auth_seq_id']:
+                                            _seqKey = (_chainId, int(altSeqId))
+                                            if _seqKey in labelToAuthSeq:
+                                                continue
                                             labelToAuthSeq[(_chainId, int(altSeqId))] = (chainId, seqId)
                             else:
                                 _seqKey = (seqKey[0], seqKey[1])
-                                labelToAuthSeq[_seqKey] = _seqKey
+                                if _seqKey not in labelToAuthSeq:
+                                    labelToAuthSeq[_seqKey] = _seqKey
                                 if chainId != authChainId:
                                     altKey = (authChainId, seqId, compId)
                                     coordAtomSite[altKey] = coordAtomSite[seqKey]

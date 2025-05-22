@@ -219,6 +219,12 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-daother-10105/D_1000295697_mr-upload_P1.cns.V1',
+                     '../../tests-nmr/mock-data-daother-10105/D_1000295697_model_P1.cif.V6')
+
     reader = CnsMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\

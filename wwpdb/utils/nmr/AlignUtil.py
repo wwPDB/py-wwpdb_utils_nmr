@@ -233,7 +233,7 @@ def fillBlankCompId(polySeq1: List[dict], polySeq2: List[dict],
     return ps
 
 
-def fillBlankCompIdWithOffset(polySeq: List[dict], offset: int, seqIdName: str = 'seq_id') -> List[dict]:
+def fillBlankCompIdWithOffset(polySeq: List[dict], offset: int, seqIdName: str = 'seq_id', compIdName: str = 'comp_id') -> List[dict]:
     """ Fill blanked comp_ID with offset.
     """
 
@@ -253,7 +253,7 @@ def fillBlankCompIdWithOffset(polySeq: List[dict], offset: int, seqIdName: str =
         if seqId in polySeq[seqIdName]:
             idx = polySeq[seqIdName].index(seqId)
             if idx < len(polySeq['comp_id']):
-                _c.append(polySeq['comp_id'][idx])
+                _c.append(polySeq[compIdName][idx])
                 if has_auth_comp_id:
                     _a_c.append(polySeq['auth_comp_id'][idx])
             else:
@@ -1081,6 +1081,8 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
 
     truncated = None
 
+    _polySeqRst = copy.deepcopy(polySeqRst)
+
     for i1, ps1 in enumerate(polySeqModel):
         chain_id_name = 'auth_chain_id' if 'auth_chain_id' in ps1 else 'chain_id'
         chain_id = ps1[chain_id_name]
@@ -1092,7 +1094,8 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
 
         seq_id_name = 'auth_seq_id' if 'auth_seq_id' in ps1 else 'seq_id'
 
-        for i2, ps2 in enumerate(polySeqRst):
+        for i2, ps2 in enumerate(_polySeqRst):
+            ps2 = copy.deepcopy(ps2)
             chain_id2 = ps2['chain_id']
 
             if i2 >= LEN_LARGE_ASYM_ID:
@@ -1100,7 +1103,6 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
 
             not_decided_ps2_comp_id = any(c2 for c2 in ps2['comp_id'] if c2.endswith('?'))  # AMBER/GROMACS topology
             if not_decided_ps2_comp_id:
-                ps2 = copy.deepcopy(ps2)
                 ps2['comp_id'] = [c2[:-1] if c2.endswith('?') else c2 for c2 in ps2['comp_id']]
                 if len(ps1['comp_id']) == len(ps2['comp_id']):
                     if not any(cmp2 not in cmp1 for cmp1, cmp2 in zip(ps1['comp_id'], ps2['comp_id'])):
@@ -1120,6 +1122,8 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
 
             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
+            prefer_ps1_alt_comp_id = prefer_ps2_auth_comp_id = False
+
             if _matched > 0 and conflict > 0 and not_decided_ps2_comp_id and 'auth_comp_id' in ps2:
                 pA.setReferenceSequence(ps1['comp_id'], 'REF' + chain_id)
                 pA.addTestSequence(ps2['auth_comp_id'], chain_id)
@@ -1135,9 +1139,10 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                     if __matched > _matched and _conflict == 0:  # DAOTHER-9511: auth_comp_id does match with the coordinates sequence
                         not_decided_ps2_comp_id = False
                         polySeqRst[i2]['comp_id'] = ps2['comp_id'] = ps2['auth_comp_id']
-                        myAlign = _myAlign
+                        myAlign = copy.deepcopy(_myAlign)
                         length, _matched, unmapped, conflict, offset_1, offset_2 =\
                             _length, __matched, _unmapped, _conflict, _offset_1, _offset_2
+                        prefer_ps2_auth_comp_id = True
 
             elif _matched > 0 and conflict > 0 and 'alt_comp_id' in ps1 and conservative:
                 pA.setReferenceSequence(ps1['alt_comp_id'], 'REF' + chain_id)
@@ -1151,11 +1156,12 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                 if _length > 0:
                     __matched, _unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(_myAlign)
 
-                    if __matched > _matched and __matched == _length and _conflict == 0:  # DAOTHER-9511: auth_comp_id does match with the coordinates sequence
+                    if __matched > _matched and _conflict == 0:  # DAOTHER-9511: auth_comp_id does match with the coordinates sequence
                         polySeqRst[i2]['comp_id'] = ps1['comp_id']
-                        myAlign = _myAlign
+                        myAlign = copy.deepcopy(_myAlign)
                         length, _matched, unmapped, conflict, offset_1, offset_2 =\
                             _length, __matched, _unmapped, _conflict, _offset_1, _offset_2
+                        prefer_ps1_alt_comp_id = True
 
             if length == unmapped + conflict or _matched <= conflict + (1 if length > 1 else 0):
                 inhibitList.append({chain_id, chain_id2})
@@ -1177,8 +1183,9 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                                 idx2 += 1
                                 break
 
-            _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1, seqIdName=seq_id_name)
-            _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2)
+            _ps1 = ps1 if offset_1 == 0 else fillBlankCompIdWithOffset(ps1, offset_1, seqIdName=seq_id_name,
+                                                                       compIdName='alt_comp_id' if prefer_ps1_alt_comp_id else 'comp_id')
+            _ps2 = ps2 if offset_2 == 0 else fillBlankCompIdWithOffset(ps2, offset_2, compIdName='auth_comp_id' if prefer_ps2_auth_comp_id else 'comp_id')
 
             if conflict == 0:
                 if hasLargeInnerSeqGap(_ps2) and not hasLargeInnerSeqGap(_ps1):
@@ -1241,8 +1248,8 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                 _ps1_ = __ps1
                 _ps2_ = __ps2
 
-                pA.setReferenceSequence(_ps1_['comp_id'], 'REF' + chain_id)
-                pA.addTestSequence(_ps2_['comp_id'], chain_id)
+                pA.setReferenceSequence(_ps1_['alt_comp_id' if prefer_ps1_alt_comp_id else 'comp_id'], 'REF' + chain_id)
+                pA.addTestSequence(_ps2_['auth_comp_id' if prefer_ps2_auth_comp_id else 'comp_id'], chain_id)
                 pA.doAlign()
 
                 myAlign = pA.getAlignment(chain_id)
@@ -1298,16 +1305,18 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                 tabooList.append({chain_id, chain_id2})
 
             ref_length = len(ps1[seq_id_name])
+            comp_id_name1 = 'alt_comp_id' if prefer_ps1_alt_comp_id and 'alt_comp_id' in _ps1 else 'comp_id'
+            comp_id_name2 = 'auth_comp_id' if prefer_ps2_auth_comp_id and 'auth_comp_id' in _ps2 else 'comp_id'
 
-            ref_code = getOneLetterCodeCanSequence(_ps1['comp_id'])
-            test_code = getOneLetterCodeCanSequence(_ps2['comp_id'])
+            ref_code = getOneLetterCodeCanSequence(_ps1[comp_id_name1])
+            test_code = getOneLetterCodeCanSequence(_ps2[comp_id_name2])
             mid_code = getMiddleCode(ref_code, test_code)
             ref_gauge_code = getGaugeCode(_ps1['seq_id'])
             test_gauge_code = getGaugeCode(_ps2['seq_id'])
 
             if conflict == 0\
                and any((__s1, __s2) for (__s1, __s2, __c1, __c2)
-                       in zip(_ps1['seq_id'], _ps2['seq_id'], _ps1['comp_id'], _ps2['comp_id'])
+                       in zip(_ps1['seq_id'], _ps2['seq_id'], _ps1[comp_id_name1], _ps2[comp_id_name2])
                        if __c1 != '.' and __c2 != '.' and __c1 != __c2):
                 seq_id1, seq_id2 = [], []
                 if has_auth_seq_id1:
@@ -1326,7 +1335,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                     myPr1 = str(myPr[1])
                     if myPr0 != '.':
                         while idx1 < len(_ps1['seq_id']):
-                            if _ps1['comp_id'][idx1] == myPr0:
+                            if _ps1[comp_id_name1][idx1] == myPr0:
                                 seq_id1.append(_ps1['seq_id'][idx1])
                                 if has_auth_seq_id1:
                                     auth_seq_id1.append(_ps1['auth_seq_id'][idx1])
@@ -1345,7 +1354,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                             auth_comp_id1.append('.')
                     if myPr1 != '.':
                         while idx2 < len(_ps2['seq_id']):
-                            if _ps2['comp_id'][idx2] == myPr1:
+                            if _ps2[comp_id_name2][idx2] == myPr1:
                                 seq_id2.append(_ps2['seq_id'][idx2])
                                 if has_auth_seq_id2:
                                     auth_seq_id2.append(_ps2['auth_seq_id'][idx2])
@@ -1423,8 +1432,14 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                     _ps1['auth_seq_id'] = auth_seq_id1
                 if has_auth_seq_id2:
                     _ps2['auth_seq_id'] = auth_seq_id2
-                _ps1['comp_id'] = comp_id1
-                _ps2['comp_id'] = comp_id2
+                if not prefer_ps1_alt_comp_id:
+                    _ps1['comp_id'] = comp_id1
+                else:
+                    _ps1['comp_id'] = [comp_id for seq_id, comp_id in zip(_ps1['seq_id'], _ps1['comp_id']) if seq_id in seq_id1]
+                if not prefer_ps2_auth_comp_id:
+                    _ps2['comp_id'] = comp_id2
+                else:
+                    _ps2['comp_id'] = [comp_id for seq_id, comp_id in zip(_ps2['seq_id'], _ps2['comp_id']) if seq_id in seq_id2]
                 if has_auth_comp_id1:
                     _ps1['auth_comp_id'] = auth_comp_id1
                 if has_auth_comp_id2:

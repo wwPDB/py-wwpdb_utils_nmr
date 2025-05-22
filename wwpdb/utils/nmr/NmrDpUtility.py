@@ -46913,6 +46913,9 @@ class NmrDpUtility:
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                              'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
+                if 'auth_seq_id' in _ps1:
+                    seq_align['ref_auth_seq_id'] = _ps1['auth_seq_id']
+
                 seq_align_set.append(seq_align)
 
         if len(seq_align_set) > 0:
@@ -47063,6 +47066,9 @@ class NmrDpUtility:
                              'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                              'test_code': test_code, 'test_gauge_code': test_gauge_code}
+
+                if 'auth_seq_id' in _ps2:
+                    seq_align['test_auth_seq_id'] = _ps2['auth_seq_id']
 
                 seq_align_set.append(seq_align)
 
@@ -49176,7 +49182,7 @@ class NmrDpUtility:
                 cif_chain_id = ca['test_chain_id']
 
                 cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id
-                                   in zip(ca['ref_seq_id'], ca['test_seq_id'])
+                                   in zip(ca['ref_seq_id'], ca['test_auth_seq_id' if 'test_auth_seq_id' in ca else 'test_seq_id'])
                                    if ref_seq_id == seq_id), None)
 
                 if cif_seq_id is None and ca['sequence_coverage'] >= LOW_SEQ_COVERAGE:
@@ -49201,7 +49207,7 @@ class NmrDpUtility:
                 else:
 
                     cif_comp_id = next((_comp_id for _seq_id, _comp_id
-                                        in zip(cif_ps['seq_id'], cif_ps['comp_id'])
+                                        in zip(cif_ps['auth_seq_id' if 'auth_seq_id' in cif_ps else 'seq_id'], cif_ps['comp_id'])
                                         if _seq_id == cif_seq_id), None)
 
                     if cif_comp_id is None:
@@ -49209,7 +49215,7 @@ class NmrDpUtility:
 
                     if cif_comp_id != comp_id and seq_id != cif_seq_id:
                         cif_comp_id = next((_comp_id for _seq_id, _comp_id
-                                            in zip(cif_ps['seq_id'], cif_ps['comp_id'])
+                                            in zip(cif_ps['auth_seq_id' if 'auth_seq_id' in cif_ps else 'seq_id'], cif_ps['comp_id'])
                                             if _seq_id == seq_id), None)
 
                         if cif_comp_id is None:
@@ -49272,13 +49278,15 @@ class NmrDpUtility:
                     if seq_key is None:
                         continue
 
-                    offset[chain_id] = seq_key[1] - seq_id
+                    if seq_key in auth_to_label_seq:
 
-                    cif_chain_id, cif_seq_id = auth_to_label_seq[seq_key]
-                    cif_comp_id = comp_id
+                        offset[chain_id] = seq_key[1] - seq_id
 
-                    if seq_key in coord_unobs_res:  # DAOTHER-7665
-                        continue
+                        cif_chain_id, cif_seq_id = auth_to_label_seq[seq_key]
+                        cif_comp_id = comp_id
+
+                        if seq_key in coord_unobs_res:  # DAOTHER-7665
+                            continue
 
                 else:
 
@@ -49318,7 +49326,7 @@ class NmrDpUtility:
                                     or 'auth_atom_id' not in coord_atom_site_)):
 
                             cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id
-                                               in zip(ca['ref_seq_id'], ca['test_seq_id'])
+                                               in zip(ca['ref_seq_id'], ca['test_auth_seq_id'])
                                                if ref_seq_id == alt_seq_id), None)
 
                             if cif_seq_id is None:

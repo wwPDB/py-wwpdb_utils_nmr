@@ -106,6 +106,7 @@
 # 19-Feb-2025  M. Yokochi - try to extract sequence using Seq_ID_# tags if necessary (v4.2.0)
 # 12-Mar-2025  M. Yokochi - allow to reset auth_seq_id of cs loop if necessary (v4.3.0, DAOTHER-9927)
 # 09-Apr-2025  M. Yokochi - allow missing of chemical shift loop for standalone NMR data conversion service (v4.4.0, DAOTHER-9785)
+# 23-May-2025  M. Yokochi - resolve pseudo atom name of non-standard residue based on local CCD derived from the coordinated (v4.5.0, DAOTHER-10105)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -114,7 +115,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "4.4.0"
+__version__ = "4.5.0"
 
 import sys
 import os
@@ -621,6 +622,8 @@ class NEFTranslator:
 
         # whether to enable remediation routine
         self.__remediation_mode = False
+        # whether to allow sequence mismatch during annotation
+        self.__annotation_mode = False
         # whether to allow to raise internal error
         self.__internal_mode = False
         # whether to allow to reset auth_seq_id of cs loop if necessary (DAOTHER-9927)
@@ -1496,6 +1499,8 @@ class NEFTranslator:
         self.chemCompAtom = None
         self.chemCompBond = None
         self.chemCompTopo = None
+        # DAOTHER-10105: coordinate derived atom name mapping from pdbx_auth_atom_name to auth_atom_id
+        self.authAtomNameToId = None
 
         self.star2NefChainMapping = None
         self.star2CifChainMapping = None
@@ -1544,6 +1549,12 @@ class NEFTranslator:
 
         self.__remediation_mode = flag
 
+    def set_annotation_mode(self, flag: bool):
+        """ Set annotation mode.
+        """
+
+        self.__annotation_mode = flag
+
     def set_internal_mode(self, flag: bool):
         """ Set internal mode.
         """
@@ -1574,9 +1585,10 @@ class NEFTranslator:
 
         self.__allow_missing_chem_shift = flag
 
-    def set_chem_comp_dict(self, chem_comp_atom: dict, chem_comp_bond: dict, chem_comp_topo: dict):
+    def set_chem_comp_dict(self, chem_comp_atom: dict, chem_comp_bond: dict, chem_comp_topo: dict, auth_atom_name_to_id: dict):
         """ Set chem_comp dictionary derived from ParserListerUtil.coordAssemblyChecker().
             DAOTHER-8817: construct pseudo CCD from the coordinates
+            DAOTHER-10105: add auth_atom_name_to_id to resolve pseudo atom names
         """
 
         if isinstance(chem_comp_atom, dict):
@@ -1587,6 +1599,9 @@ class NEFTranslator:
 
         if isinstance(chem_comp_topo, dict):
             self.chemCompTopo = chem_comp_topo
+
+        if isinstance(auth_atom_name_to_id, dict):
+            self.authAtomNameToId = auth_atom_name_to_id
 
     # def load_csv_data(self, csv_file, transpose=False):
     #     """ Load CSV data to list.
@@ -7003,7 +7018,7 @@ class NEFTranslator:
         alt_atom_conv_dict = dict(zip(coord_atom_site['atom_id'], coord_atom_site['alt_atom_id']))
         atom_conv_dict = dict(zip(coord_atom_site['alt_atom_id'], coord_atom_site['atom_id']))
 
-        if self.__ccU.updateChemCompDict(comp_id):
+        if self.__ccU.updateChemCompDict(comp_id) and self.__annotation_mode:
             cc_rel_status = self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status']
 
             if cc_rel_status == 'REL':
@@ -7290,6 +7305,13 @@ class NEFTranslator:
             atom_id = 'H%'
             methyl_only = True
 
+        # DAOTHER-10105: resolve pseudo atom name of non-standard residue
+        if comp_id not in monDict3 and self.authAtomNameToId is not None and comp_id in self.authAtomNameToId and atom_id[-1] in ('%', '*')\
+           and not self.__annotation_mode:
+            coord_atom_site = {'atom_id': list(self.authAtomNameToId[comp_id].values()),
+                               'alt_atom_id': list(self.authAtomNameToId[comp_id].keys())}
+            return self.get_star_atom_for_ligand_remap(comp_id, atom_id, details, coord_atom_site, methyl_only)
+
         key = (comp_id, atom_id, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForValidStarAtomInXplor:
             return copy.deepcopy(self.__cachedDictForValidStarAtomInXplor[key])
@@ -7549,6 +7571,13 @@ class NEFTranslator:
             atom_id = 'H%'
             methyl_only = True
 
+        # DAOTHER-10105: resolve pseudo atom name of non-standard residue
+        if comp_id not in monDict3 and self.authAtomNameToId is not None and comp_id in self.authAtomNameToId and atom_id[-1] in ('%', '*')\
+           and not self.__annotation_mode:
+            coord_atom_site = {'atom_id': list(self.authAtomNameToId[comp_id].values()),
+                               'alt_atom_id': list(self.authAtomNameToId[comp_id].keys())}
+            return self.get_star_atom_for_ligand_remap(comp_id, atom_id, details, coord_atom_site, methyl_only)
+
         key = (comp_id, atom_id, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForValidStarAtom:
             return copy.deepcopy(self.__cachedDictForValidStarAtom[key])
@@ -7731,6 +7760,13 @@ class NEFTranslator:
 
         if comp_id in emptyValue:
             return [], None, None
+
+        # DAOTHER-10105: resolve pseudo atom name of non-standard residue
+        if comp_id not in monDict3 and self.authAtomNameToId is not None and comp_id in self.authAtomNameToId and nef_atom[-1] in ('%', '*')\
+           and not self.__annotation_mode:
+            coord_atom_site = {'atom_id': list(self.authAtomNameToId[comp_id].values()),
+                               'alt_atom_id': list(self.authAtomNameToId[comp_id].keys())}
+            return self.get_star_atom_for_ligand_remap(comp_id, nef_atom, details, coord_atom_site, methyl_only)
 
         key = (comp_id, nef_atom, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForStarAtom:

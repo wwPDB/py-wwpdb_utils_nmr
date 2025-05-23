@@ -6779,9 +6779,9 @@ class NEFTranslator:
             return [], None, None
 
         methyl_only = atom_id[0] == 'M'
-        if comp_id == 'ACE' and atom_id.startswith('Q'):
-            atom_id = 'H%'
-            methyl_only = True
+        # if comp_id == 'ACE' and atom_id.startswith('Q'):
+        #     atom_id = 'H%'
+        #     methyl_only = True
 
         atom_list = []
         ambiguity_code = details = None
@@ -7302,9 +7302,9 @@ class NEFTranslator:
             return [], None, None
 
         methyl_only = atom_id[0] == 'M' or atom_id.startswith('QM') or atom_id.startswith('QQM')
-        if comp_id == 'ACE' and atom_id.startswith('Q'):
-            atom_id = 'H%'
-            methyl_only = True
+        # if comp_id == 'ACE' and atom_id.startswith('Q'):
+        #     atom_id = 'H%'
+        #     methyl_only = True
 
         key = (comp_id, atom_id, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForValidStarAtomInXplor:
@@ -7336,14 +7336,14 @@ class NEFTranslator:
 
             # DAOTHER-10105: resolve pseudo atom name of non-standard residue
             if comp_id not in monDict3 and self.authAtomNameToId is not None and comp_id in self.authAtomNameToId\
-               and not self.__annotation_mode:
+               and not self.__annotation_mode:  # and atom_id[0] in ('Q', 'M'):
                 _atom_id = atom_id
-                if atom_id[0] in ('Q', 'M'):
+                if _atom_id[0] in ('Q', 'M'):
                     _atom_id = 'H' + atom_id[1:] + '*'
                 coord_atom_site = {'atom_id': list(self.authAtomNameToId[comp_id].values()),
                                    'alt_atom_id': list(self.authAtomNameToId[comp_id].keys())}
                 _atom_list, _ambiguity_code, _details = self.get_star_atom_for_ligand_remap(comp_id, _atom_id, details, coord_atom_site, methyl_only)
-                if len(_atom_list) > 0 and not _atom_list[0].endswith('*'):
+                if len(_atom_list) > 0 and _atom_list[0][-1] not in ('%', '*') and _atom_list[0] in coord_atom_site['atom_id']:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                     return (atom_list, ambiguity_code, details)
 
@@ -7574,9 +7574,9 @@ class NEFTranslator:
             return [], None, None
 
         methyl_only |= atom_id[0] == 'M' or atom_id.startswith('QM') or atom_id.startswith('QQM')
-        if comp_id == 'ACE' and atom_id.startswith('Q'):
-            atom_id = 'H%'
-            methyl_only = True
+        # if comp_id == 'ACE' and atom_id.startswith('Q'):
+        #     atom_id = 'H%'
+        #     methyl_only = True
 
         key = (comp_id, atom_id, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForValidStarAtom:
@@ -7589,14 +7589,14 @@ class NEFTranslator:
 
             # DAOTHER-10105: resolve pseudo atom name of non-standard residue
             if comp_id not in monDict3 and self.authAtomNameToId is not None and comp_id in self.authAtomNameToId\
-               and not self.__annotation_mode:
+               and not self.__annotation_mode:  # and atom_id[0] in ('Q', 'M'):
                 _atom_id = atom_id
-                if atom_id[0] in ('Q', 'M'):
+                if _atom_id[0] in ('Q', 'M'):
                     _atom_id = 'H' + atom_id[1:] + '*'
                 coord_atom_site = {'atom_id': list(self.authAtomNameToId[comp_id].values()),
                                    'alt_atom_id': list(self.authAtomNameToId[comp_id].keys())}
                 _atom_list, _ambiguity_code, _details = self.get_star_atom_for_ligand_remap(comp_id, _atom_id, details, coord_atom_site, methyl_only)
-                if len(_atom_list) > 0 and not _atom_list[0].endswith('*'):
+                if len(_atom_list) > 0 and _atom_list[0][-1] not in ('%', '*') and _atom_list[0] in coord_atom_site['atom_id']:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                     return (atom_list, ambiguity_code, details)
 
@@ -7793,11 +7793,11 @@ class NEFTranslator:
 
             # DAOTHER-10105: resolve pseudo atom name of non-standard residue
             if not is_std_comp_id and self.authAtomNameToId is not None and comp_id in self.authAtomNameToId\
-               and not self.__annotation_mode:
+               and not self.__annotation_mode:  # and nef_atom[0] in ('%', '*'):
                 coord_atom_site = {'atom_id': list(self.authAtomNameToId[comp_id].values()),
                                    'alt_atom_id': list(self.authAtomNameToId[comp_id].keys())}
                 _atom_list, _ambiguity_code, _details = self.get_star_atom_for_ligand_remap(comp_id, nef_atom, details, coord_atom_site, methyl_only)
-                if len(_atom_list) > 0 and _atom_list[0][-1] not in ('%', '*'):
+                if len(_atom_list) > 0 and _atom_list[0][-1] not in ('%', '*') and _atom_list[0] in coord_atom_site['atom_id']:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                     return (atom_list, ambiguity_code, details)
 

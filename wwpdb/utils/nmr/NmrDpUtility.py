@@ -32536,7 +32536,7 @@ class NmrDpUtility:
                                     atom_sels[d], warn = selectCoordAtoms(self.__cR, self.__caC, self.__nefT, _assign, auth_chain_id, seq_id, comp_id, atom_id, auth_atom_id,
                                                                           allowAmbig=content_subtype in ('dist_restraint', 'noepk_restraint'),
                                                                           enableWarning=enableWarning,
-                                                                          preferAuthAtomName=prefer_auth_atom_name,
+                                                                          preferAuthAtomName=prefer_auth_atom_name and comp_id in auth_atom_name_to_id,
                                                                           representativeModelId=self.__representative_model_id, representativeAltId=self.__representative_alt_id,
                                                                           modelNumName=model_num_name)
 

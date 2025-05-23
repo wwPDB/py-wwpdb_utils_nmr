@@ -10432,6 +10432,20 @@ def getCoordAtomSiteOf(caC: dict, authChainId: str, chainId: str, seqId: int,
                         coordAtomSite = coordAtomSites[_seqKey]
                     elif seqKey in coordAtomSites:
                         coordAtomSite = coordAtomSites[seqKey]
+                    else:  # DAOTHER-10105: handle inconsistency between auth_asym_id and pdbx_auth_asym_id due to chain split while annotation
+                        for _chainId in caC['label_to_auth_chain']:
+                            if _chainId == chainId:
+                                continue
+                            _ps = next((_ps for _ps in caC['polymer_sequence'] if _ps['auth_chain_id'] == _chainId), None)
+                            if _ps is not None and seqId not in _ps['auth_seq_id']:
+                                seqKey = (_chainId, seqId)
+                                _seqKey = (seqKey[0], seqKey[1], compId)
+                                if compId is not None and _seqKey in coordAtomSites:
+                                    coordAtomSite = coordAtomSites[_seqKey]
+                                    break
+                                elif seqKey in coordAtomSites:
+                                    coordAtomSite = coordAtomSites[seqKey]
+                                    break
 
     return seqKey, coordAtomSite
 

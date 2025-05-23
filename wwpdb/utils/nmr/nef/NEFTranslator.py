@@ -7692,11 +7692,15 @@ class NEFTranslator:
                             atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
                         if len(atom_list) >= min_len:
                             return (atom_list, ambiguity_code, details)
-                    atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:-1] + '*', details, leave_unmatched, methyl_only)
-                    if details is None and len(atom_list) == 1:
-                        atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
-                    if len(atom_list) >= min_len:
-                        return (atom_list, ambiguity_code, details)
+                    if comp_id not in monDict3 and self.authAtomNameToId is not None and comp_id in self.authAtomNameToId\
+                       and not self.__annotation_mode and atom_id in self.authAtomNameToId[comp_id].values():
+                        pass  # Reconciled fix for DAOTHER-10105 and D-1300057999, 'MN' should not be mapped to 'HN%' because real 'MN' exists
+                    else:
+                        atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:-1] + '*', details, leave_unmatched, methyl_only)
+                        if details is None and len(atom_list) == 1:
+                            atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
+                        if len(atom_list) >= min_len:
+                            return (atom_list, ambiguity_code, details)
 
             if len_atom_id > 2 and ((atom_id + '2' in self.__csStat.getAllAtoms(comp_id)) or (atom_id + '22' in self.__csStat.getAllAtoms(comp_id))):
                 atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id + '%', details, leave_unmatched, methyl_only)

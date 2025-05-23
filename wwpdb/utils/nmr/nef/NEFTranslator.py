@@ -3114,18 +3114,23 @@ class NEFTranslator:
                                 _nmr_ps['comp_id'].append(row[2])
                             # 2c34
                             seq_align, _ = alignPolymerSequence(self.__pA, cif_ps, nmr_ps)
-                            chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
-
-                            for ca in chain_assign:
-                                if ca['matched'] == 0 or (ca['conflict'] > 0 and ca['matched'] != ca['length']):
-                                    valid = False
-                                    break
+                            if len(seq_align) > 0:
+                                chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
+                            else:
+                                valid = False
+                                for c in range(1, 5):
+                                    seq_align, _ = alignPolymerSequenceWithConflicts(self.__pA, cif_ps, nmr_ps, c)
+                                    if len(seq_align) > 0:
+                                        chain_assign, _ = assignPolymerSequence(self.__pA, self.__ccU, 'nmr-star', cif_ps, nmr_ps, seq_align)
+                                        valid = True
+                                        break
 
                             if valid:
+
                                 rev_seq = {}
                                 ref_chain_id = test_chain_id = None
                                 for ca in chain_assign:
-                                    if ca['matched'] == 0 or (ca['conflict'] > 0 and ca['matched'] != ca['length']):
+                                    if ca['matched'] == 0:  # or (ca['conflict'] > 0 and ca['matched'] != ca['length']):
                                         continue
                                     ref_chain_id = ca['ref_chain_id']
                                     test_chain_id = ca['test_chain_id']
@@ -3146,6 +3151,7 @@ class NEFTranslator:
                                                           if _seq_id == ref_seq_id and isinstance(auth_seq_id, int)))
                                             except StopIteration:
                                                 rev_seq[rev_seq_key] = (ps['auth_chain_id'], ref_seq_id)
+
                                     if test_chain_id is not None:
                                         chain_id_col = loop.tags.index('Entity_assembly_ID')
                                         comp_id_col = loop.tags.index('Comp_ID')
@@ -3155,6 +3161,7 @@ class NEFTranslator:
                                         seq_id_col = loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in loop.tags else -1
                                         alt_seq_id_col = loop.tags.index('Seq_ID') if 'Seq_ID' in loop.tags else -1
                                         auth_to_star_seq = coord_assembly_checker['auth_to_star_seq']
+                                        _entity_assembly_id = _entity_id = None
                                         for r in loop.data:
                                             k = (test_chain_id, int(r[seq_id_col]))
                                             if k in rev_seq:
@@ -3191,6 +3198,21 @@ class NEFTranslator:
                                                                 r[entity_id_col] = str(_entity_id)
                                                             if _comp_id not in monDict3:
                                                                 r[comp_id_col] = _comp_id
+                                            else:
+                                                for c in range(1, 5):
+                                                    k = (test_chain_id, int(r[seq_id_col]) + c)
+                                                    if k in rev_seq:
+                                                        r[chain_id_col] = str(_entity_assembly_id)
+                                                        if entity_id_col != -1:
+                                                            r[entity_id_col] = str(_entity_id)
+                                                        break
+                                                    k = (test_chain_id, int(r[seq_id_col]) - c)
+                                                    if k in rev_seq:
+                                                        r[chain_id_col] = str(_entity_assembly_id)
+                                                        if entity_id_col != -1:
+                                                            r[entity_id_col] = str(_entity_id)
+                                                        break
+
                                     else:
 
                                         valid = False
@@ -3310,6 +3332,7 @@ class NEFTranslator:
                                                             r[alt_seq_id_col] = str(_seq_id)
                                                         if entity_id_col != -1:
                                                             r[entity_id_col] = str(_entity_id)
+
                                     if 'identical_chain_id' in ps:
                                         break
 

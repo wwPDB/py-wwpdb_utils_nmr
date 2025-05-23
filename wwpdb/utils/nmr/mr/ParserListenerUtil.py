@@ -4709,8 +4709,16 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
         if modelNumName is None:
             modelNumName = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in tags else 'ndb_model'
-        if authAsymId is None:
-            authAsymId = 'pdbx_auth_asym_id' if 'pdbx_auth_asym_id' in tags else 'auth_asym_id'
+        authAsymId = 'auth_asym_id'
+        if cR.hasItem('atom_site', 'pdbx_auth_asym_id'):
+            coord = cR.getDictListWithFilter('atom_site', [{'name': 'auth_asym_id', 'type': 'str'},
+                                                           {'name': 'pdbx_auth_asym_id', 'type': 'str'}])
+            auth_asym_id_set, pdbx_auth_asym_id_set = set(), set()
+            for c in coord:
+                auth_asym_id_set.add(c['auth_asym_id'])
+                pdbx_auth_asym_id_set.add(c['pdbx_auth_asym_id'])
+            if len(pdbx_auth_asym_id_set) >= len(auth_asym_id_set):  # DAOTHER-10105: do not trust pdbx_auth_asym_id when the chain is split
+                authAsymId = 'pdbx_auth_asym_id'
         if authSeqId is None:
             authSeqId = 'pdbx_auth_seq_id' if 'pdbx_auth_seq_id' in tags else 'auth_seq_id'
         if authAtomId is None:
@@ -10443,7 +10451,7 @@ def getCoordAtomSiteOf(caC: dict, authChainId: str, chainId: str, seqId: int,
                                 if compId is not None and _seqKey in coordAtomSites:
                                     coordAtomSite = coordAtomSites[_seqKey]
                                     break
-                                elif seqKey in coordAtomSites:
+                                if seqKey in coordAtomSites:
                                     coordAtomSite = coordAtomSites[seqKey]
                                     break
 

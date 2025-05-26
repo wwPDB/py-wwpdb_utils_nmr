@@ -7056,8 +7056,8 @@ class NEFTranslator:
                     if len(v) == 3:
                         methyl_atoms.extend(v)
 
-        atoms = [alt_atom_conv_dict[atom] if atom in alt_atom_conv_dict else atom for atom in atoms]
-        methyl_atoms = [alt_atom_conv_dict[atom] if atom in alt_atom_conv_dict else atom for atom in methyl_atoms]
+        atoms = [alt_atom_conv_dict[atom] if atom in alt_atom_conv_dict else atom for atom in atoms if atom[0] == nef_atom[0]]
+        methyl_atoms = [alt_atom_conv_dict[atom] if atom in alt_atom_conv_dict else atom for atom in methyl_atoms if atom[0] == nef_atom[0]]
 
         try:
 

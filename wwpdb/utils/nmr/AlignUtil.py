@@ -1095,7 +1095,6 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
         seq_id_name = 'auth_seq_id' if 'auth_seq_id' in ps1 else 'seq_id'
 
         for i2, ps2 in enumerate(_polySeqRst):
-            ps2 = copy.deepcopy(ps2)
             chain_id2 = ps2['chain_id']
 
             if i2 >= LEN_LARGE_ASYM_ID:
@@ -1138,7 +1137,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
 
                     if __matched > _matched and _conflict == 0:  # DAOTHER-9511: auth_comp_id does match with the coordinates sequence
                         not_decided_ps2_comp_id = False
-                        polySeqRst[i2]['comp_id'] = ps2['comp_id'] = ps2['auth_comp_id']
+                        ps2['comp_id'] = ps2['auth_comp_id']
                         myAlign = copy.deepcopy(_myAlign)
                         length, _matched, unmapped, conflict, offset_1, offset_2 =\
                             _length, __matched, _unmapped, _conflict, _offset_1, _offset_2
@@ -1157,7 +1156,15 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                     __matched, _unmapped, _conflict, _offset_1, _offset_2 = getScoreOfSeqAlign(_myAlign)
 
                     if __matched > _matched and _conflict == 0:  # DAOTHER-9511: auth_comp_id does match with the coordinates sequence
-                        polySeqRst[i2]['comp_id'] = ps1['comp_id']
+                        if any(comp_id in emptyValue for comp_id in ps2['comp_id']):
+                            comp_id_mapping = {}
+                            for comp_id, alt_comp_id in zip(ps1['comp_id'], ps1['alt_comp_id']):
+                                if comp_id == alt_comp_id:
+                                    continue
+                                comp_id_mapping[alt_comp_id] = comp_id
+                            polySeqRst[i2]['comp_id'] = [comp_id_mapping[comp_id] if comp_id in comp_id_mapping else comp_id for comp_id in ps2['comp_id']]
+                        else:
+                            polySeqRst[i2]['comp_id'] = ps1['comp_id']
                         myAlign = copy.deepcopy(_myAlign)
                         length, _matched, unmapped, conflict, offset_1, offset_2 =\
                             _length, __matched, _unmapped, _conflict, _offset_1, _offset_2

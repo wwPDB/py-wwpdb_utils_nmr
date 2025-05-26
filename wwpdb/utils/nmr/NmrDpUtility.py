@@ -49193,6 +49193,9 @@ class NmrDpUtility:
 
                 cif_ps = next(ps for ps in cif_poly_seq if ps['chain_id'] == cif_chain_id)
 
+                if 'auth_chain_id' in cif_ps:
+                    cif_chain_id = cif_ps['auth_chain_id']
+
                 if ca['sequence_coverage'] < LOW_SEQ_COVERAGE:  # DAOTHER-8751, issue #2
 
                     if 'auth_seq_id' in cif_ps:

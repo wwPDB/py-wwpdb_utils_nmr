@@ -1507,7 +1507,17 @@ class XplorMRParserListener(ParseTreeListener):
                 sortPolySeqRst(self.__polySeqRstFailed)
                 if len(self.__polySeqRstFailed) > 0:
                     self.reasonsForReParsing['extend_seq_scheme'] = self.__polySeqRstFailed
-                del self.reasonsForReParsing['local_seq_scheme']
+                insuff_dist_atom_sel_warnings = [f for f in self.__f if '[Insufficient atom selection]' in f and 'distance restraints' in f]
+                insuff_dist_atom_sel_in_1st_row_warnings = [f for f in insuff_dist_atom_sel_warnings if 'Check the 1th row of distance restraints' in f]
+                invalid_dist_atom_sel_in_1st_row = any(f for f in self.__f if 'Check the 1th row of distance restraints' in f
+                                                       and ('[Atom not found]' in f or '[Hydrogen not instantiated]' in f or '[Coordinate issue]' in f))
+                if len(insuff_dist_atom_sel_in_1st_row_warnings) > 0 and not invalid_dist_atom_sel_in_1st_row:
+                    if 'label_seq_scheme' not in self.reasonsForReParsing:
+                        self.reasonsForReParsing['label_seq_scheme'] = {}
+                    self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                    set_label_seq_scheme()
+                else:
+                    del self.reasonsForReParsing['local_seq_scheme']
 
             if self.hasAnyRestraints():
 
@@ -1542,7 +1552,8 @@ class XplorMRParserListener(ParseTreeListener):
                         set_label_seq_scheme()
 
                     elif len(self.reasonsForReParsing) > 0 and self.distRestraints > 0\
-                            and 'global_auth_sequence_offset' not in self.reasonsForReParsing:
+                            and 'global_auth_sequence_offset' not in self.reasonsForReParsing\
+                            and len(insuff_dist_atom_sel_in_1st_row_warnings) == 0:
                         self.reasonsForReParsing = {}
 
                     if any(f for f in self.__f if '[Sequence mismatch]' in f):

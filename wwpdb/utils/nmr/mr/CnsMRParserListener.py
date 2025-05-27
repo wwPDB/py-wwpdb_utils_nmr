@@ -6059,6 +6059,8 @@ class CnsMRParserListener(ParseTreeListener):
             if len(psList) == 0:
                 if isChainSpecified:
                     _chainIds = [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)]
+                    if self.__hasBranched:
+                        _chainIds.extend([br['auth_chain_id'] for br in self.__branched])
                     if all(_chainId not in _chainIds for _chainId in chainIds)\
                        and chainId in [ps['chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)]:
                         psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['chain_id'] == chainId]

@@ -7005,6 +7005,16 @@ class CnsMRParserListener(ParseTreeListener):
                             return None
                 if seqId + offset in ps['auth_seq_id']:
                     return seqId + offset
+                if offset != 0 and 'gap_in_auth_seq' in ps:
+                    for shift in range(1, 100):
+                        if seqId + shift + offset in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
+                            if 0 <= idx < len(ps['auth_seq_id']):
+                                return ps['auth_seq_id'][idx]
+                        if seqId - shift + offset in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(seqId - shift + offset) + shift
+                            if 0 <= idx < len(ps['auth_seq_id']):
+                                return ps['auth_seq_id'][idx]
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
             if seqKey in self.__labelToAuthSeq:
                 _, _seqId = self.__labelToAuthSeq[seqKey]
@@ -7028,6 +7038,16 @@ class CnsMRParserListener(ParseTreeListener):
                             return None
         if seqId + offset in ps['auth_seq_id']:
             return seqId + offset
+        if offset != 0 and 'gap_in_auth_seq' in ps:
+            for shift in range(1, 100):
+                if seqId + shift + offset in ps['auth_seq_id']:
+                    idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
+                    if 0 <= idx < len(ps['auth_seq_id']):
+                        return ps['auth_seq_id'][idx]
+                if seqId - shift + offset in ps['auth_seq_id']:
+                    idx = ps['auth_seq_id'].index(seqId - shift + offset) + shift
+                    if 0 <= idx < len(ps['auth_seq_id']):
+                        return ps['auth_seq_id'][idx]
         return seqId
 
     def getRealSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True) -> Tuple[Optional[int], Optional[str], bool]:
@@ -7068,6 +7088,16 @@ class CnsMRParserListener(ParseTreeListener):
                             return None, None, False
                 if seqId + offset in ps['auth_seq_id']:
                     return seqId + offset, ps['comp_id'][ps['auth_seq_id'].index(seqId + offset)], False
+                if offset != 0 and 'gap_in_auth_seq' in ps:
+                    for shift in range(1, 100):
+                        if seqId + shift + offset in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
+                            if 0 <= idx < len(ps['auth_seq_id']):
+                                return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
+                        if seqId - shift + offset in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(seqId - shift + offset) + shift
+                            if 0 <= idx < len(ps['auth_seq_id']):
+                                return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
             if seqKey in self.__labelToAuthSeq:
                 _, _seqId = self.__labelToAuthSeq[seqKey]
@@ -7099,6 +7129,16 @@ class CnsMRParserListener(ParseTreeListener):
             if _ps is not None:
                 if seqId + offset in _ps['seq_id']:
                     return seqId + offset, _ps['comp_id'][_ps['seq_id'].index(seqId + offset)], True
+        if offset != 0 and 'gap_in_auth_seq' in ps:
+            for shift in range(1, 100):
+                if seqId + shift + offset in ps['auth_seq_id']:
+                    idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
+                    if 0 <= idx < len(ps['auth_seq_id']):
+                        return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
+                if seqId - shift + offset in ps['auth_seq_id']:
+                    idx = ps['auth_seq_id'].index(seqId - shift + offset) + shift
+                    if 0 <= idx < len(ps['auth_seq_id']):
+                        return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
         return seqId, None, False
 
     def getRealChainId(self, chainId: str) -> str:

@@ -6354,10 +6354,30 @@ class BasePKParserListener():
                         index = term.rindex(elem)
                         atomId = term[index:len(term)]
                         if index - 1 >= 0 and term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
-                            if resNameLike[idx] and compId[-1] in PEAK_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
+                            if not resNameLike[idx]:
+                                continue
+                            if compId[-1] in PEAK_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
                                 pass
+                            elif len(compId) == 1 and hasOneLetterCodeSet:
+                                compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == compId)
+                                _atomId = term[index - 1:len(term)]
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    index -= 1
+                                    atomId = _atomId
+                                else:
+                                    continue
+                            elif compId in self.compIdSet:
+                                _atomId = term[index - 1:len(term)]
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    index -= 1
+                                    atomId = _atomId
+                                else:
+                                    continue
                             else:
                                 continue
+
                         if atomId[0] in ('Q', 'M') and index + 1 < len(term) and term[index + 1].isdigit():
                             continue
                         if ((with_compid is not None and atomId.startswith(with_compid)) or atomId.startswith('MET'))\

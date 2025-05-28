@@ -9395,6 +9395,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         key = str(_factor)
         if key in self.__cachedDictForFactor:
+            if 'has_nitroxide' in self.__cachedDictForFactor[key]:
+                self.__has_nx = True
             return copy.deepcopy(self.__cachedDictForFactor[key])
 
         len_warn_msg = len(self.__f)
@@ -10599,8 +10601,10 @@ class XplorMRParserListener(ParseTreeListener):
                                 atomIds = ['H']
 
                         has_nx_local = has_nx_anchor = False
-                        if self.__cur_subtype == 'dist' and atomId in XPLOR_NITROXIDE_NAMES:  # and coordAtomSite is not None and atomId not in atomSiteAtomId:
-                            self.__has_nx = has_nx_local = has_nx_anchor = True
+                        if self.__cur_subtype == 'dist'\
+                           and (atomId in XPLOR_NITROXIDE_NAMES
+                                or (isinstance(origAtomId, list) and origAtomId[0] in XPLOR_NITROXIDE_NAMES)):  # and coordAtomSite is not None and atomId not in atomSiteAtomId:
+                            self.__has_nx = has_nx_local = has_nx_anchor = _factor['has_nitroxide'] = True
                             if compId == 'CYS':
                                 atomIds = ['SG']
                                 _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
@@ -11024,6 +11028,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                             if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
                                                                and _factor['chain_id'][0] != chainId and compId in monDict3:
                                                                 continue
+                                                            if self.__has_nx and self.__csStat.peptideLike(compId) and origAtomId0 in aminoProtonCode:
+                                                                continue
                                                             warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                                 and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
                                                                 else 'Atom not found'
@@ -11167,6 +11173,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                        and len(origAtomId0) >= 2 and origAtomId0[:2].upper() in PARAMAGNETIC_ELEMENTS:
                                                         self.paramagCenter = copy.copy(_factor)
                                                         self.paramagCenter['atom_id'][0] = origAtomId0[:2].upper()
+                                                        continue
+                                                    if self.__has_nx and self.__csStat.peptideLike(compId) and origAtomId0 in aminoProtonCode:
                                                         continue
                                                     warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                         and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\

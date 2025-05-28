@@ -219,6 +219,15 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reasons_ = {'segment_id_mismatch': {'B': 'A'},
+                'segment_id_match_stats': {'B': {'A': -104}},
+                'segment_id_poly_type_stats': {'B': {'polymer': 0, 'non-poly': 0, 'non-polymer': 0}},
+                'np_seq_id_remap': [{'chain_id': 'A', 'seq_id_dict': {1: 201}}]}
+    reader = CnsMRReader(True, reasons=reasons_)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_mr-upload_P1.cns.V1',
+                 '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')
+
     reader = CnsMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\

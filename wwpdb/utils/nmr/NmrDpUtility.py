@@ -36387,14 +36387,14 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Unknown atom name]'):
-                        self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                        self.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
                         self.report.setWarning()
 
                         if self.__verbose:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Unknown residue name]'):
-                        self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                        self.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -36654,7 +36654,7 @@ class NmrDpUtility:
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         consume_suspended_message()
 
-                        self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                        self.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -36675,15 +36675,15 @@ class NmrDpUtility:
                             if d not in self.__nmr_ext_poly_seq:
                                 self.__nmr_ext_poly_seq.append(d)
 
-                    elif warn.startswith('[Inconsistent assigned peak]'):
-                        self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                    elif warn.startswith('[Inconsistent peak assignment]'):
+                        self.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
                         self.report.setWarning()
 
                         if self.__verbose:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
-                    elif warn.startswith('[Conflicted assigned peak]'):
-                        self.report.warning.appendDescription('conflicted_mr_data', msg_dict)
+                    elif warn.startswith('[Conflicted peak assignment]'):
+                        self.report.warning.appendDescription('conflicted_peak_list', msg_dict)
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -36709,7 +36709,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                        self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                        self.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -52571,7 +52571,7 @@ class NmrDpUtility:
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         consume_suspended_message()
 
-                        self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                        self.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -52592,15 +52592,15 @@ class NmrDpUtility:
                             if d not in self.__nmr_ext_poly_seq:
                                 self.__nmr_ext_poly_seq.append(d)
 
-                    elif warn.startswith('[Inconsistent assigned peak]'):
-                        self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                    elif warn.startswith('[Inconsistent peak assignment]'):
+                        self.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
                         self.report.setWarning()
 
                         if self.__verbose:
                             self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
-                    elif warn.startswith('[Conflicted assigned peak]'):
-                        self.report.warning.appendDescription('conflicted_mr_data', msg_dict)
+                    elif warn.startswith('[Conflicted peak assignment]'):
+                        self.report.warning.appendDescription('conflicted_peak_list', msg_dict)
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -52626,7 +52626,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Range value warning]') or (warn.startswith('[Range value error]') and self.__remediation_mode):
-                        self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                        self.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
                         self.report.setWarning()
 
                         if self.__verbose:

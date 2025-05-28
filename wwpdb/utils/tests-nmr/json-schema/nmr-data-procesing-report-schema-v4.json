@@ -4828,6 +4828,12 @@
         "unsupported_mr_data": {
           "$ref": "#/definitions/common_message"
         },
+        "conflicted_peak_list": {
+          "$ref": "#/definitions/common_message"
+        },
+        "inconsistent_peak_list": {
+          "$ref": "#/definitions/common_message"
+        },
         "concatenated_sequence": {
           "$ref": "#/definitions/common_message"
         },

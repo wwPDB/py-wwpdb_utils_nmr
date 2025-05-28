@@ -1525,6 +1525,8 @@ class BasePKParserListener():
 
         finally:
             self.warningMessage = sorted(list(set(self.f)), key=self.f.index)
+            if all('(list_id=1, ' in f for f in self.warningMessage):
+                self.warningMessage = [f.replace('(list_id=1, ', '(') for f in self.warningMessage]
 
     def initSpectralDim(self):
         if self.num_of_dim not in (2, 3, 4):
@@ -3210,7 +3212,7 @@ class BasePKParserListener():
                             elif _atom_id[0] in protonBeginCode and len_atom_id_ > 0:
                                 swap_atom_id_1(_atom_id_)
                             else:
-                                self.f.append(f"[Inconsistent assigned peak] [Check row of Index_ID {loop.data[idx][loop.tags.index('Index_ID')]}] "
+                                self.f.append(f"[Inconsistent peak assignment] [Check row of Index_ID {loop.data[idx][loop.tags.index('Index_ID')]}] "
                                               f"Inconsistent assignments of spectral peak with onebond coherence transfer type, ({chain_id}:{seq_id}:{comp_id}:{atom_id}) vs "
                                               f"({chain_id}:{seq_id}:{comp_id}:{atom_id2}) have been cleared.")
 
@@ -3754,7 +3756,7 @@ class BasePKParserListener():
                             elif _atom_id[0] in protonBeginCode and len_atom_id_ > 0:
                                 alt_swap_atom_id_1(_atom_id_)
                             else:
-                                self.f.append(f"[Inconsistent assigned peak] [Check row of Peak_ID {loop.data[idx][loop.tags.index('Peak_ID')]}] "
+                                self.f.append(f"[Inconsistent peak assignment] [Check row of Peak_ID {loop.data[idx][loop.tags.index('Peak_ID')]}] "
                                               f"Inconsistent assignments of spectral peak with onebond coherence transfer type, ({chain_id}:{seq_id}:{comp_id}:{atom_id}) vs "
                                               f"({chain_id}:{seq_id}:{comp_id}:{atom_id2}) have been cleared.")
 
@@ -5687,7 +5689,7 @@ class BasePKParserListener():
                 sf['loop'].add_data(row)
 
                 if not has_assignments and details is not None:
-                    self.f.append(f"[Conflicted assigned peak] {self.getCurrentRestraint(n=index)}"
+                    self.f.append(f"[Conflicted peak assignment] {self.getCurrentRestraint(n=index)}"
                                   f"Peak assignments {details!r} could not map to the coordinates.")
 
                 row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.entryId, dstFunc)
@@ -5841,7 +5843,7 @@ class BasePKParserListener():
                 sf['loop'].add_data(row)
 
                 if not has_assignments and details is not None:
-                    self.f.append(f"[Conflicted assigned peak] {self.getCurrentRestraint(n=index)}"
+                    self.f.append(f"[Conflicted peak assignment] {self.getCurrentRestraint(n=index)}"
                                   f"Peak assignments {details!r} could not map to the coordinates.")
 
                 row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.entryId, dstFunc)
@@ -6003,7 +6005,7 @@ class BasePKParserListener():
                 sf['loop'].add_data(row)
 
                 if not has_assignments and details is not None:
-                    self.f.append(f"[Conflicted assigned peak] {self.getCurrentRestraint(n=index)}"
+                    self.f.append(f"[Conflicted peak assignment] {self.getCurrentRestraint(n=index)}"
                                   f"Peak assignments {details!r} could not map to the coordinates.")
 
                 row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.entryId, dstFunc)

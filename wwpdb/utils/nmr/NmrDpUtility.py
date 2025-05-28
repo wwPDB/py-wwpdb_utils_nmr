@@ -36334,7 +36334,7 @@ class NmrDpUtility:
                            and ('Height' in description['message']
                                 or 'Data' in description['message']):
                             _type = 'reverse'
-                        elif 'SPARKY' in a_pk_format_name and self.__internal_mode\
+                        elif 'SPARKY' in a_pk_format_name\
                                 and mismatched_input_err_msg in description['message']\
                                 and "'\\n' expecting {Integer, Float, Real, Real_vol}" in description['message']:
                             _type = 'no'
@@ -36693,7 +36693,7 @@ class NmrDpUtility:
                         if (self.__remediation_mode or self.__internal_mode) and not self.__conversion_server:
                             pass
                         else:
-                            self.report.error.appendDescription('missing_data', msg_dict)
+                            self.report.error.appendDescription('missing_mandatory_item', msg_dict)
                             self.report.setError()
 
                             if self.__verbose:
@@ -37259,34 +37259,46 @@ class NmrDpUtility:
                         if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
                             continue
 
-                if spa_type == 'no' and self.__internal_mode:
-                    self.__list_id_counter = copy.copy(__list_id_counter)
+                if spa_type == 'no':
+                    if self.__internal_mode:
+                        self.__list_id_counter = copy.copy(__list_id_counter)
 
-                    reader = SparkyNPKReader(self.__verbose, self.__lfh,
-                                             self.__representative_model_id,
-                                             self.__representative_alt_id,
-                                             self.__mr_atom_name_mapping,
-                                             self.__cR, self.__caC,
-                                             self.__ccU, self.__csStat, self.__nefT)
-                    reader.setInternalMode(self.__internal_mode)
+                        reader = SparkyNPKReader(self.__verbose, self.__lfh,
+                                                 self.__representative_model_id,
+                                                 self.__representative_alt_id,
+                                                 self.__mr_atom_name_mapping,
+                                                 self.__cR, self.__caC,
+                                                 self.__ccU, self.__csStat, self.__nefT)
+                        reader.setInternalMode(self.__internal_mode)
 
-                    _list_id_counter = copy.copy(self.__list_id_counter)
+                        _list_id_counter = copy.copy(self.__list_id_counter)
 
-                    listener, parser_err_listener, lexer_err_listener =\
-                        reader.parse(file_path, self.__cifPath,
-                                     createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                     listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
-                                     csLoops=self.__lp_data['chem_shift'])
+                        listener, parser_err_listener, lexer_err_listener =\
+                            reader.parse(file_path, self.__cifPath,
+                                         createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                         listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                         csLoops=self.__lp_data['chem_shift'])
 
-                    _content_subtype = listener.getContentSubtype() if listener is not None else None
-                    if _content_subtype is not None and len(_content_subtype) == 0:
-                        _content_subtype = None
+                        _content_subtype = listener.getContentSubtype() if listener is not None else None
+                        if _content_subtype is not None and len(_content_subtype) == 0:
+                            _content_subtype = None
 
-                    if None not in (lexer_err_listener, parser_err_listener, listener)\
-                       and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
-                            or _content_subtype is not None):
-                        if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
-                            continue
+                        if None not in (lexer_err_listener, parser_err_listener, listener)\
+                           and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                                or _content_subtype is not None):
+                            if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
+                                continue
+
+                    else:
+                        warn = 'Neither peak height nor peak volume are included in the file. Please re-upload the NMR spectral peak list file.'
+                        msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
+
+                        self.report.error.appendDescription('format_issue', msg_dict)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {warn}\n")
+                        continue
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -52598,7 +52610,7 @@ class NmrDpUtility:
                         if (self.__remediation_mode or self.__internal_mode) and not self.__conversion_server:
                             pass
                         else:
-                            self.report.error.appendDescription('missing_data', msg_dict)
+                            self.report.error.appendDescription('missing_mandatory_item', msg_dict)
                             self.report.setError()
 
                             if self.__verbose:

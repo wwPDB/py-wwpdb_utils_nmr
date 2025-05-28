@@ -4748,7 +4748,7 @@ class BasePKParserListener():
 
         if 'height' not in dstFunc and 'volume' not in dstFunc and not self.internal:
             self.f.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
-                          "Neither height nor volume value is set.")
+                          "Neither peak height nor peak volume value are set. Please re-upload the NMR spectral peak list file.")
             return None
 
         if pos_unc_1 is not None and pos_unc_1 != 0.0:
@@ -4847,7 +4847,7 @@ class BasePKParserListener():
 
         if 'height' not in dstFunc and 'volume' not in dstFunc and not self.internal:
             self.f.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
-                          "Neither height nor volume value is set.")
+                          "Neither peak height nor peak volume value are set. Please re-upload the NMR spectral peak list file.")
             return None
 
         if pos_unc_1 is not None and pos_unc_1 != 0.0:
@@ -4965,7 +4965,7 @@ class BasePKParserListener():
 
         if 'height' not in dstFunc and 'volume' not in dstFunc and not self.internal:
             self.f.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
-                          "Neither height nor volume value is set.")
+                          "Neither peak height nor peak volume value are set. Please re-upload the NMR spectral peak list file.")
             return None
 
         if pos_unc_1 is not None and pos_unc_1 != 0.0:

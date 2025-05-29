@@ -36685,8 +36685,6 @@ class NmrDpUtility:
                                 self.__nmr_ext_poly_seq.append(d)
 
                     elif warn.startswith('[Inconsistent peak assignment]'):
-                        consume_suspended_message()
-
                         self.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
                         self.report.setWarning()
 
@@ -36694,8 +36692,6 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Conflicted peak assignment]'):
-                        consume_suspended_message()
-
                         self.report.warning.appendDescription('conflicted_peak_list', msg_dict)
                         self.report.setWarning()
 
@@ -52623,8 +52619,6 @@ class NmrDpUtility:
                                 self.__nmr_ext_poly_seq.append(d)
 
                     elif warn.startswith('[Inconsistent peak assignment]'):
-                        consume_suspended_message()
-
                         self.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
                         self.report.setWarning()
 
@@ -52632,8 +52626,6 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Conflicted peak assignment]'):
-                        consume_suspended_message()
-
                         self.report.warning.appendDescription('conflicted_peak_list', msg_dict)
                         self.report.setWarning()
 

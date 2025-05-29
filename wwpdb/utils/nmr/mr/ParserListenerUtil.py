@@ -7446,6 +7446,32 @@ def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True,
     return listIdCounter
 
 
+def getReadableFactor(factor: dict) -> str:
+    """ Convert human readable factor expression.
+    """
+
+    _factor = {k: sorted(list(set(v))) if isinstance(v, list) else v for k, v in factor.items()}
+
+    string = str(_factor).replace('[', '').replace(']', '')
+
+    if "'chain_id'" in string:
+        string = string.replace("'chain_id'", "'segidentifier'")
+
+    if "'seg_id'" in string:
+        string = string.replace("'seg_id'", "'residue'")
+
+    if "'comp_id'" in string:
+        string = string.replace("'comp_id'", "'resname'")
+
+    if "'atom_id'" in string:
+        string = string.replace("'atom_id'", "'name'")
+
+    if "'type_symbol'" in string:
+        string = string.replace("'type_symbol'", "'chemical'")
+
+    return string
+
+
 def getSaveframe(mrSubtype: str, sf_framecode: str,
                  listId: Optional[int] = None, entryId: Optional[str] = None, fileName: Optional[str] = None,
                  constraintType: Optional[str] = None, potentialType: Optional[str] = None,

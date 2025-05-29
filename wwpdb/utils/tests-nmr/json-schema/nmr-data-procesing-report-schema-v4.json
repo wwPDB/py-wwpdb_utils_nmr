@@ -4834,6 +4834,9 @@
         "inconsistent_peak_list": {
           "$ref": "#/definitions/common_message"
         },
+        "unsupported_peak_list": {
+          "$ref": "#/definitions/common_message"
+        },
         "concatenated_sequence": {
           "$ref": "#/definitions/common_message"
         },

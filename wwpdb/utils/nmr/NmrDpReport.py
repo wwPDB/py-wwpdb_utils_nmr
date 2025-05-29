@@ -102,6 +102,7 @@
 # 24-Apr-2025  M. Yokochi - add NmrDpReportOutputStatistics class for standalone NMR data conversion service (DAOTHER-9785)
 # 25-Apr-2025  M. Yokochi - add 'unparsed_data' error to block conversion due to unparsed data with error in standalone NMR data conversion service (DAOTHER-9785)
 # 28-May-2025  M. Yokochi - add 'conflicted_peak_list' and 'inconsistent_peak_list' warning types (DAOTHER-10010)
+# 29-May-2025  M. Yokochi - add 'unsupported_peak_list' warning type (DAOTHER-10099)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -2422,7 +2423,7 @@ class NmrDpReportWarning:
                       'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data',
                       'conflicted_data', 'inconsistent_data', 'redundant_data',
                       'insufficient_mr_data', 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data',
-                      'conflicted_peak_list', 'inconsistent_peak_list',
+                      'conflicted_peak_list', 'inconsistent_peak_list', 'unsupported_peak_list',
                       'concatenated_sequence', 'coordinate_issue', 'not_superimposed_model', 'exactly_overlaid_model',
                       'assigned_peak_atom_not_found', 'hydrogen_not_instantiated')
 
@@ -2433,13 +2434,13 @@ class NmrDpReportWarning:
                             'unusual/rare_data', 'insufficient_data',
                             'conflicted_data', 'inconsistent_data', 'redundant_data',
                             'insufficient_mr_data', 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data',
-                            'conflicted_peak_list', 'inconsistent_peak_list',
+                            'conflicted_peak_list', 'inconsistent_peak_list', 'unsupported_peak_list',
                             'hydrogen_not_instantiated')
 
         self.mr_err_items = ('hydrogen_not_instantiated', 'coordinate_issue',
                              'ambiguous_dihedral_angle', 'anomalous_rdc_vector', 'anomalous_data',
                              'insufficient_mr_data', 'conflicted_mr_data', 'inconsistent_mr_data', 'redundant_mr_data', 'unsupported_mr_data',
-                             'conflicted_peak_list', 'inconsistent_peak_list',)
+                             'conflicted_peak_list', 'inconsistent_peak_list', 'unsupported_peak_list')
 
         self.__contents = {item: None for item in self.items}
 

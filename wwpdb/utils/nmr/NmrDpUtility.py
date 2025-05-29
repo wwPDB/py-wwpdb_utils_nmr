@@ -215,6 +215,7 @@
 # 28-Mar-2025  M. Yokochi - add support for SPARKY's 'save' (aka. ornament) peak list (DAOTHER-8905, 9785, NMR data remediation Phase 2)
 # 09-Apr-2025  M. Yokochi - enable to convert chemical shifts in any software-native format in the standalone NMR data conversion service (v4.4.0, DAOTHER-9785)
 # 23-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors to report out failed restraint conversions and detailed messages (DAOTHER-9785)
+# 29-May-2025  M. Yokochi - analyze spectral peak list files and provide warning/error messages to depositor (DAOTHER-8905, 8949, 10096, 10097, 10098, 10099, 10100, 10101)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -34201,7 +34202,7 @@ class NmrDpUtility:
         return True
 
     def __mergeAnyPkAsIs(self) -> bool:
-        """ Merge spectral peak list file(s) in any plain text format (file type: nm-pea-any) into a single NMR-STAR file as is.
+        """ Merge spectral peak list file(s) in any plain text format (file type: nm-pea-any) into a single NMR-STAR file as-is.
         """
 
         if self.__combined_mode:
@@ -36797,9 +36798,10 @@ class NmrDpUtility:
             if file_type == 'nm-pea-any':
 
                 warn = f'We could not identify peak list file format of {file_name!r}. '\
-                    'The contents are stored as is within _Spectral_peak_list.Text_data tag for future remediation.'
+                    'In order to add file format support in the future, the contents is temporarily stored as-is in the _Spectral_peak_list.Text_data tag '\
+                    'and will be converted during future data remediation if the data matches a known peak list format.'
 
-                self.report.warning.appendDescription('unsupported_mr_data',
+                self.report.warning.appendDescription('unsupported_peak_list',
                                                       {'file_name': file_name, 'description': warn, 'inheritable': True})
                 self.report.setWarning()
 
@@ -60355,7 +60357,8 @@ class NmrDpUtility:
                             file_name = f"{original_file_name} ({file_name})"
 
                         warn = f'We could not identify restraint file format of {file_name!r}. '\
-                               'The contents are stored as is within _Other_data_type_list.Text_data tag for future remediation.'
+                               'In order to add file format support in the future, the contents is temporarily stored as-is in the _Other_data_type_list.Text_data tag '\
+                               'and will be converted during future data remediation if the data matches a known restraint format.'
 
                         self.report.warning.appendDescription('unsupported_mr_data',
                                                               {'file_name': file_name, 'description': warn, 'inheritable': True})

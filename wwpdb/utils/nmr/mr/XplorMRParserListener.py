@@ -10303,10 +10303,6 @@ class XplorMRParserListener(ParseTreeListener):
                                 _, seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
                                 if seqId is not None:
                                     _seqId_ = seqId
-                            else:
-                                _, seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
-                                if seqId is not None:
-                                    continue
                         elif 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                             fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)
                             if fixedChainId != chainId:

@@ -219,6 +219,17 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6bho/CN-NOE_gaf6012g4lit.tbl-corrected',
+                     '../../tests-nmr/mock-data-remediation/6bho/6bho.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6bho/CN-NOE_gaf6012g4lit.tbl-corrected',
+                 '../../tests-nmr/mock-data-remediation/6bho/6bho.cif')
+
     reasons_ = {'segment_id_mismatch': {'B': 'A'},
                 'segment_id_match_stats': {'B': {'A': -104}},
                 'segment_id_poly_type_stats': {'B': {'polymer': 0, 'non-poly': 0, 'non-polymer': 0}},

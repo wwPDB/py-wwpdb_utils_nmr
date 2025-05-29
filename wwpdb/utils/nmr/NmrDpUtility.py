@@ -34994,14 +34994,22 @@ class NmrDpUtility:
 
             if listener.warningMessage is not None:
 
+                def_sf_framecode = ''
+                for warn in listener.warningMessage:
+
+                    if inconsistent_restraint_warning_pattern.match(warn):
+                        g = inconsistent_restraint_warning_pattern.search(warn).groups()
+                        if g[1] not in emptyValue:
+                            def_sf_framecode = g[1]
+                            break
+
                 for warn in listener.warningMessage:
 
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
-                        if g not in emptyValue:
-                            msg_dict['sf_framecode'] = g[1]
-                            msg_dict['description'] = warn.replace(f', {g[1]}', '')
+                        msg_dict['sf_framecode'] = g[1] if g[1] not in emptyValue else def_sf_framecode
+                        msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Sequence mismatch]'):
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch': msg_dict})
@@ -36653,7 +36661,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                        consume_suspended_message()
+                        # consume_suspended_message()
 
                         self.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
                         self.report.setWarning()
@@ -36677,6 +36685,8 @@ class NmrDpUtility:
                                 self.__nmr_ext_poly_seq.append(d)
 
                     elif warn.startswith('[Inconsistent peak assignment]'):
+                        consume_suspended_message()
+
                         self.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
                         self.report.setWarning()
 
@@ -36684,6 +36694,8 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Conflicted peak assignment]'):
+                        consume_suspended_message()
+
                         self.report.warning.appendDescription('conflicted_peak_list', msg_dict)
                         self.report.setWarning()
 
@@ -36727,14 +36739,22 @@ class NmrDpUtility:
 
             if listener.warningMessage is not None:
 
+                def_sf_framecode = ''
+                for warn in listener.warningMessage:
+
+                    if inconsistent_restraint_warning_pattern.match(warn):
+                        g = inconsistent_restraint_warning_pattern.search(warn).groups()
+                        if g[1] not in emptyValue:
+                            def_sf_framecode = g[1]
+                            break
+
                 for warn in listener.warningMessage:
 
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
-                        if g not in emptyValue:
-                            msg_dict['sf_framecode'] = g[1]
-                            msg_dict['description'] = warn.replace(f', {g[1]}', '')
+                        msg_dict['sf_framecode'] = g[1] if g[1] not in emptyValue else def_sf_framecode
+                        msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Sequence mismatch]'):
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch': msg_dict})
@@ -38206,14 +38226,22 @@ class NmrDpUtility:
 
             if listener.warningMessage is not None:
 
+                def_sf_framecode = ''
+                for warn in listener.warningMessage:
+
+                    if inconsistent_restraint_warning_pattern.match(warn):
+                        g = inconsistent_restraint_warning_pattern.search(warn).groups()
+                        if g[1] not in emptyValue:
+                            def_sf_framecode = g[1]
+                            break
+
                 for warn in listener.warningMessage:
 
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
                     if inconsistent_restraint_warning_pattern.match(warn):
                         g = inconsistent_restraint_warning_pattern.search(warn).groups()
-                        if g not in emptyValue:
-                            msg_dict['sf_framecode'] = g[1]
-                            msg_dict['description'] = warn.replace(f', {g[1]}', '')
+                        msg_dict['sf_framecode'] = g[1] if g[1] not in emptyValue else def_sf_framecode
+                        msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Sequence mismatch]'):
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch': msg_dict})
@@ -52504,7 +52532,7 @@ class NmrDpUtility:
 
                 for warn in listener.warningMessage:
 
-                    msg_dict = {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn}
+                    msg_dict = {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn, 'inheritable': True}
 
                     if warn.startswith('[Concatenated sequence]'):
                         self.report.warning.appendDescription('concatenated_sequence', msg_dict)
@@ -52571,7 +52599,7 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                        consume_suspended_message()
+                        # consume_suspended_message()
 
                         self.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
                         self.report.setWarning()
@@ -52595,6 +52623,8 @@ class NmrDpUtility:
                                 self.__nmr_ext_poly_seq.append(d)
 
                     elif warn.startswith('[Inconsistent peak assignment]'):
+                        consume_suspended_message()
+
                         self.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
                         self.report.setWarning()
 
@@ -52602,6 +52632,8 @@ class NmrDpUtility:
                             self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Conflicted peak assignment]'):
+                        consume_suspended_message()
+
                         self.report.warning.appendDescription('conflicted_peak_list', msg_dict)
                         self.report.setWarning()
 
@@ -52647,7 +52679,7 @@ class NmrDpUtility:
 
                 for warn in listener.warningMessage:
 
-                    msg_dict = {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn}
+                    msg_dict = {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn, 'inheritable': True}
 
                     if warn.startswith('[Sequence mismatch]'):
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch': msg_dict})

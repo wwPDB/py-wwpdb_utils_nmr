@@ -7457,8 +7457,11 @@ def getReadableFactor(factor: dict) -> str:
     if "'chain_id'" in string:
         string = string.replace("'chain_id'", "'segidentifier'")
 
-    if "'seg_id'" in string:
-        string = string.replace("'seg_id'", "'residue'")
+    if "'auth_chain_id'" in string:
+        string = string.replace("'auth_chain_id'", "'original_segidentifier'")
+
+    if "'seq_id'" in string:
+        string = string.replace("'seq_id'", "'residue'")
 
     if "'comp_id'" in string:
         string = string.replace("'comp_id'", "'resname'")

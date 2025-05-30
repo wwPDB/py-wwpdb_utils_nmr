@@ -1377,6 +1377,8 @@ class XplorMRParserListener(ParseTreeListener):
                         self.reasonsForReParsing['global_sequence_offset'][k] = list(v)[0]
                     if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
                         del self.reasonsForReParsing['global_sequence_offset']
+                        if 'label_seq_scheme' in self.reasonsForReParsing:
+                            del self.reasonsForReParsing['label_seq_scheme']
 
             seqIdRemapForRemaining = []
             if 'global_sequence_offset' in self.reasonsForReParsing:

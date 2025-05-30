@@ -1232,6 +1232,8 @@ class CnsMRParserListener(ParseTreeListener):
                         self.reasonsForReParsing['global_sequence_offset'][k] = list(v)[0]
                     if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
                         del self.reasonsForReParsing['global_sequence_offset']
+                        if 'label_seq_scheme' in self.reasonsForReParsing:
+                            del self.reasonsForReParsing['label_seq_scheme']
 
             label_seq_scheme = 'label_seq_scheme' in self.reasonsForReParsing\
                 and all(t for t in self.reasonsForReParsing['label_seq_scheme'].values())

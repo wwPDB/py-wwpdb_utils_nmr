@@ -7469,6 +7469,9 @@ def getReadableFactor(factor: dict) -> str:
     if "'atom_id'" in string:
         string = string.replace("'atom_id'", "'name'")
 
+    if "'auth_atom_id'" in string:
+        string = string.replace("'auth_atom_id'", "'original_name'")
+
     if "'type_symbol'" in string:
         string = string.replace("'type_symbol'", "'chemical'")
 

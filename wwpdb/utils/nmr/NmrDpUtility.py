@@ -22268,9 +22268,6 @@ class NmrDpUtility:
         """ Perform consistency test on data of interesting loops.
         """
 
-        if not self.__internal_mode:
-            return True
-
         fileListId = 0
 
         input_source = self.report.input_sources[fileListId]
@@ -23623,9 +23620,6 @@ class NmrDpUtility:
     def __testDataConsistencyInPkAuxLoop(self) -> bool:
         """ Perform consistency test on data of auxiliary loops.
         """
-
-        if not self.__internal_mode:
-            return True
 
         fileListId = 0
 
@@ -44889,6 +44883,7 @@ class NmrDpUtility:
 
             ent['number_of_spectral_dimensions'] = num_dim
             ent['spectral_dim'] = []
+            ent['spectral_dim_transfer'] = []
 
             aux_data = next((lp['data'] for lp in self.__aux_data[content_subtype]
                              if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode
@@ -44903,11 +44898,15 @@ class NmrDpUtility:
                             dim_1 = sp_dim_trans['dimension_1']
                             dim_2 = sp_dim_trans['dimension_2']
                             mag_link.append((dim_1, dim_2))
+                        ent['spectral_dim_transfer'].append({'id_1': sp_dim_trans['dimension_1'], 'id_2': sp_dim_trans['dimension_2'],
+                                                             'indirect': sp_dim_trans['is_indirect'], 'type': sp_dim_trans['transfer_type']})
                     else:
                         if sp_dim_trans['Type'] == 'onebond':  # or sp_dim_trans['Type'].startswith('j') or sp_dim_trans['Type'].startswith('relayed'):
                             dim_1 = sp_dim_trans['Spectral_dim_ID_1']
                             dim_2 = sp_dim_trans['Spectral_dim_ID_2']
                             mag_link.append((dim_1, dim_2))
+                        ent['spectral_dim_transfer'].append({'id_1': sp_dim_trans['Spectral_dim_ID_1'], 'id_2': sp_dim_trans['Spectral_dim_ID_2'],
+                                                             'indirect': sp_dim_trans['Indirect'], 'type': sp_dim_trans['Type']})
 
             aux_data = next((lp['data'] for lp in self.__aux_data[content_subtype]
                              if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode
@@ -45190,6 +45189,7 @@ class NmrDpUtility:
 
             ent['number_of_spectral_dimensions'] = num_dim
             ent['spectral_dim'] = []
+            ent['spectral_dim_transfer'] = []
 
             aux_data = next((lp['data'] for lp in self.__aux_data[content_subtype]
                              if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode
@@ -45203,6 +45203,8 @@ class NmrDpUtility:
                         dim_1 = sp_dim_trans['Spectral_dim_ID_1']
                         dim_2 = sp_dim_trans['Spectral_dim_ID_2']
                         mag_link.append((dim_1, dim_2))
+                    ent['spectral_dim_transfer'].append({'id_1': sp_dim_trans['Spectral_dim_ID_1'], 'id_2': sp_dim_trans['Spectral_dim_ID_2'],
+                                                         'indirect': sp_dim_trans['Indirect'], 'type': sp_dim_trans['Type']})
 
             aux_data = next((lp['data'] for lp in self.__aux_data[content_subtype]
                              if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode

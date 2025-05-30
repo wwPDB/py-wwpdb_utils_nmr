@@ -3893,6 +3893,12 @@
             "$ref": "#/definitions/spectral_dim"
           }
         },
+        "spectral_dim_transfer": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/spectral_dim_transfer"
+          }
+        },
         "number_of_spectral_peaks": {
           "type": "object",
           "properties": {
@@ -4017,6 +4023,51 @@
         "encoding_code",
         "encoded_source_dimension_id",
         "magnetization_linkage_id"
+      ]
+    },
+    "spectral_dim_transfer": {
+      "description": "Template for mechanism for coherence transfer between spectral dimensions.",
+      "type": "object",
+      "properties": {
+        "id_1": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 15
+        },
+        "id_2": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 15
+        },
+        "indirect": {
+          "type": "boolean"
+        },
+        "type": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "onebond",
+                "jcoupling",
+                "jmultibond",
+                "relayed",
+                "relayed-alternate",
+                "through-space",
+                "through-space?"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id_1",
+        "id_2",
+        "indirect",
+        "type"
       ]
     },
     "atom_name_mapping": {

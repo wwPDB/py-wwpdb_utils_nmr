@@ -1085,13 +1085,14 @@ class CharmmMRParserListener(ParseTreeListener):
             if 'global_sequence_offset' in self.reasonsForReParsing:
                 globalSequenceOffset = copy.copy(self.reasonsForReParsing['global_sequence_offset'])
                 for k, v in globalSequenceOffset.items():
-                    if v is None or len(v) != 1:
+                    len_v = 0 if v is None else len(v)
+                    if len_v != 1:
                         del self.reasonsForReParsing['global_sequence_offset'][k]
                     else:
                         self.reasonsForReParsing['global_sequence_offset'][k] = list(v)[0]
                     if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
                         del self.reasonsForReParsing['global_sequence_offset']
-                        if 'label_seq_scheme' in self.reasonsForReParsing:
+                        if len_v > 2 and 'label_seq_scheme' in self.reasonsForReParsing:
                             del self.reasonsForReParsing['label_seq_scheme']
 
             seqIdRemapForRemaining = []

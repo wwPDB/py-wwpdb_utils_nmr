@@ -7447,35 +7447,35 @@ def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True,
 
 
 def getReadableFactor(factor: dict) -> str:
-    """ Convert human readable factor expression.
+    """ Return human readable XPLOR-NIH/CNS/CHARMM factor expression.
     """
 
     _factor = {k: sorted(list(set(v))) if isinstance(v, list) else v for k, v in factor.items()}
 
-    string = str(_factor).replace('[', '').replace(']', '')
+    key_order = ['chain_id', 'auth_chain_id', 'seq_id', 'comp_id', 'type_symbol', 'atom_id', 'auth_atom_id']
 
-    if "'chain_id'" in string:
-        string = string.replace("'chain_id'", "'segidentifier'")
+    key_map = {'chain_id': 'segidentifier',
+               'auth_chain_id': 'original_segidentifier',
+               'seq_id': 'residue',
+               'comp_id': 'resname',
+               'type_symbol': 'chemical',
+               'atom_id': 'name',
+               'auth_atom_id': 'original_name'}
 
-    if "'auth_chain_id'" in string:
-        string = string.replace("'auth_chain_id'", "'original_segidentifier'")
+    for k in _factor.keys():
+        if k in key_map:
+            continue
+        key_order.append(k)
+        key_map[k] = k
 
-    if "'seq_id'" in string:
-        string = string.replace("'seq_id'", "'residue'")
+    __factor = {}
+    for k in key_order:
+        if k not in _factor:
+            continue
+        v = _factor[k]
+        __factor[key_map[k]] = v if isinstance(v, list) and len(v) > 1 else v[0] if isinstance(v, list) else v
 
-    if "'comp_id'" in string:
-        string = string.replace("'comp_id'", "'resname'")
-
-    if "'atom_id'" in string:
-        string = string.replace("'atom_id'", "'name'")
-
-    if "'auth_atom_id'" in string:
-        string = string.replace("'auth_atom_id'", "'original_name'")
-
-    if "'type_symbol'" in string:
-        string = string.replace("'type_symbol'", "'chemical'")
-
-    return string
+    return str(__factor)
 
 
 def getSaveframe(mrSubtype: str, sf_framecode: str,

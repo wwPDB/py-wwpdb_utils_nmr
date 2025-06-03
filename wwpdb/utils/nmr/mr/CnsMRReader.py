@@ -219,6 +219,52 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2mgs/2mgs-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2mgs/2mgs.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2maj/2maj-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2maj/2maj.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2m0m/2m0m-corrected-div_dst.mr',
+                     '../../tests-nmr/mock-data-remediation/2m0m/2m0m.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2lxm/2lxm-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2lxm/2lxm.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2lhz/2lhz-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2lhz/2lhz.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2le9/2le9-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2le9/2le9.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2le9/2le9-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2le9/2le9.cif')
+
     reader = CnsMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\

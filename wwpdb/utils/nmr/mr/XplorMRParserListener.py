@@ -2445,7 +2445,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.distStatements += 1
         self.__cur_subtype = 'dist' if self.__cur_subtype not in ('pre', 'rdc') else self.__cur_subtype  # set 'pre', 'rdc' for error message
 
-        if self.__cur_subtype_altered and not self.__preferAuthSeq and self.__cur_subtype == 'dist':
+        if self.__cur_subtype_altered and not self.__preferAuthSeq and self.__cur_subtype != 'dist':
             self.__preferAuthSeq = True
             self.__authSeqId = 'auth_seq_id'
 
@@ -5384,7 +5384,7 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                "The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].")
+                                f"The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].{chain_ids=} {offsets=} {atom_ids=}")
                 return
 
             comp_id = self.atomSelectionSet[2][0]['comp_id']
@@ -9366,14 +9366,17 @@ class XplorMRParserListener(ParseTreeListener):
 
         if len(self.atomSelectionSet) == 0:
 
-            # for the case dist -> pre transition occurs
-            if self.__cur_subtype == 'dist'\
-               and 'atom_id' in _factor and _factor['atom_id'][0] not in ('CA', 'CE')\
-               and (_factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS or _factor['atom_id'][0] == 'OO'):
-                self.__with_para = True
+            if self.__cur_subtype == 'pcs' and not self.__in_block and 'atom_id' in _factor and _factor['atom_id'][0].upper() in ('C', "C'", 'CO'):
+                self.__cur_subtype = 'hvycs'
+                self.__with_para = False
 
-            if self.__with_para:
-                self.paramagCenter = copy.copy(_factor)
+            # for the case dist -> pre transition occurs
+            if 'atom_id' in _factor and _factor['atom_id'][0] not in ('CA', 'CE')\
+               and (_factor['atom_id'][0] in PARAMAGNETIC_ELEMENTS or _factor['atom_id'][0] == 'OO'):
+                if self.__cur_subtype == 'dist':
+                    self.__with_para = True
+                if self.__with_para:
+                    self.paramagCenter = copy.copy(_factor)
 
         self.__retrieveLocalSeqScheme()
 
@@ -10412,7 +10415,8 @@ class XplorMRParserListener(ParseTreeListener):
                             for np in self.__nonPoly:
                                 if np['comp_id'][0] == elemName:
                                     elemCount += 1
-                            if elemCount == 1 and elemName in ps['comp_id']:
+                            if elemCount == 1 and elemName in ps['comp_id']\
+                               and (self.__cur_subtype == 'dist' or self.__with_para):
                                 compId = elemName
                                 seqId = ps['auth_seq_id'][0]
                                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, cifCheck=cifCheck)
@@ -10999,8 +11003,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                                 or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates. "
-                                                                            f"The residue number '{seqId}' is not present "
-                                                                            f"in polymer sequence of chain {chainId} of the coordinates. "
+                                                                            f"The residue number '{seqId}' is not present in polymer sequence "
+                                                                            f"of chain {chainId} of the coordinates. "
                                                                             "Please update the sequence in the Macromolecules page.")
                                                             if 'alt_chain_id' in _factor:
                                                                 self.__failure_chain_ids.append(chainId)
@@ -11071,7 +11075,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                         or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
                                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates. "
-                                                                    f"The residue number '{seqId}' is not present in polymer sequence of chain {chainId} of the coordinates. "
+                                                                    f"The residue number '{seqId}' is not present in polymer sequence "
+                                                                    f"of chain {chainId} of the coordinates. "
                                                                     "Please update the sequence in the Macromolecules page.")
                                                     if 'alt_chain_id' in _factor:
                                                         self.__failure_chain_ids.append(chainId)

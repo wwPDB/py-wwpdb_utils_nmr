@@ -3979,7 +3979,8 @@ class CharmmMRParserListener(ParseTreeListener):
                             for np in self.__nonPoly:
                                 if np['comp_id'][0] == elemName:
                                     elemCount += 1
-                            if elemCount == 1 and elemName in ps['comp_id']:
+                            if elemCount == 1 and elemName in ps['comp_id']\
+                               and self.__cur_subtype == 'dist':
                                 compId = elemName
                                 seqId = ps['auth_seq_id'][0]
                                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, cifCheck=cifCheck)
@@ -4518,8 +4519,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                 or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates. "
-                                                                            f"The residue number '{seqId}' is not present "
-                                                                            f"in polymer sequence of chain {chainId} of the coordinates. "
+                                                                            f"The residue number '{seqId}' is not present in polymer sequence "
+                                                                            f"of chain {chainId} of the coordinates. "
                                                                             "Please update the sequence in the Macromolecules page.")
                                                             if 'alt_chain_id' in _factor:
                                                                 self.__failure_chain_ids.append(chainId)

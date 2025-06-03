@@ -5622,7 +5622,6 @@ class CnsMRParserListener(ParseTreeListener):
                         _compIdSelect.add(realCompId)
                         if realCompId not in monDict3:
                             _repNstdResidueInstance[realCompId] = (chainId, realSeqId)
-
             if self.__hasNonPolySeq:
                 for chainId in _factor['chain_id']:
                     npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]
@@ -6217,7 +6216,8 @@ class CnsMRParserListener(ParseTreeListener):
                             for np in self.__nonPoly:
                                 if np['comp_id'][0] == elemName:
                                     elemCount += 1
-                            if elemCount == 1 and elemName in ps['comp_id']:
+                            if elemCount == 1 and elemName in ps['comp_id']\
+                               and self.__cur_subtype == 'dist':
                                 compId = elemName
                                 seqId = ps['auth_seq_id'][0]
                                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, cifCheck=cifCheck)
@@ -6799,8 +6799,8 @@ class CnsMRParserListener(ParseTreeListener):
                                                                 or (compId == 'NH2' and seqId == max(self.__polySeq[0]['auth_seq_id']) + 1)):
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates. "
-                                                                            f"The residue number '{seqId}' is not present "
-                                                                            f"in polymer sequence of chain {chainId} of the coordinates. "
+                                                                            f"The residue number '{seqId}' is not present in polymer sequence "
+                                                                            f"of chain {chainId} of the coordinates. "
                                                                             "Please update the sequence in the Macromolecules page.")
                                                             if 'alt_chain_id' in _factor:
                                                                 self.__failure_chain_ids.append(chainId)
@@ -7791,7 +7791,7 @@ class CnsMRParserListener(ParseTreeListener):
                     if len(self.__fibril_chain_ids) > 0 and not self.__hasNonPoly:
                         if chainId[0] in self.__fibril_chain_ids:
                             self.factor['chain_id'] = [chainId[0]]
-                    elif len(self.__polySeq) == 1 and not self.__branched and not self.__hasNonPoly:
+                    elif len(self.__polySeq) == 1 and not self.__hasBranched and not self.__hasNonPoly:
                         self.factor['chain_id'] = self.__polySeq[0]['chain_id']
                         self.factor['auth_chain_id'] = chainId
                     elif self.__reasons is not None:
@@ -9245,7 +9245,7 @@ class CnsMRParserListener(ParseTreeListener):
                         if len(self.__fibril_chain_ids) > 0 and not self.__hasNonPoly:
                             if chainId[0] in self.__fibril_chain_ids:
                                 self.factor['chain_id'] = [chainId[0]]
-                        elif len(self.__polySeq) == 1 and not self.__branched and not self.__hasNonPoly:
+                        elif len(self.__polySeq) == 1 and not self.__hasBranched and not self.__hasNonPoly:
                             self.factor['chain_id'] = self.__polySeq[0]['chain_id']
                             self.factor['auth_chain_id'] = chainId
                         elif self.__reasons is not None:

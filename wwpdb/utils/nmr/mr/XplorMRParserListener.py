@@ -5384,7 +5384,7 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                f"The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].{chain_ids=} {offsets=} {atom_ids=}")
+                                f"The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].")
                 return
 
             comp_id = self.atomSelectionSet[2][0]['comp_id']

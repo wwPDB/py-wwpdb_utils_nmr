@@ -222,6 +222,27 @@ if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/7f7x/pUbrl-UBA-NOE.tab-corrected',
+                     '../../tests-nmr/mock-data-remediation/7f7x/7f7x.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/7f7x/f1f_cnoe.tab-corrected',
+                     '../../tests-nmr/mock-data-remediation/7f7x/7f7x.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2n1o/2n1o-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2n1o/2n1o.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2lai/2lai-trimmed.mr',
                      '../../tests-nmr/mock-data-remediation/2lai/2lai.cif')
     print(reader_listener.getReasonsForReparsing())

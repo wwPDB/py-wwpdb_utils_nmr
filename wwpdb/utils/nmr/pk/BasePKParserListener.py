@@ -5088,8 +5088,8 @@ class BasePKParserListener():
 
             try:
 
-                hasChainId = assignment[0]['chain_id'] is not None
-                hasCompId = assignment[0]['comp_id'] is not None
+                hasChainId = all(a['chain_id'] is not None for a in assignment)
+                hasCompId = all(a['comp_id'] is not None for a in assigment)
 
                 for a1 in assignment:
 
@@ -5135,8 +5135,8 @@ class BasePKParserListener():
 
             try:
 
-                hasChainId = all(a[0]['chain_id'] is not None for a in assignments)
-                hasCompId = all(a[0]['comp_id'] is not None for a in assignments)
+                hasChainId = all(all(_a['chain_id'] is not None for _a in a) for a in assignments)
+                hasCompId = all(all(_a['comp_id'] is not None for _a in a) for a in assignments)
 
                 has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
 
@@ -5269,8 +5269,8 @@ class BasePKParserListener():
 
             try:
 
-                hasChainId = all(a[0]['chain_id'] is not None for a in assignments)
-                hasCompId = all(a[0]['comp_id'] is not None for a in assignments)
+                hasChainId = all(all(_a['chain_id'] is not None for _a in a) for a in assignments)
+                hasCompId = all(all(_a['comp_id'] is not None for _a in a) for a in assignments)
 
                 has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
 
@@ -5410,8 +5410,8 @@ class BasePKParserListener():
 
             try:
 
-                hasChainId = all(a[0]['chain_id'] is not None for a in assignments)
-                hasCompId = all(a[0]['comp_id'] is not None for a in assignments)
+                hasChainId = all(all(_a['chain_id'] is not None for _a in a) for a in assignments)
+                hasCompId = all(all(_a['comp_id'] is not None for _a in a) for a in assignments)
 
                 has_multiple_assignments = any(len(assignment) > 1 for assignment in assignments)
 

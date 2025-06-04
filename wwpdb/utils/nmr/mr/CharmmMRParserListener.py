@@ -3214,7 +3214,26 @@ class CharmmMRParserListener(ParseTreeListener):
                             continue
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                             if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
-                                continue
+                                offset = 0
+                                if self.__reasons is not None:
+                                    if not self.__preferAuthSeq:
+                                        realSeqId = None
+                                        if 'label_seq_offset' in self.__reasons\
+                                           and chainId in self.__reasons['label_seq_offset']:
+                                            offset = self.__reasons['label_seq_offset'][chainId]
+                                            if _factor['seq_id'][0] + offset in ps['seq_id']:
+                                                realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                    else:
+                                        if 'global_sequence_offset' in self.__reasons\
+                                           and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
+                                            offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+                                        if 'global_auth_sequence_offset' in self.__reasons\
+                                           and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
+                                            offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                            realSeqId = None
+                                if realSeqId is None:
+                                    continue
                         idx = ps['auth_seq_id'].index(realSeqId)
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -3297,13 +3316,24 @@ class CharmmMRParserListener(ParseTreeListener):
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
-                                    realSeqId = None
                                     offset = 0
-                                    if not self.__preferAuthSeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\
-                                       and chainId in self.__reasons['label_seq_offset']:
-                                        offset = self.__reasons['label_seq_offset'][chainId]
-                                    if self.__reasons is not None and not self.__preferAuthSeq and (_factor['seq_id'][0] + offset) in ps['seq_id']:
-                                        realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                    if self.__reasons is not None:
+                                        if not self.__preferAuthSeq:
+                                            realSeqId = None
+                                            if 'label_seq_offset' in self.__reasons\
+                                               and chainId in self.__reasons['label_seq_offset']:
+                                                offset = self.__reasons['label_seq_offset'][chainId]
+                                                if _factor['seq_id'][0] + offset in ps['seq_id']:
+                                                    realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                        else:
+                                            if 'global_sequence_offset' in self.__reasons\
+                                               and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
+                                                offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+                                            if 'global_auth_sequence_offset' in self.__reasons\
+                                               and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
+                                                offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                            if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                                realSeqId = None
                                     if realSeqId is None:
                                         continue
                             idx = ps['auth_seq_id'].index(realSeqId)
@@ -3400,7 +3430,26 @@ class CharmmMRParserListener(ParseTreeListener):
                             continue
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                             if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
-                                continue
+                                offset = 0
+                                if self.__reasons is not None:
+                                    if not self.__preferAuthSeq:
+                                        realSeqId = None
+                                        if 'label_seq_offset' in self.__reasons\
+                                           and chainId in self.__reasons['label_seq_offset']:
+                                            offset = self.__reasons['label_seq_offset'][chainId]
+                                            if _factor['seq_id'][0] + offset in ps['seq_id']:
+                                                realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                    else:
+                                        if 'global_sequence_offset' in self.__reasons\
+                                           and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
+                                            offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+                                        if 'global_auth_sequence_offset' in self.__reasons\
+                                           and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
+                                            offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                            realSeqId = None
+                                if realSeqId is None:
+                                    continue
                         idx = ps['auth_seq_id'].index(realSeqId)
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -3493,13 +3542,24 @@ class CharmmMRParserListener(ParseTreeListener):
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
-                                    realSeqId = None
                                     offset = 0
-                                    if not self.__preferAuthSeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\
-                                       and chainId in self.__reasons['label_seq_offset']:
-                                        offset = self.__reasons['label_seq_offset'][chainId]
-                                    if self.__reasons is not None and not self.__preferAuthSeq and (_factor['seq_id'][0] + offset) in ps['seq_id']:
-                                        realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                    if self.__reasons is not None:
+                                        if not self.__preferAuthSeq:
+                                            realSeqId = None
+                                            if 'label_seq_offset' in self.__reasons\
+                                               and chainId in self.__reasons['label_seq_offset']:
+                                                offset = self.__reasons['label_seq_offset'][chainId]
+                                                if _factor['seq_id'][0] + offset in ps['seq_id']:
+                                                    realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                        else:
+                                            if 'global_sequence_offset' in self.__reasons\
+                                               and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
+                                                offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+                                            if 'global_auth_sequence_offset' in self.__reasons\
+                                               and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
+                                                offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                            if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                                realSeqId = None
                                     if realSeqId is None:
                                         continue
                             idx = ps['auth_seq_id'].index(realSeqId)

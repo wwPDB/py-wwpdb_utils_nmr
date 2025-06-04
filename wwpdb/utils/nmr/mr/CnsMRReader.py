@@ -219,6 +219,12 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reasons_ = {'label_seq_scheme': {'dist': True}, 'label_seq_offset': {'A': 9}}
+    reader = CnsMRReader(True, reasons=reasons_)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6mie/NOE.tbl-corrected',
+                 '../../tests-nmr/mock-data-remediation/6mie/6mie.cif')
+
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\

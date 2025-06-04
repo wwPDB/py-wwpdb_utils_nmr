@@ -5529,8 +5529,12 @@ class CnsMRParserListener(ParseTreeListener):
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                     realSeqId = None
-                                    if self.__reasons is not None and not self.__preferAuthSeq and _factor['seq_id'][0] in ps['seq_id']:
-                                        realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
+                                    offset = 0
+                                    if not self.__preferAuthSeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\
+                                       and chainId in self.__reasons['label_seq_offset']:
+                                        offset = self.__reasons['label_seq_offset'][chainId]
+                                    if self.__reasons is not None and not self.__preferAuthSeq and (_factor['seq_id'][0] + offset) in ps['seq_id']:
+                                        realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
                                     if realSeqId is None:
                                         continue
                             idx = ps['auth_seq_id'].index(realSeqId)
@@ -5720,8 +5724,12 @@ class CnsMRParserListener(ParseTreeListener):
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                     realSeqId = None
-                                    if self.__reasons is not None and not self.__preferAuthSeq and _factor['seq_id'][0] in ps['seq_id']:
-                                        realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
+                                    offset = 0
+                                    if not self.__preferAuthSeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\
+                                       and chainId in self.__reasons['label_seq_offset']:
+                                        offset = self.__reasons['label_seq_offset'][chainId]
+                                    if self.__reasons is not None and not self.__preferAuthSeq and (_factor['seq_id'][0] + offset) in ps['seq_id']:
+                                        realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
                                     if realSeqId is None:
                                         continue
                             idx = ps['auth_seq_id'].index(realSeqId)

@@ -7612,7 +7612,8 @@ class NEFTranslator:
 
             len_atom_id = len(atom_id)
 
-            if atom_id[0] == 'M' or ((atom_id[0] == 'Q' or (isLikePheOrTyr(comp_id, self.__ccU) and atom_id in ('HR', 'HR%', 'HR*'))) and self.__remediation_mode):  # DAOTHER-8663, 8751
+            if atom_id[0] == 'M' or ((atom_id[0] == 'Q'
+                                      or (isLikePheOrTyr(comp_id, self.__ccU) and atom_id in ('HR', 'HR%', 'HR*'))) and self.__remediation_mode):  # DAOTHER-8663, 8751
 
                 if atom_id.startswith('QQM'):  # 2n06, comp_id=CM8, atom_id=QQM -> ['HM2%', HM3%']
                     root, _branch = [], []

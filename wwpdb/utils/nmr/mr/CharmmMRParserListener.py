@@ -2985,6 +2985,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
         len_warn_msg = len(self.__f)
 
+        chain_not_specified = True
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
             if self.__largeModel:
                 _factor['chain_id'] = [self.__representativeAsymId]
@@ -2995,6 +2996,9 @@ class CharmmMRParserListener(ParseTreeListener):
                         _chainId = np['auth_chain_id']
                         if _chainId not in _factor['chain_id']:
                             _factor['chain_id'].append(_chainId)
+        elif len(_factor['chain_id']) == 1 and any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _factor['chain_id'][0]):
+            _factor['auth_chain_id'] = _factor['chain_id']
+            chain_not_specified = False
 
         if 'seq_id' not in _factor and 'seq_ids' not in _factor:
             if 'comp_ids' in _factor and len(_factor['comp_ids']) > 0\
@@ -3278,7 +3282,8 @@ class CharmmMRParserListener(ParseTreeListener):
             _factor['atom_id'] = list(_atomIdSelect)
 
             if len(_factor['atom_id']) == 0:
-                self.__preferAuthSeq = not self.__preferAuthSeq
+                if self.__reasons is None:
+                    self.__preferAuthSeq = not self.__preferAuthSeq
 
                 _compIdSelect = set()
                 for chainId in _factor['chain_id']:
@@ -3289,7 +3294,11 @@ class CharmmMRParserListener(ParseTreeListener):
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
-                                    continue
+                                    realSeqId = None
+                                    if self.__reasons is not None and not self.__preferAuthSeq and _factor['seq_id'][0] in ps['seq_id']:
+                                        realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
+                                    if realSeqId is None:
+                                        continue
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -3361,7 +3370,8 @@ class CharmmMRParserListener(ParseTreeListener):
                     if len(self.atomSelectionSet) > 0:
                         self.__setLocalSeqScheme()
                 else:
-                    self.__preferAuthSeq = not self.__preferAuthSeq
+                    if self.__reasons is None:
+                        self.__preferAuthSeq = not self.__preferAuthSeq
 
                 if len(_factor['atom_id']) == 0:
                     _factor['atom_id'] = [None]
@@ -3459,7 +3469,8 @@ class CharmmMRParserListener(ParseTreeListener):
             _factor['atom_id'] = list(_atomIdSelect)
 
             if len(_factor['atom_id']) == 0:
-                self.__preferAuthSeq = not self.__preferAuthSeq
+                if self.__reasons is None:
+                    self.__preferAuthSeq = not self.__preferAuthSeq
 
                 _compIdSelect = set()
                 _repNstdResidueInstance = {}
@@ -3472,7 +3483,11 @@ class CharmmMRParserListener(ParseTreeListener):
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
-                                    continue
+                                    realSeqId = None
+                                    if self.__reasons is not None and not self.__preferAuthSeq and _factor['seq_id'][0] in ps['seq_id']:
+                                        realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
+                                    if realSeqId is None:
+                                        continue
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -3555,13 +3570,15 @@ class CharmmMRParserListener(ParseTreeListener):
                     if len(self.atomSelectionSet) > 0:
                         self.__setLocalSeqScheme()
                 else:
-                    self.__preferAuthSeq = not self.__preferAuthSeq
+                    if self.__reasons is None:
+                        self.__preferAuthSeq = not self.__preferAuthSeq
 
                 if len(_factor['atom_id']) == 0:
                     _factor['atom_id'] = [None]
 
         _atomSelection = []
 
+        foundCompId = False
         if _factor['atom_id'][0] is not None:
             foundCompId = self.__consumeFactor_expressions__(_factor, cifCheck, _atomSelection,
                                                              isPolySeq=True, isChainSpecified=True)
@@ -3615,7 +3632,7 @@ class CharmmMRParserListener(ParseTreeListener):
         if len(_factor['atom_selection']) == 0:
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
-            if _factor['atom_id'][0] is None:
+            if _factor['atom_id'][0] is None and 'alt_atom_id' not in _factor:
                 if self.__cur_subtype != 'plane' and cifCheck and not self.__cur_union_expr:
                     if len(_factor['seq_id']) == 1 and 'alt_atom_id' in _factor and _factor['alt_atom_id'][0] is not None and 'comp_id' not in _factor:
                         for chainId in _factor['chain_id']:
@@ -3670,12 +3687,14 @@ class CharmmMRParserListener(ParseTreeListener):
                                     if ligands == 1:
                                         for np in self.__nonPoly:
                                             _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
-                                            if _coordAtomSite is not None and len(_factor['atom_id']) == 1 and _factor['atom_id'][0].upper() in _coordAtomSite['atom_id']:
+                                            if _coordAtomSite is not None and len(_factor['atom_id']) == 1\
+                                               and _factor['atom_id'][0] is not None and  _factor['atom_id'][0].upper() in _coordAtomSite['atom_id']:
                                                 ligands = update_np_seq_id_remap_request(self.__nonPoly[0], ligands)
                                             else:
                                                 ligands = 0
 
-                                    elif ligands > 1 and len(_factor['atom_id']) == 1 and _factor['atom_id'][0].upper() in SYMBOLS_ELEMENT:  # 2n3r
+                                    elif ligands > 1 and len(_factor['atom_id']) == 1\
+                                            and _factor['atom_id'][0] is not None and _factor['atom_id'][0].upper() in SYMBOLS_ELEMENT:  # 2n3r
                                         elemName = _factor['atom_id'][0].upper()
                                         elemCount = 0
                                         refElemSeqIds = []
@@ -3736,7 +3755,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                             if has_identical_chain_id(chainId):
                                                 break
 
-                                if ligands == 0 and (len(self.__polySeq) == 1 or all('identical_chain_id' in ps for ps in self.__polySeq)):
+                                if ligands == 0\
+                                   and (len(self.__polySeq) == 1 or all('identical_chain_id' in ps for ps in self.__polySeq) or not chain_not_specified):
                                     self.__preferAuthSeq = not self.__preferAuthSeq
                                     self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                                     self.__setLocalSeqScheme()

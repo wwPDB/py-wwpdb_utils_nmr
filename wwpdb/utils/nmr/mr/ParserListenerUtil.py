@@ -7455,12 +7455,12 @@ def getReadableFactor(factor: dict) -> str:
     key_order = ['chain_id', 'auth_chain_id', 'seq_id', 'comp_id', 'type_symbol', 'atom_id', 'auth_atom_id']
 
     key_map = {'chain_id': 'segidentifier',
-               'auth_chain_id': 'original_segidentifier',
+               'auth_chain_id': 'original segidentifier',
                'seq_id': 'residue',
                'comp_id': 'resname',
                'type_symbol': 'chemical',
                'atom_id': 'name',
-               'auth_atom_id': 'original_name'}
+               'auth_atom_id': 'original name'}
 
     for k in _factor.keys():
         if k in key_map:

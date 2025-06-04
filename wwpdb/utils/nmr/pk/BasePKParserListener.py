@@ -5089,7 +5089,7 @@ class BasePKParserListener():
             try:
 
                 hasChainId = all(a['chain_id'] is not None for a in assignment)
-                hasCompId = all(a['comp_id'] is not None for a in assigment)
+                hasCompId = all(a['comp_id'] is not None for a in assignment)
 
                 for a1 in assignment:
 

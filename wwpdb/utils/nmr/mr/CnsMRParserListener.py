@@ -5495,18 +5495,19 @@ class CnsMRParserListener(ParseTreeListener):
             for compId in _compIdSelect:
                 if self.__ccU.updateChemCompDict(compId):
                     refAtomIdList = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+                    if lenAtomIds == 1:
+                        atomId = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
+                        atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId, leave_unmatched=True)
+                        if details is not None:
+                            atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                        _atomId = toNefEx(toRegEx(atomId))
+                    elif lenAtomIds == 2:
+                        atomId1 = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
+                        atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
                     for cca in self.__ccU.lastAtomList:
                         if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                             realAtomId = cca[self.__ccU.ccaAtomId]
                             if lenAtomIds == 1:
-                                atomId = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
-                                atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId, leave_unmatched=True)
-                                if details is not None:
-                                    atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
-                                    if details is None and atomId.rfind('1') != -1:
-                                        idx = atomId.rindex('1')
-                                        atomId = atomId[0:idx] + '3' + atomId[idx + 1:]
-                                _atomId = toNefEx(toRegEx(atomId))
                                 if re.match(_atomId, realAtomId):
                                     if self.__csStat.getTypeOfCompId(compId)[1]:
                                         if "'" in atomId and "'" in realAtomId:
@@ -5518,23 +5519,11 @@ class CnsMRParserListener(ParseTreeListener):
                                     _atomIdSelect.add(realAtomId)
                                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
                                 elif details is None:
+                                    if len(atomIds) == 1 and not re.match(toNefEx(toRegEx(_factor['atom_ids'][0])), atomIds[0]):
+                                        continue
                                     _atomIdSelect |= set(atomIds)
                                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
                             elif lenAtomIds == 2:
-                                atomId1 = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
-                                atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
-                                _, _, details = self.__nefT.get_valid_star_atom(compId, atomId1, leave_unmatched=True)
-                                if details is not None:
-                                    _, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId1, leave_unmatched=True)
-                                    if details is None and atomId1.rfind('1') != -1:
-                                        idx = atomId1.rindex('1')
-                                        atomId1 = atomId1[0:idx] + '3' + atomId1[idx + 1:]
-                                _, _, details = self.__nefT.get_valid_star_atom(compId, atomId2, leave_unmatched=True)
-                                if details is not None:
-                                    _, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId2, leave_unmatched=True)
-                                    if details is None and atomId2.rfind('1') != -1:
-                                        idx = atomId2.rindex('1')
-                                        atomId2 = atomId2[0:idx] + '3' + atomId2[idx + 1:]
                                 if (atomId1 < atomId2 and atomId1 <= realAtomId <= atomId2)\
                                    or (atomId1 > atomId2 and atomId2 <= realAtomId <= atomId1):
                                     _atomIdSelect.add(realAtomId)
@@ -5604,18 +5593,19 @@ class CnsMRParserListener(ParseTreeListener):
                 for compId in _compIdSelect:
                     if self.__ccU.updateChemCompDict(compId):
                         refAtomIdList = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+                        if lenAtomIds == 1:
+                            atomId = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
+                            atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId, leave_unmatched=True)
+                            if details is not None:
+                                atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            _atomId = toNefEx(toRegEx(atomId))
+                        elif lenAtomIds == 2:
+                            atomId1 = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
+                            atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
                         for cca in self.__ccU.lastAtomList:
                             if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                 realAtomId = cca[self.__ccU.ccaAtomId]
                                 if lenAtomIds == 1:
-                                    atomId = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
-                                    atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId, leave_unmatched=True)
-                                    if details is not None:
-                                        atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
-                                        if details is None and atomId.rfind('1') != -1:
-                                            idx = atomId.rindex('1')
-                                            atomId = atomId[0:idx] + '3' + atomId[idx + 1:]
-                                    _atomId = toNefEx(toRegEx(atomId))
                                     if re.match(_atomId, realAtomId):
                                         if self.__csStat.getTypeOfCompId(compId)[1]:
                                             if "'" in atomId and "'" in realAtomId:
@@ -5627,23 +5617,11 @@ class CnsMRParserListener(ParseTreeListener):
                                         _atomIdSelect.add(realAtomId)
                                         _factor['alt_atom_id'] = _factor['atom_ids'][0]
                                     elif details is None:
+                                        if len(atomIds) == 1 and not re.match(toNefEx(toRegEx(_factor['atom_ids'][0])), atomIds[0]):
+                                            continue
                                         _atomIdSelect |= set(atomIds)
                                         _factor['alt_atom_id'] = _factor['atom_ids'][0]
                                 elif lenAtomIds == 2:
-                                    atomId1 = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
-                                    atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
-                                    _, _, details = self.__nefT.get_valid_star_atom(compId, atomId1, leave_unmatched=True)
-                                    if details is not None:
-                                        _, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId1, leave_unmatched=True)
-                                        if details is None and atomId1.rfind('1') != -1:
-                                            idx = atomId1.rindex('1')
-                                            atomId1 = atomId1[0:idx] + '3' + atomId1[idx + 1:]
-                                    _, _, details = self.__nefT.get_valid_star_atom(compId, atomId2, leave_unmatched=True)
-                                    if details is not None:
-                                        _, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId2, leave_unmatched=True)
-                                        if details is None and atomId2.rfind('1') != -1:
-                                            idx = atomId2.rindex('1')
-                                            atomId2 = atomId2[0:idx] + '3' + atomId2[idx + 1:]
                                     if (atomId1 < atomId2 and atomId1 <= realAtomId <= atomId2)\
                                        or (atomId1 > atomId2 and atomId2 <= realAtomId <= atomId1):
                                         _atomIdSelect.add(realAtomId)

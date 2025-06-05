@@ -219,6 +219,13 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-daother-9063/4_mercaptophenol_a3c_NOE_restaints.txt.revised',
+                     '../../tests-nmr/mock-data-daother-9063/D_800642_model_P1.cif.V15')
+    print(reader_listener.getReasonsForReparsing())
+
     reasons_ = {'label_seq_scheme': {'dist': True}, 'label_seq_offset': {'A': 9}}
     reader = CnsMRReader(True, reasons=reasons_)
     reader.setDebugMode(True)

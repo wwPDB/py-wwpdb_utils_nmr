@@ -9707,7 +9707,7 @@ class XplorMRParserListener(ParseTreeListener):
                                             pass
                                         elif "'" not in atomId and "'" not in realAtomId:
                                             pass
-                                        else:
+                                        elif len(atomId) > 1 and atomId[1] != _factor['atom_ids'][0][1]:
                                             continue
                                     _atomIdSelect.add(realAtomId)
                                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
@@ -9805,7 +9805,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                 pass
                                             elif "'" not in atomId and "'" not in realAtomId:
                                                 pass
-                                            else:
+                                            elif len(atomId) > 1 and atomId[1] != _factor['atom_ids'][0][1]:
                                                 continue
                                         _atomIdSelect.add(realAtomId)
                                         _factor['alt_atom_id'] = _factor['atom_ids'][0]

@@ -7848,7 +7848,9 @@ class NEFTranslator:
                 if "'" in nef_atom:
                     atoms = [a for a in atoms if "'" in a]
                 else:
-                    atoms = [a for a in atoms if "'" not in a]
+                    _nef_atom = translateToStdAtomName(nef_atom, refCompId=comp_id, ccU=self.__ccU)
+                    if len(_nef_atom) > 1 and _nef_atom[1] != nef_atom[1]:
+                        atoms = [a for a in atoms if "'" not in a]
 
             try:
 

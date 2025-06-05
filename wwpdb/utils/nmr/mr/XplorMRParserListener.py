@@ -10960,7 +10960,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 else:
                                     ccdCheck = True
 
-                            if (len(_factor['chain_id']) > 1 or len(_factor['seq_id']) > 1) and not atomSpecified:
+                            if (len(_factor['chain_id']) > 1 or len(_factor['seq_id']) > 1 or not isPolySeq) and not atomSpecified:
                                 continue
 
                             if isPolySeq and 'ambig_auth_seq_id' in ps and _seqId in ps['ambig_auth_seq_id']:

@@ -7844,6 +7844,12 @@ class NEFTranslator:
                 elif self.__verbose:
                     self.__lfh.write(f"+{self.__class_name__}.get_star_atom() ++ Error  - Unknown non-standard residue {comp_id} found.\n")
 
+            if self.__csStat.getTypeOfCompId(comp_id)[1]:
+                if "'" in nef_atom:
+                    atoms = [a for a in atoms if "'" in a]
+                else:
+                    atoms = [a for a in atoms if "'" not in a]
+
             try:
 
                 # DAOTHER-8817: guess ambiguity code from pseudo CCD

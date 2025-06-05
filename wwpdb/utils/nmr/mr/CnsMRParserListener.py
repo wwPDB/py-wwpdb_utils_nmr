@@ -5445,7 +5445,25 @@ class CnsMRParserListener(ParseTreeListener):
                             continue
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                             if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
-                                continue
+                                if self.__reasons is not None:
+                                    if 'label_seq_offset' in self.__reasons\
+                                       and chainId in self.__reasons['label_seq_offset']:
+                                        realSeqId = None
+                                        offset = self.__reasons['label_seq_offset'][chainId]
+                                        if _factor['seq_id'][0] + offset in ps['seq_id']:
+                                            realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                    if 'global_sequence_offset' in self.__reasons\
+                                       and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
+                                        offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                            realSeqId = None
+                                    if 'global_auth_sequence_offset' in self.__reasons\
+                                       and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
+                                        offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                            realSeqId = None
+                                if realSeqId is None:
+                                    continue
                         idx = ps['auth_seq_id'].index(realSeqId)
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -5490,6 +5508,13 @@ class CnsMRParserListener(ParseTreeListener):
                                         atomId = atomId[0:idx] + '3' + atomId[idx + 1:]
                                 _atomId = toNefEx(toRegEx(atomId))
                                 if re.match(_atomId, realAtomId):
+                                    if self.__csStat.getTypeOfCompId(compId)[1]:
+                                        if "'" in atomId and "'" in realAtomId:
+                                            pass
+                                        elif "'" not in atomId and "'" not in realAtomId:
+                                            pass
+                                        else:
+                                            continue
                                     _atomIdSelect.add(realAtomId)
                                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
                                 elif details is None:
@@ -5528,7 +5553,6 @@ class CnsMRParserListener(ParseTreeListener):
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
-                                    offset = 0
                                     if self.__reasons is not None:
                                         if not self.__preferAuthSeq:
                                             realSeqId = None
@@ -5538,13 +5562,14 @@ class CnsMRParserListener(ParseTreeListener):
                                                 if _factor['seq_id'][0] + offset in ps['seq_id']:
                                                     realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
                                         else:
+                                            offset = 0
                                             if 'global_sequence_offset' in self.__reasons\
                                                and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
                                                 offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
                                             if 'global_auth_sequence_offset' in self.__reasons\
                                                and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
                                                 offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
-                                            if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                            if offset == 0 or realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
                                                 realSeqId = None
                                     if realSeqId is None:
                                         continue
@@ -5592,6 +5617,13 @@ class CnsMRParserListener(ParseTreeListener):
                                             atomId = atomId[0:idx] + '3' + atomId[idx + 1:]
                                     _atomId = toNefEx(toRegEx(atomId))
                                     if re.match(_atomId, realAtomId):
+                                        if self.__csStat.getTypeOfCompId(compId)[1]:
+                                            if "'" in atomId and "'" in realAtomId:
+                                                pass
+                                            elif "'" not in atomId and "'" not in realAtomId:
+                                                pass
+                                            else:
+                                                continue
                                         _atomIdSelect.add(realAtomId)
                                         _factor['alt_atom_id'] = _factor['atom_ids'][0]
                                     elif details is None:
@@ -5642,7 +5674,25 @@ class CnsMRParserListener(ParseTreeListener):
                             continue
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                             if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
-                                continue
+                                if self.__reasons is not None:
+                                    if 'label_seq_offset' in self.__reasons\
+                                       and chainId in self.__reasons['label_seq_offset']:
+                                        realSeqId = None
+                                        offset = self.__reasons['label_seq_offset'][chainId]
+                                        if _factor['seq_id'][0] + offset in ps['seq_id']:
+                                            realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                    if 'global_sequence_offset' in self.__reasons\
+                                       and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
+                                        offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                            realSeqId = None
+                                    if 'global_auth_sequence_offset' in self.__reasons\
+                                       and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
+                                        offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                            realSeqId = None
+                                if realSeqId is None:
+                                    continue
                         idx = ps['auth_seq_id'].index(realSeqId)
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -5734,7 +5784,6 @@ class CnsMRParserListener(ParseTreeListener):
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
-                                    offset = 0
                                     if self.__reasons is not None:
                                         if not self.__preferAuthSeq:
                                             realSeqId = None
@@ -5744,13 +5793,14 @@ class CnsMRParserListener(ParseTreeListener):
                                                 if _factor['seq_id'][0] + offset in ps['seq_id']:
                                                     realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
                                         else:
+                                            offset = 0
                                             if 'global_sequence_offset' in self.__reasons\
                                                and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
                                                 offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
                                             if 'global_auth_sequence_offset' in self.__reasons\
                                                and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
                                                 offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
-                                            if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                            if offset == 0 or realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
                                                 realSeqId = None
                                     if realSeqId is None:
                                         continue

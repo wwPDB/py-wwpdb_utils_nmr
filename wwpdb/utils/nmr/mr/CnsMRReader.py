@@ -495,8 +495,8 @@ if __name__ == "__main__":
                      '../../tests-nmr/mock-data-remediation/7nf9/7nf9.cif')
     print(reader_listener.getReasonsForReparsing())
 
-    reader = CnsMRReader(True)
-    reader.setDebugMode(True)
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/7zjy/unambig.tbl',
                      '../../tests-nmr/mock-data-remediation/7zjy/7zjy.cif')
@@ -879,6 +879,7 @@ if __name__ == "__main__":
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2mgt/2mgt-trimmed.mr',
                      '../../tests-nmr/mock-data-remediation/2mgt/2mgt.cif')
+    print(reader_listener.getReasonsForReparsing())
     reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mgt/2mgt-trimmed.mr',

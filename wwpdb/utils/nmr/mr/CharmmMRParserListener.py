@@ -3214,24 +3214,24 @@ class CharmmMRParserListener(ParseTreeListener):
                             continue
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                             if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
-                                if self.__reasons is not None:
-                                    if 'label_seq_offset' in self.__reasons\
-                                       and chainId in self.__reasons['label_seq_offset']:
-                                        realSeqId = None
-                                        offset = self.__reasons['label_seq_offset'][chainId]
-                                        if _factor['seq_id'][0] + offset in ps['seq_id']:
-                                            realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
-                                    if 'global_sequence_offset' in self.__reasons\
-                                       and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
-                                        offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
-                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                            realSeqId = None
-                                    if 'global_auth_sequence_offset' in self.__reasons\
-                                       and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
-                                        offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
-                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                            realSeqId = None
-                                if realSeqId is None:
+                                if self.__reasons is None:
+                                    continue
+                                if 'label_seq_offset' in self.__reasons\
+                                   and chainId in self.__reasons['label_seq_offset']:
+                                    offset = self.__reasons['label_seq_offset'][chainId]
+                                    if _factor['seq_id'][0] + offset in ps['seq_id']:
+                                        realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                elif 'global_sequence_offset' in self.__reasons\
+                                        and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
+                                    offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+                                    if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                        continue
+                                elif 'global_auth_sequence_offset' in self.__reasons\
+                                        and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
+                                    offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                    if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                        continue
+                                else:
                                     continue
                         idx = ps['auth_seq_id'].index(realSeqId)
                         realCompId = ps['comp_id'][idx]
@@ -4745,7 +4745,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                                        and _factor['chain_id'][0] != chainId and compId in monDict3:
                                                         continue
                                                     # 2mgt
-                                                    if self.__hasNonPoly and self.__cur_subtype == 'dist' and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1:
+                                                    if self.__hasNonPoly and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1:
                                                         _coordAtomSite = None
                                                         ligands = 0
                                                         for np in self.__nonPoly:
@@ -4794,7 +4794,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                     else:
                                                                         self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
                                                                         checked = True
-                                                            if checked and isPolySeq and self.__reasons is not None and 'np_seq_id_remap' in self.__reasons:
+                                                            if checked and isPolySeq and (self.__reasons is None
+                                                                                          or (self.__reasons is not None and 'np_seq_id_remap' in self.__reasons)):
                                                                 continue
                                                         # 2n3r
                                                         elif ligands > 1 and isPolySeq and self.__reasons is not None and 'np_seq_id_remap' in self.__reasons\
@@ -4881,7 +4882,7 @@ class CharmmMRParserListener(ParseTreeListener):
             if seqKey in self.__labelToAuthSeq:
                 _, _seqId = self.__labelToAuthSeq[seqKey]
                 return _seqId
-            elif seqKey[1] in ps['seq_id']:
+            if seqKey[1] in ps['seq_id']:
                 return ps['auth_seq_id'][ps['seq_id'].index(seqKey[1])]
         else:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
@@ -4969,7 +4970,7 @@ class CharmmMRParserListener(ParseTreeListener):
                     return _seqId, ps['comp_id'][ps['seq_id'].index(seqId + offset)
                                                  if seqId + offset in ps['seq_id']
                                                  else ps['auth_seq_id'].index(_seqId)], False
-                elif seqKey[1] in ps['seq_id']:  # resolve conflict between label/auth sequence schemes of polymer/non-polymer (2l90)
+                if seqKey[1] in ps['seq_id']:  # resolve conflict between label/auth sequence schemes of polymer/non-polymer (2l90)
                     idx = ps['seq_id'].index(seqKey[1])
                     return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
         else:

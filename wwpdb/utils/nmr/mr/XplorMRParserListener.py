@@ -9728,7 +9728,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 _atomIdSelect.add(realAtomId)
                                 _factor['alt_atom_id'] = _factor['atom_ids'][0]
                             elif details is None:
-                                if not re.match(toNefEx(toRegEx(tmpAtomId)), atomIds[0]):
+                                if len(atomIds) == 1 and not re.match(toNefEx(toRegEx(tmpAtomId)), atomIds[0]):  # len(atomIds) == 1 to allow map HR# to H[DE][12]
                                     continue
                                 _atomIdSelect |= set(atomIds)
                                 _factor['alt_atom_id'] = _factor['atom_ids'][0]
@@ -9842,7 +9842,7 @@ class XplorMRParserListener(ParseTreeListener):
                                     _atomIdSelect.add(realAtomId)
                                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
                                 elif details is None:
-                                    if not re.match(toNefEx(toRegEx(tmpAtomId)), atomIds[0]):
+                                    if len(atomIds) == 1 and not re.match(toNefEx(toRegEx(tmpAtomId)), atomIds[0]):
                                         continue
                                     _atomIdSelect |= set(atomIds)
                                     _factor['alt_atom_id'] = _factor['atom_ids'][0]

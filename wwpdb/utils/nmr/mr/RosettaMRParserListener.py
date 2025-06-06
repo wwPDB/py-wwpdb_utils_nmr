@@ -1466,6 +1466,9 @@ class RosettaMRParserListener(ParseTreeListener):
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
                     return _chainId, _seqId, ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
+                elif seqKey[1] in ps['seq_id']:  # resolve conflict between label/auth sequence schemes of polymer/non-polymer (2l90)
+                    idx = ps['seq_id'].index(seqKey[1])
+                    return _chainId, ps['auth_seq_id'][idx], ps['comp_id'][idx]
         else:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:

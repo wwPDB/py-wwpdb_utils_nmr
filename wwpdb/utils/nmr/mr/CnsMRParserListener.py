@@ -7165,6 +7165,8 @@ class CnsMRParserListener(ParseTreeListener):
             if seqKey in self.__labelToAuthSeq:
                 _, _seqId = self.__labelToAuthSeq[seqKey]
                 return _seqId
+            elif seqKey[1] in ps['seq_id']:
+                return ps['auth_seq_id'][ps['seq_id'].index(seqKey[1])]
         else:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
@@ -7251,6 +7253,9 @@ class CnsMRParserListener(ParseTreeListener):
                     return _seqId, ps['comp_id'][ps['seq_id'].index(seqId + offset)
                                                  if seqId + offset in ps['seq_id']
                                                  else ps['auth_seq_id'].index(_seqId)], False
+                elif seqKey[1] in ps['seq_id']:  # resolve conflict between label/auth sequence schemes of polymer/non-polymer (2l90)
+                    idx = ps['seq_id'].index(seqKey[1])
+                    return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
         else:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:

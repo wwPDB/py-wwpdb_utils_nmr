@@ -9688,38 +9688,54 @@ class XplorMRParserListener(ParseTreeListener):
             for compId in _compIdSelect:
                 if self.__ccU.updateChemCompDict(compId):
                     refAtomIdList = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+                    tmpAtomId = _factor['atom_ids'][0]
                     if lenAtomIds == 1:
-                        atomId = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
+                        atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
                         atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId, leave_unmatched=True)
                         if details is not None:
                             atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                         _atomId = toNefEx(toRegEx(atomId))
                     elif lenAtomIds == 2:
-                        atomId1 = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
+                        atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
                         atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
-                    for cca in self.__ccU.lastAtomList:
-                        if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                            realAtomId = cca[self.__ccU.ccaAtomId]
-                            if lenAtomIds == 1:
-                                if re.match(_atomId, realAtomId):
-                                    if self.__csStat.getTypeOfCompId(compId)[1]:
-                                        if "'" in atomId and "'" in realAtomId:
-                                            pass
-                                        elif "'" not in atomId and "'" not in realAtomId:
-                                            pass
-                                        elif len(atomId) > 1 and atomId[1] != _factor['atom_ids'][0][1]:
-                                            continue
-                                    _atomIdSelect.add(realAtomId)
-                                    _factor['alt_atom_id'] = _factor['atom_ids'][0]
-                                elif details is None:
-                                    if len(atomIds) == 1 and not re.match(toNefEx(toRegEx(_factor['atom_ids'][0])), atomIds[0]):
+                    _atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
+                    nucleotide = self.__csStat.getTypeOfCompId(compId)[1]
+                    if lenAtomIds == 1 and nucleotide:
+                        _matchedAtomIds = [_atomId_ for _atomId_ in _atomIds if re.match(_atomId, _atomId_)]
+                    for realAtomId in _atomIds:
+                        if lenAtomIds == 1:
+                            if re.match(_atomId, realAtomId):
+                                if nucleotide:
+                                    if ("'" in atomId and "'" in realAtomId)\
+                                       or ("'" not in atomId and "'" not in realAtomId):
+                                        pass
+                                    else:
+                                        if len(atomId) > 1 and atomId[1] != tmpAtomId[1]:
+                                            if "'" in realAtomId:
+                                                continue
+                                        else:
+                                            min_len = min(len(tmpAtomId), 2)
+                                            if realAtomId.startswith(tmpAtomId[:min_len]):
+                                                if ("'" in tmpAtomId and "'" in realAtomId)\
+                                                   or ("'" not in tmpAtomId and "'" not in realAtomId):
+                                                    pass
+                                                else:
+                                                    continue
+                                    if len([_atomId_ for _atomId_ in _matchedAtomIds
+                                            if ("'" in _atomId_ and "'" in realAtomId)
+                                            or ("'" not in _atomId_ and "'" not in realAtomId)]) < 2:
                                         continue
-                                    _atomIdSelect |= set(atomIds)
-                                    _factor['alt_atom_id'] = _factor['atom_ids'][0]
-                            elif lenAtomIds == 2:
-                                if (atomId1 < atomId2 and atomId1 <= realAtomId <= atomId2)\
-                                   or (atomId1 > atomId2 and atomId2 <= realAtomId <= atomId1):
-                                    _atomIdSelect.add(realAtomId)
+                                _atomIdSelect.add(realAtomId)
+                                _factor['alt_atom_id'] = tmpAtomId
+                            elif details is None:
+                                if not re.match(toNefEx(toRegEx(tmpAtomId)), atomIds[0]):
+                                    continue
+                                _atomIdSelect |= set(atomIds)
+                                _factor['alt_atom_id'] = tmpAtomId
+                        elif lenAtomIds == 2:
+                            if (atomId1 < atomId2 and atomId1 <= realAtomId <= atomId2)\
+                               or (atomId1 > atomId2 and atomId2 <= realAtomId <= atomId1):
+                                _atomIdSelect.add(realAtomId)
             _factor['atom_id'] = list(_atomIdSelect)
 
             if len(_factor['atom_id']) == 0:
@@ -9786,38 +9802,54 @@ class XplorMRParserListener(ParseTreeListener):
                 for compId in _compIdSelect:
                     if self.__ccU.updateChemCompDict(compId):
                         refAtomIdList = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+                        tmpAtomId = _factor['atom_ids'][0]
                         if lenAtomIds == 1:
-                            atomId = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
+                            atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
                             atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId, leave_unmatched=True)
                             if details is not None:
                                 atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                             _atomId = toNefEx(toRegEx(atomId))
                         elif lenAtomIds == 2:
-                            atomId1 = translateToStdAtomName(_factor['atom_ids'][0], compId, refAtomIdList, ccU=self.__ccU)
+                            atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
                             atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
-                        for cca in self.__ccU.lastAtomList:
-                            if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
-                                realAtomId = cca[self.__ccU.ccaAtomId]
-                                if lenAtomIds == 1:
-                                    if re.match(_atomId, realAtomId):
-                                        if self.__csStat.getTypeOfCompId(compId)[1]:
-                                            if "'" in atomId and "'" in realAtomId:
-                                                pass
-                                            elif "'" not in atomId and "'" not in realAtomId:
-                                                pass
-                                            elif len(atomId) > 1 and atomId[1] != _factor['atom_ids'][0][1]:
-                                                continue
-                                        _atomIdSelect.add(realAtomId)
-                                        _factor['alt_atom_id'] = _factor['atom_ids'][0]
-                                    elif details is None:
-                                        if len(atomIds) == 1 and not re.match(toNefEx(toRegEx(_factor['atom_ids'][0])), atomIds[0]):
+                        _atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
+                        nucleotide = self.__csStat.getTypeOfCompId(compId)[1]
+                        if lenAtomIds == 1 and nucleotide:
+                            _matchedAtomIds = [_atomId_ for _atomId_ in _atomIds if re.match(_atomId, _atomId_)]
+                        for realAtomId in _atomIds:
+                            if lenAtomIds == 1:
+                                if re.match(_atomId, realAtomId):
+                                    if nucleotide:
+                                        if ("'" in atomId and "'" in realAtomId)\
+                                           or ("'" not in atomId and "'" not in realAtomId):
+                                            pass
+                                        else:
+                                            if len(atomId) > 1 and atomId[1] != tmpAtomId[1]:
+                                                if "'" in realAtomId:
+                                                    continue
+                                            else:
+                                                min_len = min(len(tmpAtomId), 2)
+                                                if realAtomId.startswith(tmpAtomId[:min_len]):
+                                                    if ("'" in tmpAtomId and "'" in realAtomId)\
+                                                       or ("'" not in tmpAtomId and "'" not in realAtomId):
+                                                        pass
+                                                    else:
+                                                        continue
+                                        if len([_atomId_ for _atomId_ in _matchedAtomIds
+                                                if ("'" in _atomId_ and "'" in realAtomId)
+                                                or ("'" not in _atomId_ and "'" not in realAtomId)]) < 2:
                                             continue
-                                        _atomIdSelect |= set(atomIds)
-                                        _factor['alt_atom_id'] = _factor['atom_ids'][0]
-                                elif lenAtomIds == 2:
-                                    if (atomId1 < atomId2 and atomId1 <= realAtomId <= atomId2)\
-                                       or (atomId1 > atomId2 and atomId2 <= realAtomId <= atomId1):
-                                        _atomIdSelect.add(realAtomId)
+                                    _atomIdSelect.add(realAtomId)
+                                    _factor['alt_atom_id'] = tmpAtomId
+                                elif details is None:
+                                    if not re.match(toNefEx(toRegEx(tmpAtomId)), atomIds[0]):
+                                        continue
+                                    _atomIdSelect |= set(atomIds)
+                                    _factor['alt_atom_id'] = tmpAtomId
+                            elif lenAtomIds == 2:
+                                if (atomId1 < atomId2 and atomId1 <= realAtomId <= atomId2)\
+                                   or (atomId1 > atomId2 and atomId2 <= realAtomId <= atomId1):
+                                    _atomIdSelect.add(realAtomId)
                 _factor['atom_id'] = list(_atomIdSelect)
 
                 if len(_factor['atom_id']) > 0:
@@ -10653,6 +10685,7 @@ class XplorMRParserListener(ParseTreeListener):
                                     atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, authCompId, atomId, coordAtomSite)
 
                         atomIds = self.getAtomIdList(_factor, compId, atomId)
+
                         if atomSiteAtomId is not None:
                             if not any(_atomId in atomSiteAtomId for _atomId in atomIds):
                                 atomId = translateToStdAtomName(atomId, compId, atomSiteAtomId, self.__ccU, False)
@@ -11548,7 +11581,8 @@ class XplorMRParserListener(ParseTreeListener):
         if key in self.__cachedDictForAtomIdList:
             return copy.copy(self.__cachedDictForAtomIdList[key])
         atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
-        if 'alt_atom_id' in factor and details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+        if details is not None and len(atomId) > 1 and not atomId[-1].isalpha()\
+           and 'alt_atom_id' in factor and factor['alt_atom_id'][-1] not in ('%', '*', '#'):
             atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
             if atomId[-1].isdigit() and int(atomId[-1]) <= len(atomIds):
                 atomIds = [atomIds[int(atomId[-1]) - 1]]

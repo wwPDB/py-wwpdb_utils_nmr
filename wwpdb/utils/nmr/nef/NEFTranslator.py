@@ -7849,8 +7849,19 @@ class NEFTranslator:
                     atoms = [a for a in atoms if "'" in a]
                 else:
                     _nef_atom = translateToStdAtomName(nef_atom, refCompId=comp_id, ccU=self.__ccU)
-                    if len(_nef_atom) > 1 and _nef_atom[1] != nef_atom[1]:
+                    if len(_nef_atom) > 1 and len(nef_atom) > 1 and _nef_atom[1] != nef_atom[1]:
                         atoms = [a for a in atoms if "'" not in a]
+                    else:
+                        for min_len in range(min(len(nef_atom), 3), 2, -1):
+                            if "'" not in nef_atom and any("'" not in a for a in atoms if a.startswith(nef_atom[:min_len])):
+                                atoms = [a for a in atoms if "'" not in a]
+                                break
+                            elif any("'" in a for a in atoms if a.startswith(nef_atom[:min_len])):
+                                atoms = [a for a in atoms if "'" in a]
+                                break
+                            elif any("'" not in a for a in atoms if a.startswith(nef_atom[:min_len])):
+                                atoms = [a for a in atoms if "'" not in a]
+                                break
 
             try:
 

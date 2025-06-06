@@ -3264,7 +3264,7 @@ class CharmmMRParserListener(ParseTreeListener):
             for compId in _compIdSelect:
                 if self.__ccU.updateChemCompDict(compId):
                     refAtomIdList = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-                    tmpAtomId = _factor['atom_ids'][0]
+                    tmpAtomId = _factor['atom_ids'][0].upper()
                     if lenAtomIds == 1:
                         atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
                         atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId, leave_unmatched=True)
@@ -3302,12 +3302,12 @@ class CharmmMRParserListener(ParseTreeListener):
                                             or ("'" not in _atomId_ and "'" not in realAtomId)]) < 2:
                                         continue
                                 _atomIdSelect.add(realAtomId)
-                                _factor['alt_atom_id'] = tmpAtomId
+                                _factor['alt_atom_id'] = _factor['atom_ids'][0]
                             elif details is None:
                                 if not re.match(toNefEx(toRegEx(tmpAtomId)), atomIds[0]):
                                     continue
                                 _atomIdSelect |= set(atomIds)
-                                _factor['alt_atom_id'] = tmpAtomId
+                                _factor['alt_atom_id'] = _factor['atom_ids'][0]
                         elif lenAtomIds == 2:
                             if (atomId1 < atomId2 and atomId1 <= realAtomId <= atomId2)\
                                or (atomId1 > atomId2 and atomId2 <= realAtomId <= atomId1):
@@ -3378,7 +3378,7 @@ class CharmmMRParserListener(ParseTreeListener):
                 for compId in _compIdSelect:
                     if self.__ccU.updateChemCompDict(compId):
                         refAtomIdList = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-                    tmpAtomId = _factor['atom_ids'][0]
+                    tmpAtomId = _factor['atom_ids'][0].upper()
                     if lenAtomIds == 1:
                         atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
                         atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId, leave_unmatched=True)
@@ -3416,12 +3416,12 @@ class CharmmMRParserListener(ParseTreeListener):
                                             or ("'" not in _atomId_ and "'" not in realAtomId)]) < 2:
                                         continue
                                 _atomIdSelect.add(realAtomId)
-                                _factor['alt_atom_id'] = tmpAtomId
+                                _factor['alt_atom_id'] = _factor['atom_ids'][0]
                             elif details is None:
                                 if not re.match(toNefEx(toRegEx(tmpAtomId)), atomIds[0]):
                                     continue
                                 _atomIdSelect |= set(atomIds)
-                                _factor['alt_atom_id'] = tmpAtomId
+                                _factor['alt_atom_id'] = _factor['atom_ids'][0]
                         elif lenAtomIds == 2:
                             if (atomId1 < atomId2 and atomId1 <= realAtomId <= atomId2)\
                                or (atomId1 > atomId2 and atomId2 <= realAtomId <= atomId1):

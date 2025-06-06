@@ -2853,10 +2853,11 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
         elif refCompId == 'NH2':
             if atomId in ('HN*', 'HN%', 'H*', 'H%', 'QH', 'QN', 'Q1') and not unambig:
                 return 'HN%'
-            if atomId in ('H', 'HN'):
-                return 'HN1'
-            if atomId.startswith('H'):
-                return 'HN2'
+            if atomId[-1] not in ('%', '*', '#'):
+                if atomId in ('H', 'HN'):
+                    return 'HN1'
+                if atomId.startswith('H'):
+                    return 'HN2'
 
         elif refCompId == 'ACE':
             if atomId in ('HA', 'HA*', 'HA%', 'HA1', 'HA2', 'HA3', 'QH', 'MH', 'QA', 'MA') and not unambig:
@@ -3190,7 +3191,7 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                 if len(nh) == 1:
                     if nh[0] in refAtomIdList:
                         return nh[0]
-        if lenAtomId > 1 and atomId[-1] not in ('*', '%') and refCompId not in monDict3:
+        if lenAtomId > 1 and atomId[-1] not in ('%', '*', '#') and refCompId not in monDict3:
             canAtomIdList = [_atomId for _atomId in refAtomIdList if _atomId[0] == atomId[0]]
             if len(canAtomIdList) > 0:
                 pA = PairwiseAlign()

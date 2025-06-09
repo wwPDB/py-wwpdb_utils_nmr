@@ -2348,18 +2348,25 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
 
         _atomId_ = elemName + item['auth_atom_id'][1:]
 
-        if coordAtomSite is not None and _atomId not in coordAtomSite['atom_id']:
+        if coordAtomSite is not None:
 
-            total = 0
-            for __atomId in coordAtomSite['atom_id']:
-                if __atomId.startswith(_atomId_):
-                    total += 1
+            for hvyAtomId in ccU.getBondedAtoms(cifCompId, item['auth_atom_id'], exclProton=True):
 
-            if total == 1:
-                _atomId = next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(_atomId_))
-                return item['auth_seq_id'], item['auth_comp_id'], _atomId
+                if hvyAtomId in coordAtomSite['atom_id']:
+                    return item['auth_seq_id'], item['auth_comp_id'], hvyAtomId
 
-            return seqId, compId, atomId
+            if _atomId not in coordAtomSite['atom_id']:
+
+                total = 0
+                for __atomId in coordAtomSite['atom_id']:
+                    if __atomId.startswith(_atomId_):
+                        total += 1
+
+                if total == 1:
+                    _atomId = next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(_atomId_))
+                    return item['auth_seq_id'], item['auth_comp_id'], _atomId
+
+                return seqId, compId, atomId
 
         return item['auth_seq_id'], item['auth_comp_id'], _atomId_
 
@@ -2372,18 +2379,25 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
 
         _atomId_ = elemName + item['auth_atom_id'][1:-1]
 
-        if coordAtomSite is not None and _atomId not in coordAtomSite['atom_id']:
+        if coordAtomSite is not None:
 
-            total = 0
-            for __atomId in coordAtomSite['atom_id']:
-                if __atomId.startswith(_atomId_):
-                    total += 1
+            for hvyAtomId in ccU.getBondedAtoms(cifCompId, item['auth_atom_id'], exclProton=True):
 
-            if total == 1:
-                _atomId = next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(_atomId_))
-                return item['auth_seq_id'], item['auth_comp_id'], _atomId
+                if hvyAtomId in coordAtomSite['atom_id']:
+                    return item['auth_seq_id'], item['auth_comp_id'], hvyAtomId
 
-            return seqId, compId, atomId
+            if _atomId not in coordAtomSite['atom_id']:
+
+                total = 0
+                for __atomId in coordAtomSite['atom_id']:
+                    if __atomId.startswith(_atomId_):
+                        total += 1
+
+                if total == 1:
+                    _atomId = next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(_atomId_))
+                    return item['auth_seq_id'], item['auth_comp_id'], _atomId
+
+                return seqId, compId, atomId
 
         return item['auth_seq_id'], item['auth_comp_id'], _atomId_
 
@@ -2631,17 +2645,24 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
     if item is not None:
         _atomId_ = elemName + item['auth_atom_id'][1:]
 
-        if coordAtomSite is not None and _atomId_ not in coordAtomSite['atom_id']:
+        if coordAtomSite is not None:
 
-            total = 0
-            for __atomId in coordAtomSite['atom_id']:
-                if __atomId.startswith(_atomId_):
-                    total += 1
+            for hvyAtomId in ccU.getBondedAtoms(cifCompId, item['auth_atom_id'], exclProton=True):
 
-                if total == 1:
-                    return next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(_atomId_))
+                if hvyAtomId in coordAtomSite['atom_id']:
+                    return hvyAtomId
 
-            return atomId
+            if _atomId_ not in coordAtomSite['atom_id']:
+
+                total = 0
+                for __atomId in coordAtomSite['atom_id']:
+                    if __atomId.startswith(_atomId_):
+                        total += 1
+
+                    if total == 1:
+                        return next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(_atomId_))
+
+                return atomId
 
         return _atomId_
 
@@ -2653,17 +2674,24 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
     if item is not None:
         _atomId_ = elemName + item['auth_atom_id'][1:-1]
 
-        if coordAtomSite is not None and _atomId not in coordAtomSite['atom_id']:
+        if coordAtomSite is not None:
 
-            total = 0
-            for __atomId in coordAtomSite['atom_id']:
-                if __atomId.startswith(_atomId_):
-                    total += 1
+            for hvyAtomId in ccU.getBondedAtoms(cifCompId, item['auth_atom_id'], exclProton=True):
 
-                if total == 1:
-                    return next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(_atomId_))
+                if hvyAtomId in coordAtomSite['atom_id']:
+                    return hvyAtomId
 
-            return atomId
+            if _atomId not in coordAtomSite['atom_id']:
+
+                total = 0
+                for __atomId in coordAtomSite['atom_id']:
+                    if __atomId.startswith(_atomId_):
+                        total += 1
+
+                    if total == 1:
+                        return next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(_atomId_))
+
+                return atomId
 
         return _atomId_
 

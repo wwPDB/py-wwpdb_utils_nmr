@@ -1384,10 +1384,18 @@ class CnsMRParserListener(ParseTreeListener):
 
             if self.hasAnyRestraints():
 
-                if all('[Anomalous data]' in f for f in self.__f)\
-                   and all('distance' in f for f in self.__f)\
+                if len(self.__f) == 0\
                    and 'label_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_scheme']
+                    if 'local_seq_scheme' in self.reasonsForReParsing:
+                        del self.reasonsForReParsing['local_seq_scheme']
+
+                elif all('[Anomalous data]' in f for f in self.__f)\
+                        and all('distance' in f for f in self.__f)\
+                        and 'label_seq_scheme' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['label_seq_scheme']
+                    if 'local_seq_scheme' in self.reasonsForReParsing:
+                        del self.reasonsForReParsing['local_seq_scheme']
                     __f = copy.deepcopy(self.__f)
                     self.__f = []
                     for f in __f:
@@ -5677,7 +5685,7 @@ class CnsMRParserListener(ParseTreeListener):
                                     _atomIdSelect.add(realAtomId)
                 _factor['atom_id'] = list(_atomIdSelect)
 
-                if len(_factor['atom_id']) > 0:
+                if len(_atomIdSelect) > 0:
                     self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                     if len(self.atomSelectionSet) > 0:
                         self.__setLocalSeqScheme()
@@ -5685,9 +5693,8 @@ class CnsMRParserListener(ParseTreeListener):
                     if self.__reasons is None:
                         self.__preferAuthSeq = not self.__preferAuthSeq
 
-                if len(_factor['atom_id']) == 0:
-                    _factor['atom_id'] = [None]
-                    _factor['alt_atom_id'] = _factor['atom_ids']
+                    # _factor['atom_id'] = [None]
+                    _factor['alt_atom_id'] = _factor['atom_ids'][0]
             # del _factor['atom_ids']
 
         if 'atom_id' not in _factor or len(_factor['atom_id']) == 0:

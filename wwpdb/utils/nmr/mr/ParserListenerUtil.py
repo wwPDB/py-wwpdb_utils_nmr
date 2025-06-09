@@ -2821,20 +2821,20 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
             if atomId.startswith('HO') and lenAtomId > 2:  # 2n6j
                 return 'H' + atomId[2:]
 
-        elif refCompId == 'ASN' and atomId.startswith('HND'):  # 2kg1
+        elif refCompId == 'ASN' and (atomId.startswith('HND') or (atomId.startswith('HN') and atomId[-1] in ('%', '*', '#'))):  # 2kg1
             if atomId == 'HND1':
                 return 'HD21'
             if atomId == 'HND2':
                 return 'HD22'
-            if atomId == 'HND':
+            if atomId == 'HND' or (atomId.startswith('HN') and atomId[-1] in ('%', '*', '#')):  # 8dhz: ASN/HN#
                 return 'HD2'
 
-        elif refCompId == 'GLN' and atomId.startswith('HNE'):  # 2kg1
+        elif refCompId == 'GLN' and (atomId.startswith('HNE') or (atomId.startswith('HN') and atomId[-1] in ('%', '*', '#'))):  # 2kg1
             if atomId == 'HNE1':
                 return 'HE21'
             if atomId == 'HNE2':
                 return 'HE22'
-            if atomId == 'HNE':
+            if atomId == 'HNE' or (atomId.startswith('HN') and atomId[-1] in ('%', '*', '#')):
                 return 'HE2'
 
         elif refCompId == 'ARG' and atomId == 'HNE':  # 8dhz, peak list

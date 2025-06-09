@@ -15982,7 +15982,7 @@ class NmrDpUtility:
                                                     'auth_seq_id': int(col[3]),
                                                     'original_atom_id': col[4].upper(),
                                                     'original_comp_id': original_comp_id,
-                                                    'original_seq_id': int(col[3])}
+                                                    'original_seq_id': int(col[6])}
                                         if atom_map not in self.__mr_atom_name_mapping:
                                             self.__mr_atom_name_mapping.append(atom_map)
                                     except ValueError:

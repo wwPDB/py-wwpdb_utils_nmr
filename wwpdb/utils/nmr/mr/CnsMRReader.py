@@ -219,6 +219,36 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    mrAtomNameMapping_ = [{'auth_atom_id': 'HC1', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HI1', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HC2', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HI2', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HC3', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HI3', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HA', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HA', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HB1', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HB1', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HB2', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HB2', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HD1', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HD1', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HE1', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HE1', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HZ', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HZ', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HE2', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HE2', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'HD2', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HD2', 'original_comp_id': 'NHE', 'original_seq_id': 2},
+                          {'auth_atom_id': 'H', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HN', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HA', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HA', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HB', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HB', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HG12', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HG12', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HG11', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HG11', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HG23', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HG23', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HG21', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HG21', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HG22', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HG22', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HD11', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HD11', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HD12', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HD12', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HD13', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HD13', 'original_comp_id': 'ITZ', 'original_seq_id': 6},
+                          {'auth_atom_id': 'HQ', 'auth_comp_id': 'ITZ', 'auth_seq_id': 7, 'original_atom_id': 'HQ', 'original_comp_id': 'ITZ', 'original_seq_id': 6}]
+    reader = CnsMRReader(True, mrAtomNameMapping=mrAtomNameMapping_)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/7l98/NOEtable_compound10.tbl',
+                     '../../tests-nmr/mock-data-remediation/7l98/7l98.cif')
+    print(reader_listener.getReasonsForReparsing())
+
     mrAtomNameMapping_ = [{'auth_atom_id': 'H8', 'auth_comp_id': '4FU', 'auth_seq_id': 6, 'original_atom_id': 'HAM', 'original_comp_id': '4FU', 'original_seq_id': 6},
                           {'auth_atom_id': 'H9', 'auth_comp_id': '4FU', 'auth_seq_id': 6, 'original_atom_id': 'HAI', 'original_comp_id': '4FU', 'original_seq_id': 6},
                           {'auth_atom_id': 'HAI', 'auth_comp_id': '4FU', 'auth_seq_id': 6, 'original_atom_id': 'HAJ', 'original_comp_id': '4FU', 'original_seq_id': 6},

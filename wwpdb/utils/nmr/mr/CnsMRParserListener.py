@@ -5571,6 +5571,46 @@ class CnsMRParserListener(ParseTreeListener):
                                 _atomIdSelect.add(realAtomId)
             _factor['atom_id'] = list(_atomIdSelect)
 
+            if len(_compIdSelect) > 0 and len(_atomIdSelect) == 0 and self.__mrAtomNameMapping is not None:
+                tmpAtomId = 'Q' + _factor['atom_ids'][0][1:-1].upper()
+                for chainId in _factor['chain_id']:
+                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
+                    if ps is not None:
+                        for realSeqId in ps['auth_seq_id']:
+                            if realSeqId is None:
+                                continue
+                            if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
+                                if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
+                                    if self.__reasons is None:
+                                        continue
+                                    if 'label_seq_offset' in self.__reasons\
+                                       and chainId in self.__reasons['label_seq_offset']:
+                                        offset = self.__reasons['label_seq_offset'][chainId]
+                                        if _factor['seq_id'][0] + offset in ps['seq_id']:
+                                            realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                    elif 'global_sequence_offset' in self.__reasons\
+                                            and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
+                                        offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                            continue
+                                    elif 'global_auth_sequence_offset' in self.__reasons\
+                                            and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
+                                        offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                            continue
+                                    else:
+                                        continue
+                            idx = ps['auth_seq_id'].index(realSeqId)
+                            realCompId = ps['comp_id'][idx]
+                            if realCompId not in monDict3 and realCompId in _compIdSelect:
+                                _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
+                                atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, realSeqId, realCompId, tmpAtomId, coordAtomSite, ignoreSeqId=True)
+                                atomIds, _, details = self.__nefT.get_valid_star_atom(realCompId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    _atomIdSelect |= set(atomIds)
+                                    _factor['alt_atom_id'] = _factor['atom_ids'][0]
+                _factor['atom_id'] = list(_atomIdSelect)
+
             if len(_factor['atom_id']) == 0:
                 if self.__reasons is None:
                     self.__preferAuthSeq = not self.__preferAuthSeq

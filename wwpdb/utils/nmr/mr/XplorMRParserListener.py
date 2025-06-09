@@ -9665,6 +9665,24 @@ class XplorMRParserListener(ParseTreeListener):
                             if realCompId not in _compIdList and origCompId not in _compIdList:
                                 continue
                         _compIdSelect.add(realCompId)
+
+            if len(_compIdSelect) == 0 and self.__reasons is None:
+                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
+                if ps is not None:
+                    for realSeqId in ps['auth_seq_id']:
+                        if realSeqId is None:
+                            continue
+                        idx = ps['auth_seq_id'].index(realSeqId)
+                        realCompId = ps['comp_id'][idx]
+                        if realCompId in ('ACE', 'NH2'):
+                            continue
+                        if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
+                            origCompId = ps['auth_comp_id'][idx]
+                            _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
+                            if realCompId not in _compIdList and origCompId not in _compIdList:
+                                continue
+                        _compIdSelect.add(realCompId)
+
             if self.__hasNonPolySeq:
                 for chainId in _factor['chain_id']:
                     npList = [np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId]

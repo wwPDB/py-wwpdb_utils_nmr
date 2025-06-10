@@ -9650,32 +9650,33 @@ class XplorMRParserListener(ParseTreeListener):
                             if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                 if self.__reasons is None:
                                     continue
-                                if 'label_seq_offset' in self.__reasons\
-                                   and chainId in self.__reasons['label_seq_offset']:
-                                    offset = self.__reasons['label_seq_offset'][chainId]
-                                    if _factor['seq_id'][0] + offset in ps['seq_id']:
-                                        realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
-                                elif not self.__preferAuthSeq:
-                                    if _factor['seq_id'][0] in ps['seq_id']:
+                                if not self.__preferAuthSeq:
+                                    if 'label_seq_offset' in self.__reasons\
+                                       and chainId in self.__reasons['label_seq_offset']:
+                                        offset = self.__reasons['label_seq_offset'][chainId]
+                                        if _factor['seq_id'][0] + offset in ps['seq_id']:
+                                            realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                    elif _factor['seq_id'][0] in ps['seq_id']:
                                         realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
                                     else:
                                         continue
-                                elif 'global_sequence_offset' in self.__reasons\
-                                        and chainId in self.__reasons['global_sequence_offset']:
-                                    offset = self.__reasons['global_sequence_offset'][chainId]
-                                    if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                        continue
-                                elif 'global_auth_sequence_offset' in self.__reasons\
-                                        and chainId in self.__reasons['global_auth_sequence_offset']:
-                                    offset = self.__reasons['global_auth_sequence_offset'][chainId]
-                                    if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                        continue
-                                elif 'seq_id_remap' in self.__reasons:
-                                    _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
-                                    if _realSeqId != realSeqId:
-                                        continue
                                 else:
-                                    continue
+                                    if 'global_sequence_offset' in self.__reasons\
+                                            and chainId in self.__reasons['global_sequence_offset']:
+                                        offset = self.__reasons['global_sequence_offset'][chainId]
+                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                            continue
+                                    elif 'global_auth_sequence_offset' in self.__reasons\
+                                            and chainId in self.__reasons['global_auth_sequence_offset']:
+                                        offset = self.__reasons['global_auth_sequence_offset'][chainId]
+                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                            continue
+                                    elif 'seq_id_remap' in self.__reasons:
+                                        _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
+                                        if _realSeqId != realSeqId:
+                                            continue
+                                    else:
+                                        continue
                         idx = ps['auth_seq_id'].index(realSeqId)
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -9730,9 +9731,9 @@ class XplorMRParserListener(ParseTreeListener):
                     tmpAtomId = _factor['atom_ids'][0].upper()
                     if lenAtomIds == 1:
                         atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
-                        atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId, leave_unmatched=True)
+                        atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId[:-1] if atomId[0] in ('Q', 'M') else atomId, leave_unmatched=True)
                         if details is not None:
-                            atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1] if atomId[0] in ('Q', 'M') else atomId, leave_unmatched=True)
                         _atomId = toNefEx(toRegEx(atomId))
                     elif lenAtomIds == 2:
                         atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
@@ -9789,37 +9790,33 @@ class XplorMRParserListener(ParseTreeListener):
                                         if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                             if self.__reasons is None:
                                                 continue
-                                            if 'label_seq_offset' in self.__reasons\
-                                               and chainId in self.__reasons['label_seq_offset']:
-                                                offset = self.__reasons['label_seq_offset'][chainId]
-                                                if _factor['seq_id'][0] + offset in ps['seq_id']:
-                                                    realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
-                                            elif not self.__preferAuthSeq:
-                                                if _factor['seq_id'][0] in ps['seq_id']:
-                                                    realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
-                                                else:
-                                                    continue
-                                            elif 'global_sequence_offset' in self.__reasons\
-                                                    and chainId in self.__reasons['global_sequence_offset']:
-                                                offset = self.__reasons['global_sequence_offset'][chainId]
-                                                if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                                    continue
-                                            elif 'global_auth_sequence_offset' in self.__reasons\
-                                                    and chainId in self.__reasons['global_auth_sequence_offset']:
-                                                offset = self.__reasons['global_auth_sequence_offset'][chainId]
-                                                if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                                    continue
-                                            elif 'seq_id_remap' in self.__reasons:
-                                                _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
-                                                if _realSeqId != realSeqId:
-                                                    continue
-                                            elif not self.__preferAuthSeq:
-                                                if _factor['seq_id'][0] in ps['seq_id']:
+                                            if not self.__preferAuthSeq:
+                                                if 'label_seq_offset' in self.__reasons\
+                                                   and chainId in self.__reasons['label_seq_offset']:
+                                                    offset = self.__reasons['label_seq_offset'][chainId]
+                                                    if _factor['seq_id'][0] + offset in ps['seq_id']:
+                                                        realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                                elif _factor['seq_id'][0] in ps['seq_id']:
                                                     realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
                                                 else:
                                                     continue
                                             else:
-                                                continue
+                                                if 'global_sequence_offset' in self.__reasons\
+                                                        and chainId in self.__reasons['global_sequence_offset']:
+                                                    offset = self.__reasons['global_sequence_offset'][chainId]
+                                                    if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                                        continue
+                                                elif 'global_auth_sequence_offset' in self.__reasons\
+                                                        and chainId in self.__reasons['global_auth_sequence_offset']:
+                                                    offset = self.__reasons['global_auth_sequence_offset'][chainId]
+                                                    if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                                        continue
+                                                elif 'seq_id_remap' in self.__reasons:
+                                                    _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
+                                                    if _realSeqId != realSeqId:
+                                                        continue
+                                                else:
+                                                    continue
                                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
                                         if coordAtomSite is not None:
                                             _atomId = toNefEx(toRegEx(tmpAtomId))
@@ -9902,32 +9899,33 @@ class XplorMRParserListener(ParseTreeListener):
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                     if self.__reasons is None:
                                         continue
-                                    if 'label_seq_offset' in self.__reasons\
-                                       and chainId in self.__reasons['label_seq_offset']:
-                                        offset = self.__reasons['label_seq_offset'][chainId]
-                                        if _factor['seq_id'][0] + offset in ps['seq_id']:
-                                            realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
-                                    elif not self.__preferAuthSeq:
-                                        if _factor['seq_id'][0] in ps['seq_id']:
+                                    if not self.__preferAuthSeq:
+                                        if 'label_seq_offset' in self.__reasons\
+                                           and chainId in self.__reasons['label_seq_offset']:
+                                            offset = self.__reasons['label_seq_offset'][chainId]
+                                            if _factor['seq_id'][0] + offset in ps['seq_id']:
+                                                realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                        elif _factor['seq_id'][0] in ps['seq_id']:
                                             realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
                                         else:
                                             continue
-                                    elif 'global_sequence_offset' in self.__reasons\
-                                            and chainId in self.__reasons['global_sequence_offset']:
-                                        offset = self.__reasons['global_sequence_offset'][chainId]
-                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                            continue
-                                    elif 'global_auth_sequence_offset' in self.__reasons\
-                                            and chainId in self.__reasons['global_auth_sequence_offset']:
-                                        offset = self.__reasons['global_auth_sequence_offset'][chainId]
-                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                            continue
-                                    elif 'seq_id_remap' in self.__reasons:
-                                        _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
-                                        if _realSeqId != realSeqId:
-                                            continue
                                     else:
-                                        continue
+                                        if 'global_sequence_offset' in self.__reasons\
+                                                and chainId in self.__reasons['global_sequence_offset']:
+                                            offset = self.__reasons['global_sequence_offset'][chainId]
+                                            if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                                continue
+                                        elif 'global_auth_sequence_offset' in self.__reasons\
+                                                and chainId in self.__reasons['global_auth_sequence_offset']:
+                                            offset = self.__reasons['global_auth_sequence_offset'][chainId]
+                                            if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                                continue
+                                        elif 'seq_id_remap' in self.__reasons:
+                                            _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
+                                            if _realSeqId != realSeqId:
+                                                continue
+                                        else:
+                                            continue
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
                             if realCompId not in monDict3 and realCompId in _compIdSelect:
@@ -9980,9 +9978,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                 offset = self.__reasons['label_seq_offset'][chainId]
                                                 if _factor['seq_id'][0] + offset in ps['seq_id']:
                                                     realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
-                                            else:
-                                                if _factor['seq_id'][0] in ps['seq_id']:
-                                                    realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
+                                            elif _factor['seq_id'][0] in ps['seq_id']:
+                                                realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
                                         else:
                                             offset = 0
                                             if 'global_sequence_offset' in self.__reasons\
@@ -10036,9 +10033,9 @@ class XplorMRParserListener(ParseTreeListener):
                         tmpAtomId = _factor['atom_ids'][0].upper()
                         if lenAtomIds == 1:
                             atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
-                            atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId, leave_unmatched=True)
+                            atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId[:-1] if atomId[0] in ('Q', 'M') else atomId, leave_unmatched=True)
                             if details is not None:
-                                atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1] if atomId[0] in ('Q', 'M') else atomId, leave_unmatched=True)
                             _atomId = toNefEx(toRegEx(atomId))
                         elif lenAtomIds == 2:
                             atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
@@ -10108,31 +10105,30 @@ class XplorMRParserListener(ParseTreeListener):
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                             if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                 if self.__reasons is not None:
-                                    if 'label_seq_offset' in self.__reasons\
-                                       and chainId in self.__reasons['label_seq_offset']:
+                                    if not self.__preferAuthSeq:
                                         realSeqId = None
-                                        offset = self.__reasons['label_seq_offset'][chainId]
-                                        if _factor['seq_id'][0] + offset in ps['seq_id']:
-                                            realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
-                                    elif not self.__preferAuthSeq:
-                                        if _factor['seq_id'][0] in ps['seq_id']:
+                                        if 'label_seq_offset' in self.__reasons\
+                                           and chainId in self.__reasons['label_seq_offset']:
+                                            offset = self.__reasons['label_seq_offset'][chainId]
+                                            if _factor['seq_id'][0] + offset in ps['seq_id']:
+                                                realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                        elif _factor['seq_id'][0] in ps['seq_id']:
                                             realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
-                                        else:
-                                            continue
-                                    if 'global_sequence_offset' in self.__reasons\
-                                       and chainId in self.__reasons['global_sequence_offset']:
-                                        offset = self.__reasons['global_sequence_offset'][chainId]
-                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                            realSeqId = None
-                                    if 'global_auth_sequence_offset' in self.__reasons\
-                                       and chainId in self.__reasons['global_auth_sequence_offset']:
-                                        offset = self.__reasons['global_auth_sequence_offset'][chainId]
-                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                            realSeqId = None
-                                    if 'seq_id_remap' in self.__reasons:
-                                        _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
-                                        if _realSeqId != realSeqId:
-                                            continue
+                                    else:
+                                        if 'global_sequence_offset' in self.__reasons\
+                                           and chainId in self.__reasons['global_sequence_offset']:
+                                            offset = self.__reasons['global_sequence_offset'][chainId]
+                                            if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                                realSeqId = None
+                                        if 'global_auth_sequence_offset' in self.__reasons\
+                                           and chainId in self.__reasons['global_auth_sequence_offset']:
+                                            offset = self.__reasons['global_auth_sequence_offset'][chainId]
+                                            if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                                realSeqId = None
+                                        if 'seq_id_remap' in self.__reasons:
+                                            _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
+                                            if _realSeqId != realSeqId:
+                                                continue
                                 if realSeqId is None:
                                     continue
                         idx = ps['auth_seq_id'].index(realSeqId)
@@ -10234,9 +10230,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                 offset = self.__reasons['label_seq_offset'][chainId]
                                                 if _factor['seq_id'][0] + offset in ps['seq_id']:
                                                     realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
-                                            else:
-                                                if _factor['seq_id'][0] in ps['seq_id']:
-                                                    realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
+                                            elif _factor['seq_id'][0] in ps['seq_id']:
+                                                realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
                                         else:
                                             offset = 0
                                             if 'global_sequence_offset' in self.__reasons\

@@ -219,6 +219,12 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2mo5/2mo5-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2mo5/2mo5.cif')
+
     reasons_ = {'segment_id_mismatch': {'PHD': 'A', 'H3K': 'B'},
                 'segment_id_match_stats': {'PHD': {'A': 1425}, 'H3K': {'A': -1424, 'B': 32}},
                 'segment_id_poly_type_stats': {'PHD': {'polymer': 1457, 'non-poly': 0, 'non-polymer': 0}, 'H3K': {'polymer': 0, 'non-poly': 0, 'non-polymer': 0}},

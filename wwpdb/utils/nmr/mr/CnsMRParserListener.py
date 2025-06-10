@@ -5462,6 +5462,11 @@ class CnsMRParserListener(ParseTreeListener):
                                     offset = self.__reasons['label_seq_offset'][chainId]
                                     if _factor['seq_id'][0] + offset in ps['seq_id']:
                                         realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                elif not self.__preferAuthSeq:
+                                    if _factor['seq_id'][0] in ps['seq_id']:
+                                        realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
+                                    else:
+                                        continue
                                 elif 'global_sequence_offset' in self.__reasons\
                                         and chainId in self.__reasons['global_sequence_offset']:
                                     offset = self.__reasons['global_sequence_offset'][chainId]
@@ -5596,6 +5601,11 @@ class CnsMRParserListener(ParseTreeListener):
                                                 offset = self.__reasons['label_seq_offset'][chainId]
                                                 if _factor['seq_id'][0] + offset in ps['seq_id']:
                                                     realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                            elif not self.__preferAuthSeq:
+                                                if _factor['seq_id'][0] in ps['seq_id']:
+                                                    realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
+                                                else:
+                                                    continue
                                             elif 'global_sequence_offset' in self.__reasons\
                                                     and chainId in self.__reasons['global_sequence_offset']:
                                                 offset = self.__reasons['global_sequence_offset'][chainId]
@@ -5699,6 +5709,11 @@ class CnsMRParserListener(ParseTreeListener):
                                         offset = self.__reasons['label_seq_offset'][chainId]
                                         if _factor['seq_id'][0] + offset in ps['seq_id']:
                                             realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                    elif not self.__preferAuthSeq:
+                                        if _factor['seq_id'][0] in ps['seq_id']:
+                                            realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
+                                        else:
+                                            continue
                                     elif 'global_sequence_offset' in self.__reasons\
                                             and chainId in self.__reasons['global_sequence_offset']:
                                         offset = self.__reasons['global_sequence_offset'][chainId]
@@ -5767,6 +5782,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                 offset = self.__reasons['label_seq_offset'][chainId]
                                                 if _factor['seq_id'][0] + offset in ps['seq_id']:
                                                     realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                            else:
+                                                if _factor['seq_id'][0] in ps['seq_id']:
+                                                    realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
                                         else:
                                             offset = 0
                                             if 'global_sequence_offset' in self.__reasons\
@@ -5898,6 +5916,11 @@ class CnsMRParserListener(ParseTreeListener):
                                         offset = self.__reasons['label_seq_offset'][chainId]
                                         if _factor['seq_id'][0] + offset in ps['seq_id']:
                                             realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                    elif not self.__preferAuthSeq:
+                                        if _factor['seq_id'][0] in ps['seq_id']:
+                                            realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
+                                        else:
+                                            continue
                                     if 'global_sequence_offset' in self.__reasons\
                                        and chainId in self.__reasons['global_sequence_offset']:
                                         offset = self.__reasons['global_sequence_offset'][chainId]
@@ -6013,6 +6036,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                 offset = self.__reasons['label_seq_offset'][chainId]
                                                 if _factor['seq_id'][0] + offset in ps['seq_id']:
                                                     realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                            elif not self.__preferAuthSeq:
+                                                if _factor['seq_id'][0] in ps['seq_id']:
+                                                    realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
                                         else:
                                             offset = 0
                                             if 'global_sequence_offset' in self.__reasons\

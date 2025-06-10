@@ -67,6 +67,7 @@ class CharmmMRReader:
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
+        self.__internal = False
         self.__sll_pred = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
@@ -102,6 +103,9 @@ class CharmmMRReader:
 
     def setDebugMode(self, debug: bool):
         self.__debug = debug
+
+    def setInternalMode(self, internal: bool):
+        self.__internal = internal
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
         self.__maxLexerErrorReport = maxErrReport
@@ -199,6 +203,7 @@ class CharmmMRReader:
                                               self.__ccU, self.__csStat, self.__nefT,
                                               self.__atomNumberDict, self.__reasons)
             listener.setDebugMode(self.__debug)
+            listener.setInternalMode(self.__internal)
             listener.createSfDict(createSfDict)
             if createSfDict:
                 if originalFileName is not None:

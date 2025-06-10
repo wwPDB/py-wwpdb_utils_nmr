@@ -65,6 +65,7 @@ class XplorMRReader:
         self.__lfh = log
         self.__debug = False
         self.__remediate = False
+        self.__internal = False
         self.__sll_pred = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
@@ -100,6 +101,9 @@ class XplorMRReader:
 
     def setRemediateMode(self, remediate: bool):
         self.__remediate = remediate
+
+    def setInternalMode(self, internal: bool):
+        self.__internal = internal
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
         self.__maxLexerErrorReport = maxErrReport
@@ -187,6 +191,7 @@ class XplorMRReader:
                                              self.__reasons)
             listener.setDebugMode(self.__debug)
             listener.setRemediateMode(self.__remediate)
+            listener.setInternalMode(self.__internal)
             listener.createSfDict(createSfDict)
             if createSfDict:
                 if originalFileName is not None:

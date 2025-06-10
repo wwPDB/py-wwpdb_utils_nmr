@@ -291,6 +291,7 @@ class CnsMRParserListener(ParseTreeListener):
     __verbose = None
     __lfh = None
     __debug = False
+    __internal = False
     __sel_expr_debug = False
 
     __createSfDict = False
@@ -664,6 +665,9 @@ class CnsMRParserListener(ParseTreeListener):
 
     def setDebugMode(self, debug: bool):
         self.__debug = debug
+
+    def setInternalMode(self, internal: bool):
+        self.__internal = internal
 
     def createSfDict(self, createSfDict: bool):
         self.__createSfDict = createSfDict
@@ -5895,7 +5899,8 @@ class CnsMRParserListener(ParseTreeListener):
                     if self.__reasons is None:
                         self.__preferAuthSeq = not self.__preferAuthSeq
 
-                    # _factor['atom_id'] = [None]
+                    if not self.__internal:
+                        _factor['atom_id'] = [None]
                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
             # del _factor['atom_ids']
 

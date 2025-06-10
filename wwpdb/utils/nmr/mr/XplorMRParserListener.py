@@ -346,6 +346,7 @@ class XplorMRParserListener(ParseTreeListener):
     __lfh = None
     __debug = False
     __remediate = False
+    __internal = False
     __sel_expr_debug = False
 
     __createSfDict = True
@@ -786,6 +787,9 @@ class XplorMRParserListener(ParseTreeListener):
 
     def setRemediateMode(self, remediate: bool):
         self.__remediate = remediate
+
+    def setInternalMode(self, internal: bool):
+        self.__internal = internal
 
     def createSfDict(self, createSfDict: bool):
         self.__createSfDict = createSfDict
@@ -10088,7 +10092,8 @@ class XplorMRParserListener(ParseTreeListener):
                     if self.__reasons is None:
                         self.__preferAuthSeq = not self.__preferAuthSeq
 
-                    # _factor['atom_id'] = [None]
+                    if not self.__internal:
+                        _factor['atom_id'] = [None]
                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
             # del _factor['atom_ids']
 

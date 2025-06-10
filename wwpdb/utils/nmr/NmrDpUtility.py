@@ -35343,6 +35343,7 @@ class NmrDpUtility:
                                         self.__ccU, self.__csStat, self.__nefT,
                                         charmmAtomNumberDict,
                                         reasons)
+                reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
                 __list_id_counter = copy.copy(self.__list_id_counter)
@@ -35364,6 +35365,7 @@ class NmrDpUtility:
                                                 self.__ccU, self.__csStat, self.__nefT,
                                                 charmmAtomNumberDict,
                                                 None)
+                        reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -35391,6 +35393,7 @@ class NmrDpUtility:
                                                 self.__ccU, self.__csStat, self.__nefT,
                                                 charmmAtomNumberDict,
                                                 reasons)
+                        reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -35435,6 +35438,7 @@ class NmrDpUtility:
                                      self.__cR, self.__caC,
                                      self.__ccU, self.__csStat, self.__nefT,
                                      reasons)
+                reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
                 __list_id_counter = copy.copy(self.__list_id_counter)
@@ -35455,6 +35459,7 @@ class NmrDpUtility:
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              None)
+                        reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -35481,6 +35486,7 @@ class NmrDpUtility:
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
+                        reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -36075,6 +36081,7 @@ class NmrDpUtility:
                                        self.__ccU, self.__csStat, self.__nefT,
                                        reasons)
                 reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
+                reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
                 __list_id_counter = copy.copy(self.__list_id_counter)
@@ -36096,6 +36103,7 @@ class NmrDpUtility:
                                                self.__ccU, self.__csStat, self.__nefT,
                                                None)
                         reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
+                        reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -36123,6 +36131,7 @@ class NmrDpUtility:
                                                self.__ccU, self.__csStat, self.__nefT,
                                                reasons)
                         reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
+                        reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,

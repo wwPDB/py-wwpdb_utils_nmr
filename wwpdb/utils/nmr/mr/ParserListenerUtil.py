@@ -2865,6 +2865,12 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
             if atomId == 'CA':
                 return 'CH3'
 
+        elif refCompId == 'CGU':  # 2mzm
+            if atomId.startswith('O1'):
+                return 'OE' + atomId[1:]
+            if atomId.startswith('O2'):
+                return 'OE' + atomId[1:]
+
         elif refCompId in ('HEB', 'HEC', 'MH0'):
             is_mh0 = refCompId == 'MH0'  # 2n3y
             if atomId[0] in pseProBeginCode:

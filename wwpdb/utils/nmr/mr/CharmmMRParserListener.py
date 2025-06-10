@@ -3232,14 +3232,18 @@ class CharmmMRParserListener(ParseTreeListener):
                                     if _factor['seq_id'][0] + offset in ps['seq_id']:
                                         realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
                                 elif 'global_sequence_offset' in self.__reasons\
-                                        and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
-                                    offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+                                        and chainId in self.__reasons['global_sequence_offset']:
+                                    offset = self.__reasons['global_sequence_offset'][chainId]
                                     if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
                                         continue
                                 elif 'global_auth_sequence_offset' in self.__reasons\
-                                        and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
-                                    offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                        and chainId in self.__reasons['global_auth_sequence_offset']:
+                                    offset = self.__reasons['global_auth_sequence_offset'][chainId]
                                     if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                        continue
+                                elif 'seq_id_remap' in self.__reasons:
+                                    _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
+                                    if _realSeqId != realSeqId:
                                         continue
                                 else:
                                     continue
@@ -3362,14 +3366,18 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 if _factor['seq_id'][0] + offset in ps['seq_id']:
                                                     realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
                                             elif 'global_sequence_offset' in self.__reasons\
-                                                    and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
-                                                offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+                                                    and chainId in self.__reasons['global_sequence_offset']:
+                                                offset = self.__reasons['global_sequence_offset'][chainId]
                                                 if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
                                                     continue
                                             elif 'global_auth_sequence_offset' in self.__reasons\
-                                                    and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
-                                                offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                                    and chainId in self.__reasons['global_auth_sequence_offset']:
+                                                offset = self.__reasons['global_auth_sequence_offset'][chainId]
                                                 if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                                    continue
+                                            elif 'seq_id_remap' in self.__reasons:
+                                                _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
+                                                if _realSeqId != realSeqId:
                                                     continue
                                             else:
                                                 continue
@@ -3461,14 +3469,18 @@ class CharmmMRParserListener(ParseTreeListener):
                                         if _factor['seq_id'][0] + offset in ps['seq_id']:
                                             realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
                                     elif 'global_sequence_offset' in self.__reasons\
-                                            and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
-                                        offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+                                            and chainId in self.__reasons['global_sequence_offset']:
+                                        offset = self.__reasons['global_sequence_offset'][chainId]
                                         if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
                                             continue
                                     elif 'global_auth_sequence_offset' in self.__reasons\
-                                            and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
-                                        offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                            and chainId in self.__reasons['global_auth_sequence_offset']:
+                                        offset = self.__reasons['global_auth_sequence_offset'][chainId]
                                         if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                            continue
+                                    elif 'seq_id_remap' in self.__reasons:
+                                        _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
+                                        if _realSeqId != realSeqId:
                                             continue
                                     else:
                                         continue
@@ -3527,11 +3539,16 @@ class CharmmMRParserListener(ParseTreeListener):
                                         else:
                                             offset = 0
                                             if 'global_sequence_offset' in self.__reasons\
-                                               and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
-                                                offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+                                               and chainId in self.__reasons['global_sequence_offset']:
+                                                offset = self.__reasons['global_sequence_offset'][chainId]
                                             if 'global_auth_sequence_offset' in self.__reasons\
-                                               and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
-                                                offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                               and chainId in self.__reasons['global_auth_sequence_offset']:
+                                                offset = self.__reasons['global_auth_sequence_offset'][chainId]
+                                            if 'seq_id_remap' in self.__reasons:
+                                                _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
+                                                if _realSeqId != realSeqId:
+                                                    continue
+                                                offset = realSeqId - _factor['seq_id'][0]
                                             if offset == 0 or realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
                                                 realSeqId = None
                                     if realSeqId is None:
@@ -3651,15 +3668,19 @@ class CharmmMRParserListener(ParseTreeListener):
                                         if _factor['seq_id'][0] + offset in ps['seq_id']:
                                             realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
                                     if 'global_sequence_offset' in self.__reasons\
-                                       and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
-                                        offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+                                       and chainId in self.__reasons['global_sequence_offset']:
+                                        offset = self.__reasons['global_sequence_offset'][chainId]
                                         if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
                                             realSeqId = None
                                     if 'global_auth_sequence_offset' in self.__reasons\
-                                       and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
-                                        offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                       and chainId in self.__reasons['global_auth_sequence_offset']:
+                                        offset = self.__reasons['global_auth_sequence_offset'][chainId]
                                         if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
                                             realSeqId = None
+                                    if 'seq_id_remap' in self.__reasons:
+                                        _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
+                                        if _realSeqId != realSeqId:
+                                            continue
                                 if realSeqId is None:
                                     continue
                         idx = ps['auth_seq_id'].index(realSeqId)
@@ -3765,11 +3786,16 @@ class CharmmMRParserListener(ParseTreeListener):
                                         else:
                                             offset = 0
                                             if 'global_sequence_offset' in self.__reasons\
-                                               and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
-                                                offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+                                               and chainId in self.__reasons['global_sequence_offset']:
+                                                offset = self.__reasons['global_sequence_offset'][chainId]
                                             if 'global_auth_sequence_offset' in self.__reasons\
-                                               and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
-                                                offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                               and chainId in self.__reasons['global_auth_sequence_offset']:
+                                                offset = self.__reasons['global_auth_sequence_offset'][chainId]
+                                            if 'seq_id_remap' in self.__reasons:
+                                                _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
+                                                if _realSeqId != realSeqId:
+                                                    continue
+                                                offset = realSeqId - _factor['seq_id'][0]
                                             if offset == 0 or realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
                                                 realSeqId = None
                                     if realSeqId is None:

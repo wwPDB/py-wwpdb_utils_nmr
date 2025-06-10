@@ -219,6 +219,23 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reasons_ = {'segment_id_mismatch': {'PHD': 'A', 'H3K': 'B'},
+                'segment_id_match_stats': {'PHD': {'A': 1425}, 'H3K': {'A': -1424, 'B': 32}},
+                'segment_id_poly_type_stats': {'PHD': {'polymer': 1457, 'non-poly': 0, 'non-polymer': 0}, 'H3K': {'polymer': 0, 'non-poly': 0, 'non-polymer': 0}},
+                'non_poly_remap': {'ZN': {401: {'chain_id': 'A', 'seq_id': 361, 'original_chain_id': 'A'},
+                                          402: {'chain_id': 'A', 'seq_id': 362, 'original_chain_id': 'A'}}},
+                'seq_id_remap': [{'chain_id': 'A', 'seq_id_dict': {1: 306, 2: 307, 3: 308, 4: 309, 5: 310, 6: 311, 7: 312, 8: 313, 9: 314, 10: 315,
+                                                                   11: 316, 12: 317, 13: 318, 14: 319, 15: 320, 16: 321, 17: 322, 18: 323, 19: 324, 20: 325,
+                                                                   21: 326, 22: 327, 23: 328, 24: 329, 25: 330, 26: 331, 27: 332, 28: 333, 29: 334, 30: 335,
+                                                                   31: 336, 32: 337, 33: 338, 34: 339, 35: 340, 36: 341, 37: 342, 38: 343, 39: 344, 40: 345,
+                                                                   41: 346, 42: 347, 43: 348, 44: 349, 45: 350, 46: 351, 47: 352, 48: 353, 49: 354, 50: 355,
+                                                                   51: 356, 52: 357, 53: 358, 54: 359, 55: 360}},
+                                 {'chain_id': 'B', 'seq_id_dict': {1: 363, 2: 364, 3: 365, 4: 366, 5: 367, 6: 368, 7: 369, 8: 370, 9: 371, 10: 372}}]}
+    reader = CnsMRReader(True, reasons=reasons_)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2mnz/2mnz-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2mnz/2mnz.cif')
+
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\

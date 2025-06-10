@@ -3216,6 +3216,66 @@ class CharmmMRParserListener(ParseTreeListener):
                 if len(_factor['atom_id']) == 0:
                     _factor['atom_id'] = [None]
 
+        def get_real_seq_id(ps, real_seq_id):
+            chain_id = ps['auth_chain_id']
+            _seq_ids = _factor['seq_id']
+            _seq_id = _seq_ids[0]
+
+            if not self.__preferAuthSeq:
+                if 'label_seq_offset' in self.__reasons\
+                   and chain_id in self.__reasons['label_seq_offset']:
+                    offset = self.__reasons['label_seq_offset'][chain_id]
+                    if _seq_id + offset in ps['seq_id']:
+                        return ps['auth_seq_id'][ps['seq_id'].index(_seq_id + offset)]
+                elif _seq_id in ps['seq_id']:
+                    return ps['auth_seq_id'][ps['seq_id'].index(_seq_id)]
+                return None
+
+            if 'global_sequence_offset' in self.__reasons\
+               and chain_id in self.__reasons['global_sequence_offset']:
+                offset = self.__reasons['global_sequence_offset'][chain_id]
+                if real_seq_id in [seq_id + offset for seq_id in _seq_ids]:
+                    return real_seq_id
+
+            elif 'global_auth_sequence_offset' in self.__reasons\
+                    and chain_id in self.__reasons['global_auth_sequence_offset']:
+                offset = self.__reasons['global_auth_sequence_offset'][chain_id]
+                if real_seq_id in [seq_id + offset for seq_id in _seq_ids]:
+                    return real_seq_id
+
+            elif 'seq_id_remap' in self.__reasons:
+                _, _real_seq_id = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chain_id, _seq_id)
+                if _real_seq_id == real_seq_id:
+                    return real_seq_id
+
+            return None
+
+        def is_real_nucleic_atom_id(real_atom_id, test_atom_id, src_atom_id, candidates):
+            if ("'" in test_atom_id and "'" in real_atom_id)\
+               or ("'" not in test_atom_id and "'" not in real_atom_id):
+                pass
+
+            else:
+                if len(test_atom_id) > 1 and test_atom_id[1] != src_atom_id[1]:
+                    if "'" in real_atom_id:
+                        return False
+
+                else:
+                    min_len = min(len(src_atom_id), 2)
+                    if real_atom_id.startswith(src_atom_id[:min_len]):
+                        if ("'" in src_atom_id and "'" in real_atom_id)\
+                           or ("'" not in src_atom_id and "'" not in real_atom_id):
+                            pass
+                        else:
+                            return False
+
+            if len([_atom_id_ for _atom_id_ in candidates
+                    if ("'" in _atom_id_ and "'" in real_atom_id)
+                    or ("'" not in _atom_id_ and "'" not in real_atom_id)]) < 2:
+                return False
+
+            return True
+
         if 'atom_ids' in _factor and len(_factor['atom_ids']) > 0\
            and ('atom_id' not in _factor or len(_factor['atom_id']) == 0):
             lenAtomIds = len(_factor['atom_ids'])
@@ -3230,33 +3290,9 @@ class CharmmMRParserListener(ParseTreeListener):
                             if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                 if self.__reasons is None:
                                     continue
-                                if not self.__preferAuthSeq:
-                                    if 'label_seq_offset' in self.__reasons\
-                                       and chainId in self.__reasons['label_seq_offset']:
-                                        offset = self.__reasons['label_seq_offset'][chainId]
-                                        if _factor['seq_id'][0] + offset in ps['seq_id']:
-                                            realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
-                                    elif _factor['seq_id'][0] in ps['seq_id']:
-                                        realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
-                                    else:
-                                        continue
-                                else:
-                                    if 'global_sequence_offset' in self.__reasons\
-                                            and chainId in self.__reasons['global_sequence_offset']:
-                                        offset = self.__reasons['global_sequence_offset'][chainId]
-                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                            continue
-                                    elif 'global_auth_sequence_offset' in self.__reasons\
-                                            and chainId in self.__reasons['global_auth_sequence_offset']:
-                                        offset = self.__reasons['global_auth_sequence_offset'][chainId]
-                                        if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                            continue
-                                    elif 'seq_id_remap' in self.__reasons:
-                                        _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
-                                        if _realSeqId != realSeqId:
-                                            continue
-                                    else:
-                                        continue
+                                realSeqId = get_real_seq_id(ps, realSeqId)
+                                if realSeqId is None:
+                                    continue
                         idx = ps['auth_seq_id'].index(realSeqId)
                         realCompId = ps['comp_id'][idx]
                         if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -3326,26 +3362,8 @@ class CharmmMRParserListener(ParseTreeListener):
                     for realAtomId in _atomIds:
                         if lenAtomIds == 1:
                             if re.match(_atomId, realAtomId):
-                                if nucleotide:
-                                    if ("'" in atomId and "'" in realAtomId)\
-                                       or ("'" not in atomId and "'" not in realAtomId):
-                                        pass
-                                    else:
-                                        if len(atomId) > 1 and atomId[1] != tmpAtomId[1]:
-                                            if "'" in realAtomId:
-                                                continue
-                                        else:
-                                            min_len = min(len(tmpAtomId), 2)
-                                            if realAtomId.startswith(tmpAtomId[:min_len]):
-                                                if ("'" in tmpAtomId and "'" in realAtomId)\
-                                                   or ("'" not in tmpAtomId and "'" not in realAtomId):
-                                                    pass
-                                                else:
-                                                    continue
-                                    if len([_atomId_ for _atomId_ in _matchedAtomIds
-                                            if ("'" in _atomId_ and "'" in realAtomId)
-                                            or ("'" not in _atomId_ and "'" not in realAtomId)]) < 2:
-                                        continue
+                                if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId, tmpAtomId, _matchedAtomIds):
+                                    continue
                                 _atomIdSelect.add(realAtomId)
                                 _factor['alt_atom_id'] = _factor['atom_ids'][0]
                                 matched = True
@@ -3370,58 +3388,16 @@ class CharmmMRParserListener(ParseTreeListener):
                                         if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                             if self.__reasons is None:
                                                 continue
-                                            if not self.__preferAuthSeq:
-                                                if 'label_seq_offset' in self.__reasons\
-                                                   and chainId in self.__reasons['label_seq_offset']:
-                                                    offset = self.__reasons['label_seq_offset'][chainId]
-                                                    if _factor['seq_id'][0] + offset in ps['seq_id']:
-                                                        realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
-                                                elif _factor['seq_id'][0] in ps['seq_id']:
-                                                    realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
-                                                else:
-                                                    continue
-                                            else:
-                                                if 'global_sequence_offset' in self.__reasons\
-                                                        and chainId in self.__reasons['global_sequence_offset']:
-                                                    offset = self.__reasons['global_sequence_offset'][chainId]
-                                                    if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                                        continue
-                                                elif 'global_auth_sequence_offset' in self.__reasons\
-                                                        and chainId in self.__reasons['global_auth_sequence_offset']:
-                                                    offset = self.__reasons['global_auth_sequence_offset'][chainId]
-                                                    if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                                        continue
-                                                elif 'seq_id_remap' in self.__reasons:
-                                                    _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
-                                                    if _realSeqId != realSeqId:
-                                                        continue
-                                                else:
-                                                    continue
+                                            realSeqId = get_real_seq_id(ps, realSeqId)
+                                            if realSeqId is None:
+                                                continue
                                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
                                         if coordAtomSite is not None:
                                             _atomId = toNefEx(toRegEx(tmpAtomId))
                                             for realAtomId in coordAtomSite['atom_id']:
                                                 if re.match(_atomId, realAtomId):
-                                                    if nucleotide:
-                                                        if ("'" in atomId and "'" in realAtomId)\
-                                                           or ("'" not in atomId and "'" not in realAtomId):
-                                                            pass
-                                                        else:
-                                                            if len(atomId) > 1 and atomId[1] != tmpAtomId[1]:
-                                                                if "'" in realAtomId:
-                                                                    continue
-                                                            else:
-                                                                min_len = min(len(tmpAtomId), 2)
-                                                                if realAtomId.startswith(tmpAtomId[:min_len]):
-                                                                    if ("'" in tmpAtomId and "'" in realAtomId)\
-                                                                       or ("'" not in tmpAtomId and "'" not in realAtomId):
-                                                                        pass
-                                                                    else:
-                                                                        continue
-                                                        if len([_atomId_ for _atomId_ in _matchedAtomIds
-                                                                if ("'" in _atomId_ and "'" in realAtomId)
-                                                                or ("'" not in _atomId_ and "'" not in realAtomId)]) < 2:
-                                                            continue
+                                                    if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId, tmpAtomId, _matchedAtomIds):
+                                                        continue
                                                     _atomIdSelect.add(realAtomId)
                                                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
                             if self.__hasNonPolySeq:
@@ -3441,26 +3417,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 _atomId = toNefEx(toRegEx(tmpAtomId))
                                                 for realAtomId in coordAtomSite['atom_id']:
                                                     if re.match(_atomId, realAtomId):
-                                                        if nucleotide:
-                                                            if ("'" in atomId and "'" in realAtomId)\
-                                                               or ("'" not in atomId and "'" not in realAtomId):
-                                                                pass
-                                                            else:
-                                                                if len(atomId) > 1 and atomId[1] != tmpAtomId[1]:
-                                                                    if "'" in realAtomId:
-                                                                        continue
-                                                                else:
-                                                                    min_len = min(len(tmpAtomId), 2)
-                                                                    if realAtomId.startswith(tmpAtomId[:min_len]):
-                                                                        if ("'" in tmpAtomId and "'" in realAtomId)\
-                                                                           or ("'" not in tmpAtomId and "'" not in realAtomId):
-                                                                            pass
-                                                                        else:
-                                                                            continue
-                                                            if len([_atomId_ for _atomId_ in _matchedAtomIds
-                                                                    if ("'" in _atomId_ and "'" in realAtomId)
-                                                                    or ("'" not in _atomId_ and "'" not in realAtomId)]) < 2:
-                                                                continue
+                                                        if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId, tmpAtomId, _matchedAtomIds):
+                                                            continue
                                                         _atomIdSelect.add(realAtomId)
                                                         _factor['alt_atom_id'] = _factor['atom_ids'][0]
                                                         if ptnr is not None:
@@ -3479,33 +3437,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
                                     if self.__reasons is None:
                                         continue
-                                    if not self.__preferAuthSeq:
-                                        if 'label_seq_offset' in self.__reasons\
-                                           and chainId in self.__reasons['label_seq_offset']:
-                                            offset = self.__reasons['label_seq_offset'][chainId]
-                                            if _factor['seq_id'][0] + offset in ps['seq_id']:
-                                                realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
-                                        elif _factor['seq_id'][0] in ps['seq_id']:
-                                            realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
-                                        else:
-                                            continue
-                                    else:
-                                        if 'global_sequence_offset' in self.__reasons\
-                                                and chainId in self.__reasons['global_sequence_offset']:
-                                            offset = self.__reasons['global_sequence_offset'][chainId]
-                                            if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                                continue
-                                        elif 'global_auth_sequence_offset' in self.__reasons\
-                                                and chainId in self.__reasons['global_auth_sequence_offset']:
-                                            offset = self.__reasons['global_auth_sequence_offset'][chainId]
-                                            if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                                continue
-                                        elif 'seq_id_remap' in self.__reasons:
-                                            _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
-                                            if _realSeqId != realSeqId:
-                                                continue
-                                        else:
-                                            continue
+                                    realSeqId = get_real_seq_id(ps, realSeqId)
+                                    if realSeqId is None:
+                                        continue
                             idx = ps['auth_seq_id'].index(realSeqId)
                             realCompId = ps['comp_id'][idx]
                             if realCompId not in monDict3 and realCompId in _compIdSelect:
@@ -3550,31 +3484,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
-                                    if self.__reasons is not None:
-                                        if not self.__preferAuthSeq:
-                                            realSeqId = None
-                                            if 'label_seq_offset' in self.__reasons\
-                                               and chainId in self.__reasons['label_seq_offset']:
-                                                offset = self.__reasons['label_seq_offset'][chainId]
-                                                if _factor['seq_id'][0] + offset in ps['seq_id']:
-                                                    realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
-                                            elif _factor['seq_id'][0] in ps['seq_id']:
-                                                realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
-                                        else:
-                                            offset = 0
-                                            if 'global_sequence_offset' in self.__reasons\
-                                               and chainId in self.__reasons['global_sequence_offset']:
-                                                offset = self.__reasons['global_sequence_offset'][chainId]
-                                            if 'global_auth_sequence_offset' in self.__reasons\
-                                               and chainId in self.__reasons['global_auth_sequence_offset']:
-                                                offset = self.__reasons['global_auth_sequence_offset'][chainId]
-                                            if 'seq_id_remap' in self.__reasons:
-                                                _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
-                                                if _realSeqId != realSeqId:
-                                                    continue
-                                                offset = realSeqId - _factor['seq_id'][0]
-                                            if offset == 0 or realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                                realSeqId = None
+                                    if self.__reasons is None:
+                                        continue
+                                    realSeqId = get_real_seq_id(ps, realSeqId)
                                     if realSeqId is None:
                                         continue
                             idx = ps['auth_seq_id'].index(realSeqId)
@@ -3610,54 +3522,36 @@ class CharmmMRParserListener(ParseTreeListener):
                 for compId in _compIdSelect:
                     if self.__ccU.updateChemCompDict(compId):
                         refAtomIdList = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
-                    tmpAtomId = _factor['atom_ids'][0].upper()
-                    if lenAtomIds == 1:
-                        atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
-                        atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId[:-1] if atomId[0] in ('Q', 'M') else atomId, leave_unmatched=True)
-                        if details is not None:
-                            atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1] if atomId[0] in ('Q', 'M') else atomId, leave_unmatched=True)
-                        _atomId = toNefEx(toRegEx(atomId))
-                    elif lenAtomIds == 2:
-                        atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
-                        atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
-                    _atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
-                    nucleotide = self.__csStat.getTypeOfCompId(compId)[1]
-                    if lenAtomIds == 1 and nucleotide:
-                        _matchedAtomIds = [_atomId_ for _atomId_ in _atomIds if re.match(_atomId, _atomId_)]
-                    for realAtomId in _atomIds:
+                        tmpAtomId = _factor['atom_ids'][0].upper()
                         if lenAtomIds == 1:
-                            if re.match(_atomId, realAtomId):
-                                if nucleotide:
-                                    if ("'" in atomId and "'" in realAtomId)\
-                                       or ("'" not in atomId and "'" not in realAtomId):
-                                        pass
-                                    else:
-                                        if len(atomId) > 1 and atomId[1] != tmpAtomId[1]:
-                                            if "'" in realAtomId:
-                                                continue
-                                        else:
-                                            min_len = min(len(tmpAtomId), 2)
-                                            if realAtomId.startswith(tmpAtomId[:min_len]):
-                                                if ("'" in tmpAtomId and "'" in realAtomId)\
-                                                   or ("'" not in tmpAtomId and "'" not in realAtomId):
-                                                    pass
-                                                else:
-                                                    continue
-                                    if len([_atomId_ for _atomId_ in _matchedAtomIds
-                                            if ("'" in _atomId_ and "'" in realAtomId)
-                                            or ("'" not in _atomId_ and "'" not in realAtomId)]) < 2:
-                                        continue
-                                _atomIdSelect.add(realAtomId)
-                                _factor['alt_atom_id'] = _factor['atom_ids'][0]
-                            elif details is None:
-                                if len(atomIds) == 1 and not re.match(toNefEx(toRegEx(tmpAtomId)), atomIds[0]):
-                                    continue
-                                _atomIdSelect |= set(atomIds)
-                                _factor['alt_atom_id'] = _factor['atom_ids'][0]
+                            atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
+                            atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId[:-1] if atomId[0] in ('Q', 'M') else atomId, leave_unmatched=True)
+                            if details is not None:
+                                atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1] if atomId[0] in ('Q', 'M') else atomId, leave_unmatched=True)
+                            _atomId = toNefEx(toRegEx(atomId))
                         elif lenAtomIds == 2:
-                            if (atomId1 < atomId2 and atomId1 <= realAtomId <= atomId2)\
-                               or (atomId1 > atomId2 and atomId2 <= realAtomId <= atomId1):
-                                _atomIdSelect.add(realAtomId)
+                            atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
+                            atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
+                        _atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
+                        nucleotide = self.__csStat.getTypeOfCompId(compId)[1]
+                        if lenAtomIds == 1 and nucleotide:
+                            _matchedAtomIds = [_atomId_ for _atomId_ in _atomIds if re.match(_atomId, _atomId_)]
+                        for realAtomId in _atomIds:
+                            if lenAtomIds == 1:
+                                if re.match(_atomId, realAtomId):
+                                    if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId, tmpAtomId, _matchedAtomIds):
+                                        continue
+                                    _atomIdSelect.add(realAtomId)
+                                    _factor['alt_atom_id'] = _factor['atom_ids'][0]
+                                elif details is None:
+                                    if len(atomIds) == 1 and not re.match(toNefEx(toRegEx(tmpAtomId)), atomIds[0]):
+                                        continue
+                                    _atomIdSelect |= set(atomIds)
+                                    _factor['alt_atom_id'] = _factor['atom_ids'][0]
+                            elif lenAtomIds == 2:
+                                if (atomId1 < atomId2 and atomId1 <= realAtomId <= atomId2)\
+                                   or (atomId1 > atomId2 and atomId2 <= realAtomId <= atomId1):
+                                    _atomIdSelect.add(realAtomId)
                 _factor['atom_id'] = list(_atomIdSelect)
 
                 if len(_atomIdSelect) > 0:
@@ -3685,31 +3579,9 @@ class CharmmMRParserListener(ParseTreeListener):
                             continue
                         if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                             if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
-                                if self.__reasons is not None:
-                                    if not self.__preferAuthSeq:
-                                        realSeqId = None
-                                        if 'label_seq_offset' in self.__reasons\
-                                           and chainId in self.__reasons['label_seq_offset']:
-                                            offset = self.__reasons['label_seq_offset'][chainId]
-                                            if _factor['seq_id'][0] + offset in ps['seq_id']:
-                                                realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
-                                        elif _factor['seq_id'][0] in ps['seq_id']:
-                                            realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
-                                    else:
-                                        if 'global_sequence_offset' in self.__reasons\
-                                           and chainId in self.__reasons['global_sequence_offset']:
-                                            offset = self.__reasons['global_sequence_offset'][chainId]
-                                            if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                                realSeqId = None
-                                        if 'global_auth_sequence_offset' in self.__reasons\
-                                           and chainId in self.__reasons['global_auth_sequence_offset']:
-                                            offset = self.__reasons['global_auth_sequence_offset'][chainId]
-                                            if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                                realSeqId = None
-                                        if 'seq_id_remap' in self.__reasons:
-                                            _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
-                                            if _realSeqId != realSeqId:
-                                                continue
+                                if self.__reasons is None:
+                                    continue
+                                realSeqId = get_real_seq_id(ps, realSeqId)
                                 if realSeqId is None:
                                     continue
                         idx = ps['auth_seq_id'].index(realSeqId)
@@ -3804,31 +3676,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
-                                    if self.__reasons is not None:
-                                        if not self.__preferAuthSeq:
-                                            realSeqId = None
-                                            if 'label_seq_offset' in self.__reasons\
-                                               and chainId in self.__reasons['label_seq_offset']:
-                                                offset = self.__reasons['label_seq_offset'][chainId]
-                                                if _factor['seq_id'][0] + offset in ps['seq_id']:
-                                                    realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
-                                            elif _factor['seq_id'][0] in ps['seq_id']:
-                                                realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0])]
-                                        else:
-                                            offset = 0
-                                            if 'global_sequence_offset' in self.__reasons\
-                                               and chainId in self.__reasons['global_sequence_offset']:
-                                                offset = self.__reasons['global_sequence_offset'][chainId]
-                                            if 'global_auth_sequence_offset' in self.__reasons\
-                                               and chainId in self.__reasons['global_auth_sequence_offset']:
-                                                offset = self.__reasons['global_auth_sequence_offset'][chainId]
-                                            if 'seq_id_remap' in self.__reasons:
-                                                _, _realSeqId = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chainId, _factor['seq_id'][0])
-                                                if _realSeqId != realSeqId:
-                                                    continue
-                                                offset = realSeqId - _factor['seq_id'][0]
-                                            if offset == 0 or realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
-                                                realSeqId = None
+                                    if self.__reasons is None:
+                                        continue
+                                    realSeqId = get_real_seq_id(ps, realSeqId)
                                     if realSeqId is None:
                                         continue
                             idx = ps['auth_seq_id'].index(realSeqId)

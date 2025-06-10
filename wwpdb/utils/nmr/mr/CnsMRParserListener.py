@@ -48,6 +48,7 @@ try:
                                                        isLikePheOrTyr,
                                                        getRdcCode,
                                                        isCyclicPolymer,
+                                                       getStructConnPtnr,
                                                        getRestraintName,
                                                        contentSubtypeOf,
                                                        incListIdCounter,
@@ -157,6 +158,7 @@ except ImportError:
                                            isLikePheOrTyr,
                                            getRdcCode,
                                            isCyclicPolymer,
+                                           getStructConnPtnr,
                                            getRestraintName,
                                            contentSubtypeOf,
                                            incListIdCounter,
@@ -5507,7 +5509,9 @@ class CnsMRParserListener(ParseTreeListener):
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
-                                    continue
+                                    ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId)
+                                    if ptnr is None:
+                                        continue
                             idx = np['auth_seq_id'].index(realSeqId)
                             realCompId = self.getRealCompId(np['comp_id'][idx])
                             if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -5535,6 +5539,7 @@ class CnsMRParserListener(ParseTreeListener):
                     nucleotide = self.__csStat.getTypeOfCompId(compId)[1]
                     if lenAtomIds == 1 and nucleotide:
                         _matchedAtomIds = [_atomId_ for _atomId_ in _atomIds if re.match(_atomId, _atomId_)]
+                    matched = False
                     for realAtomId in _atomIds:
                         if lenAtomIds == 1:
                             if re.match(_atomId, realAtomId):
@@ -5560,15 +5565,113 @@ class CnsMRParserListener(ParseTreeListener):
                                         continue
                                 _atomIdSelect.add(realAtomId)
                                 _factor['alt_atom_id'] = _factor['atom_ids'][0]
+                                matched = True
                             elif details is None:
                                 if len(atomIds) == 1 and not re.match(toNefEx(toRegEx(tmpAtomId)), atomIds[0]):  # len(atomIds) == 1 to allow map HR# to H[DE][12]
                                     continue
                                 _atomIdSelect |= set(atomIds)
                                 _factor['alt_atom_id'] = _factor['atom_ids'][0]
+                                matched = True
                         elif lenAtomIds == 2:
                             if (atomId1 < atomId2 and atomId1 <= realAtomId <= atomId2)\
                                or (atomId1 > atomId2 and atomId2 <= realAtomId <= atomId1):
                                 _atomIdSelect.add(realAtomId)
+                    if lenAtomIds == 1 and not matched:
+                        for chainId in _factor['chain_id']:
+                            ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
+                            if ps is not None:
+                                for realSeqId, realCompId in zip(ps['auth_seq_id'], ps['comp_id']):
+                                    if realSeqId is None or realCompId != compId:
+                                        continue
+                                    if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
+                                        if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
+                                            if self.__reasons is None:
+                                                continue
+                                            if 'label_seq_offset' in self.__reasons\
+                                               and chainId in self.__reasons['label_seq_offset']:
+                                                offset = self.__reasons['label_seq_offset'][chainId]
+                                                if _factor['seq_id'][0] + offset in ps['seq_id']:
+                                                    realSeqId = ps['auth_seq_id'][ps['seq_id'].index(_factor['seq_id'][0] + offset)]
+                                            elif 'global_sequence_offset' in self.__reasons\
+                                                    and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
+                                                offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
+                                                if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                                    continue
+                                            elif 'global_auth_sequence_offset' in self.__reasons\
+                                                    and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
+                                                offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
+                                                if realSeqId not in [seqId + offset for seqId in _factor['seq_id']]:
+                                                    continue
+                                            else:
+                                                continue
+                                        _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
+                                        if coordAtomSite is not None:
+                                            _atomId = toNefEx(toRegEx(tmpAtomId))
+                                            for realAtomId in coordAtomSite['atom_id']:
+                                                if re.match(_atomId, realAtomId):
+                                                    if nucleotide:
+                                                        if ("'" in atomId and "'" in realAtomId)\
+                                                           or ("'" not in atomId and "'" not in realAtomId):
+                                                            pass
+                                                        else:
+                                                            if len(atomId) > 1 and atomId[1] != tmpAtomId[1]:
+                                                                if "'" in realAtomId:
+                                                                    continue
+                                                            else:
+                                                                min_len = min(len(tmpAtomId), 2)
+                                                                if realAtomId.startswith(tmpAtomId[:min_len]):
+                                                                    if ("'" in tmpAtomId and "'" in realAtomId)\
+                                                                       or ("'" not in tmpAtomId and "'" not in realAtomId):
+                                                                        pass
+                                                                    else:
+                                                                        continue
+                                                        if len([_atomId_ for _atomId_ in _matchedAtomIds
+                                                                if ("'" in _atomId_ and "'" in realAtomId)
+                                                                or ("'" not in _atomId_ and "'" not in realAtomId)]) < 2:
+                                                            continue
+                                                    _atomIdSelect.add(realAtomId)
+                                                    _factor['alt_atom_id'] = _factor['atom_ids'][0]
+                            if self.__hasNonPolySeq:
+                                np = next((np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId), None)
+                                if np is not None:
+                                    for realSeqId, realCompId in zip(np['auth_seq_id'], np['comp_id']):
+                                        if realSeqId is None or realCompId != compId:
+                                            continue
+                                        if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
+                                            ptnr = None
+                                            if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
+                                                ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId, realCompId)
+                                                if ptnr is None:
+                                                    continue
+                                            _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
+                                            if coordAtomSite is not None:
+                                                _atomId = toNefEx(toRegEx(tmpAtomId))
+                                                for realAtomId in coordAtomSite['atom_id']:
+                                                    if re.match(_atomId, realAtomId):
+                                                        if nucleotide:
+                                                            if ("'" in atomId and "'" in realAtomId)\
+                                                               or ("'" not in atomId and "'" not in realAtomId):
+                                                                pass
+                                                            else:
+                                                                if len(atomId) > 1 and atomId[1] != tmpAtomId[1]:
+                                                                    if "'" in realAtomId:
+                                                                        continue
+                                                                else:
+                                                                    min_len = min(len(tmpAtomId), 2)
+                                                                    if realAtomId.startswith(tmpAtomId[:min_len]):
+                                                                        if ("'" in tmpAtomId and "'" in realAtomId)\
+                                                                           or ("'" not in tmpAtomId and "'" not in realAtomId):
+                                                                            pass
+                                                                        else:
+                                                                            continue
+                                                            if len([_atomId_ for _atomId_ in _matchedAtomIds
+                                                                    if ("'" in _atomId_ and "'" in realAtomId)
+                                                                    or ("'" not in _atomId_ and "'" not in realAtomId)]) < 2:
+                                                                continue
+                                                        _atomIdSelect.add(realAtomId)
+                                                        _factor['alt_atom_id'] = _factor['atom_ids'][0]
+                                                        if ptnr is not None:
+                                                            _factor['seq_id'] = [realSeqId]
             _factor['atom_id'] = list(_atomIdSelect)
 
             if len(_compIdSelect) > 0 and len(_atomIdSelect) == 0 and self.__mrAtomNameMapping is not None:
@@ -5609,6 +5712,26 @@ class CnsMRParserListener(ParseTreeListener):
                                 if details is None:
                                     _atomIdSelect |= set(atomIds)
                                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
+                    if self.__hasNonPolySeq:
+                        np = next((np for np in self.__nonPolySeq if np['auth_chain_id'] == chainId), None)
+                        if np is not None:
+                            for realSeqId, realCompId in zip(np['auth_seq_id'], np['comp_id']):
+                                if realSeqId is None:
+                                    continue
+                                if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
+                                    ptnr = None
+                                    if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
+                                        ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId, realCompId)
+                                        if ptnr is None:
+                                            continue
+                                    _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
+                                    atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, realSeqId, realCompId, tmpAtomId, coordAtomSite, ignoreSeqId=True)
+                                    atomIds, _, details = self.__nefT.get_valid_star_atom(realCompId, atomId, leave_unmatched=True)
+                                    if details is None:
+                                        _atomIdSelect |= set(atomIds)
+                                        _factor['alt_atom_id'] = _factor['atom_ids'][0]
+                                        if ptnr is not None:
+                                            _factor['seq_id'] = [realSeqId]
                 _factor['atom_id'] = list(_atomIdSelect)
 
             if len(_factor['atom_id']) == 0:
@@ -5661,7 +5784,9 @@ class CnsMRParserListener(ParseTreeListener):
                                     continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
-                                        continue
+                                        ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId)
+                                        if ptnr is None:
+                                            continue
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = self.getRealCompId(np['comp_id'][idx])
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:

@@ -7023,6 +7023,48 @@ def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,
     return struct_conn[0]['conn_type_id'] == 'covale'
 
 
+def getStructConnPtnr(cR, authAsymId: str, authSeqId: int, authCompId: str = None) -> Optional[List[dict]]:
+    """ Return structually connected partner residues for a given residue.
+    """
+
+    if cR is None or not cR.hasCategory('struct_conn'):
+        return None
+
+    try:
+
+        filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId},
+                       {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': authSeqId}
+                       ]
+        if authCompId is not None:
+            filterItems.append({'name': 'ptnr1_auth_comp_id', 'type': 'str', 'value': authCompId})
+
+        struct_conn = cR.getDictListWithFilter('struct_conn',
+                                               [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chani_id'},
+                                                {'name': 'ptnr2_auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                {'name': 'ptnr2_auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}],
+                                               filterItems)
+
+        filterItems = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId},
+                       {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': authSeqId}
+                       ]
+        if authCompId is not None:
+            filterItems.append({'name': 'ptnr2_auth_comp_id', 'type': 'str', 'value': authCompId})
+
+        struct_conn.extend(cR.getDictListWithFilter('struct_conn',
+                                                    [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chani_id'},
+                                                     {'name': 'ptnr1_auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                     {'name': 'ptnr1_auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}],
+                                                    filterItems))
+
+        if len(struct_conn) == 0:
+            return None
+
+    except Exception:
+        return None
+
+    return [dict(s) for s in set(frozenset(sc.items()) for sc in struct_conn if isinstance(sc, dict))]
+
+
 def isStructConn(cR, authAsymId1: str, authSeqId1: int, authAtomId1: str,
                  authAsymId2: str, authSeqId2: int, authAtomId2: str,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
@@ -7183,7 +7225,7 @@ def getMetalCoordOf(cR, authSeqId: int, authCompId: str, metalId: str) -> Tuple[
     """
 
     if cR is None:
-        return False
+        return None, None
 
     is_metal_ion = authCompId in SYMBOLS_ELEMENT
 

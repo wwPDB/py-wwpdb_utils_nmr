@@ -219,6 +219,13 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/4apd/4apd-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/4apd/4apd.cif')
+    print(reader_listener.getReasonsForReparsing())
+
     mrAtomNameMapping_ = [{'auth_atom_id': 'HC1', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HI1', 'original_comp_id': 'NHE', 'original_seq_id': 2},
                           {'auth_atom_id': 'HC2', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HI2', 'original_comp_id': 'NHE', 'original_seq_id': 2},
                           {'auth_atom_id': 'HC3', 'auth_comp_id': 'MEA', 'auth_seq_id': 3, 'original_atom_id': 'HI3', 'original_comp_id': 'NHE', 'original_seq_id': 2},

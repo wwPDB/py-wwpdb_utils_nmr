@@ -5577,10 +5577,15 @@ class CnsMRParserListener(ParseTreeListener):
                     refAtomIdList = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                     tmpAtomId = _factor['atom_ids'][0].upper()
                     if lenAtomIds == 1:
-                        atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
-                        atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId[:-1] if atomId[0] in ('Q', 'M') else atomId, leave_unmatched=True)
+                        atomId = _atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
+                        if atomId[-1] in ('%', '*', '#'):
+                            if atomId[0] == 'H':
+                                _atomId = 'Q' + atomId[1:-1]
+                            elif atomId[0] in ('Q', 'M'):
+                                _atomId = atomId[:-1]
+                        atomIds, _, details = self.__nefT.get_valid_star_atom(compId, _atomId, leave_unmatched=True)
                         if details is not None:
-                            atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1] if atomId[0] in ('Q', 'M') else atomId, leave_unmatched=True)
+                            atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                         _atomId = toNefEx(toRegEx(atomId))
                     elif lenAtomIds == 2:
                         atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
@@ -5755,10 +5760,15 @@ class CnsMRParserListener(ParseTreeListener):
                         refAtomIdList = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                         tmpAtomId = _factor['atom_ids'][0].upper()
                         if lenAtomIds == 1:
-                            atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
-                            atomIds, _, details = self.__nefT.get_valid_star_atom(compId, atomId[:-1] if atomId[0] in ('Q', 'M') else atomId, leave_unmatched=True)
+                            atomId = _atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
+                            if atomId[-1] in ('%', '*', '#'):
+                                if atomId[0] == 'H':
+                                    _atomId = 'Q' + atomId[1:-1]
+                                elif atomId[0] in ('Q', 'M'):
+                                    _atomId = atomId[:-1]
+                            atomIds, _, details = self.__nefT.get_valid_star_atom(compId, _atomId, leave_unmatched=True)
                             if details is not None:
-                                atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1] if atomId[0] in ('Q', 'M') else atomId, leave_unmatched=True)
+                                atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                             _atomId = toNefEx(toRegEx(atomId))
                         elif lenAtomIds == 2:
                             atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)

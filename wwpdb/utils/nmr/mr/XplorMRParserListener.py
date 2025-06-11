@@ -9772,7 +9772,7 @@ class XplorMRParserListener(ParseTreeListener):
                     if lenAtomIds == 1:
                         atomId = _atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
                         if atomId[-1] in ('%', '*', '#'):
-                            if atomId[0] == 'H':
+                            if atomId[0] == 'H' and len(atomId) > 2:
                                 _atomId = 'Q' + atomId[1:-1]
                             elif atomId[0] in ('Q', 'M'):
                                 _atomId = atomId[:-1]
@@ -9955,7 +9955,7 @@ class XplorMRParserListener(ParseTreeListener):
                         if lenAtomIds == 1:
                             atomId = _atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
                             if atomId[-1] in ('%', '*', '#'):
-                                if atomId[0] == 'H':
+                                if atomId[0] == 'H' and len(atomId) > 2:
                                     _atomId = 'Q' + atomId[1:-1]
                                 elif atomId[0] in ('Q', 'M'):
                                     _atomId = atomId[:-1]

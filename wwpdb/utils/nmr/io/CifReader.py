@@ -422,6 +422,12 @@ class CifReader:
 
         return False
 
+    def getDirPath(self) -> str:
+        """ Return directory path of CIF file.
+        """
+
+        return self.__dirPath
+
     def getFilePath(self) -> str:
         """ Return CIF file path.
         """

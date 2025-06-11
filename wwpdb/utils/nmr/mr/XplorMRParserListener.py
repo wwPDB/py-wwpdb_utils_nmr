@@ -10647,6 +10647,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if compId is None:
                         if isPolySeq and isChainSpecified and self.__reasons is None and self.__preferAuthSeq:
+                            """ cancel the following code because comp_id prediction conflicts with extended sequence (7zjy)
                             self.__preferAuthSeq = False
                             seqId, _compId_, _ = self.getRealSeqId(ps, seqId, isPolySeq)
                             if self.__csStat.peptideLike(_compId_):
@@ -10656,6 +10657,7 @@ class XplorMRParserListener(ParseTreeListener):
                                         self.reasonsForReParsing['label_seq_scheme'] = {}
                                     self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                             self.__preferAuthSeq = True
+                            """
                         continue
 
                     if self.__reasons is not None:

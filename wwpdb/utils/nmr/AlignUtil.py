@@ -12,6 +12,8 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.0.0"
 
+import sys
+import os
 import copy
 import json
 import re
@@ -3614,6 +3616,137 @@ def splitPolySeqRstForBranched(pA, polySeqModel: List[dict], branchedModel: List
         return None, None
 
     return _polySeqRst, _branchedMapping
+
+
+def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str, history: dict,
+                                         rep_model_id: int, rep_alt_id: str) -> Optional[List[dict]]:
+    """ Retrieve atom name mapping from revision history and PDB Versioned Archive.
+    """
+
+    try:
+        import requests  # pylint: disable=import-outside-toplevel
+    except ImportError:
+        return None
+
+    try:
+        from wwpdb.utils.nmr.io.CifReader import CifReader  # pylint: disable=import-outside-toplevel
+        from wwpdb.utils.nmr.NmrVrptUtility import (uncompress_gzip_file,  # pylint: disable=import-outside-toplevel
+                                                    load_from_pickle,
+                                                    write_as_pickle)
+    except ImportError:
+        from nmr.io.CifReader import CifReader  # pylint: disable=import-outside-toplevel
+        from nmr.NmrVrptUtility import (uncompress_gzip_file,  # pylint: disable=import-outside-toplevel
+                                        load_from_pickle,
+                                        write_as_pickle)
+
+    first = min(history)
+    last = max(history)
+
+    pkl_path = os.path.join(dir_path, f'atom_name_mapping_{last}_{history[last]}_{first}_{history[first]}.pkl')
+
+    if os.path.exists(pkl_path):
+        return load_from_pickle(pkl_path)
+
+    for rev in range(first, last):
+        if rev not in history:
+            continue
+
+        cif_gz_file = f'{extended_pdb_id}_xyz_v{rev}-{history[rev]}.cif.gz'
+        loc_cif_gz_path = os.path.join(dir_path, cif_gz_file)
+        loc_cif_path = loc_cif_gz_path[:-3]
+
+        try:
+            if not os.path.exists(loc_cif_gz_path):
+                url = f'https://data.pdbj.org/pdb_versioned/data/entries/{extended_pdb_id[9:11]}/{extended_pdb_id}/{cif_gz_file}'
+                print(f'Downloading {url} -> {loc_cif_gz_path} ...')
+                r = requests.get(url, timeout=5.0)
+                with open(loc_cif_gz_path, 'wb') as f:
+                    f.write(r.content)
+                if os.path.exists(loc_cif_path):
+                    os.remove(loc_cif_path)
+            if not os.path.exists(loc_cif_path):
+                uncompress_gzip_file(loc_cif_gz_path, loc_cif_path)
+        except Exception as e:
+            print(str(e))
+            return None
+
+    nstd_residues = [d['id'] for d in cR.getDictList('chem_comp') if d['id'] not in emptyValue and d['id'] not in monDict3]
+
+    if len(nstd_residues) == 0:
+        return None
+
+    coord = cR.getDictListWithFilter('atom_site',
+                                     [{'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                      {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                                      {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
+                                      {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                      {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                      {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                      ],
+                                     [{'name': 'auth_comp_id', 'type': 'enum', 'enum': nstd_residues},
+                                      {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': rep_model_id},
+                                      {'name': 'label_alt_id', 'type': 'enum', 'enum': (rep_alt_id,)}
+                                      ])
+
+    if len(coord) == 0:
+        return None
+
+    atom_name_mapping = []
+
+    for rev in range(first, last):
+        if rev not in history:
+            continue
+
+        cif_file = f'{extended_pdb_id}_xyz_v{rev}-{history[rev]}.cif'
+        loc_cif_path = os.path.join(dir_path, cif_file)
+
+        if not os.path.exists(loc_cif_path):
+            continue
+
+        cR_prev = CifReader(False, sys.stdout, use_cache=False)
+        cR_prev.parse(loc_cif_path)
+
+        nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp') if d['id'] not in emptyValue and d['id'] not in monDict3]
+
+        if len(nstd_residues_prev) == 0:
+            continue
+
+        coord_prev = cR_prev.getDictListWithFilter('atom_site',
+                                                   [{'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                    {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                                                    {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
+                                                    {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                    {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                    ],
+                                                   [{'name': 'auth_comp_id', 'type': 'enum', 'enum': nstd_residues_prev},
+                                                    {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': rep_model_id},
+                                                    {'name': 'label_alt_id', 'type': 'enum', 'enum': (rep_alt_id,)}
+                                                    ])
+
+        for c in coord:
+            c_prev = next((c_prev for c_prev in coord_prev if c_prev['x'] == c['x'] and c_prev['y'] == c['y'] and c_prev['z'] == c['z']), None)
+            if c_prev is None:
+                continue
+
+            if c['seq_id'] != c_prev['seq_id']\
+               or c['comp_id'] != c_prev['comp_id']\
+               or c['atom_id'] != c_prev['atom_id']:
+                atom_map = {'auth_atom_id': c['atom_id'],
+                            'auth_comp_id': c['comp_id'],
+                            'auth_seq_id': c['seq_id'],
+                            'original_atom_id': c_prev['atom_id'],
+                            'original_comp_id': c_prev['comp_id'],
+                            'original_seq_id': c_prev['seq_id']}
+                if atom_map not in atom_name_mapping:
+                    atom_name_mapping.append(atom_map)
+
+    if len(atom_name_mapping) == 0:
+        atom_name_mapping = None
+
+    write_as_pickle(atom_name_mapping, pkl_path)
+
+    return atom_name_mapping
 
 
 def getPrettyJson(data: dict) -> str:

@@ -115,7 +115,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "4.5.0"
+__version__ = "4.6.0"
 
 import sys
 import os
@@ -7856,10 +7856,10 @@ class NEFTranslator:
                             if "'" not in nef_atom and any("'" not in a for a in atoms if a.startswith(nef_atom[:min_len])):
                                 atoms = [a for a in atoms if "'" not in a]
                                 break
-                            elif any("'" in a for a in atoms if a.startswith(nef_atom[:min_len])):
+                            if any("'" in a for a in atoms if a.startswith(nef_atom[:min_len])):
                                 atoms = [a for a in atoms if "'" in a]
                                 break
-                            elif any("'" not in a for a in atoms if a.startswith(nef_atom[:min_len])):
+                            if any("'" not in a for a in atoms if a.startswith(nef_atom[:min_len])):
                                 atoms = [a for a in atoms if "'" not in a]
                                 break
 

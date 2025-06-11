@@ -216,6 +216,7 @@
 # 09-Apr-2025  M. Yokochi - enable to convert chemical shifts in any software-native format in the standalone NMR data conversion service (v4.4.0, DAOTHER-9785)
 # 23-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors to report out failed restraint conversions and detailed messages (DAOTHER-9785)
 # 29-May-2025  M. Yokochi - analyze spectral peak list files and provide warning/error messages to depositor (DAOTHER-8905, 8949, 10096, 10097, 10098, 10099, 10100, 10101)
+# 11-Jun-2025  M. Yokochi - reconstruct atom name mapping from revision history and PDB Versioned Archive if possible (DAOTHER-7829, 8905)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -224,7 +225,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "4.5.0"
+__version__ = "4.6.0"
 
 import sys
 import os
@@ -297,6 +298,7 @@ try:
                                            alignPolymerSequence,
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
+                                           retrieveAtomNameMappingFromRevisions,
                                            getPrettyJson)
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -462,6 +464,7 @@ except ImportError:
                                alignPolymerSequence,
                                assignPolymerSequence,
                                trimSequenceAlignment,
+                               retrieveAtomNameMappingFromRevisions,
                                getPrettyJson)
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.ChemCompUtil import ChemCompUtil
@@ -7419,6 +7422,9 @@ class NmrDpUtility:
 
         # atom name mapping of public MR file between the coordinates and submitted file
         self.__mr_atom_name_mapping = None
+
+        # atom name mapping derived from revision history and PDB Versioned Archive
+        self.__va_atom_name_mapping = None
 
         # RCI
         self.__rci = RCI(False, self.__lfh)
@@ -17814,6 +17820,11 @@ class NmrDpUtility:
 
             except OSError:
                 pass
+
+        if self.__va_atom_name_mapping is not None:
+            for atom_map in self.__va_atom_name_mapping:
+                if atom_map not in self.__mr_atom_name_mapping:
+                    self.__mr_atom_name_mapping.append(atom_map)
 
         return not self.report.isError()
 
@@ -45912,6 +45923,37 @@ class NmrDpUtility:
             if self.__cR.hasItem('pdbx_database_status', 'recvd_nmr_data'):
                 pdbx_database_status = self.__cR.getDictList('pdbx_database_status')
                 self.__recvd_nmr_data = pdbx_database_status[0]['recvd_nmr_data'] == 'Y'
+
+            if self.__internal_mode and self.__cR.hasCategory('database_2') and self.__cR.hasCategory('pdbx_audit_revision_history'):
+                extended_pdb_id = None
+                if self.__cR.hasItem('database_2', 'pdbx_database_accession'):
+                    database_2 = self.__cR.getDictListWithFilter('database_2',
+                                                                 [{'name': 'pdbx_database_accession', 'type': 'str'}],
+                                                                 [{'name': 'database_id', 'type': 'str', 'value': 'PDB'}])
+                    if len(database_2) > 0:
+                        extended_pdb_id = database_2[0]['pdbx_database_accession']
+                        if extended_pdb_id is not None and not pdb_id_pattern.match(extended_pdb_id):
+                            extended_pdb_id = None
+                if extended_pdb_id is None:
+                    if self.__cR.hasCategory('entry'):
+                        entry = self.__cR.getDictList('entry')
+                        if len(entry) > 0 and 'id' in entry[0]:
+                            entry_id = entry[0]['id']
+                            if len(entry_id) == 4 and pdb_id_pattern.match(entry_id):
+                                extended_pdb_id = f"pdb_0000{entry[0]['id'].lower()}"
+
+                revision_history = {}
+                for r in self.__cR.getDictList('pdbx_audit_revision_history'):
+                    major_revision = int(r['major_revision'])
+                    minor_revision = int(r['minor_revision'])
+                    if major_revision not in revision_history or minor_revision > revision_history[major_revision]:
+                        revision_history[major_revision] = minor_revision
+
+                if extended_pdb_id is not None and len(revision_history) > 1\
+                   and self.__cR.hasCategory('chem_comp') and any(d['id'] not in emptyValue and d['id'] not in monDict3 for d in self.__cR.getDictList('chem_comp')):
+                    self.__va_atom_name_mapping =\
+                        retrieveAtomNameMappingFromRevisions(self.__cR, self.__cacheDirPath, extended_pdb_id, revision_history,
+                                                             self.__representative_model_id, self.__representative_alt_id)
 
             # DAOTHER-8580: convert working model file if pdbx_poly_seq_scheme category is missing
             # @see: wwpdb.utils.wf.plugins.FormatUtils.pdb2pdbxDepositOp

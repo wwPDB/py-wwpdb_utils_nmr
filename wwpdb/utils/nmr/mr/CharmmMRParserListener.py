@@ -3229,6 +3229,31 @@ class CharmmMRParserListener(ParseTreeListener):
                 offset = self.__reasons['global_auth_sequence_offset'][chain_id]
                 if real_seq_id in [seq_id + offset for seq_id in _seq_ids]:
                     return real_seq_id
+                if isinstance(offset, dict):
+                    if real_seq_id in offset:
+                        offset = offset[real_seq_id]
+                    else:
+                        for shift in range(1, 100):
+                            if real_seq_id + shift in offset:
+                                offset = offset[real_seq_id + shift]
+                                break
+                            if real_seq_id - shift in offset:
+                                offset = offset[real_seq_id - shift]
+                                break
+                        if isinstance(offset, dict):
+                            return None
+                if real_seq_id + offset in ps['auth_seq_id']:
+                    return real_seq_id + offset
+                if offset != 0 and 'gap_in_auth_seq' in ps:
+                    for shift in range(1, 100):
+                        if real_seq_id + shift + offset in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(real_seq_id + shift + offset) - shift
+                            if 0 <= idx < len(ps['auth_seq_id']):
+                                return ps['auth_seq_id'][idx]
+                        if real_seq_id - shift + offset in ps['auth_seq_id']:
+                            idx = ps['auth_seq_id'].index(real_seq_id - shift + offset) + shift
+                            if 0 <= idx < len(ps['auth_seq_id']):
+                                return ps['auth_seq_id'][idx]
 
             elif 'global_sequence_offset' in self.__reasons\
                     and chain_id in self.__reasons['global_sequence_offset']:

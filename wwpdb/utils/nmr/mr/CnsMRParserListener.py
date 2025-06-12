@@ -6407,6 +6407,8 @@ class CnsMRParserListener(ParseTreeListener):
                             if not isPolySeq:
                                 _, seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
                                 if seqId is not None:
+                                    if _seqId_ != seqId and len(_atomSelection) > 0:
+                                        continue
                                     _seqId_ = seqId
                         elif 'chain_id_remap' in self.__reasons and seqId in self.__reasons['chain_id_remap']:
                             fixedChainId, seqId = retrieveRemappedChainId(self.__reasons['chain_id_remap'], seqId)

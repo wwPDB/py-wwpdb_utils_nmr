@@ -7501,7 +7501,7 @@ def getReadableFactor(factor: dict) -> str:
 
     _factor = {k: sorted(list(set(v))) if isinstance(v, list) else v for k, v in factor.items()}
 
-    key_order = ['chain_id', 'auth_chain_id', 'seq_id', 'comp_id', 'type_symbol', 'atom_id', 'auth_atom_id']
+    key_order = ['chain_id', 'auth_chain_id', 'seq_id', 'comp_id', 'type_symbol', 'atom_id', 'alt_atom_id']
 
     key_map = {'chain_id': 'segidentifier',
                'auth_chain_id': 'original segidentifier',
@@ -7509,7 +7509,7 @@ def getReadableFactor(factor: dict) -> str:
                'comp_id': 'resname',
                'type_symbol': 'chemical',
                'atom_id': 'name',
-               'auth_atom_id': 'original name'}
+               'alt_atom_id': 'original name'}
 
     for k in _factor.keys():
         if k in key_map:
@@ -7522,6 +7522,11 @@ def getReadableFactor(factor: dict) -> str:
         if k not in _factor:
             continue
         v = _factor[k]
+        if k == 'atom_id' and 'alt_atom_id' in _factor:
+            _v = _factor['alt_atom_id']
+            if v[0] in emptyValue or _v in ('%', '*', '#') or (len(_v) == 2 and _v[-1] in ('%', '*', '#')):
+                continue
+
         __factor[key_map[k]] = v if isinstance(v, list) and len(v) > 1 else v[0] if isinstance(v, list) else v
 
     return str(__factor)

@@ -7045,7 +7045,7 @@ def getStructConnPtnr(cR, authAsymId: str, authSeqId: int, authCompId: str = Non
             filterItems.append({'name': 'ptnr1_auth_comp_id', 'type': 'str', 'value': authCompId})
 
         struct_conn = cR.getDictListWithFilter('struct_conn',
-                                               [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chani_id'},
+                                               [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                 {'name': 'ptnr2_auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
                                                 {'name': 'ptnr2_auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}],
                                                filterItems)
@@ -7057,7 +7057,7 @@ def getStructConnPtnr(cR, authAsymId: str, authSeqId: int, authCompId: str = Non
             filterItems.append({'name': 'ptnr2_auth_comp_id', 'type': 'str', 'value': authCompId})
 
         struct_conn.extend(cR.getDictListWithFilter('struct_conn',
-                                                    [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chani_id'},
+                                                    [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                      {'name': 'ptnr1_auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
                                                      {'name': 'ptnr1_auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}],
                                                     filterItems))
@@ -7069,6 +7069,41 @@ def getStructConnPtnr(cR, authAsymId: str, authSeqId: int, authCompId: str = Non
         return None
 
     return [dict(s) for s in set(frozenset(sc.items()) for sc in struct_conn if isinstance(sc, dict))]
+
+
+def getWatsonCrickPtnr(cR, authAsymId: str) -> Optional[List[str]]:
+    """ Return list of Watson-Crick partner auth_asym_ids for a given auth_asym_id.
+    """
+
+    if cR is None or not cR.hasCategory('struct_conn'):
+        return None
+
+    try:
+
+        filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId},
+                       {'name': 'details', 'type': 'str', 'value': 'WATSON-CRICK'}
+                       ]
+
+        struct_conn = cR.getDictListWithFilter('struct_conn',
+                                               [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'}
+                                                ],
+                                               filterItems)
+
+        filterItems = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId},
+                       {'name': 'details', 'type': 'str', 'value': 'WATSON-CRICK'}
+                       ]
+        struct_conn.extend(cR.getDictListWithFilter('struct_conn',
+                                                    [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'}
+                                                     ],
+                                                    filterItems))
+
+        if len(struct_conn) == 0:
+            return None
+
+    except Exception:
+        return None
+
+    return list(set(sc['chain_id'] for sc in struct_conn))
 
 
 def isStructConn(cR, authAsymId1: str, authSeqId1: int, authAtomId1: str,

@@ -224,6 +224,13 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2nbj/2nbj-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2nbj/2nbj.cif')
+    print(reader_listener.getReasonsForReparsing())
+
     reasons_ = {'global_auth_sequence_offset': {'A': 21}}
     reader = CnsMRReader(True, reasons=reasons_)
     reader.setDebugMode(True)

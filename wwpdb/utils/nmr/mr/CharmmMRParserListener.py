@@ -46,6 +46,7 @@ try:
                                                        isLikePheOrTyr,
                                                        isCyclicPolymer,
                                                        getStructConnPtnr,
+                                                       getWatsonCrickPtnr,
                                                        getRestraintName,
                                                        contentSubtypeOf,
                                                        incListIdCounter,
@@ -138,6 +139,7 @@ except ImportError:
                                            getRestraintName,
                                            isCyclicPolymer,
                                            getStructConnPtnr,
+                                           getWatsonCrickPtnr,
                                            contentSubtypeOf,
                                            incListIdCounter,
                                            decListIdCounter,
@@ -3342,21 +3344,51 @@ class CharmmMRParserListener(ParseTreeListener):
                         _compIdSelect.add(realCompId)
 
             if len(_compIdSelect) == 0 and self.__reasons is None:
-                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
-                if ps is not None:
-                    for realSeqId in ps['auth_seq_id']:
-                        if realSeqId is None:
-                            continue
-                        idx = ps['auth_seq_id'].index(realSeqId)
-                        realCompId = ps['comp_id'][idx]
-                        if realCompId in ('ACE', 'NH2'):
-                            continue
-                        if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
-                            origCompId = ps['auth_comp_id'][idx]
-                            _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
-                            if realCompId not in _compIdList and origCompId not in _compIdList:
+                for chainId in _factor['chain_id']:
+                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
+                    if ps is not None:
+                        for realSeqId in ps['auth_seq_id']:
+                            if realSeqId is None:
                                 continue
-                        _compIdSelect.add(realCompId)
+                            idx = ps['auth_seq_id'].index(realSeqId)
+                            realCompId = ps['comp_id'][idx]
+                            if realCompId in ('ACE', 'NH2'):
+                                continue
+                            if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
+                                origCompId = ps['auth_comp_id'][idx]
+                                _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
+                                if realCompId not in _compIdList and origCompId not in _compIdList:
+                                    continue
+                            _compIdSelect.add(realCompId)
+
+                        wcPtnrChainIds = getWatsonCrickPtnr(self.__cR, chainId)
+                        if wcPtnrChainIds is not None:
+                            for wcChainId in wcPtnrChainIds:
+                                if wcChainId in _factor['chain_id']:
+                                    continue
+                                wc = next((wc for wc in self.__polySeq if wc['auth_chain_id'] == wcChainId), None)
+                                if wc is not None:
+                                    for realSeqId in wc['auth_seq_id']:
+                                        if realSeqId is None:
+                                            continue
+                                        if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
+                                            if self.getOrigSeqId(wc, realSeqId) not in _factor['seq_id']:
+                                                if self.__reasons is None:
+                                                    continue
+                                                realSeqId = get_real_seq_id(wc, realSeqId)
+                                                if realSeqId is None:
+                                                    continue
+                                        idx = wc['auth_seq_id'].index(realSeqId)
+                                        realCompId = wc['comp_id'][idx]
+                                        if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
+                                            origCompId = wc['auth_comp_id'][idx]
+                                            _compIdList = [translateToStdResName(_compId, realCompId, self.__ccU) for _compId in _factor['comp_id']]
+                                            if realCompId not in _compIdList and origCompId not in _compIdList:
+                                                continue
+                                        _compIdSelect.add(realCompId)
+                                        _factor['chain_id'].append(wcChainId)
+                                        if chainId in _factor['chain_id']:
+                                            _factor['chain_id'].remove(chainId)
 
             if self.__hasNonPolySeq:
                 for chainId in _factor['chain_id']:

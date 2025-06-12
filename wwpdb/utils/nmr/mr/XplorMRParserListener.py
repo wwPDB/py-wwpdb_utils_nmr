@@ -1616,6 +1616,7 @@ class XplorMRParserListener(ParseTreeListener):
                         del self.reasonsForReParsing['label_seq_scheme']
                     if 'label_seq_offset' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['label_seq_offset']
+
                 for chainId, _chainId in self.reasonsForReParsing['segment_id_mismatch'].items():
                     uniq = True
                     for k, v in self.reasonsForReParsing['segment_id_mismatch'].items():
@@ -1663,6 +1664,22 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if len(seqIdRemapForRemaining) > 0:
                     self.reasonsForReParsing['seq_id_remap'] = seqIdRemapForRemaining
+
+                if 'chain_id_remap' in self.reasonsForReParsing:
+                    stat_chain_ids = set()
+                    for v in self.reasonsForReParsing['segment_id_match_stats'].values():
+                        for _k, _v in v.items():
+                            if _v > 0:
+                                stat_chain_ids.add(_k)
+                    map_chain_ids = set()
+                    for v in self.reasonsForReParsing['chain_id_remap'].values():
+                        map_chain_ids.add(v['chain_id'])
+                    if stat_chain_ids == map_chain_ids:
+                        del self.reasonsForReParsing['segment_id_mismatch']
+                        del self.reasonsForReParsing['segment_id_match_stats']
+                        del self.reasonsForReParsing['segment_id_poly_type_stats']
+                        if 'global_auth_sequence_offset' in self.reasonsForReParsing:
+                            del self.reasonsForReParsing['global_auth_sequence_offset']
 
                 if len(self.__f) == 0 and len(self.reasonsForReParsing) > 0:
                     self.reasonsForReParsing = {}
@@ -9685,6 +9702,11 @@ class XplorMRParserListener(ParseTreeListener):
                 if real_seq_id in [seq_id + offset for seq_id in _seq_ids]:
                     return real_seq_id
 
+            elif 'chain_id_remap' in self.__reasons\
+                    and _seq_id in self.__reasons['chain_id_remap']\
+                    and chain_id == self.__reasons['chain_id_remap'][_seq_id]['chain_id']:
+                return real_seq_id
+
             elif 'seq_id_remap' in self.__reasons:
                 _, _real_seq_id = retrieveRemappedSeqId(self.__reasons['seq_id_remap'], chain_id, _seq_id)
                 if _real_seq_id == real_seq_id:
@@ -13623,7 +13645,7 @@ class XplorMRParserListener(ParseTreeListener):
                             if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
                                 self.factor['atom_id'] = [None]
                                 if not self.__with_axis\
-                                   and 'seqment_id_mismatch' not in self.__reasons\
+                                   and 'seqment_id_mismatch' in self.__reasons\
                                    and chainId not in self.__reasons['segment_id_mismatch']\
                                    and self.__reasons['segment_id_mismatch'][chainId] is not None:
                                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"

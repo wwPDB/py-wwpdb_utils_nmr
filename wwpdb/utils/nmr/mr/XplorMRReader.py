@@ -229,6 +229,16 @@ class XplorMRReader:
 
 
 if __name__ == "__main__":
+    reasons__ = {}
+    for c, o in zip(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'], [100, 200, 300, 400, 500, 600, 700, 800, 900]):
+        for s in range(1, 56):
+            reasons__[s + o] = {'chain_id': c, 'seq_id': s}
+    reasons_ = {'chain_id_remap': reasons__}
+    reader = XplorMRReader(True, reasons=reasons_)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2lzs/2lzs-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2lzs/2lzs.cif')
+
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\

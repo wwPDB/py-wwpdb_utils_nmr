@@ -5875,7 +5875,7 @@ class CnsMRParserListener(ParseTreeListener):
                     if self.__reasons is None:
                         self.__preferAuthSeq = not self.__preferAuthSeq
 
-                    if not self.__internal:
+                    if not self.__internal or all(compId in monDict3 for compId in _compIdSelect):
                         _factor['atom_id'] = [None]
                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
             # del _factor['atom_ids']

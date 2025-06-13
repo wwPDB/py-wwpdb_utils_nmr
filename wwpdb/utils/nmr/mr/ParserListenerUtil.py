@@ -7569,7 +7569,7 @@ def getReadableFactor(factor: dict) -> str:
 
         if k == 'atom_id' and 'alt_atom_id' in _factor:
             _v = _factor['alt_atom_id']
-            if _v in ('%', '*', '#') or (len(_v) == 2 and _v[-1] in ('%', '*', '#')):
+            if _v in ('%', '*', '#') or (len(_v) == 2 and _v[-1] in ('%', '*', '#')) or (_v.startswith('HT') and len(v) > 1):
                 continue
 
         if k in ('chain_id', 'seq_id') and len(v) > 20:

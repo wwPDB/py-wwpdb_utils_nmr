@@ -3644,7 +3644,7 @@ class CharmmMRParserListener(ParseTreeListener):
                     if self.__reasons is None:
                         self.__preferAuthSeq = not self.__preferAuthSeq
 
-                    if not self.__internal:
+                    if not self.__internal or all(compId in monDict3 for compId in _compIdSelect):
                         _factor['atom_id'] = [None]
                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
             # del _factor['atom_ids']
@@ -4394,8 +4394,14 @@ class CharmmMRParserListener(ParseTreeListener):
                                         coordAtomSite = _coordAtomSite
                                         atomSiteAtomId = _coordAtomSite['atom_id']
 
+                    auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+
                     for atomId in _factor['atom_id']:
                         origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
+
+                        if isinstance(origAtomId, str) and origAtomId.startswith('HT') and coordAtomSite is not None and origAtomId not in atomSiteAtomId:
+                            if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
+                                continue
 
                         atomId = atomId.upper()
 
@@ -4775,7 +4781,6 @@ class CharmmMRParserListener(ParseTreeListener):
                                         if cifCheck and seqKey not in self.__coordUnobsRes and self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'REL':
                                             if self.__cur_subtype != 'plane' and coordAtomSite is not None:
                                                 checked = False
-                                                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                                 if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                                                     if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in atomSiteAtomId)
                                                                                       or _atomId == 'P' or _atomId.startswith('HOP')):
@@ -4879,7 +4884,6 @@ class CharmmMRParserListener(ParseTreeListener):
                                                             if 'alt_chain_id' in _factor:
                                                                 self.__failure_chain_ids.append(chainId)
                                     elif cca is None and 'type_symbol' not in _factor and 'atom_ids' not in _factor:
-                                        auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                         if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                                             if coordAtomSite is not None and ((_atomId in aminoProtonCode and 'H1' in atomSiteAtomId)
                                                                               or _atomId == 'P' or _atomId.startswith('HOP')):

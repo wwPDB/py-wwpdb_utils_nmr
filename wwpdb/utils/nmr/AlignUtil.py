@@ -1165,8 +1165,20 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                                     continue
                                 comp_id_mapping[alt_comp_id] = comp_id
                             polySeqRst[i2]['comp_id'] = [comp_id_mapping[comp_id] if comp_id in comp_id_mapping else comp_id for comp_id in ps2['comp_id']]
-                        else:
+                        elif len(polySeqRst[i2]['comp_id']) == len(ps1['comp_id']):
                             polySeqRst[i2]['comp_id'] = ps1['comp_id']
+                        else:
+                            idx1 = idx2 = 0
+                            for i in range(length):
+                                myPr = myAlign[i]
+                                myPr0 = str(myPr[0])
+                                myPr1 = str(myPr[1])
+                                if myPr1 != '.':
+                                    if myPr0 != '.':
+                                        polySeqRst[i2]['comp_id'][idx2] = ps1['comp_id'][idx1]
+                                    idx2 += 1
+                                if myPr0 != '.':
+                                    idx1 += 1
                         myAlign = copy.deepcopy(_myAlign)
                         length, _matched, unmapped, conflict, offset_1, offset_2 =\
                             _length, __matched, _unmapped, _conflict, _offset_1, _offset_2

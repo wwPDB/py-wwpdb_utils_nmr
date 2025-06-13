@@ -7564,15 +7564,18 @@ def getReadableFactor(factor: dict) -> str:
 
         v = _factor[k]
 
+        if v in emptyValue or (isinstance(v, list) and (len(v) == 0 or v[0] in emptyValue)):
+            continue
+
         if k == 'atom_id' and 'alt_atom_id' in _factor:
             _v = _factor['alt_atom_id']
-            if v[0] in emptyValue or _v in ('%', '*', '#') or (len(_v) == 2 and _v[-1] in ('%', '*', '#')):
+            if _v in ('%', '*', '#') or (len(_v) == 2 and _v[-1] in ('%', '*', '#')):
                 continue
 
         if k in ('chain_id', 'seq_id') and len(v) > 20:
             v = 'specified elsewhere or unspecified'
 
-        __factor[key_map[k]] = v if isinstance(v, list) and len(v) > 1 else v[0] if isinstance(v, list) else v
+        __factor[key_map[k]] = (v if len(v) > 1 else v[0]) if isinstance(v, list) else v
 
     return str(__factor)
 

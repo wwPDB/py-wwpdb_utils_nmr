@@ -229,6 +229,11 @@ class XplorMRReader:
 
 
 if __name__ == "__main__":
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/7k7f/HBond_HBDB_renumbered.tbl',
+                 '../../tests-nmr/mock-data-remediation/7k7f/7k7f.cif')
+
     reasons__ = {}
     for c, o in zip(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'], [100, 200, 300, 400, 500, 600, 700, 800, 900]):
         for s in range(1, 56):

@@ -11349,6 +11349,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                                and _factor['chain_id'][0] != chainId and compId in monDict3:
                                                                 continue
                                                             if self.__has_nx and self.__csStat.peptideLike(compId) and origAtomId0 in aminoProtonCode:
+                                                                if compId == 'PRO':
+                                                                    _atomSelection.remove(selection)
                                                                 continue
                                                             warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                                 and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
@@ -11496,7 +11498,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                         self.paramagCenter = copy.copy(_factor)
                                                         self.paramagCenter['atom_id'][0] = origAtomId0[:2].upper()
                                                         continue
-                                                    if self.__has_nx and self.__csStat.peptideLike(compId) and origAtomId0 in aminoProtonCode:
+                                                    if self.__has_nx and self.__csStat.peptideLike(compId) and compId != 'PRO' and origAtomId0 in aminoProtonCode:
                                                         continue
                                                     warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                         and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\

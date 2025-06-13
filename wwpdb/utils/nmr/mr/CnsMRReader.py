@@ -523,8 +523,8 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/6nbn/bmr30550/work/data/D_1000238162_mr-upload_P1.cns.V1',
                  '../../tests-nmr/mock-data-remediation/6nbn/6nbn.cif')
 
-    reader = CnsMRReader(False)
-    reader.setDebugMode(False)
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2lck/2lck-corrected.mr',
                      '../../tests-nmr/mock-data-remediation/2lck/2lck.cif')

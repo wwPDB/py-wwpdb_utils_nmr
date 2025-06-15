@@ -1031,7 +1031,9 @@ class CnsMRParserListener(ParseTreeListener):
                             valid = True
                             for item in self.__seqAtmRstFailed:
                                 chainId = item['chain_id']
-                                ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
+                                ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId), None)
+                                if ps is None:
+                                    continue
                                 if chainId in self.reasonsForReParsing['label_seq_offset']:
                                     for auth_seq_id in ps['auth_seq_id']:
                                         if auth_seq_id in chainIdRemap:

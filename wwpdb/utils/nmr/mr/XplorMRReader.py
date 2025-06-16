@@ -676,8 +676,8 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/2ml9/2ml9-corrected.mr',
                  '../../tests-nmr/mock-data-remediation/2ml9/2ml9.cif')
 
-    reader = XplorMRReader(True)
-    reader.setDebugMode(True)
+    reader = XplorMRReader(False)
+    reader.setDebugMode(False)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/3zfj/3zfj-trimmed.mr',
                      '../../tests-nmr/mock-data-remediation/3zfj/3zfj.cif')

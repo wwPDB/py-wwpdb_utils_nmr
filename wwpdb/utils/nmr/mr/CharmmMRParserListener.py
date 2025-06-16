@@ -4035,7 +4035,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
                                 if ligands == 0\
                                    and (len(self.__polySeq) == 1 or all('identical_chain_id' in ps for ps in self.__polySeq) or not chain_not_specified):
-                                    # self.__preferAuthSeq = not self.__preferAuthSeq
+                                    self.__preferAuthSeq = not self.__preferAuthSeq
                                     # self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                                     self.__setLocalSeqScheme()
                                     # ad hoc sequence scheme switching is possible for the first restraint, otherwise the entire restraints should be re-parsed
@@ -5078,6 +5078,9 @@ class CharmmMRParserListener(ParseTreeListener):
             if seqKey[1] in ps['seq_id']:
                 return ps['auth_seq_id'][ps['seq_id'].index(seqKey[1])]
         else:
+            if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
+               and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
+                offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
                 offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]
@@ -5167,6 +5170,9 @@ class CharmmMRParserListener(ParseTreeListener):
                     idx = ps['seq_id'].index(seqKey[1])
                     return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
         else:
+            if isPolySeq and self.__reasons is not None and 'global_sequence_offset' in self.__reasons\
+               and ps['auth_chain_id'] in self.__reasons['global_sequence_offset']:
+                offset = self.__reasons['global_sequence_offset'][ps['auth_chain_id']]
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
                and ps['auth_chain_id'] in self.__reasons['global_auth_sequence_offset']:
                 offset = self.__reasons['global_auth_sequence_offset'][ps['auth_chain_id']]

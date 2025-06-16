@@ -299,6 +299,7 @@ try:
                                            assignPolymerSequence,
                                            trimSequenceAlignment,
                                            retrieveAtomNameMappingFromRevisions,
+                                           retrieveAtomNameMappingFromInternal,
                                            getPrettyJson)
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -465,6 +466,7 @@ except ImportError:
                                assignPolymerSequence,
                                trimSequenceAlignment,
                                retrieveAtomNameMappingFromRevisions,
+                               retrieveAtomNameMappingFromInternal,
                                getPrettyJson)
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
     from nmr.ChemCompUtil import ChemCompUtil
@@ -7424,7 +7426,10 @@ class NmrDpUtility:
         self.__mr_atom_name_mapping = None
 
         # atom name mapping derived from revision history and PDB Versioned Archive
-        self.__va_atom_name_mapping = None
+        self.__versioned_atom_name_mapping = None
+
+        # atom name mapping derived from the original uploaded coordinate file
+        self.__internal_atom_name_mapping = None
 
         # RCI
         self.__rci = RCI(False, self.__lfh)
@@ -17821,10 +17826,18 @@ class NmrDpUtility:
             except OSError:
                 pass
 
-        if self.__va_atom_name_mapping is not None:
-            for atom_map in self.__va_atom_name_mapping:
+        if self.__versioned_atom_name_mapping is not None:
+            for atom_map in self.__versioned_atom_name_mapping:
                 if atom_map not in self.__mr_atom_name_mapping:
                     self.__mr_atom_name_mapping.append(atom_map)
+
+        if self.__internal_atom_name_mapping is not None:
+            for atom_map in self.__internal_atom_name_mapping:
+                if atom_map not in self.__mr_atom_name_mapping:
+                    self.__mr_atom_name_mapping.append(atom_map)
+
+        if len(self.__mr_atom_name_mapping) > 1:
+            self.__mr_atom_name_mapping = list(reversed(self.__mr_atom_name_mapping))
 
         return not self.report.isError()
 
@@ -45949,11 +45962,19 @@ class NmrDpUtility:
                     if major_revision not in revision_history or minor_revision > revision_history[major_revision]:
                         revision_history[major_revision] = minor_revision
 
-                if extended_pdb_id is not None and len(revision_history) > 1\
+                if extended_pdb_id is not None\
                    and self.__cR.hasCategory('chem_comp') and any(d['id'] not in emptyValue and d['id'] not in monDict3 for d in self.__cR.getDictList('chem_comp')):
-                    self.__va_atom_name_mapping =\
-                        retrieveAtomNameMappingFromRevisions(self.__cR, self.__cacheDirPath, extended_pdb_id, revision_history,
-                                                             self.__representative_model_id, self.__representative_alt_id)
+
+                    if len(revision_history) > 1:
+                        self.__versioned_atom_name_mapping =\
+                            retrieveAtomNameMappingFromRevisions(self.__cR, self.__cacheDirPath, extended_pdb_id, revision_history,
+                                                                 self.__representative_model_id, self.__representative_alt_id)
+
+                    internal_cif_file = os.path.join(self.__cR.getDirPath(), f'{extended_pdb_id[-4:]}_model-upload_P1.cif.V1')
+                    if os.path.exists(internal_cif_file):
+                        self.__internal_atom_name_mapping =\
+                            retrieveAtomNameMappingFromInternal(self.__cR, self.__cacheDirPath, revision_history, internal_cif_file,
+                                                                self.__representative_model_id, self.__representative_alt_id)
 
             # DAOTHER-8580: convert working model file if pdbx_poly_seq_scheme category is missing
             # @see: wwpdb.utils.wf.plugins.FormatUtils.pdb2pdbxDepositOp

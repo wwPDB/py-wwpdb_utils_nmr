@@ -2301,6 +2301,30 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
 
                     return item['auth_seq_id'], item['auth_comp_id'], item['auth_atom_id']
 
+    if elemName == 'H' and atomId.endswith('A'):
+
+        item = next((item for item in mapping
+                     if item['original_atom_id'] == atomId[:-1]), None)
+
+        if item is not None:
+
+            _atomId_ = item['auth_atom_id']
+
+            if coordAtomSite is not None and _atomId_ not in coordAtomSite['atom_id']:
+
+                total = 0
+                for _atomId in coordAtomSite['atom_id']:
+                    if _atomId.startswith(_atomId_):
+                        total += 1
+
+                if total == 1:
+                    return item['auth_seq_id'], item['auth_comp_id'], \
+                        next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(_atomId_))
+
+                return seqId, compId, atomId
+
+            return item['auth_seq_id'], item['auth_comp_id'], _atomId_
+
     if elemName == 'H' or (elemName in ('1', '2', '3') and lenAtomId > 1 and atomId[1] == 'H'):
 
         item = next((item for item in mapping
@@ -2600,6 +2624,29 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
                         return atomId
 
                     return item['auth_atom_id']
+
+    if elemName == 'H' and atomId.endswith('A'):
+
+        item = next((item for item in mapping
+                     if item['original_atom_id'] == atomId[:-1]), None)
+
+        if item is not None:
+
+            _atomId_ = item['auth_atom_id']
+
+            if coordAtomSite is not None and _atomId_ not in coordAtomSite['atom_id']:
+
+                total = 0
+                for _atomId in coordAtomSite['atom_id']:
+                    if _atomId.startswith(_atomId_):
+                        total += 1
+
+                if total == 1:
+                    return next(_atomId for _atomId in coordAtomSite['atom_id'] if _atomId.startswith(_atomId_))
+
+                return atomId
+
+            return _atomId_
 
     if elemName == 'H' or (elemName in ('1', '2', '3') and lenAtomId > 1 and atomId[1] == 'H'):
 
@@ -3752,6 +3799,99 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
                             'original_seq_id': c_prev['seq_id']}
                 if atom_map not in atom_name_mapping:
                     atom_name_mapping.append(atom_map)
+
+    if len(atom_name_mapping) == 0:
+        atom_name_mapping = None
+
+    write_as_pickle(atom_name_mapping, pkl_path)
+
+    return atom_name_mapping
+
+
+def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_path: str,
+                                        rep_model_id: int, rep_alt_id: str) -> Optional[List[dict]]:
+    """ Retrieve atom name mapping from the original uploaded coordinate file.
+    """
+
+    try:
+        from wwpdb.utils.nmr.io.CifReader import CifReader  # pylint: disable=import-outside-toplevel
+        from wwpdb.utils.nmr.NmrVrptUtility import (load_from_pickle,  # pylint: disable=import-outside-toplevel
+                                                    write_as_pickle)
+    except ImportError:
+        from nmr.io.CifReader import CifReader  # pylint: disable=import-outside-toplevel
+        from nmr.NmrVrptUtility import (load_from_pickle,  # pylint: disable=import-outside-toplevel
+                                        write_as_pickle)
+
+    last = max(history)
+
+    pkl_path = os.path.join(dir_path, f'atom_name_mapping_{last}_{history[last]}_internal.pkl')
+
+    if os.path.exists(pkl_path):
+        return load_from_pickle(pkl_path)
+
+    if not os.path.exists(cif_path):
+        return None
+
+    nstd_residues = [d['id'] for d in cR.getDictList('chem_comp') if d['id'] not in emptyValue and d['id'] not in monDict3]
+
+    if len(nstd_residues) == 0:
+        return None
+
+    coord = cR.getDictListWithFilter('atom_site',
+                                     [{'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                      {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                                      {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
+                                      {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                      {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                      {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                      ],
+                                     [{'name': 'auth_comp_id', 'type': 'enum', 'enum': nstd_residues},
+                                      {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': rep_model_id},
+                                      {'name': 'label_alt_id', 'type': 'enum', 'enum': (rep_alt_id,)}
+                                      ])
+
+    if len(coord) == 0:
+        return None
+
+    atom_name_mapping = []
+
+    cR_prev = CifReader(False, sys.stdout, use_cache=False)
+    cR_prev.parse(cif_path)
+
+    nstd_residues_prev = [d['id'] for d in cR_prev.getDictList('chem_comp') if d['id'] not in emptyValue and d['id'] not in monDict3]
+
+    if len(nstd_residues_prev) == 0:
+        return None
+
+    coord_prev = cR_prev.getDictListWithFilter('atom_site',
+                                               [{'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                                                {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
+                                                {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                ],
+                                               [{'name': 'auth_comp_id', 'type': 'enum', 'enum': nstd_residues_prev},
+                                                {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': rep_model_id},
+                                                {'name': 'label_alt_id', 'type': 'enum', 'enum': (rep_alt_id,)}
+                                                ])
+
+    for c in coord:
+        c_prev = next((c_prev for c_prev in coord_prev if c_prev['x'] == c['x'] and c_prev['y'] == c['y'] and c_prev['z'] == c['z']), None)
+        if c_prev is None:
+            continue
+
+        if c['seq_id'] != c_prev['seq_id']\
+           or c['comp_id'] != c_prev['comp_id']\
+           or c['atom_id'] != c_prev['atom_id']:
+            atom_map = {'auth_atom_id': c['atom_id'],
+                        'auth_comp_id': c['comp_id'],
+                        'auth_seq_id': c['seq_id'],
+                        'original_atom_id': c_prev['atom_id'],
+                        'original_comp_id': c_prev['comp_id'],
+                        'original_seq_id': c_prev['seq_id']}
+            if atom_map not in atom_name_mapping:
+                atom_name_mapping.append(atom_map)
 
     if len(atom_name_mapping) == 0:
         atom_name_mapping = None

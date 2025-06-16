@@ -10063,14 +10063,13 @@ class XplorMRParserListener(ParseTreeListener):
                                     _atomIdSelect.add(realAtomId)
                 _factor['atom_id'] = list(_atomIdSelect)
 
+                if self.__reasons is None:
+                    self.__preferAuthSeq = not self.__preferAuthSeq
+
                 if len(_atomIdSelect) > 0:
-                    self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                     if len(self.atomSelectionSet) > 0:
                         self.__setLocalSeqScheme()
                 else:
-                    if self.__reasons is None:
-                        self.__preferAuthSeq = not self.__preferAuthSeq
-
                     if not self.__internal or all(compId in monDict3 for compId in _compIdSelect):
                         _factor['atom_id'] = [None]
                     _factor['alt_atom_id'] = _factor['atom_ids'][0]
@@ -10267,15 +10266,13 @@ class XplorMRParserListener(ParseTreeListener):
 
                 _factor['atom_id'] = list(_atomIdSelect)
 
+                if self.__reasons is None:
+                    self.__preferAuthSeq = not self.__preferAuthSeq
+
                 if len(_factor['atom_id']) > 0:
-                    self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                     if len(self.atomSelectionSet) > 0:
                         self.__setLocalSeqScheme()
                 else:
-                    if self.__reasons is None:
-                        self.__preferAuthSeq = not self.__preferAuthSeq
-
-                if len(_factor['atom_id']) == 0:
                     _factor['atom_id'] = [None]
 
         _atomSelection = []
@@ -10476,8 +10473,8 @@ class XplorMRParserListener(ParseTreeListener):
 
                                 if ligands == 0 and not self.__has_nx\
                                    and (len(self.__polySeq) == 1 or all('identical_chain_id' in ps for ps in self.__polySeq) or not chain_not_specified):
-                                    self.__preferAuthSeq = not self.__preferAuthSeq
-                                    self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
+                                    # self.__preferAuthSeq = not self.__preferAuthSeq
+                                    # self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                                     self.__setLocalSeqScheme()
                                     # ad hoc sequence scheme switching is possible for the first restraint, otherwise the entire restraints should be re-parsed
                                     if trial < 3 and 'Check the 1th row of' in self.__getCurrentRestraint()\

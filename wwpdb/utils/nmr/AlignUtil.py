@@ -3266,7 +3266,7 @@ def splitPolySeqRstForNonPoly(ccU, nonPolyModel: List[dict], polySeqRst: List[di
             sa = next(sa for sa in seqAlign if sa['ref_chain_id'] == ref_chain_id and sa['test_chain_id'] == test_chain_id)
 
             for test_seq_id, mid_code in zip_longest(sa['test_seq_id'], sa['mid_code']):
-                if test_seq_id in test_ps['seq_id'] and mid_code in emptyValue:
+                if test_seq_id in test_ps['seq_id'] and mid_code != '|':
                     test_comp_id, test_auth_comp_id = next((comp_id, auth_comp_id)
                                                            for seq_id, comp_id, auth_comp_id
                                                            in zip(test_ps['seq_id'], test_ps['comp_id'], test_ps['auth_comp_id'])

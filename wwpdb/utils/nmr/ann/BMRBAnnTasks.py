@@ -442,6 +442,7 @@ class BMRBAnnTasks:
                             if len(exp_list) > 0:
 
                                 lp_category = '_Chem_shift_experiment'
+                                lp = None
 
                                 try:
 
@@ -488,7 +489,11 @@ class BMRBAnnTasks:
                                             for idx in reversed(duplicated_idxs):
                                                 del lp.data[idx]
 
-                                except KeyError:
+                                except (KeyError, TypeError):
+
+                                    if lp is not None:
+                                        del sf[lp]
+
                                     items = ['Experiment_ID', 'Experiment_name', 'Sample_ID', 'Sample_label', 'Sample_state',
                                              'Entry_ID', 'Assigned_chem_shift_list_ID']
 

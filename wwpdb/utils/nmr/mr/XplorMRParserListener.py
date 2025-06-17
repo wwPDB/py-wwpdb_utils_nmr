@@ -1622,6 +1622,14 @@ class XplorMRParserListener(ParseTreeListener):
                         self.reasonsForReParsing['label_seq_scheme']['dist'] = True
                         set_label_seq_scheme()
 
+                    elif ('non_poly_remap' in self.reasonsForReParsing or 'branch_remap' in self.reasonsForReParsing)\
+                            and 'global_sequence_offset' not in self.reasonsForReParsing\
+                            and 'global_auth_sequence_offset' not in self.reasonsForReParsing:
+                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                        self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                        set_label_seq_scheme()
+
             elif self.__reasons is None and len(self.reasonsForReParsing) == 0 and all('[Insufficient atom selection]' in f for f in self.__f):
                 set_label_seq_scheme()
 
@@ -9999,7 +10007,12 @@ class XplorMRParserListener(ParseTreeListener):
                             if realSeqId is None:
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                                if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
+                                _seqId = self.getOrigSeqId(np, realSeqId)
+                                if self.__reasons is None:
+                                    _seqKey = (chainId, _seqId)
+                                    if _seqKey in self.__authToLabelSeq:
+                                        _seqId = self.__authToLabelSeq[_seqKey][1]
+                                if _seqId not in _factor['seq_id']:
                                     if self.__reasons is None:
                                         continue
                                     realSeqId = get_real_seq_id(ps, realSeqId)
@@ -10021,7 +10034,12 @@ class XplorMRParserListener(ParseTreeListener):
                                 if realSeqId is None:
                                     continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                                    if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
+                                    _seqId = self.getOrigSeqId(np, realSeqId, False)
+                                    if self.__reasons is None:
+                                        _seqKey = (chainId, _seqId)
+                                        if _seqKey in self.__authToLabelSeq:
+                                            _seqId = self.__authToLabelSeq[_seqKey][1]
+                                    if _seqId not in _factor['seq_id']:
                                         ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId)
                                         if ptnr is None:
                                             continue
@@ -10195,7 +10213,12 @@ class XplorMRParserListener(ParseTreeListener):
                             if realSeqId is None:
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                                if self.getOrigSeqId(ps, realSeqId) not in _factor['seq_id']:
+                                _seqId = self.getOrigSeqId(np, realSeqId)
+                                if self.__reasons is None:
+                                    _seqKey = (chainId, _seqId)
+                                    if _seqKey in self.__authToLabelSeq:
+                                        _seqId = self.__authToLabelSeq[_seqKey][1]
+                                if _seqId not in _factor['seq_id']:
                                     if self.__reasons is None:
                                         continue
                                     realSeqId = get_real_seq_id(ps, realSeqId)
@@ -10219,10 +10242,15 @@ class XplorMRParserListener(ParseTreeListener):
                                 if realSeqId is None:
                                     continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                                    if self.getOrigSeqId(np, realSeqId, False) not in _factor['seq_id']:
-                                        if _factor['seq_id'][0] not in np['seq_id']:
+                                    _seqId = self.getOrigSeqId(np, realSeqId, False)
+                                    if self.__reasons is None:
+                                        _seqKey = (chainId, _seqId)
+                                        if _seqKey in self.__authToLabelSeq:
+                                            _seqId = self.__authToLabelSeq[_seqKey][1]
+                                    if _seqId not in _factor['seq_id']:
+                                        ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId)
+                                        if ptnr is None:
                                             continue
-                                        realSeqId = np['auth_seq_id'][np['seq_id'].index(_factor['seq_id'][0])]
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = self.getRealCompId(np['comp_id'][idx])
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:

@@ -969,7 +969,7 @@ if __name__ == "__main__":
     print(reader_listener.getReasonsForReparsing())
     reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2ljc/2ljc-trimmed.mr',
+    reader.parse('../../tests-nmr/mock-data-remediation/2ljc/test.mr', # 2ljc-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/2ljc/2ljc.cif')
 
     reader = CnsMRReader(True)

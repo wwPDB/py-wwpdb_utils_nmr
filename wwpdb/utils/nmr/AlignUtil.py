@@ -3392,7 +3392,7 @@ def splitPolySeqRstForNonPoly(ccU, nonPolyModel: List[dict], polySeqRst: List[di
     return _polySeqRst, _nonPolyMapping
 
 
-def retrieveRemappedNonPoly(nonPolyRemap: dict, chainId: str, seqId: int, compId: str) -> Tuple[Optional[str], Optional[int]]:
+def retrieveRemappedNonPoly(nonPolyRemap: dict, nonPoly: Optional[dict], chainId: Optional[str], seqId: int, compId: str) -> Tuple[Optional[str], Optional[int]]:
     """ Retrieve seq_id from mapping dictionary based on sequence alignments.
     """
 
@@ -3401,7 +3401,9 @@ def retrieveRemappedNonPoly(nonPolyRemap: dict, chainId: str, seqId: int, compId
 
     remap = nonPolyRemap[compId][seqId]
 
-    if chainId is None or remap['original_chain_id'] == chainId:
+    if chainId is None or chainId in (remap['chain_id'], remap['original_chain_id']):
+        if nonPoly is not None and compId in nonPoly['comp_id'] and chainId == nonPoly['auth_chain_id']:
+            return nonPoly['auth_chain_id'], remap['seq_id']
         return remap['chain_id'], remap['seq_id']
 
     return None, None

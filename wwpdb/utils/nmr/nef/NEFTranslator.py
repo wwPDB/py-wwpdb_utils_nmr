@@ -6952,7 +6952,7 @@ class NEFTranslator:
             if atom_id.startswith('Q') or atom_id.startswith('M'):
                 min_len = 4 if atom_id.startswith('QQ') else 1  # ILE/LEU/THR:QB -> HB (2m6i), MG -> Magnesium (2n3r)
                 if atom_id[-1].isalnum():
-                    atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[1:] + '%', details, coord_atom_site, methyl_only)
+                    atom_list, ambiguity_code, details = self.get_star_atom_for_ligand_remap(comp_id, 'H' + atom_id[1:] + '*', details, coord_atom_site, methyl_only)
                     if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and len_atom_id > 1\
                        and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
                         grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[1])
@@ -7690,7 +7690,7 @@ class NEFTranslator:
                 if atom_id.startswith('Q') or atom_id.startswith('M'):
                     min_len = 4 if atom_id.startswith('QQ') else 1  # ILE/LEU/THR:QB -> HB (2m6i), MG -> Magnesium (2n3r)
                     if atom_id[-1].isalnum():
-                        atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', details, leave_unmatched, methyl_only)
+                        atom_list, ambiguity_code, details = self.get_star_atom(comp_id, 'H' + atom_id[1:] + '*', details, leave_unmatched, methyl_only)
                         if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and len_atom_id > 1\
                            and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
                             grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, 'H' + atom_id[1])
@@ -7724,13 +7724,13 @@ class NEFTranslator:
             atom_list, ambiguity_code, details = self.get_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
 
             if details is not None and atom_id[-1] not in ('%', '*'):
-                _atom_list, _ambiguity_code, _details = self.get_star_atom(comp_id, atom_id + '%', None, leave_unmatched, methyl_only)
+                _atom_list, _ambiguity_code, _details = self.get_star_atom(comp_id, atom_id + '*', None, leave_unmatched, methyl_only)
                 if _details is None:
                     atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
 
             if details is not None and comp_id not in monDict3 and self.__csStat.peptideLike(comp_id) and atom_id[0] in ('H', 'C', 'N', 'O', 'P')\
                and len_atom_id > 1 and atom_id[1] in ('A', 'B', 'G', 'D', 'E', 'Z', 'H')\
-               and (atom_id[0] != 'H' or (atom_id[0] == 'H' and atom_id[-1] not in ('%', '*'))):
+               and (atom_id[0] != 'H' or (atom_id[0] == 'H' and atom_id[-1] not in ('%', '*') and not (atom_id[-1].isdigit() and atom_id[-2].isdigit()))):
                 grk_atoms = self.__ccU.getAtomsBasedOnGreekLetterSystem(comp_id, atom_id)
                 if len(grk_atoms) > 0:
                     atom_list = []

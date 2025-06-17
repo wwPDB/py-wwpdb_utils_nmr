@@ -2681,7 +2681,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 atomId = self.__reasons['unambig_atom_id_remap'][_compId][atomId][0]  # select representative one
             if 'non_poly_remap' in self.__reasons and _compId in self.__reasons['non_poly_remap']\
                and seqId in self.__reasons['non_poly_remap'][_compId]:
-                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, seqId, _compId)
+                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, None, seqId, _compId)
                 preferNonPoly = True
             if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
@@ -3301,7 +3301,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 atomId = self.__reasons['unambig_atom_id_remap'][_compId][atomId][0]  # select representative one
             if 'non_poly_remap' in self.__reasons and _compId in self.__reasons['non_poly_remap']\
                and seqId in self.__reasons['non_poly_remap'][_compId]:
-                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], str(refChainId), seqId, _compId)
+                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, str(refChainId), seqId, _compId)
                 refChainId = fixedChainId
                 preferNonPoly = True
             if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
@@ -3892,7 +3892,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__reasons is not None:
                     if 'non_poly_remap' in self.__reasons and cifCompId in self.__reasons['non_poly_remap']\
                        and seqId in self.__reasons['non_poly_remap'][cifCompId]:
-                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], chainId, seqId, cifCompId)
+                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, chainId, seqId, cifCompId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
                         if (fixedChainId is not None and fixedChainId != chainId) or seqId not in ps['auth_seq_id']:
@@ -4107,7 +4107,7 @@ class CyanaMRParserListener(ParseTreeListener):
                 if self.__reasons is not None:
                     if 'non_poly_remap' in self.__reasons and cifCompId in self.__reasons['non_poly_remap']\
                        and seqId in self.__reasons['non_poly_remap'][cifCompId]:
-                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], chainId, seqId, cifCompId)
+                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, chainId, seqId, cifCompId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
                         if (fixedChainId is not None and fixedChainId != chainId) or seqId not in ps['auth_seq_id']:

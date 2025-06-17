@@ -1089,6 +1089,9 @@ class CharmmMRParserListener(ParseTreeListener):
                 if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
                     del self.reasonsForReParsing['seq_id_remap']
 
+            if 'np_seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
+                del self.reasonsForReParsing['np_seq_id_remap']
+
             label_seq_scheme = 'label_seq_scheme' in self.reasonsForReParsing\
                 and all(t for t in self.reasonsForReParsing['label_seq_scheme'].values())
 
@@ -1348,6 +1351,7 @@ class CharmmMRParserListener(ParseTreeListener):
                 set_label_seq_scheme()
 
             if 'segment_id_mismatch' in self.reasonsForReParsing:
+                """
                 if 'seq_id_remap' not in self.reasonsForReParsing:
                     if 'local_seq_scheme' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['local_seq_scheme']
@@ -1355,6 +1359,7 @@ class CharmmMRParserListener(ParseTreeListener):
                         del self.reasonsForReParsing['label_seq_scheme']
                     if 'label_seq_offset' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['label_seq_offset']
+                """
                 for chainId, _chainId in self.reasonsForReParsing['segment_id_mismatch'].items():
                     uniq = True
                     for k, v in self.reasonsForReParsing['segment_id_mismatch'].items():
@@ -4149,8 +4154,12 @@ class CharmmMRParserListener(ParseTreeListener):
             stats = self.__reasons['segment_id_poly_type_stats'][_factor['segment_id']]
             if isPolySeq and stats['polymer'] < stats['non-poly']:
                 return False
-            if not isPolySeq and stats['polymer'] >= stats['non-poly'] and 'np_seq_id_remap' not in self.__reasons:
-                return False
+            if not isPolySeq:
+                if stats['polymer'] > 10 * stats['non-poly']:
+                    return False
+                if stats['polymer'] >= stats['non-poly']\
+                   and 'np_seq_id_remap' not in self.__reasons and 'non_poly_remap' not in self.__reasons:
+                    return False
 
         chainIds = (_factor['chain_id'] if isChainSpecified else [ps['auth_chain_id'] for ps in (self.__polySeq if isPolySeq else altPolySeq)])
 
@@ -4345,7 +4354,7 @@ class CharmmMRParserListener(ParseTreeListener):
                     if self.__reasons is not None:
                         if 'non_poly_remap' in self.__reasons and compId in self.__reasons['non_poly_remap']\
                            and _factor['seq_id'][0] in self.__reasons['non_poly_remap'][compId]:
-                            fixedChainId, seqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], chainId, _factor['seq_id'][0], compId)
+                            fixedChainId, seqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], ps, chainId, _factor['seq_id'][0], compId)
                             if fixedChainId != chainId:
                                 continue
                             if not isPolySeq and len(_atomSelection) > 0:

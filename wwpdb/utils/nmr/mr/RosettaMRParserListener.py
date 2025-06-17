@@ -1553,7 +1553,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if self.__reasons is not None:
                     if 'non_poly_remap' in self.__reasons and cifCompId in self.__reasons['non_poly_remap']\
                        and seqId in self.__reasons['non_poly_remap'][cifCompId]:
-                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], chainId, seqId, cifCompId)
+                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, chainId, seqId, cifCompId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
                         if (fixedChainId is not None and fixedChainId != chainId) or seqId not in ps['auth_seq_id']:

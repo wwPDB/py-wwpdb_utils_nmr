@@ -229,6 +229,27 @@ class XplorMRReader:
 
 
 if __name__ == "__main__":
+    reasons_ = {'segment_id_mismatch': {'AN1': 'A', 'SSS': None, 'AN2': 'B', 'AN3': 'C', 'AN4': 'D', 'RI1': 'A'},
+                'segment_id_match_stats': {'AN1': {'A': 99, 'B': 90, 'C': 90, 'D': 90},
+                                           'SSS': {},
+                                           'AN2': {'A': -149, 'B': -126, 'C': -126, 'D': -126},
+                                           'AN3': {'D': -114, 'A': -137, 'C': -114, 'B': -114},
+                                           'AN4': {'D': -110, 'A': -133, 'C': -110, 'B': -110},
+                                           'RI1': {'C': -14, 'B': -14, 'A': -2, 'D': -14}},
+                'segment_id_poly_type_stats': {'AN1': {'polymer': 1044, 'non-poly': 42, 'non-polymer': 0},
+                                               'SSS': {'polymer': 0, 'non-poly': 0},
+                                               'AN2': {'polymer': 216, 'non-poly': 7, 'non-polymer': 0},
+                                               'AN3': {'polymer': 236, 'non-poly': 7, 'non-polymer': 0},
+                                               'AN4': {'polymer': 236, 'non-poly': 7, 'non-polymer': 0},
+                                               'RI1': {'polymer': 19, 'non-poly': 12, 'non-polymer': 0}},
+                'label_seq_scheme': {'dist': True, 'rdc': True, 'dihed': True},
+                'inhibit_label_seq_scheme': {'A': {'dist': True}, 'B': {'dist': True}, 'C': {'dist': True}, 'D': {'dist': True}},
+                'non_poly_remap': {'RIM': {1: {'chain_id': 'A', 'seq_id': 1, 'original_chain_id': 'D'}}}}
+    reader = XplorMRReader(True, reasons=reasons_)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2ljc/2ljc-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2ljc/2ljc.cif')
+
     reader = XplorMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\

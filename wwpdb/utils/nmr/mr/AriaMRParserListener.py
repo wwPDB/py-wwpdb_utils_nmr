@@ -1217,7 +1217,7 @@ class AriaMRParserListener(ParseTreeListener):
         if self.__reasons is not None:
             if 'non_poly_remap' in self.__reasons and _compId in self.__reasons['non_poly_remap']\
                and seqId in self.__reasons['non_poly_remap'][_compId]:
-                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, seqId, _compId)
+                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, None, seqId, _compId)
                 preferNonPoly = True
             if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.__reasons['branched_remap'], seqId)
@@ -1793,7 +1793,7 @@ class AriaMRParserListener(ParseTreeListener):
         if self.__reasons is not None:
             if 'non_poly_remap' in self.__reasons and _compId in self.__reasons['non_poly_remap']\
                and seqId in self.__reasons['non_poly_remap'][_compId]:
-                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], str(refChainId), seqId, _compId)
+                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, str(refChainId), seqId, _compId)
                 refChainId = fixedChainId
                 preferNonPoly = True
             if 'branched_remap' in self.__reasons and seqId in self.__reasons['branched_remap']:

@@ -3582,7 +3582,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             if realSeqId is None:
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                                _seqId = self.getOrigSeqId(np, realSeqId)
+                                _seqId = self.getOrigSeqId(ps, realSeqId)
                                 if self.__reasons is None:
                                     _seqKey = (chainId, _seqId)
                                     if _seqKey in self.__authToLabelSeq:
@@ -3788,7 +3788,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             if realSeqId is None:
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
-                                _seqId = self.getOrigSeqId(np, realSeqId)
+                                _seqId = self.getOrigSeqId(ps, realSeqId)
                                 if self.__reasons is None:
                                     _seqKey = (chainId, _seqId)
                                     if _seqKey in self.__authToLabelSeq:

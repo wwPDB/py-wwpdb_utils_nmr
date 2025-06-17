@@ -4320,6 +4320,8 @@ class CharmmMRParserListener(ParseTreeListener):
                             fixedChainId, seqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], chainId, _factor['seq_id'][0], compId)
                             if fixedChainId != chainId:
                                 continue
+                            if not isPolySeq and len(_atomSelection) > 0:
+                                continue
 
                     _seqId = seqId
                     if self.__reasons is None and not isPolySeq and 'alt_auth_seq_id' in ps and seqId not in ps['auth_seq_id'] and seqId in ps['alt_auth_seq_id']:

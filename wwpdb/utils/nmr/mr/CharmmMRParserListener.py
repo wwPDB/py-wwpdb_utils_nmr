@@ -1094,16 +1094,28 @@ class CharmmMRParserListener(ParseTreeListener):
 
             if 'global_sequence_offset' in self.reasonsForReParsing:
                 globalSequenceOffset = copy.copy(self.reasonsForReParsing['global_sequence_offset'])
+                has_label_seq_scheme_pred = False
                 for k, v in globalSequenceOffset.items():
                     len_v = 0 if v is None else len(v)
                     if len_v != 1:
+                        ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == k), None)
+                        if ps is not None:
+                            try:
+                                offset = ps['auth_seq_id'][0] - ps['seq_id'][0]
+                                if offset == ps['auth_seq_id'][-1] - ps['seq_id'][-1] and offset in v:
+                                    has_label_seq_scheme_pred = True
+                            except TypeError:
+                                pass
                         del self.reasonsForReParsing['global_sequence_offset'][k]
                     else:
                         self.reasonsForReParsing['global_sequence_offset'][k] = list(v)[0]
                     if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
                         del self.reasonsForReParsing['global_sequence_offset']
-                        if len_v > 2 and 'label_seq_scheme' in self.reasonsForReParsing:
-                            del self.reasonsForReParsing['label_seq_scheme']
+                        if len_v > 2:
+                            if 'label_seq_scheme' in self.reasonsForReParsing and not has_label_seq_scheme_pred:
+                                del self.reasonsForReParsing['label_seq_scheme']
+                            if 'seq_id_remap' in self.reasonsForReParsing:
+                                del self.reasonsForReParsing['seq_id_remap']
 
             seqIdRemapForRemaining = []
             if 'global_sequence_offset' in self.reasonsForReParsing:

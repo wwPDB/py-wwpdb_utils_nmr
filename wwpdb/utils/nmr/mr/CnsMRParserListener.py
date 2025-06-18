@@ -5845,10 +5845,12 @@ class CnsMRParserListener(ParseTreeListener):
                                     continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     _seqId = self.getOrigSeqId(np, realSeqId, False)
+                                    """
                                     if self.__reasons is None and not self.__preferAuthSeq:
                                         _seqKey = (chainId, _seqId)
                                         if _seqKey in self.__authToLabelSeq:
                                             _seqId = self.__authToLabelSeq[_seqKey][1]
+                                    """
                                     if _seqId not in _factor['seq_id']:
                                         ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId)
                                         if ptnr is None:
@@ -6053,10 +6055,12 @@ class CnsMRParserListener(ParseTreeListener):
                                     continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     _seqId = self.getOrigSeqId(np, realSeqId, False)
+                                    """
                                     if self.__reasons is None and not self.__preferAuthSeq:
                                         _seqKey = (chainId, _seqId)
                                         if _seqKey in self.__authToLabelSeq:
                                             _seqId = self.__authToLabelSeq[_seqKey][1]
+                                    """
                                     if _seqId not in _factor['seq_id']:
                                         ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId)
                                         if ptnr is None:

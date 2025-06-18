@@ -2643,7 +2643,7 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
             if atomId in _refAtomIdList:
                 return atomId
 
-            if atomId.startswith('M'):  # methyl group
+            if atomId.startswith('M') or atomId.startswith('HM') or atomId.startswith('QM'):  # methyl group
                 if refAtomIdList is not None:
                     if 'H' + atomId[1:] + '1' in refAtomIdList:
                         return 'H' + atomId[1:]

@@ -3453,7 +3453,10 @@ class CharmmMRParserListener(ParseTreeListener):
                         atomId = _atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
                         if atomId[-1] in ('%', '*', '#'):
                             if atomId[0] == 'H' and len(atomId) > 2:
-                                _atomId = 'Q' + atomId[1:-1]
+                                if atomId[1] != 'M':
+                                    _atomId = 'Q' + atomId[1:-1]
+                                else:
+                                    _atomId = atomId[1:-1]
                             elif atomId[0] in ('Q', 'M'):
                                 _atomId = atomId[:-1]
                         atomIds, _, details = self.__nefT.get_valid_star_atom(compId, _atomId, leave_unmatched=True)
@@ -3648,7 +3651,10 @@ class CharmmMRParserListener(ParseTreeListener):
                             atomId = _atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
                             if atomId[-1] in ('%', '*', '#'):
                                 if atomId[0] == 'H' and len(atomId) > 2:
-                                    _atomId = 'Q' + atomId[1:-1]
+                                    if atomId[1] != 'M':
+                                        _atomId = 'Q' + atomId[1:-1]
+                                    else:
+                                        _atomId = atomId[1:-1]
                                 elif atomId[0] in ('Q', 'M'):
                                     _atomId = atomId[:-1]
                             atomIds, _, details = self.__nefT.get_valid_star_atom(compId, _atomId, leave_unmatched=True)

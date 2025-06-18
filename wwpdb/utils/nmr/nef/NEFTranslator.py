@@ -7306,7 +7306,7 @@ class NEFTranslator:
         if comp_id in emptyValue or atom_id in emptyValue:
             return [], None, None
 
-        methyl_only = atom_id[0] == 'M' or atom_id.startswith('QM') or atom_id.startswith('QQM')
+        methyl_only = atom_id[0] == 'M' or atom_id.startswith('HM') or atom_id.startswith('QM') or atom_id.startswith('QQM')
         # if comp_id == 'ACE' and atom_id.startswith('Q'):
         #     atom_id = 'H%'
         #     methyl_only = True
@@ -7580,7 +7580,7 @@ class NEFTranslator:
 
         nucleotide = self.__csStat.getTypeOfCompId(comp_id)[1]
 
-        methyl_only |= atom_id[0] == 'M' or atom_id.startswith('QM') or atom_id.startswith('QQM')
+        methyl_only |= atom_id[0] == 'M' or atom_id.startswith('HM') or atom_id.startswith('QM') or atom_id.startswith('QQM')
         # if comp_id == 'ACE' and atom_id.startswith('Q'):
         #     atom_id = 'H%'
         #     methyl_only = True

@@ -1376,7 +1376,19 @@ class XplorMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['seq_id_remap']
 
             if 'np_seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
-                del self.reasonsForReParsing['np_seq_id_remap']
+                effective = False
+                for np_remap in self.reasonsForReParsing['np_seq_id_remap']:
+                    chainId = np_remap['chain_id']
+                    seqIdDict = np_remap['seq_id_dict']
+                    for compId, _seqIdDict in self.reasonsForReParsing['non_poly_remap'].items():
+                        for _seqId in _seqIdDict:
+                            if _seqId in seqIdDict.values():
+                                _seqId_ = next(k for k, v in seqIdDict.items() if v == _seqId)
+                                if _seqId_ != _seqId:
+                                    effective = True
+                                    break
+                if not effective:
+                    del self.reasonsForReParsing['np_seq_id_remap']
 
             label_seq_scheme = 'label_seq_scheme' in self.reasonsForReParsing\
                 and all(t for t in self.reasonsForReParsing['label_seq_scheme'].values())

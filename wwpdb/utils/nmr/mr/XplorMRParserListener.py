@@ -9490,7 +9490,9 @@ class XplorMRParserListener(ParseTreeListener):
                         _chainId = np['auth_chain_id']
                         if _chainId not in _factor['chain_id']:
                             _factor['chain_id'].append(_chainId)
-        elif len(_factor['chain_id']) == 1 and any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _factor['chain_id'][0]):
+        elif len(_factor['chain_id']) == 1\
+                and (any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _factor['chain_id'][0])
+                     or (self.__hasNonPolySeq and any(np for np in self.__nonPolySeq if np['auth_chain_id'] == _factor['chain_id'][0]))):
             _factor['auth_chain_id'] = _factor['chain_id']
             chain_not_specified = False
 
@@ -10059,12 +10061,10 @@ class XplorMRParserListener(ParseTreeListener):
                                     continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     _seqId = self.getOrigSeqId(np, realSeqId, False)
-                                    """
-                                    if self.__reasons is None and self.__preferAuthSeq:
+                                    if self.__reasons is None and self.__preferAuthSeq and not chain_not_specified:
                                         _seqKey = (chainId, _seqId)
                                         if _seqKey in self.__authToLabelSeq:
                                             _seqId = self.__authToLabelSeq[_seqKey][1]
-                                    """
                                     if _seqId not in _factor['seq_id']:
                                         ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId)
                                         if ptnr is None:
@@ -10272,12 +10272,10 @@ class XplorMRParserListener(ParseTreeListener):
                                     continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     _seqId = self.getOrigSeqId(np, realSeqId, False)
-                                    """
-                                    if self.__reasons is None and not self.__preferAuthSeq:
+                                    if self.__reasons is None and not self.__preferAuthSeq and not chain_not_specified:
                                         _seqKey = (chainId, _seqId)
                                         if _seqKey in self.__authToLabelSeq:
                                             _seqId = self.__authToLabelSeq[_seqKey][1]
-                                    """
                                     if _seqId not in _factor['seq_id']:
                                         ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId)
                                         if ptnr is None:

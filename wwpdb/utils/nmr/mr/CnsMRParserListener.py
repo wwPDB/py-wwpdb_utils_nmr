@@ -1447,7 +1447,13 @@ class CnsMRParserListener(ParseTreeListener):
                             and 'global_auth_sequence_offset' not in self.reasonsForReParsing\
                             and len(insuff_dist_atom_sel_in_1st_row_warnings) == 0\
                             and not all('[Insufficient atom selection]' in f and 'distance restraints' in f for f in self.__f):
-                        self.reasonsForReParsing = {}
+                        if any('[Insufficient atom selection]' in f and 'distance restraints' not in f for f in self.__f):
+                            if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['label_seq_scheme'] = {}
+                            self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                            set_label_seq_scheme()
+                        else:
+                            self.reasonsForReParsing = {}
 
                     if any(f for f in self.__f if '[Sequence mismatch]' in f):
                         __f = copy.copy(self.__f)

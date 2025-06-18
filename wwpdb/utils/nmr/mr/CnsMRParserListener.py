@@ -1494,15 +1494,14 @@ class CnsMRParserListener(ParseTreeListener):
                 set_label_seq_scheme()
 
             if 'segment_id_mismatch' in self.reasonsForReParsing:
-                """
-                if 'seq_id_remap' not in self.reasonsForReParsing:
+                if 'np_seq_id_remap' not in self.reasonsForReParsing and 'non_poly_remap' not in self.reasonsForReParsing:
                     if 'local_seq_scheme' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['local_seq_scheme']
                     if 'label_seq_scheme' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['label_seq_scheme']
                     if 'label_seq_offset' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['label_seq_offset']
-                """
+
                 for chainId, _chainId in self.reasonsForReParsing['segment_id_mismatch'].items():
                     uniq = True
                     for k, v in self.reasonsForReParsing['segment_id_mismatch'].items():

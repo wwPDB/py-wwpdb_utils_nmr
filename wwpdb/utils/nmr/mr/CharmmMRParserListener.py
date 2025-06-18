@@ -3588,7 +3588,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 _seqId = self.getOrigSeqId(ps, realSeqId)
-                                if self.__reasons is None:
+                                if self.__reasons is None and not self.__preferAuthSeq:
                                     _seqKey = (chainId, _seqId)
                                     if _seqKey in self.__authToLabelSeq:
                                         _seqId = self.__authToLabelSeq[_seqKey][1]
@@ -3615,7 +3615,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                     continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     _seqId = self.getOrigSeqId(np, realSeqId, False)
-                                    if self.__reasons is None:
+                                    if self.__reasons is None and not self.__preferAuthSeq:
                                         _seqKey = (chainId, _seqId)
                                         if _seqKey in self.__authToLabelSeq:
                                             _seqId = self.__authToLabelSeq[_seqKey][1]
@@ -3794,7 +3794,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                 continue
                             if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                 _seqId = self.getOrigSeqId(ps, realSeqId)
-                                if self.__reasons is None:
+                                if self.__reasons is None and not self.__preferAuthSeq:
                                     _seqKey = (chainId, _seqId)
                                     if _seqKey in self.__authToLabelSeq:
                                         _seqId = self.__authToLabelSeq[_seqKey][1]
@@ -3823,7 +3823,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                     continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     _seqId = self.getOrigSeqId(np, realSeqId, False)
-                                    if self.__reasons is None:
+                                    if self.__reasons is None and not self.__preferAuthSeq:
                                         _seqKey = (chainId, _seqId)
                                         if _seqKey in self.__authToLabelSeq:
                                             _seqId = self.__authToLabelSeq[_seqKey][1]

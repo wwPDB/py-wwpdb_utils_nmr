@@ -310,6 +310,22 @@ class CifToNmrStar:
                 if maxRepeat != 1:
                     return False
 
+                datablock_pattern = re.compile(r'\s*data_(\S+)\s*')
+                sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
+
+                has_datablock = has_anonymous_saveframe = False
+
+                with open(cifPath, 'r', encoding='utf-8') as ifh:
+                    for line in ifh:
+                        if datablock_pattern.match(line):
+                            has_datablock = True
+                        elif sf_anonymous_pattern.match(line):
+                            has_anonymous_saveframe = True
+                            break
+
+                if has_datablock or not has_anonymous_saveframe:
+                    return False
+
                 with open(cifPath, 'r', encoding='utf-8') as ifh, \
                         open(cifPath + '~', 'w', encoding='utf-8') as ofh:
                     name = datablockName

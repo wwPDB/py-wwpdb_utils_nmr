@@ -9479,7 +9479,7 @@ class XplorMRParserListener(ParseTreeListener):
 
         len_warn_msg = len(self.__f)
 
-        chain_not_specified = True
+        chain_not_specified = np_chain_not_specified = 'alt_chain_id' not in _factor
         if 'chain_id' not in _factor or len(_factor['chain_id']) == 0:
             if self.__largeModel:
                 _factor['chain_id'] = [self.__representativeAsymId]
@@ -9490,11 +9490,13 @@ class XplorMRParserListener(ParseTreeListener):
                         _chainId = np['auth_chain_id']
                         if _chainId not in _factor['chain_id']:
                             _factor['chain_id'].append(_chainId)
-        elif len(_factor['chain_id']) == 1\
-                and (any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _factor['chain_id'][0])
-                     or (self.__hasNonPolySeq and any(np for np in self.__nonPolySeq if np['auth_chain_id'] == _factor['chain_id'][0]))):
-            _factor['auth_chain_id'] = _factor['chain_id']
-            chain_not_specified = False
+        elif len(_factor['chain_id']) == 1:
+            if chain_not_specified and any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _factor['chain_id'][0]):
+                _factor['auth_chain_id'] = _factor['chain_id']
+                chain_not_specified = False
+            elif self.__hasNonPolySeq and np_chain_not_specified and any(np for np in self.__nonPolySeq if np['auth_chain_id'] == _factor['chain_id'][0]):
+                _factor['auth_chain_id'] = _factor['chain_id']
+                np_chain_not_specified = False
 
         if 'seq_id' not in _factor and 'seq_ids' not in _factor:
             if 'comp_ids' in _factor and len(_factor['comp_ids']) > 0\
@@ -10061,7 +10063,7 @@ class XplorMRParserListener(ParseTreeListener):
                                     continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     _seqId = self.getOrigSeqId(np, realSeqId, False)
-                                    if self.__reasons is None and self.__preferAuthSeq and not chain_not_specified:
+                                    if self.__reasons is None and not self.__preferAuthSeq and not np_chain_not_specified:
                                         _seqKey = (chainId, _seqId)
                                         if _seqKey in self.__authToLabelSeq:
                                             _seqId = self.__authToLabelSeq[_seqKey][1]
@@ -10272,7 +10274,7 @@ class XplorMRParserListener(ParseTreeListener):
                                     continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     _seqId = self.getOrigSeqId(np, realSeqId, False)
-                                    if self.__reasons is None and not self.__preferAuthSeq and not chain_not_specified:
+                                    if self.__reasons is None and not self.__preferAuthSeq and not np_chain_not_specified:
                                         _seqKey = (chainId, _seqId)
                                         if _seqKey in self.__authToLabelSeq:
                                             _seqId = self.__authToLabelSeq[_seqKey][1]

@@ -9903,7 +9903,14 @@ class XplorMRParserListener(ParseTreeListener):
                         atomIds, _, details = self.__nefT.get_valid_star_atom(compId, _atomId, leave_unmatched=True)
                         if details is not None:
                             atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
-                        _atomId = toNefEx(toRegEx(atomId)) + '$'
+                        _atomId = toNefEx(toRegEx(atomId))
+                        if _atomId.endswith('.') and details is None:
+                            _atomId += '$'  # HT# -> H. should match with H1/2/3 and not with HA2/3 (5iew)
+                        elif _atomId.endswith('.*') and details is not None:  # remove excess wild card code e.g. LYS:HB1* -> LYS:HB3 (5kqj)
+                            _atomIds, _, _details = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId[:-2], leave_unmatched=True)
+                            if len(_atomIds) > 0 and _details is None:
+                                _atomId = _atomIds[0]
+                                atomIds, details = _atomIds, _details
                     elif lenAtomIds == 2:
                         atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
                         atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
@@ -9946,7 +9953,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                 continue
                                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
                                         if coordAtomSite is not None:
-                                            __atomId = toNefEx(toRegEx(tmpAtomId)) + '$'
+                                            __atomId = toNefEx(toRegEx(tmpAtomId))
                                             for realAtomId in coordAtomSite['atom_id']:
                                                 if re.match(_atomId, realAtomId) or re.match(__atomId, realAtomId):
                                                     if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId, tmpAtomId, _matchedAtomIds):
@@ -9967,7 +9974,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                     continue
                                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
                                             if coordAtomSite is not None:
-                                                __atomId = toNefEx(toRegEx(tmpAtomId)) + '$'
+                                                __atomId = toNefEx(toRegEx(tmpAtomId))
                                                 for realAtomId in coordAtomSite['atom_id']:
                                                     if re.match(_atomId, realAtomId) or re.match(__atomId, realAtomId):
                                                         if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId, tmpAtomId, _matchedAtomIds):
@@ -10104,7 +10111,7 @@ class XplorMRParserListener(ParseTreeListener):
                             atomIds, _, details = self.__nefT.get_valid_star_atom(compId, _atomId, leave_unmatched=True)
                             if details is not None:
                                 atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
-                            _atomId = toNefEx(toRegEx(atomId)) + '$'
+                            _atomId = toNefEx(toRegEx(atomId))
                         elif lenAtomIds == 2:
                             atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
                             atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
@@ -11007,7 +11014,7 @@ class XplorMRParserListener(ParseTreeListener):
                             if atomId in atomSiteAtomId:
                                 atomIds = [atomId]
                             elif 'alt_atom_id' in _factor:
-                                _atomId_ = toNefEx(toRegEx(_factor['alt_atom_id'])) + '$'
+                                _atomId_ = toNefEx(toRegEx(_factor['alt_atom_id']))
                                 _atomIds_ = [_atomId for _atomId in atomSiteAtomId if re.match(_atomId_, _atomId)]
                                 if len(_atomIds_) > 0:
                                     atomIds = _atomIds_

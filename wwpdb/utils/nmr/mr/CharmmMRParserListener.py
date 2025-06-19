@@ -3272,6 +3272,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             if cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']\
                                and cca[self.__ccU.ccaLeavingAtomFlag] != 'Y':
                                 _atomIdSelect.add(cca[self.__ccU.ccaAtomId])
+
                 _factor['atom_id'] = list(_atomIdSelect)
                 if len(_factor['atom_id']) == 0:
                     _factor['atom_id'] = [None]
@@ -3551,6 +3552,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                                         _factor['alt_atom_id'] = _factor['atom_ids'][0]
                                                         if ptnr is not None:
                                                             _factor['seq_id'] = [realSeqId]
+
             _factor['atom_id'] = list(_atomIdSelect)
 
             if len(_compIdSelect) > 0 and len(_atomIdSelect) == 0 and self.__mrAtomNameMapping is not None:
@@ -3597,6 +3599,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                         _factor['alt_atom_id'] = _factor['atom_ids'][0]
                                         if ptnr is not None:
                                             _factor['seq_id'] = [realSeqId]
+
                 _factor['atom_id'] = list(_atomIdSelect)
 
             if len(_factor['atom_id']) == 0:
@@ -3644,9 +3647,12 @@ class CharmmMRParserListener(ParseTreeListener):
                                         if _seqKey in self.__authToLabelSeq:
                                             _seqId = self.__authToLabelSeq[_seqKey][1]
                                     if _seqId not in _factor['seq_id']:
-                                        ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId)
-                                        if ptnr is None:
-                                            continue
+                                        if self.__reasons is not None and self.__preferAuthSeq and realSeqId in np['auth_seq_id']:
+                                            pass
+                                        else:
+                                            ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId)
+                                            if ptnr is None:
+                                                continue
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = self.getRealCompId(np['comp_id'][idx])
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:
@@ -3698,6 +3704,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                 if (atomId1 < atomId2 and atomId1 <= realAtomId <= atomId2)\
                                    or (atomId1 > atomId2 and atomId2 <= realAtomId <= atomId1):
                                     _atomIdSelect.add(realAtomId)
+
                 _factor['atom_id'] = list(_atomIdSelect)
 
                 if self.__reasons is None:
@@ -3855,9 +3862,12 @@ class CharmmMRParserListener(ParseTreeListener):
                                         if _seqKey in self.__authToLabelSeq:
                                             _seqId = self.__authToLabelSeq[_seqKey][1]
                                     if _seqId not in _factor['seq_id']:
-                                        ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId)
-                                        if ptnr is None:
-                                            continue
+                                        if self.__reasons is not None and self.__preferAuthSeq and realSeqId in np['auth_seq_id']:
+                                            pass
+                                        else:
+                                            ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId)
+                                            if ptnr is None:
+                                                continue
                                 idx = np['auth_seq_id'].index(realSeqId)
                                 realCompId = self.getRealCompId(np['comp_id'][idx])
                                 if 'comp_id' in _factor and len(_factor['comp_id']) > 0:

@@ -9494,9 +9494,13 @@ class XplorMRParserListener(ParseTreeListener):
             if chain_not_specified and any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _factor['chain_id'][0]):
                 _factor['auth_chain_id'] = _factor['chain_id']
                 chain_not_specified = False
-            elif self.__hasNonPolySeq and np_chain_not_specified and any(np for np in self.__nonPolySeq if np['auth_chain_id'] == _factor['chain_id'][0]):
-                _factor['auth_chain_id'] = _factor['chain_id']
-                np_chain_not_specified = False
+            if self.__hasNonPolySeq and np_chain_not_specified:
+                if any(np for np in self.__nonPolySeq if np['auth_chain_id'] == _factor['chain_id'][0]):
+                    _factor['auth_chain_id'] = _factor['chain_id']
+                    np_chain_not_specified = False
+                elif not chain_not_specified and any(np for np in self.__nonPolySeq if np['chain_id'] == _factor['chain_id'][0]):
+                    _factor['auth_chain_id'] = _factor['chain_id']
+                    np_chain_not_specified = False
 
         if 'seq_id' not in _factor and 'seq_ids' not in _factor:
             if 'comp_ids' in _factor and len(_factor['comp_ids']) > 0\
@@ -10073,10 +10077,13 @@ class XplorMRParserListener(ParseTreeListener):
                                     continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     _seqId = self.getOrigSeqId(np, realSeqId, False)
-                                    if self.__reasons is None and not self.__preferAuthSeq and not np_chain_not_specified:
-                                        _seqKey = (chainId, _seqId)
-                                        if _seqKey in self.__authToLabelSeq:
-                                            _seqId = self.__authToLabelSeq[_seqKey][1]
+                                    if not self.__preferAuthSeq and not np_chain_not_specified:
+                                        if self.__reasons is None:
+                                            _seqKey = (chainId, _seqId)
+                                            if _seqKey in self.__authToLabelSeq:
+                                                _seqId = self.__authToLabelSeq[_seqKey][1]
+                                        elif 'alt_auth_seq_id' in np and np['alt_auth_seq_id'][np['auth_seq_id'].index(_seqId)] in _factor['seq_id']:
+                                            _seqId = np['alt_auth_seq_id'][np['auth_seq_id'].index(_seqId)]
                                     if _seqId not in _factor['seq_id']:
                                         if self.__reasons is not None and self.__preferAuthSeq and realSeqId in np['auth_seq_id']:
                                             pass
@@ -10288,10 +10295,13 @@ class XplorMRParserListener(ParseTreeListener):
                                     continue
                                 if 'seq_id' in _factor and len(_factor['seq_id']) > 0:
                                     _seqId = self.getOrigSeqId(np, realSeqId, False)
-                                    if self.__reasons is None and not self.__preferAuthSeq and not np_chain_not_specified:
-                                        _seqKey = (chainId, _seqId)
-                                        if _seqKey in self.__authToLabelSeq:
-                                            _seqId = self.__authToLabelSeq[_seqKey][1]
+                                    if not self.__preferAuthSeq and not np_chain_not_specified:
+                                        if self.__reasons is None:
+                                            _seqKey = (chainId, _seqId)
+                                            if _seqKey in self.__authToLabelSeq:
+                                                _seqId = self.__authToLabelSeq[_seqKey][1]
+                                        elif 'alt_auth_seq_id' in np and np['alt_auth_seq_id'][np['auth_seq_id'].index(_seqId)] in _factor['seq_id']:
+                                            _seqId = np['alt_auth_seq_id'][np['auth_seq_id'].index(_seqId)]
                                     if _seqId not in _factor['seq_id']:
                                         if self.__reasons is not None and self.__preferAuthSeq and realSeqId in np['auth_seq_id']:
                                             pass

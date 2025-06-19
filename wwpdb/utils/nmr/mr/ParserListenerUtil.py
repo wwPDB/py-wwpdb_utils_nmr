@@ -2644,9 +2644,14 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                 return atomId
 
             if ccU.getTypeOfCompId(refCompId)[0] and atomId in aminoProtonCode and refAtomIdList is not None:
-                for _atomId in aminoProtonCode:
-                    if _atomId in refAtomIdList:
-                        return _atomId
+                if atomId[-1] in ('%', '*', '#'):
+                    for _atomId in aminoProtonCode:
+                        if _atomId in refAtomIdList:
+                            return _atomId + '%'
+                else:
+                    for _atomId in aminoProtonCode:
+                        if _atomId in refAtomIdList:
+                            return _atomId
 
             if atomId.startswith('M') or atomId.startswith('HM') or atomId.startswith('QM'):  # methyl group
                 if refAtomIdList is not None:
@@ -2792,7 +2797,7 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                     elif 'H' + atomId[1:] + '1' in _refAtomIdList or 'H' + atomId[1:] + '11' in _refAtomIdList:
                         return 'H' + atomId[1:] + '%'
 
-                elif atomId in ('HT', 'HT%', 'HT*'):  # 6e83
+                elif atomId in ('HT', 'HT%', 'HT*', 'HT#'):  # 6e83
                     if refAtomIdList is not None and 'H1' in refAtomIdList:
                         return 'H%'
 

@@ -5710,7 +5710,7 @@ class CnsMRParserListener(ParseTreeListener):
                         atomIds, _, details = self.__nefT.get_valid_star_atom(compId, _atomId, leave_unmatched=True)
                         if details is not None:
                             atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
-                        _atomId = toNefEx(toRegEx(atomId))
+                        _atomId = toNefEx(toRegEx(atomId)) + '$'
                     elif lenAtomIds == 2:
                         atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
                         atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
@@ -5753,9 +5753,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                 continue
                                         _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
                                         if coordAtomSite is not None:
-                                            _atomId = toNefEx(toRegEx(tmpAtomId))
+                                            __atomId = toNefEx(toRegEx(tmpAtomId)) + '$'
                                             for realAtomId in coordAtomSite['atom_id']:
-                                                if re.match(_atomId, realAtomId):
+                                                if re.match(_atomId, realAtomId) or re.match(__atomId, realAtomId):
                                                     if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId, tmpAtomId, _matchedAtomIds):
                                                         continue
                                                     _atomIdSelect.add(realAtomId)
@@ -5774,9 +5774,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                     continue
                                             _, coordAtomSite = self.getCoordAtomSiteOf(chainId, realSeqId, cifCheck=cifCheck)
                                             if coordAtomSite is not None:
-                                                _atomId = toNefEx(toRegEx(tmpAtomId))
+                                                __atomId = toNefEx(toRegEx(tmpAtomId)) + '$'
                                                 for realAtomId in coordAtomSite['atom_id']:
-                                                    if re.match(_atomId, realAtomId):
+                                                    if re.match(_atomId, realAtomId) or re.match(__atomId, realAtomId):
                                                         if nucleotide and not is_real_nucleic_atom_id(realAtomId, atomId, tmpAtomId, _matchedAtomIds):
                                                             continue
                                                         _atomIdSelect.add(realAtomId)
@@ -5911,7 +5911,7 @@ class CnsMRParserListener(ParseTreeListener):
                             atomIds, _, details = self.__nefT.get_valid_star_atom(compId, _atomId, leave_unmatched=True)
                             if details is not None:
                                 atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
-                            _atomId = toNefEx(toRegEx(atomId))
+                            _atomId = toNefEx(toRegEx(atomId)) + '$'
                         elif lenAtomIds == 2:
                             atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
                             atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
@@ -6733,11 +6733,11 @@ class CnsMRParserListener(ParseTreeListener):
                             updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
 
                         origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
-
+                        """
                         if isinstance(origAtomId, str) and origAtomId.startswith('HT') and coordAtomSite is not None and origAtomId not in atomSiteAtomId:
                             if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                                 continue
-
+                        """
                         atomId = atomId.upper()
 
                         if not isPolySeq and compId in PARAMAGNETIC_ELEMENTS:
@@ -6805,7 +6805,7 @@ class CnsMRParserListener(ParseTreeListener):
                             if atomId in atomSiteAtomId:
                                 atomIds = [atomId]
                             elif 'alt_atom_id' in _factor:
-                                _atomId_ = toNefEx(toRegEx(_factor['alt_atom_id']))
+                                _atomId_ = toNefEx(toRegEx(_factor['alt_atom_id'])) + '$'
                                 _atomIds_ = [_atomId for _atomId in atomSiteAtomId if re.match(_atomId_, _atomId)]
                                 if len(_atomIds_) > 0:
                                     atomIds = _atomIds_
@@ -7677,8 +7677,10 @@ class CnsMRParserListener(ParseTreeListener):
         if details is not None or atomId.endswith('"'):
             _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))
             if _atomId != atomId:
+                """
                 if atomId.startswith('HT') and len(_atomId) == 2:
                     _atomId = 'H'
+                """
                 atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId)[0]
         self.__cachedDictForAtomIdList[key] = atomIds
         return atomIds

@@ -5892,7 +5892,7 @@ class CnsMRParserListener(ParseTreeListener):
                                         elif 'alt_auth_seq_id' in np and np['alt_auth_seq_id'][np['auth_seq_id'].index(_seqId)] in _factor['seq_id']:
                                             _seqId = np['alt_auth_seq_id'][np['auth_seq_id'].index(_seqId)]
                                     if _seqId not in _factor['seq_id']:
-                                        if self.__reasons is not None and self.__preferAuthSeq and realSeqId in np['auth_seq_id']:
+                                        if self.__reasons is not None and (self.__preferAuthSeq or _seqId != realSeqId) and realSeqId in np['auth_seq_id']:
                                             pass
                                         else:
                                             ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId)
@@ -6110,7 +6110,7 @@ class CnsMRParserListener(ParseTreeListener):
                                         elif 'alt_auth_seq_id' in np and np['alt_auth_seq_id'][np['auth_seq_id'].index(_seqId)] in _factor['seq_id']:
                                             _seqId = np['alt_auth_seq_id'][np['auth_seq_id'].index(_seqId)]
                                     if _seqId not in _factor['seq_id']:
-                                        if self.__reasons is not None and self.__preferAuthSeq and realSeqId in np['auth_seq_id']:
+                                        if self.__reasons is not None and (self.__preferAuthSeq or _seqId != realSeqId) and realSeqId in np['auth_seq_id']:
                                             pass
                                         else:
                                             ptnr = getStructConnPtnr(self.__cR, chainId, realSeqId)

@@ -7203,15 +7203,19 @@ class CnsMRParserListener(ParseTreeListener):
                                                         if isPolySeq and not self.__preferAuthSeq\
                                                            and ('label_seq_offset' not in self.reasonsForReParsing
                                                                 or chainId not in self.reasonsForReParsing['label_seq_offset']):
-                                                            if 'label_seq_offset' not in self.reasonsForReParsing:
-                                                                self.reasonsForReParsing['label_seq_offset'] = {}
-                                                            offset = self.getLabelSeqOffsetDueToUnobs(ps)
-                                                            self.reasonsForReParsing['label_seq_offset'][chainId] = offset
-                                                            if offset != 0:
-                                                                if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                                    self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                                if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
-                                                                    self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
+                                                            if self.__csStat.peptideLike(compId) and origAtomId0 in aminoProtonCode\
+                                                               and (self.__has_nx and compId == 'PRO') or origAtomId0.startswith('HT'):
+                                                                pass
+                                                            else:
+                                                                if 'label_seq_offset' not in self.reasonsForReParsing:
+                                                                    self.reasonsForReParsing['label_seq_offset'] = {}
+                                                                offset = self.getLabelSeqOffsetDueToUnobs(ps)
+                                                                self.reasonsForReParsing['label_seq_offset'][chainId] = offset
+                                                                if offset != 0:
+                                                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                                        self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                                    if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
+                                                                        self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                                         if len(self.__polySeq) == 1\
                                                            and (seqId < 1
                                                                 or (compId == 'ACE' and seqId == min(self.__polySeq[0]['auth_seq_id']) - 1)
@@ -7255,10 +7259,12 @@ class CnsMRParserListener(ParseTreeListener):
                                                             if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
                                                                and _factor['chain_id'][0] != chainId and compId in monDict3:
                                                                 continue
-                                                            if self.__has_nx and self.__csStat.peptideLike(compId) and origAtomId0 in aminoProtonCode:
-                                                                if compId == 'PRO':
+                                                            if self.__csStat.peptideLike(compId) and origAtomId0 in aminoProtonCode:
+                                                                if (self.__has_nx and compId == 'PRO') or origAtomId0.startswith('HT'):
                                                                     _atomSelection.remove(selection)
-                                                                continue
+                                                                    continue
+                                                                if self.__has_nx:
+                                                                    continue
                                                             warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                                 and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
                                                                 else 'Atom not found'
@@ -7397,8 +7403,9 @@ class CnsMRParserListener(ParseTreeListener):
                                                         if compId not in _factor['expected_comp_id']:
                                                             _factor['expected_comp_id'].append(compId)
                                                         continue
-                                                    if self.__has_nx and self.__csStat.peptideLike(compId) and compId != 'PRO' and origAtomId0 in aminoProtonCode:
-                                                        continue
+                                                    if self.__csStat.peptideLike(compId) and origAtomId0 in aminoProtonCode:
+                                                        if self.__has_nx or origAtomId0.startswith('HT'):
+                                                            continue
                                                     warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                         and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
                                                         else 'Atom not found'
@@ -7694,10 +7701,6 @@ class CnsMRParserListener(ParseTreeListener):
         if details is not None or atomId.endswith('"'):
             _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))
             if _atomId != atomId:
-                """
-                if atomId.startswith('HT') and len(_atomId) == 2:
-                    _atomId = 'H'
-                """
                 atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId)[0]
         self.__cachedDictForAtomIdList[key] = atomIds
         return atomIds

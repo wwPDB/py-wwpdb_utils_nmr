@@ -60572,65 +60572,78 @@ class NmrDpUtility:
 
             self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
 
-            if sf_category in self.__sf_category_list:
+            has_entry_info = sf_category in self.__sf_category_list
 
+            if has_entry_info:
                 sf = master_entry.get_saveframes_by_category(sf_category)[0]
 
-                # update _Data_set loop
+            else:
+                sf_framecode = 'entry_information'
 
-                lp_category = '_Data_set'
+                sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
+                sf.set_tag_prefix('_Entry')
+                sf.add_tag('Sf_category', sf_framecode)
+                sf.add_tag('Sf_framecode', sf_framecode)
+                sf.add_tag('ID', self.__entry_id)
 
-                loop = next((loop for loop in sf.loops if loop.category == lp_category), None)
+            # update _Data_set loop
 
-                if loop is not None:
-                    del sf[loop]
+            lp_category = '_Data_set'
 
-                lp = pynmrstar.Loop.from_scratch(lp_category)
+            loop = next((loop for loop in sf.loops if loop.category == lp_category), None)
 
-                items = ['Type', 'Count', 'Entry_ID']
+            if loop is not None:
+                del sf[loop]
 
-                tags = [lp_category + '.' + item for item in items]
+            lp = pynmrstar.Loop.from_scratch(lp_category)
 
-                lp.add_tag(tags)
+            items = ['Type', 'Count', 'Entry_ID']
 
-                for content_subtype in self.nmr_rep_content_subtypes:
-                    sf_category = self.sf_categories[file_type][content_subtype]
+            tags = [lp_category + '.' + item for item in items]
 
-                    if sf_category.endswith('constraints'):  # ignore non-quantitative data set
-                        continue
+            lp.add_tag(tags)
 
-                    count = sum(1 for sf in master_entry.frame_list if sf.category == sf_category)
+            for content_subtype in self.nmr_rep_content_subtypes:
+                sf_category = self.sf_categories[file_type][content_subtype]
 
-                    if count > 0:
-                        row = [sf_category, count, self.__entry_id]
-                        lp.add_data(row)
+                if sf_category.endswith('constraints'):  # ignore non-quantitative data set
+                    continue
 
-                lp.sort_rows('Type')
+                count = sum(1 for sf in master_entry.frame_list if sf.category == sf_category)
 
-                sf.add_loop(lp)
-
-                # update _Datum loopa
-
-                lp_category = '_Datum'
-
-                loop = next((loop for loop in sf.loops if loop.category == lp_category), None)
-
-                if loop is not None:
-                    del sf[loop]
-
-                lp = pynmrstar.Loop.from_scratch(lp_category)
-
-                tags = [lp_category + '.' + item for item in items]
-
-                lp.add_tag(tags)
-
-                datum_counter = self.__getDatumCounter(master_entry)
-
-                for k, v in datum_counter.items():
-                    row = [k, v, self.__entry_id]
+                if count > 0:
+                    row = [sf_category, count, self.__entry_id]
                     lp.add_data(row)
 
-                sf.add_loop(lp)
+            lp.sort_rows('Type')
+
+            sf.add_loop(lp)
+
+            # update _Datum loopa
+
+            lp_category = '_Datum'
+
+            loop = next((loop for loop in sf.loops if loop.category == lp_category), None)
+
+            if loop is not None:
+                del sf[loop]
+
+            lp = pynmrstar.Loop.from_scratch(lp_category)
+
+            tags = [lp_category + '.' + item for item in items]
+
+            lp.add_tag(tags)
+
+            datum_counter = self.__getDatumCounter(master_entry)
+
+            for k, v in datum_counter.items():
+                row = [k, v, self.__entry_id]
+                lp.add_data(row)
+
+            sf.add_loop(lp)
+
+            if not has_entry_info:
+                master_entry.add_saveframe(sf)
 
         except IndexError as e:
             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - " + str(e))

@@ -34417,7 +34417,7 @@ class NmrDpUtility:
                 if atom_map not in self.__mr_atom_name_mapping:
                     self.__mr_atom_name_mapping.append(atom_map)
 
-        if len(self.__mr_atom_name_mapping) > 1:
+        if self.__mr_atom_name_mapping is not None and len(self.__mr_atom_name_mapping) > 1:
             self.__mr_atom_name_mapping = list(reversed(self.__mr_atom_name_mapping))
 
         amberAtomNumberDict = gromacsAtomNumberDict = charmmAtomNumberDict = None

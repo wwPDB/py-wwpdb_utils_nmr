@@ -5229,7 +5229,7 @@ class CharmmMRParserListener(ParseTreeListener):
         preferLabelSeq = False
         if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and 'segment_id_match_stats' in self.__reasons:
             for k, v in self.__reasons['segment_id_mismatch'].items():
-                if v == ps['auth_chain_id']:
+                if v == ps['auth_chain_id'] and 'identical_auth_chain_id' not in ps:  # prevent unexpected sequence scheme switch (6l8v)
                     if k in self.__reasons['segment_id_match_stats']:
                         if v in self.__reasons['segment_id_match_stats'][k] and self.__reasons['segment_id_match_stats'][k][v] == 0:
                             # no hope for auth sequence scheme (2mnz)

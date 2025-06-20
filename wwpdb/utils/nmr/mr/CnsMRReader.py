@@ -227,6 +227,24 @@ if __name__ == "__main__":
     reader = CnsMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6l8v/D_1300013940_mr_P2.xplor-nih.V3-corrected',
+                     '../../tests-nmr/mock-data-remediation/6l8v/6l8v.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6l8v/D_1300013940_mr_P2.xplor-nih.V3-corrected',
+                 '../../tests-nmr/mock-data-remediation/6l8v/6l8v.cif')
+
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2jnh/2jnh-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2jnh/2jnh.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/5mnw/cns_run30.tbl',
                      '../../tests-nmr/mock-data-remediation/5mnw/5mnw.cif')
     print(reader_listener.getReasonsForReparsing())

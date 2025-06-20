@@ -2330,6 +2330,10 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
         item = next((item for item in mapping
                      if item['original_atom_id'] == atomId), None)
 
+        if item is None:
+            item = next((item for item in mapping
+                         if item['original_atom_id'] == atomId[1:] + atomId[0]), None)
+
         if item is not None:
 
             _atomId_ = item['auth_atom_id']
@@ -2652,6 +2656,10 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
 
         item = next((item for item in mapping
                      if item['original_atom_id'] == atomId), None)
+
+        if item is None:
+            item = next((item for item in mapping
+                         if item['original_atom_id'] == atomId[1:] + atomId[0]), None)
 
         if item is not None:
 
@@ -3787,6 +3795,7 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
 
         for c in coord:
             c_prev = next((c_prev for c_prev in coord_prev if c_prev['x'] == c['x'] and c_prev['y'] == c['y'] and c_prev['z'] == c['z']), None)
+
             if c_prev is None:
                 continue
 
@@ -3880,6 +3889,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
 
     for c in coord:
         c_prev = next((c_prev for c_prev in coord_prev if c_prev['x'] == c['x'] and c_prev['y'] == c['y'] and c_prev['z'] == c['z']), None)
+
         if c_prev is None:
             continue
 
@@ -3894,6 +3904,37 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
                         'original_seq_id': c_prev['seq_id']}
             if atom_map not in atom_name_mapping:
                 atom_name_mapping.append(atom_map)
+
+    if cR_prev.hasItem('atom_site', 'pdbx_auth_atom_name'):
+        coord_prev = cR_prev.getDictListWithFilter('atom_site',
+                                                   [{'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                    {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                                                    {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
+                                                    {'name': 'pdbx_auth_atom_name', 'type': 'starts-with-alnum', 'alt_name': 'alt_atom_id'}
+                                                    ],
+                                                   [{'name': 'auth_comp_id', 'type': 'enum', 'enum': nstd_residues_prev},
+                                                    {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': rep_model_id},
+                                                    {'name': 'label_alt_id', 'type': 'enum', 'enum': (rep_alt_id,)}
+                                                    ])
+
+        for c in coord:
+            c_prev = next((c_prev for c_prev in coord_prev if c['comp_id'] == c_prev['comp_id'] and c['atom_id'] == c_prev['atom_id']
+                           and c['atom_id'] != c_prev['alt_atom_id'] and 'done' not in c_prev), None)
+
+            if c_prev is None:
+                continue
+
+            atom_map = {'auth_atom_id': c['atom_id'],
+                        'auth_comp_id': c['comp_id'],
+                        'auth_seq_id': c['seq_id'],
+                        'original_atom_id': c_prev['alt_atom_id'],
+                        'original_comp_id': c_prev['comp_id'],
+                        'original_seq_id': c_prev['seq_id']}
+
+            if atom_map not in atom_name_mapping:
+                atom_name_mapping.append(atom_map)
+
+            c_prev['done'] = True
 
     if len(atom_name_mapping) == 0:
         atom_name_mapping = None

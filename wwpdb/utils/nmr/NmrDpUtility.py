@@ -17826,19 +17826,6 @@ class NmrDpUtility:
             except OSError:
                 pass
 
-        if self.__versioned_atom_name_mapping is not None:
-            for atom_map in self.__versioned_atom_name_mapping:
-                if atom_map not in self.__mr_atom_name_mapping:
-                    self.__mr_atom_name_mapping.append(atom_map)
-
-        if self.__internal_atom_name_mapping is not None:
-            for atom_map in self.__internal_atom_name_mapping:
-                if atom_map not in self.__mr_atom_name_mapping:
-                    self.__mr_atom_name_mapping.append(atom_map)
-
-        if len(self.__mr_atom_name_mapping) > 1:
-            self.__mr_atom_name_mapping = list(reversed(self.__mr_atom_name_mapping))
-
         return not self.report.isError()
 
     def __getPeakListFileTypeAndContentSubtype(self, file_path: str) -> Tuple[Optional[str], Optional[dict]]:
@@ -34419,6 +34406,19 @@ class NmrDpUtility:
 
         if not has_poly_seq:
             return False
+
+        if self.__versioned_atom_name_mapping is not None:
+            for atom_map in self.__versioned_atom_name_mapping:
+                if atom_map not in self.__mr_atom_name_mapping:
+                    self.__mr_atom_name_mapping.append(atom_map)
+
+        if self.__internal_atom_name_mapping is not None:
+            for atom_map in self.__internal_atom_name_mapping:
+                if atom_map not in self.__mr_atom_name_mapping:
+                    self.__mr_atom_name_mapping.append(atom_map)
+
+        if len(self.__mr_atom_name_mapping) > 1:
+            self.__mr_atom_name_mapping = list(reversed(self.__mr_atom_name_mapping))
 
         amberAtomNumberDict = gromacsAtomNumberDict = charmmAtomNumberDict = None
         _amberAtomNumberDict = {}

@@ -7406,6 +7406,8 @@ class CnsMRParserListener(ParseTreeListener):
                                                     if self.__csStat.peptideLike(compId) and origAtomId0 in aminoProtonCode:
                                                         if self.__has_nx or origAtomId0.startswith('HT'):
                                                             continue
+                                                    if self.__cur_subtype == 'dihed' and _atomId == 'P' and self.__csStat.getTypeOfCompId(compId)[1]:
+                                                        continue
                                                     warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                         and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
                                                         else 'Atom not found'

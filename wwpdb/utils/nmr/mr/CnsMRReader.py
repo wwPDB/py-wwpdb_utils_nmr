@@ -224,6 +224,11 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6mxq/TL1_Dihedral_Restraints.tbl-corrected',
+                 '../../tests-nmr/mock-data-remediation/6mxq/6mxq.cif')
+
     reader = CnsMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\

@@ -10508,8 +10508,11 @@ class XplorMRParserListener(ParseTreeListener):
                                                 ligands = 0
 
                                     elif ligands > 1 and len(_factor['atom_id']) == 1\
-                                            and _factor['atom_id'][0] is not None and _factor['atom_id'][0].upper() in SYMBOLS_ELEMENT:  # 2n3r
-                                        elemName = _factor['atom_id'][0].upper()
+                                            and _factor['atom_id'][0] is not None\
+                                            and (_factor['atom_id'][0].upper() in SYMBOLS_ELEMENT  # 2n3r
+                                                 or (_factor['atom_id'][0][-2] == '+' and _factor['atom_id'][0][-1].isdigit()
+                                                     and _factor['atom_id'][0][:2].upper() in SYMBOLS_ELEMENT)):  # 6kg9
+                                        elemName = _factor['atom_id'][0][:-2].upper()
                                         elemCount = 0
                                         refElemSeqIds = []
                                         for np in self.__nonPoly:

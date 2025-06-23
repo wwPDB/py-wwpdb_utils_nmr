@@ -226,6 +226,23 @@ class CnsMRReader:
 if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6kg9/ca.tbl',
+                     '../../tests-nmr/mock-data-remediation/6kg9/6kg9.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6kg9/ca.tbl',
+                 '../../tests-nmr/mock-data-remediation/6kg9/6kg9.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6w4e/KRASGTPdimer_restraints.tbl-corrected',
+                     '../../tests-nmr/mock-data-remediation/6w4e/6w4e.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6mxq/TL1_Dihedral_Restraints.tbl-corrected',
                  '../../tests-nmr/mock-data-remediation/6mxq/6mxq.cif')
 

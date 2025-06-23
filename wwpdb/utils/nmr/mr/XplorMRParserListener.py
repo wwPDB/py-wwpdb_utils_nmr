@@ -10502,7 +10502,10 @@ class XplorMRParserListener(ParseTreeListener):
                                         for np in self.__nonPoly:
                                             _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
                                             if _coordAtomSite is not None and len(_factor['atom_id']) == 1\
-                                               and _factor['atom_id'][0] is not None and _factor['atom_id'][0].upper() in _coordAtomSite['atom_id']:
+                                               and _factor['atom_id'][0] is not None\
+                                               and (_factor['atom_id'][0].upper() in _coordAtomSite['atom_id']
+                                                    or (_factor['atom_id'][0][-2] == '+' and _factor['atom_id'][0][-1].isdigit()
+                                                        and _factor['atom_id'][0][:2].upper() in _coordAtomSite['atom_id'])):
                                                 ligands = update_np_seq_id_remap_request(self.__nonPoly[0], ligands)
                                             else:
                                                 ligands = 0

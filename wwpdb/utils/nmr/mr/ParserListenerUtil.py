@@ -3207,6 +3207,10 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                 if len(nh) == 1:
                     if nh[0] in refAtomIdList:
                         return nh[0]
+        if atomId.startswith('HN') and "'" not in atomId and atomId[-1] in ('%', '*', '#'):  # 2ky8: DG:HN* -> H4%
+            nh2 = ccU.getRepAminoProtons(refCompId)
+            if len(nh2) == 1:
+                return nh2[0][:-1] + '%'
         if lenAtomId > 1 and atomId[-1] not in ('%', '*', '#') and refCompId not in monDict3:
             canAtomIdList = [_atomId for _atomId in refAtomIdList if _atomId[0] == atomId[0]]
             if len(canAtomIdList) > 0:

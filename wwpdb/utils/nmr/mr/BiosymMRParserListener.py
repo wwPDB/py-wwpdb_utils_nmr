@@ -1963,7 +1963,7 @@ class BiosymMRParserListener(ParseTreeListener):
                             _atomId = [_atomId[int(atomId[-1]) - 1]]
 
             if details is not None or atomId.endswith('"'):
-                _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU)
+                _atomId_ = translateToStdAtomName(atomId, cifCompId, ccU=self.__ccU, unambig=self.__cur_subtype != 'dist')
                 if _atomId_ != atomId:
                     if atomId.startswith('HT') and len(_atomId_) == 2:
                         _atomId_ = 'H'

@@ -2644,7 +2644,7 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                 return atomId
 
             if ccU.getTypeOfCompId(refCompId)[0] and atomId in aminoProtonCode and refAtomIdList is not None:
-                if atomId[-1] in ('%', '*', '#'):
+                if atomId[-1] in ('%', '*', '#') and not unambig:
                     for _atomId in aminoProtonCode:
                         if _atomId in refAtomIdList:
                             return _atomId + '%'
@@ -2742,7 +2742,7 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                 _atomId = 'H' + atomId[1:]
                 if _atomId in _refAtomIdList:
                     return _atomId
-                if _atomId + '2' in _refAtomIdList:
+                if _atomId + '2' in _refAtomIdList and not unambig:
                     return _atomId + '%'
 
             if atomId[0] in ('N', 'O', 'P', 'S', 'F') and refAtomIdList is not None:
@@ -2836,7 +2836,7 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                 return 'HD21'
             if atomId == 'HND2':
                 return 'HD22'
-            if atomId == 'HND' or (atomId.startswith('HN') and atomId[-1] in ('%', '*', '#')):  # 8dhz: ASN/HN#
+            if atomId == 'HND' or (atomId.startswith('HN') and atomId[-1] in ('%', '*', '#')) and not unambig:  # 8dhz: ASN/HN#
                 return 'HD2'
 
         elif refCompId == 'GLN' and (atomId.startswith('HNE') or (atomId.startswith('HN') and atomId[-1] in ('%', '*', '#'))):  # 2kg1
@@ -2844,7 +2844,7 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                 return 'HE21'
             if atomId == 'HNE2':
                 return 'HE22'
-            if atomId == 'HNE' or (atomId.startswith('HN') and atomId[-1] in ('%', '*', '#')):
+            if atomId == 'HNE' or (atomId.startswith('HN') and atomId[-1] in ('%', '*', '#')) and not unambig:
                 return 'HE2'
 
         elif refCompId == 'ARG' and atomId == 'HNE':  # 8dhz, peak list
@@ -3207,7 +3207,7 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                 if len(nh) == 1:
                     if nh[0] in refAtomIdList:
                         return nh[0]
-        if atomId.startswith('HN') and "'" not in atomId and atomId[-1] in ('%', '*', '#'):  # 2ky8: DG:HN* -> H4%
+        if atomId.startswith('HN') and "'" not in atomId and atomId[-1] in ('%', '*', '#') and not unambig:  # 2ky8: DG:HN* -> H4%
             nh2 = ccU.getRepAminoProtons(refCompId)
             if len(nh2) == 1:
                 return nh2[0][:-1] + '%'
@@ -3241,10 +3241,10 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
         if atomId[:-2] in SYMBOLS_ELEMENT:
             return atomId[:-2]
 
-    if atomId.endswith('++'):
+    if atomId.endswith('++') and not unambig:
         return atomId[:-2] + '*'
 
-    if atomId.endswith('+'):
+    if atomId.endswith('+') and not unambig:
         return atomId[:-1] + '%'
 
     return atomId

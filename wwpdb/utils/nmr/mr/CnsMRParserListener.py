@@ -5284,6 +5284,8 @@ class CnsMRParserListener(ParseTreeListener):
                 self.__has_nx = True
             return copy.deepcopy(self.__cachedDictForFactor[key])
 
+        unambig = self.__cur_subtype != 'dist'
+
         len_warn_msg = len(self.__f)
 
         chain_not_specified = np_chain_not_specified = 'alt_chain_id' not in _factor
@@ -5702,7 +5704,7 @@ class CnsMRParserListener(ParseTreeListener):
                     refAtomIdList = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                     tmpAtomId = _factor['atom_ids'][0].upper()
                     if lenAtomIds == 1:
-                        atomId = _atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
+                        atomId = _atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU, unambig=unambig)
                         if atomId[-1] in ('%', '*', '#'):
                             if atomId[0] == 'H' and len(atomId) > 2:
                                 if atomId[1] != 'M':
@@ -5723,8 +5725,8 @@ class CnsMRParserListener(ParseTreeListener):
                                 _atomId = _atomIds[0]
                                 atomIds, details = _atomIds, _details
                     elif lenAtomIds == 2:
-                        atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
-                        atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
+                        atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU, unambig=unambig)
+                        atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU, unambig=unambig)
                     _atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
                     nucleotide = self.__csStat.getTypeOfCompId(compId)[1]
                     if lenAtomIds == 1 and nucleotide:
@@ -5913,7 +5915,7 @@ class CnsMRParserListener(ParseTreeListener):
                         refAtomIdList = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                         tmpAtomId = _factor['atom_ids'][0].upper()
                         if lenAtomIds == 1:
-                            atomId = _atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
+                            atomId = _atomId = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU, unambig=unambig)
                             if atomId[-1] in ('%', '*', '#'):
                                 if atomId[0] == 'H' and len(atomId) > 2:
                                     if atomId[1] != 'M':
@@ -5927,8 +5929,8 @@ class CnsMRParserListener(ParseTreeListener):
                                 atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                             _atomId = toNefEx(toRegEx(atomId))
                         elif lenAtomIds == 2:
-                            atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU)
-                            atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU)
+                            atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU, unambig=unambig)
+                            atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU, unambig=unambig)
                         _atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
                         nucleotide = self.__csStat.getTypeOfCompId(compId)[1]
                         if lenAtomIds == 1 and nucleotide:
@@ -7709,14 +7711,16 @@ class CnsMRParserListener(ParseTreeListener):
         if key in self.__cachedDictForAtomIdList:
             return copy.copy(self.__cachedDictForAtomIdList[key])
         atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+        if self.__cur_subtype not in ('dist', 'plane') and len(atomIds) > 1:
+            return [atomId]
         if details is not None and len(atomId) > 1 and not atomId[-1].isalpha()\
-           and 'alt_atom_id' in factor and factor['alt_atom_id'][-1] not in ('%', '*', '#'):
+           and 'alt_atom_id' in factor and factor['alt_atom_id'][-1] not in ('%', '*', '#') and self.__cur_subtype == 'dist':
             atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
             if atomId[-1].isdigit() and int(atomId[-1]) <= len(atomIds):
                 atomIds = [atomIds[int(atomId[-1]) - 1]]
 
         if details is not None or atomId.endswith('"'):
-            _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU))
+            _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.__ccU, unambig=False))
             if _atomId != atomId:
                 atomIds = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId)[0]
         self.__cachedDictForAtomIdList[key] = atomIds

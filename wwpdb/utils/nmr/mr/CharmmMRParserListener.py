@@ -4155,7 +4155,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                         pass  # 8bxj
                                     # 2knf, 2ma9
                                     elif _atomId is None\
-                                            or (_atomId not in aminoProtonCode and _atomId not in carboxylCode and _atomId not in jcoupBbPairCode):
+                                            or (_atomId not in aminoProtonCode and _atomId not in carboxylCode and _atomId not in jcoupBbPairCode)\
+                                            or any('gap_in_auth_seq' in ps for ps in self.__polySeq):  # 2kyg
                                         self.__preferAuthSeq = not self.__preferAuthSeq
                                         # self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                                         self.__setLocalSeqScheme()

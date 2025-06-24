@@ -626,7 +626,9 @@ class CharmmMRParserListener(ParseTreeListener):
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
                     if self.__reasons is None\
-                       and any(f for f in self.__f if '[Anomalous data]' in f):
+                       and any(f for f in self.__f if '[Anomalous data]' in f)\
+                       and 'segment_id_mismatch' not in self.reasonsForReParsing\
+                       and (self.distRestraints > 0 or len(self.__polySeq) == 1 or all('identical_chain_id' in ps for ps in self.__polySeq)):
                         set_label_seq_scheme()
 
                     if self.__reasons is None\
@@ -1361,11 +1363,13 @@ class CharmmMRParserListener(ParseTreeListener):
 
                     elif ('non_poly_remap' in self.reasonsForReParsing or 'branch_remap' in self.reasonsForReParsing)\
                             and 'global_sequence_offset' not in self.reasonsForReParsing\
-                            and 'global_auth_sequence_offset' not in self.reasonsForReParsing:
-                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                            self.reasonsForReParsing['label_seq_scheme'] = {}
-                        self.reasonsForReParsing['label_seq_scheme']['dist'] = True
-                        set_label_seq_scheme()
+                            and 'global_auth_sequence_offset' not in self.reasonsForReParsing\
+                            and 'segment_id_mismatch' not in self.reasonsForReParsing:
+                        if self.distRestraints > 0 or len(self.__polySeq) == 1 or all('identical_chain_id' in ps for ps in self.__polySeq):
+                            if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['label_seq_scheme'] = {}
+                            self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                            set_label_seq_scheme()
 
             elif self.__reasons is None and len(self.reasonsForReParsing) == 0 and all('[Insufficient atom selection]' in f for f in self.__f):
                 set_label_seq_scheme()

@@ -7680,7 +7680,8 @@ def getSaveframe(mrSubtype: str, sf_framecode: str,
             sf.add_tag(tag_item_name, alignCenter['chain_id'])
         elif tag_item_name == 'Tensor_auth_seq_ID' and mrSubtype in ('prdc', 'rdc_restraint') and alignCenter is not None:
             sf.add_tag(tag_item_name, alignCenter['seq_id'])
-        elif tag_item_name == 'Tensor_auth_comp_ID' and mrSubtype in ('prdc', 'rdc_restraint') and alignCenter is not None:
+        elif tag_item_name == 'Tensor_auth_comp_ID' and mrSubtype in ('prdc', 'rdc_restraint') and alignCenter is not None\
+                and 'comp_id' in alignCenter:
             sf.add_tag(tag_item_name, alignCenter['comp_id'])
         elif tag_item_name == 'Tensor_magnitude' and mrSubtype.startswith('rdc') and cyanaParameter is not None:
             sf.add_tag(tag_item_name, cyanaParameter['magnitude'])

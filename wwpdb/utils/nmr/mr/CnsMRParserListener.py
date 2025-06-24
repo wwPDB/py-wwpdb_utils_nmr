@@ -768,7 +768,9 @@ class CnsMRParserListener(ParseTreeListener):
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
                     if self.__reasons is None\
-                       and any(f for f in self.__f if '[Anomalous data]' in f):
+                       and any(f for f in self.__f if '[Anomalous data]' in f)\
+                       and 'segment_id_mismatch' not in self.reasonsForReParsing\
+                       and (self.distRestraints > 0 or len(self.__polySeq) == 1 or all('identical_chain_id' in ps for ps in self.__polySeq)):
                         set_label_seq_scheme()
 
                     if self.__reasons is None\
@@ -1502,11 +1504,13 @@ class CnsMRParserListener(ParseTreeListener):
 
                     elif ('non_poly_remap' in self.reasonsForReParsing or 'branch_remap' in self.reasonsForReParsing)\
                             and 'global_sequence_offset' not in self.reasonsForReParsing\
-                            and 'global_auth_sequence_offset' not in self.reasonsForReParsing:
-                        if 'label_seq_scheme' not in self.reasonsForReParsing:
-                            self.reasonsForReParsing['label_seq_scheme'] = {}
-                        self.reasonsForReParsing['label_seq_scheme']['dist'] = True
-                        set_label_seq_scheme()
+                            and 'global_auth_sequence_offset' not in self.reasonsForReParsing\
+                            and 'segment_id_mismatch' not in self.reasonsForReParsing:
+                        if self.distRestraints > 0 or len(self.__polySeq) == 1 or all('identical_chain_id' in ps for ps in self.__polySeq):
+                            if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['label_seq_scheme'] = {}
+                            self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                            set_label_seq_scheme()
 
             elif self.__reasons is None and len(self.reasonsForReParsing) == 0 and all('[Insufficient atom selection]' in f for f in self.__f):
                 set_label_seq_scheme()
@@ -6921,12 +6925,16 @@ class CnsMRParserListener(ParseTreeListener):
                                         if _coordAtomSite is not None and not may_exist:
                                             _compId = _coordAtomSite['comp_id']
                                             _atomId = self.getAtomIdList(_factor, _compId, atomId)[0]
+                                            skip = self.__with_axis and len(self.__polySeq) > 1 and not all('identical_chain_id' in ps for ps in self.__polySeq)
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 if self.__cur_subtype != 'dist'\
                                                    or (has_nx_local and not has_nx_anchor and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
-                                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                        self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                    self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
+                                                    if skip:
+                                                        pass
+                                                    else:
+                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                        self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                                 elif _atomId in _coordAtomSite['atom_id']:
                                                     # _atom = {}
                                                     # _atom['comp_id'] = _compId
@@ -6943,9 +6951,12 @@ class CnsMRParserListener(ParseTreeListener):
                                                 _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
                                                 if self.__cur_subtype != 'dist'\
                                                    or (has_nx_local and not has_nx_anchor and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
-                                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                        self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                    self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
+                                                    if skip:
+                                                        pass
+                                                    else:
+                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                        self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                                 else:
                                                     _atom = {}
                                                     _atom['comp_id'] = _compId
@@ -6960,9 +6971,12 @@ class CnsMRParserListener(ParseTreeListener):
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
                                                 if self.__cur_subtype != 'dist'\
                                                    or (has_nx_local and not has_nx_anchor and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
-                                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                        self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                    self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
+                                                    if skip:
+                                                        pass
+                                                    else:
+                                                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                        self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                                 else:
                                                     _atom = {}
                                                     _atom['comp_id'] = _compId
@@ -7252,7 +7266,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                             if 'alt_chain_id' in _factor:
                                                                 self.__failure_chain_ids.append(chainId)
                                                         else:
-                                                            if len(chainIds) > 1 and isPolySeq and not self.__extendAuthSeq:
+                                                            if len(chainIds) > 1 and isPolySeq and not self.__extendAuthSeq and not self.__with_axis:
                                                                 __preferAuthSeq = self.__preferAuthSeq
                                                                 self.__preferAuthSeq = False
                                                                 for __chainId in chainIds:
@@ -7331,7 +7345,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                 elif seqSpecified:
                                                     if resolved and altPolySeq is not None:
                                                         continue
-                                                    if len(chainIds) > 1 and isPolySeq and not self.__extendAuthSeq:
+                                                    if len(chainIds) > 1 and isPolySeq and not self.__extendAuthSeq and not self.__with_axis:
                                                         __preferAuthSeq = self.__preferAuthSeq
                                                         self.__preferAuthSeq = False
                                                         for __chainId in chainIds:

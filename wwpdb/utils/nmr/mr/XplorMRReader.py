@@ -229,6 +229,12 @@ class XplorMRReader:
 
 
 if __name__ == "__main__":
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2rse/2rse-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2rse/2rse.cif')
+
     reasons_ = {'segment_id_mismatch': {'AN1': 'A', 'SSS': None, 'AN2': 'B', 'AN3': 'C', 'AN4': 'D', 'RI1': 'A'},
                 'segment_id_match_stats': {'AN1': {'A': 99, 'B': 90, 'C': 90, 'D': 90},
                                            'SSS': {},

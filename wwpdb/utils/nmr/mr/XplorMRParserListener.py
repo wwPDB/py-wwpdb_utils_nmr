@@ -7610,19 +7610,23 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if not self.__in_block:
+
+                atom_id_5 = None
+
                 try:
                     # check whether if carbon shift restraints or not
                     atom_id_5 = self.atomSelectionSet[4][0]['atom_id']
                 except IndexError:
-                    self.pcsRestraints -= 1
-                    self.hvycsRestraints += 1
-                    if self.__cur_subtype_altered:
-                        self.pcsStatements -= 1
-                        if self.hvycsStatements == 0:
-                            self.hvycsStatements += 1
-                    self.__cur_subtype = 'hvycs'
-                    self.exitCarbon_shift_assign(ctx)
-                    return
+                    if not self.__with_axis:
+                        self.pcsRestraints -= 1
+                        self.hvycsRestraints += 1
+                        if self.__cur_subtype_altered:
+                            self.pcsStatements -= 1
+                            if self.hvycsStatements == 0:
+                                self.hvycsStatements += 1
+                        self.__cur_subtype = 'hvycs'
+                        self.exitCarbon_shift_assign(ctx)
+                        return
 
                 try:
                     # check whether if carbon shift restraints or not
@@ -10599,6 +10603,13 @@ class XplorMRParserListener(ParseTreeListener):
                                             if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                 self.reasonsForReParsing['label_seq_scheme'] = {}
                                             self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
+                                elif self.__with_para and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                                    self.__preferAuthSeq = not self.__preferAuthSeq
+                                    self.__setLocalSeqScheme()
+                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                        self.reasonsForReParsing['label_seq_scheme'] = {}
+                                    self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
+                                    
                             if not atom_not_found_error:
                                 if _atomId is not None and _atomId.startswith('X')\
                                    and _atomId not in SYMBOLS_ELEMENT:  # 8bxj

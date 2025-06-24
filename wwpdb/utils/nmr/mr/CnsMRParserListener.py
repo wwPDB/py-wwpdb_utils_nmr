@@ -6241,16 +6241,18 @@ class CnsMRParserListener(ParseTreeListener):
                 pass
             return False
 
+        _atomId = _factor['atom_id'][0].upper() if _factor['atom_id'][0] is not None else None
+
         if len(_factor['atom_selection']) == 0:
-            if 'atom_id' in _factor and _factor['atom_id'][0] is not None:
-                _atomId = _factor['atom_id'][0].upper() if len(_factor['atom_id'][0]) <= 2 else _factor['atom_id'][0][:2].upper()
-                if self.__with_axis and _atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+            if _atomId is not None:
+                __atomId = _atomId if len(_atomId) <= 2 else _atomId[:2]
+                if self.__with_axis and __atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                     return _factor
-                if self.__cur_subtype == 'dist' and _atomId in XPLOR_NITROXIDE_NAMES:
+                if self.__cur_subtype == 'dist' and __atomId in XPLOR_NITROXIDE_NAMES:
                     return _factor
             __factor = copy.copy(_factor)
             del __factor['atom_selection']
-            if _factor['atom_id'][0] is None and 'alt_atom_id' not in _factor:
+            if _atomId is None and 'alt_atom_id' not in _factor:
                 if self.__cur_subtype != 'plane' and cifCheck and not self.__cur_union_expr:
                     if len(_factor['seq_id']) == 1 and 'alt_atom_id' in _factor and _factor['alt_atom_id'][0] is not None and 'comp_id' not in _factor:
                         for chainId in _factor['chain_id']:
@@ -6275,7 +6277,6 @@ class CnsMRParserListener(ParseTreeListener):
                                 if compIds is not None:
                                     foundCompId = False  # 2l5y
                             if not foundCompId:
-                                _atomId = _factor['atom_id'][0].upper() if _factor['atom_id'][0] is not None else None
                                 # DAOTHER-9063
                                 ligands = 0
                                 if self.__hasNonPoly and self.__cur_subtype == 'dist':
@@ -6308,7 +6309,7 @@ class CnsMRParserListener(ParseTreeListener):
                                             if _coordAtomSite is not None and len(_factor['atom_id']) == 1\
                                                and _atomId is not None\
                                                and (_atomId in _coordAtomSite['atom_id']
-                                                    or (_atomId[-2] == '+' and _atomId[-1].isdigit()
+                                                    or (len(_atomId) == 4 and _atomId[-2] == '+' and _atomId[-1].isdigit()
                                                         and _atomId[:2] in _coordAtomSite['atom_id'])):
                                                 ligands = update_np_seq_id_remap_request(self.__nonPoly[0], ligands)
                                             else:
@@ -6624,11 +6625,13 @@ class CnsMRParserListener(ParseTreeListener):
                         except ValueError:
                             pass
 
+                    atomId = _factor['atom_id'][0].upper()
+
                     if self.__hasNonPoly:
-                        if isPolySeq and len(_factor['atom_id'][0]) == 4\
-                           and _factor['atom_id'][0][:2] in SYMBOLS_ELEMENT\
-                           and _factor['atom_id'][0][2:] in ('+1', '+2', '+3', '1+', '2+', '3+'):
-                            elemName = _factor['atom_id'][0][:2]
+                        if isPolySeq and len(atomId) == 4\
+                           and atomId[:2] in SYMBOLS_ELEMENT\
+                           and atomId[2:] in ('+1', '+2', '+3', '1+', '2+', '3+'):
+                            elemName = atomId[:2]
                             elemCount = 0
                             for np in self.__nonPoly:
                                 if np['comp_id'][0] == elemName:
@@ -6636,11 +6639,11 @@ class CnsMRParserListener(ParseTreeListener):
                             if elemCount > 0:
                                 continue
 
-                        elif not isPolySeq and len(_factor['atom_id'][0]) >= 2\
-                                and (_factor['atom_id'][0] in SYMBOLS_ELEMENT
-                                     or (len(_factor['atom_id'][0]) == 4 and _factor['atom_id'][0][:2] in SYMBOLS_ELEMENT
-                                         and _factor['atom_id'][0][2:] in ('+1', '+2', '+3', '1+', '2+', '3+'))):
-                            elemName = _factor['atom_id'][0][:2]
+                        elif not isPolySeq and len(atomId) >= 2\
+                                and (atomId in SYMBOLS_ELEMENT
+                                     or (len(atomId) == 4 and atomId[:2] in SYMBOLS_ELEMENT
+                                         and atomId[2:] in ('+1', '+2', '+3', '1+', '2+', '3+'))):
+                            elemName = atomId[:2]
                             elemCount = 0
                             for np in self.__nonPoly:
                                 if np['comp_id'][0] == elemName:
@@ -6684,7 +6687,7 @@ class CnsMRParserListener(ParseTreeListener):
                         seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
 
                     if not isPolySeq and isChainSpecified and self.doesNonPolySeqIdMatchWithPolySeqUnobs(_factor['chain_id'][0], _seqId_):
-                        if coordAtomSite is None or _factor['atom_id'][0] not in coordAtomSite['atom_id']:
+                        if coordAtomSite is None or atomId not in coordAtomSite['atom_id']:
                             continue
 
                     if not isPolySeq:
@@ -6707,8 +6710,8 @@ class CnsMRParserListener(ParseTreeListener):
                     atomSiteAtomId = None if coordAtomSite is None else coordAtomSite['atom_id']
 
                     if atomSiteAtomId is not None and isPolySeq and self.__csStat.peptideLike(compId)\
-                       and not any(atomId in atomSiteAtomId for atomId in _factor['atom_id'])\
-                       and all(atomId in ('H1', 'H2', 'HN1', 'HN2', 'NT') for atomId in _factor['atom_id']):
+                       and not any(_atomId in atomSiteAtomId for _atomId in _factor['atom_id'])\
+                       and all(_atomId in ('H1', 'H2', 'HN1', 'HN2', 'NT') for _atomId in _factor['atom_id']):
                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId + 1, cifCheck=cifCheck)
                         if _coordAtomSite is not None and _coordAtomSite['comp_id'] == 'NH2':
                             compId = 'NH2'
@@ -6726,7 +6729,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                     if self.__hasNonPoly and compId == 'CYS':
 
-                        if _factor['atom_id'][0] in zincIonCode:
+                        if atomId in zincIonCode:
                             znCount = 0
                             znSeqId = None
                             for np in self.__nonPoly:
@@ -6743,7 +6746,7 @@ class CnsMRParserListener(ParseTreeListener):
                                         coordAtomSite = _coordAtomSite
                                         atomSiteAtomId = _coordAtomSite['atom_id']
 
-                        if _factor['atom_id'][0] in calciumIonCode:
+                        if atomId in calciumIonCode:
                             caCount = 0
                             caSeqId = None
                             for np in self.__nonPoly:
@@ -7285,6 +7288,8 @@ class CnsMRParserListener(ParseTreeListener):
                                                                     continue
                                                                 if self.__has_nx:
                                                                     continue
+                                                            if self.__cur_subtype == 'dihed' and _atomId == 'P' and self.__csStat.getTypeOfCompId(compId)[1]:
+                                                                continue
                                                             warn_title = 'Anomalous data' if self.__preferAuthSeq and compId == 'PRO' and origAtomId0 in aminoProtonCode\
                                                                 and (seqId != 1 and (chainId, seqId - 1) not in self.__coordUnobsRes and seqId != min(auth_seq_id_list))\
                                                                 else 'Atom not found'
@@ -7361,16 +7366,16 @@ class CnsMRParserListener(ParseTreeListener):
                                                         _coordAtomSite = None
                                                         ligands = 0
                                                         for np in self.__nonPoly:
-                                                            if np['auth_chain_id'] == chainId and _factor['atom_id'][0].upper() == np['comp_id'][0]:
+                                                            if np['auth_chain_id'] == chainId and atomId == np['comp_id'][0]:
                                                                 ligands += len(np['seq_id'])
                                                         if ligands == 0:
                                                             for np in self.__nonPoly:
-                                                                if 'alt_comp_id' in np and np['auth_chain_id'] == chainId and _factor['atom_id'][0].upper() == np['alt_comp_id'][0]:
+                                                                if 'alt_comp_id' in np and np['auth_chain_id'] == chainId and atomId == np['alt_comp_id'][0]:
                                                                     ligands += len(np['seq_id'])
                                                         if ligands == 0:
                                                             for np in self.__nonPoly:
                                                                 _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
-                                                                if _coordAtomSite is not None and _factor['atom_id'][0] in _coordAtomSite['atom_id']:
+                                                                if _coordAtomSite is not None and atomId in _coordAtomSite['atom_id']:
                                                                     ligands += len(np['seq_id'])
                                                         if ligands == 1:
                                                             checked = False
@@ -7378,8 +7383,8 @@ class CnsMRParserListener(ParseTreeListener):
                                                                 self.reasonsForReParsing['np_seq_id_remap'] = {}
                                                             srcSeqId = _factor['seq_id'][0]
                                                             for np in self.__nonPoly:
-                                                                if _factor['atom_id'][0].upper() == np['comp_id'][0]\
-                                                                   or ('alt_comp_id' in np and _factor['atom_id'][0].upper() == np['alt_comp_id'][0]):
+                                                                if atomId == np['comp_id'][0]\
+                                                                   or ('alt_comp_id' in np and atomId == np['alt_comp_id'][0]):
                                                                     dstSeqId = np['seq_id'][0]
                                                                     if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
                                                                         self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
@@ -7393,7 +7398,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                                         self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
                                                                         checked = True
                                                             for np in self.__nonPoly:
-                                                                if _coordAtomSite is not None and _factor['atom_id'][0] in _coordAtomSite['atom_id']:
+                                                                if _coordAtomSite is not None and atomId in _coordAtomSite['atom_id']:
                                                                     dstSeqId = np['seq_id'][0]
                                                                     if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
                                                                         self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
@@ -7714,7 +7719,9 @@ class CnsMRParserListener(ParseTreeListener):
         if key in self.__cachedDictForAtomIdList:
             return copy.copy(self.__cachedDictForAtomIdList[key])
         atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
-        if self.__cur_subtype not in ('dist', 'plane') and len(atomIds) > 1:
+        if self.__cur_subtype not in ('dist', 'plane', 'geo') and len(atomIds) > 1:
+            if self.__cur_subtype == 'dihed' and len(atomIds) == 2 and self.__ccU.hasIntervenedAtom(compId, atomIds[0], atomIds[1]):
+                return atomIds
             return [atomId]
         if details is not None and len(atomId) > 1 and not atomId[-1].isalpha()\
            and 'alt_atom_id' in factor and factor['alt_atom_id'][-1] not in ('%', '*', '#') and self.__cur_subtype == 'dist':

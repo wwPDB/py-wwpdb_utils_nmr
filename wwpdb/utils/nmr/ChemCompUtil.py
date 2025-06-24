@@ -9,6 +9,7 @@
 # 07-Dec-2023  M. Yokochi - add support for PTM items (backbone, n_terminal, c_terminal atom flags)
 # 13-Dec-2023  M. Yokochi - add getAtomsBasedOnGreekLetterSystem(), peptideLike() and getTypeOfCompId() (DAOTHER-8945)
 # 19-Apr-2024  M. Yokochi - add getRepMethyleneOrAminoProtons() and getNonRepMethyleneOrAminoProtons() (DAOTHER-9317)
+# 24-Jun-2025  M. Yokochi - add hasIntervenedAtom() (DAOTHER-7829, 2ky8, D_1300056761)
 ##
 """ Wrapper class for retrieving chemical component dictionary.
     @author: Masashi Yokochi
@@ -501,6 +502,12 @@ class ChemCompUtil:
         """
 
         return atomId2 in self.getBondedAtoms(compId, atomId1)
+
+    def hasIntervenedAtom(self, compId: str, atomId1: str, atomId2: str) -> bool:
+        """ Return whether given two atoms are connected through an intervened atom.
+        """
+
+        return len(set(self.getBondedAtoms(compId, atomId1)) & set(self.getBondedAtoms(compId, atomId2))) == 1
 
     def peptideLike(self, compId: Optional[str] = None) -> bool:
         """ Return whether a given comp_id is peptide-like component.

@@ -2777,6 +2777,10 @@ class AriaMRParserListener(ParseTreeListener):
                                 self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                 f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                                 return atomId, asis
+                            if (compId == 'ASP' and atomId == 'HD1') or (compId == 'GLU' and atomId == 'HE1'):
+                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                                return atomId, asis
                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                             f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                             updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compId)

@@ -6211,7 +6211,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                        isPolySeq=False, isChainSpecified=False,
                                                        altPolySeq=self.__nonPolySeq, resolved=foundCompId)
 
-        atom_not_found_error = len(self.__f) > len_f and any('[Atom not found]' in f for f in self.__f[len_f:])
+        atom_not_found_error = len(self.__f) > len_f and any('[Atom not found]' in f or 'Hydrogen not instantiated' in f for f in self.__f[len_f:])
 
         if 'segment_id' in _factor:
             del _factor['segment_id']
@@ -7315,9 +7315,11 @@ class CnsMRParserListener(ParseTreeListener):
                                                                         and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                                 if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                                 warn_title = 'Coordinate issue'
+                                                            if (compId == 'ASP' and _atomId == 'HD1') or (compId == 'GLU' and _atomId == 'HE1'):
+                                                                warn_title = 'Hydrogen not instantiated'
                                                             self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates.")
-                                                            if warn_title == 'Coordinate issue':
+                                                            if warn_title in ('Coordinate issue', 'Hydrogen not instantiated'):
                                                                 _atomSelection.append(selection)
                                                                 continue
                                                             if 'alt_chain_id' in _factor:
@@ -7458,10 +7460,11 @@ class CnsMRParserListener(ParseTreeListener):
                                                                 and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         warn_title = 'Coordinate issue'
+                                                    if (compId == 'ASP' and _atomId == 'HD1') or (compId == 'GLU' and _atomId == 'HE1'):
+                                                        warn_title = 'Hydrogen not instantiated'
                                                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{origAtomId0} is not present in the coordinates.")
-                                                    if warn_title == 'Coordinate issue':
-                                                        _atomSelection.append(selection)
+                                                    if warn_title in ('Coordinate issue', 'Hydrogen not instantiated'):
                                                         continue
                                                     if self.__cur_subtype == 'dist' and isPolySeq and isChainSpecified and compId in monDict3 and self.__csStat.peptideLike(compId):
                                                         self.checkDistSequenceOffset(chainId, seqId, compId, origAtomId0)

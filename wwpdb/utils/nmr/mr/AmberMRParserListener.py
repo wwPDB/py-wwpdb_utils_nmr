@@ -5454,6 +5454,10 @@ class AmberMRParserListener(ParseTreeListener):
                                                     self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                     f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                     return factor
+                                                if (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1'):
+                                                    self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                    f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                    return factor
                                                 self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                             if 'auth_seq_scheme' not in self.reasonsForReParsing:
@@ -5468,6 +5472,10 @@ class AmberMRParserListener(ParseTreeListener):
                                                 and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                        return factor
+                                    if (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1'):
+                                        self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                         return factor
                                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -5656,6 +5664,10 @@ class AmberMRParserListener(ParseTreeListener):
                                                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                             return factor
+                                                        if (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1'):
+                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                            return factor
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                     if 'auth_seq_scheme' not in self.reasonsForReParsing:
@@ -5670,6 +5682,10 @@ class AmberMRParserListener(ParseTreeListener):
                                                         and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                 if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                 self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                return factor
+                                            if (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1'):
+                                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                 f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                 return factor
                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -6012,6 +6028,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                    elif (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1'):
+                                                        self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                     else:
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
@@ -6154,6 +6173,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                    elif (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1'):
+                                                        self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                     else:
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -6388,6 +6410,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                    elif (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1'):
+                                                        self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                     else:
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
@@ -6523,6 +6548,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                 and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                         if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                         self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                        f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                    elif (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1'):
+                                                        self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                         f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                     else:
                                                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -6844,6 +6872,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                             if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                        elif (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1'):
+                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                         else:
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
@@ -6978,6 +7009,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                     and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                             if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                        elif (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1'):
+                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                         else:
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -7135,6 +7169,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                             if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                        elif (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1'):
+                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                         else:
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
@@ -7270,6 +7307,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                                     and any(bondedTo for bondedTo in self.__ccU.getBondedAtoms(compId, _atomId, exclProton=True)
                                                                             if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                                             self.__f.append(f"[Coordinate issue] {self.__getCurrentRestraint()}"
+                                                                            f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
+                                                        elif (compId == 'ASP' and authAtomId == 'HD1') or (compId == 'GLU' and authAtomId == 'HE1'):
+                                                            self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                                             f"{chainId}:{seqId}:{compId}:{authAtomId} is not present in the coordinates.")
                                                         else:
                                                             self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
@@ -11354,6 +11394,9 @@ class AmberMRParserListener(ParseTreeListener):
                                     or (atomId[0] in protonBeginCode and self.__ccU.getBondedAtoms(compId, atomId, exclProton=True)[0]
                                         in self.__coordUnobsAtom[seqKey]['atom_ids'])):
                                 self.__f.append("[Coordinate issue] "
+                                                f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
+                            elif (compId == 'ASP' and atomId == 'HD1') or (compId == 'GLU' and atomId == 'HE1'):
+                                self.__f.append(f"[Hydrogen not instantiated] {self.__getCurrentRestraint()}"
                                                 f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                             else:
                                 self.__f.append("[Atom not found] "

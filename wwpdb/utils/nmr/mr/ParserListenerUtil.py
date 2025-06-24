@@ -7676,13 +7676,33 @@ def getSaveframe(mrSubtype: str, sf_framecode: str,
             sf.add_tag(tag_item_name, 's-1')
         elif tag_item_name == 'Definition' and contentSubtype == 'other_restraint' and constraintType is not None:
             sf.add_tag(tag_item_name, constraintType)
-        elif tag_item_name == 'Tensor_auth_asym_ID' and mrSubtype in ('prdc', 'rdc_restraint') and alignCenter is not None:
-            sf.add_tag(tag_item_name, alignCenter['chain_id'])
-        elif tag_item_name == 'Tensor_auth_seq_ID' and mrSubtype in ('prdc', 'rdc_restraint') and alignCenter is not None:
-            sf.add_tag(tag_item_name, alignCenter['seq_id'])
+        elif tag_item_name == 'Tensor_auth_asym_ID' and mrSubtype in ('prdc', 'rdc_restraint') and alignCenter is not None\
+                and 'chain_id' in alignCenter:
+            chainId = alignCenter['chain_id']
+            if isinstance(chainId, list):
+                if len(chainId) > 0:
+                    chainId = chainId[0]
+                else:
+                    chainId = None
+            sf.add_tag(tag_item_name, chainId)
+        elif tag_item_name == 'Tensor_auth_seq_ID' and mrSubtype in ('prdc', 'rdc_restraint') and alignCenter is not None\
+                and 'seq_id' in alignCenter:
+            seqId = alignCenter['seq_id']
+            if isinstance(seqId, list):
+                if len(seqId) > 0:
+                    seqId = seqId[0]
+                else:
+                    seqId = None
+            sf.add_tag(tag_item_name, seqId)
         elif tag_item_name == 'Tensor_auth_comp_ID' and mrSubtype in ('prdc', 'rdc_restraint') and alignCenter is not None\
                 and 'comp_id' in alignCenter:
-            sf.add_tag(tag_item_name, alignCenter['comp_id'])
+            compId = alignCenter['comp_id']
+            if isinstance(compId, list):
+                if len(compId) > 0:
+                    compId = compId[0]
+                else:
+                    compId = None
+            sf.add_tag(tag_item_name, compId)
         elif tag_item_name == 'Tensor_magnitude' and mrSubtype.startswith('rdc') and cyanaParameter is not None:
             sf.add_tag(tag_item_name, cyanaParameter['magnitude'])
         elif tag_item_name == 'Tensor_rhombicity' and mrSubtype.startswith('rdc') and cyanaParameter is not None:
@@ -8116,7 +8136,7 @@ def getRow(mrSubtype: str, id: int, indexId: int,
             row[6], row[7], row[8], row[9], row[10] =\
                 star_atom2['chain_id'], star_atom2['entity_id'], star_atom2['seq_id'], star_atom2['comp_id'], star_atom2['auth_atom_id']
 
-    if mrSubtype in ('dist', 'dihed', 'rdc', 'hbond', 'ssbond'):
+    if mrSubtype in ('dist', 'dihed', 'rdc', 'hbond', 'ssbond', 'prdc'):
         row[key_size] = indexId
 
     row[-2] = listId
@@ -8239,7 +8259,7 @@ def getRow(mrSubtype: str, id: int, indexId: int,
             row[key_size + 32] = ins_code3 if atom3 is not None else ins_code5
             row[key_size + 33] = ins_code4 if atom4 is not None else ins_code5
 
-    elif mrSubtype == 'rdc':
+    elif mrSubtype in ('rdc', 'prdc'):
         row[key_size + 1] = combinationId
         if has_key_value(dstFunc, 'target_value'):
             row[key_size + 2] = dstFunc['target_value']
@@ -8973,7 +8993,7 @@ def resetCombinationId(mrSubtype: str, row: List[Any]) -> List[Any]:
         @return: data array
     """
 
-    if mrSubtype not in ('dist', 'dihed', 'rdc'):
+    if mrSubtype not in ('dist', 'dihed', 'rdc', 'prdc'):
         return row
 
     contentSubtype = contentSubtypeOf(mrSubtype)

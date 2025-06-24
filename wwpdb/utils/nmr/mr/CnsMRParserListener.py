@@ -6318,7 +6318,7 @@ class CnsMRParserListener(ParseTreeListener):
                                     elif ligands > 1 and len(_factor['atom_id']) == 1\
                                             and _atomId is not None\
                                             and (_atomId in SYMBOLS_ELEMENT  # 2n3r
-                                                 or (_atomId[-2] == '+' and _atomId[-1].isdigit()
+                                                 or (len(_atomId) == 4 and _atomId[-2] == '+' and _atomId[-1].isdigit()
                                                      and _atomId[:2] in SYMBOLS_ELEMENT)):  # 6kg9
                                         elemName = _atomId[:-2]
                                         elemCount = 0
@@ -6385,8 +6385,9 @@ class CnsMRParserListener(ParseTreeListener):
                                     if _atomId is not None and _atomId.startswith('X')\
                                        and _atomId not in SYMBOLS_ELEMENT:
                                         pass  # 8bxj
-                                    # 2ma9
-                                    elif _atomId is not None and _atomId not in aminoProtonCode and _atomId not in carboxylCode and _atomId not in jcoupBbPairCode:
+                                    # 2knf, 2ma9
+                                    elif _atomId is None\
+                                            or (_atomId not in aminoProtonCode and _atomId not in carboxylCode and _atomId not in jcoupBbPairCode):
                                         self.__preferAuthSeq = not self.__preferAuthSeq
                                         # self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                                         self.__setLocalSeqScheme()

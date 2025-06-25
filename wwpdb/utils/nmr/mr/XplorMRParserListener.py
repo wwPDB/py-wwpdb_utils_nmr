@@ -712,7 +712,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__complexSeqScheme = True
                 for ps in self.__polySeq:
                     if ps['auth_seq_id'][0] == ps['seq_id'] or ps['auth_seq_id'][-1] == ps['seq_id'][-1]\
-                       or ('gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):
+                       or ('gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):  # 2kyg
                         self.__complexSeqScheme = False
                         break
 
@@ -1672,11 +1672,15 @@ class XplorMRParserListener(ParseTreeListener):
                 if 'label_seq_scheme' not in self.reasonsForReParsing:
                     del self.reasonsForReParsing['inhibit_label_seq_scheme_stats']
                 else:
+                    positive = negative = 0  # 2n1a
                     for ps in self.__polySeq:
                         if ps['auth_chain_id'] in self.reasonsForReParsing['inhibit_label_seq_scheme_stats']:
                             if self.reasonsForReParsing['inhibit_label_seq_scheme_stats'][ps['auth_chain_id']] / len(ps['seq_id']) < 1.0:  # 2ruk
+                                negative += 1
                                 del self.reasonsForReParsing['inhibit_label_seq_scheme_stats'][ps['auth_chain_id']]
-                    if len(self.reasonsForReParsing['inhibit_label_seq_scheme_stats']) == 0:
+                            else:
+                                positive += 1
+                    if len(self.reasonsForReParsing['inhibit_label_seq_scheme_stats']) == 0 or positive * negative == 0:
                         del self.reasonsForReParsing['inhibit_label_seq_scheme_stats']
 
             if 'segment_id_mismatch' in self.reasonsForReParsing:

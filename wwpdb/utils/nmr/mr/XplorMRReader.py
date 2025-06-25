@@ -658,6 +658,7 @@ if __name__ == "__main__":
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2n1a/2n1a-corrected.mr',
                      '../../tests-nmr/mock-data-remediation/2n1a/2n1a.cif')
+    print(reader_listener.getReasonsForReparsing())
     reader = XplorMRReader(True, reasons=reader_listener.getReasonsForReparsing())
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2n1a/2n1a-corrected.mr',

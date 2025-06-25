@@ -311,6 +311,7 @@ class CharmmMRParserListener(ParseTreeListener):
     __hasBranched = False
     __hasNonPolySeq = False
     __preferAuthSeq = True
+    __gapInAuthSeq = False
     __extendAuthSeq = False
 
     # large model
@@ -481,7 +482,10 @@ class CharmmMRParserListener(ParseTreeListener):
             elif self.__hasNonPoly:
                 self.__nonPolySeq = self.__nonPoly
             else:
-                self.__nonPolySeq = self.__branched
+                self.__nonPolySeq = self.__branche
+
+        if self.__hasPolySeq:
+            self.__gapInAuthSeq = any(ps for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
 
         self.__largeModel = self.__hasPolySeq and len(self.__polySeq) > LEN_LARGE_ASYM_ID
         if self.__largeModel:

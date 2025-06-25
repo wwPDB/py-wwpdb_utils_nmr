@@ -3324,7 +3324,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             return None
                 if real_seq_id + offset in ps['auth_seq_id']:
                     return real_seq_id + offset
-                if offset != 0 and 'gap_in_auth_seq' in ps:
+                if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                     for shift in range(1, 100):
                         if real_seq_id + shift + offset in ps['auth_seq_id']:
                             idx = ps['auth_seq_id'].index(real_seq_id + shift + offset) - shift
@@ -4156,7 +4156,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                     # 2knf, 2ma9
                                     elif _atomId is None\
                                             or (_atomId not in aminoProtonCode and _atomId not in carboxylCode and _atomId not in jcoupBbPairCode)\
-                                            or any('gap_in_auth_seq' in ps for ps in self.__polySeq):  # 2kyg
+                                            or self.__gapInAuthSeq:  # 2kyg
                                         self.__preferAuthSeq = not self.__preferAuthSeq
                                         # self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
                                         self.__setLocalSeqScheme()
@@ -5211,7 +5211,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             return None
                 if seqId + offset in ps['auth_seq_id']:
                     return seqId + offset
-                if offset != 0 and 'gap_in_auth_seq' in ps:
+                if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                     for shift in range(1, 100):
                         if seqId + shift + offset in ps['auth_seq_id']:
                             idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
@@ -5249,7 +5249,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             return None
         if seqId + offset in ps['auth_seq_id']:
             return seqId + offset
-        if offset != 0 and 'gap_in_auth_seq' in ps:
+        if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
             for shift in range(1, 100):
                 if seqId + shift + offset in ps['auth_seq_id']:
                     idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
@@ -5299,7 +5299,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             return None, None, False
                 if seqId + offset in ps['auth_seq_id']:
                     return seqId + offset, ps['comp_id'][ps['auth_seq_id'].index(seqId + offset)], False
-                if offset != 0 and 'gap_in_auth_seq' in ps:
+                if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                     for shift in range(1, 100):
                         if seqId + shift + offset in ps['auth_seq_id']:
                             idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
@@ -5346,7 +5346,7 @@ class CharmmMRParserListener(ParseTreeListener):
             if _ps is not None:
                 if seqId + offset in _ps['seq_id']:
                     return seqId + offset, _ps['comp_id'][_ps['seq_id'].index(seqId + offset)], True
-        if offset != 0 and 'gap_in_auth_seq' in ps:
+        if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
             for shift in range(1, 100):
                 if seqId + shift + offset in ps['auth_seq_id']:
                     idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift

@@ -10527,7 +10527,7 @@ class XplorMRParserListener(ParseTreeListener):
                                             and (_atomId in SYMBOLS_ELEMENT  # 2n3r
                                                  or (len(_atomId) == 4 and _atomId[-2] == '+' and _atomId[-1].isdigit()
                                                      and _atomId[:2] in SYMBOLS_ELEMENT)):  # 6kg9
-                                        elemName = _atomId[:-2]
+                                        elemName = _atomId[:2]
                                         elemCount = 0
                                         refElemSeqIds = []
                                         for np in self.__nonPoly:

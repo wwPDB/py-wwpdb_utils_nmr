@@ -427,6 +427,7 @@ class XplorMRParserListener(ParseTreeListener):
     __preferAuthSeq = True
     __gapInAuthSeq = False
     __extendAuthSeq = False
+    __complexSeqScheme = False
 
     # large model
     __largeModel = False
@@ -705,6 +706,14 @@ class XplorMRParserListener(ParseTreeListener):
 
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
+
+            self.__complexSeqScheme = False
+            if len(self.__polySeq) > 1 and not all('identical_chain_id' in ps for ps in self.__polySeq):
+                self.__complexSeqScheme = True
+                for ps in self.__polySeq:
+                    if ps['auth_seq_id'][0] == ps['seq_id'] or ps['auth_seq_id'][-1] == ps['seq_id'][-1]:
+                        self.__complexSeqScheme = False
+                        break
 
         self.__largeModel = self.__hasPolySeq and len(self.__polySeq) > LEN_LARGE_ASYM_ID
         if self.__largeModel:
@@ -1657,6 +1666,17 @@ class XplorMRParserListener(ParseTreeListener):
 
             elif self.__reasons is None and len(self.reasonsForReParsing) == 0 and all('[Insufficient atom selection]' in f for f in self.__f):
                 set_label_seq_scheme()
+
+            if self.__reasons is None and self.__complexSeqScheme and 'inhibit_label_seq_scheme_stats' in self.reasonsForReParsing:
+                if 'label_seq_scheme' not in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['inhibit_label_seq_scheme_stats']
+                else:
+                    for ps in self.__polySeq:
+                        if ps['auth_chain_id'] in self.reasonsForReParsing['inhibit_label_seq_scheme_stats']:
+                            if self.reasonsForReParsing['inhibit_label_seq_scheme_stats'][ps['auth_chain_id']] / len(ps['seq_id']) < 1.0:  # 2muk
+                                del self.reasonsForReParsing['inhibit_label_seq_scheme_stats'][ps['auth_chain_id']]
+                    if len(self.reasonsForReParsing['inhibit_label_seq_scheme_stats']) == 0:
+                        del self.reasonsForReParsing['inhibit_label_seq_scheme_stats']
 
             if 'segment_id_mismatch' in self.reasonsForReParsing:
                 if 'np_seq_id_remap' not in self.reasonsForReParsing and 'non_poly_remap' not in self.reasonsForReParsing:
@@ -9512,6 +9532,10 @@ class XplorMRParserListener(ParseTreeListener):
                     _factor['auth_chain_id'] = _factor['chain_id']
                     np_chain_not_specified = False
 
+        if self.__complexSeqScheme and self.__reasons is not None and 'inhibit_label_seq_scheme_stats' in self.__reasons\
+           and not chain_not_specified and _factor['chain_id'][0] in self.__reasons['inhibit_label_seq_scheme_stats']:
+            self.__preferAuthSeq = True
+
         if 'seq_id' not in _factor and 'seq_ids' not in _factor:
             if 'comp_ids' in _factor and len(_factor['comp_ids']) > 0\
                and ('comp_id' not in _factor or len(_factor['comp_id']) == 0):
@@ -10409,6 +10433,16 @@ class XplorMRParserListener(ParseTreeListener):
                                                        altPolySeq=self.__nonPolySeq, resolved=foundCompId)
 
         atom_not_found_error = len(self.__f) > len_f and any('[Atom not found]' in f or 'Hydrogen not instantiated' in f for f in self.__f[len_f:])
+
+        if self.__reasons is None and self.__preferAuthSeq and not atom_not_found_error and self.__complexSeqScheme\
+           and not chain_not_specified and 'seq_not_specifed' not in _factor:
+            if guessCompIdFromAtomId(_factor['atom_id'], self.__polySeq, self.__nefT) is not None:
+                if 'inhibit_label_seq_scheme_stats' not in self.reasonsForReParsing:
+                    self.reasonsForReParsing['inhibit_label_seq_scheme_stats'] = {}
+                chainId = _factor['chain_id'][0]
+                if chainId not in self.reasonsForReParsing['inhibit_label_seq_scheme_stats']:
+                    self.reasonsForReParsing['inhibit_label_seq_scheme_stats'][chainId] = 0
+                self.reasonsForReParsing['inhibit_label_seq_scheme_stats'][chainId] += 1
 
         if 'segment_id' in _factor:
             del _factor['segment_id']

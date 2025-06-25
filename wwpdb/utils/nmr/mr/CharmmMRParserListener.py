@@ -482,7 +482,7 @@ class CharmmMRParserListener(ParseTreeListener):
             elif self.__hasNonPoly:
                 self.__nonPolySeq = self.__nonPoly
             else:
-                self.__nonPolySeq = self.__branche
+                self.__nonPolySeq = self.__branched
 
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])

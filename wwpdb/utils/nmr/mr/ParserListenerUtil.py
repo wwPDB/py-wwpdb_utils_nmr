@@ -2850,6 +2850,12 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
         elif refCompId == 'ARG' and atomId == 'HNE':  # 8dhz, peak list
             return 'HE'
 
+        elif refCompId == 'ASP' and atomId.startswith('HD1'):  # 6fe6
+            return 'HD2'
+
+        elif refCompId == 'GLU' and atomId.startswith('HE'):
+            return 'HE2'
+
         elif refCompId in ('HIS', 'OUH'):
             if atomId == 'HNE':  # 2k4w
                 return 'HE2'

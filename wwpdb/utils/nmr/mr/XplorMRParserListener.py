@@ -9946,6 +9946,11 @@ class XplorMRParserListener(ParseTreeListener):
                         atomIds, _, details = self.__nefT.get_valid_star_atom(compId, _atomId, leave_unmatched=True)
                         if details is not None:
                             atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                        if details is not None and atomId[-1] in ('%', '*', '#'):
+                            _atomIds, _, _details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                            if _details is None:  # 5z4f: GLU:HG1# -> GLU:HG3
+                                atomId = _atomId = _atomIds[0]
+                                atomIds, details = _atomIds, _details
                         _atomId = toNefEx(toRegEx(atomId))
                         if _atomId.endswith('.') and details is None:
                             _atomId += '$'  # HT# -> H. should match with H1/2/3 and not with HA2/3 (5iew)

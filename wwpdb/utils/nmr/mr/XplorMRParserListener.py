@@ -1561,7 +1561,8 @@ class XplorMRParserListener(ParseTreeListener):
             invalid_dist_atom_sel_in_1st_row = any(f for f in self.__f if 'Check the 1th row of distance restraints' in f
                                                    and ('[Atom not found]' in f or '[Hydrogen not instantiated]' in f or '[Coordinate issue]' in f))
 
-            if 'local_seq_scheme' in self.reasonsForReParsing and len(self.reasonsForReParsing) == 1:
+            if 'local_seq_scheme' in self.reasonsForReParsing\
+               and (len(self.reasonsForReParsing) == 1 or len(insuff_dist_atom_sel_warnings) == len(self.__f)):  # 2ljb
                 mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                 sortPolySeqRst(self.__polySeqRstFailed)
                 if len(self.__polySeqRstFailed) > 0:
@@ -1571,6 +1572,7 @@ class XplorMRParserListener(ParseTreeListener):
                         self.reasonsForReParsing['label_seq_scheme'] = {}
                     self.reasonsForReParsing['label_seq_scheme']['dist'] = True
                     set_label_seq_scheme()
+                    label_seq_scheme = True  # 2ljb
                 else:
                     del self.reasonsForReParsing['local_seq_scheme']
 
@@ -1684,7 +1686,8 @@ class XplorMRParserListener(ParseTreeListener):
                         del self.reasonsForReParsing['inhibit_label_seq_scheme_stats']
 
             if 'segment_id_mismatch' in self.reasonsForReParsing:
-                if 'np_seq_id_remap' not in self.reasonsForReParsing and 'non_poly_remap' not in self.reasonsForReParsing:
+                if 'np_seq_id_remap' not in self.reasonsForReParsing and 'non_poly_remap' not in self.reasonsForReParsing\
+                   and not label_seq_scheme:  # 2ljb
                     if 'local_seq_scheme' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['local_seq_scheme']
                     if 'label_seq_scheme' in self.reasonsForReParsing:

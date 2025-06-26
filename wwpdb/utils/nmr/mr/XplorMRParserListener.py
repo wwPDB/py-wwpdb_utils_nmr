@@ -1715,30 +1715,31 @@ class XplorMRParserListener(ParseTreeListener):
                             for src_chain_id, dst_chain_id in zip(src_chain_id_set, dst_chain_id_set):
                                 self.reasonsForReParsing['segment_id_mismatch'][src_chain_id] = dst_chain_id
 
-                for chain_id in self.reasonsForReParsing['segment_id_mismatch'].values():
-                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id), None)
-                    if ps is None:
-                        continue
-                    if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
-                        offset = next(seq_id - auth_seq_id for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']))
-                        if any(abs(seq_id - auth_seq_id - offset) > 20 for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id'])):
-                            failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed if failed_ps['chain_id'] == ps['auth_chain_id']), None)
-                            if failed_ps is None:
-                                continue
-                            if any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in failed_ps['seq_id']):
+                if label_seq_scheme:  # 6f0y
+                    for chain_id in self.reasonsForReParsing['segment_id_mismatch'].values():
+                        ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id), None)
+                        if ps is None:
+                            continue
+                        if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
+                            offset = next(seq_id - auth_seq_id for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']))
+                            if any(abs(seq_id - auth_seq_id - offset) > 20 for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id'])):
+                                failed_ps = next((failed_ps for failed_ps in self.__polySeqRstFailed if failed_ps['chain_id'] == ps['auth_chain_id']), None)
+                                if failed_ps is None:
+                                    continue
+                                if any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in failed_ps['seq_id']):
+                                    seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
+                        elif any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in ps['seq_id']):
+                            safe = True
+                            for _ps in self.__polySeq:
+                                if _ps['auth_chain_id'] != ps['auth_chain_id']:
+                                    if any(seq_id in ps['seq_id'] and seq_id in _ps['auth_seq_id'] for seq_id in ps['seq_id']):
+                                        safe = False
+                                        break
+                            if safe:
                                 seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
-                    elif any(seq_id in ps['seq_id'] and seq_id not in ps['auth_seq_id'] for seq_id in ps['seq_id']):
-                        safe = True
-                        for _ps in self.__polySeq:
-                            if _ps['auth_chain_id'] != ps['auth_chain_id']:
-                                if any(seq_id in ps['seq_id'] and seq_id in _ps['auth_seq_id'] for seq_id in ps['seq_id']):
-                                    safe = False
-                                    break
-                        if safe:
-                            seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
 
-                if len(seqIdRemapForRemaining) > 0:
-                    self.reasonsForReParsing['seq_id_remap'] = seqIdRemapForRemaining
+                    if len(seqIdRemapForRemaining) > 0:
+                        self.reasonsForReParsing['seq_id_remap'] = seqIdRemapForRemaining
 
                 if 'chain_id_remap' in self.reasonsForReParsing:
                     stat_chain_ids = set()
@@ -10650,6 +10651,8 @@ class XplorMRParserListener(ParseTreeListener):
                                     if _atomId is not None and _atomId.startswith('X')\
                                        and _atomId not in SYMBOLS_ELEMENT:
                                         pass  # 8bxj
+                                    elif self.__reasons is not None and 'segment_id_mismatch' in self.__reasons:
+                                        pass  # 6f0y
                                     # 2knf, 2ma9
                                     elif _atomId is None\
                                             or (_atomId not in aminoProtonCode and _atomId not in carboxylCode and _atomId not in jcoupBbPairCode)\
@@ -12543,6 +12546,7 @@ class XplorMRParserListener(ParseTreeListener):
                         _chainId = self.__reasons['segment_id_mismatch'][chainId]
                         _stats = self.__reasons['segment_id_match_stats'][chainId]
                         self.factor['chain_id'] = sorted([k for k, v in _stats.items() if v == _stats[_chainId]])
+                        self.factor['alt_chain_id'] = chainId
                     else:
                         _chainId = toRegEx(chainId)
                         self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq
@@ -13881,6 +13885,8 @@ class XplorMRParserListener(ParseTreeListener):
                                 if _chainId == self.getRealChainId(chainId) and _chainId not in self.factor['chain_id']:
                                     self.factor['chain_id'].append(_chainId)
                         self.factor['segment_id'] = chainId
+                        if self.factor['chain_id'] != [chainId]:
+                            self.factor['alt_chain_id'] = chainId
                     if ctx.Simple_names(0):
                         chainId = str(ctx.Simple_names(0))
                         if self.__reasons is not None and 'segment_id_mismatch' in self.__reasons and chainId in self.__reasons['segment_id_mismatch']\
@@ -13888,6 +13894,7 @@ class XplorMRParserListener(ParseTreeListener):
                             _chainId = self.__reasons['segment_id_mismatch'][chainId]
                             _stats = self.__reasons['segment_id_match_stats'][chainId]
                             self.factor['chain_id'] = sorted([k for k, v in _stats.items() if v == _stats[_chainId]])
+                            self.factor['alt_chain_id'] = chainId
                         else:
                             _chainId = toRegEx(chainId)
                             self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.__polySeq

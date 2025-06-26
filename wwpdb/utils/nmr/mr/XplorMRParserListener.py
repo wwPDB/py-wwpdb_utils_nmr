@@ -10561,7 +10561,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                and _atomId is not None\
                                                and (_atomId in _coordAtomSite['atom_id']
                                                     or (len(_atomId) == 4 and _atomId[-2] == '+' and _atomId[-1].isdigit()
-                                                        and _atomId[:2] in _coordAtomSite['atom_id'])):
+                                                        and _atomId[:2] in _coordAtomSite['atom_id'])
+                                                    or (_atomId == 'X' and ('UNK' in _coordAtomSite['atom_id'] or 'UNX' in _coordAtomSite['atom_id']))):
                                                 ligands = update_np_seq_id_remap_request(self.__nonPoly[0], ligands)
                                             else:
                                                 ligands = 0
@@ -10570,50 +10571,61 @@ class XplorMRParserListener(ParseTreeListener):
                                             and _atomId is not None\
                                             and (_atomId in SYMBOLS_ELEMENT  # 2n3r
                                                  or (len(_atomId) == 4 and _atomId[-2] == '+' and _atomId[-1].isdigit()
-                                                     and _atomId[:2] in SYMBOLS_ELEMENT)):  # 6kg9
-                                        elemName = _atomId[:2]
-                                        elemCount = 0
-                                        refElemSeqIds = []
-                                        for np in self.__nonPoly:
-                                            if np['comp_id'][0] == elemName:
-                                                elemCount += 1
-                                                refElemSeqIds.append(np['seq_id'][0])
-                                        if elemCount == 1:
+                                                     and _atomId[:2] in SYMBOLS_ELEMENT)  # 6kg9
+                                                 or _atomId == 'X'):  # 2mjq, 2mjr, 2mjs, 2mjt
+                                        if _atomId != 'X':
+                                            elemName = _atomId[:2]
+                                            elemCount = 0
+                                            refElemSeqIds = []
                                             for np in self.__nonPoly:
                                                 if np['comp_id'][0] == elemName:
+                                                    elemCount += 1
+                                                    refElemSeqIds.append(np['seq_id'][0])
+                                            if elemCount == 1:
+                                                for np in self.__nonPoly:
+                                                    if np['comp_id'][0] == elemName:
+                                                        ligands = update_np_seq_id_remap_request(np, ligands)
+                                                        break
+                                            elif elemCount > 1:
+                                                try:
+                                                    elemSeqId = int(_factor['seq_id'][0])
+                                                    found = False
+                                                    for np in self.__nonPoly:
+                                                        if np['comp_id'][0] == elemName and (elemSeqId in np['seq_id'] or elemSeqId in np['auth_seq_id']):
+                                                            ligands = update_np_seq_id_remap_request(np, ligands)
+                                                            found = True
+                                                            break
+                                                    if not found:
+                                                        if 'alt_chain_id' in _factor:
+                                                            elemChainId = _factor['alt_chain_id']
+                                                            if elemName in elemChainId and len(elemChainId) > len(elemName) and elemChainId[len(elemName):].isdigit():
+                                                                elemChainOrder = int(elemChainId[len(elemName):])
+                                                                if 1 <= elemChainOrder <= len(refElemSeqIds):
+                                                                    np_idx = 1
+                                                                    for np in self.__nonPoly:
+                                                                        if np['comp_id'][0] == elemName:
+                                                                            if elemChainOrder == np_idx:
+                                                                                ligands = update_np_seq_id_remap_request(np, ligands)
+                                                                                found = True
+                                                                                break
+                                                                            np_idx += 1
+                                                        if not found and 1 <= elemSeqId <= len(refElemSeqIds):
+                                                            elemSeqId = refElemSeqIds[elemSeqId - 1]
+                                                            for np in self.__nonPoly:
+                                                                if np['comp_id'][0] == elemName and elemSeqId in np['seq_id']:
+                                                                    ligands = update_np_seq_id_remap_request(np, ligands)
+                                                                    found = True
+                                                except ValueError:
+                                                    pass
+                                        else:
+                                            for np in self.__nonPoly:
+                                                _, _coordAtomSite = self.getCoordAtomSiteOf(np['auth_chain_id'], np['seq_id'][0], cifCheck=cifCheck)
+                                                if 'UNK' in _coordAtomSite['atom_id']:  # 2mjq, 2mjr, 2mjs
                                                     ligands = update_np_seq_id_remap_request(np, ligands)
                                                     break
-                                        elif elemCount > 1:
-                                            try:
-                                                elemSeqId = int(_factor['seq_id'][0])
-                                                found = False
-                                                for np in self.__nonPoly:
-                                                    if np['comp_id'][0] == elemName and (elemSeqId in np['seq_id'] or elemSeqId in np['auth_seq_id']):
-                                                        ligands = update_np_seq_id_remap_request(np, ligands)
-                                                        found = True
-                                                        break
-                                                if not found:
-                                                    if 'alt_chain_id' in _factor:
-                                                        elemChainId = _factor['alt_chain_id']
-                                                        if elemName in elemChainId and len(elemChainId) > len(elemName) and elemChainId[len(elemName):].isdigit():
-                                                            elemChainOrder = int(elemChainId[len(elemName):])
-                                                            if 1 <= elemChainOrder <= len(refElemSeqIds):
-                                                                np_idx = 1
-                                                                for np in self.__nonPoly:
-                                                                    if np['comp_id'][0] == elemName:
-                                                                        if elemChainOrder == np_idx:
-                                                                            ligands = update_np_seq_id_remap_request(np, ligands)
-                                                                            found = True
-                                                                            break
-                                                                        np_idx += 1
-                                                    if not found and 1 <= elemSeqId <= len(refElemSeqIds):
-                                                        elemSeqId = refElemSeqIds[elemSeqId - 1]
-                                                        for np in self.__nonPoly:
-                                                            if np['comp_id'][0] == elemName and elemSeqId in np['seq_id']:
-                                                                ligands = update_np_seq_id_remap_request(np, ligands)
-                                                                found = True
-                                            except ValueError:
-                                                pass
+                                                if 'UNX' in _coordAtomSite['atom_id']:  # 2mjt
+                                                    ligands = update_np_seq_id_remap_request(np, ligands)
+                                                    break
 
                                 if len(_factor['seq_id']) == 1:
                                     if len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:

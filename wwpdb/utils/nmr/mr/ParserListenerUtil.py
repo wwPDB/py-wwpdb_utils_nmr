@@ -3242,6 +3242,11 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                         _atomId_.append(_atomId)
                 if len(_atomId_) == 1 and (score > 1 or len(canAtomIdList) == 1):
                     return _atomId_[0]
+        if atomId == 'X':  # micelle cennter
+            if 'UNK' in refAtomIdList:  # 2mjq, 2mjr, 2mjs
+                return 'UNK'
+            if 'UNX' in refAtomIdList:  # 2mjt
+                return 'UNX'
 
     if atomId.endswith('+1') or atomId.endswith('+2') or atomId.endswith('+3'):
         if atomId[:-2] in SYMBOLS_ELEMENT:

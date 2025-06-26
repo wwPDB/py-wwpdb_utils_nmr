@@ -7107,7 +7107,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
                     if len(self.factor['chain_id']) == 0:
                         if len(self.__polySeq) == 1:
-                            self.factor['chain_id'] = self.__polySeq[0]['chain_id']
+                            self.factor['chain_id'] = self.__polySeq[0]['auth_chain_id']
                             self.factor['auth_chain_id'] = [begChainId, endChainId]
                         elif self.__reasons is not None:
                             self.factor['atom_id'] = [None]

@@ -9790,7 +9790,7 @@ class CnsMRParserListener(ParseTreeListener):
                             if chainId[0] in self.__fibril_chain_ids:
                                 self.factor['chain_id'] = [chainId[0]]
                         elif len(self.__polySeq) == 1 and not self.__hasBranched and not self.__hasNonPoly:
-                            self.factor['chain_id'] = self.__polySeq[0]['chain_id']
+                            self.factor['chain_id'] = self.__polySeq[0]['auth_chain_id']
                             self.factor['auth_chain_id'] = chainId
                         elif self.__reasons is not None:
                             if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):

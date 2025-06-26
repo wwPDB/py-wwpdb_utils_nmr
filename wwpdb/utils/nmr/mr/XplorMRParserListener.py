@@ -13850,7 +13850,7 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if len(self.factor['chain_id']) == 0:
                         if len(self.__polySeq) == 1:
-                            self.factor['chain_id'] = self.__polySeq[0]['chain_id']
+                            self.factor['chain_id'] = self.__polySeq[0]['auth_chain_id']
                             self.factor['auth_chain_id'] = [begChainId, endChainId]
                         elif self.__reasons is not None:
                             if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):

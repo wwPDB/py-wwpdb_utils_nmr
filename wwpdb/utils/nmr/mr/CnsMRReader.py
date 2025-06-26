@@ -227,6 +227,38 @@ if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/4ch0/4ch0-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/4ch0/4ch0.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2mly/2mly-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2mly/2mly.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reasons_ = {'global_sequence_offset': {'B': -115},
+                'global_auth_sequence_offset': {'B': -115},
+                'seq_id_remap': [{'chain_id': 'A', 'seq_id_dict': {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10,
+                                                                   11: 11, 12: 12, 13: 13, 14: 14, 15: 15, 16: 16, 17: 17, 18: 18, 19: 19, 20: 20,
+                                                                   21: 21, 22: 22, 23: 23, 24: 24, 25: 25, 26: 26, 27: 310, 28: 311, 29: 312, 30: 313,
+                                                                   31: 314, 32: 315, 33: 326, 34: 327, 35: 328, 36: 329, 37: 330, 38: 331, 39: 332, 40: 333,
+                                                                   41: 334, 42: 335, 43: 336, 44: 337, 45: 338, 46: 339, 47: 340, 48: 341, 49: 342, 50: 343,
+                                                                   51: 344, 52: 345, 53: 346, 54: 347, 55: 348, 56: 349, 57: 350, 58: 351, 59: 352, 60: 353,
+                                                                   61: 354, 62: 355, 63: 356, 64: 357, 65: 358, 66: 359, 67: 360, 68: 361, 69: 362, 70: 363,
+                                                                   71: 364, 72: 365, 73: 366, 74: 367, 75: 368, 76: 369, 77: 370, 78: 371, 79: 372, 80: 373,
+                                                                   81: 392, 82: 393, 83: 502, 84: 503, 85: 504, 86: 505, 87: 506, 88: 507, 89: 508, 90: 509,
+                                                                   91: 510, 92: 511, 93: 512, 94: 513, 95: 514, 96: 515, 97: 516, 98: 517, 99: 518, 100: 519,
+                                                                   101: 520, 102: 521, 103: 522, 104: 523, 105: 524, 106: 525, 107: 526, 108: 527, 109: 528, 110: 529,
+                                                                   111: 530, 112: 531, 113: 532, 114: 548, 115: 549}}]}
+    reader = CnsMRReader(True, reasons=reasons_)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6feh/03_CAL_RDCs_XPLOR_281217.tbl-corrected',
+                 '../../tests-nmr/mock-data-remediation/6feh/6feh.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/5z4f/txn38_complex_noe.tbl',
                      '../../tests-nmr/mock-data-remediation/5z4f/5z4f.cif')
 

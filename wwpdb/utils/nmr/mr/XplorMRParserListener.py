@@ -1715,7 +1715,8 @@ class XplorMRParserListener(ParseTreeListener):
                             for src_chain_id, dst_chain_id in zip(src_chain_id_set, dst_chain_id_set):
                                 self.reasonsForReParsing['segment_id_mismatch'][src_chain_id] = dst_chain_id
 
-                if label_seq_scheme and 'inhibit_label_seq_scheme' not in self.reasonsForReParsing:  # 6f0y, 2lkm
+                if (label_seq_scheme and 'inhibit_label_seq_scheme' not in self.reasonsForReParsing)\
+                   or ('np_seq_id_remap' in self.reasonsForReParsing or 'non_poly_remap' in self.reasonsForReParsing):  # 6f0y, 2lkm, 2mnz
                     for chain_id in self.reasonsForReParsing['segment_id_mismatch'].values():
                         ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id), None)
                         if ps is None:

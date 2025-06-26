@@ -9525,6 +9525,8 @@ class XplorMRParserListener(ParseTreeListener):
                         _chainId = np['auth_chain_id']
                         if _chainId not in _factor['chain_id']:
                             _factor['chain_id'].append(_chainId)
+                if len(_factor['chain_id']) == 1:
+                    chain_not_specified = False
         elif len(_factor['chain_id']) == 1:
             if chain_not_specified and any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _factor['chain_id'][0]):
                 _factor['auth_chain_id'] = _factor['chain_id']
@@ -13919,7 +13921,7 @@ class XplorMRParserListener(ParseTreeListener):
                             if chainId[0] in self.__fibril_chain_ids:
                                 self.factor['chain_id'] = [chainId[0]]
                         elif len(self.__polySeq) == 1 and not self.__hasBranched and not self.__hasNonPoly:
-                            self.factor['chain_id'] = self.__polySeq[0]['chain_id']
+                            self.factor['chain_id'] = self.__polySeq[0]['auth_chain_id']
                             self.factor['auth_chain_id'] = chainId
                         elif self.__reasons is not None:
                             if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):

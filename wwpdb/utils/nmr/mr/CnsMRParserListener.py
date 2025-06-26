@@ -5328,6 +5328,8 @@ class CnsMRParserListener(ParseTreeListener):
                         _chainId = np['auth_chain_id']
                         if _chainId not in _factor['chain_id']:
                             _factor['chain_id'].append(_chainId)
+                if len(_factor['chain_id']) == 1:
+                    chain_not_specified = False
         elif len(_factor['chain_id']) == 1:
             if chain_not_specified and any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _factor['chain_id'][0]):
                 _factor['auth_chain_id'] = _factor['chain_id']
@@ -9721,7 +9723,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                     if len(self.factor['chain_id']) == 0:
                         if len(self.__polySeq) == 1:
-                            self.factor['chain_id'] = self.__polySeq[0]['chain_id']
+                            self.factor['chain_id'] = self.__polySeq[0]['auth_chain_id']
                             self.factor['auth_chain_id'] = [begChainId, endChainId]
                         elif self.__reasons is not None:
                             if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):

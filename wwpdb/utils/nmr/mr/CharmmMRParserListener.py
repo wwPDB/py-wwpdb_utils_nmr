@@ -3103,6 +3103,8 @@ class CharmmMRParserListener(ParseTreeListener):
                         _chainId = np['auth_chain_id']
                         if _chainId not in _factor['chain_id']:
                             _factor['chain_id'].append(_chainId)
+                if len(_factor['chain_id']) == 1:
+                    chain_not_specified = False
         elif len(_factor['chain_id']) == 1:
             if chain_not_specified and any(ps for ps in self.__polySeq if ps['auth_chain_id'] == _factor['chain_id'][0]):
                 _factor['auth_chain_id'] = _factor['chain_id']
@@ -7164,7 +7166,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                             f"The symbol {symbol_name!r} is not defined.")
                     if len(self.factor['chain_id']) == 0:
                         if len(self.__polySeq) == 1 and not self.__hasBranched and not self.__hasNonPoly:
-                            self.factor['chain_id'] = self.__polySeq[0]['chain_id']
+                            self.factor['chain_id'] = self.__polySeq[0]['auth_chain_id']
                             self.factor['auth_chain_id'] = chainId
                         elif self.__reasons is not None:
                             self.factor['atom_id'] = [None]

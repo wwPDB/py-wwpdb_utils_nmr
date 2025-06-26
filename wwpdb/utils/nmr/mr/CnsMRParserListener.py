@@ -5754,7 +5754,7 @@ class CnsMRParserListener(ParseTreeListener):
                             atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
                         if details is not None and atomId[-1] in ('%', '*', '#'):
                             _atomIds, _, _details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
-                            if _details is None:  # 5z4f: GLU:HG1# -> GLU:HG3
+                            if _details is None and len(_atomIds) > 0:  # 5z4f: GLU:HG1# -> GLU:HG3
                                 atomId = _atomId = _atomIds[0]
                                 atomIds, details = _atomIds, _details
                         _atomId = toNefEx(toRegEx(atomId))

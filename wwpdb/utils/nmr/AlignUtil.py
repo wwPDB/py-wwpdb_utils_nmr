@@ -1159,12 +1159,16 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
 
                     if __matched > _matched and _conflict == 0:  # DAOTHER-9511: auth_comp_id does match with the coordinates sequence
                         if any(comp_id in emptyValue for comp_id in ps2['comp_id']):
+                            valid_comp_ids = set()  # 2mze: ensure that comp_id_mapping has no side effect
                             comp_id_mapping = {}
                             for comp_id, alt_comp_id in zip(ps1['comp_id'], ps1['alt_comp_id']):
                                 if comp_id == alt_comp_id:
+                                    valid_comp_ids.add(alt_comp_id)
                                     continue
                                 comp_id_mapping[alt_comp_id] = comp_id
-                            polySeqRst[i2]['comp_id'] = [comp_id_mapping[comp_id] if comp_id in comp_id_mapping else comp_id for comp_id in ps2['comp_id']]
+                            polySeqRst[i2]['comp_id'] = [comp_id_mapping[comp_id]
+                                                         if comp_id in comp_id_mapping and comp_id not in valid_comp_ids else comp_id
+                                                         for comp_id in ps2['comp_id']]
                         elif len(polySeqRst[i2]['comp_id']) == len(ps1['comp_id']):
                             polySeqRst[i2]['comp_id'] = ps1['comp_id']
                         else:

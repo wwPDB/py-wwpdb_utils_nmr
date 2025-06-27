@@ -621,6 +621,11 @@ class CharmmMRParserListener(ParseTreeListener):
             pro_hn_atom_not_found_warnings = [f for f in self.__f if pro_hn_atom_not_found_pattern.match(f)]
             gly_hb_atom_not_found_warnings = [f for f in self.__f if gly_hb_atom_not_found_pattern.match(f)]
 
+            if 'segment_id_mismatch' in self.reasonsForReParsing and len(self.reasonsForReParsing['segment_id_mismatch']) == 0:  # 2lzs
+                del self.reasonsForReParsing['segment_id_mismatch']
+                del self.reasonsForReParsing['segment_id_match_stats']
+                del self.reasonsForReParsing['segment_id_poly_type_stats']
+
             _seqIdRemap = []
 
             if self.__hasPolySeq and self.__polySeqRst is not None:
@@ -1501,6 +1506,13 @@ class CharmmMRParserListener(ParseTreeListener):
                         del self.reasonsForReParsing['segment_id_poly_type_stats']
                         if 'global_auth_sequence_offset' in self.reasonsForReParsing:
                             del self.reasonsForReParsing['global_auth_sequence_offset']
+
+                if len(self.__f) == 0 and len(self.reasonsForReParsing) > 0:
+                    self.reasonsForReParsing = {}
+
+            elif 'chain_id_remap' in self.reasonsForReParsing:
+                if 'global_auth_sequence_offset' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['global_auth_sequence_offset']  # 2lzs
 
                 if len(self.__f) == 0 and len(self.reasonsForReParsing) > 0:
                     self.reasonsForReParsing = {}
@@ -5493,15 +5505,19 @@ class CharmmMRParserListener(ParseTreeListener):
                             self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['polymer'] -= 1
                         else:
                             self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['non-poly'] -= 1
-        stats = self.reasonsForReParsing['segment_id_match_stats'][altChainId]
-        _chainId = max(stats, key=lambda key: stats[key])[0]
-        self.reasonsForReParsing['segment_id_mismatch'][altChainId] = _chainId
         # try to avoid multiple segment_id assignments
         for k, _stats in self.reasonsForReParsing['segment_id_match_stats'].items():
             if k == altChainId:
                 continue
             if chainId in _stats:
                 _stats[chainId] -= 1
+        stats = self.reasonsForReParsing['segment_id_match_stats'][altChainId]
+        _chainId = max(stats, key=lambda key: stats[key])[0]
+        _score = stats[_chainId]
+        if _score > 0:
+            self.reasonsForReParsing['segment_id_mismatch'][altChainId] = _chainId
+        elif _score < 0 and altChainId in self.reasonsForReParsing['segment_id_mismatch']:
+            del self.reasonsForReParsing['segment_id_mismatch'][altChainId]  # 2lzs
 
     def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
                            ) -> Tuple[Tuple[str, int], Optional[dict]]:
@@ -5992,7 +6008,7 @@ class CharmmMRParserListener(ParseTreeListener):
                         self.factor['auth_chain_id'] = chainId
                     elif self.__reasons is not None:
                         self.factor['atom_id'] = [None]
-                        if 'seqment_id_mismatch' not in self.__reasons\
+                        if 'segment_id_mismatch' not in self.__reasons\
                            and chainId not in self.__reasons['segment_id_mismatch']\
                            and self.__reasons['segment_id_mismatch'][chainId] is not None:
                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -7149,7 +7165,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             self.factor['auth_chain_id'] = [begChainId, endChainId]
                         elif self.__reasons is not None:
                             self.factor['atom_id'] = [None]
-                            if 'seqment_id_mismatch' not in self.__reasons\
+                            if 'segment_id_mismatch' not in self.__reasons\
                                and chainId not in self.__reasons['segment_id_mismatch']\
                                and self.__reasons['segment_id_mismatch'][chainId] is not None:
                                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
@@ -7209,7 +7225,7 @@ class CharmmMRParserListener(ParseTreeListener):
                             self.factor['auth_chain_id'] = chainId
                         elif self.__reasons is not None:
                             self.factor['atom_id'] = [None]
-                            if 'seqment_id_mismatch' in self.__reasons\
+                            if 'segment_id_mismatch' in self.__reasons\
                                and chainId not in self.__reasons['segment_id_mismatch']\
                                and self.__reasons['segment_id_mismatch'][chainId] is not None:
                                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"

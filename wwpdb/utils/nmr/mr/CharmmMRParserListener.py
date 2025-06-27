@@ -301,6 +301,7 @@ class CharmmMRParserListener(ParseTreeListener):
     __authToStarSeq = None
     __authToOrigSeq = None
     __authToInsCode = None
+    __atomIdSetPerChain = None
 
     __offsetHolder = None
 
@@ -484,6 +485,25 @@ class CharmmMRParserListener(ParseTreeListener):
                 self.__nonPolySeq = self.__nonPoly
             else:
                 self.__nonPolySeq = self.__branched
+
+        self.__atomIdSetPerChain = {}
+        if self.__hasCoord and len(self.__polySeq) > 1:  # 7d3v
+            for ps in self.__polySeq:
+                chainId = ps['auth_chain_id']
+                if chainId not in self.__atomIdSetPerChain:
+                    self.__atomIdSetPerChain[chainId] = set()
+            if self.__hasNonPoly:
+                for np in self.__nonPoly:
+                    chainId = np['auth_chain_id']
+                    if chainId not in self.__atomIdSetPerChain:
+                        self.__atomIdSetPerChain[chainId] = set()
+            if self.__hasBranched:
+                for br in self.__branched:
+                    chainId = br['auth_chain_id']
+                    if chainId not in self.__atomIdSetPerChain:
+                        self.__atomIdSetPerChain[chainId] = set()
+            for k, v in self.__coordAtomSite.items():
+                self.__atomIdSetPerChain[k[0]] |= set(v['atom_id'])
 
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
@@ -5445,7 +5465,14 @@ class CharmmMRParserListener(ParseTreeListener):
             self.reasonsForReParsing['segment_id_match_stats'][altChainId][chainId] = 0
             self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['polymer'] = 0
             self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['non-polymer'] = 0
-        if valid or chainId not in self.__failure_chain_ids:
+        checked = False
+        if not valid and chainId not in self.__failure_chain_ids and chainId in self.__atomIdSetPerChain:
+            if 'atom_id' in factor:
+                for atomId in factor['atom_id']:
+                    if atomId in self.__atomIdSetPerChain[chainId]:
+                        checked = True  # 7d3v
+                        break
+        if valid or checked:
             self.reasonsForReParsing['segment_id_match_stats'][altChainId][chainId] += 1
             if isPolymer is not None:
                 if isPolymer:
@@ -5454,7 +5481,7 @@ class CharmmMRParserListener(ParseTreeListener):
                     self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['non-poly'] += 1
         else:
             for _chainId in factor['chain_id']:
-                if _chainId in self.__failure_chain_ids:
+                if _chainId in self.__failure_chain_ids or not checked:
                     if _chainId not in self.reasonsForReParsing['segment_id_match_stats'][altChainId]:
                         self.reasonsForReParsing['segment_id_match_stats'][altChainId][_chainId] = 0
                         self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['polymer'] = 0

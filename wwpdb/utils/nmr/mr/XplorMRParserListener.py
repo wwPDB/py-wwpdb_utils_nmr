@@ -12029,12 +12029,12 @@ class XplorMRParserListener(ParseTreeListener):
         stats = self.reasonsForReParsing['segment_id_match_stats'][altChainId]
         _chainId = max(stats, key=lambda key: stats[key])[0]
         _score = stats[_chainId]
-        if _score > 0:
+        if _score > 0 or len(stats) == 1:  # 2mtk
             self.reasonsForReParsing['segment_id_mismatch'][altChainId] = _chainId
-        else:
+        elif _score < 0:
             __chainId = min(stats, key=lambda key: stats[key])[0]
             __score = stats[__chainId]
-            if _score == __score and altChainId in self.reasonsForReParsing['segment_id_mismatch']:
+            if _score == __score and _chainId != __chainId and altChainId in self.reasonsForReParsing['segment_id_mismatch']:  # 2la5
                 del self.reasonsForReParsing['segment_id_mismatch'][altChainId]  # 2lzs
 
     def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True

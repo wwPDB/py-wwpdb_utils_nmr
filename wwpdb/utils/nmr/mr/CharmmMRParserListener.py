@@ -6008,9 +6008,9 @@ class CharmmMRParserListener(ParseTreeListener):
                         self.factor['auth_chain_id'] = chainId
                     elif self.__reasons is not None:
                         self.factor['atom_id'] = [None]
-                        if 'segment_id_mismatch' not in self.__reasons\
-                           and chainId not in self.__reasons['segment_id_mismatch']\
-                           and self.__reasons['segment_id_mismatch'][chainId] is not None:
+                        if 'segment_id_mismatch' in self.__reasons\
+                           and (chainId not in self.__reasons['segment_id_mismatch']
+                                or self.__reasons['segment_id_mismatch'][chainId] is not None):
                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                             "Couldn't specify segment name "
                                             f"'{chainId}' the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError
@@ -7165,9 +7165,9 @@ class CharmmMRParserListener(ParseTreeListener):
                             self.factor['auth_chain_id'] = [begChainId, endChainId]
                         elif self.__reasons is not None:
                             self.factor['atom_id'] = [None]
-                            if 'segment_id_mismatch' not in self.__reasons\
-                               and chainId not in self.__reasons['segment_id_mismatch']\
-                               and self.__reasons['segment_id_mismatch'][chainId] is not None:
+                            if 'segment_id_mismatch' in self.__reasons\
+                               and (chainId not in self.__reasons['segment_id_mismatch']
+                                    or self.__reasons['segment_id_mismatch'][chainId] is not None):
                                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                 "Couldn't specify segment name "
                                                 f"{begChainId:!r}:{endChainId:!r} in the coordinates.")
@@ -7226,8 +7226,8 @@ class CharmmMRParserListener(ParseTreeListener):
                         elif self.__reasons is not None:
                             self.factor['atom_id'] = [None]
                             if 'segment_id_mismatch' in self.__reasons\
-                               and chainId not in self.__reasons['segment_id_mismatch']\
-                               and self.__reasons['segment_id_mismatch'][chainId] is not None:
+                               and (chainId not in self.__reasons['segment_id_mismatch']
+                                    or self.__reasons['segment_id_mismatch'][chainId] is not None):
                                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                 "Couldn't specify segment name "
                                                 f"'{chainId}' in the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError

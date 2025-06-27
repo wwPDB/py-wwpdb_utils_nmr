@@ -8396,9 +8396,9 @@ class CnsMRParserListener(ParseTreeListener):
                         if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
                             self.factor['atom_id'] = [None]
                             if not self.__with_axis\
-                               and 'segment_id_mismatch' not in self.__reasons\
-                               and chainId not in self.__reasons['segment_id_mismatch']\
-                               and self.__reasons['segment_id_mismatch'][chainId] is not None:
+                               and 'segment_id_mismatch' in self.__reasons\
+                               and (chainId not in self.__reasons['segment_id_mismatch']
+                                    or self.__reasons['segment_id_mismatch'][chainId] is not None):
                                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                 "Couldn't specify segment name "
                                                 f"'{chainId}' the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError
@@ -9781,9 +9781,9 @@ class CnsMRParserListener(ParseTreeListener):
                             if 'atom_id' not in self.factor or not any(a in XPLOR_RDC_PRINCIPAL_AXIS_NAMES for a in self.factor['atom_id']):
                                 self.factor['atom_id'] = [None]
                                 if not self.__with_axis\
-                                   and 'segment_id_mismatch' not in self.__reasons\
-                                   and chainId not in self.__reasons['segment_id_mismatch']\
-                                   and self.__reasons['segment_id_mismatch'][chainId] is not None:
+                                   and 'segment_id_mismatch' in self.__reasons\
+                                   and (chainId not in self.__reasons['segment_id_mismatch']
+                                        or self.__reasons['segment_id_mismatch'][chainId] is not None):
                                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                     "Couldn't specify segment name "
                                                     f"{begChainId:!r}:{endChainId:!r} in the coordinates.")
@@ -9854,8 +9854,8 @@ class CnsMRParserListener(ParseTreeListener):
                                 self.factor['atom_id'] = [None]
                                 if not self.__with_axis\
                                    and 'segment_id_mismatch' in self.__reasons\
-                                   and chainId not in self.__reasons['segment_id_mismatch']\
-                                   and self.__reasons['segment_id_mismatch'][chainId] is not None:
+                                   and (chainId not in self.__reasons['segment_id_mismatch']
+                                        or self.__reasons['segment_id_mismatch'][chainId] is not None):
                                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                     "Couldn't specify segment name "
                                                     f"'{chainId}' in the coordinates.")  # do not use 'chainId!r' expression, '%' code throws ValueError

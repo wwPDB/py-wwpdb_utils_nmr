@@ -1144,6 +1144,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
             label_seq_scheme = 'label_seq_scheme' in self.reasonsForReParsing\
                 and all(t for t in self.reasonsForReParsing['label_seq_scheme'].values())
+            local_to_label_seq_scheme = False  # 2lp4
 
             if 'global_sequence_offset' in self.reasonsForReParsing:
                 globalSequenceOffset = copy.copy(self.reasonsForReParsing['global_sequence_offset'])
@@ -1312,7 +1313,7 @@ class CharmmMRParserListener(ParseTreeListener):
                         self.reasonsForReParsing['label_seq_scheme'] = {}
                     self.reasonsForReParsing['label_seq_scheme']['dist'] = True
                     set_label_seq_scheme()
-                    label_seq_scheme = True  # 2ljb
+                    local_to_label_seq_scheme = True  # 2ljb, 2lp4
                 else:
                     del self.reasonsForReParsing['local_seq_scheme']
 
@@ -1427,7 +1428,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
             if 'segment_id_mismatch' in self.reasonsForReParsing:
                 if 'np_seq_id_remap' not in self.reasonsForReParsing and 'non_poly_remap' not in self.reasonsForReParsing\
-                   and not label_seq_scheme:  # 2ljb
+                   and not local_to_label_seq_scheme:  # 2ljb, 2lp4
                     if 'local_seq_scheme' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['local_seq_scheme']
                     if 'label_seq_scheme' in self.reasonsForReParsing:

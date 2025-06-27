@@ -4264,7 +4264,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                         self.__setLocalSeqScheme()
                                         # ad hoc sequence scheme switching is possible for the first restraint, otherwise the entire restraints should be re-parsed
                                         if trial < 3 and 'Check the 1th row of' in self.__getCurrentRestraint()\
-                                           and self.__cur_subtype != 'dist':  # skip ad hoc sequence scheme switching should be inherited to the other restraints
+                                           and self.__cur_subtype != 'dist':
+                                            # skip ad hoc sequence scheme switching should be inherited to the other restraints
                                             del _factor['atom_selection']
                                             return self.__consumeFactor_expressions(_factor, clauseName, cifCheck, trial + 1)
                                     if not self.__preferAuthSeq and self.__reasons is None and self.__cur_subtype != 'dist':

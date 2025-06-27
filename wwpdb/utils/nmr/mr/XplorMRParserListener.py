@@ -450,6 +450,7 @@ class XplorMRParserListener(ParseTreeListener):
     __with_axis = False
     __with_para = False
     __in_block = False
+    __in_noe = False  # resolve side effect derived from rdc -> dist type change (2ljb)
     __cur_auth_atom_id = ''
 
     # vector statement
@@ -2508,10 +2509,12 @@ class XplorMRParserListener(ParseTreeListener):
                     self.ceiling = 30.0
             if self.ceiling is None:
                 self.__f.append("[Range value warning] "
-                                f"The ceiling value for energy constant 'NOE {str(ctx.Ceiling())} {self.ceiling} END' should be a non-negative value.")
+                                "The ceiling value for energy constant "
+                                f"'NOE {str(ctx.Ceiling())} {self.ceiling} END' should be a non-negative value.")
             elif self.ceiling < 0.0:
                 self.__f.append("[Invalid data] "
-                                f"The ceiling value for energy constant 'NOE {str(ctx.Ceiling())} {self.ceiling} END' must not be a negative value.")
+                                "The ceiling value for energy constant "
+                                f"'NOE {str(ctx.Ceiling())} {self.ceiling} END' must not be a negative value.")
 
         elif ctx.Temperature():
             self.temperature = self.getNumber_s(ctx.number_s())
@@ -2544,11 +2547,11 @@ class XplorMRParserListener(ParseTreeListener):
             self.ncount = int(str(ctx.Integer()))
             if self.ncount is None or self.ncount == 0:
                 self.__f.append("[Range value warning] "
-                                f"The number of assign statements "
+                                "The number of assign statements "
                                 f"'NOE {str(ctx.Ncount())} {self.getClass_name(ctx.class_name(0))} {self.ncount} END' should be a positive value.")
             elif self.ncount < 0:
                 self.__f.append("[Invalid data] "
-                                f"The number of assign statements "
+                                "The number of assign statements "
                                 f"'NOE {str(ctx.Ncount())} {self.getClass_name(ctx.class_name(0))} {self.ncount} END' must not be a negative value.")
 
         elif ctx.Reset():
@@ -2577,6 +2580,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#noe_assign.
     def enterNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):  # pylint: disable=unused-argument
         self.distRestraints += 1
+
         self.__cur_subtype_altered = self.__cur_subtype != 'dist'
         if self.__cur_subtype != 'dist':
             self.distStatements += 1
@@ -2592,6 +2596,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.scale_a = None
         self.paramagCenter = None
         self.__has_nx = False
+        self.__in_noe = True
 
         self.donor_columnSel = self.acceptor_columnSel = -1
 
@@ -3484,6 +3489,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.atomSelectionSet.clear()
         self.__g.clear()
+
+        self.__in_noe = False
 
     # Exit a parse tree produced by XplorMRParser#sani_assign.
     def exitSani_assign(self, ctx: XplorMRParser.Sani_assignContext):  # pylint: disable=unused-argument
@@ -5521,7 +5528,7 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                f"The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].")
+                                "The atom selection order must be [C(i-1), N(i), CA(i), C(i), N(i+1)].")
                 return
 
             comp_id = self.atomSelectionSet[2][0]['comp_id']
@@ -7422,6 +7429,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.atomSelectionSet.clear()
         self.__g.clear()
+
+        self.__in_noe = False
 
     # Exit a parse tree produced by XplorMRParser#pre_assign.
     def exitPre_assign(self, ctx: XplorMRParser.Pre_assignContext):  # pylint: disable=unused-argument
@@ -10699,10 +10708,11 @@ class XplorMRParserListener(ParseTreeListener):
                                         self.__setLocalSeqScheme()
                                         # ad hoc sequence scheme switching is possible for the first restraint, otherwise the entire restraints should be re-parsed
                                         if trial < 3 and 'Check the 1th row of' in self.__getCurrentRestraint()\
-                                           and self.__cur_subtype != 'dist':  # skip ad hoc sequence scheme switching should be inherited to the other restraints
+                                           and (self.__cur_subtype != 'dist' and not self.__in_noe):
+                                            # skip ad hoc sequence scheme switching should be inherited to the other restraints
                                             del _factor['atom_selection']
                                             return self.__consumeFactor_expressions(_factor, clauseName, cifCheck, trial + 1)
-                                        if not self.__preferAuthSeq and self.__reasons is None and self.__cur_subtype != 'dist':
+                                        if not self.__preferAuthSeq and self.__reasons is None and (self.__cur_subtype != 'dist' and not self.__in_noe):
                                             if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                 self.reasonsForReParsing['label_seq_scheme'] = {}
                                             self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
@@ -11240,7 +11250,7 @@ class XplorMRParserListener(ParseTreeListener):
                                             skip = self.__with_axis and len(self.__polySeq) > 1 and not all('identical_chain_id' in ps for ps in self.__polySeq)
                                             if _atomId in _coordAtomSite['atom_id']\
                                                or (has_nx_local and not has_nx_anchor):
-                                                if self.__cur_subtype != 'dist'\
+                                                if (self.__cur_subtype != 'dist' and not self.__in_noe)\
                                                    or (has_nx_local and not has_nx_anchor and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
                                                     if skip:
                                                         pass
@@ -11262,7 +11272,7 @@ class XplorMRParserListener(ParseTreeListener):
                                             elif _atomId in ('HN1', 'HN2', 'HN3') and ((_atomId[-1] + 'HN') in _coordAtomSite['atom_id']
                                                                                        or ('H' + _atomId[-1]) in _coordAtomSite['atom_id']):
                                                 _atomId = _atomId[-1] + 'HN' if _atomId[-1] + 'HN' in _coordAtomSite['atom_id'] else 'H' + _atomId[-1]
-                                                if self.__cur_subtype != 'dist'\
+                                                if (self.__cur_subtype != 'dist' and not self.__in_noe)\
                                                    or (has_nx_local and not has_nx_anchor and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
                                                     if skip:
                                                         pass
@@ -11282,7 +11292,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                             if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
                                                                 self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                                             elif 'alt_atom_id' in _coordAtomSite and _atomId in _coordAtomSite['alt_atom_id']:
-                                                if self.__cur_subtype != 'dist'\
+                                                if (self.__cur_subtype != 'dist' and not self.__in_noe)\
                                                    or (has_nx_local and not has_nx_anchor and _compId in NITROOXIDE_ANCHOR_RES_NAMES):
                                                     if skip:
                                                         pass
@@ -15381,7 +15391,7 @@ class XplorMRParserListener(ParseTreeListener):
                 del self.evaluateFor[symbol_name]
 
     def __getCurrentRestraint(self) -> str:
-        if self.__cur_subtype == 'dist':
+        if self.__cur_subtype == 'dist' or (self.__in_noe and self.__cur_subtype_altered):  # resolve side effect derived from rdc -> dist type change (2ljb)
             return f"[Check the {self.distRestraints}th row of distance restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'dihed':
             return f"[Check the {self.dihedRestraints}th row of dihedral angle restraints, {self.__def_err_sf_framecode}] "

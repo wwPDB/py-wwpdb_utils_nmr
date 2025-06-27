@@ -1285,6 +1285,10 @@ class CnsMRParserListener(ParseTreeListener):
                 if not effective:
                     del self.reasonsForReParsing['np_seq_id_remap']
 
+            label_seq_scheme = 'label_seq_scheme' in self.reasonsForReParsing\
+                and all(t for t in self.reasonsForReParsing['label_seq_scheme'].values())
+            local_to_label_seq_scheme = False  # 2lp4
+
             if 'global_sequence_offset' in self.reasonsForReParsing:
                 globalSequenceOffset = copy.copy(self.reasonsForReParsing['global_sequence_offset'])
                 has_label_seq_scheme_pred = False
@@ -1309,10 +1313,6 @@ class CnsMRParserListener(ParseTreeListener):
                                 del self.reasonsForReParsing['label_seq_scheme']
                             if 'seq_id_remap' in self.reasonsForReParsing:
                                 del self.reasonsForReParsing['seq_id_remap']
-
-            label_seq_scheme = 'label_seq_scheme' in self.reasonsForReParsing\
-                and all(t for t in self.reasonsForReParsing['label_seq_scheme'].values())
-            local_to_label_seq_scheme = False  # 2lp4
 
             seqIdRemapForRemaining = []
             if 'global_sequence_offset' in self.reasonsForReParsing:
@@ -1485,6 +1485,7 @@ class CnsMRParserListener(ParseTreeListener):
                 elif not any(f for f in self.__f if '[Atom not found]' in f or '[Anomalous data]' in f)\
                         and 'non_poly_remap' not in self.reasonsForReParsing\
                         and 'branch_remap' not in self.reasonsForReParsing:
+
                     # ad hoc sequence scheme switching of distance restraints should be inherited
                     if len(insuff_dist_atom_sel_in_1st_row_warnings) > 0 and not invalid_dist_atom_sel_in_1st_row\
                        and (len(self.reasonsForReParsing) == 0 or (len(self.reasonsForReParsing) == 1 and 'label_seq_scheme' in self.reasonsForReParsing))\
@@ -3628,7 +3629,6 @@ class CnsMRParserListener(ParseTreeListener):
                         return
 
                 elif abs(seq_id_1 - seq_id_2) > 1:
-
                     if abs(seq_id_1 - seq_id_2) > 2 or {atom_id_1, atom_id_2} != {'H', 'N'}:
                         warn_title = 'Anomalous data' if self.__preferAuthSeq and 'PRO' in (comp_id_1, comp_id_2) else 'Invalid data'
                         self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
@@ -6496,7 +6496,8 @@ class CnsMRParserListener(ParseTreeListener):
                                         self.__setLocalSeqScheme()
                                         # ad hoc sequence scheme switching is possible for the first restraint, otherwise the entire restraints should be re-parsed
                                         if trial < 3 and 'Check the 1th row of' in self.__getCurrentRestraint()\
-                                           and self.__cur_subtype != 'dist':  # skip ad hoc sequence scheme switching should be inherited to the other restraints
+                                           and self.__cur_subtype != 'dist':
+                                            # skip ad hoc sequence scheme switching should be inherited to the other restraints
                                             del _factor['atom_selection']
                                             return self.__consumeFactor_expressions(_factor, clauseName, cifCheck, trial + 1)
                                         if not self.__preferAuthSeq and self.__reasons is None and self.__cur_subtype != 'dist':

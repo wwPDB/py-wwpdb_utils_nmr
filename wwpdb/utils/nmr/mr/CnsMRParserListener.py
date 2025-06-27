@@ -759,7 +759,11 @@ class CnsMRParserListener(ParseTreeListener):
             pro_hn_atom_not_found_warnings = [f for f in self.__f if pro_hn_atom_not_found_pattern.match(f)]
             gly_hb_atom_not_found_warnings = [f for f in self.__f if gly_hb_atom_not_found_pattern.match(f)]
 
-            if 'segment_id_mismatch' in self.reasonsForReParsing and len(self.reasonsForReParsing['segment_id_mismatch']) == 0:  # 2lzs
+            if 'segment_id_mismatch' in self.reasonsForReParsing\
+               and (len(self.reasonsForReParsing['segment_id_mismatch']) == 0
+                    or (len(self.reasonsForReParsing['segment_id_mismatch']) < len(self.__atomIdSetPerChain)
+                        and all(all(score < 0 for score in stat.values()) and len(set(stat.values())) == 1
+                                for stat in self.reasonsForReParsing['segment_id_match_stats'].values()))):  # 2lzs
                 del self.reasonsForReParsing['segment_id_mismatch']
                 del self.reasonsForReParsing['segment_id_match_stats']
                 del self.reasonsForReParsing['segment_id_poly_type_stats']

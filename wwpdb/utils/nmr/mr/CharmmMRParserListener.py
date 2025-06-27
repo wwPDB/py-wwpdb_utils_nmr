@@ -5516,8 +5516,11 @@ class CharmmMRParserListener(ParseTreeListener):
         _score = stats[_chainId]
         if _score > 0:
             self.reasonsForReParsing['segment_id_mismatch'][altChainId] = _chainId
-        elif _score < 0 and altChainId in self.reasonsForReParsing['segment_id_mismatch']:
-            del self.reasonsForReParsing['segment_id_mismatch'][altChainId]  # 2lzs
+        else:
+            __chainId = min(stats, key=lambda key: stats[key])[0]
+            __score = stats[__chainId]
+            if _score == __score and altChainId in self.reasonsForReParsing['segment_id_mismatch']:
+                del self.reasonsForReParsing['segment_id_mismatch'][altChainId]  # 2lzs
 
     def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True
                            ) -> Tuple[Tuple[str, int], Optional[dict]]:

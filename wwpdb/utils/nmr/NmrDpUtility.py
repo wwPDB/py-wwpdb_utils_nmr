@@ -8248,7 +8248,7 @@ class NmrDpUtility:
                         three_letter_codes = monDict3.keys()
                         atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
 
-                        with open(arPath, 'r', encoding='utf-8') as ifh:
+                        with open(arPath, 'r', encoding='utf-8', errors='ignore') as ifh:
 
                             for line in ifh:
 
@@ -8288,7 +8288,7 @@ class NmrDpUtility:
                         three_letter_codes = monDict3.keys()
                         atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
 
-                        with open(arPath, 'r', encoding='utf-8') as ifh:
+                        with open(arPath, 'r', encoding='utf-8', errors='ignore') as ifh:
 
                             for line in ifh:
 
@@ -11245,7 +11245,7 @@ class NmrDpUtility:
 
             if file_type in ('nm-res-xpl', 'nm-res-cns'):
 
-                with open(file_path, 'r', encoding='utf-8') as ifh:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
 
                     atom_likes = atom_unlikes = cs_atom_likes = resid_likes = real_likes = 0
                     names, resids = [], []
@@ -11346,7 +11346,7 @@ class NmrDpUtility:
 
                             _t_lower = t_lower
 
-                with open(file_path, 'r', encoding='utf-8') as ifh:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
 
                     atom_likes = 0
                     names = []
@@ -11413,7 +11413,7 @@ class NmrDpUtility:
 
             elif file_type == 'nm-res-amb':
 
-                with open(file_path, 'r', encoding='utf-8') as ifh:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
                     in_rst = in_iat = in_igr1 = in_igr2 =\
                         dist_range_like = dihed_range_like = rdc_range_like = False
 
@@ -11627,7 +11627,7 @@ class NmrDpUtility:
 
                 prohibited_col = set()
 
-                with open(file_path, 'r', encoding='utf-8') as ifh:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
 
                     pos = 0
 
@@ -11908,7 +11908,7 @@ class NmrDpUtility:
 
                 if file_type == 'nm-res-oth' and has_chem_shift and not has_dist_restraint and not has_dihed_restraint:
 
-                    with open(file_path, 'r', encoding='utf-8') as ifh:
+                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
 
                         for line in ifh:
 
@@ -11974,7 +11974,7 @@ class NmrDpUtility:
 
                     has_spectral_peak = get_peak_list_format(file_path) is not None
 
-                    with open(file_path, 'r', encoding='utf-8') as ifh:
+                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
                         for pos, line in enumerate(ifh, start=1):
                             if pos == 1:
                                 if 'Structures from CYANA' not in line:
@@ -11990,7 +11990,7 @@ class NmrDpUtility:
                                     has_coordinate = True
                                 break
 
-                    with open(file_path, 'r', encoding='utf-8') as ifh:
+                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
                         for pos, line in enumerate(ifh, start=1):
                             if pos == 1:
                                 if line.isdigit():
@@ -12027,7 +12027,7 @@ class NmrDpUtility:
 
             if file_type in light_mr_file_types and not has_dist_restraint:  # DAOTHER-7491
 
-                with open(file_path, 'r', encoding='utf-8') as ifh:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
 
                     for line in ifh:
 

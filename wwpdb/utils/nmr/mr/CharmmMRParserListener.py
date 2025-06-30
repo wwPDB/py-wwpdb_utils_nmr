@@ -1437,7 +1437,10 @@ class CharmmMRParserListener(ParseTreeListener):
 
             if 'segment_id_mismatch' in self.reasonsForReParsing:
                 if 'np_seq_id_remap' not in self.reasonsForReParsing and 'non_poly_remap' not in self.reasonsForReParsing\
-                   and not local_to_label_seq_scheme and 'inhibit_label_seq_scheme' not in self.reasonsForReParsing:  # 2ljb, 2lp4, 1qkg
+                   and not local_to_label_seq_scheme\
+                   and ('inhibit_label_seq_scheme' not in self.reasonsForReParsing
+                        or all(chainId in self.reasonsForReParsing['segment_id_mismatch'].values()
+                               for chainId in self.reasonsForReParsing['inhibit_label_seq_scheme'])):  # 2ljb, 2lp4, 1qkg, 2lkm
                     if 'local_seq_scheme' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['local_seq_scheme']
                     if 'label_seq_scheme' in self.reasonsForReParsing:

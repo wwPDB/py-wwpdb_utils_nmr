@@ -1438,9 +1438,7 @@ class CharmmMRParserListener(ParseTreeListener):
             if 'segment_id_mismatch' in self.reasonsForReParsing:
                 if 'np_seq_id_remap' not in self.reasonsForReParsing and 'non_poly_remap' not in self.reasonsForReParsing\
                    and not local_to_label_seq_scheme\
-                   and ('inhibit_label_seq_scheme' not in self.reasonsForReParsing
-                        or all(chainId in self.reasonsForReParsing['segment_id_mismatch'].values()
-                               for chainId in self.reasonsForReParsing['inhibit_label_seq_scheme'])):  # 2ljb, 2lp4, 1qkg, 2lkm
+                   and 'inhibit_label_seq_scheme' not in self.reasonsForReParsing:  # 2ljb, 2lp4, 1qkg, 2lkm
                     if 'local_seq_scheme' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['local_seq_scheme']
                     if 'label_seq_scheme' in self.reasonsForReParsing:
@@ -1470,6 +1468,17 @@ class CharmmMRParserListener(ParseTreeListener):
                             src_chain_id_set.sort()
                             for src_chain_id, dst_chain_id in zip(src_chain_id_set, dst_chain_id_set):
                                 self.reasonsForReParsing['segment_id_mismatch'][src_chain_id] = dst_chain_id
+
+                if 'inhibit_label_seq_scheme' in self.reasonsForReParsing\
+                   and len(self.reasonsForReParsing['inhibit_label_seq_scheme']) == len(set(filter(None, self.reasonsForReParsing['segment_id_mismatch'].values())))\
+                   and all(chainId in self.reasonsForReParsing['segment_id_mismatch'].values()
+                           for chainId in self.reasonsForReParsing['inhibit_label_seq_scheme']):  # 2ljc, 1qkg
+                    if 'local_seq_scheme' in self.reasonsForReParsing:
+                        del self.reasonsForReParsing['local_seq_scheme']
+                    if 'label_seq_scheme' in self.reasonsForReParsing:
+                        del self.reasonsForReParsing['label_seq_scheme']
+                    if 'label_seq_offset' in self.reasonsForReParsing:
+                        del self.reasonsForReParsing['label_seq_offset']
 
                 if (label_seq_scheme and 'inhibit_label_seq_scheme' not in self.reasonsForReParsing)\
                    or ('np_seq_id_remap' in self.reasonsForReParsing or 'non_poly_remap' in self.reasonsForReParsing):  # 6f0y, 2lkm, 2mnz

@@ -1719,9 +1719,7 @@ class XplorMRParserListener(ParseTreeListener):
             if 'segment_id_mismatch' in self.reasonsForReParsing:
                 if 'np_seq_id_remap' not in self.reasonsForReParsing and 'non_poly_remap' not in self.reasonsForReParsing\
                    and not local_to_label_seq_scheme\
-                   and ('inhibit_label_seq_scheme' not in self.reasonsForReParsing
-                        or all(chainId in self.reasonsForReParsing['segment_id_mismatch'].values()
-                               for chainId in self.reasonsForReParsing['inhibit_label_seq_scheme'])):  # 2ljb, 2lp4, 1qkg, 2lkm
+                   and 'inhibit_label_seq_scheme' not in self.reasonsForReParsing:  # 2ljb, 2lp4, 1qkg, 2lkm
                     if 'local_seq_scheme' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['local_seq_scheme']
                     if 'label_seq_scheme' in self.reasonsForReParsing:
@@ -1751,6 +1749,17 @@ class XplorMRParserListener(ParseTreeListener):
                             src_chain_id_set.sort()
                             for src_chain_id, dst_chain_id in zip(src_chain_id_set, dst_chain_id_set):
                                 self.reasonsForReParsing['segment_id_mismatch'][src_chain_id] = dst_chain_id
+
+                if 'inhibit_label_seq_scheme' in self.reasonsForReParsing\
+                   and len(self.reasonsForReParsing['inhibit_label_seq_scheme']) == len(set(filter(None, self.reasonsForReParsing['segment_id_mismatch'].values())))\
+                   and all(chainId in self.reasonsForReParsing['segment_id_mismatch'].values()
+                           for chainId in self.reasonsForReParsing['inhibit_label_seq_scheme']):  # 2ljc, 1qkg
+                    if 'local_seq_scheme' in self.reasonsForReParsing:
+                        del self.reasonsForReParsing['local_seq_scheme']
+                    if 'label_seq_scheme' in self.reasonsForReParsing:
+                        del self.reasonsForReParsing['label_seq_scheme']
+                    if 'label_seq_offset' in self.reasonsForReParsing:
+                        del self.reasonsForReParsing['label_seq_offset']
 
                 if (label_seq_scheme and 'inhibit_label_seq_scheme' not in self.reasonsForReParsing)\
                    or ('np_seq_id_remap' in self.reasonsForReParsing or 'non_poly_remap' in self.reasonsForReParsing):  # 6f0y, 2lkm, 2mnz
@@ -10710,19 +10719,20 @@ class XplorMRParserListener(ParseTreeListener):
                                     elif _atomId is None\
                                             or (_atomId not in aminoProtonCode and _atomId not in carboxylCode and _atomId not in jcoupBbPairCode)\
                                             or self.__gapInAuthSeq:  # 2kyg
-                                        self.__preferAuthSeq = not self.__preferAuthSeq
-                                        # self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
-                                        self.__setLocalSeqScheme()
-                                        # ad hoc sequence scheme switching is possible for the first restraint, otherwise the entire restraints should be re-parsed
-                                        if trial < 3 and 'Check the 1th row of' in self.__getCurrentRestraint()\
-                                           and (self.__cur_subtype != 'dist' and not self.__in_noe):
-                                            # skip ad hoc sequence scheme switching should be inherited to the other restraints
-                                            del _factor['atom_selection']
-                                            return self.__consumeFactor_expressions(_factor, clauseName, cifCheck, trial + 1)
-                                        if not self.__preferAuthSeq and self.__reasons is None and (self.__cur_subtype != 'dist' and not self.__in_noe):
-                                            if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                self.reasonsForReParsing['label_seq_scheme'] = {}
-                                            self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
+                                        if not self.__cur_subtype_altered or not self.__in_noe:  # 2ljc
+                                            self.__preferAuthSeq = not self.__preferAuthSeq
+                                            # self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
+                                            self.__setLocalSeqScheme()
+                                            # ad hoc sequence scheme switching is possible for the first restraint, otherwise the entire restraints should be re-parsed
+                                            if trial < 3 and 'Check the 1th row of' in self.__getCurrentRestraint()\
+                                               and (self.__cur_subtype != 'dist' and not self.__in_noe):
+                                                # skip ad hoc sequence scheme switching should be inherited to the other restraints
+                                                del _factor['atom_selection']
+                                                return self.__consumeFactor_expressions(_factor, clauseName, cifCheck, trial + 1)
+                                            if not self.__preferAuthSeq and self.__reasons is None and (self.__cur_subtype != 'dist' and not self.__in_noe):
+                                                if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                    self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
 
                                 elif self.__with_para and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                                     self.__preferAuthSeq = not self.__preferAuthSeq

@@ -5493,6 +5493,9 @@ class CharmmMRParserListener(ParseTreeListener):
         altChainId = factor['alt_chain_id']
         if altChainId not in self.reasonsForReParsing['segment_id_mismatch']:
             return
+        if 'atom_id' in factor and any(atomId in aminoProtonCode or atomId in carboxylCode or atomId in jcoupBbPairCode
+                                       for atomId in factor['atom_id']):  # 2n8a
+            return
         if chainId not in self.reasonsForReParsing['segment_id_match_stats'][altChainId]:
             self.reasonsForReParsing['segment_id_match_stats'][altChainId][chainId] = 0
             self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['polymer'] = 0

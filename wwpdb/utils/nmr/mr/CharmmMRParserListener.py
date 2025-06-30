@@ -5379,7 +5379,9 @@ class CharmmMRParserListener(ParseTreeListener):
                             # no hope for auth sequence scheme (2mnz)
                             preferLabelSeq = True
                             break
-        if not self.__preferAuthSeq or preferLabelSeq:
+        inhibitLabelSeq = self.__reasons is not None and 'inhibit_label_seq_scheme' in self.__reasons\
+            and ps['auth_chain_id'] in self.__reasons['inhibit_label_seq_scheme']
+        if (not self.__preferAuthSeq or preferLabelSeq) and not inhibitLabelSeq:
             chainId = ps['chain_id']
             offset = 0
             if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\

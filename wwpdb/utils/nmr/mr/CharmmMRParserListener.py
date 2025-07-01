@@ -1571,7 +1571,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by CharmmMRParser#distance_restraint.
     def enterDistance_restraint(self, ctx: CharmmMRParser.Distance_restraintContext):  # pylint: disable=unused-argument
-        self.__cur_subtype_altered = self.__cur_subtype != 'dist'
+        self.__cur_subtype_altered = self.__cur_subtype != 'dist' and len(self.__cur_subtype) > 0
         self.__cur_subtype = 'dist'
 
         if self.__cur_subtype_altered and not self.__preferAuthSeq:

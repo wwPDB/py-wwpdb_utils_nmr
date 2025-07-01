@@ -1695,7 +1695,7 @@ class CnsMRParserListener(ParseTreeListener):
         self.classification = '.'
 
         self.distStatements += 1
-        self.__cur_subtype_altered = self.__cur_subtype != 'dist'
+        self.__cur_subtype_altered = self.__cur_subtype != 'dist' and len(self.__cur_subtype) > 0
         self.__cur_subtype = 'dist'
 
         if self.__cur_subtype_altered and not self.__preferAuthSeq:
@@ -2187,8 +2187,7 @@ class CnsMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by CnsMRParser#noe_assign.
     def enterNoe_assign(self, ctx: CnsMRParser.Noe_assignContext):  # pylint: disable=unused-argument
         self.distRestraints += 1
-
-        self.__cur_subtype_altered = self.__cur_subtype != 'dist'
+        self.__cur_subtype_altered = self.__cur_subtype != 'dist' and len(self.__cur_subtype) > 0
         if self.__cur_subtype_altered:
             self.distStatements += 1
         self.__cur_subtype = 'dist'

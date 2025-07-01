@@ -1840,7 +1840,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.classification = '.'
 
         self.distStatements += 1
-        self.__cur_subtype_altered = self.__cur_subtype != 'dist'
+        self.__cur_subtype_altered = self.__cur_subtype != 'dist' and len(self.__cur_subtype) > 0
         self.__cur_subtype = 'dist'
 
         if self.__cur_subtype_altered and not self.__preferAuthSeq:
@@ -2612,8 +2612,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#noe_assign.
     def enterNoe_assign(self, ctx: XplorMRParser.Noe_assignContext):  # pylint: disable=unused-argument
         self.distRestraints += 1
-
-        self.__cur_subtype_altered = self.__cur_subtype != 'dist'
+        self.__cur_subtype_altered = self.__cur_subtype != 'dist' and len(self.__cur_subtype) > 0
         if self.__cur_subtype != 'dist':
             self.distStatements += 1
         self.__cur_subtype = 'dist' if self.__cur_subtype not in ('pre', 'rdc') else self.__cur_subtype  # set 'pre', 'rdc' for error message
@@ -3514,7 +3513,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#sani_assign.
     def enterSani_assign(self, ctx: XplorMRParser.Sani_assignContext):  # pylint: disable=unused-argument
         self.rdcRestraints += 1
-        self.__cur_subtype_altered = self.__cur_subtype != 'rdc'
+        self.__cur_subtype_altered = self.__cur_subtype != 'rdc' and len(self.__cur_subtype) > 0
         if self.__cur_subtype != 'rdc':
             self.rdcStatements += 1
         self.__cur_subtype = 'rdc'
@@ -5205,7 +5204,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#coup_assign.
     def enterCoup_assign(self, ctx: XplorMRParser.Coup_assignContext):  # pylint: disable=unused-argument
         self.jcoupRestraints += 1
-        self.__cur_subtype_altered = self.__cur_subtype != 'jcoup'
+        self.__cur_subtype_altered = self.__cur_subtype != 'jcoup' and len(self.__cur_subtype) > 0
         self.__cur_subtype = 'jcoup' if self.__cur_subtype != 'rdc' else 'rdc'  # set 'rdc' for error message
 
         self.atomSelectionSet.clear()
@@ -7703,7 +7702,7 @@ class XplorMRParserListener(ParseTreeListener):
     # Enter a parse tree produced by XplorMRParser#pcs_assign.
     def enterPcs_assign(self, ctx: XplorMRParser.Pcs_assignContext):  # pylint: disable=unused-argument
         self.pcsRestraints += 1
-        self.__cur_subtype_altered = self.__cur_subtype != 'pcs'
+        self.__cur_subtype_altered = self.__cur_subtype != 'pcs' and len(self.__cur_subtype) > 0
         self.__cur_subtype = 'pcs' if self.__cur_subtype != 'hvycs' else 'hvycs'  # set 'hvycs' for error message
 
         self.atomSelectionSet.clear()
@@ -8816,13 +8815,13 @@ class XplorMRParserListener(ParseTreeListener):
     def enterHbond_db_assign(self, ctx: XplorMRParser.Hbond_db_assignContext):  # pylint: disable=unused-argument
         if self.__cur_dist_type:
             self.distRestraints += 1
-            self.__cur_subtype_altered = self.__cur_subtype != 'dist'
+            self.__cur_subtype_altered = self.__cur_subtype != 'dist' and len(self.__cur_subtype) > 0
             if self.__cur_subtype != 'dist':
                 self.distStatements += 1
             self.__cur_subtype = 'dist'
         else:
             self.hbondRestraints += 1
-            self.__cur_subtype_altered = self.__cur_subtype != 'hbond'
+            self.__cur_subtype_altered = self.__cur_subtype != 'hbond' and len(self.__cur_subtype) > 0
             if self.__cur_subtype != 'hbond':
                 self.hbondStatements += 1
             self.__cur_subtype = 'hbond'

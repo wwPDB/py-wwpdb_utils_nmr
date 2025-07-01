@@ -430,6 +430,11 @@ class XplorMRParserListener(ParseTreeListener):
     __extendAuthSeq = False
     __complexSeqScheme = False
 
+    __entityAssembly = None
+    __polyPeptide = False
+    __polyDeoxyribonucleotide = False
+    __polyRibonucleotide = False
+
     # large model
     __largeModel = False
     __representativeAsymId = 'A'
@@ -671,6 +676,7 @@ class XplorMRParserListener(ParseTreeListener):
             self.__authToStarSeq = ret['auth_to_star_seq']
             self.__authToOrigSeq = ret['auth_to_orig_seq']
             self.__authToInsCode = ret['auth_to_ins_code']
+            self.__entityAssembly = ret['entity_assembly']
 
             exptl = cR.getDictList('exptl')
             if len(exptl) > 0:
@@ -736,6 +742,16 @@ class XplorMRParserListener(ParseTreeListener):
                        or ('gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):  # 2kyg
                         self.__complexSeqScheme = False
                         break
+
+            for entity in self.__entityAssembly:
+                if 'entity_poly_type' in entity:
+                    poly_type = entity['entity_poly_type']
+                    if poly_type.startswith('polypeptide'):
+                        self.__polyPeptide = True
+                    elif poly_type == 'polydeoxyribonucleotide':
+                        self.__polyDeoxyribonucleotide = True
+                    elif poly_type == 'polyribonucleotide':
+                        self.__polyRibonucleotide = True
 
         self.__largeModel = self.__hasPolySeq and len(self.__polySeq) > LEN_LARGE_ASYM_ID
         if self.__largeModel:
@@ -12018,9 +12034,13 @@ class XplorMRParserListener(ParseTreeListener):
         altChainId = factor['alt_chain_id']
         if altChainId not in self.reasonsForReParsing['segment_id_mismatch']:
             return
-        if 'atom_id' in factor and any(atomId in aminoProtonCode or atomId in carboxylCode or atomId in jcoupBbPairCode
-                                       for atomId in factor['atom_id']):  # 2n8a
-            return
+        if 'atom_id' in factor and len(factor['atom_id']) == 1 and self.__polyPeptide:  # 7lgi
+            atomId = factor['atom_id'][0]
+            if atomId in aminoProtonCode or atomId in carboxylCode or atomId in jcoupBbPairCode:
+                if self.__polyDeoxyribonucleotide or self.__polyRibonucleotide:  # 2n8a
+                    return
+                if (self.__cur_subtype == 'dist' or self.__in_noe) and not valid:
+                    return  # D_1300057999
         if chainId not in self.reasonsForReParsing['segment_id_match_stats'][altChainId]:
             self.reasonsForReParsing['segment_id_match_stats'][altChainId][chainId] = 0
             self.reasonsForReParsing['segment_id_poly_type_stats'][altChainId]['polymer'] = 0

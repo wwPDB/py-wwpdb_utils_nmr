@@ -7805,7 +7805,7 @@ class CnsMRParserListener(ParseTreeListener):
         if 'atom_id' in factor and len(factor['atom_id']) == 1 and self.__polyPeptide:  # 7lgi
             atomId = factor['atom_id'][0]
             if atomId in aminoProtonCode or atomId in carboxylCode or atomId in jcoupBbPairCode:
-                if self.__polyDeoxyribonucleotide or self.__polyRibonucleotide:  # 2n8a
+                if self.__polyDeoxyribonucleotide or self.__polyRibonucleotide or self.__hasBranched:  # 2n8a, 4b1q (branched)
                     return
                 if self.__cur_subtype == 'dist' and not valid:
                     return  # D_1300057999

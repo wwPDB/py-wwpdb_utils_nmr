@@ -1385,8 +1385,9 @@ class CharmmMRParserListener(ParseTreeListener):
                     or 'label_seq_scheme' in self.reasonsForReParsing):  # 2joa
                 mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                 sortPolySeqRst(self.__polySeqRstFailed)
+
                 valid = True
-                if len(self.__polySeqRstFailed) > 0:
+                if len(self.__polySeqRstFailed) > 0 and 'label_seq_scheme' not in self.reasonsForReParsing:  # 6qeu
                     for _ps in self.__polySeqRstFailed:
                         ps = next((ps for ps in self.__polySeqRstValid if ps['chain_id'] == _ps['chain_id']), None)
                         if ps is None:
@@ -1394,9 +1395,9 @@ class CharmmMRParserListener(ParseTreeListener):
                         if len([compId for compId in ps['comp_id'] if compId not in emptyValue]) > len(_ps['comp_id']) * 2:
                             valid = False
                             break
+                if len(self.__polySeqRstFailed) > 0:
+                    self.reasonsForReParsing['extend_seq_scheme'] = self.__polySeqRstFailed
                 if valid:
-                    if len(self.__polySeqRstFailed) > 0:
-                        self.reasonsForReParsing['extend_seq_scheme'] = self.__polySeqRstFailed
                     if len(insuff_dist_atom_sel_in_1st_row_warnings) > 0 and not invalid_dist_atom_sel_in_1st_row:
                         if 'label_seq_scheme' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['label_seq_scheme'] = {}

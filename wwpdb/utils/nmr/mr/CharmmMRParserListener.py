@@ -1217,6 +1217,9 @@ class CharmmMRParserListener(ParseTreeListener):
                 if not effective:
                     del self.reasonsForReParsing['np_seq_id_remap']
 
+            if len(self.__polySeqRstValid) > 0:
+                sortPolySeqRst(self.__polySeqRstValid)
+
             label_seq_scheme = 'label_seq_scheme' in self.reasonsForReParsing\
                 and all(t for t in self.reasonsForReParsing['label_seq_scheme'].values())
             local_to_label_seq_scheme = False  # 2lp4
@@ -1382,16 +1385,38 @@ class CharmmMRParserListener(ParseTreeListener):
                     or 'label_seq_scheme' in self.reasonsForReParsing):  # 2joa
                 mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                 sortPolySeqRst(self.__polySeqRstFailed)
+                valid = True
                 if len(self.__polySeqRstFailed) > 0:
-                    self.reasonsForReParsing['extend_seq_scheme'] = self.__polySeqRstFailed
-                if len(insuff_dist_atom_sel_in_1st_row_warnings) > 0 and not invalid_dist_atom_sel_in_1st_row:
-                    if 'label_seq_scheme' not in self.reasonsForReParsing:
-                        self.reasonsForReParsing['label_seq_scheme'] = {}
-                    self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                    for _ps in self.__polySeqRstFailed:
+                        ps = next((ps for ps in self.__polySeqRstValid if ps['chain_id'] == _ps['chain_id']), None)
+                        if ps is None:
+                            break
+                        if len([compId for compId in ps['comp_id'] if compId not in emptyValue]) > len(_ps['comp_id']) * 2:
+                            valid = False
+                            break
+                if valid:
+                    if len(self.__polySeqRstFailed) > 0:
+                        self.reasonsForReParsing['extend_seq_scheme'] = self.__polySeqRstFailed
+                    if len(insuff_dist_atom_sel_in_1st_row_warnings) > 0 and not invalid_dist_atom_sel_in_1st_row:
+                        if 'label_seq_scheme' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['label_seq_scheme'] = {}
+                        self.reasonsForReParsing['label_seq_scheme']['dist'] = True
+                        set_label_seq_scheme()
+                        local_to_label_seq_scheme = True  # 2ljb, 2lp4
+                    else:
+                        del self.reasonsForReParsing['local_seq_scheme']
+                else:  # 2ld3
+                    if 'inhibit_label_seq_scheme' not in self.reasonsForReParsing:
+                        self.reasonsForReParsing['inhibit_label_seq_scheme'] = {}
                     set_label_seq_scheme()
-                    local_to_label_seq_scheme = True  # 2ljb, 2lp4
-                else:
-                    del self.reasonsForReParsing['local_seq_scheme']
+                    for ps in self.__polySeqRstValid:
+                        chainId = ps['chain_id']
+                        if 'label_seq_scheme' in self.reasonsForReParsing:
+                            self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId] = self.reasonsForReParsing['label_seq_scheme']
+                    if 'local_seq_scheme' in self.reasonsForReParsing:
+                        del self.reasonsForReParsing['local_seq_scheme']
+                    if 'label_seq_scheme' in self.reasonsForReParsing:
+                        del self.reasonsForReParsing['label_seq_scheme']
 
             if self.hasAnyRestraints():
 

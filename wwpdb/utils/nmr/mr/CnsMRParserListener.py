@@ -938,6 +938,31 @@ class CnsMRParserListener(ParseTreeListener):
 
                             seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
 
+                            # extend restraint polymer sequence from single match (2joa)
+                            if len(seqAlignFailed) == 0 and len(self.__polySeqRstFailed) > 0 and len(self.__polySeqRstFailedAmbig) > 0:
+                                for ps in self.__polySeqRstFailed:
+                                    chainId = ps['chain_id']
+                                    _ps = next((_ps for _ps in self.__polySeqRstFailedAmbig if _ps['chain_id'] == chainId), None)
+                                    if _ps is None:
+                                        continue
+                                    _matched = 0
+                                    for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
+                                        _compId = None
+                                        for compId in list(compIds):
+                                            _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
+                                            updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
+                                            sortPolySeqRst(_polySeqRstFailed)
+                                            _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, _polySeqRstFailed)
+                                            _sa = next((_sa for _sa in _seqAlignFailed if _sa['test_chain_id'] == chainId), None)
+                                            if _sa is None or _sa['conflict'] > 0:
+                                                continue
+                                            if _sa['matched'] > _matched:
+                                                _matched = _sa['matched']
+                                                _compId = compId
+                                        if _compId is not None:
+                                            updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, _compId)
+                                            sortPolySeqRst(self.__polySeqRstFailed)
+
                             for sa in seqAlignFailed:
                                 if sa['conflict'] == 0:
                                     chainId = sa['test_chain_id']
@@ -1146,6 +1171,31 @@ class CnsMRParserListener(ParseTreeListener):
                         sortPolySeqRst(self.__polySeqRstFailed)
 
                         seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
+
+                        # extend restraint polymer sequence from single match (2joa)
+                        if len(seqAlignFailed) == 0 and len(self.__polySeqRstFailed) > 0 and len(self.__polySeqRstFailedAmbig) > 0:
+                            for ps in self.__polySeqRstFailed:
+                                chainId = ps['chain_id']
+                                _ps = next((_ps for _ps in self.__polySeqRstFailedAmbig if _ps['chain_id'] == chainId), None)
+                                if _ps is None:
+                                    continue
+                                _matched = 0
+                                for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
+                                    _compId = None
+                                    for compId in list(compIds):
+                                        _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
+                                        updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
+                                        sortPolySeqRst(_polySeqRstFailed)
+                                        _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, _polySeqRstFailed)
+                                        _sa = next((_sa for _sa in _seqAlignFailed if _sa['test_chain_id'] == chainId), None)
+                                        if _sa is None or _sa['conflict'] > 0:
+                                            continue
+                                        if _sa['matched'] > _matched:
+                                            _matched = _sa['matched']
+                                            _compId = compId
+                                    if _compId is not None:
+                                        updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, _compId)
+                                        sortPolySeqRst(self.__polySeqRstFailed)
 
                         for sa in seqAlignFailed:
                             if sa['conflict'] == 0:
@@ -1439,7 +1489,7 @@ class CnsMRParserListener(ParseTreeListener):
                                         break
                                     chainIdRemap[auth_seq_id - offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
                             else:
-                                if label_seq_scheme:
+                                if label_seq_scheme or 'local_seq_scheme' in self.reasonsForReParsing:
                                     for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
                                         if seq_id in chainIdRemap:
                                             valid = False
@@ -1466,7 +1516,8 @@ class CnsMRParserListener(ParseTreeListener):
                                                    and ('[Atom not found]' in f or '[Hydrogen not instantiated]' in f or '[Coordinate issue]' in f))
 
             if 'local_seq_scheme' in self.reasonsForReParsing\
-               and (len(self.reasonsForReParsing) == 1 or len(insuff_dist_atom_sel_warnings) == len(self.__f)):  # 2ljb
+               and (len(self.reasonsForReParsing) == 1 or len(insuff_dist_atom_sel_warnings) == len(self.__f)  # 2ljb
+                    or 'label_seq_scheme' in self.reasonsForReParsing):  # 2joa
                 mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                 sortPolySeqRst(self.__polySeqRstFailed)
                 if len(self.__polySeqRstFailed) > 0:
@@ -11057,7 +11108,10 @@ class CnsMRParserListener(ParseTreeListener):
             #    and 'inhibit_label_seq_scheme' not in self.__reasons):
             return
         if 'extend_seq_scheme' in self.__reasons:
-            self.__preferAuthSeq = self.__extendAuthSeq = True
+            self.__extendAuthSeq = True
+            if 'label_seq_scheme' not in self.__reasons:  # 2joa
+                self.__preferAuthSeq = True
+                self.__authSeqId = 'label_seq_id'
             return
         if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:  # \
             # and 'segment_id_mismatch' not in self.__reasons:

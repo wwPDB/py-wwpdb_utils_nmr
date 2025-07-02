@@ -1081,6 +1081,31 @@ class XplorMRParserListener(ParseTreeListener):
 
                             seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
 
+                            # extend restraint polymer sequence from single match (2joa)
+                            if len(seqAlignFailed) == 0 and len(self.__polySeqRstFailed) > 0 and len(self.__polySeqRstFailedAmbig) > 0:
+                                for ps in self.__polySeqRstFailed:
+                                    chainId = ps['chain_id']
+                                    _ps = next((_ps for _ps in self.__polySeqRstFailedAmbig if _ps['chain_id'] == chainId), None)
+                                    if _ps is None:
+                                        continue
+                                    _matched = 0
+                                    for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
+                                        _compId = None
+                                        for compId in list(compIds):
+                                            _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
+                                            updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
+                                            sortPolySeqRst(_polySeqRstFailed)
+                                            _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, _polySeqRstFailed)
+                                            _sa = next((_sa for _sa in _seqAlignFailed if _sa['test_chain_id'] == chainId), None)
+                                            if _sa is None or _sa['conflict'] > 0:
+                                                continue
+                                            if _sa['matched'] > _matched:
+                                                _matched = _sa['matched']
+                                                _compId = compId
+                                        if _compId is not None:
+                                            updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, _compId)
+                                            sortPolySeqRst(self.__polySeqRstFailed)
+
                             for sa in seqAlignFailed:
                                 if sa['conflict'] == 0:
                                     chainId = sa['test_chain_id']
@@ -1289,6 +1314,31 @@ class XplorMRParserListener(ParseTreeListener):
                         sortPolySeqRst(self.__polySeqRstFailed)
 
                         seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
+
+                        # extend restraint polymer sequence from single match (2joa)
+                        if len(seqAlignFailed) == 0 and len(self.__polySeqRstFailed) > 0 and len(self.__polySeqRstFailedAmbig) > 0:
+                            for ps in self.__polySeqRstFailed:
+                                chainId = ps['chain_id']
+                                _ps = next((_ps for _ps in self.__polySeqRstFailedAmbig if _ps['chain_id'] == chainId), None)
+                                if _ps is None:
+                                    continue
+                                _matched = 0
+                                for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
+                                    _compId = None
+                                    for compId in list(compIds):
+                                        _polySeqRstFailed = copy.deepcopy(self.__polySeqRstFailed)
+                                        updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
+                                        sortPolySeqRst(_polySeqRstFailed)
+                                        _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, _polySeqRstFailed)
+                                        _sa = next((_sa for _sa in _seqAlignFailed if _sa['test_chain_id'] == chainId), None)
+                                        if _sa is None or _sa['conflict'] > 0:
+                                            continue
+                                        if _sa['matched'] > _matched:
+                                            _matched = _sa['matched']
+                                            _compId = compId
+                                    if _compId is not None:
+                                        updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, _compId)
+                                        sortPolySeqRst(self.__polySeqRstFailed)
 
                         for sa in seqAlignFailed:
                             if sa['conflict'] == 0:
@@ -1582,7 +1632,7 @@ class XplorMRParserListener(ParseTreeListener):
                                         break
                                     chainIdRemap[auth_seq_id - offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
                             else:
-                                if label_seq_scheme:
+                                if label_seq_scheme or 'local_seq_scheme' in self.reasonsForReParsing:
                                     for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
                                         if seq_id in chainIdRemap:
                                             valid = False
@@ -1609,7 +1659,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                    and ('[Atom not found]' in f or '[Hydrogen not instantiated]' in f or '[Coordinate issue]' in f))
 
             if 'local_seq_scheme' in self.reasonsForReParsing\
-               and (len(self.reasonsForReParsing) == 1 or len(insuff_dist_atom_sel_warnings) == len(self.__f)):  # 2ljb
+               and (len(self.reasonsForReParsing) == 1 or len(insuff_dist_atom_sel_warnings) == len(self.__f)  # 2ljb
+                    or 'label_seq_scheme' in self.reasonsForReParsing):  # 2joa
                 mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                 sortPolySeqRst(self.__polySeqRstFailed)
                 if len(self.__polySeqRstFailed) > 0:
@@ -3166,6 +3217,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
         self.__g.clear()
 
+        self.__in_noe = False
+
     # Exit a parse tree produced by XplorMRParser#dihedral_assign.
     def exitDihedral_assign(self, ctx: XplorMRParser.Dihedral_assignContext):
 
@@ -4005,6 +4058,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
         self.__g.clear()
 
+        self.__in_noe = False
+
     # Exit a parse tree produced by XplorMRParser#xdip_assign.
     def exitXdip_assign(self, ctx: XplorMRParser.Xdip_assignContext):  # pylint: disable=unused-argument
 
@@ -4318,6 +4373,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
         self.__g.clear()
 
+        self.__in_noe = False
+
     # Exit a parse tree produced by XplorMRParser#vean_assign.
     def exitVean_assign(self, ctx: XplorMRParser.Vean_assignContext):  # pylint: disable=unused-argument
 
@@ -4604,6 +4661,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
         self.__g.clear()
 
+        self.__in_noe = False
+
     # Exit a parse tree produced by XplorMRParser#tenso_assign.
     def exitTenso_assign(self, ctx: XplorMRParser.Tenso_assignContext):  # pylint: disable=unused-argument
 
@@ -4786,6 +4845,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.atomSelectionSet.clear()
         self.__g.clear()
+
+        self.__in_noe = False
 
     # Exit a parse tree produced by XplorMRParser#anis_assign.
     def exitAnis_assign(self, ctx: XplorMRParser.Anis_assignContext):  # pylint: disable=unused-argument
@@ -5046,6 +5107,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
         self.__g.clear()
 
+        self.__in_noe = False
+
     # Exit a parse tree produced by XplorMRParser#harmonic_assign.
     def exitHarmonic_assign(self, ctx: XplorMRParser.Harmonic_assignContext):  # pylint: disable=unused-argument
 
@@ -5135,6 +5198,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
         self.__g.clear()
 
+        self.__in_noe = False
+
     # Exit a parse tree produced by XplorMRParser#xadc_assign.
     def exitXadc_assign(self, ctx: XplorMRParser.Xadc_assignContext):  # pylint: disable=unused-argument
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
@@ -5209,6 +5274,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.atomSelectionSet.clear()
         self.__g.clear()
+
+        self.__in_noe = False
 
     # Exit a parse tree produced by XplorMRParser#coup_assign.
     def exitCoup_assign(self, ctx: XplorMRParser.Coup_assignContext):  # pylint: disable=unused-argument
@@ -5468,6 +5535,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.atomSelectionSet.clear()
         self.__g.clear()
+
+        self.__in_noe = False
 
     # Exit a parse tree produced by XplorMRParser#carbon_shift_assign.
     def exitCarbon_shift_assign(self, ctx: XplorMRParser.Carbon_shift_assignContext):  # pylint: disable=unused-argument
@@ -6109,6 +6178,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
         self.__g.clear()
 
+        self.__in_noe = False
+
     # Exit a parse tree produced by XplorMRParser#rama_assign.
     def exitRama_assign(self, ctx: XplorMRParser.Rama_assignContext):  # pylint: disable=unused-argument
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
@@ -6264,6 +6335,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
         self.__g.clear()
 
+        self.__in_noe = False
+
     # Exit a parse tree produced by XplorMRParser#coll_assign.
     def exitColl_assign(self, ctx: XplorMRParser.Coll_assignContext):  # pylint: disable=unused-argument
 
@@ -6365,6 +6438,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.atomSelectionSet.clear()
         self.__g.clear()
+
+        self.__in_noe = False
 
     # Exit a parse tree produced by XplorMRParser#dani_assign.
     def exitDani_assign(self, ctx: XplorMRParser.Dani_assignContext):  # pylint: disable=unused-argument
@@ -6748,6 +6823,8 @@ class XplorMRParserListener(ParseTreeListener):
         self.atomSelectionSet.clear()
         self.__g.clear()
 
+        self.__in_noe = False
+
     # Exit a parse tree produced by XplorMRParser#orie_assign.
     def exitOrie_assign(self, ctx: XplorMRParser.Orie_assignContext):  # pylint: disable=unused-argument
         if not self.__hasPolySeq and not self.__hasNonPolySeq:
@@ -6940,6 +7017,8 @@ class XplorMRParserListener(ParseTreeListener):
 
         self.atomSelectionSet.clear()
         self.__g.clear()
+
+        self.__in_noe = False
 
     # Exit a parse tree produced by XplorMRParser#csa_assign.
     def exitCsa_assign(self, ctx: XplorMRParser.Csa_assignContext):  # pylint: disable=unused-argument
@@ -15536,7 +15615,10 @@ class XplorMRParserListener(ParseTreeListener):
             #    and 'inhibit_label_seq_scheme' not in self.__reasons):
             return
         if 'extend_seq_scheme' in self.__reasons:
-            self.__preferAuthSeq = self.__extendAuthSeq = True
+            self.__extendAuthSeq = True
+            if 'label_seq_scheme' not in self.__reasons:  # 2joa
+                self.__preferAuthSeq = True
+                self.__authSeqId = 'label_seq_id'
             return
         if 'label_seq_scheme' in self.__reasons and self.__reasons['label_seq_scheme']:  # \
             # and 'segment_id_mismatch' not in self.__reasons:

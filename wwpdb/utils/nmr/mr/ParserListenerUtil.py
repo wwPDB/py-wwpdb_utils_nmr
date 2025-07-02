@@ -6248,8 +6248,13 @@ def guessCompIdFromAtomId(atomIds: List[str], polySeq: List[dict], nefT) -> List
         compIds = ps['comp_id']
 
         for _compId in set(compIds):
-            if _compId in monDict3:
-                _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, atomIds[0])
+            if _compId in monDict3 or _compId == 'ACE':  # 2jw1: avoid early conclusion of GLY assignemt when ACE is in polymer
+                _atomId = atomIds[0]
+                if _atomId in emptyValue:
+                    return None
+                if _compId not in monDict3:
+                    _atomId = translateToStdAtomName(_atomId, _compId, ccU=nefT.get_ccu())
+                _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, _atomId)
                 if len(_atomId) > 0 and details is None:
                     candidates.add(_compId)
                     if len(candidates) > 2:
@@ -6268,9 +6273,11 @@ def guessCompIdFromAtomIdWoLimit(atomIds: List[str], polySeq: List[dict], nefT, 
         compIds = ps['comp_id']
 
         for _compId in set(compIds):
-            if _compId in monDict3 or not isPolySeq:
+            if _compId in monDict3 or _compId == 'ACE' or not isPolySeq:  # 2jw1: avoid early conclusion of GLY assignemt when ACE is in polymer
                 failed = False
                 for atomId in atomIds:
+                    if atomId in emptyValue:
+                        break
                     _atomId = translateToStdAtomName(atomId, _compId, ccU=nefT.get_ccu())
                     _atomId, _, details = nefT.get_valid_star_atom_in_xplor(_compId, _atomId)
                     if len(_atomId) == 0 or details is not None:

@@ -154,7 +154,7 @@ class GromacsMRReader:
                     self.__atomNumberDict = ptPL.getAtomNumberDict()
 
             if isFilePath:
-                ifh = open(mrFilePath, 'r')  # pylint: disable=consider-using-with
+                ifh = open(mrFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
                 input = InputStream(ifh.read())
             else:
                 input = InputStream(mrString)

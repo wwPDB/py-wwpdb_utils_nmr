@@ -114,7 +114,7 @@ class AmberPTReader:
                         self.__lfh.write(f"+{self.__class_name__}.parse() {ptFilePath} is not accessible.\n")
                     return None, None, None
 
-                ifh = open(ptFilePath, 'r')  # pylint: disable=consider-using-with
+                ifh = open(ptFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
                 input = InputStream(ifh.read())
 
             else:

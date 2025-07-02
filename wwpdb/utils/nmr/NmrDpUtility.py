@@ -12100,9 +12100,9 @@ class NmrDpUtility:
                         if idx >= self.mr_max_spacer_lines:
                             break
 
-            except UnicodeDecodeError:  # catch exception due to binary format (DAOTHER-9425)
+            except UnicodeDecodeError as e:  # catch exception due to binary format (DAOTHER-9425)
 
-                err = f"The {mr_format_name} restraint file {file_name!r} is not plain text file."
+                err = f"The {mr_format_name} restraint file {file_name!r} is not plain text file. {str(e)}"
 
                 self.report.error.appendDescription('format_issue',
                                                     {'file_name': file_name, 'description': err})
@@ -12199,7 +12199,7 @@ class NmrDpUtility:
                     if has_parser_error:
                         total_line = -1
                         if os.path.exists(file_path):
-                            with open(file_path, 'r') as ifh:
+                            with open(file_path, 'r', errors='replace') as ifh:
                                 total_line = len(ifh.readlines())
 
                         messageList = parser_err_listener.getMessageList()

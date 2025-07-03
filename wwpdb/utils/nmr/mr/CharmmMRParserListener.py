@@ -1419,6 +1419,16 @@ class CharmmMRParserListener(ParseTreeListener):
                     if 'label_seq_scheme' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['label_seq_scheme']
 
+            if 'label_seq_scheme' in self.reasonsForReParsing and 'extend_seq_scheme' in self.reasonsForReParsing:  # 2mbv
+                for _ps in self.reasonsForReParsing['extend_seq_scheme']:
+                    ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == _ps['chain_id']), None)
+                    if ps is None:
+                        continue
+                    if all(seqId in ps['seq_id'] for seqId in _ps['seq_id']):
+                        self.reasonsForReParsing['extend_seq_scheme'].remove(_ps)
+                if len(self.reasonsForReParsing['extend_seq_scheme']) == 0:
+                    del self.reasonsForReParsing['extend_seq_scheme']
+
             if self.hasAnyRestraints():
 
                 if len(self.__f) == 0\

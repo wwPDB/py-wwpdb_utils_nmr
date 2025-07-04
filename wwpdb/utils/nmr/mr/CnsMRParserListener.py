@@ -1149,7 +1149,7 @@ class CnsMRParserListener(ParseTreeListener):
                         # try to find valid sequence offset from failed ambiguous assignments (2js1)
                         elif len(self.__chainAssign) > 0 and len(self.__polySeqRstFailedAmbig) > 0 and len(self.__seqAtmRstFailed) > 0\
                                 and 'local_seq_scheme' in self.reasonsForReParsing and 'label_seq_scheme' in self.reasonsForReParsing:
-                            refChainIds = []
+                            refChainIds, ovwChainIds = [], []
                             chainIdRemap = {}
                             for ca in self.__chainAssign:
                                 if ca['conflict'] > 0:
@@ -1170,10 +1170,19 @@ class CnsMRParserListener(ParseTreeListener):
                                 if any(seq_id in chainIdRemap for seq_id in sa['test_seq_id']):
                                     continue
 
-                                for seq_id, auth_seq_id in zip(sa['test_seq_id'], sa['ref_auth_seq_id'] if 'ref_auth_seq_id' in sa else sa['ref_seq_id']):
-                                    if auth_seq_id in emptyValue:
-                                        continue
-                                    chainIdRemap[seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
+                                ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == ref_chain_id)
+                                has_gap_in_auth_seq = 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']
+
+                                if has_gap_in_auth_seq:
+                                    for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
+                                        if auth_seq_id in emptyValue:
+                                            continue
+                                        chainIdRemap[seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
+                                else:
+                                    for auth_seq_id in ps['auth_seq_id']:
+                                        if auth_seq_id in emptyValue:
+                                            continue
+                                        chainIdRemap[auth_seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
 
                                 refChainIds.append(ref_chain_id)
 
@@ -1181,8 +1190,9 @@ class CnsMRParserListener(ParseTreeListener):
                                 chainId = ps['auth_chain_id']
                                 if chainId in refChainIds:
                                     continue
-                                if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
-                                    continue
+                                has_gap_in_auth_seq = 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']
+                                seq_id_name = 'seq_id' if has_gap_in_auth_seq else 'auth_seq_id'
+
                                 chainIds = [chainId]
                                 if 'identical_chain_id' in ps:
                                     chainIds.extend(ps['identical_chain_id'])
@@ -1191,7 +1201,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 for item in self.__polySeqRstFailedAmbig:
                                     if item['chain_id'] in chainIds:
                                         for seqId, compIds in zip(item['seq_id'], item['comp_ids']):
-                                            offsets.extend([_seqId - seqId for _seqId, _compId in zip(ps['auth_seq_id'], ps['comp_id']) if _compId in compIds])
+                                            offsets.extend([_seqId - seqId for _seqId, _compId in zip(ps[seq_id_name], ps['comp_id']) if _compId in compIds])
 
                                 if len(offsets) == 0:
                                     continue
@@ -1215,8 +1225,8 @@ class CnsMRParserListener(ParseTreeListener):
                                             if _seqId in chainIdRemap:
                                                 continue
                                             _compIds = guessCompIdFromAtomIdWoLimit(_atomIds, [ps], self.__nefT)
-                                            if _seqId + offset in ps['auth_seq_id']:
-                                                if ps['comp_id'][ps['auth_seq_id'].index(_seqId + offset)] in _compIds:
+                                            if _seqId + offset in ps[seq_id_name]:
+                                                if ps['comp_id'][ps[seq_id_name].index(_seqId + offset)] in _compIds:
                                                     matched += 1
                                                 else:
                                                     valid = False
@@ -1228,16 +1238,103 @@ class CnsMRParserListener(ParseTreeListener):
                                 if _offset is None:
                                     continue
 
-                                for auth_seq_id in ps['auth_seq_id']:
-                                    if auth_seq_id in emptyValue:
+                                if has_gap_in_auth_seq:
+
+                                    if len(refChainIds) == 0:  # 2kny
                                         continue
-                                    chainIdRemap[auth_seq_id - _offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
+
+                                    for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
+                                        if auth_seq_id in emptyValue:
+                                            continue
+                                        if seq_id - _offset in chainIdRemap:
+                                            _chainId = chainIdRemap[seq_id - _offset]['chain_id']
+                                            if _chainId not in ovwChainIds:
+                                                ovwChainIds.append(_chainId)
+                                        chainIdRemap[seq_id - _offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
+                                else:
+                                    for auth_seq_id in ps['auth_seq_id']:
+                                        if auth_seq_id in emptyValue:
+                                            continue
+                                        if auth_seq_id - _offset in chainIdRemap:
+                                            _chainId = chainIdRemap[auth_seq_id - _offset]['chain_id']
+                                            if _chainId not in ovwChainIds:
+                                                ovwChainIds.append(_chainId)
+                                        chainIdRemap[auth_seq_id - _offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
 
                                 if 'label_seq_offset' in self.reasonsForReParsing:
                                     del self.reasonsForReParsing['label_seq_offset']
                                 if 'local_seq_scheme' in self.reasonsForReParsing:
                                     del self.reasonsForReParsing['local_seq_scheme']
                                 self.reasonsForReParsing['chain_id_remap'] = chainIdRemap
+
+                            # try to handle chain_id remapping conflicts (2knh)
+                            for chainId in ovwChainIds:
+                                ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
+                                has_gap_in_auth_seq = 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']
+                                seq_id_name = 'seq_id' if has_gap_in_auth_seq else 'auth_seq_id'
+
+                                offsets = []
+                                for item in self.__polySeqRstFailedAmbig:
+                                    if item['chain_id'] == chainId:
+                                        for seqId, compIds in zip(item['seq_id'], item['comp_ids']):
+                                            if seqId in chainIdRemap:
+                                                continue
+                                            offsets.extend([_seqId - seqId for _seqId, _compId in zip(ps[seq_id_name], ps['comp_id']) if _compId in compIds])
+
+                                if len(offsets) == 0:
+                                    continue
+
+                                common_offsets = collections.Counter(offsets).most_common()
+                                offsets = [offset for offset, count in common_offsets if count == common_offsets[0][1]]
+
+                                item = next((item for item in self.__seqAtmRstFailed if item['chain_id'] == chainId), None)
+                                if item is None:
+                                    continue
+
+                                _matched = 0
+                                _offset = None
+
+                                for item in self.__seqAtmRstFailed:
+                                    if item['chain_id'] != chainId:
+                                        continue
+                                    for offset in offsets:
+                                        valid = True
+                                        matched = 0
+                                        for _seqId, _atomIds in zip(item['seq_id'], item['atom_id']):
+                                            if _seqId in chainIdRemap:
+                                                continue
+                                            _compIds = guessCompIdFromAtomIdWoLimit(_atomIds, [ps], self.__nefT)
+                                            if _seqId + offset in ps[seq_id_name]:
+                                                if ps['comp_id'][ps[seq_id_name].index(_seqId + offset)] in _compIds:
+                                                    matched += 1
+                                                else:
+                                                    valid = False
+                                                    break
+                                        if valid:
+                                            if matched > _matched:
+                                                _matched, _offset = matched, offset
+
+                                if _offset is None:
+                                    continue
+
+                                if has_gap_in_auth_seq:
+                                    for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
+                                        if auth_seq_id in emptyValue:
+                                            continue
+                                        chainIdRemap[seq_id - _offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
+                                else:
+                                    for auth_seq_id in ps['auth_seq_id']:
+                                        if auth_seq_id in emptyValue:
+                                            continue
+                                        chainIdRemap[auth_seq_id - _offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
+
+                                self.reasonsForReParsing['chain_id_remap'] = chainIdRemap
+
+                                if 'inhibit_label_seq_scheme' in self.reasonsForReParsing:
+                                    if chainId in self.reasonsForReParsing['inhibit_label_seq_scheme']:
+                                        del self.reasonsForReParsing['inhibit_label_seq_scheme'][chainId]
+                                    if len(self.reasonsForReParsing['inhibit_label_seq_scheme']) == 0:
+                                        del self.reasonsForReParsing['inhibit_label_seq_scheme']
 
                     # DAOTHER-9063
                     if self.__reasons is None and 'np_seq_id_remap' in self.reasonsForReParsing:

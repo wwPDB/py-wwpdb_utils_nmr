@@ -45971,6 +45971,76 @@ class NmrDpUtility:
                                                                  self.__representative_model_id, self.__representative_alt_id)
 
                     internal_cif_file = os.path.join(self.__cR.getDirPath(), f'{extended_pdb_id[-4:]}_model-upload_P1.cif.V1')
+                    if not os.path.exists(internal_cif_file):
+                        try:
+                            import subprocess  # pylint: disable=import-outside-toplevel
+
+                            database_2 = self.__cR.getDictListWithFilter('database_2',
+                                                                         [{'name': 'database_code', 'type': 'str'}],
+                                                                         [{'name': 'database_id', 'type': 'str', 'value': 'BMRB'}])
+                            if len(database_2) > 0:
+
+                                def has_coordinates(file_name):
+                                    with open(file_name, 'r', encoding='utf-8', errors='ignore') as ifh:
+                                        for line in ifh:
+                                            if line.startswith('ATOM ') and line.count('.') >= 3:
+                                                return True
+                                    return False
+
+                                bmrb_id = database_2[0]['database_code']
+                                if bmrb_id is not None and bmrb_id.isdigit():
+                                    ret_code = -1
+                                    intnl_upload_dir = os.path.join(self.__cR.getDirPath(), f'bmr{bmrb_id}/work/upload')
+                                    if os.path.isdir(intnl_upload_dir):
+                                        for file_name in os.listdir(intnl_upload_dir):
+                                            file_path = os.path.join(intnl_upload_dir, file_name)
+                                            if not os.path.isfile(file_path):
+                                                continue
+                                            if not has_coordinates(file_path):
+                                                continue
+                                            if file_name.endswith('.pdb'):
+                                                com = ['maxit', '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
+                                                result = subprocess.run(com, check=False)
+                                                ret_code = result.returncode
+                                                print(f'{" ".join(com)}\n -> {ret_code}')
+                                                if ret_code == 0:
+                                                    break
+                                            elif file_name.endswith('.cif'):
+                                                com = ['maxit', '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
+                                                result = subprocess.run(com, check=False)
+                                                ret_code = result.returncode
+                                                print(f'{" ".join(com)}\n -> {ret_code}')
+                                                if ret_code == 0:
+                                                    break
+                                    if ret_code != 0:
+                                        intnl_upload_dir = os.path.join(self.__cR.getDirPath(), f'bmr{bmrb_id}/work')
+                                        if os.path.isdir(intnl_upload_dir):
+                                            for file_name in os.listdir(intnl_upload_dir):
+                                                file_path = os.path.join(intnl_upload_dir, file_name)
+                                                if not os.path.isfile(file_path):
+                                                    continue
+                                                if not has_coordinates(file_path):
+                                                    continue
+                                                if file_name.endswith('.pdb'):
+                                                    com = ['maxit', '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
+                                                    result = subprocess.run(com, check=False)
+                                                    ret_code = result.returncode
+                                                    print(f'{" ".join(com)}\n -> {ret_code}')
+                                                    if ret_code == 0:
+                                                        break
+                                                elif file_name.endswith('.cif'):
+                                                    com = ['maxit', '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
+                                                    result = subprocess.run(com, check=False)
+                                                    ret_code = result.returncode
+                                                    print(f'{" ".join(com)}\n -> {ret_code}')
+                                                    if ret_code == 0:
+                                                        break
+
+                        except ImportError:
+                            pass
+                        except Exception as e:
+                            print(str(e))
+
                     if os.path.exists(internal_cif_file):
                         self.__internal_atom_name_mapping =\
                             retrieveAtomNameMappingFromInternal(self.__cR, self.__cacheDirPath, revision_history, internal_cif_file,

@@ -6168,6 +6168,9 @@ class CnsMRParserListener(ParseTreeListener):
                                     _atomId = atomId[1:-1]
                             elif atomId[0] in ('Q', 'M'):
                                 _atomId = atomId[:-1]
+                            elif atomId[:-1] in XPLOR_NITROXIDE_NAMES:
+                                _atomIdSelect.add(atomId[:-1])
+                                _factor['alt_atom_id'] = atomId
                         atomIds, _, details = self.__nefT.get_valid_star_atom(compId, _atomId, leave_unmatched=True)
                         if details is not None:
                             atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
@@ -6384,6 +6387,9 @@ class CnsMRParserListener(ParseTreeListener):
                                         _atomId = atomId[1:-1]
                                 elif atomId[0] in ('Q', 'M'):
                                     _atomId = atomId[:-1]
+                                elif atomId[:-1] in XPLOR_NITROXIDE_NAMES:
+                                    _atomIdSelect.add(atomId[:-1])
+                                    _factor['alt_atom_id'] = atomId
                             atomIds, _, details = self.__nefT.get_valid_star_atom(compId, _atomId, leave_unmatched=True)
                             if details is not None:
                                 atomIds, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)

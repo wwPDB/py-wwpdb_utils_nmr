@@ -2135,10 +2135,11 @@ class XplorMRParserListener(ParseTreeListener):
                                     if any(seq_id in ps['seq_id'] and seq_id in _ps['auth_seq_id'] for seq_id in ps['seq_id']):
                                         safe = False
                                         break
-                            for _np in self.__nonPolySeq:
-                                if _np['auth_chain_id'] == chain_id:
-                                    safe = False  # 2lba
-                                    break
+                            if 'np_seq_id_remap' in self.reasonsForReParsing or 'non_poly_remap' in self.reasonsForReParsing:
+                                for _np in self.__nonPolySeq:
+                                    if _np['auth_chain_id'] == chain_id:
+                                        safe = False  # 2lba
+                                        break
                             if safe:
                                 seqIdRemapForRemaining.append({'chain_id': ps['auth_chain_id'], 'seq_id_dict': dict(zip(ps['seq_id'], ps['auth_seq_id']))})
 

@@ -2665,10 +2665,10 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                     return atomId[:-1] if atomId.endswith('1') else atomId
             elif refCompId in ('DT', 'T') and atomId.startswith('Q5'):
                 return 'H7'
-            elif refCompId in ('DT', 'T') and atomId.startswith('H5'):  # 2lsz
+            elif refCompId in ('DT', 'T') and atomId.startswith('H5') and "'" not in atomId:  # 2lsz
                 if atomId in ('H51', 'H52', 'H53'):
                     return 'H7' + atomId[-1]
-                if atomId in ('H5', 'H5%', 'H5#', 'H5*'):
+                if atomId in ('H5', 'H5%', 'H5*', 'H5#'):
                     return 'H7'
             elif refCompId in ('DT', 'T') and (atomId.startswith('C5') or atomId == 'CM'):  # 7dju, 7pdu
                 return 'C7'
@@ -2678,13 +2678,15 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                 if atomId.startswith('H7'):
                     if atomId in ('H71', 'H72', 'H73'):
                         return 'HM5' + atomId[-1]
-                    if atomId in ('H7', 'H7%', 'H7#', 'H7*'):
+                    if atomId in ('H7', 'H7%', 'H7*', 'H7#'):
                         return 'HM5'
                 if atomId in ('C7', 'CM'):  # 7png, 7pdu
                     return 'C5M'
-            elif refCompId in ('DA', 'A') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
+            elif refCompId in ('DA', 'A') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
+                    and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 2lgm exclude H5 for segment identifier via DT:H5
                 return 'H6' + atomId[-1]
-            elif refCompId in ('DG', 'G') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):  # 6g99
+            elif refCompId in ('DG', 'G') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
+                    and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 6g99, 2lgm exclude H5 fir segment identifier via DT:H5
                 return 'H2' + atomId[-1]
             elif refCompId in ('DC', 'C') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit() and atomId[-1] in ('1', '2'):
                 return 'H4' + atomId[-1]
@@ -2876,7 +2878,7 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                     return 'HN2'
 
         elif refCompId == 'ACE':
-            if atomId in ('HA', 'HA*', 'HA%', 'HA1', 'HA2', 'HA3', 'QH', 'MH', 'QA', 'MA') and not unambig:
+            if atomId in ('HA', 'HA%', 'HA*', 'HA#', 'HA1', 'HA2', 'HA3', 'QH', 'MH', 'QA', 'MA') and not unambig:
                 return 'H%'
             if atomId == 'CA':
                 return 'CH3'

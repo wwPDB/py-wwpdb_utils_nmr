@@ -1555,9 +1555,18 @@ class CnsMRParserListener(ParseTreeListener):
                 if 'seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['seq_id_remap']
 
+            insuff_dist_atom_sel_warnings = [f for f in self.__f if '[Insufficient atom selection]' in f and 'distance restraints' in f]
+
             if 'local_seq_scheme' in self.reasonsForReParsing:
                 if 'label_seq_offset' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['local_seq_scheme']
+                elif len(self.reasonsForReParsing['local_seq_scheme']) == 1:
+                    for k, v in self.reasonsForReParsing['local_seq_scheme'].items():
+                        if k[0] == 'dist' and not v\
+                           and k[1] > 1\
+                           and len(insuff_dist_atom_sel_warnings) == 1\
+                           and any(f'Check the {k[1]}th row of distance restraints' for f in insuff_dist_atom_sel_warnings):
+                            set_label_seq_scheme()  # 2lif
 
             if 'seq_id_remap' in self.reasonsForReParsing and 'non_poly_remap' in self.reasonsForReParsing:
                 if self.__reasons is None and not any(f for f in self.__f if '[Sequence mismatch]' in f):
@@ -1755,7 +1764,6 @@ class CnsMRParserListener(ParseTreeListener):
             if len(seqIdRemapForRemaining) > 0:
                 self.reasonsForReParsing['seq_id_remap'] = seqIdRemapForRemaining
 
-            insuff_dist_atom_sel_warnings = [f for f in self.__f if '[Insufficient atom selection]' in f and 'distance restraints' in f]
             insuff_dist_atom_sel_in_1st_row_warnings = [f for f in insuff_dist_atom_sel_warnings if 'Check the 1th row of distance restraints' in f]
             invalid_dist_atom_sel_in_1st_row = any(f for f in self.__f if 'Check the 1th row of distance restraints' in f
                                                    and ('[Atom not found]' in f or '[Hydrogen not instantiated]' in f or '[Coordinate issue]' in f))

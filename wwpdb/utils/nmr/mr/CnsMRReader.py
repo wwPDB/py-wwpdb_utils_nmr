@@ -227,6 +227,13 @@ if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2lif/2lif-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2lif/2lif.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/2lgm/2lgm-corrected.mr',
                      '../../tests-nmr/mock-data-remediation/2lgm/2lgm.cif')
     print(reader_listener.getReasonsForReparsing())

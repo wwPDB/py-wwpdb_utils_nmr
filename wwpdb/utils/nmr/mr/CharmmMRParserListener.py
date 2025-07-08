@@ -4818,10 +4818,10 @@ class CharmmMRParserListener(ParseTreeListener):
                             if fixedChainId != chainId:
                                 continue
                         if 'np_seq_id_remap' in self.__reasons:
-                            if isPolySeq and 'segment_id_mismatch' in self.__reasons and chainId in self.__reasons['segment_id_mismatch'].values():
-                                _, __seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
-                                if __seqId is not None:
-                                    if __seqId != seqId and list(self.__reasons['segment_id_mismatch'].values()).count(chainId) > 1:
+                            if isPolySeq:
+                                if 'segment_id_mismatch' in self.__reasons and chainId in self.__reasons['segment_id_mismatch'].values():
+                                    _, __seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
+                                    if __seqId is not None and __seqId != seqId and list(self.__reasons['segment_id_mismatch'].values()).count(chainId) > 1:
                                         continue
                             else:
                                 _, seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)

@@ -224,6 +224,16 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reasons_ = {'segment_id_mismatch': {'G2': 'A', 'GDP': 'A'},
+                'segment_id_match_stats': {'G2': {'A': 5122}, 'GDP': {'A': -146}},
+                'segment_id_poly_type_stats': {'G2': {'polymer': 5101, 'non-poly': 40, 'non-polymer': 0}, 'GDP': {'polymer': 11, 'non-poly': 0, 'non-polymer': 0}},
+                'np_seq_id_remap': [{'chain_id': 'A', 'seq_id_dict': {1: 179}}],
+                'non_poly_remap': {'GDP': {179: {'chain_id': 'A', 'seq_id': 179, 'original_chain_id': 'A'}}}}
+    reader = CnsMRReader(True, reasons=reasons_)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2lkd/2lkd-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2lkd/2lkd.cif')
+
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\

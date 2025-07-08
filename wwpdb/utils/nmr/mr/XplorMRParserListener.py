@@ -11240,7 +11240,7 @@ class XplorMRParserListener(ParseTreeListener):
             stats = self.__reasons['segment_id_poly_type_stats'][_factor['segment_id']]
             if isPolySeq and stats['polymer'] < stats['non-poly']:
                 return False
-            if not isPolySeq:
+            if not isPolySeq and 'np_seq_id_remap' not in self.__reasons:
                 if stats['polymer'] > 10 * stats['non-poly']:
                     return False
                 if stats['polymer'] >= stats['non-poly']\
@@ -11306,7 +11306,12 @@ class XplorMRParserListener(ParseTreeListener):
                             if fixedChainId != chainId:
                                 continue
                         if 'np_seq_id_remap' in self.__reasons:
-                            if not isPolySeq:
+                            if isPolySeq and 'segment_id_mismatch' in self.__reasons and chainId in self.__reasons['segment_id_mismatch'].values():
+                                _, __seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
+                                if __seqId is not None:
+                                    if __seqId != seqId and list(self.__reasons['segment_id_mismatch'].values()).count(chainId) > 1:
+                                        continue
+                            else:
                                 _, seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
                                 if seqId is not None:
                                     if _seqId_ != seqId and len(_atomSelection) > 0:

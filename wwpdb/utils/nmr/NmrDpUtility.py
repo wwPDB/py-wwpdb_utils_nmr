@@ -45989,6 +45989,10 @@ class NmrDpUtility:
 
                                 bmrb_id = database_2[0]['database_code']
                                 if bmrb_id is not None and bmrb_id.isdigit():
+                                    maxitpath = os.getenv('MAXITPATH')
+                                    if maxitpath is None:
+                                        package_dir = os.getenv('PACKAGE_DIR')
+                                        maxitpath = os.path.join(package_dir, 'maxit/bin/maxit') if package_dir is not None else 'maxit'
                                     ret_code = -1
                                     intnl_upload_dir = os.path.join(self.__cR.getDirPath(), f'bmr{bmrb_id}/work/upload')
                                     if os.path.isdir(intnl_upload_dir):
@@ -45999,14 +46003,14 @@ class NmrDpUtility:
                                             if not has_coordinates(file_path):
                                                 continue
                                             if file_name.endswith('.pdb'):
-                                                com = ['maxit', '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
+                                                com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
                                                 result = subprocess.run(com, check=False)
                                                 ret_code = result.returncode
                                                 print(f'{" ".join(com)}\n -> {ret_code}')
                                                 if ret_code == 0:
                                                     break
                                             elif file_name.endswith('.cif'):
-                                                com = ['maxit', '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
+                                                com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
                                                 result = subprocess.run(com, check=False)
                                                 ret_code = result.returncode
                                                 print(f'{" ".join(com)}\n -> {ret_code}')
@@ -46022,14 +46026,14 @@ class NmrDpUtility:
                                                 if not has_coordinates(file_path):
                                                     continue
                                                 if file_name.endswith('.pdb'):
-                                                    com = ['maxit', '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
+                                                    com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
                                                     result = subprocess.run(com, check=False)
                                                     ret_code = result.returncode
                                                     print(f'{" ".join(com)}\n -> {ret_code}')
                                                     if ret_code == 0:
                                                         break
                                                 elif file_name.endswith('.cif'):
-                                                    com = ['maxit', '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
+                                                    com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
                                                     result = subprocess.run(com, check=False)
                                                     ret_code = result.returncode
                                                     print(f'{" ".join(com)}\n -> {ret_code}')

@@ -1742,9 +1742,10 @@ class XplorMRParserListener(ParseTreeListener):
                 for k, v in globalSequenceOffset.items():
                     if v is None:
                         del self.reasonsForReParsing['global_sequence_offset'][k]  # 2l12
-                        if 'unspecified_chain_id' not in self.reasonsForReParsing:
-                            self.reasonsForReParsing['uninterpretable_chain_id'] = {}
-                        self.reasonsForReParsing['uninterpretable_chain_id'][k] = True  # 2lqc
+                        if 'global_auth_sequence_offset' not in self.reasonsForReParsing:  # 2n2w
+                            if 'uninterpretable_chain_id' not in self.reasonsForReParsing:
+                                self.reasonsForReParsing['uninterpretable_chain_id'] = {}
+                            self.reasonsForReParsing['uninterpretable_chain_id'][k] = True  # 2lqc
                 if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
                     del self.reasonsForReParsing['global_sequence_offset']
 
@@ -1867,6 +1868,7 @@ class XplorMRParserListener(ParseTreeListener):
                         for d in _seqIdRemap:
                             chainId = d['chain_id']
                             ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chainId)
+                            subst_label_seq_scheme = ps['seq_id'] == ps['auth_seq_id']  # 2n2w
                             if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                                 valid = False
                                 break
@@ -1878,7 +1880,7 @@ class XplorMRParserListener(ParseTreeListener):
                                         break
                                     chainIdRemap[auth_seq_id - offset] = {'chain_id': chainId, 'seq_id': auth_seq_id}
                             else:
-                                if label_seq_scheme or 'local_seq_scheme' in self.reasonsForReParsing:
+                                if label_seq_scheme or subst_label_seq_scheme or 'local_seq_scheme' in self.reasonsForReParsing:
                                     for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
                                         if seq_id in chainIdRemap:
                                             valid = False
@@ -11299,7 +11301,8 @@ class XplorMRParserListener(ParseTreeListener):
 
                 if 'uninterpretable_chain_id' in self.__reasons\
                    and chainId in self.__reasons['uninterpretable_chain_id']\
-                   and (self.__cur_subtype != 'dist' and not self.__in_noe):
+                   and self.__cur_subtype != 'dist'\
+                   and 'chain_id_remap' not in self.__reasons:  # 2n2w
                     continue  # 2lqc
 
             psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == chainId]
@@ -12100,7 +12103,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                                     for __ps in __psList:
                                                                         __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)[0]
                                                                         __seqKey, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
-                                                                        if __coordAtomSite is not None:
+                                                                        if __coordAtomSite is not None\
+                                                                           and ((seqId in ps['auth_seq_id'] and ps['seq_id'][ps['auth_seq_id'].index(seqId)] != seqId)  # 2lr1, 2lqc
+                                                                                or seqId != __seqId):  # 1qkg
                                                                             __compId = __coordAtomSite['comp_id']
                                                                             __atomIds = self.getAtomIdList(_factor, __compId, atomId)
                                                                             if compId != __compId and __atomIds[0] in __coordAtomSite['atom_id']:
@@ -12181,7 +12186,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                             for __ps in __psList:
                                                                 __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)[0]
                                                                 __seqKey, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
-                                                                if __coordAtomSite is not None:
+                                                                if __coordAtomSite is not None\
+                                                                   and ((seqId in ps['auth_seq_id'] and ps['seq_id'][ps['auth_seq_id'].index(seqId)] != seqId)  # 2lr1, 2lqc
+                                                                        or seqId != __seqId):  # 1qkg
                                                                     __compId = __coordAtomSite['comp_id']
                                                                     __atomIds = self.getAtomIdList(_factor, __compId, atomId)
                                                                     if compId != __compId and __atomIds[0] in __coordAtomSite['atom_id']:

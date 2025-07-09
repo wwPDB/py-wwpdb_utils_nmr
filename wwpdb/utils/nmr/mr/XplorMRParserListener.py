@@ -1742,6 +1742,9 @@ class XplorMRParserListener(ParseTreeListener):
                 for k, v in globalSequenceOffset.items():
                     if v is None:
                         del self.reasonsForReParsing['global_sequence_offset'][k]  # 2l12
+                        if 'unspecified_chain_id' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['uninterpretable_chain_id'] = {}
+                        self.reasonsForReParsing['uninterpretable_chain_id'][k] = True  # 2lqc
                 if len(self.reasonsForReParsing['global_sequence_offset']) == 0:
                     del self.reasonsForReParsing['global_sequence_offset']
 
@@ -11004,10 +11007,12 @@ class XplorMRParserListener(ParseTreeListener):
                             if not foundCompId:
                                 # DAOTHER-9063
                                 ligands = 0
+                                npChainIds = set()
                                 if self.__hasNonPoly and self.__cur_subtype == 'dist':
                                     for np in self.__nonPoly:
                                         ligands += len(np['seq_id'])
-                                if len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1:
+                                        npChainIds.add(np['auth_chain_id'])  # 2lqc
+                                if (len(_factor['chain_id']) == 1 or _factor['chain_id'][0] in npChainIds) and len(_factor['seq_id']) == 1:
 
                                     def update_np_seq_id_remap_request(np, ligands):
                                         if 'np_seq_id_remap' not in self.reasonsForReParsing:
@@ -11027,6 +11032,23 @@ class XplorMRParserListener(ParseTreeListener):
                                         else:
                                             self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
                                         return ligands
+
+                                    def upsert_np_seq_id_remap_request(np):
+                                        if 'np_seq_id_remap' not in self.reasonsForReParsing:
+                                            self.reasonsForReParsing['np_seq_id_remap'] = {}
+                                        chainId = _factor['chain_id'][0]
+                                        srcSeqId = _factor['seq_id'][0]
+                                        dstSeqId = np['seq_id'][0]
+                                        if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
+                                            self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
+                                        if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
+                                            if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
+                                                keys = list(self.reasonsForReParsing['np_seq_id_remap'][chainId].keys())
+                                                vals = list(self.reasonsForReParsing['np_seq_id_remap'][chainId].values())
+                                                if keys != sorted(keys) or vals != sorted(vals) or len(set(keys)) != len(set(vals)):
+                                                    self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
+                                        else:
+                                            self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = dstSeqId
 
                                     if ligands == 1:
                                         for np in self.__nonPoly:
@@ -11083,12 +11105,23 @@ class XplorMRParserListener(ParseTreeListener):
                                                                                 found = True
                                                                                 break
                                                                             np_idx += 1
-                                                        if not found and 1 <= elemSeqId <= len(refElemSeqIds):
-                                                            elemSeqId = refElemSeqIds[elemSeqId - 1]
-                                                            for np in self.__nonPoly:
-                                                                if np['comp_id'][0] == elemName and elemSeqId in np['seq_id']:
-                                                                    ligands = update_np_seq_id_remap_request(np, ligands)
+                                                                else:  # 2lqc
+                                                                    for elemSeqId in refElemSeqIds:
+                                                                        for np in self.__nonPoly:
+                                                                            if np['comp_id'][0] == elemName and elemSeqId in np['seq_id']:
+                                                                                upsert_np_seq_id_remap_request(np)
                                                                     found = True
+                                                        if not found:
+                                                            if 1 <= elemSeqId <= len(refElemSeqIds):
+                                                                elemSeqId = refElemSeqIds[elemSeqId - 1]
+                                                                for np in self.__nonPoly:
+                                                                    if np['comp_id'][0] == elemName and elemSeqId in np['seq_id']:
+                                                                        ligands = update_np_seq_id_remap_request(np, ligands)
+                                                            else:  # 2lqc
+                                                                for elemSeqId in refElemSeqIds:
+                                                                    for np in self.__nonPoly:
+                                                                        if np['comp_id'][0] == elemName and elemSeqId in np['seq_id']:
+                                                                            upsert_np_seq_id_remap_request(np)
                                                 except ValueError:
                                                     pass
                                         else:
@@ -11252,15 +11285,22 @@ class XplorMRParserListener(ParseTreeListener):
 
         for chainId in chainIds:
 
-            if self.__reasons is not None and 'label_seq_scheme' in self.__reasons\
-               and self.__reasons['label_seq_scheme'] is not None\
-               and self.__cur_subtype in self.__reasons['label_seq_scheme']\
-               and self.__reasons['label_seq_scheme'][self.__cur_subtype]\
-               and 'inhibit_label_seq_scheme' in self.__reasons and chainId in self.__reasons['inhibit_label_seq_scheme']\
-               and self.__cur_subtype in self.__reasons['inhibit_label_seq_scheme'][chainId]\
-               and self.__reasons['inhibit_label_seq_scheme'][chainId][self.__cur_subtype]\
-               and 'segment_id_mismatch' not in self.__reasons:
-                continue
+            if self.__reasons is not None:
+
+                if 'label_seq_scheme' in self.__reasons\
+                   and self.__reasons['label_seq_scheme'] is not None\
+                   and self.__cur_subtype in self.__reasons['label_seq_scheme']\
+                   and self.__reasons['label_seq_scheme'][self.__cur_subtype]\
+                   and 'inhibit_label_seq_scheme' in self.__reasons and chainId in self.__reasons['inhibit_label_seq_scheme']\
+                   and self.__cur_subtype in self.__reasons['inhibit_label_seq_scheme'][chainId]\
+                   and self.__reasons['inhibit_label_seq_scheme'][chainId][self.__cur_subtype]\
+                   and 'segment_id_mismatch' not in self.__reasons:
+                    continue
+
+                if 'uninterpretable_chain_id' in self.__reasons\
+                   and chainId in self.__reasons['uninterpretable_chain_id']\
+                   and (self.__cur_subtype != 'dist' and not self.__in_noe):
+                    continue  # 2lqc
 
             psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == chainId]
 

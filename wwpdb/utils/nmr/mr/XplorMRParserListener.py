@@ -1742,7 +1742,8 @@ class XplorMRParserListener(ParseTreeListener):
                 for k, v in globalSequenceOffset.items():
                     if v is None:
                         del self.reasonsForReParsing['global_sequence_offset'][k]  # 2l12
-                        if 'global_auth_sequence_offset' not in self.reasonsForReParsing:  # 2n2w
+                        if 'global_auth_sequence_offset' not in self.reasonsForReParsing\
+                           and 'segment_id_mismatch' not in self.reasonsForReParsing:  # 2n2w, 2b87
                             if 'uninterpretable_chain_id' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['uninterpretable_chain_id'] = {}
                             self.reasonsForReParsing['uninterpretable_chain_id'][k] = True  # 2lqc

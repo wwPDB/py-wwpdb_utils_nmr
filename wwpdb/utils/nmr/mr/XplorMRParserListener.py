@@ -2005,7 +2005,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 self.reasonsForReParsing['label_seq_scheme'] = {}
                             self.reasonsForReParsing['label_seq_scheme']['dist'] = True
                             set_label_seq_scheme()
-                        else:
+                        elif 'np_seq_id_remap' not in self.reasonsForReParsing and 'non_poly_remap' not in self.reasonsForReParsing:  # 2lml
                             self.reasonsForReParsing = {}
 
                     if any(f for f in self.__f if '[Sequence mismatch]' in f):
@@ -11313,9 +11313,9 @@ class XplorMRParserListener(ParseTreeListener):
                                    and 'segment_id_poly_type_stats' in self.__reasons\
                                    and _factor['segment_id'] in self.__reasons['segment_id_poly_type_stats']\
                                    and stats['polymer'] <= stats['non-poly']:  # 2mtk
-                                        _, __seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
-                                        if __seqId is not None and __seqId != seqId and list(self.__reasons['segment_id_mismatch'].values()).count(chainId) > 1:
-                                            continue  # 2lkd
+                                    _, __seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
+                                    if __seqId is not None and __seqId != seqId and list(self.__reasons['segment_id_mismatch'].values()).count(chainId) > 1:
+                                        continue  # 2lkd
                             else:
                                 _, seqId = retrieveRemappedSeqId(self.__reasons['np_seq_id_remap'], chainId, seqId)
                                 if seqId is not None:

@@ -224,6 +224,24 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2lml/2lml-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2lml/2lml.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2lm9/2lm9-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2lm9/2lm9.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2lm9/2lm9-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2lm9/2lm9.cif')
+
     reasons_ = {'segment_id_mismatch': {'G2': 'A', 'GDP': 'A'},
                 'segment_id_match_stats': {'G2': {'A': 5122}, 'GDP': {'A': -146}},
                 'segment_id_poly_type_stats': {'G2': {'polymer': 5101, 'non-poly': 40, 'non-polymer': 0}, 'GDP': {'polymer': 11, 'non-poly': 0, 'non-polymer': 0}},

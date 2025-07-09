@@ -11014,6 +11014,8 @@ class XplorMRParserListener(ParseTreeListener):
                                     for np in self.__nonPoly:
                                         ligands += len(np['seq_id'])
                                         npChainIds.add(np['auth_chain_id'])  # 2lqc
+                                if ligands == 1:
+                                    npChainIds.clear()  # 2ljc
                                 if (len(_factor['chain_id']) == 1 or _factor['chain_id'][0] in npChainIds) and len(_factor['seq_id']) == 1:
 
                                     def update_np_seq_id_remap_request(np, ligands):

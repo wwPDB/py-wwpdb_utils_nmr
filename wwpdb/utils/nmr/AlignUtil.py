@@ -2523,12 +2523,14 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
         return atomId
 
     if any(item for item in mapping
-           if len(item['original_atom_id']) > 1
+           if item['original_atom_id'] is not None
+           and len(item['original_atom_id']) > 1
            and item['original_atom_id'][0].isdigit()
            and item['original_atom_id'][1] == 'H'):
         _mapping = copy.deepcopy(mapping)
         for item in mapping:
-            if len(item['original_atom_id']) > 1\
+            if item['original_atom_id'] is not None\
+               and len(item['original_atom_id']) > 1\
                and item['original_atom_id'][0].isdigit()\
                and item['original_atom_id'][1] == 'H':
                 _item = copy.copy(item)
@@ -3941,7 +3943,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
             c_prev = next((c_prev for c_prev in coord_prev if c['comp_id'] == c_prev['comp_id'] and c['atom_id'] == c_prev['atom_id']
                            and c['atom_id'] != c_prev['alt_atom_id'] and 'done' not in c_prev), None)
 
-            if c_prev is None:
+            if c_prev is None or c_prev['alt_atom_id'] is None:
                 continue
 
             atom_map = {'auth_atom_id': c['atom_id'],

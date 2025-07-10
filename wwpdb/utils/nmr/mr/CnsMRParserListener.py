@@ -1376,7 +1376,7 @@ class CnsMRParserListener(ParseTreeListener):
 
                         # try to find valid sequence offset from failed ambiguous assignments (2js1)
                         elif len(self.__chainAssign) > 0 and len(self.__polySeqRstFailedAmbig) > 0 and len(self.__seqAtmRstFailed) > 0\
-                                and 'local_seq_scheme' in self.reasonsForReParsing and 'label_seq_scheme' in self.reasonsForReParsing:
+                                and 'local_seq_scheme' in self.reasonsForReParsing:  # and 'label_seq_scheme' in self.reasonsForReParsing: (2lxs)
                             chain_id_remap_with_offset()
 
                     # DAOTHER-9063

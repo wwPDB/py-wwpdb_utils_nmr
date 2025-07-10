@@ -9877,8 +9877,12 @@ class XplorMRParserListener(ParseTreeListener):
 
         if self.depth == 1 or not self.__top_union_expr:
             while self.stackFactors:
-                _factor = self.__consumeFactor_expressions(self.stackFactors.pop(), cifCheck=True)
-                self.factor = self.__intersectionFactor_expressions(self.factor, _factor.get('atom_selection'))
+                p = self.stackFactors.pop()
+                if 'has_nitroxide' in p:
+                    self.factor = p
+                else:
+                    _factor = self.__consumeFactor_expressions(p, cifCheck=True)
+                    self.factor = self.__intersectionFactor_expressions(self.factor, _factor.get('atom_selection'))
 
         if self.unionFactor is not None and len(self.unionFactor) > 0:
             if 'atom_selection' not in self.unionFactor:
@@ -11214,7 +11218,7 @@ class XplorMRParserListener(ParseTreeListener):
                                         if ps is not None and _seqId not in ps['auth_seq_id']:
                                             if self.__nmr_vs_model is not None:
                                                 item = next((item for item in self.__nmr_vs_model
-                                                                     if item['test_auth_chain_id' if 'test_auth_chain_id' in item else 'test_chain_id'] == _chainId), None)
+                                                             if item['test_auth_chain_id' if 'test_auth_chain_id' in item else 'test_chain_id'] == _chainId), None)
                                                 if item is not None and item['conflict'] == 0 and item['unmapped'] > 0 and 'unmapped_sequence' in item:
                                                     refCompId = next((u['ref_comp_id'] for u in item['unmapped_sequence']
                                                                       if 'ref_seq_id' in u and u['ref_seq_id'] == _seqId), None)
@@ -11715,34 +11719,34 @@ class XplorMRParserListener(ParseTreeListener):
                             self.__has_nx = has_nx_local = has_nx_anchor = _factor['has_nitroxide'] = True
                             if compId == 'CYS':
                                 atomIds = ['SG']
-                                _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
+                                _factor['alt_atom_id'] = atomIds[0] + '(nitroxide attached point)'
                             elif compId == 'SER':
                                 atomIds = ['OG']
-                                _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
+                                _factor['alt_atom_id'] = atomIds[0] + '(nitroxide attached point)'
                             elif compId == 'GLU':
                                 atomIds = ['OE2']
-                                _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
+                                _factor['alt_atom_id'] = atomIds[0] + '(nitroxide attached point)'
                             elif compId == 'ASP':
                                 atomIds = ['OD2']
-                                _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
+                                _factor['alt_atom_id'] = atomIds[0] + '(nitroxide attached point)'
                             elif compId == 'GLN':
                                 atomIds = ['NE2']
-                                _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
+                                _factor['alt_atom_id'] = atomIds[0] + '(nitroxide attached point)'
                             elif compId == 'ASN':
                                 atomIds = ['ND2']
-                                _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
+                                _factor['alt_atom_id'] = atomIds[0] + '(nitroxide attached point)'
                             elif compId == 'LYS':
                                 atomIds = ['NZ']
-                                _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
+                                _factor['alt_atom_id'] = atomIds[0] + '(nitroxide attached point)'
                             elif compId == 'THR':
                                 atomIds = ['OG1']
-                                _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
+                                _factor['alt_atom_id'] = atomIds[0] + '(nitroxide attached point)'
                             elif compId == 'HIS':
                                 atomIds = ['NE2']
-                                _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
+                                _factor['alt_atom_id'] = atomIds[0] + '(nitroxide attached point)'
                             elif compId == 'ILE':
                                 atomIds = ['CD1']
-                                _factor['alt_atom_id'] = atomId + '(nitroxide attached point)'
+                                _factor['alt_atom_id'] = atomIds[0] + '(nitroxide attached point)'
                             elif compId == 'R1A':
                                 atomIds = ['O1']
                             else:

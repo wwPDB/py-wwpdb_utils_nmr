@@ -4728,7 +4728,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                         if ps is not None and _seqId not in ps['auth_seq_id']:
                                             if self.__nmr_vs_model is not None:
                                                 item = next((item for item in self.__nmr_vs_model
-                                                                     if item['test_auth_chain_id' if 'test_auth_chain_id' in item else 'test_chain_id'] == _chainId), None)
+                                                             if item['test_auth_chain_id' if 'test_auth_chain_id' in item else 'test_chain_id'] == _chainId), None)
                                                 if item is not None and item['conflict'] == 0 and item['unmapped'] > 0 and 'unmapped_sequence' in item:
                                                     refCompId = next((u['ref_comp_id'] for u in item['unmapped_sequence']
                                                                       if 'ref_seq_id' in u and u['ref_seq_id'] == _seqId), None)

@@ -353,6 +353,8 @@ class XplorMRParserListener(ParseTreeListener):
     __internal = False
     __sel_expr_debug = False
 
+    __nmr_vs_model = None
+
     __createSfDict = True
     __omitDistLimitOutlier = True
     __allowZeroUpperLimit = False
@@ -841,6 +843,9 @@ class XplorMRParserListener(ParseTreeListener):
 
     def setInternalMode(self, internal: bool):
         self.__internal = internal
+
+    def setNmrChainAssignments(self, nmr_vs_model: Optional[List[dict]]):
+        self.__nmr_vs_model = nmr_vs_model
 
     def createSfDict(self, createSfDict: bool):
         self.__createSfDict = createSfDict
@@ -11207,19 +11212,34 @@ class XplorMRParserListener(ParseTreeListener):
                                         _seqId = _factor['seq_id'][0]
                                         ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == _chainId), None)
                                         if ps is not None and _seqId not in ps['auth_seq_id']:
-                                            auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
-                                            if len(auth_seq_id_list) > 0:
-                                                min_auth_seq_id = min(auth_seq_id_list)
-                                                max_auth_seq_id = max(auth_seq_id_list)
-                                                if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId < 8)\
-                                                   or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id < 8):
-                                                    hint = f" The residue '{_seqId}' is not present in polymer sequence "\
-                                                        f"of chain {_chainId} of the coordinates. "\
-                                                        "Please update the sequence in the Macromolecules page."
-                                                    if self.__reasons is not None:
-                                                        self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                                                        f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.{hint}")
-                                                    no_ext_seq = False  # 2law
+                                            if self.__nmr_vs_model is not None:
+                                                item = next((item for item in self.__nmr_vs_model
+                                                                     if item['test_auth_chain_id' if 'test_auth_chain_id' in item else 'test_chain_id'] == _chainId), None)
+                                                if item is not None and item['conflict'] == 0 and item['unmapped'] > 0 and 'unmapped_sequence' in item:
+                                                    refCompId = next((u['ref_comp_id'] for u in item['unmapped_sequence']
+                                                                      if 'ref_seq_id' in u and u['ref_seq_id'] == _seqId), None)
+                                                    if refCompId is not None:
+                                                        hint = f" The residue '{_seqId}:{refCompId}' is not present in polymer sequence "\
+                                                            f"of chain {_chainId} of the coordinates. "\
+                                                            "Please update the sequence in the Macromolecules page."
+                                                        if self.__reasons is not None:
+                                                            self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                                                            f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.{hint}")
+                                                        no_ext_seq = False  # 2ls7
+                                            if no_ext_seq:
+                                                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                                if len(auth_seq_id_list) > 0:
+                                                    min_auth_seq_id = min(auth_seq_id_list)
+                                                    max_auth_seq_id = max(auth_seq_id_list)
+                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId < 8)\
+                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id < 8):
+                                                        hint = f" The residue '{_seqId}' is not present in polymer sequence "\
+                                                            f"of chain {_chainId} of the coordinates. "\
+                                                            "Please update the sequence in the Macromolecules page."
+                                                        if self.__reasons is not None:
+                                                            self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                                                            f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.{hint}")
+                                                        no_ext_seq = False  # 2law
                                     if no_ext_seq or self.__reasons is None:
                                         if no_ext_seq:  # 2laz
                                             hint = " Please make sure that the values in 'segidentifier', 'residue', and 'name' clauses of the restraint file match "\

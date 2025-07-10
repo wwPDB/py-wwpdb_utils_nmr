@@ -34407,6 +34407,11 @@ class NmrDpUtility:
         if not has_poly_seq:
             return False
 
+        nmr_vs_model = None
+        chain_assign_dic = self.report.chain_assignment.get()
+        if 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+            nmr_vs_model = chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']
+
         if self.__versioned_atom_name_mapping is not None:
             for atom_map in self.__versioned_atom_name_mapping:
                 if atom_map not in self.__mr_atom_name_mapping:
@@ -35368,6 +35373,7 @@ class NmrDpUtility:
                                         charmmAtomNumberDict,
                                         reasons)
                 reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
+                reader.setNmrChainAssignments(nmr_vs_model)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
                 __list_id_counter = copy.copy(self.__list_id_counter)
@@ -35390,6 +35396,7 @@ class NmrDpUtility:
                                                 charmmAtomNumberDict,
                                                 None)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
+                        reader.setNmrChainAssignments(nmr_vs_model)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -35418,6 +35425,7 @@ class NmrDpUtility:
                                                 charmmAtomNumberDict,
                                                 reasons)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
+                        reader.setNmrChainAssignments(nmr_vs_model)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -35463,6 +35471,7 @@ class NmrDpUtility:
                                      self.__ccU, self.__csStat, self.__nefT,
                                      reasons)
                 reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
+                reader.setNmrChainAssignments(nmr_vs_model)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
                 __list_id_counter = copy.copy(self.__list_id_counter)
@@ -35484,6 +35493,7 @@ class NmrDpUtility:
                                              self.__ccU, self.__csStat, self.__nefT,
                                              None)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
+                        reader.setNmrChainAssignments(nmr_vs_model)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -35511,6 +35521,7 @@ class NmrDpUtility:
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
+                        reader.setNmrChainAssignments(nmr_vs_model)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -36106,6 +36117,7 @@ class NmrDpUtility:
                                        reasons)
                 reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
                 reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
+                reader.setNmrChainAssignments(nmr_vs_model)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
                 __list_id_counter = copy.copy(self.__list_id_counter)
@@ -36128,6 +36140,7 @@ class NmrDpUtility:
                                                None)
                         reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
+                        reader.setNmrChainAssignments(nmr_vs_model)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -36156,6 +36169,7 @@ class NmrDpUtility:
                                                reasons)
                         reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
+                        reader.setNmrChainAssignments(nmr_vs_model)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,

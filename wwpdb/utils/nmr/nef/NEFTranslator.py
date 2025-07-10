@@ -7872,9 +7872,11 @@ class NEFTranslator:
                                 atoms = [a for a in atoms if "'" not in a]
                                 break
                         else:
-                            if not nef_atom.startswith('H5'):  # 2l5d
+                            if not nef_atom.startswith('H2') and not nef_atom.startswith('H5'):  # 2l5d
                                 if "'" not in nef_atom:
-                                    atoms = [a for a in atoms if "'" not in a]
+                                    if nef_atom[:2] not in ('H1', 'H3', 'H4')\
+                                       or not any(a for a in atoms if "'" not in a and a.startswith(nef_atom[:2])):  # 2lzv
+                                        atoms = [a for a in atoms if "'" not in a]
                                 else:
                                     atoms = [a for a in atoms if "'" in a]
 

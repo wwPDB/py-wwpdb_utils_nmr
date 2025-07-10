@@ -3852,13 +3852,15 @@ class CharmmMRParserListener(ParseTreeListener):
                         if ("'" in src_atom_id and "'" in real_atom_id)\
                            or ("'" not in src_atom_id and "'" not in real_atom_id):
                             pass
+                        elif len(candidates) == 1 or (all("'" in a for a in candidates) or all("'" not in a for a in candidates)):
+                            pass  # 2lzv
                         else:
                             return False
 
             if len([_atom_id_ for _atom_id_ in candidates
                     if ("'" in _atom_id_ and "'" in real_atom_id)
                     or ("'" not in _atom_id_ and "'" not in real_atom_id)]) < 2:
-                return False
+                return len(candidates) == 1 or (all("'" in a for a in candidates) or all("'" not in a for a in candidates))  # 2lzv
 
             return True
 
@@ -3959,6 +3961,7 @@ class CharmmMRParserListener(ParseTreeListener):
             _atomIdSelect = set()
             for compId in _compIdSelect:
                 if self.__ccU.updateChemCompDict(compId):
+                    nucleotide = self.__csStat.getTypeOfCompId(compId)[1]
                     refAtomIdList = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                     tmpAtomId = _factor['atom_ids'][0].upper()
                     if lenAtomIds == 1:
@@ -3977,8 +3980,12 @@ class CharmmMRParserListener(ParseTreeListener):
                         if details is not None and atomId[-1] in ('%', '*', '#'):
                             _atomIds, _, _details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
                             if _details is None and len(_atomIds) > 0:  # 5z4f: GLU:HG1# -> GLU:HG3
-                                atomId = _atomId = _atomIds[0]
-                                atomIds, details = _atomIds, _details
+                                if nucleotide and atomId[0] in protonBeginCode and len(atomId) > 1 and len(_atomIds[0]) > 1\
+                                   and atomId[1].isdigit() and _atomIds[0][1].isdigit() and atomId[1] != _atomIds[0][0]:
+                                    pass  # 2lzv
+                                else:
+                                    atomId = _atomId = _atomIds[0]
+                                    atomIds, details = _atomIds, _details
                         _atomId = toNefEx(toRegEx(atomId))
                         if _atomId.endswith('.') and details is None:
                             _atomId += '$'  # HT# -> H. should match with H1/2/3 and not with HA2/3 (5iew)
@@ -3991,7 +3998,6 @@ class CharmmMRParserListener(ParseTreeListener):
                         atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU, unambig=unambig)
                         atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU, unambig=unambig)
                     _atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
-                    nucleotide = self.__csStat.getTypeOfCompId(compId)[1]
                     if lenAtomIds == 1 and nucleotide:
                         _matchedAtomIds = [_atomId_ for _atomId_ in _atomIds if re.match(_atomId, _atomId_)]
                     matched = False
@@ -4175,6 +4181,7 @@ class CharmmMRParserListener(ParseTreeListener):
                 _atomIdSelect = set()
                 for compId in _compIdSelect:
                     if self.__ccU.updateChemCompDict(compId):
+                        nucleotide = self.__csStat.getTypeOfCompId(compId)[1]
                         refAtomIdList = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                         tmpAtomId = _factor['atom_ids'][0].upper()
                         if lenAtomIds == 1:
@@ -4195,7 +4202,6 @@ class CharmmMRParserListener(ParseTreeListener):
                             atomId1 = translateToStdAtomName(tmpAtomId, compId, refAtomIdList, ccU=self.__ccU, unambig=unambig)
                             atomId2 = translateToStdAtomName(_factor['atom_ids'][1], compId, refAtomIdList, ccU=self.__ccU, unambig=unambig)
                         _atomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaLeavingAtomFlag] != 'Y']
-                        nucleotide = self.__csStat.getTypeOfCompId(compId)[1]
                         if lenAtomIds == 1 and nucleotide:
                             _matchedAtomIds = [_atomId_ for _atomId_ in _atomIds if re.match(_atomId, _atomId_)]
                         for realAtomId in _atomIds:

@@ -230,6 +230,13 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/4asw/4asw-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/4asw/4asw.cif')
+    print(reader_listener.getReasonsForReparsing())
+
     reader = CnsMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\

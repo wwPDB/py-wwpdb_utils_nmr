@@ -11183,21 +11183,22 @@ class XplorMRParserListener(ParseTreeListener):
                                             or (_atomId not in aminoProtonCode and _atomId not in carboxylCode and _atomId not in jcoupBbPairCode)\
                                             or self.__gapInAuthSeq:  # 2kyg
                                         if not self.__cur_subtype_altered or not self.__in_noe:  # 2ljc
-                                            self.__preferAuthSeq = not self.__preferAuthSeq
-                                            # self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
-                                            self.__setLocalSeqScheme()
-                                            # ad hoc sequence scheme switching is possible for the first restraint, otherwise the entire restraints should be re-parsed
-                                            if trial < 3 and 'Check the 1th row of' in self.__getCurrentRestraint()\
-                                               and (self.__cur_subtype != 'dist' and not self.__in_noe):
-                                                # skip ad hoc sequence scheme switching should be inherited to the other restraints
-                                                del _factor['atom_selection']
-                                                return self.__consumeFactor_expressions(_factor, clauseName, cifCheck, trial + 1)
-                                            if not self.__preferAuthSeq and self.__reasons is None and (self.__cur_subtype != 'dist' and not self.__in_noe):
-                                                if 'label_seq_scheme' not in self.reasonsForReParsing:
-                                                    self.reasonsForReParsing['label_seq_scheme'] = {}
-                                                self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
+                                            if self.__reasons is None:
+                                                self.__preferAuthSeq = not self.__preferAuthSeq
+                                                # self.__authSeqId = 'auth_seq_id' if self.__preferAuthSeq else 'label_seq_id'
+                                                self.__setLocalSeqScheme()
+                                                # ad hoc sequence scheme switching is possible for the first restraint, otherwise the entire restraints should be re-parsed
+                                                if trial < 3 and 'Check the 1th row of' in self.__getCurrentRestraint()\
+                                                   and (self.__cur_subtype != 'dist' and not self.__in_noe):
+                                                    # skip ad hoc sequence scheme switching should be inherited to the other restraints
+                                                    del _factor['atom_selection']
+                                                    return self.__consumeFactor_expressions(_factor, clauseName, cifCheck, trial + 1)
+                                                if not self.__preferAuthSeq and self.__reasons is None and (self.__cur_subtype != 'dist' and not self.__in_noe):
+                                                    if 'label_seq_scheme' not in self.reasonsForReParsing:
+                                                        self.reasonsForReParsing['label_seq_scheme'] = {}
+                                                    self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
 
-                                elif self.__with_para and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
+                                elif self.__with_para and _atomId not in XPLOR_RDC_PRINCIPAL_AXIS_NAMES and self.__reasons is None:
                                     self.__preferAuthSeq = not self.__preferAuthSeq
                                     self.__setLocalSeqScheme()
                                     if 'label_seq_scheme' not in self.reasonsForReParsing:
@@ -11216,12 +11217,22 @@ class XplorMRParserListener(ParseTreeListener):
                                         _seqId = _factor['seq_id'][0]
                                         ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == _chainId), None)
                                         if ps is not None and _seqId not in ps['auth_seq_id']:
-                                            if self.__nmr_vs_model is not None:
+                                            if self.__nmr_vs_model is not None and not ('gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):
+                                                nmr_offset = ps['seq_id'][0] - ps['auth_seq_id'][0]  # 2lzn
+                                                if self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
+                                                   and _chainId in self.__reasons['global_auth_sequence_offset']:
+                                                    nmr_offset += self.__reasons['global_auth_sequence_offset'][_chainId]
+                                                elif self.__reasons is not None and 'auth_sequence_offset' in self.__reasons\
+                                                        and _chainId in self.__reasons['auth_sequence_offset']:
+                                                    nmr_offset += self.__reasons['auth_sequence_offset'][_chainId]
+                                                elif self.__reasons is not None and 'label_sequence_offset' in self.__reasons\
+                                                        and _chainId in self.__reasons['label_sequence_offset']:
+                                                    nmr_offset += self.__reasons['label_sequence_offset'][_chainId]
                                                 item = next((item for item in self.__nmr_vs_model
                                                              if item['test_auth_chain_id' if 'test_auth_chain_id' in item else 'test_chain_id'] == _chainId), None)
                                                 if item is not None and item['conflict'] == 0 and item['unmapped'] > 0 and 'unmapped_sequence' in item:
                                                     refCompId = next((u['ref_comp_id'] for u in item['unmapped_sequence']
-                                                                      if 'ref_seq_id' in u and u['ref_seq_id'] == _seqId), None)
+                                                                      if 'ref_seq_id' in u and u['ref_seq_id'] == _seqId + nmr_offset), None)
                                                     if refCompId is not None:
                                                         hint = f" The residue '{_seqId}:{refCompId}' is not present in polymer sequence "\
                                                             f"of chain {_chainId} of the coordinates. "\
@@ -11230,6 +11241,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                                                             f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.{hint}")
                                                         no_ext_seq = False  # 2ls7
+
                                             if no_ext_seq:
                                                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                                 if len(auth_seq_id_list) > 0:

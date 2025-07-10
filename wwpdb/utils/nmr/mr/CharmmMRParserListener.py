@@ -682,6 +682,10 @@ class CharmmMRParserListener(ParseTreeListener):
                     chainIds.extend(ps['identical_chain_id'])
 
                 offsets = []
+                for item in self.__polySeqRstFailed:
+                    if item['chain_id'] in chainIds:
+                        for seqId, compId in zip(item['seq_id'], item['comp_id']):
+                            offsets.extend([_seqId - seqId for _seqId, _compId in zip(ps[seq_id_name], ps['comp_id']) if _compId == compId])
                 for item in self.__polySeqRstFailedAmbig:
                     if item['chain_id'] in chainIds:
                         for seqId, compIds in zip(item['seq_id'], item['comp_ids']):
@@ -730,8 +734,11 @@ class CharmmMRParserListener(ParseTreeListener):
                                 continue
                             _compIds = guessCompIdFromAtomIdWoLimit(_atomIds, [ps], self.__nefT)
                             if _seqId + offset in ps[seq_id_name]:
-                                if ps['comp_id'][ps[seq_id_name].index(_seqId + offset)] in _compIds:
+                                compId = ps['comp_id'][ps[seq_id_name].index(_seqId + offset)]
+                                if compId in _compIds:
                                     matched += 1
+                                elif compId not in monDict3:
+                                    continue
                                 else:
                                     valid = False
                                     break

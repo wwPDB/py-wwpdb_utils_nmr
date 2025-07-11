@@ -11782,8 +11782,11 @@ class XplorMRParserListener(ParseTreeListener):
                             elif compId == 'HIS':
                                 atomIds = ['NE2']
                                 _factor['alt_atom_id'] = atomIds[0] + '(nitroxide attached point)'
-                            elif compId == 'ILE':
+                            elif compId in ('ILE', 'LEU'):
                                 atomIds = ['CD1']
+                                _factor['alt_atom_id'] = atomIds[0] + '(nitroxide attached point)'
+                            elif compId == 'MET':
+                                atomIds = ['CE']
                                 _factor['alt_atom_id'] = atomIds[0] + '(nitroxide attached point)'
                             elif compId == 'R1A':
                                 atomIds = ['O1']

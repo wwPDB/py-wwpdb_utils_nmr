@@ -6848,6 +6848,8 @@ class CnsMRParserListener(ParseTreeListener):
                                                and (_atomId in _coordAtomSite['atom_id']
                                                     or (len(_atomId) == 4 and _atomId[-2] == '+' and _atomId[-1].isdigit()
                                                         and _atomId[:2] in _coordAtomSite['atom_id'])
+                                                    or (len(_atomId) == 3 and _atomId[-1].isdigit()
+                                                        and _atomId[:2] in _coordAtomSite['atom_id'])
                                                     or (_atomId == 'X' and ('UNK' in _coordAtomSite['atom_id'] or 'UNX' in _coordAtomSite['atom_id']))):
                                                 ligands = update_np_seq_id_remap_request(self.__nonPoly[0], ligands)
                                             else:
@@ -6858,6 +6860,8 @@ class CnsMRParserListener(ParseTreeListener):
                                             and (_atomId in SYMBOLS_ELEMENT  # 2n3r
                                                  or (len(_atomId) == 4 and _atomId[-2] == '+' and _atomId[-1].isdigit()
                                                      and _atomId[:2] in SYMBOLS_ELEMENT)  # 6kg9
+                                                 or (len(_atomId) == 3 and _atomId[-1].isdigit()
+                                                     and _atomId[:2] in SYMBOLS_ELEMENT)  # 2m28
                                                  or _atomId == 'X'):  # 2mjq, 2mjr, 2mjs, 2mjt
                                         if _atomId != 'X':
                                             elemName = _atomId[:2]

@@ -1435,6 +1435,21 @@ class CharmmMRParserListener(ParseTreeListener):
                                     if 'branched_remap' not in self.reasonsForReParsing:
                                         self.reasonsForReParsing['branched_remap'] = branchedMapping
 
+            if 'alt_global_sequence_offset' in self.reasonsForReParsing:
+                if not any(f for f in self.__f if '[Insufficient atom selection]' in f)\
+                   or len(self.reasonsForReParsing) > 1:
+                    del self.reasonsForReParsing['alt_global_sequence_offset']
+                else:
+                    globalSequenceOffset = copy.copy(self.reasonsForReParsing['alt_global_sequence_offset'])
+                    for k, v in globalSequenceOffset.items():
+                        len_v = 0 if v is None else len(v)
+                        if len_v != 1:
+                            del self.reasonsForReParsing['alt_global_sequence_offset'][k]
+                        else:
+                            self.reasonsForReParsing['alt_global_sequence_offset'][k] = list(v)[0]
+                    if len(self.reasonsForReParsing['alt_global_sequence_offset']) == 0:
+                        del self.reasonsForReParsing['alt_global_sequence_offset']
+
             if 'local_seq_scheme' in self.reasonsForReParsing:
                 if 'non_poly_remap' in self.reasonsForReParsing or 'branched_remap' in self.reasonsForReParsing\
                    or 'np_seq_id_remap' in self.reasonsForReParsing:
@@ -5060,8 +5075,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, compId, cifCheck=cifCheck)
 
                     if compId is None:
+                        """ cancel the following code because comp_id prediction conflicts with extended sequence (7zjy)
                         if isPolySeq and isChainSpecified and self.__reasons is None and self.__preferAuthSeq:
-                            """ cancel the following code because comp_id prediction conflicts with extended sequence (7zjy)
                             self.__preferAuthSeq = False
                             seqId, _compId_, _ = self.getRealSeqId(ps, seqId, isPolySeq)
                             if self.__csStat.peptideLike(_compId_):
@@ -5071,7 +5086,52 @@ class CharmmMRParserListener(ParseTreeListener):
                                         self.reasonsForReParsing['label_seq_scheme'] = {}
                                     self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
                             self.__preferAuthSeq = True
-                            """
+                        """
+                        if isPolySeq and seqSpecified and atomSpecified\
+                           and self.__reasons is None and self.__preferAuthSeq and self.__altPolySeq is not None:
+                            if any(seqId in __ps['auth_seq_id'] or seqId in __ps['seq_id'] for __ps in self.__polySeq):
+                                continue
+                            if self.__hasNonPolySeq:
+                                if any(seqId in __np['auth_seq_id'] or seqId in __np['seq_id'] for __np in self.__nonPolySeq):
+                                    continue
+                            __ps = next((__ps for __ps in self.__altPolySeq if __ps['auth_chain_id'] == chainId), None)  # 2mg5
+                            if __ps is None or seqId not in __ps['auth_seq_id']:
+                                continue
+                            try:
+                                __seqId = ps['auth_seq_id'][__ps['auth_seq_id'].index(seqId)]
+                                if seqId == __seqId:
+                                    continue
+                                _, __coordAtomSite = self.getCoordAtomSiteOf(chainId, __seqId, cifCheck=cifCheck)
+                                if __coordAtomSite is None:
+                                    continue
+                                __compId = __coordAtomSite['comp_id']
+                                __atomSiteAtomId = __coordAtomSite['atom_id']
+
+                                offsets = set()
+
+                                for atomId in _factor['atom_id']:
+                                    atomId = atomId.upper()
+                                    if __compId not in monDict3 and self.__mrAtomNameMapping is not None:
+                                        authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(__seqId)]
+                                        atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, __seqId, authCompId, atomId, __coordAtomSite)
+                                    __atomIds = self.getAtomIdList(_factor, __compId, atomId)
+                                    if __atomIds[0] in __atomSiteAtomId:
+                                        offsets.add(__seqId - seqId)
+
+                                if len(offsets) > 0:
+                                    if 'alt_global_sequence_offset' not in self.reasonsForReParsing:
+                                        self.reasonsForReParsing['alt_global_sequence_offset'] = {}
+                                    if chainId in self.reasonsForReParsing['alt_global_sequence_offset']:
+                                        if self.reasonsForReParsing['alt_global_sequence_offset'][chainId] is None:
+                                            continue
+                                        self.reasonsForReParsing['alt_global_sequence_offset'][chainId] &= offsets
+                                        if len(self.reasonsForReParsing['alt_global_sequence_offset'][chainId]) == 0:
+                                            self.reasonsForReParsing['alt_global_sequence_offset'][chainId] = None
+                                            continue
+                                        continue
+                                    self.reasonsForReParsing['alt_global_sequence_offset'][chainId] = offsets
+                            except IndexError:
+                                pass
                         continue
 
                     if self.__reasons is not None:
@@ -5618,12 +5678,13 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                 for __chainId in chainIds:
                                                                     if __chainId == chainId:
                                                                         continue
-                                                                    __psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == __chainId]
+                                                                    __psList = [__ps for __ps in (self.__polySeq if isPolySeq else altPolySeq)
+                                                                                if __ps['auth_chain_id'] == __chainId]
                                                                     if len(__psList) == 0:
                                                                         continue
                                                                     for __ps in __psList:
                                                                         __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)[0]
-                                                                        __seqKey, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
+                                                                        _, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
                                                                         if __coordAtomSite is not None\
                                                                            and ((seqId in ps['auth_seq_id'] and ps['seq_id'][ps['auth_seq_id'].index(seqId)] != seqId)  # 2lr1, 2lqc
                                                                                 or seqId != __seqId):  # 1qkg
@@ -5698,12 +5759,13 @@ class CharmmMRParserListener(ParseTreeListener):
                                                         for __chainId in chainIds:
                                                             if __chainId == chainId:
                                                                 continue
-                                                            __psList = [ps for ps in (self.__polySeq if isPolySeq else altPolySeq) if ps['auth_chain_id'] == __chainId]
+                                                            __psList = [__ps for __ps in (self.__polySeq if isPolySeq else altPolySeq)
+                                                                        if __ps['auth_chain_id'] == __chainId]
                                                             if len(__psList) == 0:
                                                                 continue
                                                             for __ps in __psList:
                                                                 __seqId = self.getRealSeqId(__ps, seqId, isPolySeq)[0]
-                                                                __seqKey, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
+                                                                _, __coordAtomSite = self.getCoordAtomSiteOf(__chainId, __seqId, cifCheck=cifCheck)
                                                                 if __coordAtomSite is not None\
                                                                    and ((seqId in ps['auth_seq_id'] and ps['seq_id'][ps['auth_seq_id'].index(seqId)] != seqId)  # 2lr1, 2lqc
                                                                         or seqId != __seqId):  # 1qkg
@@ -5921,7 +5983,6 @@ class CharmmMRParserListener(ParseTreeListener):
             and ps['auth_chain_id'] in self.__reasons['inhibit_label_seq_scheme']
         if (not self.__preferAuthSeq or preferLabelSeq) and not inhibitLabelSeq:
             chainId = ps['chain_id']
-            offset = 0
             if isPolySeq and self.__reasons is not None and 'label_seq_offset' in self.__reasons\
                and chainId in self.__reasons['label_seq_offset']:
                 offset = self.__reasons['label_seq_offset'][chainId]

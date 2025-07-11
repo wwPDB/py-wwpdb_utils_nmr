@@ -800,16 +800,29 @@ class CnsMRParserListener(ParseTreeListener):
                 ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == ref_chain_id)
                 has_gap_in_auth_seq = 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']
 
+                rev_seq_id_mapping = {}
+                for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id']):
+                    if test_seq_id is not None:
+                        rev_seq_id_mapping[test_seq_id] = ref_seq_id
+
                 if has_gap_in_auth_seq:
                     for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
                         if auth_seq_id in emptyValue:
                             continue
-                        chainIdRemap[seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
+                        if auth_seq_id in rev_seq_id_mapping:
+                            test_seq_id = rev_seq_id_mapping[auth_seq_id]
+                            chainIdRemap[test_seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
+                        elif seq_id not in chainIdRemap:
+                            chainIdRemap[seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
                 else:
                     for auth_seq_id in ps['auth_seq_id']:
                         if auth_seq_id in emptyValue:
                             continue
-                        chainIdRemap[auth_seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
+                        if auth_seq_id in rev_seq_id_mapping:
+                            test_seq_id = rev_seq_id_mapping[auth_seq_id]
+                            chainIdRemap[test_seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
+                        elif auth_seq_id not in chainIdRemap:
+                            chainIdRemap[auth_seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
 
                 refChainIds.append(ref_chain_id)
 

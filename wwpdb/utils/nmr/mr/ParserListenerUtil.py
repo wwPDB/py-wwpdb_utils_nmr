@@ -3258,6 +3258,10 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
         if atomId[:-2] in SYMBOLS_ELEMENT:
             return atomId[:-2]
 
+    if atomId.endswith('1+') or atomId.endswith('2+') or atomId.endswith('3+'):
+        if atomId[:-2] in SYMBOLS_ELEMENT:
+            return atomId[:-2]
+
     if atomId.endswith('++') and not unambig:
         return atomId[:-2] + '*'
 

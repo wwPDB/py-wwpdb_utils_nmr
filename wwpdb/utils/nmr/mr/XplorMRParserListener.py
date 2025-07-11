@@ -11099,7 +11099,8 @@ class XplorMRParserListener(ParseTreeListener):
                                             if _coordAtomSite is not None and len(_factor['atom_id']) == 1\
                                                and _atomId is not None\
                                                and (_atomId in _coordAtomSite['atom_id']
-                                                    or (len(_atomId) == 4 and _atomId[-2] == '+' and _atomId[-1].isdigit()
+                                                    or (len(_atomId) == 4 and ((_atomId[-2] == '+' and _atomId[-1].isdigit())
+                                                                               or (_atomId[-1] == '+' and _atomId[-2].isdigit()))
                                                         and _atomId[:2] in _coordAtomSite['atom_id'])
                                                     or (len(_atomId) == 3 and _atomId[-1].isdigit()
                                                         and _atomId[:2] in _coordAtomSite['atom_id'])
@@ -11111,8 +11112,9 @@ class XplorMRParserListener(ParseTreeListener):
                                     elif ligands > 1 and len(_factor['atom_id']) == 1\
                                             and _atomId is not None\
                                             and (_atomId in SYMBOLS_ELEMENT  # 2n3r
-                                                 or (len(_atomId) == 4 and _atomId[-2] == '+' and _atomId[-1].isdigit()
-                                                     and _atomId[:2] in SYMBOLS_ELEMENT)  # 6kg9
+                                                 or (len(_atomId) == 4 and ((_atomId[-2] == '+' and _atomId[-1].isdigit())
+                                                                            or (_atomId[-1] == '+' and _atomId[-2].isdigit()))
+                                                     and _atomId[:2] in SYMBOLS_ELEMENT)  # 6kg9, 2ma7
                                                  or (len(_atomId) == 3 and _atomId[-1].isdigit()
                                                      and _atomId[:2] in SYMBOLS_ELEMENT)  # 2m28
                                                  or _atomId == 'X'):  # 2mjq, 2mjr, 2mjs, 2mjt

@@ -1743,7 +1743,8 @@ class CharmmMRParserListener(ParseTreeListener):
                             self.reasonsForReParsing['label_seq_scheme']['dist'] = True
                             set_label_seq_scheme()
                         elif 'np_seq_id_remap' not in self.reasonsForReParsing and 'non_poly_remap' not in self.reasonsForReParsing:  # 2lml
-                            self.reasonsForReParsing = {}
+                            if 'assert_label_seq_scheme' not in self.reasonsForReParsing:  # 2m0k
+                                self.reasonsForReParsing = {}
 
                     if any(f for f in self.__f if '[Sequence mismatch]' in f):
                         __f = copy.copy(self.__f)
@@ -1900,14 +1901,16 @@ class CharmmMRParserListener(ParseTreeListener):
                             del self.reasonsForReParsing['global_auth_sequence_offset']
 
                 if len(self.__f) == 0 and len(self.reasonsForReParsing) > 0:
-                    self.reasonsForReParsing = {}
+                    if 'assert_label_seq_scheme' not in self.reasonsForReParsing:
+                        self.reasonsForReParsing = {}
 
             elif 'chain_id_remap' in self.reasonsForReParsing:
                 if 'global_auth_sequence_offset' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['global_auth_sequence_offset']  # 2lzs
 
                 if len(self.__f) == 0 and len(self.reasonsForReParsing) > 0:
-                    self.reasonsForReParsing = {}
+                    if 'assert_label_seq_scheme' not in self.reasonsForReParsing:
+                        self.reasonsForReParsing = {}
 
             if len(self.reasonsForReParsing) == 0 and self.__reasons is None\
                and any('[Insufficient atom selection]' in f and 'Macromolecules page' in f for f in self.__f):
@@ -5692,6 +5695,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                                             self.reasonsForReParsing['label_seq_scheme'] = {}
                                                                         if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:
                                                                             self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
+                                                                            if 'segment_id' in _factor and 'assert_label_scheme_scheme' not in self.reasonsForReParsing:
+                                                                                self.reasonsForReParsing['assert_label_seq_scheme'] = True  # 2m0k
                                                                         if isChainSpecified:
                                                                             if 'inhibit_label_seq_scheme' not in self.reasonsForReParsing:
                                                                                 self.reasonsForReParsing['inhibit_label_seq_scheme'] = {}

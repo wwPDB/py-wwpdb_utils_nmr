@@ -3250,7 +3250,7 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
             if 'UNX' in refAtomIdList:  # 2mjt
                 return 'UNX'
 
-        if lenAtomId == 3 and atomId[-1] in ('1', '2', '3') and atomId[:-2] in SYMBOLS_ELEMENT:  # 2m28
+        if lenAtomId == 3 and atomId[-1] in ('1', '2', '3', '+', '-') and atomId[:-2] in SYMBOLS_ELEMENT:  # 2m28
             if atomId[:-2] in refAtomIdList:
                 return atomId[:-2]
 

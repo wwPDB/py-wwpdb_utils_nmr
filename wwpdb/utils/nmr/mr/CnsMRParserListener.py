@@ -812,9 +812,12 @@ class CnsMRParserListener(ParseTreeListener):
                 has_gap_in_auth_seq = 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']
 
                 rev_seq_id_mapping = {}
-                for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id']):
-                    if test_seq_id is not None:
-                        rev_seq_id_mapping[test_seq_id] = ref_seq_id
+                if 'ref_auth_seq_id' in sa and sa['ref_auth_seq_id'] == sa['test_seq_id']:
+                    pass  # 6f0y
+                else:
+                    for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id']):
+                        if test_seq_id is not None:
+                            rev_seq_id_mapping[test_seq_id] = ref_seq_id
 
                 if has_gap_in_auth_seq:
                     for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
@@ -904,7 +907,7 @@ class CnsMRParserListener(ParseTreeListener):
                                 compId = ps['comp_id'][ps[seq_id_name].index(_seqId + offset)]
                                 if compId in _compIds:
                                     matched += 1
-                                elif compId not in monDict3:
+                                elif compId not in monDict3 or len(_compIds) == 0:  # 6f0y
                                     continue
                                 else:
                                     valid = False
@@ -2071,7 +2074,7 @@ class CnsMRParserListener(ParseTreeListener):
                     for v in self.reasonsForReParsing['chain_id_remap'].values():
                         map_chain_ids.add(v['chain_id'])
                     if stat_chain_ids == map_chain_ids:
-                        del self.reasonsForReParsing['segment_id_mismatch']
+                        # del self.reasonsForReParsing['segment_id_mismatch'] 6f0y
                         del self.reasonsForReParsing['segment_id_match_stats']
                         del self.reasonsForReParsing['segment_id_poly_type_stats']
                         if 'global_auth_sequence_offset' in self.reasonsForReParsing:

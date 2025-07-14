@@ -954,8 +954,13 @@ class XplorMRParserListener(ParseTreeListener):
                 ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == ref_chain_id)
                 has_gap_in_auth_seq = 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']
 
+                label_seq_scheme = False
+                _ps = next((_ps for _ps in self.__polySeqRstValid if _ps['chain_id'] == ref_chain_id), None)
+                if _ps is not None and all(seq_id in ps['seq_id'] for seq_id in _ps['seq_id']):
+                    label_seq_scheme = True  # 2m3o
+
                 rev_seq_id_mapping = {}
-                if 'ref_auth_seq_id' in sa and sa['ref_auth_seq_id'] == sa['test_seq_id']:
+                if 'ref_auth_seq_id' in sa and sa['ref_auth_seq_id'] == sa['test_seq_id'] and not label_seq_scheme:
                     pass  # 6f0y
                 else:
                     for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id']):

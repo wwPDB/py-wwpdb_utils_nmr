@@ -12381,7 +12381,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                                         or seqId != __seqId):  # 1qkg
                                                                     __compId = __coordAtomSite['comp_id']
                                                                     __atomIds = self.getAtomIdList(_factor, __compId, atomId)
-                                                                    if compId != __compId and __atomIds[0] in __coordAtomSite['atom_id']:
+                                                                    if compId != __compId and __atomIds[0] in __coordAtomSite['atom_id']\
+                                                                       and self.__csStat.getTypeOfCompId(compId) == self.__csStat.getTypeOfCompId(__compId):  # 2ld5
                                                                         if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                                             self.reasonsForReParsing['label_seq_scheme'] = {}
                                                                         if self.__cur_subtype not in self.reasonsForReParsing['label_seq_scheme']:

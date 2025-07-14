@@ -45951,6 +45951,11 @@ class NmrDpUtility:
                 pdbx_database_status = self.__cR.getDictList('pdbx_database_status')
                 self.__recvd_nmr_data = pdbx_database_status[0]['recvd_nmr_data'] == 'Y'
 
+            maxitpath = os.getenv('MAXITPATH')
+            if maxitpath is None:
+                package_dir = os.getenv('PACKAGE_DIR')
+                maxitpath = os.path.join(package_dir, 'maxit/bin/maxit') if package_dir is not None else 'maxit'
+
             if self.__internal_mode and self.__cR.hasCategory('database_2') and self.__cR.hasCategory('pdbx_audit_revision_history'):
                 extended_pdb_id = None
                 if self.__cR.hasItem('database_2', 'pdbx_database_accession'):
@@ -46003,10 +46008,6 @@ class NmrDpUtility:
 
                                 bmrb_id = database_2[0]['database_code']
                                 if bmrb_id is not None and bmrb_id.isdigit():
-                                    maxitpath = os.getenv('MAXITPATH')
-                                    if maxitpath is None:
-                                        package_dir = os.getenv('PACKAGE_DIR')
-                                        maxitpath = os.path.join(package_dir, 'maxit/bin/maxit') if package_dir is not None else 'maxit'
                                     ret_code = -1
                                     intnl_upload_dir = os.path.join(self.__cR.getDirPath(), f'bmr{bmrb_id}/work/upload')
                                     if os.path.isdir(intnl_upload_dir):
@@ -46070,42 +46071,60 @@ class NmrDpUtility:
             if self.__remediation_mode and self.__recvd_nmr_data\
                and not self.__cR.hasCategory('pdbx_poly_seq_scheme') and not self.__cifPath.endswith('~'):
 
-                try:
-                    from wwpdb.utils.config.ConfigInfo import ConfigInfo  # pylint: disable=import-outside-toplevel
-                    from wwpdb.utils.dp.RcsbDpUtility import RcsbDpUtility  # pylint: disable=import-outside-toplevel
-                except ImportError:
-                    return False
+                srcCifPath = self.__cifPath
+                dstCifPath = self.__cifPath + '~'
 
-                try:
+                done = False
 
-                    srcCifPath = self.__cifPath
-                    dstCifPath = self.__cifPath + '~'
+                if maxitpath is not None:
 
-                    dirPath = os.path.join(self.__dirPath, 'cif2cif')
-                    if not os.path.isdir(dirPath):
-                        os.makedirs(dirPath)
+                    try:
 
-                    cI = ConfigInfo()
-                    siteId = cI.get('SITE_PREFIX')
-                    rdU = RcsbDpUtility(tmpPath=dirPath, siteId=siteId, verbose=self.__verbose, log=self.__lfh)
-                    rdU.imp(srcCifPath)
-                    rdU.op('annot-cif2cif-dep')
-                    rdU.exp(dstCifPath)
-                    rdU.cleanup()
-                    os.rmdir(dirPath)
+                        import subprocess  # pylint: disable=import-outside-toplevel
 
-                    self.__inputParamDict['coordinate_file_path'] = dstCifPath
-                    self.__cifPath = None
-                    self.__cifChecked = False
+                        com = [maxitpath, '-input', srcCifPath, '-output', dstCifPath, '-o', '8']
+                        result = subprocess.run(com, check=False)
 
-                    return self.__parseCoordinate()
+                        done = result.returncode == 0
 
-                except Exception as e:
+                    except ImportError:
+                        pass
 
-                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__parseCoordinate() ++ Error  - " + str(e))
-                    self.report.setError()
+                if not done:
 
-                    return False
+                    try:
+                        from wwpdb.utils.config.ConfigInfo import ConfigInfo  # pylint: disable=import-outside-toplevel
+                        from wwpdb.utils.dp.RcsbDpUtility import RcsbDpUtility  # pylint: disable=import-outside-toplevel
+                    except ImportError:
+                        return False
+
+                    try:
+
+                        dirPath = os.path.join(self.__dirPath, 'cif2cif')
+                        if not os.path.isdir(dirPath):
+                            os.makedirs(dirPath)
+
+                        cI = ConfigInfo()
+                        siteId = cI.get('SITE_PREFIX')
+                        rdU = RcsbDpUtility(tmpPath=dirPath, siteId=siteId, verbose=self.__verbose, log=self.__lfh)
+                        rdU.imp(srcCifPath)
+                        rdU.op('annot-cif2cif-dep')
+                        rdU.exp(dstCifPath)
+                        rdU.cleanup()
+                        os.rmdir(dirPath)
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__parseCoordinate() ++ Error  - " + str(e))
+                        self.report.setError()
+
+                        return False
+
+                self.__inputParamDict['coordinate_file_path'] = dstCifPath
+                self.__cifPath = None
+                self.__cifChecked = False
+
+                return self.__parseCoordinate()
 
             self.__cifChecked = True
 

@@ -3261,6 +3261,13 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
         if atomId[:-2] in SYMBOLS_ELEMENT:
             return atomId[:-2]
 
+    if lenAtomId > 2 and atomId[0] not in ('H', 'Q', 'M', 'C', 'N') and atomId[:2] in SYMBOLS_ELEMENT:  # 2ma7
+        if lenAtomId == 3 and atomId[-1] in ('+', '-', '1', '2', '3'):
+            return atomId[:2]
+
+        if lenAtomId == 4 and (atomId.endswith('1+') or atomId.endswith('2+') or atomId.endswith('3+')):
+            return atomId[:2]
+
     if atomId.endswith('++') and not unambig:
         return atomId[:-2] + '*'
 

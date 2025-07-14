@@ -3250,15 +3250,14 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
             if 'UNX' in refAtomIdList:  # 2mjt
                 return 'UNX'
 
-        if lenAtomId == 3 and atomId[-1] in ('1', '2', '3', '+', '-') and atomId[:-2] in SYMBOLS_ELEMENT:  # 2m28
-            if atomId[:-2] in refAtomIdList:
-                return atomId[:-2]
+        if lenAtomId > 2 and atomId[:2] in SYMBOLS_ELEMENT and atomId[:2] in refAtomIdList and refCompId == atomId[:2]:
+            if lenAtomId == 3 and atomId[-1] in ('+', '-', '1', '2', '3'):  # 6f0y, 2m28
+                return atomId[:2]
+
+            if lenAtomId == 4 and (atomId.endswith('1+') or atomId.endswith('2+') or atomId.endswith('3+')):
+                return atomId[:2]
 
     if atomId.endswith('+1') or atomId.endswith('+2') or atomId.endswith('+3'):
-        if atomId[:-2] in SYMBOLS_ELEMENT:
-            return atomId[:-2]
-
-    if atomId.endswith('1+') or atomId.endswith('2+') or atomId.endswith('3+'):
         if atomId[:-2] in SYMBOLS_ELEMENT:
             return atomId[:-2]
 

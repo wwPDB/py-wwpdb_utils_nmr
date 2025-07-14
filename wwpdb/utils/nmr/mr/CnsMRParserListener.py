@@ -364,6 +364,7 @@ class CnsMRParserListener(ParseTreeListener):
     __atomIdSetPerChain = None
 
     __offsetHolder = None
+    __effSeqIdSet = None
 
     __representativeModelId = REPRESENTATIVE_MODEL_ID
     __representativeAltId = REPRESENTATIVE_ALT_ID
@@ -679,6 +680,16 @@ class CnsMRParserListener(ParseTreeListener):
                                               self.__polySeq, self.__altPolySeq,
                                               self.__coordAtomSite, self.__coordUnobsRes,
                                               self.__authToLabelSeq, self.__authToStarSeq, self.__authToOrigSeq)
+
+        if self.__altPolySeq is not None:
+            self.__effSeqIdSet = set()
+            for ps in self.__polySeq:
+                self.__effSeqIdSet |= set(ps['auth_seq_id'])
+                self.__effSeqIdSet |= set(ps['seq_id'])
+            if self.__hasNonPolySeq:
+                for np in self.__nonPolySeq:
+                    self.__effSeqIdSet |= set(np['auth_seq_id'])
+                    self.__effSeqIdSet |= set(np['seq_id'])
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
@@ -7333,11 +7344,8 @@ class CnsMRParserListener(ParseTreeListener):
                         """
                         if isPolySeq and seqSpecified and atomSpecified\
                            and self.__reasons is None and self.__preferAuthSeq and self.__altPolySeq is not None:
-                            if any(seqId in __ps['auth_seq_id'] or seqId in __ps['seq_id'] for __ps in self.__polySeq):
+                            if seqId in self.__effSeqIdSet:
                                 continue
-                            if self.__hasNonPolySeq:
-                                if any(seqId in __np['auth_seq_id'] or seqId in __np['seq_id'] for __np in self.__nonPolySeq):
-                                    continue
                             __ps = next((__ps for __ps in self.__altPolySeq if __ps['auth_chain_id'] == chainId), None)  # 2mg5
                             if __ps is None or seqId not in __ps['auth_seq_id']:
                                 continue

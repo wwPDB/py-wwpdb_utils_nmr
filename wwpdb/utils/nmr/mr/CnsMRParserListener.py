@@ -1592,8 +1592,11 @@ class CnsMRParserListener(ParseTreeListener):
                                     if 'branched_remap' not in self.reasonsForReParsing:
                                         self.reasonsForReParsing['branched_remap'] = branchedMapping
 
+            insuff_dist_atom_sel_warnings = [f for f in self.__f if '[Insufficient atom selection]' in f and 'distance restraints' in f]
+
             if 'alt_global_sequence_offset' in self.reasonsForReParsing:
-                if not any(f for f in self.__f if '[Insufficient atom selection]' in f)\
+                if len(insuff_dist_atom_sel_warnings) < 20\
+                   or not any(f for f in self.__f if '[Insufficient atom selection]' in f)\
                    or len(self.reasonsForReParsing) > 1:
                     del self.reasonsForReParsing['alt_global_sequence_offset']
                 else:
@@ -1613,8 +1616,6 @@ class CnsMRParserListener(ParseTreeListener):
                     del self.reasonsForReParsing['local_seq_scheme']
                 if 'seq_id_remap' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['seq_id_remap']
-
-            insuff_dist_atom_sel_warnings = [f for f in self.__f if '[Insufficient atom selection]' in f and 'distance restraints' in f]
 
             if 'local_seq_scheme' in self.reasonsForReParsing:
                 if 'label_seq_offset' in self.reasonsForReParsing:
@@ -7070,6 +7071,36 @@ class CnsMRParserListener(ParseTreeListener):
                                                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                                                             f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.{hint}")
                                                         no_ext_seq = False  # 2law
+                                    elif len(_factor['chain_id']) > 1 and len(_factor['seq_id']) == 1:
+                                        _chainId_ = []
+                                        _seqId = _factor['seq_id'][0]
+                                        for _chainId in _factor['chain_id']:
+                                            ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == _chainId), None)
+                                            if ps is not None and _seqId not in ps['auth_seq_id']:
+                                                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                                if len(auth_seq_id_list) > 0:
+                                                    min_auth_seq_id = min(auth_seq_id_list)
+                                                    max_auth_seq_id = max(auth_seq_id_list)
+                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId < 8)\
+                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id < 8):
+                                                        _chainId_.append(_chainId)
+                                        if len(_chainId_) == 1:
+                                            _chainId = _chainId_[0]
+                                            ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == _chainId), None)
+                                            if ps is not None and _seqId not in ps['auth_seq_id']:
+                                                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                                if len(auth_seq_id_list) > 0:
+                                                    min_auth_seq_id = min(auth_seq_id_list)
+                                                    max_auth_seq_id = max(auth_seq_id_list)
+                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId < 8)\
+                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id < 8):
+                                                        hint = f" The residue '{_seqId}' is not present in polymer sequence "\
+                                                            f"of chain {_chainId} of the coordinates. "\
+                                                            "Please update the sequence in the Macromolecules page."
+                                                        if self.__reasons is not None:
+                                                            self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                                                            f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.{hint}")
+                                                        no_ext_seq = False  # 2mps
                                     if no_ext_seq or self.__reasons is None:
                                         if no_ext_seq:  # 2laz
                                             hint = " Please make sure that the values in 'segidentifier', 'residue', and 'name' clauses of the restraint file match "\

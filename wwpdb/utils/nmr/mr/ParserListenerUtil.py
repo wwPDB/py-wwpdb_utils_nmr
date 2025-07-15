@@ -2883,6 +2883,9 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
             if atomId == 'CA':
                 return 'CH3'
 
+        elif refCompId == 'A2G' and atomId == 'HNA':
+            return 'HN2'  # 2mk7
+
         elif refCompId == 'CGU':  # 2mzm
             if atomId.startswith('O1'):
                 return 'OE' + atomId[1:]

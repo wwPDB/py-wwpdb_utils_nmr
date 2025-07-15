@@ -70,6 +70,7 @@ try:
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
+                                                       MIN_EXT_SEQ_FOR_ATOM_SEL_ERR,
                                                        THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                                        PLANE_LIKE_LOWER_LIMIT,
                                                        PLANE_LIKE_UPPER_LIMIT,
@@ -182,6 +183,7 @@ except ImportError:
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
+                                           MIN_EXT_SEQ_FOR_ATOM_SEL_ERR,
                                            THRESHHOLD_FOR_CIRCULAR_SHIFT,
                                            PLANE_LIKE_LOWER_LIMIT,
                                            PLANE_LIKE_UPPER_LIMIT,
@@ -7201,8 +7203,8 @@ class CnsMRParserListener(ParseTreeListener):
                                                 if len(auth_seq_id_list) > 0:
                                                     min_auth_seq_id = min(auth_seq_id_list)
                                                     max_auth_seq_id = max(auth_seq_id_list)
-                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId < 8)\
-                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id < 8):
+                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId < MIN_EXT_SEQ_FOR_ATOM_SEL_ERR)\
+                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id < MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
                                                         hint = f" The residue '{_seqId}' is not present in polymer sequence "\
                                                             f"of chain {_chainId} of the coordinates. "\
                                                             "Please update the sequence in the Macromolecules page."
@@ -7222,8 +7224,8 @@ class CnsMRParserListener(ParseTreeListener):
                                                 if len(auth_seq_id_list) > 0:
                                                     min_auth_seq_id = min(auth_seq_id_list)
                                                     max_auth_seq_id = max(auth_seq_id_list)
-                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId < 8)\
-                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id < 8):
+                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId < MIN_EXT_SEQ_FOR_ATOM_SEL_ERR)\
+                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id < MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
                                                         _chainId_.append(_chainId)
                                         if len(_chainId_) == 1:
                                             _chainId = _chainId_[0]
@@ -7233,8 +7235,8 @@ class CnsMRParserListener(ParseTreeListener):
                                                 if len(auth_seq_id_list) > 0:
                                                     min_auth_seq_id = min(auth_seq_id_list)
                                                     max_auth_seq_id = max(auth_seq_id_list)
-                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId < 8)\
-                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id < 8):
+                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId < MIN_EXT_SEQ_FOR_ATOM_SEL_ERR)\
+                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id < MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
                                                         hint = f" The residue '{_seqId}' is not present in polymer sequence "\
                                                             f"of chain {_chainId} of the coordinates. "\
                                                             "Please update the sequence in the Macromolecules page."

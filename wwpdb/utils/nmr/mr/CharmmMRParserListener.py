@@ -4919,8 +4919,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 if len(auth_seq_id_list) > 0:
                                                     min_auth_seq_id = min(auth_seq_id_list)
                                                     max_auth_seq_id = max(auth_seq_id_list)
-                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId < MIN_EXT_SEQ_FOR_ATOM_SEL_ERR)\
-                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id < MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
+                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR)\
+                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
                                                         hint = f" The residue '{_seqId}' is not present in polymer sequence "\
                                                             f"of chain {_chainId} of the coordinates. "\
                                                             "Please update the sequence in the Macromolecules page."
@@ -4940,8 +4940,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 if len(auth_seq_id_list) > 0:
                                                     min_auth_seq_id = min(auth_seq_id_list)
                                                     max_auth_seq_id = max(auth_seq_id_list)
-                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId < MIN_EXT_SEQ_FOR_ATOM_SEL_ERR)\
-                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id < MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
+                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR)\
+                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
                                                         _chainId_.append(_chainId)
                                         if len(_chainId_) == 1:
                                             _chainId = _chainId_[0]
@@ -4951,8 +4951,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 if len(auth_seq_id_list) > 0:
                                                     min_auth_seq_id = min(auth_seq_id_list)
                                                     max_auth_seq_id = max(auth_seq_id_list)
-                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId < MIN_EXT_SEQ_FOR_ATOM_SEL_ERR)\
-                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id < MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
+                                                    if (_seqId < min_auth_seq_id and min_auth_seq_id - _seqId <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR)\
+                                                       or (_seqId > max_auth_seq_id and _seqId - max_auth_seq_id <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
                                                         hint = f" The residue '{_seqId}' is not present in polymer sequence "\
                                                             f"of chain {_chainId} of the coordinates. "\
                                                             "Please update the sequence in the Macromolecules page."

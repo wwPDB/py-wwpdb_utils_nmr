@@ -152,12 +152,12 @@ CCR_RESTRAINT_RANGE = {'min_inclusive': -10.0, 'max_inclusive': 10.0}
 CCR_RESTRAINT_ERROR = {'min_exclusive': -20.0, 'max_exclusive': 20.0}
 
 
-PRE_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 20.0}
-PRE_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 40.0}
+PRE_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 200.0}
+PRE_RESTRAINT_ERROR = {'min_exclusive': -5.0, 'max_exclusive': 10000.0}
 
 
-T1T2_RESTRAINT_RANGE = {'min_inclusive': 1.0, 'max_inclusive': 20.0}
-T1T2_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 100.0}
+T1T2_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 20.0}
+T1T2_RESTRAINT_ERROR = {'min_exclusive': -0.05, 'max_exclusive': 100.0}
 
 
 CS_UNCERTAINTY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 3.0}
@@ -283,9 +283,10 @@ XPLOR_RDC_PRINCIPAL_AXIS_NAMES = ('OO', 'X', 'Y', 'Z')
 
 XPLOR_ORIGIN_AXIS_COLS = (0, 1, 2, 3)
 
-XPLOR_NITROXIDE_NAMES = ('NO', 'NX', 'NR', 'NAI', 'OS', 'OS1', 'NS1', 'OAH', 'SLC')
+XPLOR_NITROXIDE_NAMES = ('NO', 'NX', 'NR', 'NAI', 'OS', 'OS1', 'NS1', 'OAH', 'SLC', 'GD', 'GD3+')
 
-NITROOXIDE_ANCHOR_RES_NAMES = ('CYS', 'SER', 'GLU', 'ASP', 'GLN', 'ASN', 'LYS', 'THR', 'HIS', 'R1A')
+NITROOXIDE_ANCHOR_RES_NAMES = ('CYS', 'SER', 'GLU', 'ASP', 'GLN', 'ASN', 'LYS', 'THR', 'HIS',
+                               'ILE', 'LEU', 'MET', 'R1A')
 
 HEME_LIKE_RES_NAMES = ('HEM', 'HEB', 'HEC', 'MH0')
 

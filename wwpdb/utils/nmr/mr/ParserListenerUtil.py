@@ -3917,25 +3917,25 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
             return 'I'
 
         if compId == 'ADE':
-            return 'A' if refCompId == 'A' else 'DA'
+            return 'A' if lenRefCompId == 1 else 'DA'
         if compId == 'CYT':
-            return 'C' if refCompId == 'C' else 'DC'
+            return 'C' if lenRefCompId == 1 else 'DC'
         if compId == 'GUA':
-            return 'G' if refCompId == 'G' else 'DG'
+            return 'G' if lenRefCompId == 1 else 'DG'
         if compId == 'THY':
             return 'DT'
         if compId == 'INO':
-            return 'I' if refCompId == 'I' else 'DI'
+            return 'I' if lenRefCompId == 1 else 'DI'
         if compId == 'HCY':
-            return 'CH' if refCompId == 'C' else 'DNR'
+            return 'CH' if lenRefCompId == 1 else 'DNR'
 
     if lenCompId == 2 and compId[1] == 'P':
         if compId == 'AP':
-            return 'A' if refCompId == 'A' else 'DA'
+            return 'A' if lenRefCompId == 1 else 'DA'
         if compId == 'CP':
-            return 'C' if refCompId == 'C' else 'DC'
+            return 'C' if lenRefCompId == 1 else 'DC'
         if compId == 'GP':
-            return 'G' if refCompId == 'G' else 'DG'
+            return 'G' if lenRefCompId == 1 else 'DG'
         if compId == 'TP':
             return 'DT'
         if compId == 'UP':
@@ -7584,13 +7584,14 @@ def getReadableFactor(factor: dict) -> str:
 
     _factor = {k: sorted(list(set(v))) if isinstance(v, list) else v for k, v in factor.items()}
 
-    key_order = ['chain_id', 'auth_chain_id', 'alt_chain_id', 'seq_id', 'comp_id', 'type_symbol', 'atom_id', 'alt_atom_id']
+    key_order = ['chain_id', 'auth_chain_id', 'alt_chain_id', 'seq_id', 'comp_id', 'alt_comp_id', 'type_symbol', 'atom_id', 'alt_atom_id']
 
     key_map = {'chain_id': 'segidentifier',
                'auth_chain_id': 'original segidentifier',
                'alt_chain_id': 'original segidentifier',
                'seq_id': 'residue',
                'comp_id': 'resname',
+               'alt_comp_id': 'original resname',
                'type_symbol': 'chemical',
                'atom_id': 'name',
                'alt_atom_id': 'original name'}

@@ -4682,7 +4682,7 @@ class CharmmMRParserListener(ParseTreeListener):
                 error_type = "Insufficient atom selection" if 'atom_num' not in __factor else 'Atom not found'
                 if self.__cur_subtype != 'plane':
                     if cifCheck:
-                        if self.__cur_union_expr:
+                        if self.__cur_union_expr or self.__top_union_expr:  # 2mws
                             self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.")
                         else:

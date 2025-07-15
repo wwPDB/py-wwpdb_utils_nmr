@@ -230,6 +230,24 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2mzx/2mzx-trimmed.mr',
+                     '../../tests-nmr/mock-data-remediation/2mzx/2mzx.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2mzx/2mzx-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2mzx/2mzx.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2mws/2mws-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2mws/2mws.cif')
+    print(reader_listener.getReasonsForReparsing())
+
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
@@ -243,7 +261,7 @@ if __name__ == "__main__":
         reader.parse('../../tests-nmr/mock-data-remediation/2mf6/2mf6-trimmed.mr',
                      '../../tests-nmr/mock-data-remediation/2mf6/2mf6.cif')
     print(reader_listener.getReasonsForReparsing())
-    eader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mf6/2mf6-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/2mf6/2mf6.cif')

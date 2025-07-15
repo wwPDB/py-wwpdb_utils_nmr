@@ -1521,8 +1521,9 @@ class CharmmMRParserListener(ParseTreeListener):
                 for k, v in globalSequenceOffset.items():
                     if v is None:
                         del self.reasonsForReParsing['global_sequence_offset'][k]  # 2l12
-                        if 'global_auth_sequence_offset' not in self.reasonsForReParsing\
-                           and 'segment_id_mismatch' not in self.reasonsForReParsing:  # 2n2w, 2b87
+                        if not label_seq_scheme\
+                           and 'global_auth_sequence_offset' not in self.reasonsForReParsing\
+                           and 'segment_id_mismatch' not in self.reasonsForReParsing:  # 2n2w, 2b87, 2mf6 (excl label_seq_scheme)
                             if 'uninterpretable_chain_id' not in self.reasonsForReParsing:
                                 self.reasonsForReParsing['uninterpretable_chain_id'] = {}
                             self.reasonsForReParsing['uninterpretable_chain_id'][k] = True  # 2lqc
@@ -4780,7 +4781,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                             self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
 
                             if not atom_not_found_error:
-                                if _atomId is not None and _atomId.startswith('X')\
+                                if _atomId is not None and _atomId.startsnwith('X')\
                                    and _atomId not in SYMBOLS_ELEMENT:  # 8bxj
                                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
                                                     f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.")

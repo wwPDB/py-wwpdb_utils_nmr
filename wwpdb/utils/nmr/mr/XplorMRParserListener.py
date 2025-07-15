@@ -11279,7 +11279,9 @@ class XplorMRParserListener(ParseTreeListener):
                                         _chainId = _factor['chain_id'][0]
                                         _seqId = _factor['seq_id'][0]
                                         ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == _chainId), None)
-                                        if ps is not None and _seqId not in ps['auth_seq_id']:
+                                        no_nonpoly = not self.__hasNonPolySeq\
+                                            or not any(_seqId in np['auth_seq_id'] for np in self.__nonPolySeq if np['auth_chain_id'] == _chainId)  # 2mco
+                                        if ps is not None and _seqId not in ps['auth_seq_id'] and no_nonpoly:
                                             if self.__nmr_vs_model is not None and not ('gap_in_auth_seq' in ps and ps['gap_in_auth_seq']):
                                                 nmr_offset = ps['seq_id'][0] - ps['auth_seq_id'][0]  # 2lzn
                                                 if self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
@@ -11335,7 +11337,9 @@ class XplorMRParserListener(ParseTreeListener):
                                         if len(_chainId_) == 1:
                                             _chainId = _chainId_[0]
                                             ps = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == _chainId), None)
-                                            if ps is not None and _seqId not in ps['auth_seq_id']:
+                                            no_nonpoly = not self.__hasNonPolySeq\
+                                                or not any(_seqId in np['auth_seq_id'] for np in self.__nonPolySeq if np['auth_chain_id'] == _chainId)
+                                            if ps is not None and _seqId not in ps['auth_seq_id'] and no_nonpoly:
                                                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                                 if len(auth_seq_id_list) > 0:
                                                     min_auth_seq_id = min(auth_seq_id_list)

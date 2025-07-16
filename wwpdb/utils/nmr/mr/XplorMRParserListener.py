@@ -1212,24 +1212,34 @@ class XplorMRParserListener(ParseTreeListener):
 
                     if len(self.__polySeq) == len(self.__polySeqRst):
 
-                        chain_mapping = {}
+                        chain_id_mapping = {}
 
                         for ca in self.__chainAssign:
                             ref_chain_id = ca['ref_chain_id']
                             test_chain_id = ca['test_chain_id']
 
                             if ref_chain_id != test_chain_id:
-                                chain_mapping[test_chain_id] = ref_chain_id
+                                chain_id_mapping[test_chain_id] = ref_chain_id
 
-                        if len(chain_mapping) == len(self.__polySeq):
+                        if len(chain_id_mapping) == len(self.__polySeq):
 
-                            for ps in self.__polySeqRst:
-                                if ps['chain_id'] in chain_mapping:
-                                    ps['chain_id'] = chain_mapping[ps['chain_id']]
+                            if not any('identical_chain_id' in ps for ps in self.__polySeq if ps['auth_chain_id'] in chain_id_mapping):
+                                for ps in self.__polySeqRst:
+                                    if ps['chain_id'] in chain_id_mapping:
+                                        ps['chain_id'] = chain_id_mapping[ps['chain_id']]
 
-                            self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
-                                                                      resolvedMultimer=self.__reasons is not None)
-                            self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+                                self.__seqAlign, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRst,
+                                                                          resolvedMultimer=self.__reasons is not None)
+                                self.__chainAssign, _ = assignPolymerSequence(self.__pA, self.__ccU, self.__file_type, self.__polySeq, self.__polySeqRst, self.__seqAlign)
+
+                            elif len(self.__chainAssign) > len(self.__polySeqRst) and len(self.__polySeqRstFailed) > 0:
+                                mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
+                                sortPolySeqRst(self.__polySeqRstFailed)
+
+                                seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
+
+                                if all(sa['matched'] > 0 and sa['conflict'] == 0 for sa in seqAlignFailed):
+                                    chain_id_remap_with_offset()
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 

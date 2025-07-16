@@ -46275,6 +46275,32 @@ class NmrDpUtility:
         src_id = self.report.getInputSourceIdOfCoord()
 
         if src_id < 0:
+
+            if not self.__combined_mode and self.__allow_missing_legacy_dist_restraint:  # no exception
+
+                if len(self.__suspended_errors_for_lazy_eval) > 0:
+                    for msg in self.__suspended_errors_for_lazy_eval:
+                        for k, v in msg.items():
+                            self.report.error.appendDescription(k, v)
+                            self.report.setError()
+
+                            if k == 'missing_mandatory_content' and 'Deposition of assigned chemical shifts is mandatory' in v['description'] and self.__remediation_mode:
+                                dir_path = os.path.dirname(self.__dstPath)
+
+                                touch_file = os.path.join(dir_path, '.entry_without_cs')
+                                if not os.path.exists(touch_file):
+                                    with open(touch_file, 'w') as ofh:
+                                        ofh.write('')
+
+                    self.__suspended_errors_for_lazy_eval.clear()
+
+                if len(self.__suspended_warnings_for_lazy_eval) > 0:
+                    for msg in self.__suspended_warnings_for_lazy_eval:
+                        for k, v in msg.items():
+                            self.report.warning.appendDescription(k, v)
+                            self.report.setWarning()
+                    self.__suspended_warnings_for_lazy_eval.clear()
+
             return False
 
         cif_input_source = self.report.input_sources[src_id]

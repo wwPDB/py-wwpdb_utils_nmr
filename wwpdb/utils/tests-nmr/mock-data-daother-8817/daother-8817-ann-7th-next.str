@@ -842,6 +842,7 @@ save_nef_distance_restraint_list_1
    _Gen_dist_constraint_list.Constraint_file_ID  1
    _Gen_dist_constraint_list.Potential_type      undefined
    _Gen_dist_constraint_list.Block_ID            1
+   _Gen_dist_constraint_list.Details             .
 
    loop_
       _Gen_dist_constraint.Index_ID

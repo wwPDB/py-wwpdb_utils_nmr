@@ -834,6 +834,7 @@ save_nef_distance_restraint_list_1
    _Gen_dist_constraint_list.Sf_framecode        nef_distance_restraint_list_1
    _Gen_dist_constraint_list.Constraint_type     .
    _Gen_dist_constraint_list.Potential_type      undefined
+   _Gen_dist_constraint_list.Details             .
    _Gen_dist_constraint_list.Data_file_name      D_1292133086_nmr-data-original_P1.str
    _Gen_dist_constraint_list.ID                  1
    _Gen_dist_constraint_list.Entry_ID            NEED_ACC_NO

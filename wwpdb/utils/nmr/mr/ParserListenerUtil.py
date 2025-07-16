@@ -383,6 +383,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                       'square-well-parabolic-linear', 'upper-bound-parabolic',
                                                       'lower-bound-parabolic', 'upper-bound-parabolic-linear',
                                                       'lower-bound-parabolic-linear', 'undefined', 'unknown')},
+                                            {'name': 'Details', 'type': 'str', 'mandatory': False},
                                             {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                             {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -395,6 +396,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                               'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear',
                                                        'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear',
                                                        'lower-bound-parabolic-linear', 'undefined', 'unknown')},
+                                             {'name': 'Details', 'type': 'str', 'mandatory': False},
                                              {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                              {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -421,12 +423,14 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                              {'name': 'Homonuclear_NOE_val_type', 'type': 'enum', 'mandatory': True,
                                               'enum': ('peak volume', 'peak height', 'contour count', 'na')},
+                                             {'name': 'Details', 'type': 'str', 'mandatory': False},
                                              {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                              {'name': 'ID', 'type': 'int', 'mandatory': True},  # allows to have software-native id starting from zero
                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                              ],
                          'jcoup_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Details', 'type': 'str', 'mandatory': False},
                                              {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                              {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -435,6 +439,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                           {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                            'enforce-non-zero': True},
+                                          {'name': 'Details', 'type': 'str', 'mandatory': False},
                                           {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -445,6 +450,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                             'enforce-non-zero': True},
                                            {'name': 'Val_units', 'type': 'enum', 'mandatory': False,
                                             'enum': ('ppm', 'ppb')},
+                                           {'name': 'Details', 'type': 'str', 'mandatory': False},
                                            {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                            {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -455,6 +461,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                             'enforce-non-zero': True},
                                            {'name': 'Scaling_factor', 'type': 'positive-float', 'mandatory': False},
                                            {'name': 'Fitting_procedure', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Details', 'type': 'str', 'mandatory': False},
                                            {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                            {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -462,6 +469,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                          'hvycs_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                              {'name': 'Units', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Details', 'type': 'str', 'mandatory': False},
                                              {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                              {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -469,6 +477,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                          'procs_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                              {'name': 'Units', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Details', 'type': 'str', 'mandatory': False},
                                              {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                              {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -507,6 +516,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                    'enum': ('s-1', 'ms-1', 'us-1')},
                                                   {'name': 'Rex_field_strength', 'type': 'positive-float', 'mandatory': False,
                                                    'enforce-non-zero': True},
+                                                  {'name': 'Details', 'type': 'str', 'mandatory': False},
                                                   {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                                   {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                                   {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -517,6 +527,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                   'enforce-non-zero': True},
                                                  {'name': 'Heteronuclear_NOE_val_type', 'type': 'enum', 'mandatory': True,
                                                   'enum': ('peak height', 'peak integral', 'contour count', 'relative intensities', 'na')},
+                                                 {'name': 'Details', 'type': 'str', 'mandatory': False},
                                                  {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                                  {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -529,6 +540,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                  'enum': ('Iz', 'Sz', 'na')},
                                                 {'name': 'T1_val_units', 'type': 'enum', 'mandatory': True,
                                                  'enum': ('s', 's-1', 'ms', 'ms-1')},
+                                                {'name': 'Details', 'type': 'str', 'mandatory': False},
                                                 {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                                 {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -549,6 +561,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                  'enum': ('s', 's-1', 'ms', 'ms-1')},
                                                 {'name': 'Rex_units', 'type': 'enum', 'mandatory': False,
                                                  'enum': ('s-1', 'ms-1', 'us-1')},
+                                                {'name': 'Details', 'type': 'str', 'mandatory': False},
                                                 {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                                 {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                                 {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -569,6 +582,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                   'enum': ('s', 's-1', 'ms', 'ms-1')},
                                                  {'name': 'Rex_units', 'type': 'enum', 'mandatory': False,
                                                   'enum': ('s-1', 'ms-1', 'us-1')},
+                                                 {'name': 'Details', 'type': 'str', 'mandatory': False},
                                                  {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                                  {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -585,6 +599,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                'enum': ('s-1', 'ms-1', 'us-1')},
                                               {'name': 'Rex_field_strength', 'type': 'positive-float', 'mandatory': False,
                                                'enforce-non-zero': True},
+                                              {'name': 'Details', 'type': 'str', 'mandatory': False},
                                               {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                               {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -593,6 +608,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                           {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                           {'name': 'Expt_observed_param', 'type': 'enum', 'mandatory': True,
                                            'enum': ('chemical shift', 'coupling constant', 'peak height', 'peak volume')},
+                                          {'name': 'Details', 'type': 'str', 'mandatory': False},
                                           {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                           {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -603,6 +619,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                             'enum': ('chemical shift', 'coupling constant', 'peak height', 'peak volume')},
                                            {'name': 'PH_titration_list_ID', 'type': 'positive-int', 'mandatory': True,
                                             'default': '1'},
+                                           {'name': 'Details', 'type': 'str', 'mandatory': False},
                                            {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                            {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -611,6 +628,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                  {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                  {'name': 'Spectrometer_frequency_1H', 'type': 'positive-float', 'mandatory': False,
                                                   'enforce-non-zero': True},
+                                                 {'name': 'Details', 'type': 'str', 'mandatory': False},
                                                  {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                                  {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -621,6 +639,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                   'enforce-non-zero': True},
                                                  {'name': 'Val_units', 'type': 'enum', 'mandatory': True,
                                                   'enum': ('s-1', 'ms-1', 'us-1')},
+                                                 {'name': 'Details', 'type': 'str', 'mandatory': False},
                                                  {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                                  {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                                  {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -631,6 +650,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                'enforce-non-zero': True},
                                               {'name': 'Val_units', 'type': 'enum', 'mandatory': True,
                                                'enum': ('s-1', 'ms-1', 'us-1')},
+                                              {'name': 'Details', 'type': 'str', 'mandatory': False},
                                               {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                               {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                               {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -639,12 +659,14 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                                {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                {'name': 'Stereo_count', 'type': 'int', 'mandatory': False},
                                                {'name': 'Stereo_assigned_count', 'type': 'int', 'mandatory': True},
+                                               {'name': 'Details', 'type': 'str', 'mandatory': False},
                                                {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                                {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                                {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                                ],
                          'saxs_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                            {'name': 'Details', 'type': 'str', 'mandatory': False},
                                             {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                             {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                             {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -652,6 +674,7 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                          'other_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                              {'name': 'Definition', 'type': 'str', 'mandatory': True},
+                                             {'name': 'Details', 'type': 'str', 'mandatory': False},
                                              {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                              {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                              {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -664,12 +687,14 @@ NMR_STAR_SF_TAG_ITEMS = {'dist_restraint': [{'name': 'Sf_category', 'type': 'str
                                            {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
                                            {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
                                            {'name': 'Chemical_shift_list', 'type': 'str', 'mandatory': True},
+                                           {'name': 'Details', 'type': 'str', 'mandatory': False},
                                            {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                            {'name': 'ID', 'type': 'int', 'mandatory': True},  # allows to have software-native id starting from zero
                                            {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
                                            ],
                          'chem_shift': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                         {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                        {'name': 'Details', 'type': 'str', 'mandatory': False},
                                         {'name': 'Data_file_name', 'type': 'str', 'mandatory': False},
                                         {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                         {'name': 'Entry_ID', 'type': 'str', 'mandatory': True}
@@ -7604,7 +7629,7 @@ def getReadableFactor(factor: dict) -> str:
 
     for k in _factor.keys():
 
-        if k in key_map:
+        if k in key_map or k == 'is_poly':
             continue
 
         key_order.append(k)
@@ -7627,12 +7652,48 @@ def getReadableFactor(factor: dict) -> str:
             if _v in ('%', '*', '#') or (len(_v) == 2 and _v[-1] in ('%', '*', '#')) or (_v.startswith('HT') and len(v) > 1):
                 continue
 
-        if k in ('chain_id', 'seq_id') and len(v) > 20:
+        if k in ('chain_id', 'seq_id') and isinstance(v, list) and len(v) > 20:
             v = 'specified elsewhere or unspecified'
 
         __factor[key_map[k]] = (v if len(v) > 1 else v[0]) if isinstance(v, list) else v
 
     return str(__factor)
+
+
+def getReadableParamagCenter(factor: dict) -> str:
+    """ Return human readable paramagnetic center.
+    """
+
+    _factor = {k: sorted(list(set(v))) if isinstance(v, list) else v for k, v in factor.items()}
+
+    key_order = ['chain_id', 'seq_id', 'comp_id', 'alt_comp_id', 'atom_id', 'alt_atom_id']
+
+    __factor = []
+
+    for k in key_order:
+
+        if k not in _factor:
+            continue
+
+        v = _factor[k]
+
+        if v in emptyValue or (isinstance(v, list) and (len(v) == 0 or v[0] in emptyValue)):
+            continue
+
+        if k == 'atom_id' and 'alt_atom_id' in _factor:
+            _v = _factor['alt_atom_id']
+            if _v in ('%', '*', '#') or (len(_v) == 2 and _v[-1] in ('%', '*', '#')) or (_v.startswith('HT') and len(v) > 1):
+                continue
+
+        if k in ('chain_id', 'seq_id') and isinstance(v, list) and len(v) > 20:
+            continue
+
+        __factor.append(str((v if len(v) > 1 else v[0]) if isinstance(v, list) else v))
+
+        if k.startswith('alt'):
+            __factor[-1] = f'({__factor[-1]})'
+
+    return '/'.join(__factor)
 
 
 def getSaveframe(mrSubtype: str, sf_framecode: str,

@@ -56,6 +56,7 @@ try:
                                                        incListIdCounter,
                                                        decListIdCounter,
                                                        getReadableFactor,
+                                                       getReadableParamagCenter,
                                                        getSaveframe,
                                                        getLoop,
                                                        getAuxLoops,
@@ -146,6 +147,8 @@ try:
                                            retrieveRemappedNonPoly,
                                            splitPolySeqRstForBranched,
                                            retrieveOriginalSeqIdFromMRMap)
+    from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
+                                              set_sf_tag)
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
                                                 distance,
                                                 dist_error,
@@ -182,6 +185,7 @@ except ImportError:
                                            incListIdCounter,
                                            decListIdCounter,
                                            getReadableFactor,
+                                           getReadableParamagCenter,
                                            getSaveframe,
                                            getLoop,
                                            getAuxLoops,
@@ -272,6 +276,8 @@ except ImportError:
                                retrieveRemappedNonPoly,
                                splitPolySeqRstForBranched,
                                retrieveOriginalSeqIdFromMRMap)
+    from nmr.CifToNmrStar import (get_first_sf_tag,
+                                  set_sf_tag)
     from nmr.NmrVrptUtility import (to_np_array,
                                     distance,
                                     dist_error,
@@ -484,6 +490,9 @@ class XplorMRParserListener(ParseTreeListener):
     # has Gd3+
     __has_gd = False
 
+    # has lanthanoide
+    __has_la = False
+
     depth = 0
 
     stackSelections = None  # stack of selection
@@ -589,6 +598,9 @@ class XplorMRParserListener(ParseTreeListener):
 
     # factor of paramagnetic center
     paramagCenter = None
+
+    # description of spin labeling
+    spinLabeling = None
 
     # collection of number selection
     numberSelection = []
@@ -3068,6 +3080,7 @@ class XplorMRParserListener(ParseTreeListener):
         self.paramagCenter = None
         self.__has_nx = False
         self.__has_gd = False
+        self.__has_la = False
         self.__in_noe = True
 
         self.donor_columnSel = self.acceptor_columnSel = -1
@@ -8027,7 +8040,8 @@ class XplorMRParserListener(ParseTreeListener):
             if not self.__hasPolySeq and not self.__hasNonPolySeq:
                 return
 
-            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else self.paramagCenter
+            if len(self.atomSelectionSet[0]) > 0:
+                self.paramagCenter = self.atomSelectionSet[0][0]
 
             chain_id = self.atomSelectionSet[1][0]['chain_id']
             seq_id = self.atomSelectionSet[1][0]['seq_id']
@@ -8040,13 +8054,13 @@ class XplorMRParserListener(ParseTreeListener):
                 return
 
             if self.__createSfDict:
-                sf = self.__getSf(alignCenter=atom_id_0)
+                sf = self.__getSf(alignCenter=self.paramagCenter)
                 sf['id'] += 1
 
             for atom1 in self.atomSelectionSet[1]:
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.preRestraints} "
-                          f"paramag_center={atom_id_0} atom={atom1} {dstFunc}")
+                          f"paramag_center={self.paramagCenter} atom={atom1} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
@@ -8323,16 +8337,17 @@ class XplorMRParserListener(ParseTreeListener):
             if dstFunc is None:
                 return
 
-            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else self.paramagCenter
+            if len(self.atomSelectionSet[0]) > 0:
+                self.paramagCenter = self.atomSelectionSet[0][0]
 
             if self.__createSfDict:
-                sf = self.__getSf(alignCenter=atom_id_0)
+                sf = self.__getSf(alignCenter=self.paramagCenter)
                 sf['id'] += 1
 
             for atom1 in self.atomSelectionSet[4]:
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} id={self.pcsRestraints} "
-                          f"paramag_center={atom_id_0} atom={atom1} {dstFunc}")
+                          f"paramag_center={self.paramagCenter} atom={atom1} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
@@ -8563,7 +8578,8 @@ class XplorMRParserListener(ParseTreeListener):
                     self.__f.extend(self.__g)
                 return
 
-            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else self.paramagCenter
+            if len(self.atomSelectionSet[0]) > 0:
+                self.paramagCenter = self.atomSelectionSet[0][0]
 
             chain_id_1 = self.atomSelectionSet[4][0]['chain_id']
             seq_id_1 = self.atomSelectionSet[4][0]['seq_id']
@@ -8633,7 +8649,7 @@ class XplorMRParserListener(ParseTreeListener):
 
             combinationId = '.'
             if self.__createSfDict:
-                sf = self.__getSf(alignCenter=atom_id_0)
+                sf = self.__getSf(alignCenter=self.paramagCenter)
                 sf['id'] += 1
                 if len(self.atomSelectionSet[4]) > 1 or len(self.atomSelectionSet[5]) > 1:
                     combinationId = 0
@@ -8649,7 +8665,7 @@ class XplorMRParserListener(ParseTreeListener):
                     combinationId += 1
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XRDC) id={self.prdcRestraints} "
-                          f"paramag_center={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
+                          f"paramag_center={self.paramagCenter} atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
@@ -8886,7 +8902,8 @@ class XplorMRParserListener(ParseTreeListener):
                     self.__f.extend(self.__g)
                 return
 
-            atom_id_0 = self.atomSelectionSet[0][0]['atom_id'] if len(self.atomSelectionSet[0]) > 0 and 'atom_id' in self.atomSelectionSet[0][0] else self.paramagCenter
+            if len(self.atomSelectionSet[0]) > 0:
+                self.paramagCenter = self.atomSelectionSet[0][0]
 
             chain_id_1 = self.atomSelectionSet[1][0]['chain_id']
             seq_id_1 = self.atomSelectionSet[1][0]['seq_id']
@@ -8954,7 +8971,7 @@ class XplorMRParserListener(ParseTreeListener):
                         return
 
             if self.__createSfDict:
-                sf = self.__getSf(alignCenter=atom_id_0)
+                sf = self.__getSf(alignCenter=self.paramagCenter)
                 sf['id'] += 1
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[1],
@@ -8966,14 +8983,14 @@ class XplorMRParserListener(ParseTreeListener):
                     continue
                 if self.__debug:
                     print(f"subtype={self.__cur_subtype} (XCCR) id={self.pccrRestraints} "
-                          f"paramag_center={atom_id_0} atom1={atom1} atom2={atom2} {dstFunc}")
+                          f"paramag_center={self.paramagCenter} atom1={atom1} atom2={atom2} {dstFunc}")
                 if self.__createSfDict and sf is not None:
                     sf['index_id'] += 1
                     row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
                                  '.', None, None,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
-                                 atom_id_0, None, atom1, atom2)
+                                 self.paramagCenter, None, atom1, atom2)
                     sf['loop'].add_data(row)
 
         finally:
@@ -10019,7 +10036,7 @@ class XplorMRParserListener(ParseTreeListener):
         if self.depth == 1 or not self.__top_union_expr:
             while self.stackFactors:
                 p = self.stackFactors.pop()
-                if 'has_nitroxide' in p or 'has_gd3+' in p:
+                if 'has_nitroxide' in p or 'has_gd3+' in p or 'has_lanthanide' in p:
                     self.factor = p
                 else:
                     _factor = self.__consumeFactor_expressions(p, cifCheck=True)
@@ -10131,6 +10148,8 @@ class XplorMRParserListener(ParseTreeListener):
                 self.__has_nx = True
             if 'has_gd3+' in self.__cachedDictForFactor[key]:
                 self.__has_gd = True
+            if 'has_lanthanide' in self.__cachedDictForFactor[key]:
+                self.__has_la = True
             return copy.deepcopy(self.__cachedDictForFactor[key])
 
         unambig = self.__cur_subtype != 'dist'
@@ -11419,7 +11438,7 @@ class XplorMRParserListener(ParseTreeListener):
                                             if has_identical_chain_id(chainId):
                                                 break
 
-                                if ligands == 0 and not self.__has_nx and not self.__has_gd\
+                                if ligands == 0 and not self.__has_nx and not self.__has_gd and not self.__has_la\
                                    and (len(self.__polySeq) == 1 or all('identical_chain_id' in ps for ps in self.__polySeq) or not chain_not_specified):
                                     if _atomId is not None and _atomId.startswith('X')\
                                        and _atomId not in SYMBOLS_ELEMENT:
@@ -11544,6 +11563,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                 "the auth_asym_id, auth_seq_id, and auth_atom_id values of the coordinates, respectively. "
                                             if self.__has_gd:
                                                 hint += "We ignore the atom selection since it may be related to ambiguous PRE restraints induced by Gd3+ spin label."
+                                            elif self.__has_la:
+                                                hint += "We ignore the atom selection since it may be related to paramagnetic restraints induced by Lanthanide ion."
                                             elif self.__has_nx:
                                                 hint += "We ignore the atom selection since it may be related to ambiguous PRE restraints induced by nitroxide spin label."
                                             else:
@@ -11970,7 +11991,7 @@ class XplorMRParserListener(ParseTreeListener):
                             if _atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                                 continue
                         if self.__with_para:
-                            if ((atomId == compId and _atomId in PARAMAGNETIC_ELEMENTS) or _atomId in FERROMAGNETIC_ELEMENTS or _atomId in LANTHANOID_ELEMENTS):
+                            if (atomId == compId and _atomId in PARAMAGNETIC_ELEMENTS) or _atomId in FERROMAGNETIC_ELEMENTS:  # or _atomId in LANTHANOID_ELEMENTS:
                                 continue
                         if self.__with_axis or self.__with_para:
                             updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
@@ -12055,20 +12076,24 @@ class XplorMRParserListener(ParseTreeListener):
                                 atomIds = ['H']
 
                         has_nx_local = has_nx_anchor = False
-                        if self.__cur_subtype == 'dist'\
+
+                        if self.__cur_subtype in ('dist', 'pcs', 'pre', 'prdc', 'pccr')\
                            and (atomId in XPLOR_NITROXIDE_NAMES
                                 or (isinstance(origAtomId, list) and origAtomId[0] in XPLOR_NITROXIDE_NAMES)):  # and coordAtomSite is not None and atomId not in atomSiteAtomId:
                             self.__has_nx = has_nx_local = has_nx_anchor = _factor['has_nitroxide'] = True
-                            desc = '(nitroxide spin label attaching point)'
+                            desc = '(attaching point for for nitroxide spin label)'
                             if atomId.startswith('GD'):
                                 self.__has_gd = _factor['has_gd3+'] = True
-                                desc = '(Gd3+ spin label attaching point)'
+                                desc = '(attaching point for Gd3+ spin label)'
+                            elif atomId in LANTHANOID_ELEMENTS:
+                                self.__has_la = _factor['has_lanthanide'] = True
+                                desc = f'(attaching point for {atomId.title()}3+ spin label)'
                             if compId == 'CYS':
                                 atomIds = ['SG']
                                 _factor['alt_atom_id'] = atomIds[0] + desc
                             elif compId == 'SER':
                                 atomIds = ['OG']
-                                _factor['alt_atom_id'] = atomIds[0] + desc
+                                _factor['auth_atom_id'] = atomIds[0] + desc
                             elif compId == 'GLU':
                                 atomIds = ['OE2']
                                 _factor['alt_atom_id'] = atomIds[0] + desc
@@ -12098,8 +12123,11 @@ class XplorMRParserListener(ParseTreeListener):
                                 _factor['alt_atom_id'] = atomIds[0] + desc
                             elif compId == 'R1A':
                                 atomIds = ['O1']
+                                desc = '(nitroxide spin label)'
                             else:
                                 has_nx_anchor = False
+                                desc = '(nitroxide spin label)'
+                            self.spinLabeling = desc
 
                         for _atomId in atomIds:
                             ccdCheck = not cifCheck
@@ -16610,7 +16638,21 @@ class XplorMRParserListener(ParseTreeListener):
         _key = next((_key for _key in self.sfDict if _key[0] == 'dist' and _key[1] is None), key) if self.__cur_subtype == 'dist' else key
         self.__def_err_sf_framecode = self.sfDict[_key][-1]['sf_framecode']
 
-        return self.sfDict[key][-1]
+        sf = self.sfDict[key][-1]
+
+        if (self.classification not in emptyValue or self.__with_para) and 'classification' not in sf:
+            if get_first_sf_tag(sf['saveframe'], 'Details') in emptyValue:
+                desc = ''
+                if self.classification not in emptyValue:
+                    desc = f'{self.classification},'
+                if self.__with_para and self.spinLabeling is not None:
+                    desc += f' {self.spinLabeling[1:-1]}: {getReadableParamagCenter(self.paramagCenter)}'
+                desc = desc.strip()
+                if desc not in emptyValue:
+                    set_sf_tag(sf['saveframe'], 'Details', desc)
+                sf['classification'] = desc
+
+        return sf
 
     def __trimSfWoLp(self):
         if self.__cur_subtype not in self.__lastSfDict:

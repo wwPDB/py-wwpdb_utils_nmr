@@ -8286,6 +8286,7 @@ save_distance_constraint_list
    _Gen_dist_constraint_list.Sf_framecode        distance_constraint_list
    _Gen_dist_constraint_list.Constraint_type     .
    _Gen_dist_constraint_list.Potential_type      square-well-parabolic
+   _Gen_dist_constraint_list.Details             .
    _Gen_dist_constraint_list.Data_file_name      2m5o.nef
    _Gen_dist_constraint_list.ID                  1
    _Gen_dist_constraint_list.Entry_ID            NEED_ACC_NO
@@ -15887,6 +15888,7 @@ save_dihedral_constraint_list
    _Torsion_angle_constraint_list.Sf_framecode        dihedral_constraint_list
    _Torsion_angle_constraint_list.Constraint_type     .
    _Torsion_angle_constraint_list.Potential_type      square-well-parabolic
+   _Torsion_angle_constraint_list.Details             .
    _Torsion_angle_constraint_list.Data_file_name      2m5o.nef
    _Torsion_angle_constraint_list.ID                  1
    _Torsion_angle_constraint_list.Entry_ID            NEED_ACC_NO

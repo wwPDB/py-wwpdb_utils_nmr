@@ -133,6 +133,8 @@ try:
                                            retrieveRemappedNonPoly,
                                            splitPolySeqRstForBranched,
                                            retrieveOriginalSeqIdFromMRMap)
+    from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
+                                              set_sf_tag)
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
                                                 distance,
                                                 dist_error,
@@ -246,6 +248,8 @@ except ImportError:
                                retrieveRemappedNonPoly,
                                splitPolySeqRstForBranched,
                                retrieveOriginalSeqIdFromMRMap)
+    from nmr.CifToNmrStar import (get_first_sf_tag,
+                                  set_sf_tag)
     from nmr.NmrVrptUtility import (to_np_array,
                                     distance,
                                     dist_error,
@@ -7770,7 +7774,7 @@ class CnsMRParserListener(ParseTreeListener):
                            and (atomId in XPLOR_NITROXIDE_NAMES
                                 or (isinstance(origAtomId, list) and origAtomId[0] in XPLOR_NITROXIDE_NAMES)):  # and coordAtomSite is not None and atomId not in atomSiteAtomId:
                             self.__has_nx = has_nx_local = has_nx_anchor = _factor['has_nitroxide'] = True
-                            desc = '(nitroxide spin label attaching point)'
+                            desc = '(attaching point for nitroxide spin label)'
                             if compId == 'CYS':
                                 atomIds = ['SG']
                                 _factor['alt_atom_id'] = atomIds[0] + desc
@@ -12010,7 +12014,14 @@ class CnsMRParserListener(ParseTreeListener):
         _key = next((_key for _key in self.sfDict if _key[0] == 'dist' and _key[1] is None), key) if self.__cur_subtype == 'dist' else key
         self.__def_err_sf_framecode = self.sfDict[_key][-1]['sf_framecode']
 
-        return self.sfDict[key][-1]
+        sf = self.sfDict[key][-1]
+
+        if self.classification not in emptyValue and 'classification' not in sf:
+            if get_first_sf_tag(sf['saveframe'], 'Details') in emptyValue:
+                set_sf_tag(sf['saveframe'], 'Details', self.classification)
+                sf['classification'] = self.classification
+
+        return sf
 
     def __trimSfWoLp(self):
         if self.__cur_subtype not in self.__lastSfDict:

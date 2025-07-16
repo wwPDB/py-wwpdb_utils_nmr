@@ -115,6 +115,8 @@ try:
                                            retrieveRemappedNonPoly,
                                            splitPolySeqRstForBranched,
                                            retrieveOriginalSeqIdFromMRMap)
+    from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
+                                              set_sf_tag)
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
                                                 distance,
                                                 dist_error,
@@ -210,6 +212,8 @@ except ImportError:
                                retrieveRemappedNonPoly,
                                splitPolySeqRstForBranched,
                                retrieveOriginalSeqIdFromMRMap)
+    from nmr.CifToNmrStar import (get_first_sf_tag,
+                                  set_sf_tag)
     from nmr.NmrVrptUtility import (to_np_array,
                                     distance,
                                     dist_error,
@@ -8532,7 +8536,14 @@ class CharmmMRParserListener(ParseTreeListener):
         _key = next((_key for _key in self.sfDict if _key[0] == 'dist' and _key[1] is None), key) if self.__cur_subtype == 'dist' else key
         self.__def_err_sf_framecode = self.sfDict[_key][-1]['sf_framecode']
 
-        return self.sfDict[key][-1]
+        sf = self.sfDict[key][-1]
+
+        if self.classification not in emptyValue and 'classification' not in sf:
+            if get_first_sf_tag(sf['saveframe'], 'Details') in emptyValue:
+                set_sf_tag(sf['saveframe'], 'Details', self.classification)
+                sf['classification'] = self.classification
+
+        return sf
 
     def __trimSfWoLp(self):
         if self.__cur_subtype not in self.__lastSfDict:

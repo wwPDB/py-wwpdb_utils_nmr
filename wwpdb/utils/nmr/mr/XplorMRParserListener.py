@@ -11479,6 +11479,7 @@ class XplorMRParserListener(ParseTreeListener):
                                                     f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.")
                                 else:
                                     no_ext_seq = True
+                                    unobs_seq = False
                                     if len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1:
                                         _chainId = _factor['chain_id'][0]
                                         _seqId = _factor['seq_id'][0]
@@ -11510,7 +11511,6 @@ class XplorMRParserListener(ParseTreeListener):
                                                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                                                             f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.{hint}")
                                                         no_ext_seq = False  # 2ls7
-
                                             if no_ext_seq:
                                                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                                 if len(auth_seq_id_list) > 0:
@@ -11525,6 +11525,13 @@ class XplorMRParserListener(ParseTreeListener):
                                                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                                                             f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.{hint}")
                                                         no_ext_seq = False  # 2law
+                                        _seqKey = (_chainId, _seqId)
+                                        if _seqKey in self.__coordUnobsRes:
+                                            unobs_seq = True  # 2n25
+                                        if _seqKey in self.__coordUnobsAtom and 'atom_id' in _factor:
+                                            _atomIds = self.getAtomIdList(_factor, self.__coordUnobsAtom[_seqKey]['comp_id'], _factor['atom_id'][0])
+                                            if _atomIds[0] in self.__coordUnobsAtom[_seqKey]['atom_ids']:
+                                                unobs_seq = True
                                     elif len(_factor['chain_id']) > 1 and len(_factor['seq_id']) == 1:
                                         _chainId_ = []
                                         _seqId = _factor['seq_id'][0]
@@ -11557,7 +11564,14 @@ class XplorMRParserListener(ParseTreeListener):
                                                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                                                             f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.{hint}")
                                                         no_ext_seq = False  # 2mps
-                                    if no_ext_seq or self.__reasons is None:
+                                            _seqKey = (_chainId, _seqId)
+                                            if _seqKey in self.__coordUnobsRes:
+                                                unobs_seq = True  # 2n25
+                                            if _seqKey in self.__coordUnobsAtom and 'atom_id' in _factor:
+                                                _atomIds[0] = self.getAtomIdList(_factor, self.__coordUnobsAtom[_seqKey]['comp_id'], _factor['atom_id'][0])
+                                                if _atomIds in self.__coordUnobsAtom[_seqKey]['atom_ids']:
+                                                    unobs_seq = True
+                                    if (no_ext_seq or self.__reasons is None) and not unobs_seq:
                                         if no_ext_seq:  # 2laz
                                             hint = " Please make sure that the values in 'segidentifier', 'residue', and 'name' clauses of the restraint file match "\
                                                 "the auth_asym_id, auth_seq_id, and auth_atom_id values of the coordinates, respectively. "
@@ -12093,7 +12107,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 _factor['alt_atom_id'] = atomIds[0] + desc
                             elif compId == 'SER':
                                 atomIds = ['OG']
-                                _factor['auth_atom_id'] = atomIds[0] + desc
+                                _factor['alt_atom_id'] = atomIds[0] + desc
                             elif compId == 'GLU':
                                 atomIds = ['OE2']
                                 _factor['alt_atom_id'] = atomIds[0] + desc

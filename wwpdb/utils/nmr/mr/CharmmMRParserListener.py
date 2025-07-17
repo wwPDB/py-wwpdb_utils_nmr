@@ -953,10 +953,18 @@ class CharmmMRParserListener(ParseTreeListener):
                                 mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
                                 sortPolySeqRst(self.__polySeqRstFailed)
 
-                                seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
+                                overlap = False
+                                for _ps in self.__polySeqRstFailed:
+                                    ps = next((ps for ps in self.__polySeqRst if ps['chain_id'] == _ps['chain_id']), None)
+                                    if ps is not None and any(_seq_id in ps['seq_id'] for _seq_id in _ps['seq_id']):
+                                        overlap = True
+                                        break
 
-                                if all(sa['matched'] > 0 and sa['conflict'] == 0 for sa in seqAlignFailed):
-                                    chain_id_remap_with_offset()
+                                if not overlap:  # 2lfr
+                                    seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
+
+                                    if all(sa['matched'] > 0 and sa['conflict'] == 0 for sa in seqAlignFailed):
+                                        chain_id_remap_with_offset()  # 2l01
 
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 

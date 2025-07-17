@@ -1681,6 +1681,8 @@ class CnsMRParserListener(ParseTreeListener):
                 and all(t for t in self.reasonsForReParsing['label_seq_scheme'].values())
             local_to_label_seq_scheme = False  # 2lp4
 
+            assert_auth_seq_scheme = 'global_auth_sequence_offset' in self.reasonsForReParsing and not label_seq_scheme
+
             if 'global_sequence_offset' in self.reasonsForReParsing:
                 globalSequenceOffset = copy.copy(self.reasonsForReParsing['global_sequence_offset'])
                 for k, v in globalSequenceOffset.items():
@@ -1966,7 +1968,7 @@ class CnsMRParserListener(ParseTreeListener):
                             if '[Sequence mismatch]' in f:
                                 self.__f.remove(f)
 
-                else:
+                elif not assert_auth_seq_scheme:  # 2n0s
                     if 'label_seq_offset' in self.reasonsForReParsing and len(insuff_dist_atom_sel_in_1st_row_warnings) > 0 and not invalid_dist_atom_sel_in_1st_row\
                        and (any(f for f in insuff_dist_atom_sel_in_1st_row_warnings if '_distance_' in f)
                             or (len(insuff_dist_atom_sel_warnings) >= 1 and any(f for f in insuff_dist_atom_sel_in_1st_row_warnings if 'None' in f))):

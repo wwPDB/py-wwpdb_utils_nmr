@@ -12093,15 +12093,16 @@ class XplorMRParserListener(ParseTreeListener):
 
                         if self.__cur_subtype in ('dist', 'pcs', 'pre', 'prdc', 'pccr')\
                            and (atomId in XPLOR_NITROXIDE_NAMES
-                                or (isinstance(origAtomId, list) and origAtomId[0] in XPLOR_NITROXIDE_NAMES)):  # and coordAtomSite is not None and atomId not in atomSiteAtomId:
+                                or (isinstance(origAtomId, list) and origAtomId[0] in XPLOR_NITROXIDE_NAMES)
+                                or (_atomId in LANTHANOID_ELEMENTS and atomSpecified and coordAtomSite is not None and atomId not in atomSiteAtomId)):
                             self.__has_nx = has_nx_local = has_nx_anchor = _factor['has_nitroxide'] = True
                             desc = '(attaching point for for nitroxide spin label)'
-                            if atomId.startswith('GD'):
+                            if _atomId == 'GD':
                                 self.__has_gd = _factor['has_gd3+'] = True
                                 desc = '(attaching point for Gd3+ spin label)'
-                            elif atomId in LANTHANOID_ELEMENTS:
+                            elif _atomId in LANTHANOID_ELEMENTS:
                                 self.__has_la = _factor['has_lanthanide'] = True
-                                desc = f'(attaching point for {atomId.title()}3+ spin label)'
+                                desc = f'(attaching point for {_atomId.title()}3+ spin label)'
                             if compId == 'CYS':
                                 atomIds = ['SG']
                                 _factor['alt_atom_id'] = atomIds[0] + desc
@@ -12550,6 +12551,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                             if isPolySeq and not isChainSpecified and seqSpecified and len(_factor['chain_id']) == 1\
                                                                and _factor['chain_id'][0] != chainId and compId in monDict3:
                                                                 continue
+                                                            if self.__with_para and len(origAtomId0) >= 2 and origAtomId0[:2].upper() in LANTHANOID_ELEMENTS:
+                                                                continue
                                                             if self.__csStat.peptideLike(compId) and origAtomId0 in aminoProtonCode:
                                                                 if (self.__has_nx and compId == 'PRO') or origAtomId0.startswith('HT'):
                                                                     _atomSelection.remove(selection)
@@ -12706,10 +12709,12 @@ class XplorMRParserListener(ParseTreeListener):
                                                         continue
                                                     # 5t1n: SANI -> PCS
                                                     if self.__cur_subtype == 'rdc' and len(self.atomSelectionSet) == 4 and\
-                                                       compId in ('CYS', 'SER', 'GLU', 'GLN', 'ASP', 'ASN', 'LYS', 'THR', 'HIS')\
+                                                       compId in NITROOXIDE_ANCHOR_RES_NAMES\
                                                        and len(origAtomId0) >= 2 and origAtomId0[:2].upper() in PARAMAGNETIC_ELEMENTS:
                                                         self.paramagCenter = copy.copy(_factor)
                                                         self.paramagCenter['atom_id'][0] = origAtomId0[:2].upper()
+                                                        continue
+                                                    if self.__with_para and len(origAtomId0) >= 2 and origAtomId0[:2].upper() in LANTHANOID_ELEMENTS:
                                                         continue
                                                     if self.__csStat.peptideLike(compId) and origAtomId0 in aminoProtonCode:
                                                         if self.__has_nx or origAtomId0.startswith('HT'):

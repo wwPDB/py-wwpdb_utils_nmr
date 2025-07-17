@@ -2861,26 +2861,28 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
             if atomId.startswith('HO') and lenAtomId > 2:  # 2n6j
                 return 'H' + atomId[2:]
 
-        elif refCompId == 'ASN' and (atomId.startswith('HND') or (atomId.startswith('HN') and atomId[-1] in ('%', '*', '#'))):  # 2kg1
+        elif refCompId == 'ASN' and (atomId.startswith('HND')
+                                     or ((atomId.startswith('HN') or atomId.startswith('HG')) and atomId[-1] in ('%', '*', '#'))):  # 2kg1
             if atomId == 'HND1':
                 return 'HD21'
             if atomId == 'HND2':
                 return 'HD22'
-            if atomId == 'HND' or (atomId.startswith('HN') and atomId[-1] in ('%', '*', '#')) and not unambig:  # 8dhz: ASN/HN#
+            if atomId == 'HND' or ((atomId.startswith('HN') or atomId.startswith('HG')) and atomId[-1] in ('%', '*', '#')) and not unambig:  # 8dhz: ASN/HN#
                 return 'HD2'
 
-        elif refCompId == 'GLN' and (atomId.startswith('HNE') or (atomId.startswith('HN') and atomId[-1] in ('%', '*', '#'))):  # 2kg1
+        elif refCompId == 'GLN' and (atomId.startswith('HNE')
+                                     or ((atomId.startswith('HN') or atomId.startswith('HD')) and atomId[-1] in ('%', '*', '#'))):  # 2kg1
             if atomId == 'HNE1':
                 return 'HE21'
             if atomId == 'HNE2':
                 return 'HE22'
-            if atomId == 'HNE' or (atomId.startswith('HN') and atomId[-1] in ('%', '*', '#')) and not unambig:
-                return 'HE2'
+            if atomId == 'HNE' or ((atomId.startswith('HN') or atomId.startswith('HD')) and atomId[-1] in ('%', '*', '#')) and not unambig:
+                return 'HE2'  # 5xdi
 
         elif refCompId == 'ARG' and atomId == 'HNE':  # 8dhz, peak list
             return 'HE'
 
-        elif refCompId == 'ASP' and atomId.startswith('HD1'):  # 6fe6
+        elif refCompId == 'ASP' and atomId.startswith('HD'):  # 6fe6
             return 'HD2'
 
         elif refCompId == 'GLU' and atomId.startswith('HE'):

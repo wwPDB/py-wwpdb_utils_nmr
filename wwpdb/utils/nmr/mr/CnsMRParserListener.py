@@ -7797,26 +7797,51 @@ class CnsMRParserListener(ParseTreeListener):
                             if compId != atomId:
                                 atomId = compId
 
-                        if compId not in monDict3 and self.__mrAtomNameMapping is not None\
-                           and ((_seqId in ps['auth_seq_id'] or _seqId_ in ps['auth_seq_id'])
-                                or ('alt_auth_seq_id' in ps
-                                    and (_seqId in ps['alt_auth_seq_id'] or _seqId_ in ps['alt_auth_seq_id']))):
-                            if _seqId in ps['auth_seq_id']:
-                                authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId)]
-                            elif _seqId_ in ps['auth_seq_id']:
-                                authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId_)]
-                            elif _seqId in ps['alt_auth_seq_id']:
-                                authCompId = ps['auth_comp_id'][ps['alt_auth_seq_id'].index(_seqId)]
-                            else:
-                                authCompId = ps['auth_comp_id'][ps['alt_auth_seq_id'].index(_seqId_)]
-                            atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, authCompId, atomId, coordAtomSite)
-                            if coordAtomSite is not None and atomId not in atomSiteAtomId:
-                                if self.__reasons is not None and 'branched_remap' in self.__reasons:
-                                    _seqId_ = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, seqId)
-                                    if _seqId_ != seqId:
-                                        _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId_, authCompId, atomId, compId, coordAtomSite)
-                                elif seqId != _seqId:
-                                    atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, authCompId, atomId, coordAtomSite)
+                        if self.__mrAtomNameMapping is not None:
+                            # 6u24: split during annotation
+                            if isPolySeq and compId in monDict3 and 'alt_comp_id' in ps and self.__hasNonPolySeq:
+                                if _seqId in ps['auth_seq_id']:
+                                    authCompId = ps['alt_comp_id'][ps['auth_seq_id'].index(_seqId)]
+                                else:
+                                    authCompId = ps['alt_comp_id'][ps['auth_seq_id'].index(_seqId_)]
+                                if authCompId not in monDict3:
+                                    __seqId__, __compId__, __atomId__ = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId,
+                                                                                                   authCompId, atomId, ignoreSeqId=True)
+                                    split = False
+                                    for np in self.__nonPolySeq:
+                                        if __compId__ in np['comp_id']:
+                                            split = True
+                                        elif split:
+                                            split = False
+                                            break
+                                    if split:
+                                        for np in self.__nonPolySeq:
+                                            if __compId__ in np['comp_id']:
+                                                _factor['chain_id'] = [np['auth_chain_id']]
+                                                _factor['seq_id'] = [__seqId__]
+                                                _factor['atom_id'] = [__atomId__]
+                                        continue
+
+                            if compId not in monDict3\
+                               and ((_seqId in ps['auth_seq_id'] or _seqId_ in ps['auth_seq_id'])
+                                    or ('alt_auth_seq_id' in ps
+                                        and (_seqId in ps['alt_auth_seq_id'] or _seqId_ in ps['alt_auth_seq_id']))):
+                                if _seqId in ps['auth_seq_id']:
+                                    authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId)]
+                                elif _seqId_ in ps['auth_seq_id']:
+                                    authCompId = ps['auth_comp_id'][ps['auth_seq_id'].index(_seqId_)]
+                                elif _seqId in ps['alt_auth_seq_id']:
+                                    authCompId = ps['auth_comp_id'][ps['alt_auth_seq_id'].index(_seqId)]
+                                else:
+                                    authCompId = ps['auth_comp_id'][ps['alt_auth_seq_id'].index(_seqId_)]
+                                atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, authCompId, atomId, coordAtomSite)
+                                if coordAtomSite is not None and atomId not in atomSiteAtomId:
+                                    if self.__reasons is not None and 'branched_remap' in self.__reasons:
+                                        _seqId_ = retrieveOriginalSeqIdFromMRMap(self.__reasons['branched_remap'], chainId, seqId)
+                                        if _seqId_ != seqId:
+                                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId_, authCompId, atomId, compId, coordAtomSite)
+                                    elif seqId != _seqId:
+                                        atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, authCompId, atomId, coordAtomSite)
 
                         atomIds = self.getAtomIdList(_factor, compId, atomId)
 

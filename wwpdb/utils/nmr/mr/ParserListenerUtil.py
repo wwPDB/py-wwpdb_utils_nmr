@@ -2671,7 +2671,7 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
             if atomId in _refAtomIdList:
                 return atomId
 
-            peptide, nucleotide, carbohydrate = ccU.getTypeOfCompId(refCompId)
+            peptide, _, carbohydrate = ccU.getTypeOfCompId(refCompId)
 
             if peptide and atomId in aminoProtonCode and refAtomIdList is not None:
                 if atomId[-1] in ('%', '*', '#') and not unambig:

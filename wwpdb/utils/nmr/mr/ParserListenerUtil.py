@@ -2671,7 +2671,9 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
             if atomId in _refAtomIdList:
                 return atomId
 
-            if ccU.getTypeOfCompId(refCompId)[0] and atomId in aminoProtonCode and refAtomIdList is not None:
+            peptide, nucleotide, carbohydrate = ccU.getTypeOfCompId(refCompId)
+
+            if peptide and atomId in aminoProtonCode and refAtomIdList is not None:
                 if atomId[-1] in ('%', '*', '#') and not unambig:
                     for _atomId in aminoProtonCode:
                         if _atomId in refAtomIdList:
@@ -2680,6 +2682,10 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                     for _atomId in aminoProtonCode:
                         if _atomId in refAtomIdList:
                             return _atomId
+
+            if carbohydrate and lenAtomId > 2 and atomId[0] in ('1', '2', '3') and atomId[1] == 'H' and refAtomIdList is not None:
+                if atomId[1:] + atomId[0] in refAtomIdList:
+                    return atomId[1:] + atomId[0]  # 2yhh: MAN:(1|2)H6 -> H6(1|2)
 
             if atomId.startswith('M') or atomId.startswith('HM') or atomId.startswith('QM'):  # methyl group
                 if refAtomIdList is not None:

@@ -1008,6 +1008,8 @@ class XplorMRParserListener(ParseTreeListener):
 
                 refChainIds.append(ref_chain_id)
 
+            score = {1: 8, 2: 6, 3: 4, 4: 2, 5: 1, 6: 1, 7: 1}
+
             for ps in self.__polySeq:
                 chainId = ps['auth_chain_id']
                 if chainId in refChainIds:
@@ -1030,7 +1032,6 @@ class XplorMRParserListener(ParseTreeListener):
                             offsets.extend([_seqId - seqId for _seqId, _compId in zip(ps[seq_id_name], ps['comp_id']) if _compId in compIds])
 
                 if len(offsets) == 0:
-                    score = {1: 8, 2: 6, 3: 4, 4: 2, 5: 1, 6: 1, 7: 1}
                     # predict sequence offset purely from __seqAtmRstFailed (2l12)
                     for item in self.__seqAtmRstFailed:
                         if item['chain_id'] not in chainIds:
@@ -1055,18 +1056,21 @@ class XplorMRParserListener(ParseTreeListener):
                 common_offsets = collections.Counter(offsets).most_common()
                 offsets = [offset for offset, count in common_offsets if count == common_offsets[0][1]]
 
+                if len(offsets) > 4:  # 2ymj
+                    continue
+
                 item = next((item for item in self.__seqAtmRstFailed if item['chain_id'] in chainIds), None)
                 if item is None:
                     continue
 
                 _matched = 0
-                _offset = None
-                for item in self.__seqAtmRstFailed:
-                    if item['chain_id'] not in chainIds:
-                        continue
-                    for offset in offsets:
-                        valid = True
-                        matched = 0
+                _offsets = []
+                for offset in offsets:
+                    valid = True
+                    matched = 0
+                    for item in self.__seqAtmRstFailed:
+                        if item['chain_id'] not in chainIds:
+                            continue
                         for _seqId, _atomIds in zip(item['seq_id'], item['atom_id']):
                             if _seqId in chainIdRemap:
                                 continue
@@ -1080,12 +1084,44 @@ class XplorMRParserListener(ParseTreeListener):
                                 else:
                                     valid = False
                                     break
-                        if valid:
+                            else:
+                                matched -= 1
+                    if valid:
+                        if matched > _matched:
+                            _matched = matched
+                            _offsets = [offset]
+                        elif matched == _matched:
+                            _offsets.append(offset)
+
+                if len(_offsets) == 0:
+                    continue
+
+                if len(_offsets) == 1:
+                    _offset = _offsets[0]
+
+                else:  # 2n3a
+                    _matched = -10000
+                    _offset = None
+                    for offset in _offsets:
+                        matched = 0
+                        for item in self.__seqAtmRstFailed:
+                            if item['chain_id'] not in chainIds:
+                                continue
+                            for _seqId, _atomIds in zip(item['seq_id'], item['atom_id']):
+                                _compIds = guessCompIdFromAtomIdWoLimit(_atomIds, [ps], self.__nefT)
+                                if _seqId + offset in ps[seq_id_name]:
+                                    idx = ps[seq_id_name].index(_seqId + offset)
+                                    compId = ps['comp_id'][idx]
+                                    if compId in _compIds:
+                                        matched += 100
+                                        if ps['auth_seq_id'][idx] not in emptyValue:
+                                            matched -= abs(offset - (ps['auth_seq_id'][idx] - ps['seq_id'][idx]))
+                                else:
+                                    matched -= 1
                             if matched > _matched:
                                 _matched, _offset = matched, offset
-
-                if _offset is None:
-                    continue
+                    if _offset is None:
+                        _offset = _offsets[0]
 
                 if has_gap_in_auth_seq:
 
@@ -1589,7 +1625,8 @@ class XplorMRParserListener(ParseTreeListener):
 
                         # try to find valid sequence offset from failed ambiguous assignments (2js1)
                         elif len(self.__chainAssign) > 0 and len(self.__polySeqRstFailedAmbig) > 0 and len(self.__seqAtmRstFailed) > 0\
-                                and 'local_seq_scheme' in self.reasonsForReParsing:  # and 'label_seq_scheme' in self.reasonsForReParsing: (2lxs)
+                                and len(self.__polySeq) > 1:  # 2n3a
+                            # and 'local_seq_scheme' in self.reasonsForReParsing:  # and 'label_seq_scheme' in self.reasonsForReParsing: (2lxs)
                             chain_id_remap_with_offset()
 
                     # DAOTHER-9063

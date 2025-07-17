@@ -761,9 +761,6 @@ class CharmmMRParserListener(ParseTreeListener):
                 common_offsets = collections.Counter(offsets).most_common()
                 offsets = [offset for offset, count in common_offsets if count == common_offsets[0][1]]
 
-                if len(offsets) > 4:  # 2ymj
-                    continue
-
                 item = next((item for item in self.__seqAtmRstFailed if item['chain_id'] in chainIds), None)
                 if item is None:
                     continue
@@ -798,11 +795,11 @@ class CharmmMRParserListener(ParseTreeListener):
                         elif matched == _matched:
                             _offsets.append(offset)
 
-                if len(_offsets) == 0:
-                    continue
-
                 if len(_offsets) == 1:
                     _offset = _offsets[0]
+
+                elif len(_offsets) == 0 or len(offsets) > 4:  # 2ymj, 2js1
+                    continue
 
                 else:  # 2n3a
                     _matched = -10000
@@ -822,7 +819,7 @@ class CharmmMRParserListener(ParseTreeListener):
                                         if ps['auth_seq_id'][idx] not in emptyValue:
                                             matched -= abs(offset - (ps['auth_seq_id'][idx] - ps['seq_id'][idx]))
                                 else:
-                                    matched -= 1
+                                    matched -= 100
                             if matched > _matched:
                                 _matched, _offset = matched, offset
                     if _offset is None:

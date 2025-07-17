@@ -13176,17 +13176,29 @@ class XplorMRParserListener(ParseTreeListener):
             if factor_has_is_poly != atomsel_has_is_poly:
                 if factor_has_is_poly:
                     for _atom in refAtomSelection:
-                        del _atom['is_poly']
+                        try:
+                            del _atom['is_poly']
+                        except KeyError:
+                            pass
                 if atomsel_has_is_poly:
                     for _atom in atomSelection:
-                        del _atom['is_poly']
+                        try:
+                            del _atom['is_poly']
+                        except KeyError:
+                            pass
             if factor_has_auth_atom_id != atomsel_has_auth_atom_id:
                 if factor_has_auth_atom_id:
                     for _atom in refAtomSelection:
-                        del _atom['auth_atom_id']
+                        try:
+                            del _atom['auth_atom_id']
+                        except KeyError:
+                            pass
                 if atomsel_has_auth_atom_id:
                     for _atom in atomSelection:
-                        del _atom['auth_atom_id']
+                        try:
+                            del _atom['auth_atom_id']
+                        except KeyError:
+                            pass
 
         _atomSelection = []
         for _atom, _atom_ in zip(refAtomSelection, _factor['atom_selection']):

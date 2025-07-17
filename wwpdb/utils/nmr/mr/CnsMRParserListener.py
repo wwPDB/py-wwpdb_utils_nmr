@@ -1143,6 +1143,38 @@ class CnsMRParserListener(ParseTreeListener):
                                     if all(sa['matched'] > 0 and sa['conflict'] == 0 for sa in seqAlignFailed):
                                         chain_id_remap_with_offset()  # 2l01
 
+                    elif len(self.__polySeq) > len(self.__polySeqRst) > 0 and all('identical_chain_id' in ps for ps in self.__polySeq):
+
+                        chain_id_mapping = {}
+
+                        for ca in self.__chainAssign:
+                            ref_chain_id = ca['ref_chain_id']
+                            test_chain_id = ca['test_chain_id']
+
+                            if ref_chain_id != test_chain_id:
+                                chain_id_mapping[test_chain_id] = ref_chain_id
+
+                        if len(chain_id_mapping) == len(self.__polySeqRst) and len(self.__chainAssign) > len(self.__polySeqRst):
+                            if len(self.__polySeqRstFailed) > 0:
+                                mergePolySeqRstAmbig(self.__polySeqRstFailed, self.__polySeqRstFailedAmbig)
+                                sortPolySeqRst(self.__polySeqRstFailed)
+
+                                overlap = False
+                                for _ps in self.__polySeqRstFailed:
+                                    ps = next((ps for ps in self.__polySeqRst if ps['chain_id'] == _ps['chain_id']), None)
+                                    if ps is not None and any(_seq_id in ps['seq_id'] for _seq_id in _ps['seq_id']):
+                                        overlap = True
+                                        break
+
+                                if not overlap:  # 2lfr
+                                    seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, self.__polySeqRstFailed)
+
+                                    if all(sa['matched'] > 0 and sa['conflict'] == 0 for sa in seqAlignFailed):
+                                        chain_id_remap_with_offset()
+
+                            elif len(self.__seqAtmRstFailed) > 0:
+                                chain_id_remap_with_offset()  # 2n9b
+
                     trimSequenceAlignment(self.__seqAlign, self.__chainAssign)
 
                     if self.__reasons is None\

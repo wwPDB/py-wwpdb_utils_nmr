@@ -3876,8 +3876,8 @@ class CharmmMRParserListener(ParseTreeListener):
                             seqIds.append(realSeqId)
             _factor['seq_id'] = list(set(seqIds))
 
-        if len(_factor['seq_id']) > 0 and 'seq_not_specified' in _factor:
-            del _factor['seq_not_specified']
+            if len(_factor['seq_id']) > 0 and 'comp_id' in _factor and 'seq_not_specified' in _factor:  # 2lr1
+                del _factor['seq_not_specified']  # 2krf
 
         if 'atom_id' not in _factor and 'atom_ids' not in _factor:
             if 'type_symbols' in _factor and len(_factor['type_symbols']) > 0\

@@ -5299,8 +5299,14 @@ class CharmmMRParserListener(ParseTreeListener):
                             seqId = ps['seq_id'][idx]
                             compId = ps['comp_id'][idx]
                             seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
-                        except ValueError:
-                            pass
+                        except ValueError:  # 2yhh (branched)
+                            try:
+                                idx = ps['seq_id'].index(seqId)
+                                seqId = ps['auth_seq_id'][idx]
+                                compId = ps['comp_id'][idx]
+                                seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
+                            except ValueError:
+                                pass
 
                     atomId = _factor['atom_id'][0].upper()
 

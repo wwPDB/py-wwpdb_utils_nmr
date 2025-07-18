@@ -7817,7 +7817,8 @@ def getSaveframe(mrSubtype: str, sf_framecode: str,
             sf.add_tag(tag_item_name, cyanaParameter['magnitude'])
         elif tag_item_name == 'Tensor_rhombicity' and mrSubtype.startswith('rdc') and cyanaParameter is not None:
             sf.add_tag(tag_item_name, cyanaParameter['rhombicity'])
-        elif tag_item_name == 'Details' and mrSubtype.startswith('rdc') and mrSubtype != 'rdc_raw_data' and rdcCode is not None:
+        elif tag_item_name == 'Details' and mrSubtype is not None and mrSubtype.startswith('rdc')\
+             and mrSubtype != 'rdc_raw_data' and rdcCode is not None:
             sf.add_tag(tag_item_name, rdcCode)
         elif tag_item_name == 'Details' and mrSubtype in ('pcs', 'csp_restraint') and cyanaParameter is not None:
             sf.add_tag(tag_item_name, f"Tensor_magnitude {cyanaParameter['magnitude']}, "

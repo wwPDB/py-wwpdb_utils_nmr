@@ -5505,14 +5505,11 @@ class CharmmMRParserListener(ParseTreeListener):
                                 if authCompId not in monDict3:
                                     __seqId__, __compId__, __atomId__ = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId,
                                                                                                    authCompId, atomId, ignoreSeqId=True)
-                                    split = False
+                                    split = 0
                                     for np in self.__nonPolySeq:
                                         if __compId__ in np['comp_id']:
-                                            split = True
-                                        elif split:
-                                            split = False
-                                            break
-                                    if split:
+                                            split += 1
+                                    if split == 1:
                                         for np in self.__nonPolySeq:
                                             if __compId__ in np['comp_id']:
                                                 _factor['chain_id'] = [np['auth_chain_id']]

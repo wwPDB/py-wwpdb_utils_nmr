@@ -11350,7 +11350,7 @@ class XplorMRParserListener(ParseTreeListener):
                    and not (self.__cur_subtype == 'rdc' and len(self.atomSelectionSet) == 4
                             and len(_atomId) >= 2 and _atomId[:2] in PARAMAGNETIC_ELEMENTS):
                     if cifCheck:
-                        if self.__cur_union_expr or self.__top_union_expr:  # 2mws
+                        if self.__cur_union_expr or (self.__top_union_expr and ambigAtomSelect):  # 2mws, 2krf
                             self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.")
                         else:

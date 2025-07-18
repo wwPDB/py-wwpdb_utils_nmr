@@ -7056,7 +7056,7 @@ class CnsMRParserListener(ParseTreeListener):
             else:
                 if self.__cur_subtype != 'plane':
                     if cifCheck:
-                        if self.__cur_union_expr or self.__top_union_expr:  # 2mws
+                        if self.__cur_union_expr or (self.__top_union_expr and ambigAtomSelect):  # 2mws, 2krf
                             self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.")
                         else:

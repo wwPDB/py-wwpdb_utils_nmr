@@ -1721,11 +1721,6 @@ if __name__ == "__main__":
 
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/2mf8/2mf8-corrected.mr',
-                 '../../tests-nmr/mock-data-remediation/2mf8/2mf8.cif')
-
-    reader = CnsMRReader(True)
-    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-daother-7969/dna2_used.tbl',
                  '../../tests-nmr/mock-data-daother-7969/D_800478_model_P1.cif.V3')
 

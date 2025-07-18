@@ -12204,7 +12204,10 @@ class XplorMRParserListener(ParseTreeListener):
                         if self.__cur_subtype in ('dist', 'pcs', 'pre', 'prdc', 'pccr')\
                            and (atomId in XPLOR_NITROXIDE_NAMES
                                 or (isinstance(origAtomId, list) and origAtomId[0] in XPLOR_NITROXIDE_NAMES)
-                                or (_atomId in LANTHANOID_ELEMENTS and atomSpecified and coordAtomSite is not None and atomId not in atomSiteAtomId)):
+                                or (_atomId in LANTHANOID_ELEMENTS and atomSpecified
+                                    and coordAtomSite is not None and atomId not in atomSiteAtomId
+                                    and ('alt_atom_id' not in _factor
+                                         or not ('%' in _factor['alt_atom_id'] or '*' in _factor['alt_atom_id'] or '#' in _factor['alt_atom_id'])))):
                             self.__has_nx = has_nx_local = has_nx_anchor = _factor['has_nitroxide'] = True
                             desc = '(attaching point for for nitroxide spin label)'
                             if _atomId == 'GD':

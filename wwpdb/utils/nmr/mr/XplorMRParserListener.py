@@ -949,64 +949,65 @@ class XplorMRParserListener(ParseTreeListener):
             if 'local_seq_scheme' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['local_seq_scheme']
 
-        def chain_id_remap_with_offset():
+        def chain_id_remap_with_offset(trust_cur_chain_assign=True):
             refChainIds, ovwChainIds = [], []
             chainIdRemap = {}
-            for ca in self.__chainAssign:
-                if ca['conflict'] > 0:
-                    continue
-                ref_chain_id = ca['ref_chain_id']
-                test_chain_id = ca['test_chain_id']
+            if trust_cur_chain_assign:
+                for ca in self.__chainAssign:
+                    if ca['conflict'] > 0:
+                        continue
+                    ref_chain_id = ca['ref_chain_id']
+                    test_chain_id = ca['test_chain_id']
 
-                if ref_chain_id in refChainIds:
-                    continue
+                    if ref_chain_id in refChainIds:
+                        continue
 
-                sa = next((sa for sa in self.__seqAlign
-                           if sa['ref_chain_id'] == ref_chain_id
-                           and sa['test_chain_id'] == test_chain_id), None)
+                    sa = next((sa for sa in self.__seqAlign
+                               if sa['ref_chain_id'] == ref_chain_id
+                               and sa['test_chain_id'] == test_chain_id), None)
 
-                if sa is None:
-                    continue
+                    if sa is None:
+                        continue
 
-                if any(seq_id in chainIdRemap for seq_id in sa['test_seq_id']):
-                    continue
+                    if any(seq_id in chainIdRemap for seq_id in sa['test_seq_id']):
+                        continue
 
-                ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == ref_chain_id)
-                has_gap_in_auth_seq = 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']
+                    ps = next(ps for ps in self.__polySeq if ps['auth_chain_id'] == ref_chain_id)
+                    has_gap_in_auth_seq = 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']
 
-                label_seq_scheme = False
-                _ps = next((_ps for _ps in self.__polySeqRstValid if _ps['chain_id'] == ref_chain_id), None)
-                if _ps is not None and all(seq_id in ps['seq_id'] for seq_id in _ps['seq_id']):
-                    label_seq_scheme = True  # 2m3o
+                    label_seq_scheme = False
+                    _ps = next((_ps for _ps in self.__polySeqRstValid if _ps['chain_id'] == ref_chain_id), None)
+                    if _ps is not None and all(seq_id in ps['seq_id'] for seq_id in _ps['seq_id']):
+                        label_seq_scheme = True  # 2m3o
 
-                rev_seq_id_mapping = {}
-                if 'ref_auth_seq_id' in sa and sa['ref_auth_seq_id'] == sa['test_seq_id'] and not label_seq_scheme:
-                    pass  # 6f0y
-                else:
-                    for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id']):
-                        if test_seq_id is not None:
-                            rev_seq_id_mapping[test_seq_id] = ref_seq_id
+                    rev_seq_id_mapping = {}
+                    if 'ref_auth_seq_id' in sa and sa['ref_auth_seq_id'] == sa['test_seq_id'] and not label_seq_scheme:
+                        pass  # 6f0y
+                    else:
+                        for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id']):
+                            if test_seq_id is not None:
+                                rev_seq_id_mapping[test_seq_id] = ref_seq_id
 
-                if has_gap_in_auth_seq:
-                    for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
-                        if auth_seq_id in emptyValue:
-                            continue
-                        if auth_seq_id in rev_seq_id_mapping:
-                            test_seq_id = rev_seq_id_mapping[auth_seq_id]
-                            chainIdRemap[test_seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
-                        elif seq_id not in chainIdRemap:
-                            chainIdRemap[seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
-                else:
-                    for auth_seq_id in ps['auth_seq_id']:
-                        if auth_seq_id in emptyValue:
-                            continue
-                        if auth_seq_id in rev_seq_id_mapping:
-                            test_seq_id = rev_seq_id_mapping[auth_seq_id]
-                            chainIdRemap[test_seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
-                        elif auth_seq_id not in chainIdRemap:
-                            chainIdRemap[auth_seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
+                    if has_gap_in_auth_seq:
+                        for seq_id, auth_seq_id in zip(ps['seq_id'], ps['auth_seq_id']):
+                            if auth_seq_id in emptyValue:
+                                continue
+                            if auth_seq_id in rev_seq_id_mapping:
+                                test_seq_id = rev_seq_id_mapping[auth_seq_id]
+                                chainIdRemap[test_seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
+                            elif seq_id not in chainIdRemap:
+                                chainIdRemap[seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
+                    else:
+                        for auth_seq_id in ps['auth_seq_id']:
+                            if auth_seq_id in emptyValue:
+                                continue
+                            if auth_seq_id in rev_seq_id_mapping:
+                                test_seq_id = rev_seq_id_mapping[auth_seq_id]
+                                chainIdRemap[test_seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
+                            elif auth_seq_id not in chainIdRemap:
+                                chainIdRemap[auth_seq_id] = {'chain_id': ref_chain_id, 'seq_id': auth_seq_id}
 
-                refChainIds.append(ref_chain_id)
+                    refChainIds.append(ref_chain_id)
 
             score = {1: 8, 2: 6, 3: 4, 4: 2, 5: 1, 6: 1, 7: 1}
 
@@ -1022,14 +1023,15 @@ class XplorMRParserListener(ParseTreeListener):
                     chainIds.extend(ps['identical_chain_id'])
 
                 offsets = []
-                for item in self.__polySeqRstFailed:
-                    if item['chain_id'] in chainIds:
-                        for seqId, compId in zip(item['seq_id'], item['comp_id']):
-                            offsets.extend([_seqId - seqId for _seqId, _compId in zip(ps[seq_id_name], ps['comp_id']) if _compId == compId])
-                for item in self.__polySeqRstFailedAmbig:
-                    if item['chain_id'] in chainIds:
-                        for seqId, compIds in zip(item['seq_id'], item['comp_ids']):
-                            offsets.extend([_seqId - seqId for _seqId, _compId in zip(ps[seq_id_name], ps['comp_id']) if _compId in compIds])
+                if trust_cur_chain_assign:
+                    for item in self.__polySeqRstFailed:
+                        if item['chain_id'] in chainIds:
+                            for seqId, compId in zip(item['seq_id'], item['comp_id']):
+                                offsets.extend([_seqId - seqId for _seqId, _compId in zip(ps[seq_id_name], ps['comp_id']) if _compId == compId])
+                    for item in self.__polySeqRstFailedAmbig:
+                        if item['chain_id'] in chainIds:
+                            for seqId, compIds in zip(item['seq_id'], item['comp_ids']):
+                                offsets.extend([_seqId - seqId for _seqId, _compId in zip(ps[seq_id_name], ps['comp_id']) if _compId in compIds])
 
                 if len(offsets) == 0:
                     # predict sequence offset purely from __seqAtmRstFailed (2l12)
@@ -1230,9 +1232,12 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             pro_hn_atom_not_found_pattern = re.compile(r"^\[Atom not found\] \[Check the \d+th row of [^,]+s.*\] (\S+):(\d+):PRO:[Hh][Nn]? is not present in the coordinates\.$")
+            pro_hn_anomalous_data_pattern = re.compile(r"^\[Anomalous data\] \[Check the \d+th row of [^,]+s.*\] (\S+):(\d+):PRO:[Hh][Nn]? is not present in the coordinates\.$")
             gly_hb_atom_not_found_pattern = re.compile(r"^\[Atom not found\] \[Check the \d+th row of [^,]+s.*\] (\S+):(\d+):GLY:[Hh][Bb]\S* is not present in the coordinates\.$")
-            pro_hn_atom_not_found_warnings = [f for f in self.__f if pro_hn_atom_not_found_pattern.match(f)]
+            any_atom_not_found_pattern = re.compile(r"^\[Atom not found\] \[Check the \d+th row of [^,]+s.*\] (\S+):(\d+):\S+:(\S+) is not present in the coordinates\.$")
+            pro_hn_atom_not_found_warnings = [f for f in self.__f if pro_hn_atom_not_found_pattern.match(f) or pro_hn_anomalous_data_pattern.match(f)]
             gly_hb_atom_not_found_warnings = [f for f in self.__f if gly_hb_atom_not_found_pattern.match(f)]
+            any_atom_not_found_warnings = [f for f in self.__f if any_atom_not_found_pattern.match(f)]
 
             if 'segment_id_mismatch' in self.reasonsForReParsing\
                and (len(self.reasonsForReParsing['segment_id_mismatch']) == 0
@@ -1512,6 +1517,12 @@ class XplorMRParserListener(ParseTreeListener):
                                         del self.reasonsForReParsing['local_seq_scheme']
                                     if 'label_seq_scheme' in self.reasonsForReParsing:
                                         del self.reasonsForReParsing['label_seq_scheme']
+                                    if len(pro_hn_atom_not_found_warnings) + len(gly_hb_atom_not_found_warnings) > 0:
+                                        self.__seqAtmRstFailed = []
+                                        for f in any_atom_not_found_warnings:
+                                            g = any_atom_not_found_pattern.search(f).groups()
+                                            updateSeqAtmRst(self.__seqAtmRstFailed, g[0], int(g[1]), [g[2]])
+                                        chain_id_remap_with_offset(False)  # 5xs1
 
                                 for ca in chainAssignFailed:
                                     if ca['conflict'] > 0:
@@ -11344,7 +11355,7 @@ class XplorMRParserListener(ParseTreeListener):
                 if self.__cur_subtype != 'plane' and cifCheck and not self.__cur_union_expr:
                     if len(_factor['seq_id']) == 1 and 'alt_atom_id' in _factor and _factor['alt_atom_id'][0] is not None and 'comp_id' not in _factor:
                         for chainId in _factor['chain_id']:
-                            updateSeqAtmRst(self.__seqAtmRstFailed, chainId, _factor['seq_id'][0], _factor['alt_atom_id'])
+                            updateSeqAtmRst(self.__seqAtmRstFailed, chainId, _factor['seq_id'][0], [_factor['alt_atom_id']])
                             if has_identical_chain_id(chainId):
                                 break
 

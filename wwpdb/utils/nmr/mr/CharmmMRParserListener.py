@@ -2161,6 +2161,9 @@ class CharmmMRParserListener(ParseTreeListener):
                         self.reasonsForReParsing = {}
 
             elif 'chain_id_remap' in self.reasonsForReParsing:
+                if 'seq_id_remap' in self.reasonsForReParsing:
+                    del self.reasonsForReParsing['seq_id_remap']  # 6ijv
+
                 if 'global_auth_sequence_offset' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['global_auth_sequence_offset']  # 2lzs
 

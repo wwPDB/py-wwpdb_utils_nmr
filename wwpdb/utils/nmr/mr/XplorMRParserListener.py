@@ -1700,7 +1700,9 @@ class XplorMRParserListener(ParseTreeListener):
                                                             self.reasonsForReParsing['global_auth_sequence_offset'] = {}
                                                         self.reasonsForReParsing['global_auth_sequence_offset'][ref_chain_id] = offsets
 
-                                if len(chainAssignFailed) == 0:
+                                if len(chainAssignFailed) == 0\
+                                   or (len(self.__polySeq) == 1 and 'label_seq_scheme' not in self.reasonsForReParsing
+                                       and 'gap_in_auth_seq' in self.__polySeq[0] and self.__polySeq[0]['gap_in_auth_seq']):  # 6mv3
                                     valid_auth_seq = valid_label_seq = True
                                     for _ps in self.__polySeqRstFailed:
                                         test_chain_id = _ps['chain_id']
@@ -1709,7 +1711,7 @@ class XplorMRParserListener(ParseTreeListener):
                                             for test_seq_id, test_comp_id in zip(_ps['seq_id'], _ps['comp_id']):
                                                 if test_seq_id not in ps['seq_id']:
                                                     valid_label_seq = False
-                                                elif test_comp_id != ps['comp_id'][ps['seq_id'].index(test_seq_id)]:
+                                                elif test_comp_id not in emptyValue and test_comp_id != ps['comp_id'][ps['seq_id'].index(test_seq_id)]:
                                                     valid_label_seq = False
                                                 if test_seq_id not in ps['auth_seq_id']:
                                                     valid_auth_seq = False

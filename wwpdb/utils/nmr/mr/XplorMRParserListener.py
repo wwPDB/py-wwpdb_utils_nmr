@@ -1113,7 +1113,9 @@ class XplorMRParserListener(ParseTreeListener):
                                     compId = ps['comp_id'][idx]
                                     if compId in _compIds:
                                         matched += 100
-                                        if ps['auth_seq_id'][idx] not in emptyValue:
+                                        if all(abs(offset_) > 950 for offset_ in _offsets):  # 6e5n
+                                            matched -= abs((offset % 100) - 100) % 100
+                                        elif ps['auth_seq_id'][idx] not in emptyValue:
                                             matched -= abs(offset - (ps['auth_seq_id'][idx] - ps['seq_id'][idx]))
                                 else:
                                     matched -= 100
@@ -1667,8 +1669,8 @@ class XplorMRParserListener(ParseTreeListener):
                                 self.reasonsForReParsing['chain_id_remap'] = chainIdRemap
 
                         # try to find valid sequence offset from failed ambiguous assignments (2js1)
-                        elif len(self.__chainAssign) > 0 and len(self.__polySeqRstFailedAmbig) > 0 and len(self.__seqAtmRstFailed) > 0\
-                                and len(self.__polySeq) > 1:  # 2n3a
+                        elif len(self.__chainAssign) > 0 and len(self.__seqAtmRstFailed) > 0\
+                                and len(self.__polySeq) > 1:  # 2n3a, 6e5n
                             # and 'local_seq_scheme' in self.reasonsForReParsing:  # and 'label_seq_scheme' in self.reasonsForReParsing: (2lxs)
                             chain_id_remap_with_offset()
 

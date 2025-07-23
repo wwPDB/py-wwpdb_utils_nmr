@@ -332,6 +332,8 @@ class CharmmMRParserListener(ParseTreeListener):
     __polyDeoxyribonucleotide = False
     __polyRibonucleotide = False
 
+    __uniqAtomIdToSeqKey = None
+
     # large model
     __largeModel = False
     __representativeAsymId = 'A'
@@ -543,6 +545,20 @@ class CharmmMRParserListener(ParseTreeListener):
                         self.__polyDeoxyribonucleotide = True
                     elif poly_type == 'polyribonucleotide':
                         self.__polyRibonucleotide = True
+
+        if self.__hasNonPoly:
+            atom_list = []
+            for v in self.__coordAtomSite.values():
+                atom_list.extend(v['atom_id'])
+            common_atom_list = collections.Counter(atom_list).most_common()
+            unq_atom_ids = [atom_id for atom_id, count in common_atom_list if count == 1]
+            if len(unq_atom_ids) > 0:
+                self.__uniqAtomIdToSeqKey = {}
+                for k, v in self.__coordAtomSite.items():
+                    if any(np for np in self.__nonPoly if np['comp_id'][0] == v['comp_id']):
+                        for atom_id in v['atom_id']:
+                            if atom_id in unq_atom_ids:
+                                self.__uniqAtomIdToSeqKey[atom_id] = k
 
         self.__largeModel = self.__hasPolySeq and len(self.__polySeq) > LEN_LARGE_ASYM_ID
         if self.__largeModel:
@@ -4811,6 +4827,14 @@ class CharmmMRParserListener(ParseTreeListener):
                                 _factor['alt_comp_id'] = _factor['comp_id']
                                 _factor['comp_id'] = _compIdList
 
+        if self.__reasons is not None and 'np_atom_id_remap' in self.__reasons\
+           and len(_factor['atom_id']) == 1 and _factor['atom_id'][0] is not None:
+            _atomId = _factor['atom_id'][0].upper()
+            if _atomId in self.__reasons['np_atom_id_remap']:
+                _seqKey = self.__reasons['np_atom_id_remap'][_atomId]
+                _factor['chain_id'] = [_seqKey[0]]
+                _factor['seq_id'] = [_seqKey[1]]
+
         _atomSelection = []
 
         len_f = len(self.__f)
@@ -4870,6 +4894,8 @@ class CharmmMRParserListener(ParseTreeListener):
         else:
             _factor['atom_selection'] = self.__intersectionAtom_selections(_factor['atom_selection'], atomSelection)
 
+        _atomId = _factor['atom_id'][0].upper() if _factor['atom_id'][0] is not None else None
+
         def has_identical_chain_id(chain_id):
             try:
                 next(ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id and 'identical_chain_id' in ps)
@@ -4878,7 +4904,24 @@ class CharmmMRParserListener(ParseTreeListener):
                 pass
             return False
 
-        _atomId = _factor['atom_id'][0].upper() if _factor['atom_id'][0] is not None else None
+        def update_np_atom_id_remap():
+            if len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1:
+                if 'np_seq_id_remap' not in self.reasonsForReParsing:
+                    self.reasonsForReParsing['np_seq_id_remap'] = {}
+                chainId = _factor['chain_id'][0]
+                srcSeqId = _factor['seq_id'][0]
+                dstSeqId = self.__uniqAtomIdToSeqKey[_atomId][1]
+                if chainId not in self.reasonsForReParsing['np_seq_id_remap']:
+                    self.reasonsForReParsing['np_seq_id_remap'][chainId] = {}
+                if srcSeqId in self.reasonsForReParsing['np_seq_id_remap'][chainId]:
+                    if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] is not None:
+                        if self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] != dstSeqId:
+                            self.reasonsForReParsing['np_seq_id_remap'][chainId][srcSeqId] = None
+            else:
+                if 'np_atom_id_remap' not in self.reasonsForReParsing:
+                    self.reasonsForReParsing['np_atom_id_remap'] = {}
+                if _atomId not in self.reasonsForReParsing['np_atom_id_remap']:
+                    self.reasonsForReParsing['np_atom_id_remap'][_atomId] = self.__uniqAtomIdToSeqKey[_atomId]
 
         if len(_factor['atom_selection']) == 0:
             __factor = copy.copy(_factor)
@@ -4898,6 +4941,9 @@ class CharmmMRParserListener(ParseTreeListener):
                         if self.__cur_union_expr or (self.__top_union_expr and ambigAtomSelect):  # 2mws, 2krf
                             self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
                                             f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.")
+                            if self.__uniqAtomIdToSeqKey is not None and len(_factor['atom_id']) == 1 and _atomId in self.__uniqAtomIdToSeqKey:
+                                update_np_atom_id_remap()
+
                         else:
                             # self.__f.append(f"[{error_type}] {self.__getCurrentRestraint()}"
                             #                 f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.")
@@ -5045,6 +5091,10 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 if 'UNX' in _coordAtomSite['atom_id']:  # 2mjt
                                                     ligands = update_np_seq_id_remap_request(np, ligands)
                                                     break
+
+                                    elif self.__uniqAtomIdToSeqKey is not None and len(_factor['atom_id']) == 1 and _atomId in self.__uniqAtomIdToSeqKey:
+                                        update_np_atom_id_remap()
+                                        ligands = 1
 
                                 if len(_factor['seq_id']) == 1:
                                     if len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
@@ -6195,6 +6245,11 @@ class CharmmMRParserListener(ParseTreeListener):
                                                         continue
                                                     # 2mgt
                                                     if self.__hasNonPoly and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1:
+                                                        if self.__uniqAtomIdToSeqKey is not None and _atomId in self.__uniqAtomIdToSeqKey:  # 7jk8
+                                                            if 'np_atom_id_remap' not in self.reasonsForReParsing:
+                                                                self.reasonsForReParsing['np_atom_id_remap'] = {}
+                                                            if _atomId not in self.reasonsForReParsing['np_atom_id_remap']:
+                                                                self.reasonsForReParsing['np_atom_id_remap'][_atomId] = self.__uniqAtomIdToSeqKey[_atomId]
                                                         _coordAtomSite = None
                                                         ligands = 0
                                                         for np in self.__nonPoly:

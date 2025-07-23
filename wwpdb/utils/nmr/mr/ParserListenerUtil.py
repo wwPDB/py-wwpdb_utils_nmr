@@ -3929,18 +3929,19 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
         return 'CYS'
 
     if lenCompId == 3:
-        if compId.startswith('DA'):
-            return 'DA'
-        if compId.startswith('DC'):
-            return 'DC'
-        if compId.startswith('DG'):
-            return 'DG'
-        if compId.startswith('DT'):
-            return 'DT'
-        if compId.startswith('DU'):
-            return 'DU'
-        if compId.startswith('DI'):
-            return 'DI'
+        if not ccU.getTypeOfCompId(compId)[0]:  # 6qtf
+            if compId.startswith('DA'):
+                return 'DA'
+            if compId.startswith('DC'):
+                return 'DC'
+            if compId.startswith('DG'):
+                return 'DG'
+            if compId.startswith('DT'):
+                return 'DT'
+            if compId.startswith('DU'):
+                return 'DU'
+            if compId.startswith('DI'):
+                return 'DI'
 
         if compId.startswith('RA'):
             return 'A'

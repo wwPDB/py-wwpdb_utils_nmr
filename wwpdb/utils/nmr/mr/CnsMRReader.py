@@ -230,6 +230,20 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6qtf/bmr34363/work/data/D_1292100432_nmr-peaks-upload_P1.dat.V1',
+                     '../../tests-nmr/mock-data-remediation/6qtf/6qtf.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6o22/D_1000239495_mr_P1.cns.V1-corrected',
+                     '../../tests-nmr/mock-data-remediation/6o22/6o22.cif')
+    print(reader_listener.getReasonsForReparsing())
+
     reader = CnsMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\

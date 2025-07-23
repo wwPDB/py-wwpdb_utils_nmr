@@ -11662,7 +11662,8 @@ class XplorMRParserListener(ParseTreeListener):
                                                     # skip ad hoc sequence scheme switching should be inherited to the other restraints
                                                     del _factor['atom_selection']
                                                     return self.__consumeFactor_expressions(_factor, clauseName, cifCheck, trial + 1)
-                                                if not self.__preferAuthSeq and self.__reasons is None and (self.__cur_subtype != 'dist' and not self.__in_noe):
+                                                if not self.__preferAuthSeq and self.__reasons is None\
+                                                   and ((self.__cur_subtype != 'dist' and not self.__in_noe) or 'Check the 2th row of' in self.__getCurrentRestraint()):  # 6nk9
                                                     if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                         self.reasonsForReParsing['label_seq_scheme'] = {}
                                                     self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
@@ -12276,6 +12277,7 @@ class XplorMRParserListener(ParseTreeListener):
                                         atomId = retrieveAtomIdFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, authCompId, atomId, coordAtomSite)
 
                         atomIds = self.getAtomIdList(_factor, compId, atomId)
+
                         if atomSiteAtomId is not None:
                             if not any(_atomId in atomSiteAtomId for _atomId in atomIds):
                                 atomId = translateToStdAtomName(atomId, compId, atomSiteAtomId, self.__ccU, False)

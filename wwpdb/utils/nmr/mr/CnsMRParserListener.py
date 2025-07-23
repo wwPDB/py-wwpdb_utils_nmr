@@ -7367,7 +7367,8 @@ class CnsMRParserListener(ParseTreeListener):
                                                 # skip ad hoc sequence scheme switching should be inherited to the other restraints
                                                 del _factor['atom_selection']
                                                 return self.__consumeFactor_expressions(_factor, clauseName, cifCheck, trial + 1)
-                                            if not self.__preferAuthSeq and self.__reasons is None and self.__cur_subtype != 'dist':
+                                            if not self.__preferAuthSeq and self.__reasons is None\
+                                               and (self.__cur_subtype != 'dist' or 'Check the 2th row of' in self.__getCurrentRestraint()):  # 6nk9
                                                 if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                     self.reasonsForReParsing['label_seq_scheme'] = {}
                                                 self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True
@@ -7411,7 +7412,6 @@ class CnsMRParserListener(ParseTreeListener):
                                                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                                                             f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.{hint}")
                                                         no_ext_seq = False  # 2ls7
-
                                             if no_ext_seq:
                                                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
                                                 if len(auth_seq_id_list) > 0:
@@ -8512,6 +8512,7 @@ class CnsMRParserListener(ParseTreeListener):
                                                         continue
                                                     if len(chainIds) > 1 and isPolySeq and not self.__extendAuthSeq and not self.__with_axis:
                                                         __preferAuthSeq = self.__preferAuthSeq
+                                                        self.__preferAuthSeq = False
                                                         for __chainId in chainIds:
                                                             if __chainId == chainId:
                                                                 continue

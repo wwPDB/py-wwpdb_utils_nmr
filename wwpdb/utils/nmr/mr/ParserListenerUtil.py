@@ -7663,6 +7663,16 @@ def getReadableFactor(factor: dict) -> str:
         if k in ('chain_id', 'seq_id') and isinstance(v, list) and len(v) > 20:
             v = 'specified elsewhere or unspecified'
 
+        if k in ('auth_chain_id', 'alt_chain_id'):
+            if v == _factor['chain_id']:
+                continue
+
+        if k == 'alt_comp_id' and v == _factor['comp_id']:
+            continue
+
+        if k == 'alt_atom_id' and v == _factor['atom_id']:
+            continue
+
         __factor[key_map[k]] = (v if len(v) > 1 else v[0]) if isinstance(v, list) else v
 
     return str(__factor)

@@ -5083,7 +5083,8 @@ class CharmmMRParserListener(ParseTreeListener):
                                                 # skip ad hoc sequence scheme switching should be inherited to the other restraints
                                                 del _factor['atom_selection']
                                                 return self.__consumeFactor_expressions(_factor, clauseName, cifCheck, trial + 1)
-                                        if not self.__preferAuthSeq and self.__reasons is None and self.__cur_subtype != 'dist':
+                                        if not self.__preferAuthSeq and self.__reasons is None\
+                                           and (self.__cur_subtype != 'dist' or 'Check the 2th row of' in self.__getCurrentRestraint()):  # 6nk9
                                             if 'label_seq_scheme' not in self.reasonsForReParsing:
                                                 self.reasonsForReParsing['label_seq_scheme'] = {}
                                             self.reasonsForReParsing['label_seq_scheme'][self.__cur_subtype] = True

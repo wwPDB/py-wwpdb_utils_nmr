@@ -233,6 +233,17 @@ if __name__ == "__main__":
     reader = CnsMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6nk9/AcaTx1_distance-constraints.tbl',
+                     '../../tests-nmr/mock-data-remediation/6nk9/6nk9.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6nk9/AcaTx1_distance-constraints.tbl',
+                 '../../tests-nmr/mock-data-remediation/6nk9/6nk9.cif')
+
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/6mv3/D_1000236393_mr_P1.cns.V1',
                      '../../tests-nmr/mock-data-remediation/6mv3/6mv3.cif')
     print(reader_listener.getReasonsForReparsing())

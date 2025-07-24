@@ -620,6 +620,7 @@ bmrb_nmr_star_file_name_pattern = re.compile(r'^bmr\d[0-9]{1,5}_3.str$')
 mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
 proc_mr_file_name_pattern = re.compile(r'^D_[0-9]{6,10}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
                                        r'_P\d+\.(amber|aria|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|sybyl|xplor-nih)\.V\d+$')
+onedep_model_file_name_pattern = re.compile(r'^(D_[0-9]{6,10})_model_P1.cif.V\d+$')
 pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}$')
 bmrb_id_pattern = re.compile(r'^(bmr)?([0-9]+)$')
 dep_id_pattern = re.compile(r'^D_[0-9]{6,10}$')
@@ -7430,6 +7431,7 @@ class NmrDpUtility:
 
         # atom name mapping derived from the original uploaded coordinate file
         self.__internal_atom_name_mapping = None
+        self.__internal_atom_name_mapping0 = None
 
         # RCI
         self.__rci = RCI(False, self.__lfh)
@@ -34422,6 +34424,11 @@ class NmrDpUtility:
                 if atom_map not in self.__mr_atom_name_mapping:
                     self.__mr_atom_name_mapping.append(atom_map)
 
+        if self.__internal_atom_name_mapping0 is not None:
+            for atom_map in self.__internal_atom_name_mapping0:
+                if atom_map not in self.__mr_atom_name_mapping:
+                    self.__mr_atom_name_mapping.append(atom_map)
+
         if self.__mr_atom_name_mapping is not None and len(self.__mr_atom_name_mapping) > 1:
             self.__mr_atom_name_mapping = list(reversed(self.__mr_atom_name_mapping))
 
@@ -45951,10 +45958,33 @@ class NmrDpUtility:
                 pdbx_database_status = self.__cR.getDictList('pdbx_database_status')
                 self.__recvd_nmr_data = pdbx_database_status[0]['recvd_nmr_data'] == 'Y'
 
+            self.__versioned_atom_name_mapping = None
+            self.__internal_atom_name_mapping = None
+            self.__internal_atom_name_mapping0 = None
+
             maxitpath = os.getenv('MAXITPATH')
             if maxitpath is None:
                 package_dir = os.getenv('PACKAGE_DIR')
                 maxitpath = os.path.join(package_dir, 'maxit/bin/maxit') if package_dir is not None else 'maxit'
+
+            def has_coordinates(file_name):
+                with open(file_name, 'r', encoding='utf-8', errors='ignore') as ifh:
+                    for line in ifh:
+                        if line.startswith('ATOM ') and line.count('.') >= 3:
+                            return True
+                return False
+
+            def has_cif_coordinates(file_name):
+                has_atom_site = False
+                with open(file_name, 'r', encoding='utf-8', errors='ignore') as ifh:
+                    for line in ifh:
+                        if not has_atom_site:
+                            if line.startswith('_atom_site.'):
+                                has_atom_site = True
+                            continue
+                        if line.startswith('ATOM ') and line.count('.') >= 3:
+                            return True
+                return False
 
             if self.__internal_mode and self.__cR.hasCategory('database_2') and self.__cR.hasCategory('pdbx_audit_revision_history'):
                 extended_pdb_id = None
@@ -45990,21 +46020,18 @@ class NmrDpUtility:
                                                                  self.__representative_model_id, self.__representative_alt_id)
 
                     internal_cif_file = os.path.join(self.__cR.getDirPath(), f'{extended_pdb_id[-4:]}_model-upload_P1.cif.V1')
+                    internal_cif_file0 = os.path.join(self.__cR.getDirPath(), f'{extended_pdb_id[-4:]}_model-upload_P1.cif.V0')
+
                     if not os.path.exists(internal_cif_file):
+
                         try:
+
                             import subprocess  # pylint: disable=import-outside-toplevel
 
                             database_2 = self.__cR.getDictListWithFilter('database_2',
                                                                          [{'name': 'database_code', 'type': 'str'}],
                                                                          [{'name': 'database_id', 'type': 'str', 'value': 'BMRB'}])
                             if len(database_2) > 0:
-
-                                def has_coordinates(file_name):
-                                    with open(file_name, 'r', encoding='utf-8', errors='ignore') as ifh:
-                                        for line in ifh:
-                                            if line.startswith('ATOM ') and line.count('.') >= 3:
-                                                return True
-                                    return False
 
                                 bmrb_id = database_2[0]['database_code']
                                 if bmrb_id is not None and bmrb_id.isdigit():
@@ -46025,6 +46052,8 @@ class NmrDpUtility:
                                                 if ret_code == 0:
                                                     break
                                             elif file_name.endswith('.cif'):
+                                                if not has_cif_coordinates(file_path):
+                                                    continue
                                                 com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
                                                 result = subprocess.run(com, check=False)
                                                 ret_code = result.returncode
@@ -46048,6 +46077,8 @@ class NmrDpUtility:
                                                     if ret_code == 0:
                                                         break
                                                 elif file_name.endswith('.cif'):
+                                                    if not has_cif_coordinates(file_path):
+                                                        continue
                                                     com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
                                                     result = subprocess.run(com, check=False)
                                                     ret_code = result.returncode
@@ -46082,10 +46113,129 @@ class NmrDpUtility:
                         except Exception as e:
                             print(str(e))
 
+                    if not os.path.exists(internal_cif_file0):
+
+                        try:
+
+                            database_2 = self.__cR.getDictListWithFilter('database_2',
+                                                                         [{'name': 'database_code', 'type': 'str'}],
+                                                                         [{'name': 'database_id', 'type': 'str', 'value': 'BMRB'}])
+                            if len(database_2) > 0:
+
+                                bmrb_id = database_2[0]['database_code']
+                                if bmrb_id is not None and bmrb_id.isdigit():
+                                    ret_code = -1
+                                    intnl_upload_dir = os.path.join(self.__cR.getDirPath(), f'bmr{bmrb_id}/work/upload')
+                                    if os.path.isdir(intnl_upload_dir):
+                                        for file_name in os.listdir(intnl_upload_dir):
+                                            file_path = os.path.join(intnl_upload_dir, file_name)
+                                            if not os.path.isfile(file_path):
+                                                continue
+                                            if not has_cif_coordinates(file_path):
+                                                continue
+                                            if file_name.endswith('.cif'):
+                                                ret_path = shutil.copyfile(file_path, internal_cif_file0)
+                                                if os.path.exists(ret_path):
+                                                    ret_code = 0
+                                                    break
+                                    if ret_code != 0:
+                                        intnl_upload_dir = os.path.join(self.__cR.getDirPath(), f'bmr{bmrb_id}/work')
+                                        if os.path.isdir(intnl_upload_dir):
+                                            for file_name in os.listdir(intnl_upload_dir):
+                                                file_path = os.path.join(intnl_upload_dir, file_name)
+                                                if not os.path.isfile(file_path):
+                                                    continue
+                                                if not has_cif_coordinates(file_path):
+                                                    continue
+                                                if file_name.endswith('.cif'):
+                                                    ret_path = shutil.copyfile(file_path, internal_cif_file0)
+                                                    if os.path.exists(ret_path):
+                                                        ret_code = 0
+                                    if ret_code != 0:
+                                        intnl_upload_dir = os.path.join(self.__cR.getDirPath(), f'bmr{bmrb_id}/work/data')
+                                        if os.path.isdir(intnl_upload_dir):
+                                            for file_name in os.listdir(intnl_upload_dir):
+                                                if file_name.endswith('model-upload_P1.cif.V1'):
+                                                    file_path = os.path.join(intnl_upload_dir, file_name)
+                                                    ret_path = shutil.copyfile(file_path, internal_cif_file0)
+                                                    if os.path.exists(ret_path):
+                                                        ret_code = 0
+                                                        break
+
+                        except Exception as e:
+                            print(str(e))
+
                     if os.path.exists(internal_cif_file):
                         self.__internal_atom_name_mapping =\
                             retrieveAtomNameMappingFromInternal(self.__cR, self.__cacheDirPath, revision_history, internal_cif_file,
                                                                 self.__representative_model_id, self.__representative_alt_id)
+
+                    if os.path.exists(internal_cif_file0):
+                        major = max(revision_history)
+                        minor = revision_history[major] - 1
+                        revision_history[major] = minor
+                        self.__internal_atom_name_mapping0 =\
+                            retrieveAtomNameMappingFromInternal(self.__cR, self.__cacheDirPath, revision_history, internal_cif_file0,
+                                                                self.__representative_model_id, self.__representative_alt_id)
+
+            if self.__internal_atom_name_mapping is None:
+                cif_file_name = os.path.basename(self.__cifPath)
+
+                if onedep_model_file_name_pattern.match(cif_file_name):
+
+                    try:
+
+                        import subprocess  # pylint: disable=import-outside-toplevel
+
+                        cur_dir_path = self.__cR.getDirPath()
+                        dep_id = onedep_model_file_name_pattern.search(cif_file_name).groups()[0]
+                        internal_cif_file = os.path.join(cur_dir_path, self.__cacheDirPath, f'{dep_id}_model-upload_P1.cif.V1')
+
+                        if not os.path.exists(internal_cif_file):
+                            ret_code = -1
+                            for file_name in os.listdir(cur_dir_path):
+                                if file_name == f'{dep_id}_model-upload_P1.pdb.V1':
+                                    file_path = os.path.join(cur_dir_path, file_name)
+                                    com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
+                                    result = subprocess.run(com, check=False)
+                                    ret_code = result.returncode
+                                    if ret_code == 0:
+                                        break
+                            if ret_code != 0:
+                                for file_name in os.listdir(cur_dir_path):
+                                    if file_name == f'{dep_id}_model_P1.pdb.V1':
+                                        file_path = os.path.join(cur_dir_path, file_name)
+                                        com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
+                                        result = subprocess.run(com, check=False)
+                                        ret_code = result.returncode
+                                        if ret_code == 0:
+                                            break
+                            if ret_code != 0:
+                                for file_name in os.listdir(cur_dir_path):
+                                    if file_name == f'{dep_id}_model-upload_P1.cif.V1':
+                                        file_path = os.path.join(cur_dir_path, file_name)
+                                        com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
+                                        result = subprocess.run(com, check=False)
+                                        ret_code = result.returncode
+                                        if ret_code == 0:
+                                            break
+                            if ret_code != 0:
+                                for file_name in os.listdir(cur_dir_path):
+                                    if file_name == f'{dep_id}_modelP1.cif.V1':
+                                        file_path = os.path.join(cur_dir_path, file_name)
+                                        com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
+                                        result = subprocess.run(com, check=False)
+                                        ret_code = result.returncode
+                                        if ret_code == 0:
+                                            break
+
+                        if os.path.exists(internal_cif_file):
+                            self.__internal_atom_name_mapping =\
+                                retrieveAtomNameMappingFromInternal(self.__cR, self.__cacheDirPath, {0: 0}, internal_cif_file,
+                                                                    self.__representative_model_id, self.__representative_alt_id)
+
+                    except Exception:
+                        pass
 
             # DAOTHER-8580: convert working model file if pdbx_poly_seq_scheme category is missing
             # @see: wwpdb.utils.wf.plugins.FormatUtils.pdb2pdbxDepositOp

@@ -3855,15 +3855,15 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
         from nmr.NmrVrptUtility import (load_from_pickle,  # pylint: disable=import-outside-toplevel
                                         write_as_pickle)
 
+    if not os.path.exists(cif_path):
+        return None
+
     last = max(history)
 
     pkl_path = os.path.join(dir_path, f'atom_name_mapping_{last}_{history[last]}_internal.pkl')
 
     if os.path.exists(pkl_path):
         return load_from_pickle(pkl_path)
-
-    if not os.path.exists(cif_path):
-        return None
 
     nstd_residues = [d['id'] for d in cR.getDictList('chem_comp') if d['id'] not in emptyValue and d['id'] not in monDict3]
 

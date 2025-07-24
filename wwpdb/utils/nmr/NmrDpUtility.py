@@ -46054,6 +46054,28 @@ class NmrDpUtility:
                                                     print(f'{" ".join(com)}\n -> {ret_code}')
                                                     if ret_code == 0:
                                                         break
+                                    if ret_code != 0:
+                                        intnl_upload_dir = os.path.join(self.__cR.getDirPath(), f'bmr{bmrb_id}/work/data')
+                                        if os.path.isdir(intnl_upload_dir):
+                                            for file_name in os.listdir(intnl_upload_dir):
+                                                if file_name.endswith('model-upload_P1.pdb.V1'):
+                                                    file_path = os.path.join(intnl_upload_dir, file_name)
+                                                    com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
+                                                    result = subprocess.run(com, check=False)
+                                                    ret_code = result.returncode
+                                                    print(f'{" ".join(com)}\n -> {ret_code}')
+                                                    if ret_code == 0:
+                                                        break
+                                            if ret_code != 0:
+                                                for file_name in os.listdir(intnl_upload_dir):
+                                                    if file_name.endswith('model-upload_P1.cif.V1'):
+                                                        file_path = os.path.join(intnl_upload_dir, file_name)
+                                                        com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
+                                                        result = subprocess.run(com, check=False)
+                                                        ret_code = result.returncode
+                                                        print(f'{" ".join(com)}\n -> {ret_code}')
+                                                        if ret_code == 0:
+                                                            break
 
                         except ImportError:
                             pass

@@ -551,13 +551,13 @@ class CharmmMRParserListener(ParseTreeListener):
             for v in self.__coordAtomSite.values():
                 atom_list.extend(v['atom_id'])
             common_atom_list = collections.Counter(atom_list).most_common()
-            unq_atom_ids = [atom_id for atom_id, count in common_atom_list if count == 1]
-            if len(unq_atom_ids) > 0:
+            uniq_atom_ids = [atom_id for atom_id, count in common_atom_list if count == 1]
+            if len(uniq_atom_ids) > 0:
                 self.__uniqAtomIdToSeqKey = {}
                 for k, v in self.__coordAtomSite.items():
                     if any(np for np in self.__nonPoly if np['comp_id'][0] == v['comp_id']):
                         for atom_id in v['atom_id']:
-                            if atom_id in unq_atom_ids:
+                            if atom_id in uniq_atom_ids:
                                 self.__uniqAtomIdToSeqKey[atom_id] = k
 
         self.__largeModel = self.__hasPolySeq and len(self.__polySeq) > LEN_LARGE_ASYM_ID

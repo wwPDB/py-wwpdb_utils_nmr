@@ -3929,19 +3929,25 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
         return 'CYS'
 
     if lenCompId == 3:
-        if not ccU.getTypeOfCompId(compId)[0]:  # 6qtf
-            if compId.startswith('DA'):
-                return 'DA'
-            if compId.startswith('DC'):
-                return 'DC'
-            if compId.startswith('DG'):
-                return 'DG'
-            if compId.startswith('DT'):
-                return 'DT'
-            if compId.startswith('DU'):
-                return 'DU'
-            if compId.startswith('DI'):
-                return 'DI'
+
+        if compId.startswith('D'):
+            d_peptide = False
+            if ccU is not None and ccU.updateChemCompDict(compId):
+                if ccU.lastChemCompDict['_chem_comp.type'] == 'D-PEPTIDE LINKING':
+                    d_peptide = True
+            if not d_peptide:  # 6qtf, 2lrr
+                if compId.startswith('DA'):
+                    return 'DA'
+                if compId.startswith('DC'):
+                    return 'DC'
+                if compId.startswith('DG'):
+                    return 'DG'
+                if compId.startswith('DT'):
+                    return 'DT'
+                if compId.startswith('DU'):
+                    return 'DU'
+                if compId.startswith('DI'):
+                    return 'DI'
 
         if compId.startswith('RA'):
             return 'A'

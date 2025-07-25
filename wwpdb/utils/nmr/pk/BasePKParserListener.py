@@ -5640,23 +5640,24 @@ class BasePKParserListener():
 
         common_name = ''.join(common_name)
 
-        if '##' in common_name:
+        while '##' in common_name:
             common_name = common_name.replace('##', '*')
 
-        if '%%' in common_name:
+        while '%%' in common_name:
             common_name = common_name.replace('%%', '*')
 
-        if '*%' in common_name:
+        while '*%' in common_name:
             common_name = common_name.replace('*%', '*')
 
-        if '%*' in common_name:
+        while '%*' in common_name:
             common_name = common_name.replace('%*', '*')
 
-        if '**' in common_name:
+        while '**' in common_name:
             common_name = common_name.replace('**', '*')
 
         if len(common_name) == 2 and common_name.endswith('*'):  # avoid 'H*' for amide proton
-            return atom_sel[0]
+            if self.csStat.getTypeOfCompId(atom_sel[0]['comp_id'])[0]:
+                return atom_sel[0]
 
         _atom_sel = copy.copy(atom_sel[0])
         if 'auth_atom_id' in _atom_sel:
@@ -6403,7 +6404,16 @@ class BasePKParserListener():
                                 continue
 
                         if atomId[0] in ('Q', 'M') and index + 1 < len(term) and term[index + 1].isdigit():
-                            continue
+                            if self.csStat.peptideLike(compId):
+                                ligand = False
+                                if resIdLike[idx] and self.reasons is not None:
+                                    resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
+                                    if 'non_poly_remap' in self.reasons\
+                                       and compId in self.reasons['non_poly_remap']\
+                                       and resId in self.reasons['non_poly_remap'][compId]:
+                                        ligand = True
+                                if not ligand:
+                                    continue
                         if ((with_compid is not None and atomId.startswith(with_compid)) or atomId.startswith('MET'))\
                            and ((index + 3 < len(term) and term[index + 3].isdigit() or (index + 4 < len(term) and term[index + 4].isdigit()))):
                             continue

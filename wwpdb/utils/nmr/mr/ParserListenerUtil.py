@@ -4045,6 +4045,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                          prevResult: Optional[dict] = None,
                          nmrPolySeq: Optional[List[dict]] = None, fullCheck: bool = True) -> dict:
     """ Check assembly of the coordinates for MR/PT parser listener.
+        @return: properties about of the assembly of the cooridnates
     """
 
     changed = has_nonpoly_only = gen_ent_asm_from_nonpoly = False
@@ -6203,6 +6204,7 @@ def isLongRangeRestraint(atoms: List[dict], polySeq: Optional[List[dict]] = None
 
 def getAltProtonIdInBondConstraint(atoms: List[dict], csStat) -> Tuple[Optional[str], Optional[str]]:
     """ Return alternative atom_id in swappable proton group, which involves in bond constraint (e.g. amino group in Watson-Crick pair).
+        @return: alternative atom_id for the first atom, alternative atom_id for the second atom
     """
 
     if len(atoms) < 2:
@@ -6295,7 +6297,7 @@ def isAsymmetricRangeRestraint(atoms: List[dict], chainIdSet: List[str], symmetr
 
 
 def guessCompIdFromAtomId(atomIds: List[str], polySeq: List[dict], nefT) -> List[str]:
-    """ Try to find candidate comp_id that matches with a given atom_id.
+    """ Try to find candidate comp_ids that matche with a given atom_id.
     """
 
     if atomIds[0] in ('C', 'CA', 'CB', 'CO', 'H', 'HN', 'HA', 'N', 'O',
@@ -6326,7 +6328,7 @@ def guessCompIdFromAtomId(atomIds: List[str], polySeq: List[dict], nefT) -> List
 
 
 def guessCompIdFromAtomIdWoLimit(atomIds: List[str], polySeq: List[dict], nefT, isPolySeq: bool = True) -> List[str]:
-    """ Try to find candidate comp_id that matches with a given atom_id.
+    """ Try to find candidate comp_ids that matche with a given atom_id.
     """
 
     candidates = set()
@@ -6353,6 +6355,7 @@ def guessCompIdFromAtomIdWoLimit(atomIds: List[str], polySeq: List[dict], nefT, 
 
 def hasIntraChainRestraint(atomSelectionSet: List[List[dict]]) -> Tuple[bool, Optional[set]]:
     """ Return whether intra-chain distance restraints in the atom selection.
+        @return: whether intra-chain distrance restraints, representative set of chain_id
     """
 
     for atom1, atom2 in itertools.product(atomSelectionSet[0],
@@ -6879,6 +6882,10 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
 
 def fixBackboneAtomsOfDihedralRestraint(angleName: str, atoms: List[dict], currentRestraint: str) -> Tuple[str, dict, dict, str]:
     """ Return valid dihedral angle name and remediated protein backbone atoms.
+        @return: dihedral angle name,
+                 remediated atom_id for the second atom,
+                 remediated atom_id for the third atom,
+                 message for the remediation ('' for valid dihedral angle restraint)
     """
 
     msg = ''
@@ -7125,6 +7132,7 @@ def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,
 
 def getStructConnPtnr(cR, authAsymId: str, authSeqId: int, authCompId: str = None) -> Optional[List[dict]]:
     """ Return structually connected partner residues for a given residue.
+        @return: list of partner residues for a given residue descrived in struct_conn loop
     """
 
     if cR is None or not cR.hasCategory('struct_conn'):
@@ -7167,6 +7175,7 @@ def getStructConnPtnr(cR, authAsymId: str, authSeqId: int, authCompId: str = Non
 
 def getWatsonCrickPtnr(cR, authAsymId: str) -> Optional[List[str]]:
     """ Return list of Watson-Crick partner auth_asym_ids for a given auth_asym_id.
+        @return: list of partner auth_asym_ids for a given auth_asym_id by Watson-Crick base paring
     """
 
     if cR is None or not cR.hasCategory('struct_conn'):
@@ -7305,8 +7314,8 @@ def getCoordBondLength(cR, asymId1: str, seqId1: int, atomId1: str,
                        asymId2: str, seqId2: int, atomId2: str,
                        representativeAltId: int = REPRESENTATIVE_ALT_ID,
                        modelNumName: str = 'PDB_model_num', labelScheme: bool = True) -> Optional[List[dict]]:
-    """ Return the bond length of given two CIF atoms.
-        @return: the bond length
+    """ Return the bond length of given two atoms.
+        @return: list of bond length for each model_id (None for failure case)
     """
 
     try:
@@ -10698,8 +10707,8 @@ def getRealChainSeqId(ccU, ps: dict, seqId: int, compId: Optional[str] = None) -
 
 def getCoordAtomSiteOf(caC: dict, authChainId: str, chainId: str, seqId: int,
                        compId: Optional[str] = None, asis: bool = True) -> Tuple[Tuple[str, int], dict]:
-    """ Return sequence key and its atom list of the coordinates.
-        @return: sequence key, atom list in the sequence
+    """ Return sequence key and its attributes in coordAssemblyChecker (caC).
+        @return: sequence key, attributes in the coordAssemblyChecker's 'coord_atom_site' for a given residue
     """
 
     seqKey = (chainId, seqId)

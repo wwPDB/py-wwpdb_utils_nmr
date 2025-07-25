@@ -620,7 +620,6 @@ bmrb_nmr_star_file_name_pattern = re.compile(r'^bmr\d[0-9]{1,5}_3.str$')
 mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
 proc_mr_file_name_pattern = re.compile(r'^D_[0-9]{6,10}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
                                        r'_P\d+\.(amber|aria|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|sybyl|xplor-nih)\.V\d+$')
-onedep_model_file_name_pattern = re.compile(r'^(D_[0-9]{6,10})_model_P1.cif.V\d+$')
 pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}$')
 bmrb_id_pattern = re.compile(r'^(bmr)?([0-9]+)$')
 dep_id_pattern = re.compile(r'^D_[0-9]{6,10}$')
@@ -642,6 +641,7 @@ tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
 sf_category_pattern = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
 sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
 
+onedep_model_file_pattern = re.compile(r'^(D_[0-9]{6,10})_model_P1.cif.V\d+$')
 onedep_upload_file_pattern = re.compile(r'(.*)\-upload_(.*)\.V(.*)$')
 onedep_file_pattern = re.compile(r'(.*)\.V(.*)$')
 mr_file_header_pattern = re.compile(r'(.*)# Restraints file (\d+): (\S+)\s*')
@@ -46042,9 +46042,9 @@ class NmrDpUtility:
                                             file_path = os.path.join(intnl_upload_dir, file_name)
                                             if not os.path.isfile(file_path):
                                                 continue
-                                            if not has_coordinates(file_path):
-                                                continue
                                             if file_name.endswith('.pdb'):
+                                                if not has_coordinates(file_path):
+                                                    continue
                                                 com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
                                                 result = subprocess.run(com, check=False)
                                                 ret_code = result.returncode
@@ -46067,9 +46067,9 @@ class NmrDpUtility:
                                                 file_path = os.path.join(intnl_upload_dir, file_name)
                                                 if not os.path.isfile(file_path):
                                                     continue
-                                                if not has_coordinates(file_path):
-                                                    continue
                                                 if file_name.endswith('.pdb'):
+                                                    if not has_coordinates(file_path):
+                                                        continue
                                                     com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
                                                     result = subprocess.run(com, check=False)
                                                     ret_code = result.returncode
@@ -46131,9 +46131,9 @@ class NmrDpUtility:
                                             file_path = os.path.join(intnl_upload_dir, file_name)
                                             if not os.path.isfile(file_path):
                                                 continue
-                                            if not has_cif_coordinates(file_path):
-                                                continue
                                             if file_name.endswith('.cif'):
+                                                if not has_cif_coordinates(file_path):
+                                                    continue
                                                 ret_path = shutil.copyfile(file_path, internal_cif_file0)
                                                 if os.path.exists(ret_path):
                                                     ret_code = 0
@@ -46145,9 +46145,9 @@ class NmrDpUtility:
                                                 file_path = os.path.join(intnl_upload_dir, file_name)
                                                 if not os.path.isfile(file_path):
                                                     continue
-                                                if not has_cif_coordinates(file_path):
-                                                    continue
                                                 if file_name.endswith('.cif'):
+                                                    if not has_cif_coordinates(file_path):
+                                                        continue
                                                     ret_path = shutil.copyfile(file_path, internal_cif_file0)
                                                     if os.path.exists(ret_path):
                                                         ret_code = 0
@@ -46181,14 +46181,14 @@ class NmrDpUtility:
             if self.__internal_atom_name_mapping is None:
                 cif_file_name = os.path.basename(self.__cifPath)
 
-                if onedep_model_file_name_pattern.match(cif_file_name):
+                if onedep_model_file_pattern.match(cif_file_name):
 
                     try:
 
                         import subprocess  # pylint: disable=import-outside-toplevel
 
                         cur_dir_path = self.__cR.getDirPath()
-                        dep_id = onedep_model_file_name_pattern.search(cif_file_name).groups()[0]
+                        dep_id = onedep_model_file_pattern.search(cif_file_name).groups()[0]
                         internal_cif_file = os.path.join(cur_dir_path, self.__cacheDirPath, f'{dep_id}_model-upload_P1.cif.V1')
 
                         if not os.path.exists(internal_cif_file):

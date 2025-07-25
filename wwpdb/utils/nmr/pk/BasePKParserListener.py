@@ -5593,7 +5593,10 @@ class BasePKParserListener():
 
     def __extractCommonAtom(self, atom_sel: List[dict]) -> dict:
 
-        if len(atom_sel) < 2:
+        if len(atom_sel) == 0:
+            return {}
+
+        if len(atom_sel) == 1:
             return atom_sel[0]
 
         strings = [a['atom_id'] for a in atom_sel]
@@ -5728,33 +5731,96 @@ class BasePKParserListener():
 
             if sf is not None:
                 sf['id'] = index
-                sf['index_id'] += 1
-                ambig_code1 = ambig_code2 = None
-                if has_assignments and not has_multiple_assignments:
-                    atom1 = self.__extractCommonAtom(self.atomSelectionSet[0])
-                    atom2 = self.__extractCommonAtom(self.atomSelectionSet[1])
-                    if len(self.atomSelectionSet[0]) > 1:
-                        ambig_code1 = self.csStat.getMaxAmbigCodeWoSetId(atom1['comp_id'], atom1['atom_id'])
-                        if ambig_code1 == 0:
-                            ambig_code1 = None
-                    if 'ambig_code' in atom1:
-                        ambig_code1 = atom1['ambig_code']
-                    if len(self.atomSelectionSet[1]) > 1:
-                        ambig_code2 = self.csStat.getMaxAmbigCodeWoSetId(atom2['comp_id'], atom2['atom_id'])
-                        if ambig_code2 == 0:
-                            ambig_code2 = None
-                    if 'ambig_code' in atom2:
-                        ambig_code2 = atom2['ambig_code']
-                else:
-                    atom1 = atom2 = None
 
-                row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                               sf['list_id'], self.entryId, dstFunc,
-                               self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                               atom1, atom2, asis1=asis1, asis2=asis2,
-                               ambig_code1=ambig_code1, ambig_code2=ambig_code2,
-                               details=details)
-                sf['loop'].add_data(row)
+                if has_assignments and has_multiple_assignments:
+                    history = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
+                    if self.software_name != 'PIPP':
+                        for atomSelectionSet in self.atomSelectionSets:
+                            for onebond_idx, (dim1, dim2) in enumerate(DIM_TRANSFER_PAT_2D):
+                                _atom1, _atom2 = atomSelectionSet[dim1][0], atomSelectionSet[dim2][0]
+                                if _atom1['chain_id'] != _atom2['chain_id']\
+                                   or _atom1['seq_id'] != _atom2['seq_id']\
+                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0]:
+                                    continue
+                                if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                    history.append(onebond_idx)
+                    atom_set1, atom_set2 = [], []
+                    for atomSelectionSet in self.atomSelectionSets:
+                        valid = True
+                        if len(history) > 0:
+                            onebond_idx = collections.Counter(history).most_common()[0][0]
+                            _atom1, _atom2 =\
+                                atomSelectionSet[DIM_TRANSFER_PAT_2D[onebond_idx][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_2D[onebond_idx][1]][0]
+                            if _atom1['chain_id'] != _atom2['chain_id']\
+                               or _atom1['seq_id'] != _atom2['seq_id']\
+                               or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                valid = False
+                        if not valid:
+                            continue
+                        atom_set1.extend(atomSelectionSet[0])
+                        atom_set2.extend(atomSelectionSet[1])
+                    common_atom1 = self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set1 if isinstance(a, dict))]
+                                                            if len(atom_set1) > 1 else atom_set1)
+                    common_atom2 = self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set2 if isinstance(a, dict))]
+                                                            if len(atom_set2) > 1 else atom_set2)
+                    for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
+                        ambig_code1 = ambig_code2 = None
+                        atom1 = self.__extractCommonAtom(atomSelectionSet[0])
+                        atom2 = self.__extractCommonAtom(atomSelectionSet[1])
+                        asis1, asis2 = asIsSet
+                        if len(atomSelectionSet[0]) > 1:
+                            ambig_code1 = self.csStat.getMaxAmbigCodeWoSetId(atom1['comp_id'], atom1['atom_id'])
+                            if ambig_code1 == 0:
+                                ambig_code1 = None
+                        if 'ambig_code' in common_atom1:
+                            ambig_code1 = common_atom1['ambig_code']
+                        if len(atomSelectionSet[1]) > 1:
+                            ambig_code2 = self.csStat.getMaxAmbigCodeWoSetId(atom2['comp_id'], atom2['atom_id'])
+                            if ambig_code2 == 0:
+                                ambig_code2 = None
+                        if 'ambig_code' in common_atom2:
+                            ambig_code2 = common_atom2['ambig_code']
+
+                        sf['index_id'] += 1
+
+                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                       sf['list_id'], self.entryId, dstFunc,
+                                       self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                       atom1, atom2, asis1=asis1, asis2=asis2,
+                                       ambig_code1=ambig_code1, ambig_code2=ambig_code2,
+                                       details=details)
+                        sf['loop'].add_data(row)
+
+                else:
+
+                    sf['index_id'] += 1
+
+                    ambig_code1 = ambig_code2 = None
+                    if has_assignments:
+                        atom1 = self.__extractCommonAtom(self.atomSelectionSet[0])
+                        atom2 = self.__extractCommonAtom(self.atomSelectionSet[1])
+                        if len(self.atomSelectionSet[0]) > 1:
+                            ambig_code1 = self.csStat.getMaxAmbigCodeWoSetId(atom1['comp_id'], atom1['atom_id'])
+                            if ambig_code1 == 0:
+                                ambig_code1 = None
+                        if 'ambig_code' in atom1:
+                            ambig_code1 = atom1['ambig_code']
+                        if len(self.atomSelectionSet[1]) > 1:
+                            ambig_code2 = self.csStat.getMaxAmbigCodeWoSetId(atom2['comp_id'], atom2['atom_id'])
+                            if ambig_code2 == 0:
+                                ambig_code2 = None
+                        if 'ambig_code' in atom2:
+                            ambig_code2 = atom2['ambig_code']
+                    else:
+                        atom1 = atom2 = None
+
+                    row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                   sf['list_id'], self.entryId, dstFunc,
+                                   self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                   atom1, atom2, asis1=asis1, asis2=asis2,
+                                   ambig_code1=ambig_code1, ambig_code2=ambig_code2,
+                                   details=details)
+                    sf['loop'].add_data(row)
 
                 if not has_assignments and details is not None:
                     self.f.append(f"[Conflicted peak assignment] {self.getCurrentRestraint(n=index)}"
@@ -5817,6 +5883,26 @@ class BasePKParserListener():
                                     sf['alt_loops'][3].add_data(row)
                                     uniqAtoms.append(common_atom)
                     else:
+                        atom_set1, atom_set2 = [], []
+                        for atomSelectionSet in self.atomSelectionSets:
+                            valid = True
+                            if len(history) > 0:
+                                onebond_idx = collections.Counter(history).most_common()[0][0]
+                                _atom1, _atom2 =\
+                                    atomSelectionSet[DIM_TRANSFER_PAT_2D[onebond_idx][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_2D[onebond_idx][1]][0]
+                                if _atom1['chain_id'] != _atom2['chain_id']\
+                                   or _atom1['seq_id'] != _atom2['seq_id']\
+                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                    valid = False
+                            if not valid:
+                                continue
+                            atom_set1.extend(atomSelectionSet[0])
+                            atom_set2.extend(atomSelectionSet[1])
+                        common_atoms = []
+                        common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set1 if isinstance(a, dict))]
+                                                                     if len(atom_set1) > 1 else atom_set1))
+                        common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set2 if isinstance(a, dict))]
+                                                                     if len(atom_set2) > 1 else atom_set2))
                         set_id = 1
                         for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
                             valid = True
@@ -5850,8 +5936,8 @@ class BasePKParserListener():
                                                 gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in protonBeginCode else hvy_gem_atoms
                                                 if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
                                                     ambig_code = 1
-                                        if 'ambig_code' in common_atom:
-                                            ambig_code = common_atom['ambig_code']
+                                        if 'ambig_code' in common_atoms[idx]:
+                                            ambig_code = common_atoms[idx]['ambig_code']
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                             common_atom, asis, ambig_code)
@@ -5884,41 +5970,115 @@ class BasePKParserListener():
 
             if sf is not None:
                 sf['id'] = index
-                sf['index_id'] += 1
-                ambig_code1 = ambig_code2 = ambig_code3 = None
-                if has_assignments and not has_multiple_assignments:
-                    atom1 = self.__extractCommonAtom(self.atomSelectionSet[0])
-                    atom2 = self.__extractCommonAtom(self.atomSelectionSet[1])
-                    atom3 = self.__extractCommonAtom(self.atomSelectionSet[2])
-                    if len(self.atomSelectionSet[0]) > 1:
-                        ambig_code1 = self.csStat.getMaxAmbigCodeWoSetId(atom1['comp_id'], atom1['atom_id'])
-                        if ambig_code1 == 0:
-                            ambig_code1 = None
-                    if 'ambig_code' in atom1:
-                        ambig_code1 = atom1['ambig_code']
-                    if len(self.atomSelectionSet[1]) > 1:
-                        ambig_code2 = self.csStat.getMaxAmbigCodeWoSetId(atom2['comp_id'], atom2['atom_id'])
-                        if ambig_code2 == 0:
-                            ambig_code2 = None
-                    if 'ambig_code' in atom2:
-                        ambig_code2 = atom2['ambig_code']
-                    if len(self.atomSelectionSet[2]) > 1:
-                        ambig_code3 = self.csStat.getMaxAmbigCodeWoSetId(atom3['comp_id'], atom3['atom_id'])
-                        if ambig_code3 == 0:
-                            ambig_code3 = None
-                    if 'ambig_code' in atom3:
-                        ambig_code3 = atom3['ambig_code']
-                else:
-                    atom1 = atom2 = atom3 = None
 
-                row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                               sf['list_id'], self.entryId, dstFunc,
-                               self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                               atom1, atom2, atom3, asis1=asis1, asis2=asis2, asis3=asis3,
-                               ambig_code1=ambig_code1, ambig_code2=ambig_code2,
-                               ambig_code3=ambig_code3,
-                               details=details)
-                sf['loop'].add_data(row)
+                if has_assignments and has_multiple_assignments:
+                    history = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
+                    if self.software_name != 'PIPP':
+                        for atomSelectionSet in self.atomSelectionSets:
+                            for onebond_idx, (dim1, dim2) in enumerate(DIM_TRANSFER_PAT_3D):
+                                _atom1, _atom2 = atomSelectionSet[dim1][0], atomSelectionSet[dim2][0]
+                                if _atom1['chain_id'] != _atom2['chain_id']\
+                                   or _atom1['seq_id'] != _atom2['seq_id']\
+                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0]:
+                                    continue
+                                if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                    history.append(onebond_idx)
+                    atom_set1, atom_set2, atom_set3 = [], [], []
+                    for atomSelectionSet in self.atomSelectionSets:
+                        valid = True
+                        if len(history) > 0:
+                            onebond_idx = collections.Counter(history).most_common()[0][0]
+                            _atom1, _atom2 =\
+                                atomSelectionSet[DIM_TRANSFER_PAT_3D[onebond_idx][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_3D[onebond_idx][1]][0]
+                            if _atom1['chain_id'] != _atom2['chain_id']\
+                               or _atom1['seq_id'] != _atom2['seq_id']\
+                               or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                valid = False
+                        if not valid:
+                            continue
+                        atom_set1.extend(atomSelectionSet[0])
+                        atom_set2.extend(atomSelectionSet[1])
+                        atom_set3.extend(atomSelectionSet[2])
+                    common_atom1 = self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set1 if isinstance(a, dict))]
+                                                            if len(atom_set1) > 1 else atom_set1)
+                    common_atom2 = self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set2 if isinstance(a, dict))]
+                                                            if len(atom_set2) > 1 else atom_set2)
+                    common_atom3 = self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set3 if isinstance(a, dict))]
+                                                            if len(atom_set3) > 1 else atom_set3)
+                    for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
+                        ambig_code1 = ambig_code2 = ambig_code3 = None
+                        atom1 = self.__extractCommonAtom(atomSelectionSet[0])
+                        atom2 = self.__extractCommonAtom(atomSelectionSet[1])
+                        atom3 = self.__extractCommonAtom(atomSelectionSet[2])
+                        asis1, asis2, asis3 = asIsSet
+                        if len(atomSelectionSet[0]) > 1:
+                            ambig_code1 = self.csStat.getMaxAmbigCodeWoSetId(atom1['comp_id'], atom1['atom_id'])
+                            if ambig_code1 == 0:
+                                ambig_code1 = None
+                        if 'ambig_code' in common_atom1:
+                            ambig_code1 = common_atom1['ambig_code']
+                        if len(atomSelectionSet[1]) > 1:
+                            ambig_code2 = self.csStat.getMaxAmbigCodeWoSetId(atom2['comp_id'], atom2['atom_id'])
+                            if ambig_code2 == 0:
+                                ambig_code2 = None
+                        if 'ambig_code' in common_atom2:
+                            ambig_code2 = common_atom2['ambig_code']
+                        if len(atomSelectionSet[2]) > 1:
+                            ambig_code3 = self.csStat.getMaxAmbigCodeWoSetId(atom3['comp_id'], atom3['atom_id'])
+                            if ambig_code3 == 0:
+                                ambig_code3 = None
+                        if 'ambig_code' in common_atom3:
+                            ambig_code3 = common_atom3['ambig_code']
+
+                        sf['index_id'] += 1
+
+                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                       sf['list_id'], self.entryId, dstFunc,
+                                       self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                       atom1, atom2, atom3, asis1=asis1, asis2=asis2, asis3=asis3,
+                                       ambig_code1=ambig_code1, ambig_code2=ambig_code2,
+                                       ambig_code3=ambig_code3,
+                                       details=details)
+                        sf['loop'].add_data(row)
+
+                else:
+
+                    sf['index_id'] += 1
+
+                    ambig_code1 = ambig_code2 = ambig_code3 = None
+                    if has_assignments:
+                        atom1 = self.__extractCommonAtom(self.atomSelectionSet[0])
+                        atom2 = self.__extractCommonAtom(self.atomSelectionSet[1])
+                        atom3 = self.__extractCommonAtom(self.atomSelectionSet[2])
+                        if len(self.atomSelectionSet[0]) > 1:
+                            ambig_code1 = self.csStat.getMaxAmbigCodeWoSetId(atom1['comp_id'], atom1['atom_id'])
+                            if ambig_code1 == 0:
+                                ambig_code1 = None
+                        if 'ambig_code' in atom1:
+                            ambig_code1 = atom1['ambig_code']
+                        if len(self.atomSelectionSet[1]) > 1:
+                            ambig_code2 = self.csStat.getMaxAmbigCodeWoSetId(atom2['comp_id'], atom2['atom_id'])
+                            if ambig_code2 == 0:
+                                ambig_code2 = None
+                        if 'ambig_code' in atom2:
+                            ambig_code2 = atom2['ambig_code']
+                        if len(self.atomSelectionSet[2]) > 1:
+                            ambig_code3 = self.csStat.getMaxAmbigCodeWoSetId(atom3['comp_id'], atom3['atom_id'])
+                            if ambig_code3 == 0:
+                                ambig_code3 = None
+                        if 'ambig_code' in atom3:
+                            ambig_code3 = atom3['ambig_code']
+                    else:
+                        atom1 = atom2 = atom3 = None
+
+                    row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                   sf['list_id'], self.entryId, dstFunc,
+                                   self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                   atom1, atom2, atom3, asis1=asis1, asis2=asis2, asis3=asis3,
+                                   ambig_code1=ambig_code1, ambig_code2=ambig_code2,
+                                   ambig_code3=ambig_code3,
+                                   details=details)
+                    sf['loop'].add_data(row)
 
                 if not has_assignments and details is not None:
                     self.f.append(f"[Conflicted peak assignment] {self.getCurrentRestraint(n=index)}"
@@ -5981,6 +6141,29 @@ class BasePKParserListener():
                                     sf['alt_loops'][3].add_data(row)
                                     uniqAtoms.append(common_atom)
                     else:
+                        atom_set1, atom_set2, atom_set3 = [], [], []
+                        for atomSelectionSet in self.atomSelectionSets:
+                            valid = True
+                            if len(history) > 0:
+                                onebond_idx = collections.Counter(history).most_common()[0][0]
+                                _atom1, _atom2 =\
+                                    atomSelectionSet[DIM_TRANSFER_PAT_3D[onebond_idx][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_3D[onebond_idx][1]][0]
+                                if _atom1['chain_id'] != _atom2['chain_id']\
+                                   or _atom1['seq_id'] != _atom2['seq_id']\
+                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id']):
+                                    valid = False
+                            if not valid:
+                                continue
+                            atom_set1.extend(atomSelectionSet[0])
+                            atom_set2.extend(atomSelectionSet[1])
+                            atom_set3.extend(atomSelectionSet[2])
+                        common_atoms = []
+                        common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set1 if isinstance(a, dict))]
+                                                                     if len(atom_set1) > 1 else atom_set1))
+                        common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set2 if isinstance(a, dict))]
+                                                                     if len(atom_set2) > 1 else atom_set2))
+                        common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set3 if isinstance(a, dict))]
+                                                                     if len(atom_set3) > 1 else atom_set3))
                         set_id = 1
                         for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
                             valid = True
@@ -6014,8 +6197,8 @@ class BasePKParserListener():
                                                 gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in protonBeginCode else hvy_gem_atoms
                                                 if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
                                                     ambig_code = 1
-                                        if 'ambig_code' in common_atom:
-                                            ambig_code = common_atom['ambig_code']
+                                        if 'ambig_code' in common_atoms[idx]:
+                                            ambig_code = common_atoms[idx]['ambig_code']
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                             common_atom, asis, ambig_code)
@@ -6050,49 +6233,143 @@ class BasePKParserListener():
 
             if sf is not None:
                 sf['id'] = index
-                sf['index_id'] += 1
-                ambig_code1 = ambig_code2 = ambig_code3 = ambig_code4 = None
-                if has_assignments and not has_multiple_assignments:
-                    atom1 = self.__extractCommonAtom(self.atomSelectionSet[0])
-                    atom2 = self.__extractCommonAtom(self.atomSelectionSet[1])
-                    atom3 = self.__extractCommonAtom(self.atomSelectionSet[2])
-                    atom4 = self.__extractCommonAtom(self.atomSelectionSet[3])
-                    if len(self.atomSelectionSet[0]) > 1:
-                        ambig_code1 = self.csStat.getMaxAmbigCodeWoSetId(atom1['comp_id'], atom1['atom_id'])
-                        if ambig_code1 == 0:
-                            ambig_code1 = None
-                    if 'ambig_code' in atom1:
-                        ambig_code1 = atom1['ambig_code']
-                    if len(self.atomSelectionSet[1]) > 1:
-                        ambig_code2 = self.csStat.getMaxAmbigCodeWoSetId(atom2['comp_id'], atom2['atom_id'])
-                        if ambig_code2 == 0:
-                            ambig_code2 = None
-                    if 'ambig_code' in atom2:
-                        ambig_code2 = atom2['ambig_code']
-                    if len(self.atomSelectionSet[2]) > 1:
-                        ambig_code3 = self.csStat.getMaxAmbigCodeWoSetId(atom3['comp_id'], atom3['atom_id'])
-                        if ambig_code3 == 0:
-                            ambig_code3 = None
-                    if 'ambig_code' in atom3:
-                        ambig_code3 = atom3['ambig_code']
-                    if len(self.atomSelectionSet[3]) > 1:
-                        ambig_code4 = self.csStat.getMaxAmbigCodeWoSetId(atom4['comp_id'], atom4['atom_id'])
-                        if ambig_code4 == 0:
-                            ambig_code4 = None
-                    if 'ambig_code' in atom4:
-                        ambig_code4 = atom4['ambig_code']
-                else:
-                    atom1 = atom2 = atom3 = atom4 = None
 
-                row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                               sf['list_id'], self.entryId, dstFunc,
-                               self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
-                               atom1, atom2, atom3, atom4,
-                               asis1=asis1, asis2=asis2, asis3=asis3, asis4=asis4,
-                               ambig_code1=ambig_code1, ambig_code2=ambig_code2,
-                               ambig_code3=ambig_code3, ambig_code4=ambig_code4,
-                               details=details)
-                sf['loop'].add_data(row)
+                if has_assignments and has_multiple_assignments:
+                    history = self.onebond_idx_history[self.num_of_dim][self.cur_list_id]
+                    if self.software_name != 'PIPP':
+                        for atomSelectionSet in self.atomSelectionSets:
+                            for onebond_idx, ((dim1, dim2), (dim3, dim4)) in enumerate(DIM_TRANSFER_PAT_4D):
+                                _atom1, _atom2, _atom3, _atom4 =\
+                                    atomSelectionSet[dim1][0], atomSelectionSet[dim2][0], atomSelectionSet[dim3][0], atomSelectionSet[dim4][0]
+                                if _atom1['chain_id'] != _atom2['chain_id']\
+                                   or _atom1['seq_id'] != _atom2['seq_id']\
+                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0]\
+                                   or _atom3['chain_id'] != _atom4['chain_id']\
+                                   or _atom3['seq_id'] != _atom4['seq_id']\
+                                   or _atom3['atom_id'][0] == _atom4['atom_id'][0]:
+                                    continue
+                                if self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id'])\
+                                   and self.ccU.hasBond(_atom3['comp_id'], _atom3['atom_id'], _atom4['atom_id']):
+                                    history.append(onebond_idx)
+                    atom_set1, atom_set2, atom_set3, atom_set4 = [], [], [], []
+                    for atomSelectionSet in self.atomSelectionSets:
+                        valid = True
+                        if len(history) > 0:
+                            onebond_idx = collections.Counter(history).most_common()[0][0]
+                            _atom1, _atom2, _atom3, _atom4 =\
+                                atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][1]][0], \
+                                atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][1]][0]
+                            if _atom1['chain_id'] != _atom2['chain_id']\
+                               or _atom1['seq_id'] != _atom2['seq_id']\
+                               or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id'])\
+                               or _atom3['chain_id'] != _atom4['chain_id']\
+                               or _atom3['seq_id'] != _atom4['seq_id']\
+                               or _atom3['atom_id'][0] == _atom4['atom_id'][0] or not self.ccU.hasBond(_atom3['comp_id'], _atom3['atom_id'], _atom4['atom_id']):
+                                valid = False
+                        if not valid:
+                            continue
+                        atom_set1.extend(atomSelectionSet[0])
+                        atom_set2.extend(atomSelectionSet[1])
+                        atom_set3.extend(atomSelectionSet[2])
+                        atom_set4.extend(atomSelectionSet[3])
+                    common_atom1 = self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set1 if isinstance(a, dict))]
+                                                            if len(atom_set1) > 1 else atom_set1)
+                    common_atom2 = self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set2 if isinstance(a, dict))]
+                                                            if len(atom_set2) > 1 else atom_set2)
+                    common_atom3 = self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set3 if isinstance(a, dict))]
+                                                            if len(atom_set3) > 1 else atom_set3)
+                    common_atom4 = self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set4 if isinstance(a, dict))]
+                                                            if len(atom_set4) > 1 else atom_set4)
+                    for atomSelectionSet, asIsSet in zip(self.atomSelectionSets, self.asIsSets):
+                        ambig_code1 = ambig_code2 = ambig_code3 = ambig_code4 = None
+                        atom1 = self.__extractCommonAtom(atomSelectionSet[0])
+                        atom2 = self.__extractCommonAtom(atomSelectionSet[1])
+                        atom3 = self.__extractCommonAtom(atomSelectionSet[2])
+                        atom4 = self.__extractCommonAtom(atomSelectionSet[3])
+                        asis1, asis2, asis3, asis4 = asIsSet
+                        if len(atomSelectionSet[0]) > 1:
+                            ambig_code1 = self.csStat.getMaxAmbigCodeWoSetId(atom1['comp_id'], atom1['atom_id'])
+                            if ambig_code1 == 0:
+                                ambig_code1 = None
+                        if 'ambig_code' in common_atom1:
+                            ambig_code1 = common_atom1['ambig_code']
+                        if len(atomSelectionSet[1]) > 1:
+                            ambig_code2 = self.csStat.getMaxAmbigCodeWoSetId(atom2['comp_id'], atom2['atom_id'])
+                            if ambig_code2 == 0:
+                                ambig_code2 = None
+                        if 'ambig_code' in common_atom2:
+                            ambig_code2 = common_atom2['ambig_code']
+                        if len(atomSelectionSet[2]) > 1:
+                            ambig_code3 = self.csStat.getMaxAmbigCodeWoSetId(atom3['comp_id'], atom3['atom_id'])
+                            if ambig_code3 == 0:
+                                ambig_code3 = None
+                        if 'ambig_code' in common_atom3:
+                            ambig_code3 = common_atom3['ambig_code']
+                        if len(atomSelectionSet[3]) > 1:
+                            ambig_code4 = self.csStat.getMaxAmbigCodeWoSetId(atom4['comp_id'], atom4['atom_id'])
+                            if ambig_code4 == 0:
+                                ambig_code4 = None
+                        if 'ambig_code' in common_atom4:
+                            ambig_code4 = common_atom4['ambig_code']
+
+                        sf['index_id'] += 1
+
+                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                       sf['list_id'], self.entryId, dstFunc,
+                                       self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                       atom1, atom2, atom3, atom4,
+                                       asis1=asis1, asis2=asis2, asis3=asis3, asis4=asis4,
+                                       ambig_code1=ambig_code1, ambig_code2=ambig_code2,
+                                       ambig_code3=ambig_code3, ambig_code4=ambig_code4,
+                                       details=details)
+                        sf['loop'].add_data(row)
+
+                else:
+
+                    sf['index_id'] += 1
+
+                    ambig_code1 = ambig_code2 = ambig_code3 = ambig_code4 = None
+                    if has_assignments:
+                        atom1 = self.__extractCommonAtom(self.atomSelectionSet[0])
+                        atom2 = self.__extractCommonAtom(self.atomSelectionSet[1])
+                        atom3 = self.__extractCommonAtom(self.atomSelectionSet[2])
+                        atom4 = self.__extractCommonAtom(self.atomSelectionSet[3])
+                        if len(self.atomSelectionSet[0]) > 1:
+                            ambig_code1 = self.csStat.getMaxAmbigCodeWoSetId(atom1['comp_id'], atom1['atom_id'])
+                            if ambig_code1 == 0:
+                                ambig_code1 = None
+                        if 'ambig_code' in atom1:
+                            ambig_code1 = atom1['ambig_code']
+                        if len(self.atomSelectionSet[1]) > 1:
+                            ambig_code2 = self.csStat.getMaxAmbigCodeWoSetId(atom2['comp_id'], atom2['atom_id'])
+                            if ambig_code2 == 0:
+                                ambig_code2 = None
+                        if 'ambig_code' in atom2:
+                            ambig_code2 = atom2['ambig_code']
+                        if len(self.atomSelectionSet[2]) > 1:
+                            ambig_code3 = self.csStat.getMaxAmbigCodeWoSetId(atom3['comp_id'], atom3['atom_id'])
+                            if ambig_code3 == 0:
+                                ambig_code3 = None
+                        if 'ambig_code' in atom3:
+                            ambig_code3 = atom3['ambig_code']
+                        if len(self.atomSelectionSet[3]) > 1:
+                            ambig_code4 = self.csStat.getMaxAmbigCodeWoSetId(atom4['comp_id'], atom4['atom_id'])
+                            if ambig_code4 == 0:
+                                ambig_code4 = None
+                        if 'ambig_code' in atom4:
+                            ambig_code4 = atom4['ambig_code']
+                    else:
+                        atom1 = atom2 = atom3 = atom4 = None
+
+                    row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                   sf['list_id'], self.entryId, dstFunc,
+                                   self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
+                                   atom1, atom2, atom3, atom4,
+                                   asis1=asis1, asis2=asis2, asis3=asis3, asis4=asis4,
+                                   ambig_code1=ambig_code1, ambig_code2=ambig_code2,
+                                   ambig_code3=ambig_code3, ambig_code4=ambig_code4,
+                                   details=details)
+                    sf['loop'].add_data(row)
 
                 if not has_assignments and details is not None:
                     self.f.append(f"[Conflicted peak assignment] {self.getCurrentRestraint(n=index)}"
@@ -6160,6 +6437,36 @@ class BasePKParserListener():
                                     sf['alt_loops'][3].add_data(row)
                                     uniqAtoms.append(common_atom)
                     else:
+                        atom_set1, atom_set2, atom_set3, atom_set4 = [], [], [], []
+                        for atomSelectionSet in self.atomSelectionSets:
+                            valid = True
+                            if len(history) > 0:
+                                onebond_idx = collections.Counter(history).most_common()[0][0]
+                                _atom1, _atom2, _atom3, _atom4 =\
+                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][0][1]][0], \
+                                    atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][0]][0], atomSelectionSet[DIM_TRANSFER_PAT_4D[onebond_idx][1][1]][0]
+                                if _atom1['chain_id'] != _atom2['chain_id']\
+                                   or _atom1['seq_id'] != _atom2['seq_id']\
+                                   or _atom1['atom_id'][0] == _atom2['atom_id'][0] or not self.ccU.hasBond(_atom1['comp_id'], _atom1['atom_id'], _atom2['atom_id'])\
+                                   or _atom3['chain_id'] != _atom4['chain_id']\
+                                   or _atom3['seq_id'] != _atom4['seq_id']\
+                                   or _atom3['atom_id'][0] == _atom4['atom_id'][0] or not self.ccU.hasBond(_atom3['comp_id'], _atom3['atom_id'], _atom4['atom_id']):
+                                    valid = False
+                            if not valid:
+                                continue
+                            atom_set1.extend(atomSelectionSet[0])
+                            atom_set2.extend(atomSelectionSet[1])
+                            atom_set3.extend(atomSelectionSet[2])
+                            atom_set4.extend(atomSelectionSet[3])
+                        common_atoms = []
+                        common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set1 if isinstance(a, dict))]
+                                                                     if len(atom_set1) > 1 else atom_set1))
+                        common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set2 if isinstance(a, dict))]
+                                                                     if len(atom_set2) > 1 else atom_set2))
+                        common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set3 if isinstance(a, dict))]
+                                                                     if len(atom_set3) > 1 else atom_set3))
+                        common_atoms.append(self.__extractCommonAtom([dict(s) for s in set(frozenset(a.items()) for a in atom_set4 if isinstance(a, dict))]
+                                                                     if len(atom_set4) > 1 else atom_set4))
                         set_id = 1
                         for atomSelectionSet, asIsSet in itertools.zip_longest(self.atomSelectionSets, self.asIsSets):
                             valid = True
@@ -6197,8 +6504,8 @@ class BasePKParserListener():
                                                 gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in protonBeginCode else hvy_gem_atoms
                                                 if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
                                                     ambig_code = 1
-                                        if 'ambig_code' in common_atom:
-                                            ambig_code = common_atom['ambig_code']
+                                        if 'ambig_code' in common_atoms[idx]:
+                                            ambig_code = common_atoms[idx]['ambig_code']
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                             common_atom, asis, ambig_code)

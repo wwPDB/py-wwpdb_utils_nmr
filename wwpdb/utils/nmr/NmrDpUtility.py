@@ -3474,10 +3474,12 @@ class NmrDpUtility:
 
         # key items for spectral peak
         self.pk_key_items = {'nef': [{'name': 'position_%s', 'type': 'float'},
-                                     {'name': 'peak_id', 'type': 'positive-int'}
+                                     {'name': 'peak_id', 'type': 'positive-int'},
+                                     {'name': 'index', 'type': 'index-int'}
                                      ],
                              'nmr-star': [{'name': 'Position_%s', 'type': 'float'},
-                                          {'name': 'ID', 'type': 'int'}  # allows to have software-native id starting from zero
+                                          {'name': 'ID', 'type': 'int'},  # allows to have software-native id starting from zero
+                                          {'name': 'Index_ID', 'type': 'index-int'}
                                           ]
                              }
 
@@ -3653,7 +3655,7 @@ class NmrDpUtility:
                                                       'enforce-non-zero': True},
                                                      {'name': 'distance_dependent', 'type': 'bool', 'mandatory': False}
                                                      ],
-                                   'spectral_peak': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
+                                   'spectral_peak': [{'name': 'peak_id', 'type': 'positive-int', 'mandatory': True},
                                                      {'name': 'volume', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                       'clear-bad-pattern': True,
                                                       'group': {'member-with': ['height'],
@@ -3983,7 +3985,7 @@ class NmrDpUtility:
                                                           {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
                                                           {'name': 'RDC_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
                                                           ],
-                                        'spectral_peak': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                        'spectral_peak': [{'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                                           {'name': 'Volume', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                            'clear-bad-pattern': True,
                                                            'group': {'member-with': ['Height'],
@@ -3998,7 +4000,7 @@ class NmrDpUtility:
                                                            'clear-bad-pattern': True},
                                                           {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
                                                           ],
-                                        'spectral_peak_alt': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                        'spectral_peak_alt': [{'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                                               {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
                                                                'range': WEIGHT_RANGE},
                                                               {'name': 'Restraint', 'type': 'enum', 'mandatory': False,
@@ -29690,7 +29692,7 @@ class NmrDpUtility:
                             comp_id_names.append(item_names[d]['comp_id'])
                             atom_id_names.append(item_names[d]['atom_id'])
 
-                        index_tag = self.index_tags[file_type][content_subtype]
+                        id_tag = self.consist_id_tags[file_type][content_subtype]
 
                         try:
 
@@ -29793,7 +29795,7 @@ class NmrDpUtility:
                                             if rescue_mode:
                                                 continue
 
-                                            err = f"[Check row of {index_tag} {row[index_tag]}] Assignment of {subtype_name} "\
+                                            err = f"[Check row of {id_tag} {row[id_tag]}] Assignment of {subtype_name} "\
                                                 + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                                 comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
                                                 + " was not found in assigned chemical shifts. In contrast, "\
@@ -29811,7 +29813,7 @@ class NmrDpUtility:
 
                                         else:
 
-                                            warn = f"[Check row of {index_tag} {row[index_tag]}] Assignment of {subtype_name} "\
+                                            warn = f"[Check row of {id_tag} {row[id_tag]}] Assignment of {subtype_name} "\
                                                 + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                                 comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
                                                 + " was not found in assigned chemical shifts. In contrast, "\
@@ -30154,7 +30156,7 @@ class NmrDpUtility:
                     atom_id_names.append(item_names[d]['atom_id'])
                     position_names.append(item_names[d]['position'])
 
-                index_tag = self.index_tags[file_type][content_subtype]
+                id_tag = self.consist_id_tags[file_type][content_subtype]
 
                 try:
 
@@ -30217,7 +30219,7 @@ class NmrDpUtility:
 
                                 if cs_idx == -1:
 
-                                    err = f"[Check row of {index_tag} {row[index_tag]}] Assignment of spectral peak "\
+                                    err = f"[Check row of {id_tag} {row[id_tag]}] Assignment of spectral peak "\
                                         + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                         comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
                                         + f" was not found in assigned chemical shifts of {cs_list!r} saveframe."
@@ -30264,7 +30266,7 @@ class NmrDpUtility:
 
                                             if CS_RANGE_MIN < sp_widths[d] < CS_RANGE_MAX:
 
-                                                err = f"[Check row of {index_tag} {row[index_tag]}] "\
+                                                err = f"[Check row of {id_tag} {row[id_tag]}] "\
                                                     f"Peak position of spectral peak {position_names[d]} {position} ("\
                                                     + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                                     comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
@@ -30296,7 +30298,7 @@ class NmrDpUtility:
                                     if axis_codes[d] is not None and d < num_dim\
                                        and axis_code not in (axis_codes[d], alt_axis_codes[d]) and cs[cs_atom_type] != axis_codes[d]:
 
-                                        err = f"[Check row of {index_tag} {row[index_tag]}] Assignment of spectral peak "\
+                                        err = f"[Check row of {id_tag} {row[id_tag]}] Assignment of spectral peak "\
                                             + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                             comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
                                             + f" is inconsistent with axis code {axis_code} vs {axis_codes[d]}."
@@ -30335,7 +30337,7 @@ class NmrDpUtility:
                                                                or (b[self.__ccU.ccbAtomId1] in _atom_ids2 and b[self.__ccU.ccbAtomId2] in _atom_ids))):
                                                         continue
 
-                                                err = f"[Check row of {index_tag} {row[index_tag]}] Coherence transfer type is onebond. "\
+                                                err = f"[Check row of {id_tag} {row[id_tag]}] Coherence transfer type is onebond. "\
                                                     "However, assignment of spectral peak is inconsistent with the type, ("\
                                                     + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                                     comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
@@ -30363,7 +30365,7 @@ class NmrDpUtility:
                                             if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue\
                                                or (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)):  # DAOTHER-7389, issue #2
 
-                                                err = f"[Check row of {index_tag} {row[index_tag]}] Coherence transfer type is jcoupling. "\
+                                                err = f"[Check row of {id_tag} {row[id_tag]}] Coherence transfer type is jcoupling. "\
                                                     "However, assignment of spectral peak is inconsistent with the type, ("\
                                                     + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                                     comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
@@ -30391,7 +30393,7 @@ class NmrDpUtility:
                                             if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue\
                                                or (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):  # DAOTHER-7389, issue #2
 
-                                                err = f"[Check row of {index_tag} {row[index_tag]}] Coherence transfer type is relayed. "\
+                                                err = f"[Check row of {id_tag} {row[id_tag]}] Coherence transfer type is relayed. "\
                                                     "However, assignment of spectral peak is inconsistent with the type, ("\
                                                     + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                                     comp_id_names[d], comp_id, atom_id_names[d], atom_id)\

@@ -953,6 +953,7 @@ class BasePKParserListener():
     cur_list_id = -1
     cur_spectral_dim = {}
     use_peak_row_format = True
+    enforce_peak_row_format = False
     null_value = None
     null_string = None
 
@@ -1165,6 +1166,9 @@ class BasePKParserListener():
 
     def setDebugMode(self, debug: bool):
         self.debug = debug
+
+    def enforsePeakRowFormat(self, enforce_peak_row_format: bool):
+        self.enforce_peak_row_format = enforce_peak_row_format
 
     def createSfDict(self, createSfDict: bool):
         self.createSfDict__ = createSfDict
@@ -7680,7 +7684,7 @@ class BasePKParserListener():
         multiple = len(ret) > numOfDim
 
         if multiple:
-            if self.createSfDict__ and self.use_peak_row_format:
+            if self.createSfDict__ and self.use_peak_row_format and not self.enforce_peak_row_format:
                 sf = self.getSf()
                 sf['peak_row_format'] = self.use_peak_row_format = False
 

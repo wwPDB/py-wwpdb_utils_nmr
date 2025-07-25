@@ -217,6 +217,7 @@
 # 23-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors to report out failed restraint conversions and detailed messages (DAOTHER-9785)
 # 29-May-2025  M. Yokochi - analyze spectral peak list files and provide warning/error messages to depositor (DAOTHER-8905, 8949, 10096, 10097, 10098, 10099, 10100, 10101)
 # 11-Jun-2025  M. Yokochi - reconstruct atom name mapping from revision history and PDB Versioned Archive if possible (DAOTHER-7829, 8905)
+# 25-Jul-2025  M. Yokochi - enable to configure whether to enforce to use _Peak_row_format loop for spectral peak list remediation (DAOTHER-8905, 9785)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -1855,6 +1856,8 @@ class NmrDpUtility:
         self.__internal_mode = False
         # whether to combine spectral peak list in any plain text format into single NMR-STAR file (must be turned off after Phase 2, DAOTHER-7407)
         self.__merge_any_pk_as_is = False
+        # whether to enforce to use _Peak_row_format loop for spectral peak remediation (DAOTHER-8905)
+        self.__enforce_peak_row_format = False
 
         # whether to allow empty coordinate file path
         self.__bmrb_only = False
@@ -7713,6 +7716,12 @@ class NmrDpUtility:
                 self.__merge_any_pk_as_is = self.__inputParamDict['merge_any_pk_as_is']
             else:
                 self.__merge_any_pk_as_is = self.__inputParamDict['merge_any_pk_as_is'] in trueValue
+
+        if has_key_value(self.__inputParamDict, 'enforce_peak_row_format'):
+            if isinstance(self.__inputParamDict['enforce_peak_row_format'], bool):
+                self.__enforce_peak_row_format = self.__inputParamDict['enforce_peak_row_format']
+            else:
+                self.__enforce_peak_row_format = self.__inputParamDict['enforce_peak_row_format'] in trueValue
 
         if has_key_value(self.__inputParamDict, 'nonblk_anomalous_cs'):
             if isinstance(self.__inputParamDict['nonblk_anomalous_cs'], bool):
@@ -36899,6 +36908,7 @@ class NmrDpUtility:
                                       self.__mr_atom_name_mapping,
                                       self.__cR, self.__caC,
                                       self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -36927,6 +36937,7 @@ class NmrDpUtility:
                                               self.__cR, self.__caC,
                                               self.__ccU, self.__csStat, self.__nefT,
                                               reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -36971,6 +36982,7 @@ class NmrDpUtility:
                                       self.__mr_atom_name_mapping,
                                       self.__cR, self.__caC,
                                       self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
                 reader.setInternalMode(self.__internal_mode)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
@@ -37001,6 +37013,7 @@ class NmrDpUtility:
                                               self.__cR, self.__caC,
                                               self.__ccU, self.__csStat, self.__nefT,
                                               reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
                         reader.setInternalMode(self.__internal_mode)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
@@ -37046,6 +37059,7 @@ class NmrDpUtility:
                                       self.__mr_atom_name_mapping,
                                       self.__cR, self.__caC,
                                       self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37078,6 +37092,7 @@ class NmrDpUtility:
                                               self.__cR, self.__caC,
                                               self.__ccU, self.__csStat, self.__nefT,
                                               reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37122,6 +37137,7 @@ class NmrDpUtility:
                                          self.__mr_atom_name_mapping,
                                          self.__cR, self.__caC,
                                          self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37154,6 +37170,7 @@ class NmrDpUtility:
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
                                                  reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37198,6 +37215,7 @@ class NmrDpUtility:
                                            self.__mr_atom_name_mapping,
                                            self.__cR, self.__caC,
                                            self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37230,6 +37248,7 @@ class NmrDpUtility:
                                                    self.__cR, self.__caC,
                                                    self.__ccU, self.__csStat, self.__nefT,
                                                    reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37276,6 +37295,7 @@ class NmrDpUtility:
                                         self.__mr_atom_name_mapping,
                                         self.__cR, self.__caC,
                                         self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37306,6 +37326,7 @@ class NmrDpUtility:
                                              self.__mr_atom_name_mapping,
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37335,6 +37356,7 @@ class NmrDpUtility:
                                                  self.__mr_atom_name_mapping,
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
                         reader.setInternalMode(self.__internal_mode)
 
                         _list_id_counter = copy.copy(self.__list_id_counter)
@@ -37398,6 +37420,8 @@ class NmrDpUtility:
                                                      reasons)
                             reader.setInternalMode(self.__internal_mode)
 
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
+
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
@@ -37441,6 +37465,7 @@ class NmrDpUtility:
                                          self.__mr_atom_name_mapping,
                                          self.__cR, self.__caC,
                                          self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37473,6 +37498,7 @@ class NmrDpUtility:
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
                                                  reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37517,6 +37543,7 @@ class NmrDpUtility:
                                          self.__mr_atom_name_mapping,
                                          self.__cR, self.__caC,
                                          self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37544,6 +37571,7 @@ class NmrDpUtility:
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
                                                  reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37589,6 +37617,7 @@ class NmrDpUtility:
                                          self.__mr_atom_name_mapping,
                                          self.__cR, self.__caC,
                                          self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37619,6 +37648,7 @@ class NmrDpUtility:
                                               self.__mr_atom_name_mapping,
                                               self.__cR, self.__caC,
                                               self.__ccU, self.__csStat, self.__nefT)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37660,6 +37690,8 @@ class NmrDpUtility:
                                                       self.__cR, self.__caC,
                                                       self.__ccU, self.__csStat, self.__nefT,
                                                       reasons)
+
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37704,6 +37736,7 @@ class NmrDpUtility:
                                       self.__mr_atom_name_mapping,
                                       self.__cR, self.__caC,
                                       self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37736,6 +37769,7 @@ class NmrDpUtility:
                                               self.__cR, self.__caC,
                                               self.__ccU, self.__csStat, self.__nefT,
                                               reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37781,6 +37815,7 @@ class NmrDpUtility:
                                        self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT,
                                        xeasyAtomNumberDict)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37814,6 +37849,7 @@ class NmrDpUtility:
                                                self.__ccU, self.__csStat, self.__nefT,
                                                xeasyAtomNumberDict,
                                                reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37858,6 +37894,7 @@ class NmrDpUtility:
                                          self.__mr_atom_name_mapping,
                                          self.__cR, self.__caC,
                                          self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37889,6 +37926,7 @@ class NmrDpUtility:
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
                                                  reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -53084,6 +53122,7 @@ class NmrDpUtility:
                                   self.__mr_atom_name_mapping,
                                   self.__cR, self.__caC,
                                   self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53105,6 +53144,7 @@ class NmrDpUtility:
                                           self.__cR, self.__caC,
                                           self.__ccU, self.__csStat, self.__nefT,
                                           reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53148,6 +53188,7 @@ class NmrDpUtility:
                                   self.__mr_atom_name_mapping,
                                   self.__cR, self.__caC,
                                   self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
             reader.setInternalMode(self.__internal_mode)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
@@ -53170,6 +53211,7 @@ class NmrDpUtility:
                                           self.__cR, self.__caC,
                                           self.__ccU, self.__csStat, self.__nefT,
                                           reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
                     reader.setInternalMode(self.__internal_mode)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
@@ -53214,6 +53256,7 @@ class NmrDpUtility:
                                   self.__mr_atom_name_mapping,
                                   self.__cR, self.__caC,
                                   self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53235,6 +53278,7 @@ class NmrDpUtility:
                                           self.__cR, self.__caC,
                                           self.__ccU, self.__csStat, self.__nefT,
                                           reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53278,6 +53322,7 @@ class NmrDpUtility:
                                      self.__mr_atom_name_mapping,
                                      self.__cR, self.__caC,
                                      self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53299,6 +53344,7 @@ class NmrDpUtility:
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53342,6 +53388,7 @@ class NmrDpUtility:
                                        self.__mr_atom_name_mapping,
                                        self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53363,6 +53410,7 @@ class NmrDpUtility:
                                                self.__cR, self.__caC,
                                                self.__ccU, self.__csStat, self.__nefT,
                                                reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53406,6 +53454,7 @@ class NmrDpUtility:
                                     self.__mr_atom_name_mapping,
                                     self.__cR, self.__caC,
                                     self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53427,6 +53476,7 @@ class NmrDpUtility:
                                             self.__cR, self.__caC,
                                             self.__ccU, self.__csStat, self.__nefT,
                                             reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53470,6 +53520,7 @@ class NmrDpUtility:
                                      self.__mr_atom_name_mapping,
                                      self.__cR, self.__caC,
                                      self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53491,6 +53542,7 @@ class NmrDpUtility:
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53534,6 +53586,7 @@ class NmrDpUtility:
                                      self.__mr_atom_name_mapping,
                                      self.__cR, self.__caC,
                                      self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53554,6 +53607,7 @@ class NmrDpUtility:
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53596,6 +53650,7 @@ class NmrDpUtility:
                                      self.__mr_atom_name_mapping,
                                      self.__cR, self.__caC,
                                      self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53617,6 +53672,7 @@ class NmrDpUtility:
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53660,6 +53716,7 @@ class NmrDpUtility:
                                   self.__mr_atom_name_mapping,
                                   self.__cR, self.__caC,
                                   self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53681,6 +53738,7 @@ class NmrDpUtility:
                                           self.__cR, self.__caC,
                                           self.__ccU, self.__csStat, self.__nefT,
                                           reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53725,6 +53783,7 @@ class NmrDpUtility:
                                    self.__cR, self.__caC,
                                    self.__ccU, self.__csStat, self.__nefT,
                                    None)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53747,6 +53806,7 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat, self.__nefT,
                                            None,
                                            reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53790,6 +53850,7 @@ class NmrDpUtility:
                                      self.__mr_atom_name_mapping,
                                      self.__cR, self.__caC,
                                      self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53810,6 +53871,7 @@ class NmrDpUtility:
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,

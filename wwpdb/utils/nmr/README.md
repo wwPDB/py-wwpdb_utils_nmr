@@ -58,6 +58,7 @@ name|type|description
 `bmrb_only`|`param`|Boolean value. Set BMRB only mode. NOTE: used for BMRB only.
 `bmrb_id`|`param`|Set BMRB ID. NOTE: used for BMRB only.
 `merge_any_pk_as_is`|`param`|Boolean value. True until NMR data remediation (Phase 2). NOTE: used only for OneDep workflow
+`enforce_peak_row_format`|`param`|Boolean value. Whether to enforce to use _Peak_row_format loop for spectral peak list remediation (default value is False)
 `nonblk_anomalous_cs`|`param`|Boolean value. True for OneDep system because any anomalous chemical shift values should not be blocker.
 `nonblk_bad_nterm`|`param`|Boolean value. True for OneDep system because biocurator can handle atom name inconsistency of N-terminus residue.
 `update_poly_seq`|`param`|Boolean value. True for OneDep system.

@@ -228,6 +228,14 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    reasons_ = {'non_poly_remap': {'SAH': {76: {'chain_id': 'A', 'seq_id': 101, 'original_chain_id': None}}}}
+    reader = CyanaMRReader(True, reasons=reasons_)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6hag/aroG.upl',
+                     '../../tests-nmr/mock-data-remediation/6hag/6hag.cif')
+    print(reader_listener.getReasonsForReparsing())
+
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\

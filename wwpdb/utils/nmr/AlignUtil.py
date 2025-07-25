@@ -97,7 +97,7 @@ LEN_LARGE_ASYM_ID = len(LARGE_ASYM_ID)
 MAX_MAG_IDENT_ASYM_ID = 2
 
 
-def hasLargeInnerSeqGap(polySeq: List[dict], seqIdName: str = 'seq_id') -> bool:
+def hasLargeInnerSeqGap(polySeq: dict, seqIdName: str = 'seq_id') -> bool:
     """ Return whether large gap in a sequence.
     """
 
@@ -110,7 +110,7 @@ def hasLargeInnerSeqGap(polySeq: List[dict], seqIdName: str = 'seq_id') -> bool:
     return False
 
 
-def hasLargeSeqGap(polySeq1: List[dict], polySeq2: List[dict],
+def hasLargeSeqGap(polySeq1: dict, polySeq2: dict,
                    seqIdName1: str = 'seq_id', seqIdName2: str = 'seq_id') -> bool:
     """ Return whether large gap in combined sequence of polySeq1 and polySeq2.
     """
@@ -135,7 +135,7 @@ def hasLargeSeqGap(polySeq1: List[dict], polySeq2: List[dict],
     return False
 
 
-def fillInnerBlankCompId(polySeq: List[dict], seqIdName: str = 'seq_id') -> List[dict]:
+def fillInnerBlankCompId(polySeq: dict, seqIdName: str = 'seq_id') -> List[dict]:
     """ Fill inner blanked comp_ID.
     """
 
@@ -176,7 +176,7 @@ def fillInnerBlankCompId(polySeq: List[dict], seqIdName: str = 'seq_id') -> List
     return ps
 
 
-def fillBlankCompId(polySeq1: List[dict], polySeq2: List[dict],
+def fillBlankCompId(polySeq1: dict, polySeq2: dict,
                     seqIdName1: str = 'seq_id', seqIdName2: str = 'seq_id') -> List[dict]:
     """ Fill blanked comp_ID in polySeq2 against polySeq1.
     """
@@ -235,7 +235,7 @@ def fillBlankCompId(polySeq1: List[dict], polySeq2: List[dict],
     return ps
 
 
-def fillBlankCompIdWithOffset(polySeq: List[dict], offset: int, seqIdName: str = 'seq_id', compIdName: str = 'comp_id') -> List[dict]:
+def fillBlankCompIdWithOffset(polySeq: dict, offset: int, seqIdName: str = 'seq_id', compIdName: str = 'comp_id') -> List[dict]:
     """ Fill blanked comp_ID with offset.
     """
 
@@ -276,7 +276,7 @@ def fillBlankCompIdWithOffset(polySeq: List[dict], offset: int, seqIdName: str =
     return ps
 
 
-def beautifyPolySeq(polySeq1: List[dict], polySeq2: List[dict],
+def beautifyPolySeq(polySeq1: dict, polySeq2: dict,
                     seqIdName1: str = 'seq_id', seqIdName2: str = 'seq_id') -> Tuple[List[dict], List[dict]]:
     """ Truncate negative seq_IDs and insert spacing between the large gap.
     """
@@ -916,7 +916,7 @@ def sortPolySeqRst(polySeqRst: List[dict], nonPolyRemap: Optional[dict] = None):
                                   'seq_id': seqIdMap['seq_id'],
                                   'comp_id': compId})
 
-        for ps in polySeqRst:
+        for pos, ps in enumerate(polySeqRst):
             seqIds = [seqId for seqId in ps['seq_id']
                       if not any(item for item in remapList if item['chain_id'] == ps['chain_id'] and item['seq_id'] == seqId)]
 
@@ -978,6 +978,9 @@ def sortPolySeqRst(polySeqRst: List[dict], nonPolyRemap: Optional[dict] = None):
             ps['seq_id'] = _seqIds
             ps['comp_id'] = _compIds
             ps['auth_comp_id'] = _authCompIds
+
+            if hasLargeInnerSeqGap(ps):
+                polySeqRst[pos] = fillInnerBlankCompId(ps)
 
 
 def syncCompIdOfPolySeqRst(polySeqRst: List[dict], compIdMap: dict):

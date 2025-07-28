@@ -3985,7 +3985,7 @@ class NmrDpUtility:
                                                           {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
                                                           {'name': 'RDC_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
                                                           ],
-                                        'spectral_peak': [{'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                        'spectral_peak': [{'name': 'ID', 'type': 'int', 'mandatory': True},
                                                           {'name': 'Volume', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                            'clear-bad-pattern': True,
                                                            'group': {'member-with': ['Height'],
@@ -4000,7 +4000,7 @@ class NmrDpUtility:
                                                            'clear-bad-pattern': True},
                                                           {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
                                                           ],
-                                        'spectral_peak_alt': [{'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                        'spectral_peak_alt': [{'name': 'ID', 'type': 'int', 'mandatory': True},
                                                               {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
                                                                'range': WEIGHT_RANGE},
                                                               {'name': 'Restraint', 'type': 'enum', 'mandatory': False,
@@ -24072,7 +24072,7 @@ class NmrDpUtility:
                             key_items.append(_k)
 
                 position_names = [k['name'] for k in key_items]
-                index_tag = self.index_tags[file_type][content_subtype]
+                id_tag = self.consist_id_tags[file_type][content_subtype]
 
                 lp_data = next((lp['data'] for lp in self.__lp_data[content_subtype]
                                 if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode), None)
@@ -24089,7 +24089,7 @@ class NmrDpUtility:
 
                             if position < min_points[j] or position > max_points[j]:
 
-                                err = f"[Check row of {index_tag} {row[index_tag]}] {position_names[j]} {position} is not within expected range "\
+                                err = f"[Check row of {id_tag} {row[id_tag]}] {position_names[j]} {position} is not within expected range "\
                                     f"(min_position {min_points[j]}, max_position {max_points[j]}, absolute_peak_positions {abs_positions[j]}). "\
                                     "Please check for reference frequency and spectral width."
 
@@ -24106,7 +24106,7 @@ class NmrDpUtility:
 
                             if position < min_limits[j] or position > max_limits[j]:
 
-                                err = f"[Check row of {index_tag} {row[index_tag]}] {position_names[j]} {position} is not within expected range "\
+                                err = f"[Check row of {id_tag} {row[id_tag]}] {position_names[j]} {position} is not within expected range "\
                                     f"(min_position {min_limits[j]}, max_position {max_limits[j]}, absolute_peak_positions {abs_positions[j]}), "\
                                     f"which exceeds limit of current probe design ({self.hard_probe_limit / 1000.0} kHz). "\
                                     "Please check for reference frequency and spectral width."

@@ -642,20 +642,20 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                     cur_spectral_dim[1]['freq_hint'].append(x_ppm)
                     cur_spectral_dim[2]['freq_hint'].append(y_ppm)
 
-                    if self.createSfDict__:
-                        sf = self.getSf()
-
                     if self.debug:
                         print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) {dstFunc}")
 
-                    if self.createSfDict__ and sf is not None:
-                        sf['id'] = index
-                        sf['index_id'] += 1
+                    if self.createSfDict__:
+                        sf = self.getSf()
 
-                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                                       sf['list_id'], self.entryId, dstFunc,
-                                       None, None, None, details=note)
-                        sf['loop'].add_data(row)
+                        if sf is not None:
+                            sf['id'] = index
+                            sf['index_id'] += 1
+
+                            row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                           sf['list_id'], self.entryId, dstFunc,
+                                           None, None, None, details=note)
+                            sf['loop'].add_data(row)
 
                 except IndexError:
                     self.peaks2D -= 1
@@ -739,20 +739,20 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                     cur_spectral_dim[2]['freq_hint'].append(y_ppm)
                     cur_spectral_dim[3]['freq_hint'].append(z_ppm)
 
-                    if self.createSfDict__:
-                        sf = self.getSf()
-
                     if self.debug:
                         print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) {dstFunc}")
 
-                    if self.createSfDict__ and sf is not None:
-                        sf['id'] = index
-                        sf['index_id'] += 1
+                    if self.createSfDict__:
+                        sf = self.getSf()
 
-                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                                       sf['list_id'], self.entryId, dstFunc,
-                                       None, None, None, details=note)
-                        sf['loop'].add_data(row)
+                        if sf is not None:
+                            sf['id'] = index
+                            sf['index_id'] += 1
+
+                            row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                           sf['list_id'], self.entryId, dstFunc,
+                                           None, None, None, details=note)
+                            sf['loop'].add_data(row)
 
                 except IndexError:
                     self.peaks3D -= 1
@@ -847,20 +847,20 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                     cur_spectral_dim[3]['freq_hint'].append(z_ppm)
                     cur_spectral_dim[4]['freq_hint'].append(a_ppm)
 
-                    if self.createSfDict__:
-                        sf = self.getSf()
-
                     if self.debug:
                         print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) {dstFunc}")
 
-                    if self.createSfDict__ and sf is not None:
-                        sf['id'] = index
-                        sf['index_id'] += 1
+                    if self.createSfDict__:
+                        sf = self.getSf()
 
-                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                                       sf['list_id'], self.entryId, dstFunc,
-                                       None, None, None, details=note)
-                        sf['loop'].add_data(row)
+                        if sf is not None:
+                            sf['id'] = index
+                            sf['index_id'] += 1
+
+                            row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                           sf['list_id'], self.entryId, dstFunc,
+                                           None, None, None, details=note)
+                            sf['loop'].add_data(row)
 
                 except IndexError:
                     self.peaks4D -= 1

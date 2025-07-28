@@ -3620,11 +3620,11 @@ class BasePKParserListener():
                         if peak_id != row[0]:
                             continue
 
-                    chain_ids.append(row[2] if isinstance(row[2], str) else str(row[2]))
-                    seq_ids.append(int(row[3]) if isinstance(row[3], str) else row[3])
-                    comp_ids.append(row[4])
-                    atom_ids.append(row[5])
-                    positions.append(float(row[6]) if isinstance(row[6], str) else row[6])
+                    chain_ids.append(row[2] if isinstance(row[2], str) else str(row[2]))  # pylint: disable=possibly-used-before-assignment
+                    seq_ids.append(int(row[3]) if isinstance(row[3], str) else row[3])  # pylint: disable=possibly-used-before-assignment
+                    comp_ids.append(row[4])  # pylint: disable=possibly-used-before-assignment
+                    atom_ids.append(row[5])  # pylint: disable=possibly-used-before-assignment
+                    positions.append(float(row[6]) if isinstance(row[6], str) else row[6])  # pylint: disable=possibly-used-before-assignment
 
                     if dim_id < num_of_dim:
                         continue
@@ -4277,11 +4277,11 @@ class BasePKParserListener():
                         if peak_id != row[0]:
                             continue
 
-                    chain_ids.append(row[2] if isinstance(row[2], str) else str(row[2]))
-                    seq_ids.append(int(row[3]) if isinstance(row[3], str) else row[3])
-                    comp_ids.append(row[4])
-                    atom_ids.append(row[5])
-                    positions.append(float(row[6]) if isinstance(row[6], str) else row[6])
+                    chain_ids.append(row[2] if isinstance(row[2], str) else str(row[2]))  # pylint: disable=possibly-used-before-assignment
+                    seq_ids.append(int(row[3]) if isinstance(row[3], str) else row[3])  # pylint: disable=possibly-used-before-assignment
+                    comp_ids.append(row[4])  # pylint: disable=possibly-used-before-assignment
+                    atom_ids.append(row[5])  # pylint: disable=possibly-used-before-assignment
+                    positions.append(float(row[6]) if isinstance(row[6], str) else row[6])  # pylint: disable=possibly-used-before-assignment
 
                     if dim_id < num_of_dim:
                         continue
@@ -4538,11 +4538,11 @@ class BasePKParserListener():
                         if peak_id != row[0]:
                             continue
 
-                    chain_ids.append(row[2] if isinstance(row[2], str) else str(row[2]))
-                    seq_ids.append(int(row[3]) if isinstance(row[3], str) else row[3])
-                    comp_ids.append(row[4])
-                    atom_ids.append(row[5])
-                    positions.append(float(row[6]) if isinstance(row[6], str) else row[6])
+                    chain_ids.append(row[2] if isinstance(row[2], str) else str(row[2]))  # pylint: disable=possibly-used-before-assignment
+                    seq_ids.append(int(row[3]) if isinstance(row[3], str) else row[3])  # pylint: disable=possibly-used-before-assignment
+                    comp_ids.append(row[4])  # pylint: disable=possibly-used-before-assignment
+                    atom_ids.append(row[5])  # pylint: disable=possibly-used-before-assignment
+                    positions.append(float(row[6]) if isinstance(row[6], str) else row[6])  # pylint: disable=possibly-used-before-assignment
 
                     if dim_id < num_of_dim:
                         continue

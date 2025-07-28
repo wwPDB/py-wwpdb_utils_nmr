@@ -182,21 +182,21 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
         cur_spectral_dim[1]['freq_hint'].append(f1_ppm)
         cur_spectral_dim[2]['freq_hint'].append(f2_ppm)
 
-        if self.createSfDict__:
-            sf = self.getSf()
-
         if self.debug:
             print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) {dstFunc}")
 
-        if self.createSfDict__ and sf is not None:
-            sf['id'] = index
-            sf['index_id'] += 1
+        if self.createSfDict__:
+            sf = self.getSf()
 
-            row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                           sf['list_id'], self.entryId, dstFunc,
-                           None, None, None,
-                           details=annotation)
-            sf['loop'].add_data(row)
+            if sf is not None:
+                sf['id'] = index
+                sf['index_id'] += 1
+
+                row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                               sf['list_id'], self.entryId, dstFunc,
+                               None, None, None,
+                               details=annotation)
+                sf['loop'].add_data(row)
 
     # Enter a parse tree produced by XwinNmrPKParser#peak_3d.
     def enterPeak_3d(self, ctx: XwinNmrPKParser.Peak_3dContext):  # pylint: disable=unused-argument
@@ -261,21 +261,21 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
         cur_spectral_dim[2]['freq_hint'].append(f2_ppm)
         cur_spectral_dim[3]['freq_hint'].append(f3_ppm)
 
-        if self.createSfDict__:
-            sf = self.getSf()
-
         if self.debug:
             print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) {dstFunc}")
 
-        if self.createSfDict__ and sf is not None:
-            sf['id'] = index
-            sf['index_id'] += 1
+        if self.createSfDict__:
+            sf = self.getSf()
 
-            row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                           sf['list_id'], self.entryId, dstFunc,
-                           None, None, None,
-                           details=annotation)
-            sf['loop'].add_data(row)
+            if sf is not None:
+                sf['id'] = index
+                sf['index_id'] += 1
+
+                row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                               sf['list_id'], self.entryId, dstFunc,
+                               None, None, None,
+                               details=annotation)
+                sf['loop'].add_data(row)
 
     # Enter a parse tree produced by XwinNmrPKParser#peak_4d.
     def enterPeak_4d(self, ctx: XwinNmrPKParser.Peak_4dContext):  # pylint: disable=unused-argument
@@ -347,21 +347,21 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
         cur_spectral_dim[3]['freq_hint'].append(f3_ppm)
         cur_spectral_dim[4]['freq_hint'].append(f4_ppm)
 
-        if self.createSfDict__:
-            sf = self.getSf()
-
         if self.debug:
             print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) {dstFunc}")
 
-        if self.createSfDict__ and sf is not None:
-            sf['id'] = index
-            sf['index_id'] += 1
+        if self.createSfDict__:
+            sf = self.getSf()
 
-            row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                           sf['list_id'], self.entryId, dstFunc,
-                           None, None, None,
-                           details=annotation)
-            sf['loop'].add_data(row)
+            if sf is not None:
+                sf['id'] = index
+                sf['index_id'] += 1
+
+                row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                               sf['list_id'], self.entryId, dstFunc,
+                               None, None, None,
+                               details=annotation)
+                sf['loop'].add_data(row)
 
 
 # del XwinNmrPKParser

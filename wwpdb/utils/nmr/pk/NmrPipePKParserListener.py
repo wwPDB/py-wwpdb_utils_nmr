@@ -86,22 +86,22 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
 
             if ctx.Simple_name_DA():
                 cur_spectral_dim['axis_code'] = axis_code = str(ctx.Simple_name_DA())
-            if axis_code is not None:
-                digits = re.findall(r'\d+', axis_code)
-                for digit in digits:
-                    num = int(digit)
-                    nuc = next((k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if num == v[0]), None)
-                    if nuc is not None:
-                        cur_spectral_dim['atom_type'] = nuc
-                        cur_spectral_dim['atom_isotope_number'] = num
-                        break
-                if cur_spectral_dim['atom_type'] is None:
-                    for a in axis_code:
-                        a = a.upper()
-                        if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                            cur_spectral_dim['atom_type'] = a
-                            cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
+                if axis_code not in emptyValue:
+                    digits = re.findall(r'\d+', axis_code)
+                    for digit in digits:
+                        num = int(digit)
+                        nuc = next((k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if num == v[0]), None)
+                        if nuc is not None:
+                            cur_spectral_dim['atom_type'] = nuc
+                            cur_spectral_dim['atom_isotope_number'] = num
                             break
+                    if cur_spectral_dim['atom_type'] is None:
+                        for a in axis_code:
+                            a = a.upper()
+                            if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                cur_spectral_dim['atom_type'] = a
+                                cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
+                                break
 
             truncated = False
             first_point = last_point = None

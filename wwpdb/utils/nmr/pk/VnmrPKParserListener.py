@@ -216,6 +216,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 volume = self.originalNumberSelection[offset]
                 offset += 1
 
+            x_lw_hz = y_lw_hz = None
             if self.__has_line_width:
                 x_lw_hz = self.numberSelection[offset]
                 y_lw_hz = self.numberSelection[offset + 1]
@@ -329,6 +330,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 volume = self.originalNumberSelection[offset]
                 offset += 1
 
+            x_lw_hz = y_lw_hz = z_lw_hz = None
             if self.__has_line_width:
                 x_lw_hz = self.numberSelection[offset]
                 y_lw_hz = self.numberSelection[offset + 1]
@@ -442,6 +444,7 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 volume = self.originalNumberSelection[offset]
                 offset += 1
 
+            x_lw_hz = y_lw_hz = z_lw_hz = a_lw_hz = None
             if self.__has_line_width:
                 x_lw_hz = self.numberSelection[offset]
                 y_lw_hz = self.numberSelection[offset + 1]

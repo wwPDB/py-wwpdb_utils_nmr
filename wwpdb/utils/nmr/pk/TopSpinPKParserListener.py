@@ -181,21 +181,21 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
             cur_spectral_dim[1]['freq_hint'].append(self.__f1_ppm)
             cur_spectral_dim[2]['freq_hint'].append(self.__f2_ppm)
 
-            if self.createSfDict__:
-                sf = self.getSf()
-
             if self.debug:
                 print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) {dstFunc}")
 
-            if self.createSfDict__ and sf is not None:
-                sf['id'] = index
-                sf['index_id'] += 1
+            if self.createSfDict__:
+                sf = self.getSf()
 
-                row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                               sf['list_id'], self.entryId, dstFunc,
-                               None, None, None,
-                               details=self.__annotation)
-                sf['loop'].add_data(row)
+                if sf is not None:
+                    sf['id'] = index
+                    sf['index_id'] += 1
+
+                    row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                   sf['list_id'], self.entryId, dstFunc,
+                                   None, None, None,
+                                   details=self.__annotation)
+                    sf['loop'].add_data(row)
 
         elif self.__cur_path == '/PeakList/PeakList3D/Peak3D':
 
@@ -219,21 +219,21 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
             cur_spectral_dim[2]['freq_hint'].append(self.__f2_ppm)
             cur_spectral_dim[3]['freq_hint'].append(self.__f3_ppm)
 
-            if self.createSfDict__:
-                sf = self.getSf()
-
             if self.debug:
                 print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) {dstFunc}")
 
-            if self.createSfDict__ and sf is not None:
-                sf['id'] = index
-                sf['index_id'] += 1
+            if self.createSfDict__:
+                sf = self.getSf()
 
-                row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                               sf['list_id'], self.entryId, dstFunc,
-                               None, None, None,
-                               details=self.__annotation)
-                sf['loop'].add_data(row)
+                if sf is not None:
+                    sf['id'] = index
+                    sf['index_id'] += 1
+
+                    row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                   sf['list_id'], self.entryId, dstFunc,
+                                   None, None, None,
+                                   details=self.__annotation)
+                    sf['loop'].add_data(row)
 
         elif self.__cur_path == '/PeakList/PeakList4D/Peak4D':
 
@@ -258,21 +258,21 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
             cur_spectral_dim[3]['freq_hint'].append(self.__f3_ppm)
             cur_spectral_dim[4]['freq_hint'].append(self.__f4_ppm)
 
-            if self.createSfDict__:
-                sf = self.getSf()
-
             if self.debug:
                 print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) {dstFunc}")
 
-            if self.createSfDict__ and sf is not None:
-                sf['id'] = index
-                sf['index_id'] += 1
+            if self.createSfDict__:
+                sf = self.getSf()
 
-                row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                               sf['list_id'], self.entryId, dstFunc,
-                               None, None, None,
-                               details=self.__annotation)
-                sf['loop'].add_data(row)
+                if sf is not None:
+                    sf['id'] = index
+                    sf['index_id'] += 1
+
+                    row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                   sf['list_id'], self.entryId, dstFunc,
+                                   None, None, None,
+                                   details=self.__annotation)
+                    sf['loop'].add_data(row)
 
         self.__cur_path = self.__cur_path[:-(1 + len(str(ctx.Name(0))))]
 

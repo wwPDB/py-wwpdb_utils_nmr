@@ -64,6 +64,7 @@ class XwinNmrPKReader:
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
+        self.__enforce_peak_row_format = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
         self.__maxParserErrorReport = MAX_ERROR_REPORT
@@ -95,6 +96,9 @@ class XwinNmrPKReader:
 
     def setDebugMode(self, debug: bool):
         self.__debug = debug
+
+    def enforcePeakRowFormat(self, enforce_peak_row_format: bool):
+        self.__enforce_peak_row_format = enforce_peak_row_format
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
         self.__maxLexerErrorReport = maxErrReport
@@ -179,6 +183,7 @@ class XwinNmrPKReader:
                                                self.__ccU, self.__csStat, self.__nefT,
                                                self.__reasons)
             listener.setDebugMode(self.__debug)
+            listener.enforsePeakRowFormat(self.__enforce_peak_row_format)
             listener.createSfDict(createSfDict)
             if createSfDict:
                 if originalFileName is not None:

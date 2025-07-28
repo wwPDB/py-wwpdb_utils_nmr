@@ -217,6 +217,7 @@
 # 23-Apr-2025  M. Yokochi - enable to inherit previous warnings/errors to report out failed restraint conversions and detailed messages (DAOTHER-9785)
 # 29-May-2025  M. Yokochi - analyze spectral peak list files and provide warning/error messages to depositor (DAOTHER-8905, 8949, 10096, 10097, 10098, 10099, 10100, 10101)
 # 11-Jun-2025  M. Yokochi - reconstruct atom name mapping from revision history and PDB Versioned Archive if possible (DAOTHER-7829, 8905)
+# 25-Jul-2025  M. Yokochi - enable to configure whether to enforce to use _Peak_row_format loop for spectral peak list remediation (DAOTHER-8905, 9785)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -641,6 +642,7 @@ tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
 sf_category_pattern = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
 sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
 
+onedep_model_file_pattern = re.compile(r'^(D_[0-9]{6,10})_model_P1.cif.V\d+$')
 onedep_upload_file_pattern = re.compile(r'(.*)\-upload_(.*)\.V(.*)$')
 onedep_file_pattern = re.compile(r'(.*)\.V(.*)$')
 mr_file_header_pattern = re.compile(r'(.*)# Restraints file (\d+): (\S+)\s*')
@@ -1854,6 +1856,8 @@ class NmrDpUtility:
         self.__internal_mode = False
         # whether to combine spectral peak list in any plain text format into single NMR-STAR file (must be turned off after Phase 2, DAOTHER-7407)
         self.__merge_any_pk_as_is = False
+        # whether to enforce to use _Peak_row_format loop for spectral peak remediation (DAOTHER-8905)
+        self.__enforce_peak_row_format = False
 
         # whether to allow empty coordinate file path
         self.__bmrb_only = False
@@ -3470,10 +3474,12 @@ class NmrDpUtility:
 
         # key items for spectral peak
         self.pk_key_items = {'nef': [{'name': 'position_%s', 'type': 'float'},
-                                     {'name': 'peak_id', 'type': 'positive-int'}
+                                     {'name': 'peak_id', 'type': 'positive-int'},
+                                     {'name': 'index', 'type': 'index-int'}
                                      ],
                              'nmr-star': [{'name': 'Position_%s', 'type': 'float'},
-                                          {'name': 'ID', 'type': 'int'}  # allows to have software-native id starting from zero
+                                          {'name': 'ID', 'type': 'int'},  # allows to have software-native id starting from zero
+                                          {'name': 'Index_ID', 'type': 'index-int'}
                                           ]
                              }
 
@@ -3649,7 +3655,7 @@ class NmrDpUtility:
                                                       'enforce-non-zero': True},
                                                      {'name': 'distance_dependent', 'type': 'bool', 'mandatory': False}
                                                      ],
-                                   'spectral_peak': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
+                                   'spectral_peak': [{'name': 'peak_id', 'type': 'positive-int', 'mandatory': True},
                                                      {'name': 'volume', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                       'clear-bad-pattern': True,
                                                       'group': {'member-with': ['height'],
@@ -3979,7 +3985,7 @@ class NmrDpUtility:
                                                           {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
                                                           {'name': 'RDC_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
                                                           ],
-                                        'spectral_peak': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                        'spectral_peak': [{'name': 'ID', 'type': 'int', 'mandatory': True},
                                                           {'name': 'Volume', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                            'clear-bad-pattern': True,
                                                            'group': {'member-with': ['Height'],
@@ -3994,7 +4000,7 @@ class NmrDpUtility:
                                                            'clear-bad-pattern': True},
                                                           {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1', 'default-from': 'parent'}
                                                           ],
-                                        'spectral_peak_alt': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                        'spectral_peak_alt': [{'name': 'ID', 'type': 'int', 'mandatory': True},
                                                               {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
                                                                'range': WEIGHT_RANGE},
                                                               {'name': 'Restraint', 'type': 'enum', 'mandatory': False,
@@ -7430,6 +7436,7 @@ class NmrDpUtility:
 
         # atom name mapping derived from the original uploaded coordinate file
         self.__internal_atom_name_mapping = None
+        self.__internal_atom_name_mapping0 = None
 
         # RCI
         self.__rci = RCI(False, self.__lfh)
@@ -7711,6 +7718,12 @@ class NmrDpUtility:
                 self.__merge_any_pk_as_is = self.__inputParamDict['merge_any_pk_as_is']
             else:
                 self.__merge_any_pk_as_is = self.__inputParamDict['merge_any_pk_as_is'] in trueValue
+
+        if has_key_value(self.__inputParamDict, 'enforce_peak_row_format'):
+            if isinstance(self.__inputParamDict['enforce_peak_row_format'], bool):
+                self.__enforce_peak_row_format = self.__inputParamDict['enforce_peak_row_format']
+            else:
+                self.__enforce_peak_row_format = self.__inputParamDict['enforce_peak_row_format'] in trueValue
 
         if has_key_value(self.__inputParamDict, 'nonblk_anomalous_cs'):
             if isinstance(self.__inputParamDict['nonblk_anomalous_cs'], bool):
@@ -24059,7 +24072,7 @@ class NmrDpUtility:
                             key_items.append(_k)
 
                 position_names = [k['name'] for k in key_items]
-                index_tag = self.index_tags[file_type][content_subtype]
+                id_tag = self.consist_id_tags[file_type][content_subtype]
 
                 lp_data = next((lp['data'] for lp in self.__lp_data[content_subtype]
                                 if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode), None)
@@ -24076,7 +24089,7 @@ class NmrDpUtility:
 
                             if position < min_points[j] or position > max_points[j]:
 
-                                err = f"[Check row of {index_tag} {row[index_tag]}] {position_names[j]} {position} is not within expected range "\
+                                err = f"[Check row of {id_tag} {row[id_tag]}] {position_names[j]} {position} is not within expected range "\
                                     f"(min_position {min_points[j]}, max_position {max_points[j]}, absolute_peak_positions {abs_positions[j]}). "\
                                     "Please check for reference frequency and spectral width."
 
@@ -24093,7 +24106,7 @@ class NmrDpUtility:
 
                             if position < min_limits[j] or position > max_limits[j]:
 
-                                err = f"[Check row of {index_tag} {row[index_tag]}] {position_names[j]} {position} is not within expected range "\
+                                err = f"[Check row of {id_tag} {row[id_tag]}] {position_names[j]} {position} is not within expected range "\
                                     f"(min_position {min_limits[j]}, max_position {max_limits[j]}, absolute_peak_positions {abs_positions[j]}), "\
                                     f"which exceeds limit of current probe design ({self.hard_probe_limit / 1000.0} kHz). "\
                                     "Please check for reference frequency and spectral width."
@@ -29679,7 +29692,7 @@ class NmrDpUtility:
                             comp_id_names.append(item_names[d]['comp_id'])
                             atom_id_names.append(item_names[d]['atom_id'])
 
-                        index_tag = self.index_tags[file_type][content_subtype]
+                        id_tag = self.consist_id_tags[file_type][content_subtype]
 
                         try:
 
@@ -29782,7 +29795,7 @@ class NmrDpUtility:
                                             if rescue_mode:
                                                 continue
 
-                                            err = f"[Check row of {index_tag} {row[index_tag]}] Assignment of {subtype_name} "\
+                                            err = f"[Check row of {id_tag} {row[id_tag]}] Assignment of {subtype_name} "\
                                                 + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                                 comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
                                                 + " was not found in assigned chemical shifts. In contrast, "\
@@ -29800,7 +29813,7 @@ class NmrDpUtility:
 
                                         else:
 
-                                            warn = f"[Check row of {index_tag} {row[index_tag]}] Assignment of {subtype_name} "\
+                                            warn = f"[Check row of {id_tag} {row[id_tag]}] Assignment of {subtype_name} "\
                                                 + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                                 comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
                                                 + " was not found in assigned chemical shifts. In contrast, "\
@@ -30143,7 +30156,7 @@ class NmrDpUtility:
                     atom_id_names.append(item_names[d]['atom_id'])
                     position_names.append(item_names[d]['position'])
 
-                index_tag = self.index_tags[file_type][content_subtype]
+                id_tag = self.consist_id_tags[file_type][content_subtype]
 
                 try:
 
@@ -30206,7 +30219,7 @@ class NmrDpUtility:
 
                                 if cs_idx == -1:
 
-                                    err = f"[Check row of {index_tag} {row[index_tag]}] Assignment of spectral peak "\
+                                    err = f"[Check row of {id_tag} {row[id_tag]}] Assignment of spectral peak "\
                                         + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                         comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
                                         + f" was not found in assigned chemical shifts of {cs_list!r} saveframe."
@@ -30253,7 +30266,7 @@ class NmrDpUtility:
 
                                             if CS_RANGE_MIN < sp_widths[d] < CS_RANGE_MAX:
 
-                                                err = f"[Check row of {index_tag} {row[index_tag]}] "\
+                                                err = f"[Check row of {id_tag} {row[id_tag]}] "\
                                                     f"Peak position of spectral peak {position_names[d]} {position} ("\
                                                     + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                                     comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
@@ -30285,7 +30298,7 @@ class NmrDpUtility:
                                     if axis_codes[d] is not None and d < num_dim\
                                        and axis_code not in (axis_codes[d], alt_axis_codes[d]) and cs[cs_atom_type] != axis_codes[d]:
 
-                                        err = f"[Check row of {index_tag} {row[index_tag]}] Assignment of spectral peak "\
+                                        err = f"[Check row of {id_tag} {row[id_tag]}] Assignment of spectral peak "\
                                             + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                             comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
                                             + f" is inconsistent with axis code {axis_code} vs {axis_codes[d]}."
@@ -30324,7 +30337,7 @@ class NmrDpUtility:
                                                                or (b[self.__ccU.ccbAtomId1] in _atom_ids2 and b[self.__ccU.ccbAtomId2] in _atom_ids))):
                                                         continue
 
-                                                err = f"[Check row of {index_tag} {row[index_tag]}] Coherence transfer type is onebond. "\
+                                                err = f"[Check row of {id_tag} {row[id_tag]}] Coherence transfer type is onebond. "\
                                                     "However, assignment of spectral peak is inconsistent with the type, ("\
                                                     + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                                     comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
@@ -30352,7 +30365,7 @@ class NmrDpUtility:
                                             if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue\
                                                or (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)):  # DAOTHER-7389, issue #2
 
-                                                err = f"[Check row of {index_tag} {row[index_tag]}] Coherence transfer type is jcoupling. "\
+                                                err = f"[Check row of {id_tag} {row[id_tag]}] Coherence transfer type is jcoupling. "\
                                                     "However, assignment of spectral peak is inconsistent with the type, ("\
                                                     + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                                     comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
@@ -30380,7 +30393,7 @@ class NmrDpUtility:
                                             if chain_id2 in emptyValue or seq_id2 in emptyValue or comp_id2 in emptyValue or atom_id2 in emptyValue\
                                                or (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):  # DAOTHER-7389, issue #2
 
-                                                err = f"[Check row of {index_tag} {row[index_tag]}] Coherence transfer type is relayed. "\
+                                                err = f"[Check row of {id_tag} {row[id_tag]}] Coherence transfer type is relayed. "\
                                                     "However, assignment of spectral peak is inconsistent with the type, ("\
                                                     + self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id,
                                                                                     comp_id_names[d], comp_id, atom_id_names[d], atom_id)\
@@ -34422,6 +34435,11 @@ class NmrDpUtility:
                 if atom_map not in self.__mr_atom_name_mapping:
                     self.__mr_atom_name_mapping.append(atom_map)
 
+        if self.__internal_atom_name_mapping0 is not None:
+            for atom_map in self.__internal_atom_name_mapping0:
+                if atom_map not in self.__mr_atom_name_mapping:
+                    self.__mr_atom_name_mapping.append(atom_map)
+
         if self.__mr_atom_name_mapping is not None and len(self.__mr_atom_name_mapping) > 1:
             self.__mr_atom_name_mapping = list(reversed(self.__mr_atom_name_mapping))
 
@@ -36892,6 +36910,7 @@ class NmrDpUtility:
                                       self.__mr_atom_name_mapping,
                                       self.__cR, self.__caC,
                                       self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -36920,6 +36939,7 @@ class NmrDpUtility:
                                               self.__cR, self.__caC,
                                               self.__ccU, self.__csStat, self.__nefT,
                                               reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -36964,6 +36984,7 @@ class NmrDpUtility:
                                       self.__mr_atom_name_mapping,
                                       self.__cR, self.__caC,
                                       self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
                 reader.setInternalMode(self.__internal_mode)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
@@ -36994,6 +37015,7 @@ class NmrDpUtility:
                                               self.__cR, self.__caC,
                                               self.__ccU, self.__csStat, self.__nefT,
                                               reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
                         reader.setInternalMode(self.__internal_mode)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
@@ -37039,6 +37061,7 @@ class NmrDpUtility:
                                       self.__mr_atom_name_mapping,
                                       self.__cR, self.__caC,
                                       self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37071,6 +37094,7 @@ class NmrDpUtility:
                                               self.__cR, self.__caC,
                                               self.__ccU, self.__csStat, self.__nefT,
                                               reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37115,6 +37139,7 @@ class NmrDpUtility:
                                          self.__mr_atom_name_mapping,
                                          self.__cR, self.__caC,
                                          self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37147,6 +37172,7 @@ class NmrDpUtility:
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
                                                  reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37191,6 +37217,7 @@ class NmrDpUtility:
                                            self.__mr_atom_name_mapping,
                                            self.__cR, self.__caC,
                                            self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37223,6 +37250,7 @@ class NmrDpUtility:
                                                    self.__cR, self.__caC,
                                                    self.__ccU, self.__csStat, self.__nefT,
                                                    reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37269,6 +37297,7 @@ class NmrDpUtility:
                                         self.__mr_atom_name_mapping,
                                         self.__cR, self.__caC,
                                         self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37299,6 +37328,7 @@ class NmrDpUtility:
                                              self.__mr_atom_name_mapping,
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37328,6 +37358,7 @@ class NmrDpUtility:
                                                  self.__mr_atom_name_mapping,
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
                         reader.setInternalMode(self.__internal_mode)
 
                         _list_id_counter = copy.copy(self.__list_id_counter)
@@ -37391,6 +37422,8 @@ class NmrDpUtility:
                                                      reasons)
                             reader.setInternalMode(self.__internal_mode)
 
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
+
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
@@ -37434,6 +37467,7 @@ class NmrDpUtility:
                                          self.__mr_atom_name_mapping,
                                          self.__cR, self.__caC,
                                          self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37466,6 +37500,7 @@ class NmrDpUtility:
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
                                                  reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37510,6 +37545,7 @@ class NmrDpUtility:
                                          self.__mr_atom_name_mapping,
                                          self.__cR, self.__caC,
                                          self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37537,6 +37573,7 @@ class NmrDpUtility:
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
                                                  reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37582,6 +37619,7 @@ class NmrDpUtility:
                                          self.__mr_atom_name_mapping,
                                          self.__cR, self.__caC,
                                          self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37612,6 +37650,7 @@ class NmrDpUtility:
                                               self.__mr_atom_name_mapping,
                                               self.__cR, self.__caC,
                                               self.__ccU, self.__csStat, self.__nefT)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37653,6 +37692,8 @@ class NmrDpUtility:
                                                       self.__cR, self.__caC,
                                                       self.__ccU, self.__csStat, self.__nefT,
                                                       reasons)
+
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37697,6 +37738,7 @@ class NmrDpUtility:
                                       self.__mr_atom_name_mapping,
                                       self.__cR, self.__caC,
                                       self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37729,6 +37771,7 @@ class NmrDpUtility:
                                               self.__cR, self.__caC,
                                               self.__ccU, self.__csStat, self.__nefT,
                                               reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37774,6 +37817,7 @@ class NmrDpUtility:
                                        self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT,
                                        xeasyAtomNumberDict)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37807,6 +37851,7 @@ class NmrDpUtility:
                                                self.__ccU, self.__csStat, self.__nefT,
                                                xeasyAtomNumberDict,
                                                reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -37851,6 +37896,7 @@ class NmrDpUtility:
                                          self.__mr_atom_name_mapping,
                                          self.__cR, self.__caC,
                                          self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -37882,6 +37928,7 @@ class NmrDpUtility:
                                                  self.__cR, self.__caC,
                                                  self.__ccU, self.__csStat, self.__nefT,
                                                  reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -45951,10 +45998,33 @@ class NmrDpUtility:
                 pdbx_database_status = self.__cR.getDictList('pdbx_database_status')
                 self.__recvd_nmr_data = pdbx_database_status[0]['recvd_nmr_data'] == 'Y'
 
+            self.__versioned_atom_name_mapping = None
+            self.__internal_atom_name_mapping = None
+            self.__internal_atom_name_mapping0 = None
+
             maxitpath = os.getenv('MAXITPATH')
             if maxitpath is None:
                 package_dir = os.getenv('PACKAGE_DIR')
                 maxitpath = os.path.join(package_dir, 'maxit/bin/maxit') if package_dir is not None else 'maxit'
+
+            def has_coordinates(file_name):
+                with open(file_name, 'r', encoding='utf-8', errors='ignore') as ifh:
+                    for line in ifh:
+                        if line.startswith('ATOM ') and line.count('.') >= 3:
+                            return True
+                return False
+
+            def has_cif_coordinates(file_name):
+                has_atom_site = False
+                with open(file_name, 'r', encoding='utf-8', errors='ignore') as ifh:
+                    for line in ifh:
+                        if not has_atom_site:
+                            if line.startswith('_atom_site.'):
+                                has_atom_site = True
+                            continue
+                        if line.startswith('ATOM ') and line.count('.') >= 3:
+                            return True
+                return False
 
             if self.__internal_mode and self.__cR.hasCategory('database_2') and self.__cR.hasCategory('pdbx_audit_revision_history'):
                 extended_pdb_id = None
@@ -45990,21 +46060,18 @@ class NmrDpUtility:
                                                                  self.__representative_model_id, self.__representative_alt_id)
 
                     internal_cif_file = os.path.join(self.__cR.getDirPath(), f'{extended_pdb_id[-4:]}_model-upload_P1.cif.V1')
+                    internal_cif_file0 = os.path.join(self.__cR.getDirPath(), f'{extended_pdb_id[-4:]}_model-upload_P1.cif.V0')
+
                     if not os.path.exists(internal_cif_file):
+
                         try:
+
                             import subprocess  # pylint: disable=import-outside-toplevel
 
                             database_2 = self.__cR.getDictListWithFilter('database_2',
                                                                          [{'name': 'database_code', 'type': 'str'}],
                                                                          [{'name': 'database_id', 'type': 'str', 'value': 'BMRB'}])
                             if len(database_2) > 0:
-
-                                def has_coordinates(file_name):
-                                    with open(file_name, 'r', encoding='utf-8', errors='ignore') as ifh:
-                                        for line in ifh:
-                                            if line.startswith('ATOM ') and line.count('.') >= 3:
-                                                return True
-                                    return False
 
                                 bmrb_id = database_2[0]['database_code']
                                 if bmrb_id is not None and bmrb_id.isdigit():
@@ -46015,9 +46082,9 @@ class NmrDpUtility:
                                             file_path = os.path.join(intnl_upload_dir, file_name)
                                             if not os.path.isfile(file_path):
                                                 continue
-                                            if not has_coordinates(file_path):
-                                                continue
                                             if file_name.endswith('.pdb'):
+                                                if not has_coordinates(file_path):
+                                                    continue
                                                 com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
                                                 result = subprocess.run(com, check=False)
                                                 ret_code = result.returncode
@@ -46025,6 +46092,8 @@ class NmrDpUtility:
                                                 if ret_code == 0:
                                                     break
                                             elif file_name.endswith('.cif'):
+                                                if not has_cif_coordinates(file_path):
+                                                    continue
                                                 com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
                                                 result = subprocess.run(com, check=False)
                                                 ret_code = result.returncode
@@ -46038,9 +46107,9 @@ class NmrDpUtility:
                                                 file_path = os.path.join(intnl_upload_dir, file_name)
                                                 if not os.path.isfile(file_path):
                                                     continue
-                                                if not has_coordinates(file_path):
-                                                    continue
                                                 if file_name.endswith('.pdb'):
+                                                    if not has_coordinates(file_path):
+                                                        continue
                                                     com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
                                                     result = subprocess.run(com, check=False)
                                                     ret_code = result.returncode
@@ -46048,15 +46117,91 @@ class NmrDpUtility:
                                                     if ret_code == 0:
                                                         break
                                                 elif file_name.endswith('.cif'):
+                                                    if not has_cif_coordinates(file_path):
+                                                        continue
                                                     com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
                                                     result = subprocess.run(com, check=False)
                                                     ret_code = result.returncode
                                                     print(f'{" ".join(com)}\n -> {ret_code}')
                                                     if ret_code == 0:
                                                         break
+                                    if ret_code != 0:
+                                        intnl_upload_dir = os.path.join(self.__cR.getDirPath(), f'bmr{bmrb_id}/work/data')
+                                        if os.path.isdir(intnl_upload_dir):
+                                            for file_name in os.listdir(intnl_upload_dir):
+                                                if file_name.endswith('model-upload_P1.pdb.V1'):
+                                                    file_path = os.path.join(intnl_upload_dir, file_name)
+                                                    com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
+                                                    result = subprocess.run(com, check=False)
+                                                    ret_code = result.returncode
+                                                    print(f'{" ".join(com)}\n -> {ret_code}')
+                                                    if ret_code == 0:
+                                                        break
+                                            if ret_code != 0:
+                                                for file_name in os.listdir(intnl_upload_dir):
+                                                    if file_name.endswith('model-upload_P1.cif.V1'):
+                                                        file_path = os.path.join(intnl_upload_dir, file_name)
+                                                        com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
+                                                        result = subprocess.run(com, check=False)
+                                                        ret_code = result.returncode
+                                                        print(f'{" ".join(com)}\n -> {ret_code}')
+                                                        if ret_code == 0:
+                                                            break
 
                         except ImportError:
                             pass
+                        except Exception as e:
+                            print(str(e))
+
+                    if not os.path.exists(internal_cif_file0):
+
+                        try:
+
+                            database_2 = self.__cR.getDictListWithFilter('database_2',
+                                                                         [{'name': 'database_code', 'type': 'str'}],
+                                                                         [{'name': 'database_id', 'type': 'str', 'value': 'BMRB'}])
+                            if len(database_2) > 0:
+
+                                bmrb_id = database_2[0]['database_code']
+                                if bmrb_id is not None and bmrb_id.isdigit():
+                                    ret_code = -1
+                                    intnl_upload_dir = os.path.join(self.__cR.getDirPath(), f'bmr{bmrb_id}/work/upload')
+                                    if os.path.isdir(intnl_upload_dir):
+                                        for file_name in os.listdir(intnl_upload_dir):
+                                            file_path = os.path.join(intnl_upload_dir, file_name)
+                                            if not os.path.isfile(file_path):
+                                                continue
+                                            if file_name.endswith('.cif'):
+                                                if not has_cif_coordinates(file_path):
+                                                    continue
+                                                ret_path = shutil.copyfile(file_path, internal_cif_file0)
+                                                if os.path.exists(ret_path):
+                                                    ret_code = 0
+                                                    break
+                                    if ret_code != 0:
+                                        intnl_upload_dir = os.path.join(self.__cR.getDirPath(), f'bmr{bmrb_id}/work')
+                                        if os.path.isdir(intnl_upload_dir):
+                                            for file_name in os.listdir(intnl_upload_dir):
+                                                file_path = os.path.join(intnl_upload_dir, file_name)
+                                                if not os.path.isfile(file_path):
+                                                    continue
+                                                if file_name.endswith('.cif'):
+                                                    if not has_cif_coordinates(file_path):
+                                                        continue
+                                                    ret_path = shutil.copyfile(file_path, internal_cif_file0)
+                                                    if os.path.exists(ret_path):
+                                                        ret_code = 0
+                                    if ret_code != 0:
+                                        intnl_upload_dir = os.path.join(self.__cR.getDirPath(), f'bmr{bmrb_id}/work/data')
+                                        if os.path.isdir(intnl_upload_dir):
+                                            for file_name in os.listdir(intnl_upload_dir):
+                                                if file_name.endswith('model-upload_P1.cif.V1'):
+                                                    file_path = os.path.join(intnl_upload_dir, file_name)
+                                                    ret_path = shutil.copyfile(file_path, internal_cif_file0)
+                                                    if os.path.exists(ret_path):
+                                                        ret_code = 0
+                                                        break
+
                         except Exception as e:
                             print(str(e))
 
@@ -46064,6 +46209,73 @@ class NmrDpUtility:
                         self.__internal_atom_name_mapping =\
                             retrieveAtomNameMappingFromInternal(self.__cR, self.__cacheDirPath, revision_history, internal_cif_file,
                                                                 self.__representative_model_id, self.__representative_alt_id)
+
+                    if os.path.exists(internal_cif_file0):
+                        major = max(revision_history)
+                        minor = revision_history[major] - 1
+                        revision_history[major] = minor
+                        self.__internal_atom_name_mapping0 =\
+                            retrieveAtomNameMappingFromInternal(self.__cR, self.__cacheDirPath, revision_history, internal_cif_file0,
+                                                                self.__representative_model_id, self.__representative_alt_id)
+
+            if self.__internal_atom_name_mapping is None:
+                cif_file_name = os.path.basename(self.__cifPath)
+
+                if onedep_model_file_pattern.match(cif_file_name):
+
+                    try:
+
+                        import subprocess  # pylint: disable=import-outside-toplevel
+
+                        cur_dir_path = self.__cR.getDirPath()
+                        dep_id = onedep_model_file_pattern.search(cif_file_name).groups()[0]
+                        internal_cif_file = os.path.join(cur_dir_path, self.__cacheDirPath, f'{dep_id}_model-upload_P1.cif.V1')
+
+                        if not os.path.exists(internal_cif_file):
+                            ret_code = -1
+                            for file_name in os.listdir(cur_dir_path):
+                                if file_name == f'{dep_id}_model-upload_P1.pdb.V1':
+                                    file_path = os.path.join(cur_dir_path, file_name)
+                                    com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
+                                    result = subprocess.run(com, check=False)
+                                    ret_code = result.returncode
+                                    if ret_code == 0:
+                                        break
+                            if ret_code != 0:
+                                for file_name in os.listdir(cur_dir_path):
+                                    if file_name == f'{dep_id}_model_P1.pdb.V1':
+                                        file_path = os.path.join(cur_dir_path, file_name)
+                                        com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
+                                        result = subprocess.run(com, check=False)
+                                        ret_code = result.returncode
+                                        if ret_code == 0:
+                                            break
+                            if ret_code != 0:
+                                for file_name in os.listdir(cur_dir_path):
+                                    if file_name == f'{dep_id}_model-upload_P1.cif.V1':
+                                        file_path = os.path.join(cur_dir_path, file_name)
+                                        com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
+                                        result = subprocess.run(com, check=False)
+                                        ret_code = result.returncode
+                                        if ret_code == 0:
+                                            break
+                            if ret_code != 0:
+                                for file_name in os.listdir(cur_dir_path):
+                                    if file_name == f'{dep_id}_modelP1.cif.V1':
+                                        file_path = os.path.join(cur_dir_path, file_name)
+                                        com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
+                                        result = subprocess.run(com, check=False)
+                                        ret_code = result.returncode
+                                        if ret_code == 0:
+                                            break
+
+                        if os.path.exists(internal_cif_file):
+                            self.__internal_atom_name_mapping =\
+                                retrieveAtomNameMappingFromInternal(self.__cR, self.__cacheDirPath, {0: 0}, internal_cif_file,
+                                                                    self.__representative_model_id, self.__representative_alt_id)
+
+                    except Exception:
+                        pass
 
             # DAOTHER-8580: convert working model file if pdbx_poly_seq_scheme category is missing
             # @see: wwpdb.utils.wf.plugins.FormatUtils.pdb2pdbxDepositOp
@@ -52912,6 +53124,7 @@ class NmrDpUtility:
                                   self.__mr_atom_name_mapping,
                                   self.__cR, self.__caC,
                                   self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -52933,6 +53146,7 @@ class NmrDpUtility:
                                           self.__cR, self.__caC,
                                           self.__ccU, self.__csStat, self.__nefT,
                                           reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -52976,6 +53190,7 @@ class NmrDpUtility:
                                   self.__mr_atom_name_mapping,
                                   self.__cR, self.__caC,
                                   self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
             reader.setInternalMode(self.__internal_mode)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
@@ -52998,6 +53213,7 @@ class NmrDpUtility:
                                           self.__cR, self.__caC,
                                           self.__ccU, self.__csStat, self.__nefT,
                                           reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
                     reader.setInternalMode(self.__internal_mode)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
@@ -53042,6 +53258,7 @@ class NmrDpUtility:
                                   self.__mr_atom_name_mapping,
                                   self.__cR, self.__caC,
                                   self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53063,6 +53280,7 @@ class NmrDpUtility:
                                           self.__cR, self.__caC,
                                           self.__ccU, self.__csStat, self.__nefT,
                                           reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53106,6 +53324,7 @@ class NmrDpUtility:
                                      self.__mr_atom_name_mapping,
                                      self.__cR, self.__caC,
                                      self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53127,6 +53346,7 @@ class NmrDpUtility:
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53170,6 +53390,7 @@ class NmrDpUtility:
                                        self.__mr_atom_name_mapping,
                                        self.__cR, self.__caC,
                                        self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53191,6 +53412,7 @@ class NmrDpUtility:
                                                self.__cR, self.__caC,
                                                self.__ccU, self.__csStat, self.__nefT,
                                                reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53234,6 +53456,7 @@ class NmrDpUtility:
                                     self.__mr_atom_name_mapping,
                                     self.__cR, self.__caC,
                                     self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53255,6 +53478,7 @@ class NmrDpUtility:
                                             self.__cR, self.__caC,
                                             self.__ccU, self.__csStat, self.__nefT,
                                             reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53298,6 +53522,7 @@ class NmrDpUtility:
                                      self.__mr_atom_name_mapping,
                                      self.__cR, self.__caC,
                                      self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53319,6 +53544,7 @@ class NmrDpUtility:
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53362,6 +53588,7 @@ class NmrDpUtility:
                                      self.__mr_atom_name_mapping,
                                      self.__cR, self.__caC,
                                      self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53382,6 +53609,7 @@ class NmrDpUtility:
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53424,6 +53652,7 @@ class NmrDpUtility:
                                      self.__mr_atom_name_mapping,
                                      self.__cR, self.__caC,
                                      self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53445,6 +53674,7 @@ class NmrDpUtility:
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53488,6 +53718,7 @@ class NmrDpUtility:
                                   self.__mr_atom_name_mapping,
                                   self.__cR, self.__caC,
                                   self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53509,6 +53740,7 @@ class NmrDpUtility:
                                           self.__cR, self.__caC,
                                           self.__ccU, self.__csStat, self.__nefT,
                                           reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53553,6 +53785,7 @@ class NmrDpUtility:
                                    self.__cR, self.__caC,
                                    self.__ccU, self.__csStat, self.__nefT,
                                    None)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53575,6 +53808,7 @@ class NmrDpUtility:
                                            self.__ccU, self.__csStat, self.__nefT,
                                            None,
                                            reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
@@ -53618,6 +53852,7 @@ class NmrDpUtility:
                                      self.__mr_atom_name_mapping,
                                      self.__cR, self.__caC,
                                      self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
             _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -53638,6 +53873,7 @@ class NmrDpUtility:
                                              self.__cR, self.__caC,
                                              self.__ccU, self.__csStat, self.__nefT,
                                              reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
 
                     listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,

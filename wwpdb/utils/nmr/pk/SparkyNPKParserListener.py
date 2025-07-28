@@ -537,7 +537,7 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                 _ass_ = str(ctx.Assignment_3d_ex())
             elif ctx.Assignment_4d_ex():
                 _ass_ = str(ctx.Assignment_4d_ex())
-            if _ass_ == '?-?' and self.__has_note and len(self.__noteSelection) > 0:
+            if _ass_ in ('?-?', None) and self.__has_note and len(self.__noteSelection) > 0:
                 _ass_ = ' '.join(self.__noteSelection)
 
             try:
@@ -582,7 +582,7 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     asis1, asis2,
                                     f'{ass} -> ',
                                     None if (has_assignments and not has_multiple_assignments)
-                                    or _ass_ == '?-?' else _ass_)
+                                    or _ass_ in ('?-?', None) else _ass_)
 
         finally:
             self.__noteSelection.clear()
@@ -614,7 +614,7 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                     ass = _ass_ = None
             if ctx.Assignment_4d_ex():
                 _ass_ = str(ctx.Assignment_4d_ex())
-            if _ass_ == '?-?-?' and self.__has_note and len(self.__noteSelection) > 0:
+            if _ass_ in ('?-?-?', None) and self.__has_note and len(self.__noteSelection) > 0:
                 _ass_ = ' '.join(self.__noteSelection)
 
             try:
@@ -664,7 +664,7 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     asis1, asis2, asis3,
                                     f'{ass} -> ',
                                     None if (has_assignments and not has_multiple_assignments)
-                                    or _ass_ == '?-?-?' else _ass_)
+                                    or _ass_ in ('?-?-?', None) else _ass_)
 
         finally:
             self.__noteSelection.clear()
@@ -694,7 +694,7 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                     ass = None
                 if _ass_ == 'A1H-H-H-H' and not self.isFirstResidueAla:
                     ass = _ass_ = None
-            if _ass_ == '?-?-?-?' and self.__has_note and len(self.__noteSelection) > 0:
+            if _ass_ in ('?-?-?-?', None) and self.__has_note and len(self.__noteSelection) > 0:
                 _ass_ = ' '.join(self.__noteSelection)
 
             try:
@@ -746,7 +746,7 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     asis1, asis2, asis3, asis4,
                                     f'{ass} -> ',
                                     None if (has_assignments and not has_multiple_assignments)
-                                    or _ass_ == '?-?-?-?' else _ass_)
+                                    or _ass_ in ('?-?-?-?', None) else _ass_)
 
         finally:
             self.__noteSelection.clear()

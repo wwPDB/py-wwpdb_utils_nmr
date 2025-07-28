@@ -179,7 +179,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                 ass = None
             if _ass_ == 'A1H-H' and not self.isFirstResidueAla:
                 ass = _ass_ = None
-            if _ass_ == '?-?' and self.__has_note and len(self.__noteSelection) > 0:
+            if _ass_ in ('?-?', None) and self.__has_note and len(self.__noteSelection) > 0:
                 _ass_ = ' '.join(self.__noteSelection)
 
             x_ppm = float(str(ctx.Float(0)))
@@ -263,7 +263,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                                     asis1, asis2,
                                     f'{ass} -> ',
                                     None if (has_assignments and not has_multiple_assignments)
-                                    or _ass_ == '?-?' else _ass_)
+                                    or _ass_ in ('?-?', None) else _ass_)
 
         finally:
             self.numberSelection.clear()
@@ -298,7 +298,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                 ass = None
             if _ass_ == 'A1H-H-H' and not self.isFirstResidueAla:
                 ass = _ass_ = None
-            if _ass_ == '?-?-?' and self.__has_note and len(self.__noteSelection) > 0:
+            if _ass_ in ('?-?-?', None) and self.__has_note and len(self.__noteSelection) > 0:
                 _ass_ = ' '.join(self.__noteSelection)
 
             x_ppm = float(str(ctx.Float(0)))
@@ -393,7 +393,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                                     asis1, asis2, asis3,
                                     f'{ass} -> ',
                                     None if (has_assignments and not has_multiple_assignments)
-                                    or _ass_ == '?-?-?' else _ass_)
+                                    or _ass_ in ('?-?-?', None) else _ass_)
 
         finally:
             self.numberSelection.clear()
@@ -428,7 +428,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                 ass = None
             if _ass_ == 'A1H-H-H-H' and not self.isFirstResidueAla:
                 ass = _ass_ = None
-            if _ass_ == '?-?-?-?' and self.__has_note and len(self.__noteSelection) > 0:
+            if _ass_ in ('?-?-?-?', None) and self.__has_note and len(self.__noteSelection) > 0:
                 _ass_ = ' '.join(self.__noteSelection)
 
             x_ppm = float(str(ctx.Float(0)))
@@ -534,7 +534,7 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                                     asis1, asis2, asis3, asis4,
                                     f'{ass} -> ',
                                     None if (has_assignments and not has_multiple_assignments)
-                                    or _ass_ == '?-?-?-?' else _ass_)
+                                    or _ass_ in ('?-?-?-?', None) else _ass_)
 
         finally:
             self.numberSelection.clear()

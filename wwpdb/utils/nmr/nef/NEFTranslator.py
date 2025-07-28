@@ -7435,6 +7435,13 @@ class NEFTranslator:
                             atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
                             return (atom_list, ambiguity_code, details)
 
+                if (atom_id.startswith('QH') or atom_id.startswith('MH')) and comp_id in monDict3\
+                   and len_atom_id > 2 and not atom_id[2].isdigit():  # 6wqr LEU:QHD# -> LEU:HD#
+                    _atom_list, _ambiguity_code, _details = self.get_valid_star_atom(comp_id, atom_id[1:], None, leave_unmatched, methyl_only)
+                    if _details is None:
+                        atom_list, ambiguity_code, details = _atom_list, _ambiguity_code, _details
+                        return (atom_list, ambiguity_code, details)
+
             atom_list, ambiguity_code, details = self.get_valid_star_atom(comp_id, atom_id, details, leave_unmatched, methyl_only)
 
             if details is not None and atom_id[-1] not in ('%', '*'):

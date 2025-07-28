@@ -300,6 +300,8 @@ class DynamoMRParserListener(ParseTreeListener):
     __modResidue = None
     __splitLigand = None
 
+    __uniqAtomIdToSeqKey = None
+
     __offsetHolder = None
     __shiftNonPosSeq = None
 
@@ -435,6 +437,20 @@ class DynamoMRParserListener(ParseTreeListener):
 
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
+
+        if self.__hasNonPoly:
+            atom_list = []
+            for v in self.__coordAtomSite.values():
+                atom_list.extend(v['atom_id'])
+            common_atom_list = collections.Counter(atom_list).most_common()
+            uniq_atom_ids = [atom_id for atom_id, count in common_atom_list if count == 1]
+            if len(uniq_atom_ids) > 0:
+                self.__uniqAtomIdToSeqKey = {}
+                for k, v in self.__coordAtomSite.items():
+                    if any(np for np in self.__nonPoly if np['comp_id'][0] == v['comp_id']):
+                        for atom_id in v['atom_id']:
+                            if atom_id in uniq_atom_ids:
+                                self.__uniqAtomIdToSeqKey[atom_id] = k
 
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
@@ -646,6 +662,14 @@ class DynamoMRParserListener(ParseTreeListener):
                                 self.__polySeqRst = polySeqRst
                                 if 'non_poly_remap' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
+                                else:
+                                    for k, v in nonPolyMapping.items():
+                                        if k not in self.reasonsForReParsing['non_poly_remap']:
+                                            self.reasonsForReParsing['non_poly_remap'][k] = v
+                                        else:
+                                            for k2, v2 in v.items():
+                                                if k2 not in self.reasonsForReParsing['non_poly_remap'][k]:
+                                                    self.reasonsForReParsing['non_poly_remap'][k][k2] = v2
 
                         if self.__hasBranched:
                             polySeqRst, branchedMapping = splitPolySeqRstForBranched(self.__pA, self.__polySeq, self.__branched, self.__polySeqRst,
@@ -1897,6 +1921,18 @@ class DynamoMRParserListener(ParseTreeListener):
                         if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
+                if self.__reasons is None and self.__uniqAtomIdToSeqKey is not None and atomId in self.__uniqAtomIdToSeqKey:
+                    seqKey = self.__uniqAtomIdToSeqKey[atomId]
+                    if _seqId != seqKey[1]:
+                        if 'non_poly_remap' not in self.reasonsForReParsing:
+                            self.reasonsForReParsing['non_poly_remap'] = {}
+                        if _compId not in self.reasonsForReParsing['non_poly_remap']:
+                            self.reasonsForReParsing['non_poly_remap'][_compId] = {}
+                        if _seqId not in self.reasonsForReParsing['non_poly_remap'][_compId]:
+                            self.reasonsForReParsing['non_poly_remap'][_compId][_seqId] =\
+                                {'chain_id': seqKey[0],
+                                 'seq_id': seqKey[1],
+                                 'original_chain_id': refChainId}
             for np in self.__nonPolySeq:
                 chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, compId, False)
                 if fixedChainId is None and refChainId is not None and refChainId != chainId and refChainId in self.__chainNumberDict:
@@ -2366,7 +2402,7 @@ class DynamoMRParserListener(ParseTreeListener):
                                     f"Residue name {__compId!r} of the restraint does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
                     continue
 
-            if compId != cifCompId and compId in monDict3 and not isPolySeq:
+            if compId != cifCompId and cifCompId in monDict3 and not isPolySeq:
                 continue
 
             if lenAtomId == 0 and not isPolySeq and cifCompId in SYMBOLS_ELEMENT:

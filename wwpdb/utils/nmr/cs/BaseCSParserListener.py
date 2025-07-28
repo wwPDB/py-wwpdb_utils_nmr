@@ -1017,7 +1017,18 @@ class BaseCSParserListener():
                             else:
                                 continue
                         if atomId[0] in ('Q', 'M') and index + 1 < len(term) and term[index + 1].isdigit():
-                            continue
+                            if resNameLike[idx] and resNameSpan[idx][0] == index:
+                                continue
+                            if self.csStat.peptideLike(compId):
+                                ligand = False
+                                if resIdLike[idx] and self.reasons is not None:
+                                    resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
+                                    if 'non_poly_remap' in self.reasons\
+                                       and compId in self.reasons['non_poly_remap']\
+                                       and resId in self.reasons['non_poly_remap'][compId]:
+                                        ligand = True
+                                if not ligand:
+                                    continue
                         if ((with_compid is not None and atomId.startswith(with_compid)) or atomId.startswith('MET'))\
                            and ((index + 3 < len(term) and term[index + 3].isdigit() or (index + 4 < len(term) and term[index + 4].isdigit()))):
                             continue
@@ -2239,7 +2250,7 @@ class BaseCSParserListener():
                     return _chainId, _seqId, ps['comp_id'][ps['seq_id'].index(seqId)]
                 if seqKey[1] in ps['seq_id']:  # resolve conflict between label/auth sequence schemes of polymer/non-polymer (2l90)
                     idx = ps['seq_id'].index(seqKey[1])
-                    return _chainId, ps['auth_seq_id'][idx], ps['comp_id'][idx],
+                    return _chainId, ps['auth_seq_id'][idx], ps['comp_id'][idx]
         if seqId in ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']:
             if compId is None:
                 return ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'], seqId, ps['comp_id'][ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId)]
@@ -2303,7 +2314,7 @@ class BaseCSParserListener():
         if self.reasons is not None:
             if 'non_poly_remap' in self.reasons and _compId in self.reasons['non_poly_remap']\
                and seqId in self.reasons['non_poly_remap'][_compId]:
-                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.reasons['non_poly_remap'], refChainId, seqId, _compId)
+                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.reasons['non_poly_remap'], None, refChainId, seqId, _compId)
                 refChainId = fixedChainId
                 preferNonPoly = True
             if 'branched_remap' in self.reasons and seqId in self.reasons['branched_remap']:
@@ -2654,7 +2665,7 @@ class BaseCSParserListener():
                 atomId = self.reasons['unambig_atom_id_remap'][_compId][atomId][0]  # select representative one
             if 'non_poly_remap' in self.reasons and _compId in self.reasons['non_poly_remap']\
                and seqId in self.reasons['non_poly_remap'][_compId]:
-                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.reasons['non_poly_remap'], str(refChainId), seqId, _compId)
+                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.reasons['non_poly_remap'], None, str(refChainId), seqId, _compId)
                 refChainId = fixedChainId
                 preferNonPoly = True
             if 'branched_remap' in self.reasons and seqId in self.reasons['branched_remap']:
@@ -3037,7 +3048,7 @@ class BaseCSParserListener():
                 if self.reasons is not None:
                     if 'non_poly_remap' in self.reasons and cifCompId in self.reasons['non_poly_remap']\
                        and seqId in self.reasons['non_poly_remap'][cifCompId]:
-                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.reasons['non_poly_remap'], chainId, seqId, cifCompId)
+                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.reasons['non_poly_remap'], None, chainId, seqId, cifCompId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
                         if (fixedChainId is not None and fixedChainId != chainId) or seqId not in ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']:
@@ -3198,7 +3209,7 @@ class BaseCSParserListener():
                 if self.reasons is not None:
                     if 'non_poly_remap' in self.reasons and cifCompId in self.reasons['non_poly_remap']\
                        and seqId in self.reasons['non_poly_remap'][cifCompId]:
-                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.reasons['non_poly_remap'], chainId, seqId, cifCompId)
+                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.reasons['non_poly_remap'], None, chainId, seqId, cifCompId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
                         if (fixedChainId is not None and fixedChainId != chainId) or seqId not in ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']:
@@ -3393,7 +3404,7 @@ class BaseCSParserListener():
                                   f"Residue name {__compId!r} of the chemical shift does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
                     continue
 
-            if compId != cifCompId and compId in monDict3 and not isPolySeq:
+            if compId != cifCompId and cifCompId in monDict3 and not isPolySeq:
                 continue
 
             if lenAtomId == 0 and not isPolySeq and cifCompId in SYMBOLS_ELEMENT:

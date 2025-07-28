@@ -64,6 +64,7 @@ class BarePKReader:
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
+        self.__enforce_peak_row_format = False
         self.__internal = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
@@ -96,6 +97,9 @@ class BarePKReader:
 
     def setDebugMode(self, debug: bool):
         self.__debug = debug
+
+    def enforcePeakRowFormat(self, enforce_peak_row_format: bool):
+        self.__enforce_peak_row_format = enforce_peak_row_format
 
     def setInternalMode(self, internal: bool):
         self.__internal = internal
@@ -183,6 +187,7 @@ class BarePKReader:
                                             self.__ccU, self.__csStat, self.__nefT,
                                             self.__reasons)
             listener.setDebugMode(self.__debug)
+            listener.enforsePeakRowFormat(self.__enforce_peak_row_format)
             listener.setInternalMode(self.__internal)
             listener.createSfDict(createSfDict)
             if createSfDict:

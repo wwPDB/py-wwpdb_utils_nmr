@@ -302,6 +302,8 @@ class RosettaMRParserListener(ParseTreeListener):
     __polySeqRstFailed = None
     __polySeqRstFailedAmbig = None
 
+    __uniqAtomIdToSeqKey = None
+
     __seqAlign = None
     __chainAssign = None
 
@@ -419,6 +421,20 @@ class RosettaMRParserListener(ParseTreeListener):
 
         if self.__hasPolySeq:
             self.__gapInAuthSeq = any(ps for ps in self.__polySeq if 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq'])
+
+        if self.__hasNonPoly:
+            atom_list = []
+            for v in self.__coordAtomSite.values():
+                atom_list.extend(v['atom_id'])
+            common_atom_list = collections.Counter(atom_list).most_common()
+            uniq_atom_ids = [atom_id for atom_id, count in common_atom_list if count == 1]
+            if len(uniq_atom_ids) > 0:
+                self.__uniqAtomIdToSeqKey = {}
+                for k, v in self.__coordAtomSite.items():
+                    if any(np for np in self.__nonPoly if np['comp_id'][0] == v['comp_id']):
+                        for atom_id in v['atom_id']:
+                            if atom_id in uniq_atom_ids:
+                                self.__uniqAtomIdToSeqKey[atom_id] = k
 
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
@@ -647,6 +663,14 @@ class RosettaMRParserListener(ParseTreeListener):
                                 self.__polySeqRst = polySeqRst
                                 if 'non_poly_remap' not in self.reasonsForReParsing:
                                     self.reasonsForReParsing['non_poly_remap'] = nonPolyMapping
+                                else:
+                                    for k, v in nonPolyMapping.items():
+                                        if k not in self.reasonsForReParsing['non_poly_remap']:
+                                            self.reasonsForReParsing['non_poly_remap'][k] = v
+                                        else:
+                                            for k2, v2 in v.items():
+                                                if k2 not in self.reasonsForReParsing['non_poly_remap'][k]:
+                                                    self.reasonsForReParsing['non_poly_remap'][k][k2] = v2
 
                         if self.__hasBranched:
                             polySeqRst, branchedMapping = splitPolySeqRstForBranched(self.__pA, self.__polySeq, self.__branched, self.__polySeqRst,
@@ -1600,6 +1624,33 @@ class RosettaMRParserListener(ParseTreeListener):
                                 pass
 
         if self.__hasNonPolySeq:
+            if self.__hasNonPoly:
+                for np in self.__nonPoly:
+                    chainId, seqId, fixedCompId = self.getRealChainSeqId(np, _seqId, False)
+                    if seqId in np['auth_seq_id'] or fixedCompId is not None:
+                        if fixedCompId is not None:
+                            cifCompId = fixedCompId
+                        else:
+                            idx = np['auth_seq_id'].index(seqId)
+                            cifCompId = np['comp_id'][idx]
+                        if self.__reasons is not None:
+                            if 'non_poly_remap' in self.__reasons and cifCompId in self.__reasons['non_poly_remap']\
+                               and seqId in self.__reasons['non_poly_remap'][cifCompId]:
+                                fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.__reasons['non_poly_remap'], None, chainId, seqId, cifCompId)
+                                if fixedSeqId is not None:
+                                    seqId = _seqId = fixedSeqId
+                        elif self.__uniqAtomIdToSeqKey is not None and atomId in self.__uniqAtomIdToSeqKey:
+                            seqKey = self.__uniqAtomIdToSeqKey[atomId]
+                            if _seqId != seqKey[1] and seqKey in self.__coordAtomSite:
+                                if 'non_poly_remap' not in self.reasonsForReParsing:
+                                    self.reasonsForReParsing['non_poly_remap'] = {}
+                                if cifCompId not in self.reasonsForReParsing['non_poly_remap']:
+                                    self.reasonsForReParsing['non_poly_remap'][cifCompId] = {}
+                                if _seqId not in self.reasonsForReParsing['non_poly_remap'][cifCompId]:
+                                    self.reasonsForReParsing['non_poly_remap'][cifCompId][_seqId] =\
+                                        {'chain_id': seqKey[0],
+                                         'seq_id': seqKey[1],
+                                         'original_chain_id': None}
             for np in self.__nonPolySeq:
                 chainId, seqId, _ = self.getRealChainSeqId(np, _seqId, False)
                 if self.__reasons is not None:

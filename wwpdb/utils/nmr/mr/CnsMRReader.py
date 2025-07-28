@@ -230,6 +230,121 @@ class CnsMRReader:
 
 
 if __name__ == "__main__":
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/7n7d/distance.xplor-corrected',
+                     '../../tests-nmr/mock-data-remediation/7n7d/7n7d.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/7jk8/DistanceRe.tbl-corrected',
+                     '../../tests-nmr/mock-data-remediation/7jk8/7jk8.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6uyi/noe-Tenary_110119forP.tbl',
+                     '../../tests-nmr/mock-data-remediation/6uyi/6uyi.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6uyi/noe-Tenary_110119forP.tbl',
+                 '../../tests-nmr/mock-data-remediation/6uyi/6uyi.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6qtf/bmr34363/work/data/D_1292100432_nmr-peaks-upload_P1.dat.V1',
+                     '../../tests-nmr/mock-data-remediation/6qtf/6qtf.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6o22/D_1000239495_mr_P1.cns.V1-corrected',
+                     '../../tests-nmr/mock-data-remediation/6o22/6o22.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6nk9/AcaTx1_distance-constraints.tbl',
+                     '../../tests-nmr/mock-data-remediation/6nk9/6nk9.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6nk9/AcaTx1_distance-constraints.tbl',
+                 '../../tests-nmr/mock-data-remediation/6nk9/6nk9.cif')
+
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6mv3/D_1000236393_mr_P1.cns.V1',
+                     '../../tests-nmr/mock-data-remediation/6mv3/6mv3.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6mv3/D_1000236393_mr_P1.cns.V1',
+                 '../../tests-nmr/mock-data-remediation/6mv3/6mv3.cif')
+
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6ijv/N1_QC_mr.str-corrected',
+                     '../../tests-nmr/mock-data-remediation/6ijv/6ijv.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6ijv/N1_QC_mr.str-corrected',
+                 '../../tests-nmr/mock-data-remediation/6ijv/6ijv.cif')
+
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6ge1/noe_nonex_int.tbl',
+                     '../../tests-nmr/mock-data-remediation/6ge1/6ge1.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6ge1/noe_nonex_int.tbl',
+                 '../../tests-nmr/mock-data-remediation/6ge1/6ge1.cif')
+
+    reader = CnsMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6e5n/NOEs.tbl',
+                     '../../tests-nmr/mock-data-remediation/6e5n/6e5n.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CnsMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6e5n/NOEs.tbl',
+                 '../../tests-nmr/mock-data-remediation/6e5n/6e5n.cif')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6ccx/NKC_run17_unambig.tbl-corrected',
+                     '../../tests-nmr/mock-data-remediation/6ccx/6ccx.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6c00/cdif1restraints',
+                     '../../tests-nmr/mock-data-remediation/6c00/6c00.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/5zld/N1_NEW.mr-corrected',
+                     '../../tests-nmr/mock-data-remediation/5zld/5zld.cif')
+    print(reader_listener.getReasonsForReparsing())
+
     reader = CnsMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\

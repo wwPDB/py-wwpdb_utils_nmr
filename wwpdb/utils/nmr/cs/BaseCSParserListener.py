@@ -1017,6 +1017,8 @@ class BaseCSParserListener():
                             else:
                                 continue
                         if atomId[0] in ('Q', 'M') and index + 1 < len(term) and term[index + 1].isdigit():
+                            if resNameLike[idx] and resNameSpan[idx][0] == index:
+                                continue
                             if self.csStat.peptideLike(compId):
                                 ligand = False
                                 if resIdLike[idx] and self.reasons is not None:

@@ -5781,9 +5781,9 @@ class BasePKParserListener():
                         if 'ambig_code' in common_atom2:
                             ambig_code2 = common_atom2['ambig_code']
 
-                        sf['index_id'] += 1
+                        sf['row_index_id'] += 1
 
-                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                        row = getPkRow(self.cur_subtype, sf['id'], sf['row_index_id'],
                                        sf['list_id'], self.entryId, dstFunc,
                                        self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                        atom1, atom2, asis1=asis1, asis2=asis2,
@@ -5793,7 +5793,7 @@ class BasePKParserListener():
 
                 else:
 
-                    sf['index_id'] += 1
+                    sf['row_index_id'] += 1
 
                     ambig_code1 = ambig_code2 = None
                     if has_assignments:
@@ -5814,7 +5814,7 @@ class BasePKParserListener():
                     else:
                         atom1 = atom2 = None
 
-                    row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                    row = getPkRow(self.cur_subtype, sf['id'], sf['row_index_id'],
                                    sf['list_id'], self.entryId, dstFunc,
                                    self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                    atom1, atom2, asis1=asis1, asis2=asis2,
@@ -5825,6 +5825,8 @@ class BasePKParserListener():
                 if not has_assignments and details is not None:
                     self.f.append(f"[Conflicted peak assignment] {self.getCurrentRestraint(n=index)}"
                                   f"Peak assignments {details!r} could not map to the coordinates.")
+
+                sf['index_id'] += 1
 
                 row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.entryId, dstFunc)
                 if row is not None:
@@ -6030,9 +6032,9 @@ class BasePKParserListener():
                         if 'ambig_code' in common_atom3:
                             ambig_code3 = common_atom3['ambig_code']
 
-                        sf['index_id'] += 1
+                        sf['row_index_id'] += 1
 
-                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                        row = getPkRow(self.cur_subtype, sf['id'], sf['row_index_id'],
                                        sf['list_id'], self.entryId, dstFunc,
                                        self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                        atom1, atom2, atom3, asis1=asis1, asis2=asis2, asis3=asis3,
@@ -6043,7 +6045,7 @@ class BasePKParserListener():
 
                 else:
 
-                    sf['index_id'] += 1
+                    sf['row_index_id'] += 1
 
                     ambig_code1 = ambig_code2 = ambig_code3 = None
                     if has_assignments:
@@ -6071,7 +6073,7 @@ class BasePKParserListener():
                     else:
                         atom1 = atom2 = atom3 = None
 
-                    row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                    row = getPkRow(self.cur_subtype, sf['id'], sf['row_index_id'],
                                    sf['list_id'], self.entryId, dstFunc,
                                    self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                    atom1, atom2, atom3, asis1=asis1, asis2=asis2, asis3=asis3,
@@ -6083,6 +6085,8 @@ class BasePKParserListener():
                 if not has_assignments and details is not None:
                     self.f.append(f"[Conflicted peak assignment] {self.getCurrentRestraint(n=index)}"
                                   f"Peak assignments {details!r} could not map to the coordinates.")
+
+                sf['index_id'] += 1
 
                 row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.entryId, dstFunc)
                 if row is not None:
@@ -6312,9 +6316,9 @@ class BasePKParserListener():
                         if 'ambig_code' in common_atom4:
                             ambig_code4 = common_atom4['ambig_code']
 
-                        sf['index_id'] += 1
+                        sf['row_index_id'] += 1
 
-                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                        row = getPkRow(self.cur_subtype, sf['id'], sf['row_index_id'],
                                        sf['list_id'], self.entryId, dstFunc,
                                        self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                        atom1, atom2, atom3, atom4,
@@ -6326,7 +6330,7 @@ class BasePKParserListener():
 
                 else:
 
-                    sf['index_id'] += 1
+                    sf['row_index_id'] += 1
 
                     ambig_code1 = ambig_code2 = ambig_code3 = ambig_code4 = None
                     if has_assignments:
@@ -6374,6 +6378,8 @@ class BasePKParserListener():
                 if not has_assignments and details is not None:
                     self.f.append(f"[Conflicted peak assignment] {self.getCurrentRestraint(n=index)}"
                                   f"Peak assignments {details!r} could not map to the coordinates.")
+
+                sf['index_id'] += 1
 
                 row = getAltPkRow(self.cur_subtype, sf['index_id'], sf['id'], sf['list_id'], self.entryId, dstFunc)
                 if row is not None:
@@ -6780,6 +6786,8 @@ class BasePKParserListener():
                                 continue
 
                         if atomId[0] in ('Q', 'M') and index + 1 < len(term) and term[index + 1].isdigit():
+                            if resNameLike[idx] and resNameSpan[idx][0] == index:
+                                continue
                             if self.csStat.peptideLike(compId):
                                 ligand = False
                                 if resIdLike[idx] and self.reasons is not None:
@@ -10466,7 +10474,7 @@ class BasePKParserListener():
         alt_loops = getAltLoops(content_subtype)
 
         item = {'file_type': self.file_type, 'saveframe': sf, 'loop': lp, 'alt_loops': alt_loops, 'list_id': list_id,
-                'id': 0, 'index_id': 0, 'num_of_dim': self.num_of_dim, 'peak_row_format': True,
+                'id': 0, 'index_id': 0, 'row_index_id': 0, 'num_of_dim': self.num_of_dim, 'peak_row_format': True,
                 'sf_framecode': sf_framecode}
 
         self.sfDict[key].append(item)

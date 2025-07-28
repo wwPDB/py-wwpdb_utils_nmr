@@ -5877,8 +5877,8 @@ class BasePKParserListener():
                                                 gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in protonBeginCode else hvy_gem_atoms
                                                 if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
                                                     ambig_code = 1
-                                        if 'ambig_code' in common_atom:
-                                            ambig_code = common_atom['ambig_code']
+                                    if 'ambig_code' in common_atom:
+                                        ambig_code = common_atom['ambig_code']
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                             common_atom, asis, ambig_code)
@@ -5938,8 +5938,8 @@ class BasePKParserListener():
                                                 gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in protonBeginCode else hvy_gem_atoms
                                                 if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
                                                     ambig_code = 1
-                                        if 'ambig_code' in common_atoms[idx]:
-                                            ambig_code = common_atoms[idx]['ambig_code']
+                                    if 'ambig_code' in common_atoms[idx]:
+                                        ambig_code = common_atoms[idx]['ambig_code']
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                             common_atom, asis, ambig_code)
@@ -6137,8 +6137,8 @@ class BasePKParserListener():
                                                 gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in protonBeginCode else hvy_gem_atoms
                                                 if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
                                                     ambig_code = 1
-                                        if 'ambig_code' in common_atom:
-                                            ambig_code = common_atom['ambig_code']
+                                    if 'ambig_code' in common_atom:
+                                        ambig_code = common_atom['ambig_code']
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                             common_atom, asis, ambig_code)
@@ -6201,8 +6201,8 @@ class BasePKParserListener():
                                                 gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in protonBeginCode else hvy_gem_atoms
                                                 if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
                                                     ambig_code = 1
-                                        if 'ambig_code' in common_atoms[idx]:
-                                            ambig_code = common_atoms[idx]['ambig_code']
+                                    if 'ambig_code' in common_atoms[idx]:
+                                        ambig_code = common_atoms[idx]['ambig_code']
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                             common_atom, asis, ambig_code)
@@ -6435,8 +6435,8 @@ class BasePKParserListener():
                                                 gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in protonBeginCode else hvy_gem_atoms
                                                 if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
                                                     ambig_code = 1
-                                        if 'ambig_code' in common_atom:
-                                            ambig_code = common_atom['ambig_code']
+                                    if 'ambig_code' in common_atom:
+                                        ambig_code = common_atom['ambig_code']
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                             common_atom, asis, ambig_code)
@@ -6510,8 +6510,8 @@ class BasePKParserListener():
                                                 gem_atom_ids = pro_gem_atoms if rep_atom_id[0] in protonBeginCode else hvy_gem_atoms
                                                 if not any(a['atom_id'] in gem_atom_ids for a in atom_sel):
                                                     ambig_code = 1
-                                        if 'ambig_code' in common_atoms[idx]:
-                                            ambig_code = common_atoms[idx]['ambig_code']
+                                    if 'ambig_code' in common_atoms[idx]:
+                                        ambig_code = common_atoms[idx]['ambig_code']
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                             common_atom, asis, ambig_code)

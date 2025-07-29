@@ -225,6 +225,12 @@ class SparkyPKReader:
 
 
 if __name__ == "__main__":
+    reader = SparkyPKReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/5z5x/bmr21081/work/upload/HVF18-NOESY.-corrected',
+                     '../../tests-nmr/mock-data-remediation/5z5x/5z5x.cif')
+
     reasons_ = {'non_poly_remap': {'SER': {37: {'chain_id': 'A', 'seq_id': 102, 'original_chain_id': None}}}}
     mrAtomNameMapping_ = [{'auth_atom_id': 'H44', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H44', 'original_comp_id': 'PNS', 'original_seq_id': 102},
                           {'auth_atom_id': 'H432', 'auth_comp_id': 'PNS', 'auth_seq_id': 102, 'original_atom_id': 'H432', 'original_comp_id': 'PNS', 'original_seq_id': 102},

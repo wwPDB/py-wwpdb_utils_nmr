@@ -31,6 +31,7 @@ try:
                                                        translateToStdResName,
                                                        translateToStdAtomName,
                                                        translateToLigandName,
+                                                       backTranslateFromStdResName,
                                                        hasInterChainRestraint,
                                                        isLongRangeRestraint,
                                                        isCyclicPolymer,
@@ -108,6 +109,7 @@ except ImportError:
                                            translateToStdResName,
                                            translateToStdAtomName,
                                            translateToLigandName,
+                                           backTranslateFromStdResName,
                                            hasInterChainRestraint,
                                            isLongRangeRestraint,
                                            isCyclicPolymer,
@@ -910,6 +912,7 @@ class BasePKParserListener():
     authAsymIdSet = None
     compIdSet = None
     altCompIdSet = None
+    cyanaCompIdSet = None
     polyPeptide = False
     polyDeoxyribonucleotide = False
     polyRibonucleotide = False
@@ -1092,6 +1095,7 @@ class BasePKParserListener():
 
             self.compIdSet = set()
             self.altCompIdSet = set()
+            self.cyanaCompIdSet = set()
 
             def is_data(array: list) -> bool:
                 return not any(d in emptyValue for d in array)
@@ -1123,6 +1127,9 @@ class BasePKParserListener():
                         self.polyRibonucleotide = True
             if 'ALA' in self.compIdSet:
                 self.isFirstResidueAla = any(ps['comp_id'][0] == 'ALA' for ps in self.polySeq)
+
+            for compId in self.compIdSet:
+                self.cyanaCompIdSet |= backTranslateFromStdResName(compId)
 
         if self.hasNonPoly:
             atom_list = []
@@ -6600,6 +6607,15 @@ class BasePKParserListener():
 
             if not resNameLike[idx]:
                 for compId in self.altCompIdSet:
+                    if compId in term:
+                        resNameLike[idx] = True
+                        index = term.index(compId)
+                        if index < minIndex:
+                            resNameSpan[idx] = (index, index + len(compId))
+                            minIndex = index
+
+            if not resNameLike[idx] and self.cyanaCompIdSet is not None:
+                for compId in self.cyanaCompIdSet:
                     if compId in term:
                         resNameLike[idx] = True
                         index = term.index(compId)

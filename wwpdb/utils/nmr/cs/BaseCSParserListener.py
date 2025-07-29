@@ -25,6 +25,7 @@ try:
     from wwpdb.utils.nmr.io.CifReader import SYMBOLS_ELEMENT
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName,
+                                                       backTranslateFromStdResName,
                                                        guessCompIdFromAtomId,
                                                        getRestraintName,
                                                        contentSubtypeOf,
@@ -68,6 +69,7 @@ except ImportError:
     from nmr.io.CifReader import SYMBOLS_ELEMENT
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName,
+                                           backTranslateFromStdResName,
                                            guessCompIdFromAtomId,
                                            getRestraintName,
                                            contentSubtypeOf,
@@ -158,6 +160,7 @@ class BaseCSParserListener():
 
     chainIdSet = None
     compIdSet = None
+    cyanaCompIdSet = None
     polyPeptide = False
     polyDeoxyribonucleotide = False
     polyRibonucleotide = False
@@ -256,12 +259,16 @@ class BaseCSParserListener():
 
             self.chainIdSet = set(ps['chain_id'] for ps in self.polySeq)
             self.compIdSet = set()
+            self.cyanaCompIdSet = set()
 
             def is_data(array: list) -> bool:
                 return not any(d in emptyValue for d in array)
 
             for ps in self.polySeq:
                 self.compIdSet.update(set(filter(is_data, ps['comp_id'])))
+
+            for compId in self.compIdSet:
+                self.cyanaCompIdSet |= backTranslateFromStdResName(compId)
 
             for compId in self.compIdSet:
                 if compId in monDict3:
@@ -858,6 +865,15 @@ class BaseCSParserListener():
                     if index < minIndex:
                         resNameSpan[idx] = (index, index + len(compId))
                         minIndex = index
+
+            if not resNameLike[idx] and self.cyanaCompIdSet is not None:
+                for compId in self.cyanaCompIdSet:
+                    if compId in term:
+                        resNameLike[idx] = True
+                        index = term.index(compId)
+                        if index < minIndex:
+                            resNameSpan[idx] = (index, index + len(compId))
+                            minIndex = index
 
             if hasOneLetterCodeSet and not useOneLetterCodeSet and resNameLike[idx] and len(term[resNameSpan[idx][0]:resNameSpan[idx][1]]) > 1:
                 hasOneLetterCodeSet = False

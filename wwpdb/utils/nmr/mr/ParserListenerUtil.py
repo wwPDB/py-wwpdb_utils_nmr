@@ -29,7 +29,7 @@ import numpy
 import pynmrstar
 
 from operator import itemgetter
-from typing import Any, IO, List, Tuple, Optional
+from typing import Any, IO, List, Set, Tuple, Optional
 
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
 
@@ -4022,6 +4022,49 @@ def translateToStdResName(compId: str, refCompId: Optional[str] = None, ccU=None
                 compId = replaced_by
 
     return compId
+
+
+def backTranslateFromStdResName(compId: str) -> Set[str]:
+    """ Back translate standard residue name to software specific name.
+    """
+
+    if compId is None:
+        return set()
+
+    if compId == 'DA':
+        return {'ADE', }
+
+    if compId == 'DC':
+        return {'CYT', }
+
+    if compId == 'DG':
+        return {'GUA', }
+
+    if compId == 'DT':
+        return {'THY', }
+
+    if compId == 'DI':
+        return {'INO', }
+
+    if compId in ('CH', 'DNR'):
+        return {'HCY', }
+
+    if compId == 'A':
+        return set(['RADE', 'RA'])
+
+    if compId == 'C':
+        return set(['RCYT', 'RC'])
+
+    if compId == 'G':
+        return set(['RGUA', 'RG'])
+
+    if compId == 'U':
+        return set(['URA', 'URI', 'RU'])
+
+    if compId == 'I':
+        return set(['RINO', 'RI'])
+
+    return set()
 
 
 def translateToLigandName(compId: str, refCompId: str, ccU) -> str:

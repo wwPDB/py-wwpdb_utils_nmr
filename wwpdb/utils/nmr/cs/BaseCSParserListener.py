@@ -843,8 +843,11 @@ class BaseCSParserListener():
 
             resIdTest = CHEM_SHIFT_ASSIGNMENT_RESID_PAT.search(term)
             if resIdTest:
-                resIdLike[idx] = True
-                resIdSpan[idx] = resIdTest.span()
+                if term[0] == 'D' and len(term) == 3 and term[-1] in ('5', '3') and translateToStdResName(term, ccU=self.ccU) in self.compIdSet:
+                    pass
+                else:
+                    resIdLike[idx] = True
+                    resIdSpan[idx] = resIdTest.span()
 
             minIndex = len(term)
 

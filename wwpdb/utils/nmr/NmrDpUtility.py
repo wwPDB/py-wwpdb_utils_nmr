@@ -28832,6 +28832,12 @@ class NmrDpUtility:
 
                                                     _row[1], _row[2] = entity_assembly_id, entity_id
                                                     _row[3] = _row[4] = seq_id
+                                                    if _row[17] in emptyValue:
+                                                        _row[17] = seq_id + offset  # DAOTHER-10222
+                                                    if _row[18] in emptyValue:
+                                                        _row[18] = comp_id
+                                                    if _row[19] in emptyValue:
+                                                        _row[19] = atom_id
 
                                                     _row[16] = _row[20] = auth_asym_id
                                                     if _row[21] in emptyValue:

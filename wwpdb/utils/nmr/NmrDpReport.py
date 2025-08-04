@@ -1207,7 +1207,8 @@ class NmrDpReport:
         """ Retrieve NMR polymer sequence (1-letter code) corresponding to a given coordinate chain_id.
         """
 
-        fullSeqeucne = self.getInputSourceIdOfNmrData() != -1
+        fullSequence = self.getInputSourceIdOfNmrData() != -1
+
         unmappedSeqId = []
 
         chain_assign_dic = self.chain_assignment.get()
@@ -1217,7 +1218,7 @@ class NmrDpReport:
         if chain_assigns is None:
             return None
 
-        if not fullSeqeucne:
+        if not fullSequence:
 
             _chain_assigns = get_value_safe(chain_assign_dic, 'nmr_poly_seq_vs_model_poly_seq')
 
@@ -1235,11 +1236,24 @@ class NmrDpReport:
 
                         break
 
+            if len(unmappedSeqId) > 0:
+
+                ids = self.getInputSourceIdsOfNmrLegacyData()
+
+                if len(ids) > 0:
+                    input_source = self.input_sources[ids[0]]
+                    input_source_dic = input_source.get()
+
+                    content_subtype = input_source_dic['content_subtype']
+
+                    if 'entity' in content_subtype:
+                        fullSequence = True  # trust full sequence of the entity if cs file is based on existing BMRB entry (DAOTHR-10222)
+
         for ca in chain_assigns:
 
             if (ca['ref_chain_id'] == cif_chain_id and label_scheme) or\
                ((ca['ref_auth_chain_id'] if 'ref_auth_chain_id' in ca else ca['ref_chain_id']) == cif_chain_id and not label_scheme):
-                return self.getNmrSeq1LetterCodeOf(ca['test_chain_id'], fullSequence=fullSeqeucne, unmappedSeqId=unmappedSeqId)
+                return self.getNmrSeq1LetterCodeOf(ca['test_chain_id'], fullSequence=fullSequence, unmappedSeqId=unmappedSeqId)
 
         return None
 

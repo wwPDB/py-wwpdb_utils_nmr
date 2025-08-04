@@ -1388,7 +1388,7 @@ class BMRBAnnTasks:
                                 resid = (100 - total_v) // zero_comps
                                 solvent_system = {k: v if v > 0 else resid for k, v in solvent_system.items()}
 
-                    else:
+                    elif _solvent_system not in emptyValue:
                         if solvent_with_percent_pat.match(_solvent_system):
                             g = solvent_with_percent_pat.search(_solvent_system).groups()
                             solvent_name = g[1].strip()

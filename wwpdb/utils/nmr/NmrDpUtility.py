@@ -28802,7 +28802,7 @@ class NmrDpUtility:
 
                                 def test_seq_id_offset_as_is(lp, index, _row, _idx, chain_id, seq_id, comp_id, offset):
                                     _resolved = False
-                                    _index = index
+                                    _index, _seq_id = index, seq_id
 
                                     auth_asym_id, auth_seq_id, label_seq_id = get_label_seq_scheme(chain_id, seq_id + offset)
                                     if None not in (auth_asym_id, auth_seq_id):
@@ -28832,8 +28832,9 @@ class NmrDpUtility:
 
                                                     _row[1], _row[2] = entity_assembly_id, entity_id
                                                     _row[3] = _row[4] = seq_id
+
                                                     if _row[17] in emptyValue:
-                                                        _row[17] = seq_id + offset  # DAOTHER-10222
+                                                        _row[17] = _seq_id
                                                     if _row[18] in emptyValue:
                                                         _row[18] = comp_id
                                                     if _row[19] in emptyValue:

@@ -196,17 +196,22 @@ mode COMMENT_MODE;
 Any_name:		~[ \t\r\n]+;
 
 SPACE_CM:		[ \t]+ -> skip;
-RETURN_CM:		[\r\n]+ -> popMode;
+RETURN_CM:		[\r\n]+ -> mode(DEFAULT_MODE);
 
 mode POLARITY_MODE;
 
-Hydrophilic:		(N O T | '!') SPACE_PM+ Hydrophobic -> popMode;
-Hydrophobic:		H Y? D? R? O? P? H? B? I? C? -> popMode;
-Non_polar:		(N O T | '!') SPACE_PM+ Polar -> popMode;
-Polar:			P O L A? R? -> popMode;
-Charged:		((Positive CONTINUE_PM Negative) | (Negative CONTINUE_PM Positive)) -> popMode;
-Positive:		P O S I? T? I? V? E? -> popMode;
-Negative:		N E? G? A? T? I? V? E? -> popMode;
+fragment HYDROPHOBIC:	H Y? D? R? O? P? H? B? I? C?;
+fragment POLAR:		P O L A? R?;
+fragment POSITIVE:	P O S I? T? I? V? E?;
+fragment NEGATIVE:	N E? G? A? T? I? V? E?;
+
+Hydrophilic:		(N O T | '!') SPACE_PM+ HYDROPHOBIC -> popMode;
+Hydrophobic:		HYDROPHOBIC -> popMode;
+Non_polar:		(N O T | '!') SPACE_PM+ POLAR -> popMode;
+Polar:			POLAR -> popMode;
+Charged:		((POSITIVE CONTINUE_PM NEGATIVE) | (NEGATIVE CONTINUE_PM POSITIVE)) -> popMode;
+Positive:		POSITIVE -> popMode;
+Negative:		NEGATIVE -> popMode;
 
 fragment SPACE_PM:	[ \t\r\n];
 fragment CONTINUE_PM:	SPACE_PM* (O R | '|' | ',' | U N I O N) SPACE_PM*;
@@ -215,13 +220,17 @@ IGNORE_SPACE_PM:	SPACE_PM -> skip;
 
 mode SECONDARY_STRUCT_MODE;
 
-Helix_or_strand:	((Helix CONTINUE_SSM Strand) | (Strand CONTINUE_SSM Helix)) -> popMode;
-Strand_or_loop:		((Strand CONTINUE_SSM Loop) | (Loop CONTINUE_SSM Strand)) -> popMode;
-Helix_or_loop:		((Helix CONTINUE_SSM Loop) | (Loop CONTINUE_SSM Helix)) -> popMode;
+fragment HELIX:		H E? L? I? X?;
+fragment STRAND:	S T? R? A? N? D?;
+fragment LOOP:		L O? O? P?;
 
-Helix:			H E? L? I? X? -> popMode;
-Strand:			S T? R? A? N? D? -> popMode;
-Loop:			L O? O? P? -> popMode;
+Helix_or_strand:	((HELIX CONTINUE_SSM STRAND) | (STRAND CONTINUE_SSM HELIX)) -> popMode;
+Strand_or_loop:		((STRAND CONTINUE_SSM LOOP) | (LOOP CONTINUE_SSM STRAND)) -> popMode;
+Helix_or_loop:		((HELIX CONTINUE_SSM LOOP) | (LOOP CONTINUE_SSM HELIX)) -> popMode;
+
+Helix:			HELIX -> popMode;
+Strand:			STRAND -> popMode;
+Loop:			LOOP -> popMode;
 
 fragment SPACE_SSM:	[ \t\r\n];
 fragment CONTINUE_SSM:	SPACE_SSM* (O R | '|' | ',') SPACE_SSM*;

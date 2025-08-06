@@ -168,17 +168,22 @@ mode COMMENT_MODE;
 Any_name:		~[ \t\r\n]+;
 
 SPACE_CM:		[ \t]+ -> skip;
-RETURN_CM:		[\r\n]+ -> popMode;
+RETURN_CM:		[\r\n]+ -> mode(DEFAULT_MODE);
 
 mode POLARITY_MODE;
 
-Hydrophilic:		('not' | '!') SPACE_PM+  Hydrophobic-> popMode;
-Hydrophobic:		'h' 'y'? 'd'? 'r'? 'o'? 'p'? 'h'? 'b'? 'i'? 'c'? -> popMode;
-Non_polar:		('not' | '!') SPACE_PM+ 'pol' 'a'? 'r'? -> popMode;
-Polar:			'pol' 'a'? 'r'? -> popMode;
-Charged:		((Positive CONTINUE_PM Negative) | (Negative CONTINUE_PM Positive)) -> popMode;
-Positive:		'pos' 'i'? 't'? 'i'? 'v'? 'e'? -> popMode;
-Negative:		'n' 'e'? 'g'? 'a'? 't'? 'i'? 'v'? 'e'? -> popMode;
+fragment HYDROPHOBIC:	'h' 'y'? 'd'? 'r'? 'o'? 'p'? 'h'? 'b'? 'i'? 'c'?;
+fragment POLAR:		'pol' 'a'? 'r'?;
+fragment POSITIVE:	'pos' 'i'? 't'? 'i'? 'v'? 'e'?;
+fragment NEGATIVE:	'n' 'e'? 'g'? 'a'? 't'? 'i'? 'v'? 'e'?;
+
+Hydrophilic:		('not' | '!') SPACE_PM+ HYDROPHOBIC -> popMode;
+Hydrophobic:		HYDROPHOBIC -> popMode;
+Non_polar:		('not' | '!') SPACE_PM+ POLAR -> popMode;
+Polar:			POLAR -> popMode;
+Charged:		((POSITIVE CONTINUE_PM NEGATIVE) | (NEGATIVE CONTINUE_PM POSITIVE)) -> popMode;
+Positive:		POSITIVE -> popMode;
+Negative:		NEGATIVE -> popMode;
 
 fragment SPACE_PM:	[ \t\r\n];
 fragment CONTINUE_PM:	SPACE_PM* ('or' | '|' | ',' | 'union') SPACE_PM*;
@@ -187,13 +192,17 @@ IGNORE_SPACE_PM:	SPACE_PM -> skip;
 
 mode SECONDARY_STRUCT_MODE;
 
-Helix_or_strand:	((Helix CONTINUE_SSM Strand) | (Strand CONTINUE_SSM Helix)) -> popMode;
-Strand_or_loop:		((Strand CONTINUE_SSM Loop) | (Loop CONTINUE_SSM Strand)) -> popMode;
-Helix_or_loop:		((Helix CONTINUE_SSM Loop) | (Loop CONTINUE_SSM Helix)) -> popMode;
+fragment HELIX:		'h' 'e'? 'l'? 'i'? 'x'?;
+fragment STRAND:	's' 't'? 'r'? 'a'? 'n'? 'd'?;
+fragment LOOP:		'l' 'o'? 'o'? 'p'?;
 
-Helix:			'h' 'e'? 'l'? 'i'? 'x'? -> popMode;
-Strand:			's' 't'? 'r'? 'a'? 'n'? 'd'? -> popMode;
-Loop:			'l' 'o'? 'o'? 'p'? -> popMode;
+Helix_or_strand:	((HELIX CONTINUE_SSM STRAND) | (STRAND CONTINUE_SSM HELIX)) -> popMode;
+Strand_or_loop:		((STRAND CONTINUE_SSM LOOP) | (LOOP CONTINUE_SSM STRAND)) -> popMode;
+Helix_or_loop:		((HELIX CONTINUE_SSM LOOP) | (LOOP CONTINUE_SSM HELIX)) -> popMode;
+
+Helix:			HELIX -> popMode;
+Strand:			STRAND -> popMode;
+Loop:			LOOP -> popMode;
 
 fragment SPACE_SSM:	[ \t\r\n];
 fragment CONTINUE_SSM:	SPACE_SSM* ('or' | '|' | ',') SPACE_SSM*;

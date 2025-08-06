@@ -123,7 +123,7 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
 
     mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
     proc_mr_file_name_pattern = re.compile(r'^D_[0-9]{6,10}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
-                                           r'_P\d+\.(amber|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|sybyl|xplor-nih)\.V\d+$')
+                                           r'_P\d+\.(amber|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|schrodinger|sybyl|xplor-nih)\.V\d+$')
     pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}$')
     dep_id_pattern = re.compile(r'^D_[0-9]{6,10}$')
     bmrb_id_pattern = re.compile(r'^(bmr)?[0-9]{5,}$')
@@ -155,15 +155,7 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
                         combined = False
 
                     if row[1] not in emptyValue and row[2] not in emptyValue:
-                        if row[2] in ('XPLOR-NIH', 'X-PLOR NIH'):
-                            if 'nm-res-xpl' not in original_file_name:
-                                original_file_name['nm-res-xpl'] = []
-                            original_file_name['nm-res-xpl'].append(row[1])
-                        elif row[2] == 'CNS':
-                            if 'nm-res-cns' not in original_file_name:
-                                original_file_name['nm-res-cns'] = []
-                            original_file_name['nm-res-cns'].append(row[1])
-                        elif row[2] in ('AMBER', 'Amber'):
+                        if row[2] in ('AMBER', 'Amber'):
                             if 'nm-res-amb' not in original_file_name:
                                 original_file_name['nm-res-amb'] = []
                             original_file_name['nm-res-amb'].append(row[1])
@@ -171,38 +163,50 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
                             if 'nm-res-ari' not in original_file_name:
                                 original_file_name['nm-res-ari'] = []
                             original_file_name['nm-res-ari'].append(row[1])
-                        elif row[2] == 'CYANA':
-                            if 'nm-res-cya' not in original_file_name:
-                                original_file_name['nm-res-cya'] = []
-                            original_file_name['nm-res-cya'].append(row[1])
-                        elif row[2] in ('ROSETTA', 'Rosetta'):
-                            if 'nm-res-ros' not in original_file_name:
-                                original_file_name['nm-res-ros'] = []
-                            original_file_name['nm-res-ros'].append(row[1])
                         elif row[2] in ('BIOSYM', 'Discover'):
                             if 'nm-res-bio' not in original_file_name:
                                 original_file_name['nm-res-bio'] = []
                             original_file_name['nm-res-bio'].append(row[1])
-                        elif row[2] == 'GROMACS':
-                            if 'nm-res-gro' not in original_file_name:
-                                original_file_name['nm-res-gro'] = []
-                            original_file_name['nm-res-gro'].append(row[1])
-                        elif row[2] == 'DYNAMO':
-                            if 'nm-res-dyn' not in original_file_name:
-                                original_file_name['nm-res-dyn'] = []
-                            original_file_name['nm-res-dyn'].append(row[1])
-                        elif row[2] == 'SYBYL':
-                            if 'nm-res-syb' not in original_file_name:
-                                original_file_name['nm-res-syb'] = []
-                            original_file_name['nm-res-syb'].append(row[1])
-                        elif row[2] in ('ISD', 'Inferential Structure Determination (ISD)'):
-                            if 'nm-res-isd' not in original_file_name:
-                                original_file_name['nm-res-isd'] = []
-                            original_file_name['nm-res-isd'].append(row[1])
                         elif row[2] == 'CHARMM':
                             if 'nm-res-cha' not in original_file_name:
                                 original_file_name['nm-res-cha'] = []
                             original_file_name['nm-res-cha'].append(row[1])
+                        elif row[2] == 'CNS':
+                            if 'nm-res-cns' not in original_file_name:
+                                original_file_name['nm-res-cns'] = []
+                            original_file_name['nm-res-cns'].append(row[1])
+                        elif row[2] == 'CYANA':
+                            if 'nm-res-cya' not in original_file_name:
+                                original_file_name['nm-res-cya'] = []
+                            original_file_name['nm-res-cya'].append(row[1])
+                        elif row[2] == 'DYNAMO':
+                            if 'nm-res-dyn' not in original_file_name:
+                                original_file_name['nm-res-dyn'] = []
+                            original_file_name['nm-res-dyn'].append(row[1])
+                        elif row[2] in ('ISD', 'Inferential Structure Determination (ISD)'):
+                            if 'nm-res-isd' not in original_file_name:
+                                original_file_name['nm-res-isd'] = []
+                            original_file_name['nm-res-isd'].append(row[1])
+                        elif row[2] == 'GROMACS':
+                            if 'nm-res-gro' not in original_file_name:
+                                original_file_name['nm-res-gro'] = []
+                            original_file_name['nm-res-gro'].append(row[1])
+                        elif row[2] == 'SCHRODINGER':
+                            if 'nm-res-sch' not in original_file_name:
+                                original_file_name['nm-res-sch'] = []
+                            original_file_name['nm-res-sch'].append(row[1])
+                        elif row[2] == 'SYBYL':
+                            if 'nm-res-syb' not in original_file_name:
+                                original_file_name['nm-res-syb'] = []
+                            original_file_name['nm-res-syb'].append(row[1])
+                        elif row[2] in ('ROSETTA', 'Rosetta'):
+                            if 'nm-res-ros' not in original_file_name:
+                                original_file_name['nm-res-ros'] = []
+                            original_file_name['nm-res-ros'].append(row[1])
+                        elif row[2] in ('XPLOR-NIH', 'X-PLOR NIH'):
+                            if 'nm-res-xpl' not in original_file_name:
+                                original_file_name['nm-res-xpl'] = []
+                            original_file_name['nm-res-xpl'].append(row[1])
 
                 return combined, original_file_name
 
@@ -682,26 +686,29 @@ class gen_auth_view_onedep:
                     self.__ar_file_type.append('nm-res-amb')
                 elif content_type == 'aria':
                     self.__ar_file_type.append('nm-res-ari')
+                elif content_type == 'biosym':
+                    self.__ar_file_type.append('nm-res-bio')
+                elif content_type == 'charmm':
+                    self.__ar_file_type.append('nm-res-cha')
                 elif content_type == 'cns':
                     self.__ar_file_type.append('nm-res-cns')
                 elif content_type == 'cyana':
                     self.__ar_file_type.append('nm-res-cya')
-                elif content_type == 'xplor-nih':
-                    self.__ar_file_type.append('nm-res-xpl')
-                elif content_type == 'rosetta':
-                    self.__ar_file_type.append('nm-res-ros')
-                elif content_type == 'biosym':
-                    self.__ar_file_type.append('nm-res-bio')
                 elif content_type == 'dynamo':
                     self.__ar_file_type.append('nm-res-dyn')
                 elif content_type == 'gromacs':
                     self.__ar_file_type.append('nm-res-gro')
-                elif content_type == 'sybyl':
-                    self.__ar_file_type.append('nm-res-syb')
                 elif content_type == 'isd':
                     self.__ar_file_type.append('nm-res-isd')
-                elif content_type == 'charmm':
-                    self.__ar_file_type.append('nm-res-cha')
+                elif content_type == 'rosetta':
+                    self.__ar_file_type.append('nm-res-ros')
+                elif content_type == 'schrodinger':
+                    self.__ar_file_type.append('nm-res-sch')
+                elif content_type == 'sybyl':
+                    self.__ar_file_type.append('nm-res-syb')
+                elif content_type == 'xplor-nih':
+                    self.__ar_file_type.append('nm-res-xpl')
+
                 elif content_type == 'dat':
                     if has_amber:
                         self.__ar_file_type.append('nm-aux-amb')
@@ -726,26 +733,29 @@ class gen_auth_view_onedep:
                         self.__ar_file_type.append('nm-res-amb')
                     elif content_type == 'aria':
                         self.__ar_file_type.append('nm-res-ari')
+                    elif content_type == 'biosym':
+                        self.__ar_file_type.append('nm-res-bio')
+                    elif content_type == 'charmm':
+                        self.__ar_file_type.append('nm-res-cha')
                     elif content_type == 'cns':
                         self.__ar_file_type.append('nm-res-cns')
                     elif content_type == 'cyana':
                         self.__ar_file_type.append('nm-res-cya')
-                    elif content_type == 'xplor-nih':
-                        self.__ar_file_type.append('nm-res-xpl')
-                    elif content_type == 'rosetta':
-                        self.__ar_file_type.append('nm-res-ros')
-                    elif content_type == 'biosym':
-                        self.__ar_file_type.append('nm-res-bio')
                     elif content_type == 'dynamo':
                         self.__ar_file_type.append('nm-res-dyn')
                     elif content_type == 'gromacs':
                         self.__ar_file_type.append('nm-res-gro')
-                    elif content_type == 'sybyl':
-                        self.__ar_file_type.append('nm-res-syb')
                     elif content_type == 'isd':
                         self.__ar_file_type.append('nm-res-isd')
-                    elif content_type == 'charmm':
-                        self.__ar_file_type.append('nm-res-cha')
+                    elif content_type == 'rosetta':
+                        self.__ar_file_type.append('nm-res-ros')
+                    elif content_type == 'schrodinger':
+                        self.__ar_file_type.append('nm-res-sch')
+                    elif content_type == 'sybyl':
+                        self.__ar_file_type.append('nm-res-syb')
+                    elif content_type == 'xplor-nih':
+                        self.__ar_file_type.append('nm-res-xpl')
+
                     elif content_type == 'dat':
                         self.__ar_file_type.append('nm-aux-amb')
 
@@ -763,26 +773,29 @@ class gen_auth_view_onedep:
                         self.__ar_file_type.append('nm-res-amb')
                     elif content_type == 'aria':
                         self.__ar_file_type.append('nm-res-ari')
+                    elif content_type == 'biosym':
+                        self.__ar_file_type.append('nm-res-bio')
+                    elif content_type == 'charmm':
+                        self.__ar_file_type.append('nm-res-cha')
                     elif content_type == 'cns':
                         self.__ar_file_type.append('nm-res-cns')
                     elif content_type == 'cyana':
                         self.__ar_file_type.append('nm-res-cya')
-                    elif content_type == 'xplor-nih':
-                        self.__ar_file_type.append('nm-res-xpl')
-                    elif content_type == 'rosetta':
-                        self.__ar_file_type.append('nm-res-ros')
-                    elif content_type == 'biosym':
-                        self.__ar_file_type.append('nm-res-bio')
                     elif content_type == 'dynamo':
                         self.__ar_file_type.append('nm-res-dyn')
                     elif content_type == 'gromacs':
                         self.__ar_file_type.append('nm-res-gro')
-                    elif content_type == 'sybyl':
-                        self.__ar_file_type.append('nm-res-syb')
                     elif content_type == 'isd':
                         self.__ar_file_type.append('nm-res-isd')
-                    elif content_type == 'charmm':
-                        self.__ar_file_type.append('nm-res-cha')
+                    elif content_type == 'rosetta':
+                        self.__ar_file_type.append('nm-res-ros')
+                    elif content_type == 'schrodinger':
+                        self.__ar_file_type.append('nm-res-sch')
+                    elif content_type == 'sybyl':
+                        self.__ar_file_type.append('nm-res-syb')
+                    elif content_type == 'xplor-nih':
+                        self.__ar_file_type.append('nm-res-xpl')
+
                     elif content_type == 'dat':
                         self.__ar_file_type.append('nm-aux-gro')
 
@@ -800,26 +813,29 @@ class gen_auth_view_onedep:
                         self.__ar_file_type.append('nm-res-amb')
                     elif content_type == 'aria':
                         self.__ar_file_type.append('nm-res-ari')
+                    elif content_type == 'biosym':
+                        self.__ar_file_type.append('nm-res-bio')
+                    elif content_type == 'charmm':
+                        self.__ar_file_type.append('nm-res-cha')
                     elif content_type == 'cns':
                         self.__ar_file_type.append('nm-res-cns')
                     elif content_type == 'cyana':
                         self.__ar_file_type.append('nm-res-cya')
-                    elif content_type == 'xplor-nih':
-                        self.__ar_file_type.append('nm-res-xpl')
-                    elif content_type == 'rosetta':
-                        self.__ar_file_type.append('nm-res-ros')
-                    elif content_type == 'biosym':
-                        self.__ar_file_type.append('nm-res-bio')
                     elif content_type == 'dynamo':
                         self.__ar_file_type.append('nm-res-dyn')
                     elif content_type == 'gromacs':
                         self.__ar_file_type.append('nm-res-gro')
-                    elif content_type == 'sybyl':
-                        self.__ar_file_type.append('nm-res-syb')
                     elif content_type == 'isd':
                         self.__ar_file_type.append('nm-res-isd')
-                    elif content_type == 'charmm':
-                        self.__ar_file_type.append('nm-res-cha')
+                    elif content_type == 'rosetta':
+                        self.__ar_file_type.append('nm-res-ros')
+                    elif content_type == 'schrodinger':
+                        self.__ar_file_type.append('nm-res-sch')
+                    elif content_type == 'sybyl':
+                        self.__ar_file_type.append('nm-res-syb')
+                    elif content_type == 'xplor-nih':
+                        self.__ar_file_type.append('nm-res-xpl')
+
                     elif content_type == 'dat':
                         self.__ar_file_type.append('nm-aux-cha')
 

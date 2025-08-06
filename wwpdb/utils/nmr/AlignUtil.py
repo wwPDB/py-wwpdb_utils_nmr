@@ -642,6 +642,8 @@ def getRestraintFormatName(fileType: str, ambig: bool = False) -> str:
         return 'MR data'
     if fileType == 'nm-res-ros':
         return 'ROSETTA restraint'
+    if fileType == 'nm-res-sch':
+        return 'SCHRODINGER/ASL restraint'
     if fileType == 'nm-res-syb':
         return 'SYBYL restraint'
     if fileType == 'nm-res-xpl':

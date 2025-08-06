@@ -115,7 +115,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "4.6.0"
+__version__ = "4.7.0"
 
 import sys
 import os

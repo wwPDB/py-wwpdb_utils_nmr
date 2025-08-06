@@ -218,6 +218,7 @@
 # 29-May-2025  M. Yokochi - analyze spectral peak list files and provide warning/error messages to depositor (DAOTHER-8905, 8949, 10096, 10097, 10098, 10099, 10100, 10101)
 # 11-Jun-2025  M. Yokochi - reconstruct atom name mapping from revision history and PDB Versioned Archive if possible (DAOTHER-7829, 8905)
 # 25-Jul-2025  M. Yokochi - enable to configure whether to enforce to use _Peak_row_format loop for spectral peak list remediation (DAOTHER-8905, 9785)
+# 06-Aug-2025  M. Yokochi - add support for SCHRODINGER/ASL MR format (DAOTHER-7902, 10172, NMR data remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -226,7 +227,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "4.6.0"
+__version__ = "4.7.0"
 
 import sys
 import os
@@ -386,6 +387,7 @@ try:
     from wwpdb.utils.nmr.mr.GromacsPTReader import GromacsPTReader
     from wwpdb.utils.nmr.mr.IsdMRReader import IsdMRReader
     from wwpdb.utils.nmr.mr.RosettaMRReader import RosettaMRReader
+    from wwpdb.utils.nmr.mr.SchrodingerMRReader import SchrodingerMRReader
     from wwpdb.utils.nmr.mr.SybylMRReader import SybylMRReader
     from wwpdb.utils.nmr.mr.XplorMRReader import XplorMRReader
     from wwpdb.utils.nmr.pk.AriaPKReader import AriaPKReader
@@ -553,6 +555,7 @@ except ImportError:
     from nmr.mr.GromacsPTReader import GromacsPTReader
     from nmr.mr.IsdMRReader import IsdMRReader
     from nmr.mr.RosettaMRReader import RosettaMRReader
+    from nmr.mr.SchrodingerMRReader import SchrodingerMRReader
     from nmr.mr.SybylMRReader import SybylMRReader
     from nmr.mr.XplorMRReader import XplorMRReader
     from nmr.pk.AriaPKReader import AriaPKReader
@@ -620,7 +623,7 @@ RDC_UNCERT_MAX = RDC_UNCERTAINTY_RANGE['max_inclusive']
 bmrb_nmr_star_file_name_pattern = re.compile(r'^bmr\d[0-9]{1,5}_3.str$')
 mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
 proc_mr_file_name_pattern = re.compile(r'^D_[0-9]{6,10}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
-                                       r'_P\d+\.(amber|aria|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|sybyl|xplor-nih)\.V\d+$')
+                                       r'_P\d+\.(amber|aria|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|schrodinger|sybyl|xplor-nih)\.V\d+$')
 pdb_id_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}$')
 bmrb_id_pattern = re.compile(r'^(bmr)?([0-9]+)$')
 dep_id_pattern = re.compile(r'^D_[0-9]{6,10}$')
@@ -703,20 +706,20 @@ linear_mr_file_types = ('nm-res-bio', 'nm-res-cya', 'nm-res-ros', 'nm-res-syb')
 
 retrial_mr_file_types = ('nm-res-ari', 'nm-res-bio', 'nm-res-cns', 'nm-res-cha',
                          'nm-res-cya', 'nm-res-dyn', 'nm-res-isd', 'nm-res-noa',
-                         'nm-res-ros', 'nm-res-syb', 'nm-res-xpl')
+                         'nm-res-ros', 'nm-res-sch', 'nm-res-syb', 'nm-res-xpl')
 
 parsable_mr_file_types = ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro',
                           'nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha',
                           'nm-res-cns', 'nm-res-cya', 'nm-res-dyn', 'nm-res-gro',
-                          'nm-res-isd', 'nm-res-noa', 'nm-res-syb', 'nm-res-ros',
-                          'nm-res-xpl')
+                          'nm-res-isd', 'nm-res-noa', 'nm-res-sch', 'nm-res-syb',
+                          'nm-res-ros', 'nm-res-xpl')
 
 archival_mr_file_types = ('nmr-star',
                           'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro',
                           'nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha',
                           'nm-res-cns', 'nm-res-cya', 'nm-res-dyn', 'nm-res-gro',
                           'nm-res-isd', 'nm-res-noa', 'nm-res-oth', 'nm-res-sax',
-                          'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
+                          'nm-res-sch', 'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
 
 parsable_pk_file_types = ('nm-aux-xea',
                           'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-pip',
@@ -13227,6 +13230,12 @@ class NmrDpUtility:
                                      reasons)
             reader.setRemediateMode(self.__remediation_mode)
             return reader
+        if file_type == 'nm-res-sch':
+            reader = SchrodingerMRReader(verbose, self.__lfh, None, None, None, None, None,
+                                         self.__ccU, self.__csStat, self.__nefT,
+                                         reasons)
+            reader.setSllPredMode(sll_pred)
+            return reader
         if file_type == 'nm-res-syb':
             return SybylMRReader(verbose, self.__lfh, None, None, None, None, None,
                                  self.__ccU, self.__csStat, self.__nefT,
@@ -15401,6 +15410,19 @@ class NmrDpUtility:
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-ros')
 
             is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-res-sch':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-sch',
+                                                                    agreed_w_cns=agreed_w_cns)
+
+            is_valid |= _is_valid
+            agreed_w_cns |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)
@@ -36047,6 +36069,102 @@ class NmrDpUtility:
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate NMR restraint file (ROSETTA) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in self.__mr_sf_dict_holder:
+                                    self.__mr_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in self.__mr_sf_dict_holder[content_subtype]:
+                                        self.__mr_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-res-sch':
+                reader = SchrodingerMRReader(self.__verbose, self.__lfh,
+                                             self.__representative_model_id,
+                                             self.__representative_alt_id,
+                                             self.__mr_atom_name_mapping,
+                                             self.__cR, self.__caC,
+                                             self.__ccU, self.__csStat, self.__nefT,
+                                             reasons)
+                reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
+                reader.setNmrChainAssignments(nmr_vs_model)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+                __list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                              listIdCounter=self.__list_id_counter, entryId=self.__entry_id)
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if None not in (reasons, _reasons):
+
+                        reader = SchrodingerMRReader(self.__verbose, self.__lfh,
+                                                     self.__representative_model_id,
+                                                     self.__representative_alt_id,
+                                                     self.__mr_atom_name_mapping,
+                                                     self.__cR, self.__caC,
+                                                     self.__ccU, self.__csStat, self.__nefT,
+                                                     None)
+                        reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
+                        reader.setNmrChainAssignments(nmr_vs_model)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, entryId=self.__entry_id)
+
+                        if listener is not None:
+                            reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_res_warn_message_for_lazy_eval(file_name, listener)
+
+                        if 'dist_restraint' in content_subtype.keys():
+                            reasons_dict[file_type] = reasons
+
+                        if 'model_chain_id_ext' in reasons:
+                            self.__auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                        if 'chain_id_clone' in reasons:
+                            self.__auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+
+                        reader = SchrodingerMRReader(self.__verbose, self.__lfh,
+                                                     self.__representative_model_id,
+                                                     self.__representative_alt_id,
+                                                     self.__mr_atom_name_mapping,
+                                                     self.__cR, self.__caC,
+                                                     self.__ccU, self.__csStat, self.__nefT,
+                                                     reasons)
+                        reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
+                        reader.setNmrChainAssignments(nmr_vs_model)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=__list_id_counter, entryId=self.__entry_id)
+
+                    deal_res_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate NMR restraint file (SCHRODINGER/ASL) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()

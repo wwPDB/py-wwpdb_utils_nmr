@@ -11428,7 +11428,7 @@ class XplorMRParserListener(ParseTreeListener):
         atom_not_found_error = len(self.__f) > len_f and any('[Atom not found]' in f or 'Hydrogen not instantiated' in f for f in self.__f[len_f:])
 
         if self.__reasons is None and self.__preferAuthSeq and not atom_not_found_error and self.__complexSeqScheme\
-           and not chain_not_specified and 'seq_not_specifed' not in _factor:
+           and not chain_not_specified and 'seq_not_specified' not in _factor:
             if guessCompIdFromAtomId(_factor['atom_id'], self.__polySeq, self.__nefT) is not None:
                 if 'inhibit_label_seq_scheme_stats' not in self.reasonsForReParsing:
                     self.reasonsForReParsing['inhibit_label_seq_scheme_stats'] = {}
@@ -13611,7 +13611,7 @@ class XplorMRParserListener(ParseTreeListener):
                 self.factor['atom_id'] = [None]
                 self.__f.append(f"[Unsupported data] {self.__getCurrentRestraint()}"
                                 f"The 'store{num}' clause has no effect "
-                                "because the internal vector statement is not set.")
+                                "because the internal vector statement is not set yet.")
             else:
                 self.factor = copy.copy(self.storeSet[num])
 

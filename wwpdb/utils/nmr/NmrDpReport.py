@@ -103,6 +103,7 @@
 # 25-Apr-2025  M. Yokochi - add 'unparsed_data' error to block conversion due to unparsed data with error in standalone NMR data conversion service (DAOTHER-9785)
 # 28-May-2025  M. Yokochi - add 'conflicted_peak_list' and 'inconsistent_peak_list' warning types (DAOTHER-10010)
 # 29-May-2025  M. Yokochi - add 'unsupported_peak_list' warning type (DAOTHER-10099)
+# 06-Aug-2025  M. Yokochi - add 'nm-res-sch' file type for SCHRODINGER/ASL restraint format (DAOTHER-7902, 10172, NMR data remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -111,7 +112,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "4.6.0"
+__version__ = "4.7.0"
 
 import sys
 import json
@@ -1858,8 +1859,8 @@ class NmrDpReportInputSource:
                            'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-xea',
                            'nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha', 'nm-res-cns',
                            'nm-res-cya', 'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-mr',
-                           'nm-res-noa', 'nm-res-oth', 'nm-res-ros', 'nm-res-sax', 'nm-res-syb',
-                           'nm-res-xpl',
+                           'nm-res-noa', 'nm-res-oth', 'nm-res-ros', 'nm-res-sax', 'nm-res-sch',
+                           'nm-res-syb', 'nm-res-xpl',
                            'nm-pea-any', 'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-pip',
                            'nm-pea-pon', 'nm-pea-spa', 'nm-pea-sps', 'nm-pea-top', 'nm-pea-vie',
                            'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi',

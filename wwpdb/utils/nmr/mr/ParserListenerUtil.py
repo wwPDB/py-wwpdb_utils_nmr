@@ -2864,6 +2864,8 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
                 return 'CD1'
 
         elif refCompId in ('SER', 'THR', 'TYR'):
+            if refCompId == 'TYR' and atomId == 'HO':
+                return 'HH'
             if atomId.startswith('HO') and lenAtomId > 2:  # 2n6j
                 return 'H' + atomId[2:]
 
@@ -11101,4 +11103,6 @@ def getPdbxNmrSoftwareName(name: str) -> str:
         return 'XwinNMR'
     if name == 'CCPN':
         return 'CcpNmr Analysis'
+    if name == 'SCHRODINGER':
+        return 'MacroModel'
     return name  # 'ARIA', 'CHARMM', 'CNS', 'CYANA', 'DYNAMO', 'PALES', 'TALOS', 'GROMACS', 'SYBYL', 'VNMR', 'XEASY'

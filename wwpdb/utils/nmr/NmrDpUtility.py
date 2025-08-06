@@ -15422,7 +15422,6 @@ class NmrDpUtility:
                                                                     agreed_w_cns=agreed_w_cns)
 
             is_valid |= _is_valid
-            agreed_w_cns |= _is_valid
             err += _err
             if _genuine_type is not None:
                 genuine_type.append(_genuine_type)

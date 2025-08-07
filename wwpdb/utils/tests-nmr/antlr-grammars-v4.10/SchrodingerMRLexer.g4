@@ -38,6 +38,15 @@ Target:			'target';
 
 Comma:			',';
 
+/* MacroModel command
+  See also https://shaker.umh.es/computing/Schrodinger_suites/macromodel_reference_manual.pdf
+*/
+
+FXDI:			'FXDI';
+FXBA:			'FXBA';
+FXTA:			'FXTA';
+FXHB:			'FXHB';
+
 /* Atom Selection Language - ASL
   See also https://shaker.umh.es/computing/Schrodinger_suites/maestro_command_reference.pdf
 */

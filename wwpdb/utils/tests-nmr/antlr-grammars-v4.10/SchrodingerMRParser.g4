@@ -27,7 +27,11 @@ schrodinger_mr:
 	distance_assign |		// allowing bare assign clauses for Distance restraints
 	dihedral_angle_assign |		// allowing bare assign clauses for Dihedral angle restraints
 	angle_assign |			// allowing bare assign clauses for angle restraints
-	parameter_statement
+	parameter_statement |
+	fxdi_statement |		
+	fxta_statement |
+	fxba_statement |
+	fxhb_statement
 	)*
 	EOF;
 
@@ -81,6 +85,46 @@ angle_assign:
 
 angle_assign_unsupported:
 	Integer Integer Integer number number;
+
+fxdi_statement:
+	fxdi_assign+ |
+	fxdi_assign_unsupported+;
+
+fxdi_assign:
+	FXDI selection selection Integer? number number number;
+
+fxdi_assign_unsupported:
+	FXDI Integer Integer Integer? number number number;
+
+fxta_statement:
+	fxta_assign+ |
+	fxta_assign_unsupported+;
+
+fxta_assign:
+	FXTA selection selection selection selection number number number Integer;
+
+fxta_assign_unsupported:
+	FXTA Integer Integer Integer Integer number number number Integer;
+
+fxba_statement:
+	fxba_assign+ |
+	fxba_assign_unsupported+;
+
+fxba_assign:
+	FXBA selection selection selection number number number;
+
+fxba_assign_unsupported:
+	FXBA Integer Integer Integer number number number;
+
+fxhb_statement:
+	fxhb_assign+ |
+	fxhb_assign_unsupported+;
+
+fxhb_assign:
+	FXHB selection selection selection number number;
+
+fxhb_assign_unsupported:
+	FXHB Integer Integer Integer number number;
 
 /* Atom Selection Language - ASL
   See also https://shaker.umh.es/computing/Schrodinger_suites/maestro_command_reference.pdf

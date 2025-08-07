@@ -62,6 +62,7 @@ try:
                                                        resetCombinationId,
                                                        resetMemberId,
                                                        getDistConstraintType,
+                                                       getDstFuncForHBond,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID,
                                                        MAX_PREF_LABEL_SCHEME_COUNT,
@@ -160,6 +161,7 @@ except ImportError:
                                            resetCombinationId,
                                            resetMemberId,
                                            getDistConstraintType,
+                                           getDstFuncForHBond,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID,
                                            MAX_PREF_LABEL_SCHEME_COUNT,
@@ -628,14 +630,17 @@ class SchrodingerMRParserListener(ParseTreeListener):
         self.distRestraints = 0      # SCHRODINGER: Distance restraints
         self.dihedRestraints = 0     # SCHRODINGER: Dihedral angle restraints
         self.angRestraints = 0       # SCHRODINGER: Angle database restraints
+        self.hbondRestraints = 0     # SCHRODINGER: Hydrogen bond restraints
 
         self.failedDistRestraints = 0      # SCHRODINGER: Distance restraints (unsupported)
         self.failedDihedRestraints = 0     # SCHRODINGER: Dihedral angle restraints (unsupported)
         self.failedAngRestraints = 0       # SCHRODINGER: Angle database restraints (unsupported)
+        self.failedHbondRestraints = 0     # SCHRODINGER: Hydrogen bond restraints (unsupported)
 
         self.distStatements = 0      # SCHRODINGER: Distance statements
         self.dihedStatements = 0     # SCHRODINGER: Dihedral angle statements
         self.angStatements = 0       # SCHRODINGER: Angle database statements
+        self.hbondStatements = 0     # SCHRODINGER: Hydrogen bond statements
 
         self.sfDict = {}
 
@@ -682,6 +687,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
                 self.reasonsForReParsing['label_seq_scheme']['dihed'] = True
             if self.angRestraints > 0:
                 self.reasonsForReParsing['label_seq_scheme']['ang'] = True
+            if self.hbondRestraints > 0:
+                self.reasonsForReParsing['label_seq_scheme']['hbond'] = True
             if 'local_seq_scheme' in self.reasonsForReParsing:
                 del self.reasonsForReParsing['local_seq_scheme']
 
@@ -2367,8 +2374,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
                     _atom1 = _atom2 = None
                 if self.__createSfDict:
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else '.'
-                for atom1, atom2 in (itertools.product(self.atomSelectionSet[i],
-                                                       self.atomSelectionSet[i + 1])):
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
+                                                      self.atomSelectionSet[i + 1]):
                     atoms = [atom1, atom2]
                     if isIdenticalRestraint(atoms, self.__nefT):
                         continue
@@ -2715,10 +2722,10 @@ class SchrodingerMRParserListener(ParseTreeListener):
 
             if isinstance(combinationId, int):
                 fixedAngleName = '.'
-                for atom1, atom2, atom3, atom4 in (itertools.product(self.atomSelectionSet[0],
-                                                                     self.atomSelectionSet[1],
-                                                                     self.atomSelectionSet[2],
-                                                                     self.atomSelectionSet[3])):
+                for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                    self.atomSelectionSet[1],
+                                                                    self.atomSelectionSet[2],
+                                                                    self.atomSelectionSet[3]):
                     atoms = [atom1, atom2, atom3, atom4]
                     angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                            atoms,
@@ -2744,10 +2751,10 @@ class SchrodingerMRParserListener(ParseTreeListener):
 
             first_item = True
 
-            for atom1, atom2, atom3, atom4 in (itertools.product(self.atomSelectionSet[0],
-                                                                 self.atomSelectionSet[1],
-                                                                 self.atomSelectionSet[2],
-                                                                 self.atomSelectionSet[3])):
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                self.atomSelectionSet[1],
+                                                                self.atomSelectionSet[2],
+                                                                self.atomSelectionSet[3]):
                 atoms = [atom1, atom2, atom3, atom4]
                 angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
                                                        atoms,
@@ -3079,6 +3086,716 @@ class SchrodingerMRParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by SchrodingerMRParser#angle_assign_unsupported.
     def exitAngle_assign_unsupported(self, ctx: SchrodingerMRParser.Angle_assign_unsupportedContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by SchrodingerMRParser#fxdi_statement.
+    def enterFxdi_statement(self, ctx: SchrodingerMRParser.Fxdi_statementContext):  # pylint: disable=unused-argument
+        self.distStatements += 1
+        self.__cur_subtype_altered = self.__cur_subtype != 'dist' and len(self.__cur_subtype) > 0
+        self.__cur_subtype = 'dist'
+
+        if self.__cur_subtype_altered and not self.__preferAuthSeq:
+            self.__preferAuthSeq = True
+            self.__authSeqId = 'auth_seq_id'
+
+        if self.__createSfDict:
+            self.__addSf()
+
+    # Exit a parse tree produced by SchrodingerMRParser#fxdi_statement.
+    def exitFxdi_statement(self, ctx: SchrodingerMRParser.Fxdi_statementContext):  # pylint: disable=unused-argument
+        if self.__createSfDict:
+            self.__trimSfWoLp()
+
+    # Enter a parse tree produced by SchrodingerMRParser#fxdi_assign.
+    def enterFxdi_assign(self, ctx: SchrodingerMRParser.Fxdi_assignContext):  # pylint: disable=unused-argument
+        self.distRestraints += 1
+        self.__cur_subtype_altered = self.__cur_subtype != 'dist' and len(self.__cur_subtype) > 0
+        if self.__cur_subtype_altered:
+            self.distStatements += 1
+        self.__cur_subtype = 'dist'
+
+        if self.__cur_subtype_altered and not self.__preferAuthSeq:
+            self.__preferAuthSeq = True
+            self.__authSeqId = 'auth_seq_id'
+
+        self.atomSelectionSet.clear()
+        self.__g.clear()
+
+        self.__has_nx = False
+
+    # Exit a parse tree produced by SchrodingerMRParser#fxdi_assign.
+    def exitFxdi_assign(self, ctx: SchrodingerMRParser.Fxdi_assignContext):  # pylint: disable=unused-argument
+
+        try:
+
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
+                return
+
+            target_value = self.numberSelection[1]
+
+            if target_value <= 0.0:
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target distance '{target_value}' should be a positive value because we cannot refer the initial coordinates.")
+                return
+
+            delta = abs(self.numberSelection[2])
+
+            lower_limit = target_value - delta
+            upper_limit = target_value + delta
+
+            fc = self.numberSelection[0]
+
+            if fc < 0.0:
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The force constant '{fc}' must not be a negative value.")
+                return
+            if fc == 0.0:
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The force constant '{fc}' should be a positive value.")
+
+            lower_linear_limit = upper_linear_limit = None
+
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                return
+
+            self.__allowZeroUpperLimit = False
+            if self.__reasons is not None and 'model_chain_id_ext' in self.__reasons\
+               and len(self.atomSelectionSet[0]) > 0\
+               and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                   and ((chain_id_1 in self.__reasons['model_chain_id_ext'] and chain_id_2 in self.__reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.__reasons['model_chain_id_ext'] and chain_id_1 in self.__reasons['model_chain_id_ext'][chain_id_2])):
+                    self.__allowZeroUpperLimit = True
+            self.__allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+
+            dstFunc = self.validateDistanceRange(1.0, {'energy_const': fc},
+                                                 target_value, lower_limit, upper_limit,
+                                                 lower_linear_limit, upper_linear_limit)
+
+            if dstFunc is None:
+                return
+
+            if 0 in (len(self.atomSelectionSet[0]), len(self.atomSelectionSet[1])):
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
+                return
+
+            combinationId = memberId = memberLogicCode = '.'
+            if self.__createSfDict:
+                sf = self.__getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
+                                                                       self.__csStat, self.__originalFileName))
+                sf['id'] += 1
+                if len(self.atomSelectionSet) > 2:
+                    combinationId = 0
+                if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
+                   and (isAmbigAtomSelection(self.atomSelectionSet[0], self.__csStat)
+                        or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
+                    memberId = 0
+
+            for i in range(0, len(self.atomSelectionSet), 2):
+                if isinstance(combinationId, int):
+                    combinationId += 1
+                if isinstance(memberId, int):
+                    memberId = 0
+                    _atom1 = _atom2 = None
+                if self.__createSfDict:
+                    memberLogicCode = 'OR' if len(self.atomSelectionSet[i]) * len(self.atomSelectionSet[i + 1]) > 1 else '.'
+                for atom1, atom2 in itertools.product(self.atomSelectionSet[i],
+                                                      self.atomSelectionSet[i + 1]):
+                    atoms = [atom1, atom2]
+                    if isIdenticalRestraint(atoms, self.__nefT):
+                        continue
+                    if self.__createSfDict and isinstance(memberId, int):
+                        star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
+                        star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
+                        if None in (star_atom1, star_atom2) or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
+                            continue
+                    if self.__createSfDict and memberLogicCode == '.':
+                        altAtomId1, altAtomId2 = getAltProtonIdInBondConstraint(atoms, self.__csStat)
+                        if altAtomId1 is not None or altAtomId2 is not None:
+                            atom1, atom2 =\
+                                self.selectRealisticBondConstraint(atom1, atom2,
+                                                                   altAtomId1, altAtomId2,
+                                                                   dstFunc)
+                    if len(self.__fibril_chain_ids) > 0\
+                       and atom1['chain_id'] in self.__fibril_chain_ids\
+                       and atom2['chain_id'] in self.__fibril_chain_ids\
+                       and not self.isRealisticDistanceRestraint(atom1, atom2, dstFunc):
+                        continue
+                    if self.__debug:
+                        print(f"subtype={self.__cur_subtype} (FXDI) id={self.distRestraints} "
+                              f"atom1={atom1} atom2={atom2} {dstFunc}")
+                    if self.__createSfDict and sf is not None:
+                        if isinstance(memberId, int):
+                            if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\
+                               or isAmbigAtomSelection([_atom2, atom2], self.__csStat):
+                                memberId += 1
+                                _atom1, _atom2 = atom1, atom2
+                        sf['index_id'] += 1
+                        row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                     combinationId, memberId, memberLogicCode,
+                                     sf['list_id'], self.__entryId, dstFunc,
+                                     self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                     atom1, atom2)
+                        sf['loop'].add_data(row)
+
+                        if sf['constraint_subsubtype'] == 'ambi':
+                            continue
+
+                        if self.__cur_constraint_type is not None and self.__cur_constraint_type.startswith('ambiguous'):
+                            sf['constraint_subsubtype'] = 'ambi'
+
+                        if isinstance(combinationId, int)\
+                           or (memberLogicCode == 'OR'
+                               and (isAmbigAtomSelection(self.atomSelectionSet[i], self.__csStat)
+                                    or isAmbigAtomSelection(self.atomSelectionSet[i + 1], self.__csStat))):
+                            sf['constraint_subsubtype'] = 'ambi'
+
+                        if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
+                            upperLimit = float(dstFunc['upper_limit'])
+                            if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
+                                sf['constraint_subsubtype'] = 'ambi'
+
+            if self.__createSfDict and sf is not None:
+                if isinstance(memberId, int) and memberId == 1:
+                    sf['loop'].data[-1] = resetMemberId(self.__cur_subtype, sf['loop'].data[-1])
+                    memberId = '.'
+                if isinstance(memberId, str) and isinstance(combinationId, int) and combinationId == 1:
+                    sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
+        finally:
+            self.numberSelection.clear()
+
+    # Enter a parse tree produced by SchrodingerMRParser#fxdi_assign_unsupported.
+    def enterFxdi_assign_unsupported(self, ctx: SchrodingerMRParser.Fxdi_assign_unsupportedContext):
+        self.failedDistRestraints += 1
+        atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1)))]
+        self.__f.append(f"[Unsupported data] [Check the {self.failedDistRestraints}th row of distance restraints]"
+                        "The 'FXDI' clause has no effect "
+                        f"because the internal atom selection {atom_sel} is fragile in the restraint file.")
+
+    # Exit a parse tree produced by SchrodingerMRParser#fxdi_assign_unsupported.
+    def exitFxdi_assign_unsupported(self, ctx: SchrodingerMRParser.Fxdi_assign_unsupportedContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by SchrodingerMRParser#fxta_statement.
+    def enterFxta_statement(self, ctx: SchrodingerMRParser.Fxta_statementContext):  # pylint: disable=unused-argument
+        self.dihedStatements += 1
+        self.__cur_subtype = 'dihed'
+
+        if self.__createSfDict:
+            self.__addSf()
+
+    # Exit a parse tree produced by SchrodingerMRParser#fxta_statement.
+    def exitFxta_statement(self, ctx: SchrodingerMRParser.Fxta_statementContext):  # pylint: disable=unused-argument
+        if self.__createSfDict:
+            self.__trimSfWoLp()
+
+    # Enter a parse tree produced by SchrodingerMRParser#fxta_assign.
+    def enterFxta_assign(self, ctx: SchrodingerMRParser.Fxta_assignContext):  # pylint: disable=unused-argument
+        self.dihedRestraints += 1
+        if self.__cur_subtype != 'dihed':
+            self.dihedStatements += 1
+        self.__cur_subtype = 'dihed'
+
+        self.atomSelectionSet.clear()
+        self.__g.clear()
+
+    # Exit a parse tree produced by SchrodingerMRParser#fxta_assign.
+    def exitFxta_assign(self, ctx: SchrodingerMRParser.Fxta_assignContext):
+
+        try:
+
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
+                return
+
+            target_value = self.numberSelection[1]
+
+            if target_value > 360.0:
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target angle '{target_value}' should be less than 360.0 because we cannot refer the initial coordinates.")
+                return
+
+            delta = abs(self.numberSelection[2])
+
+            lower_limit = target_value - delta
+            upper_limit = target_value + delta
+
+            fc = self.numberSelection[0]
+
+            if fc <= 0.0:
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The energy constant value {fc} must be a positive value.")
+                return
+
+            lower_linear_limit = upper_linear_limit = None
+
+            multiplicity = int(str(ctx.Integer()))
+
+            if multiplicity <= 0:
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The multiplicity of angle restraint '{multiplicity}' must be a positive integer.")
+                return
+
+            dstFunc = self.validateAngleRange(1.0, {'energy_const': fc},
+                                              target_value, lower_limit, upper_limit,
+                                              lower_linear_limit, upper_linear_limit)
+
+            if dstFunc is None:
+                return
+
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                return
+
+            try:
+                compId = self.atomSelectionSet[0][0]['comp_id']
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
+            except IndexError:
+                if not self.areUniqueCoordAtoms('a dihedral angle (FXTA)'):
+                    if len(self.__g) > 0:
+                        self.__f.extend(self.__g)
+                return
+
+            len_f = len(self.__f)
+            self.areUniqueCoordAtoms('a dihedral angle (FXTA)',
+                                     allow_ambig=True, allow_ambig_warn_title='Ambiguous dihedral angle')
+            combinationId = '.' if len_f == len(self.__f) else 0
+
+            atomSelTotal = sum(len(s) for s in self.atomSelectionSet)
+
+            if isinstance(combinationId, int):
+                fixedAngleName = '.'
+                for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                    self.atomSelectionSet[1],
+                                                                    self.atomSelectionSet[2],
+                                                                    self.atomSelectionSet[3]):
+                    atoms = [atom1, atom2, atom3, atom4]
+                    angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                           atoms,
+                                                           'plane_like' in dstFunc,
+                                                           self.__cR, self.__ccU,
+                                                           self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+
+                    if angleName is not None and angleName.startswith('pseudo'):
+                        angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                           atoms,
+                                                                                           self.__getCurrentRestraint())
+                        self.__f.append(err)
+
+                    if angleName in emptyValue and atomSelTotal != 4:
+                        continue
+
+                    fixedAngleName = angleName
+                    break
+
+            if multiplicity > 1:
+                combinationId = 0
+
+            sf = None
+            if self.__createSfDict:
+                sf = self.__getSf()
+
+            first_item = True
+
+            for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                self.atomSelectionSet[1],
+                                                                self.atomSelectionSet[2],
+                                                                self.atomSelectionSet[3]):
+                atoms = [atom1, atom2, atom3, atom4]
+                angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                       atoms,
+                                                       'plane_like' in dstFunc,
+                                                       self.__cR, self.__ccU,
+                                                       self.__representativeModelId, self.__representativeAltId, self.__modelNumName)
+
+                if angleName is not None and angleName.startswith('pseudo'):
+                    angleName, atom2, atom3, err = fixBackboneAtomsOfDihedralRestraint(angleName,
+                                                                                       atoms,
+                                                                                       self.__getCurrentRestraint())
+                    self.__f.append(err)
+
+                if angleName in emptyValue and atomSelTotal != 4:
+                    continue
+
+                if isinstance(combinationId, int):
+                    if angleName != fixedAngleName:
+                        continue
+                    combinationId += 1
+                if peptide and angleName == 'CHI2' and atom4['atom_id'] == 'CD1' and isLikePheOrTyr(atom2['comp_id'], self.__ccU):
+                    dstFunc = self.selectRealisticChi2AngleConstraint(atom1, atom2, atom3, atom4,
+                                                                      dstFunc)
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} (FXTA) id={self.dihedRestraints} angleName={angleName} "
+                          f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} multiplicity={multiplicity} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    if first_item:
+                        sf['id'] += 1
+                        first_item = False
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 combinationId, None, angleName,
+                                 sf['list_id'], self.__entryId, dstFunc,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                 atom1, atom2, atom3, atom4)
+                    sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
+        finally:
+            self.numberSelection.clear()
+
+    # Enter a parse tree produced by SchrodingerMRParser#fxta_assign_unsupported.
+    def enterFxta_assign_unsupported(self, ctx: SchrodingerMRParser.Fxta_assign_unsupportedContext):
+        self.failedDihedRestraints += 1
+        atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2))), int(str(ctx.Integer(3)))]
+        self.__f.append(f"[Unsupported data] [Check the {self.failedDihedRestraints}th row of dihedral angle restraints]"
+                        "The 'FXTA' clause has no effect "
+                        f"because the internal atom selection {atom_sel} is fragile in the restraint file.")
+
+    # Exit a parse tree produced by SchrodingerMRParser#fxta_assign_unsupported.
+    def exitFxta_assign_unsupported(self, ctx: SchrodingerMRParser.Fxta_assign_unsupportedContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by SchrodingerMRParser#fxba_statement.
+    def enterFxba_statement(self, ctx: SchrodingerMRParser.Fxba_statementContext):  # pylint: disable=unused-argument
+        self.angStatements += 1
+        self.__cur_subtype = 'ang'
+
+        if self.__createSfDict:
+            self.__addSf()
+
+    # Exit a parse tree produced by SchrodingerMRParser#fxba_statement.
+    def exitFxba_statement(self, ctx: SchrodingerMRParser.Fxba_statementContext):  # pylint: disable=unused-argument
+        if self.__createSfDict:
+            self.__trimSfWoLp()
+
+    # Enter a parse tree produced by SchrodingerMRParser#fxba_assign.
+    def enterFxba_assign(self, ctx: SchrodingerMRParser.Fxba_assignContext):  # pylint: disable=unused-argument
+        self.angRestraints += 1
+        if self.__cur_subtype != 'ang':
+            self.angStatements += 1
+        self.__cur_subtype = 'ang'
+
+        self.atomSelectionSet.clear()
+        self.__g.clear()
+
+    # Exit a parse tree produced by SchrodingerMRParser#fxba_assign.
+    def exitFxba_assign(self, ctx: SchrodingerMRParser.Fxba_assignContext):  # pylint: disable=unused-argument
+
+        try:
+
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
+                return
+
+            target_value = self.numberSelection[1]
+
+            if target_value <= 0.0:
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The target angle '{target_value}' should be a positive value because we cannot refer the initial coordinates.")
+                return
+
+            delta = abs(self.numberSelection[2])
+
+            lower_limit = target_value - delta
+            upper_limit = target_value + delta
+
+            fc = self.numberSelection[0]
+
+            if fc <= 0.0:
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The energy constant value {fc} must be a positive value.")
+                return
+
+            lower_limit = upper_limit = None
+
+            dstFunc = self.validateAngleRange(1.0, {'energy_const': fc}, target_value, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                return
+
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                return
+
+            if not self.areUniqueCoordAtoms('a angle (FXBA)'):
+                if len(self.__g) > 0:
+                    self.__f.extend(self.__g)
+                return
+
+            if self.__createSfDict:
+                sf = self.__getSf('angle restraint')
+                sf['id'] += 1
+                if len(sf['loop']['tags']) == 0:
+                    sf['loop']['tags'] = ['index_id', 'id',
+                                          'auth_asym_id_1', 'auth_seq_id_1', 'auth_comp_id_1', 'auth_atom_id_1',
+                                          'auth_asym_id_2', 'auth_seq_id_2', 'auth_comp_id_2', 'auth_atom_id_2',
+                                          'auth_asym_id_3', 'auth_seq_id_3', 'auth_comp_id_3', 'auth_atom_id_3',
+                                          'target_value', 'target_value_uncertainty',
+                                          'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit',
+                                          'force_constant',
+                                          'list_id']
+
+            updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
+
+            for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
+                                                         self.atomSelectionSet[1],
+                                                         self.atomSelectionSet[2]):
+                if isLongRangeRestraint([atom1, atom2, atom3], self.__polySeq if self.__gapInAuthSeq else None):
+                    continue
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.angRestraints} "
+                          f"atom1={atom1} atom2={atom2} atom3={atom3} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    sf['loop']['data'].append([sf['index_id'], sf['id'],
+                                               atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id'],
+                                               atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id'],
+                                               atom3['chain_id'], atom3['seq_id'], atom3['comp_id'], atom3['atom_id'],
+                                               dstFunc.get('target_value'), None,
+                                               dstFunc.get('lower_linear_limit'),
+                                               dstFunc.get('lower_limit'),
+                                               dstFunc.get('upper_limit'),
+                                               dstFunc.get('upper_linear_limit'),
+                                               fc,
+                                               sf['list_id']])
+
+        except ValueError:
+            self.angRestraints -= 1
+
+        finally:
+            self.numberSelection.clear()
+
+    # Enter a parse tree produced by SchrodingerMRParser#fxba_assign_unsupported.
+    def enterFxba_assign_unsupported(self, ctx: SchrodingerMRParser.Fxba_assign_unsupportedContext):
+        self.failedAngRestraints += 1
+        atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2)))]
+        self.__f.append(f"[Unsupported data] [Check the {self.failedAngRestraints}th row of angle restraints]"
+                        "The 'FXBA' clause has no effect "
+                        f"because the internal atom selection {atom_sel} is fragile in the restraint file.")
+
+    # Exit a parse tree produced by SchrodingerMRParser#fxba_assign_unsupported.
+    def exitFxba_assign_unsupported(self, ctx: SchrodingerMRParser.Fxba_assign_unsupportedContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by SchrodingerMRParser#fxhb_statement.
+    def enterFxhb_statement(self, ctx: SchrodingerMRParser.Fxhb_statementContext):  # pylint: disable=unused-argument
+        self.dihedStatements += 1
+        self.__cur_subtype = 'hbond'
+
+        if self.__createSfDict:
+            self.__addSf()
+
+    # Exit a parse tree produced by SchrodingerMRParser#fxhb_statement.
+    def exitFxhb_statement(self, ctx: SchrodingerMRParser.Fxhb_statementContext):  # pylint: disable=unused-argument
+        if self.__createSfDict:
+            self.__trimSfWoLp()
+
+    # Enter a parse tree produced by SchrodingerMRParser#fxhb_assign.
+    def enterFxhb_assign(self, ctx: SchrodingerMRParser.Fxhb_assignContext):  # pylint: disable=unused-argument
+        self.hbondRestraints += 1
+        if self.__cur_subtype != 'hbond':
+            self.hbondStatements += 1
+        self.__cur_subtype = 'hbond'
+
+        self.atomSelectionSet.clear()
+        self.__g.clear()
+
+    # Exit a parse tree produced by SchrodingerMRParser#fxhb_assign.
+    def exitFxhb_assign(self, ctx: SchrodingerMRParser.Fxhb_assignContext):  # pylint: disable=unused-argument
+
+        if not self.__hasPolySeq and not self.__hasNonPolySeq:
+            return
+
+        if not self.areUniqueCoordAtoms('a hydrogen bond (FXHB)'):
+            if len(self.__g) > 0:
+                self.__f.extend(self.__g)
+            return
+
+        donor = self.atomSelectionSet[0][0]
+        hydrogen = self.atomSelectionSet[1][0]
+        acceptor = self.atomSelectionSet[2][0]
+
+        is_hbond = True
+
+        if donor['chain_id'] != hydrogen['chain_id']:
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "The donor atom and its hygrogen are in different chains; "
+                            f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "
+                            f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
+            return
+
+        if donor['seq_id'] != hydrogen['seq_id']:
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "The donor atom and its hygrogen are in different residues; "
+                            f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "
+                            f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
+            return
+
+        if hydrogen['atom_id'][0] not in protonBeginCode:
+            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                            "Not a hydrogen; "
+                            f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}. "
+                            "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
+            return
+
+        if donor['atom_id'][0] not in ('N', 'O', 'F'):
+            self.__f.append(f"[Unmatched atom type] {self.__getCurrentRestraint()}"
+                            "The donor atom type should be one of Nitrogen, Oxygen, Fluorine; "
+                            f"{donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}. "
+                            "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
+            is_hbond = False
+            # return
+
+        if acceptor['atom_id'][0] not in ('N', 'O', 'F'):
+            self.__f.append(f"[Unmatched atom type] {self.__getCurrentRestraint()}"
+                            "The acceptor atom type should be one of Nitrogen, Oxygen, Fluorine; "
+                            f"{acceptor['chain_id']}:{acceptor['seq_id']}:{acceptor['comp_id']}:{acceptor['atom_id']}. "
+                            "The XPLOR-NIH atom selections for hydrogen bond geometry restraint must be in the order of donor, hydrogen, and acceptor.")
+            is_hbond = False
+            # return
+
+        comp_id = donor['comp_id']
+
+        if self.__ccU.updateChemCompDict(comp_id):  # matches with comp_id in CCD
+
+            atom_id_1 = donor['atom_id']
+            atom_id_2 = hydrogen['atom_id']
+
+            if not self.__ccU.hasBond(comp_id, atom_id_1, atom_id_2):
+
+                if self.__nefT.validate_comp_atom(comp_id, atom_id_1) and self.__nefT.validate_comp_atom(comp_id, atom_id_2):
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Found a donor-hydrogen vector over multiple covalent bonds in the 'HBDA' statement; "
+                                    f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "
+                                    f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
+                    return
+
+        if not is_hbond:
+            self.hbondRestraints -= 1
+            self.distRestraints += 1
+            if self.distStatements == 0:
+                self.distStatements += 1
+            self.__cur_subtype = 'dist'
+
+        chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+        seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+        atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+        chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+        seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+        atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+        chain_id_3 = self.atomSelectionSet[2][0]['chain_id']
+        seq_id_3 = self.atomSelectionSet[2][0]['seq_id']
+        atom_id_3 = self.atomSelectionSet[2][0]['atom_id']
+
+        try:
+
+            _donor =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_1},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_1},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_1},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': (self.__representativeAltId,)}
+                                                 ])
+
+            _hydrogen =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_2},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_2},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_2},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': (self.__representativeAltId,)}
+                                                 ])
+
+            _acceptor =\
+                self.__cR.getDictListWithFilter('atom_site',
+                                                CARTN_DATA_ITEMS,
+                                                [{'name': self.__authAsymId, 'type': 'str', 'value': chain_id_3},
+                                                 {'name': self.__authSeqId, 'type': 'int', 'value': seq_id_3},
+                                                 {'name': self.__authAtomId, 'type': 'str', 'value': atom_id_3},
+                                                 {'name': self.__modelNumName, 'type': 'int',
+                                                  'value': self.__representativeModelId},
+                                                 {'name': 'label_alt_id', 'type': 'enum',
+                                                  'enum': (self.__representativeAltId,)}
+                                                 ])
+
+            if len(_donor) == 1 and len(_hydrogen) == 1 and len(_acceptor) == 1:
+                dist = distance(to_np_array(_hydrogen[0]), to_np_array(_acceptor[0]))
+                if dist > 2.5 and is_hbond:
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The distance of the hydrogen bond linkage ({chain_id_2}:{seq_id_2}:{atom_id_2} - "
+                                    f"{chain_id_3}:{seq_id_3}:{atom_id_3}) is too far apart in the coordinates ({dist:.3f}Å).")
+
+                dist = distance(to_np_array(_donor[0]), to_np_array(_acceptor[0]))
+                if dist > 3.5 and is_hbond:
+                    self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                    f"The distance of the hydrogen bond linkage ({chain_id_1}:{seq_id_1}:{atom_id_1} - "
+                                    f"{chain_id_3}:{seq_id_3}:{atom_id_3}) is too far apart in the coordinates ({dist:.3f}Å).")
+
+        except Exception as e:
+            if self.__verbose:
+                self.__lfh.write(f"+{self.__class_name__}.exitFxhb_assign() ++ Error  - {str(e)}")
+
+        if self.__createSfDict:
+            sf = self.__getSf()
+            sf['id'] += 1
+
+        for atom1, atom2, atom3 in itertools.product(self.atomSelectionSet[0],
+                                                     self.atomSelectionSet[1],
+                                                     self.atomSelectionSet[2]):
+            if isLongRangeRestraint([atom1, atom2], self.__polySeq if self.__gapInAuthSeq else None):
+                continue
+            if self.__debug:
+                print(f"subtype={self.__cur_subtype} (FXHB) id={self.hbondRestraints} "
+                      f"donor={atom1} hydrogen={atom2} acceptor={atom3}")
+            if self.__createSfDict and sf is not None:
+                sf['index_id'] += 1
+                memberLogicCode = 'AND'
+                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                             1, None, memberLogicCode,
+                             sf['list_id'], self.__entryId, getDstFuncForHBond(atom1, atom3),
+                             self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                             atom1, atom3)
+                sf['loop'].add_data(row)
+
+                sf['index_id'] += 1
+                memberLogicCode = 'AND'
+                row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                             2, None, memberLogicCode,
+                             sf['list_id'], self.__entryId, getDstFuncForHBond(atom2, atom3),
+                             self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                             atom2, atom3)
+                sf['loop'].add_data(row)
+
+        if not is_hbond:
+            self.__cur_subtype = 'hbond'
+
+    # Enter a parse tree produced by SchrodingerMRParser#fxhb_assign_unsupported.
+    def enterFxhb_assign_unsupported(self, ctx: SchrodingerMRParser.Fxhb_assign_unsupportedContext):
+        self.failedHbondRestraints += 1
+        atom_sel = [int(str(ctx.Integer(0))), int(str(ctx.Integer(1))), int(str(ctx.Integer(2)))]
+        self.__f.append(f"[Unsupported data] [Check the {self.failedHbondRestraints}th row of hydrogen bond restraints]"
+                        "The 'FXHB' clause has no effect "
+                        f"because the internal atom selection {atom_sel} is fragile in the restraint file.")
+
+    # Exit a parse tree produced by SchrodingerMRParser#fxhb_assign_unsupported.
+    def exitFxhb_assign_unsupported(self, ctx: SchrodingerMRParser.Fxhb_assign_unsupportedContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by SchrodingerMRParser#selection.
@@ -8768,6 +9485,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
             return f"[Check the {self.dihedRestraints}th row of dihedral angle restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'ang':
             return f"[Check the {self.angRestraints}th row of angle restraints, {self.__def_err_sf_framecode}] "
+        if self.__cur_subtype == 'hbond':
+            return f"[Check the {self.hbondRestraints}th row of hydrogen bond restraints, {self.__def_err_sf_framecode}] "
         return ''
 
     def __setLocalSeqScheme(self):
@@ -8779,6 +9498,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.dihedRestraints)] = self.__preferAuthSeq
         elif self.__cur_subtype == 'ang':
             self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.angRestraints)] = self.__preferAuthSeq
+        elif self.__cur_subtype == 'hbond':
+            self.reasonsForReParsing['local_seq_scheme'][(self.__cur_subtype, self.hbondRestraints)] = self.__preferAuthSeq
         if not self.__preferAuthSeq:
             self.__preferLabelSeqCount += 1
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
@@ -8819,6 +9540,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
             key = (self.__cur_subtype, self.dihedRestraints)
         elif self.__cur_subtype == 'ang':
             key = (self.__cur_subtype, self.angRestraints)
+        elif self.__cur_subtype == 'hbond':
+            key = (self.__cur_subtype, self.hbondRestraints)
         else:
             return
 
@@ -8923,9 +9646,13 @@ class SchrodingerMRParserListener(ParseTreeListener):
         if self.angStatements == 0 and self.angRestraints > 0:
             self.angStatements = 1
 
+        if self.hbondStatements == 0 and self.hbondRestraints > 0:
+            self.hbondStatements = 1
+
         contentSubtype = {'dist_restraint': self.distStatements,
                           'dihed_restraint': self.dihedStatements,
-                          'ang_restraint': self.angStatements
+                          'ang_restraint': self.angStatements,
+                          'hbond_restraint': self.hbondStatements
                           }
 
         return {k: v for k, v in contentSubtype.items() if v > 0}

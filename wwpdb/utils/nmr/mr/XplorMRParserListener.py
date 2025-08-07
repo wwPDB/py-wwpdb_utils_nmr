@@ -16729,7 +16729,7 @@ class XplorMRParserListener(ParseTreeListener):
         if self.__cur_subtype == 'pccr':
             return f"[Check the {self.pccrRestraints}th row of paramagnetic cross-correlation rate restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'hbond':
-            return f"[Check the {self.hbondRestraints}th row of hydrogen bond geometry restraints, {self.__def_err_sf_framecode}] "
+            return f"[Check the {self.hbondRestraints}th row of hydrogen bond geometry/database restraints, {self.__def_err_sf_framecode}] "
         if self.__cur_subtype == 'geo':
             return f"[Check the {self.geoRestraints}th row of harmonic coordinate/NCS restraints, {self.__def_err_sf_framecode}] "
         return ''

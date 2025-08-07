@@ -11115,6 +11115,9 @@ def getDistConstraintType(atomSelectionSet: List[List[dict]], dstFunc: dict, csS
             if is_like_hbond():
                 return 'hydrogen bond (lower bound)'
 
+            if upperLimit > 0:
+                return 'general distance'
+
             return 'NOE (lower bound)' if 'roe' not in _hint else 'ROE (lower bound)'
 
         return None if 'roe' not in _hint else 'ROE'

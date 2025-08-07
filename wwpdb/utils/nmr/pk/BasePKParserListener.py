@@ -6576,7 +6576,7 @@ class BasePKParserListener():
                     extMonDict3[np['comp_id'][0]] = np['alt_comp_id'][0][0]
 
         hasOneLetterCodeSet = len(oneLetterCodeSet) > 0
-        useOneLetterCodeSet = False
+        useOneLetterCodeSet = forceOneLetterCodeSet = self.polyRibonucleotide and not self.polyPeptide and not self.polyDeoxyribonucleotide
         ligCompId = ligAtomId = None
         _ligSeqId = _ligCompId = _ligAtomId = None
 
@@ -6824,7 +6824,7 @@ class BasePKParserListener():
                             continue
                         if resNameLike[idx]:
                             compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
-                            if len(compId) == 1 and hasOneLetterCodeSet:
+                            if len(compId) == 1 and hasOneLetterCodeSet and not forceOneLetterCodeSet:
                                 compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == compId)
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                 if details is None:
@@ -7451,10 +7451,16 @@ class BasePKParserListener():
                            and any(_idx for _idx in range(idx + 1, lenStr) if atomNameLike[_idx]):
                             atomNameLike[idx] = False
                         else:
-                            resNameLike[idx] = False
+                            if forceOneLetterCodeSet and resIdLike[idx] and len(atomNameLike) > idx + 1 and atomNameLike[idx + 1]:
+                                atomNameLike[idx] = False
+                            else:
+                                resNameLike[idx] = False
                 if resIdLike[idx]:
                     if resIdSpan[idx][1] > atomNameSpan[idx][0]:
-                        resIdLike[idx] = False
+                        if forceOneLetterCodeSet and resNameLike[idx]:
+                            pass
+                        else:
+                            resIdLike[idx] = False
                 if segIdLike[idx]:
                     if segIdSpan[idx][1] > atomNameSpan[idx][0]:
                         segIdLike[idx] = False

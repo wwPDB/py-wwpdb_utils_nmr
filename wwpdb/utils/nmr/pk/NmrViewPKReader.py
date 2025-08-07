@@ -227,6 +227,11 @@ class NmrViewPKReader:
 if __name__ == "__main__":
     reader = NmrViewPKReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-D_1300061373/D_1300061373_nmr-peaks-upload_P1.dat.V1',
+                 '../../tests-nmr/mock-data-D_1300061373/D_1300061373_model_P1.cif.V36')
+
+    reader = NmrViewPKReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6zxp/bmr34544/work/data/D_1292110366_nmr-peaks-upload_P5.dat.V1',
                  '../../tests-nmr/mock-data-remediation/6zxp/6zxp.cif')
 

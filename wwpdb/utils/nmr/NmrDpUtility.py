@@ -60829,6 +60829,7 @@ class NmrDpUtility:
                             constraint_type, constraint_subtype = 'coordinate geometry', constraint_type
                         if constraint_subtype == 'unknown':  # DAOTHER-9471
                             constraint_subtype = 'Not applicable'
+
                     constraint_subsubtype = sf_item.get('constraint_subsubtype')
 
                     try:

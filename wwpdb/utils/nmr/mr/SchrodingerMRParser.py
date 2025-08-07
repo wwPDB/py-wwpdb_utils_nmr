@@ -10,7 +10,7 @@ else:
 
 def serializedATN():
     return [
-        4,1,106,440,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,
+        4,1,103,440,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,
         7,6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,
         13,2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,
         20,7,20,2,21,7,21,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,5,0,53,8,0,10,
@@ -49,7 +49,7 @@ def serializedATN():
         18,3,18,430,8,18,1,19,1,19,1,20,1,20,1,21,1,21,1,21,1,21,1,21,0,
         0,22,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,
         0,10,2,0,16,16,27,27,1,0,70,71,2,0,17,17,28,28,1,0,75,79,2,0,18,
-        18,33,33,2,0,19,19,34,34,1,0,92,98,1,0,100,105,2,0,20,20,43,43,2,
+        18,33,33,2,0,19,19,34,34,1,0,89,95,1,0,97,102,2,0,20,20,43,43,2,
         0,63,63,65,65,519,0,54,1,0,0,0,2,59,1,0,0,0,4,67,1,0,0,0,6,72,1,
         0,0,0,8,76,1,0,0,0,10,80,1,0,0,0,12,100,1,0,0,0,14,102,1,0,0,0,16,
         108,1,0,0,0,18,131,1,0,0,0,20,133,1,0,0,0,22,140,1,0,0,0,24,163,
@@ -234,11 +234,11 @@ class SchrodingerMRParser ( Parser ):
                       "Integers", "L_paren", "R_paren", "Lt_op", "Gt_op", 
                       "Leq_op", "Geq_op", "Equ_op", "SPACE", "ENCLOSE_COMMENT", 
                       "SECTION_COMMENT", "LINE_COMMENT", "Param_name", "Equ_op_SM", 
-                      "SPACE_SM", "RETURN_SM", "End_SM", "Any_name", "SPACE_CM", 
-                      "RETURN_CM", "Hydrophilic", "Hydrophobic", "Non_polar", 
-                      "Polar", "Charged", "Positive", "Negative", "IGNORE_SPACE_PM", 
-                      "Helix_or_strand", "Strand_or_loop", "Helix_or_loop", 
-                      "Helix", "Strand", "Loop", "IGNORE_SPACE_SSM" ]
+                      "SPACE_SM", "RETURN_SM", "End_SM", "Hydrophilic", 
+                      "Hydrophobic", "Non_polar", "Polar", "Charged", "Positive", 
+                      "Negative", "IGNORE_SPACE_PM", "Helix_or_strand", 
+                      "Strand_or_loop", "Helix_or_loop", "Helix", "Strand", 
+                      "Loop", "IGNORE_SPACE_SSM" ]
 
     RULE_schrodinger_mr = 0
     RULE_import_structure = 1
@@ -361,24 +361,21 @@ class SchrodingerMRParser ( Parser ):
     SPACE_SM=86
     RETURN_SM=87
     End_SM=88
-    Any_name=89
-    SPACE_CM=90
-    RETURN_CM=91
-    Hydrophilic=92
-    Hydrophobic=93
-    Non_polar=94
-    Polar=95
-    Charged=96
-    Positive=97
-    Negative=98
-    IGNORE_SPACE_PM=99
-    Helix_or_strand=100
-    Strand_or_loop=101
-    Helix_or_loop=102
-    Helix=103
-    Strand=104
-    Loop=105
-    IGNORE_SPACE_SSM=106
+    Hydrophilic=89
+    Hydrophobic=90
+    Non_polar=91
+    Polar=92
+    Charged=93
+    Positive=94
+    Negative=95
+    IGNORE_SPACE_PM=96
+    Helix_or_strand=97
+    Strand_or_loop=98
+    Helix_or_loop=99
+    Helix=100
+    Strand=101
+    Loop=102
+    IGNORE_SPACE_SSM=103
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -2348,7 +2345,7 @@ class SchrodingerMRParser ( Parser ):
                 self.match(SchrodingerMRParser.Residue_polarity)
                 self.state = 289
                 _la = self._input.LA(1)
-                if not(((((_la - 92)) & ~0x3f) == 0 and ((1 << (_la - 92)) & 127) != 0)):
+                if not(((((_la - 89)) & ~0x3f) == 0 and ((1 << (_la - 89)) & 127) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -2360,7 +2357,7 @@ class SchrodingerMRParser ( Parser ):
                 self.match(SchrodingerMRParser.Residue_secondary_structure)
                 self.state = 291
                 _la = self._input.LA(1)
-                if not(((((_la - 100)) & ~0x3f) == 0 and ((1 << (_la - 100)) & 63) != 0)):
+                if not(((((_la - 97)) & ~0x3f) == 0 and ((1 << (_la - 97)) & 63) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)

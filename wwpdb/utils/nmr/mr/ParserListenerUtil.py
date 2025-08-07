@@ -7678,8 +7678,8 @@ def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True,
     return listIdCounter
 
 
-def getReadableFactor(factor: dict) -> str:
-    """ Return human readable XPLOR-NIH/CNS/CHARMM factor expression.
+def getReadableFactor(factor: dict, fileType='nm-res-xpl') -> str:
+    """ Return human readable XPLOR-NIH/CNS/CHARMM/SCHRODINGER factor expression.
     """
 
     _factor = {k: sorted(list(set(v))) if isinstance(v, list) else v for k, v in factor.items()}
@@ -7695,6 +7695,17 @@ def getReadableFactor(factor: dict) -> str:
                'type_symbol': 'chemical',
                'atom_id': 'name',
                'alt_atom_id': 'original name'}
+
+    if fileType == 'nm-res-sch':  # DAOTHER-10172: Schrodinger/ASL
+        key_map = {'chain_id': 'chain.name',
+                   'auth_chain_id': 'original chain.name',
+                   'alt_chain_id': 'original chain.name',
+                   'seq_id': 'residue.number',
+                   'comp_id': 'residue.ptype',
+                   'alt_comp_id': 'original residue.ptype',
+                   'type_symbol': 'atom.element',
+                   'atom_id': 'atom.ptype',
+                   'alt_atom_id': 'original atom.ptype'}
 
     for k in _factor.keys():
 

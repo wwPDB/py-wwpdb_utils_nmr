@@ -114,7 +114,7 @@ fragment DECIMAL:	DEC_DIGIT+;
 
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
-COMMENT:		'#'+ -> mode(COMMENT_MODE);
+COMMENT:		'#'+ -> channel(HIDDEN);
 
 Simple_name:		SIMPLE_NAME;
 Simple_names:		(WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+) POST_WC_CHAR*;
@@ -162,13 +162,6 @@ SPACE_SM:		[ \t]+ -> skip;
 RETURN_SM:		[\r\n]+;
 
 End_SM:			'&END' -> popMode;
-
-mode COMMENT_MODE;
-
-Any_name:		~[ \t\r\n]+;
-
-SPACE_CM:		[ \t]+ -> skip;
-RETURN_CM:		[\r\n]+ -> mode(DEFAULT_MODE);
 
 mode POLARITY_MODE;
 

@@ -4593,13 +4593,13 @@ class SchrodingerMRParserListener(ParseTreeListener):
                 if cifCheck:
                     if self.__cur_union_expr or (self.__top_union_expr and ambigAtomSelect):  # 2mws, 2krf
                         self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                                        f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.")
+                                        f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.__file_type)}.")
                         if self.__uniqAtomIdToSeqKey is not None and len(_factor['atom_id']) == 1 and _atomId in self.__uniqAtomIdToSeqKey:
                             update_np_atom_id_remap()
 
                     else:
                         # self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                        #                 f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.")
+                        #                 f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.__file_type)}.")
                         if 'alt_chain_id' in _factor:  # 2mnz
                             for chainId in _factor['chain_id']:
                                 self.updateSegmentIdDict(_factor, chainId, None, False)
@@ -4795,7 +4795,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                             if _atomId is not None and _atomId.startswith('X')\
                                and _atomId not in SYMBOLS_ELEMENT:  # 8bxj
                                 self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                                f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.")
+                                                f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.__file_type)}.")
                             else:
                                 no_ext_seq = True
                                 unobs_seq = False
@@ -4828,7 +4828,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                                                         "Please update the sequence in the Macromolecules page."
                                                     if self.__reasons is not None:
                                                         self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                                                        f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.{hint}")
+                                                                        f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.__file_type)}.{hint}")
                                                     no_ext_seq = False  # 2ls7
                                         if no_ext_seq:
                                             auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
@@ -4842,7 +4842,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                                                         "Please update the sequence in the Macromolecules page."
                                                     if self.__reasons is not None:
                                                         self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                                                        f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.{hint}")
+                                                                        f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.__file_type)}.{hint}")
                                                     no_ext_seq = False  # 2law
                                     _seqKey = (_chainId, _seqId)
                                     if _seqKey in self.__coordUnobsRes:
@@ -4881,7 +4881,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                                                         "Please update the sequence in the Macromolecules page."
                                                     if self.__reasons is not None:
                                                         self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
-                                                                        f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.{hint}")
+                                                                        f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.__file_type)}.{hint}")
                                                     no_ext_seq = False  # 2mps
                                         _seqKey = (_chainId, _seqId)
                                         if _seqKey in self.__coordUnobsRes:
@@ -4899,10 +4899,10 @@ class SchrodingerMRParserListener(ParseTreeListener):
                                         else:
                                             hint += "Alternatively, try to upload the genuine coordinate file generated by structure determination software without editing."
                                     self.__f.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                                                    f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}.{hint}")
+                                                    f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.__file_type)}.{hint}")
                 else:
                     self.__g.append(f"[Insufficient atom selection] {self.__getCurrentRestraint()}"
-                                    f"The {clauseName} has no effect for a factor {getReadableFactor(__factor)}. "
+                                    f"The {clauseName} has no effect for a factor {getReadableFactor(__factor, self.__file_type)}. "
                                     "Please update the sequence in the Macromolecules page.")
 
         elif len(_factor['chain_id']) == 1 and len(_factor['seq_id']) == 1 and len(_factor['atom_id']) == 1 and 'comp_id' not in _factor:
@@ -8182,7 +8182,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                 self.factor['comp_id'] = ['HOH']
                 self.factor['atom_id'] = ['O']
 
-            elif ctx.Methyl():
+            elif ctx.Methyl():  # /C3(-H1)(-H1)(-H1)/
                 clauseName = 'methyl'
                 if self.__sel_expr_debug:
                     print("  " * self.depth + f"--> {clauseName}")
@@ -8216,7 +8216,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                     self.factor['comp_id'] = list(compIds)
                     self.factor['atom_id'] = list(atomIds)
 
-            elif ctx.Amide():
+            elif ctx.Amide():  # /C2(=O2)-N2-H2/
                 clauseName = 'amide'
                 if self.__sel_expr_debug:
                     print("  " * self.depth + f"--> {clauseName}")
@@ -8224,7 +8224,14 @@ class SchrodingerMRParserListener(ParseTreeListener):
                     return
 
                 if self.__polyPeptide:
-                    self.factor['atom_id'] = ['C', 'N']
+                    authAsymIds = []
+                    for entity in self.__entityAssembly:
+                        if 'entity_poly_type' in entity:
+                            poly_type = entity['entity_poly_type']
+                            if poly_type.startswith('polypeptide'):
+                                authAsymIds.extend(entity['auth_asym_id'].split(','))
+                    self.factor['chain_id'] = authAsymIds
+                    self.factor['atom_id'] = ['C', 'N', 'H']
 
             elif ctx.Smarts():
                 clauseName = 'smarts.'

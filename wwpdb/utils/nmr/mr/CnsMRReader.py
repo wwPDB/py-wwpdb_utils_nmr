@@ -24,6 +24,7 @@ try:
     from wwpdb.utils.nmr.mr.CnsMRParser import CnsMRParser
     from wwpdb.utils.nmr.mr.CnsMRParserListener import CnsMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                                       retrieveOriginalFileName,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
@@ -38,6 +39,7 @@ except ImportError:
     from nmr.mr.CnsMRParser import CnsMRParser
     from nmr.mr.CnsMRParserListener import CnsMRParserListener
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                           retrieveOriginalFileName,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
@@ -195,8 +197,7 @@ class CnsMRReader:
             listener.setNmrChainAssignments(self.__nmr_vs_model)
             listener.createSfDict(createSfDict)
             if createSfDict:
-                if originalFileName is not None:
-                    listener.setOriginaFileName(originalFileName)
+                listener.setOriginaFileName(originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath))
                 if listIdCounter is not None:
                     listener.setListIdCounter(listIdCounter)
                 if entryId is not None:

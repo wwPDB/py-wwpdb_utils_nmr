@@ -24,6 +24,7 @@ try:
     from wwpdb.utils.nmr.mr.IsdMRParser import IsdMRParser
     from wwpdb.utils.nmr.mr.IsdMRParserListener import IsdMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                                       retrieveOriginalFileName,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
@@ -38,6 +39,7 @@ except ImportError:
     from nmr.mr.IsdMRParser import IsdMRParser
     from nmr.mr.IsdMRParserListener import IsdMRParserListener
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                           retrieveOriginalFileName,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
@@ -180,8 +182,7 @@ class IsdMRReader:
             listener.setDebugMode(self.__debug)
             listener.createSfDict(createSfDict)
             if createSfDict:
-                if originalFileName is not None:
-                    listener.setOriginaFileName(originalFileName)
+                listener.setOriginaFileName(originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath))
                 if listIdCounter is not None:
                     listener.setListIdCounter(listIdCounter)
                 if entryId is not None:

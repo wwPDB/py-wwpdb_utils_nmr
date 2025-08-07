@@ -1521,6 +1521,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     if self.__debug:
                         print(f"subtype={self.__cur_subtype} id={self.distRestraints if self.__cur_subtype == 'dist' else self.noepkRestraints} "
                               f"atom1={atom1} atom2={atom2} {dstFunc}")
+                        # print(f"constraint_type={getDistConstraintType(self.atomSelectionSet, dstFunc, self.__csStat, self.__originalFileName)}")
                     if self.__createSfDict and sf is not None:
                         if isinstance(memberId, int):
                             if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.__csStat)\

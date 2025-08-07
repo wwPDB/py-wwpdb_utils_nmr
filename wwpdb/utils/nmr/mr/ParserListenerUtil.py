@@ -21,6 +21,7 @@ __license__ = "Apache License 2.0"
 __version__ = "1.0.0"
 
 import sys
+import os
 import re
 import copy
 import collections
@@ -7786,6 +7787,64 @@ def getReadableParamagCenter(factor: dict) -> str:
     return '/'.join(__factor)
 
 
+def retrieveOriginalFileName(filePath: str) -> str:
+    """ Retrieve original filename by omitting internal sufixes used in NMR data remediation.
+    """
+
+    if filePath in emptyValue:
+        return None
+
+    fileName = os.path.basename(filePath)
+    if fileName.endswith('-corrected'):
+        fileName = fileName[:-10]
+    if fileName.endswith('-ignored'):
+        fileName = fileName[:-8]
+    if '-selected-as-' in fileName:
+        idx = fileName.index('-selected-as-')
+        fileName = fileName[:idx]
+    if '-ignored-as-' in fileName:
+        idx = fileName.index('-ignored-as-')
+        fileName = fileName[:idx]
+
+    if fileName.endswith('.mr'):
+        if fileName.endswith('-corrected.mr'):
+            fileName = fileName[:-13] + '.mr'
+        if fileName.endswith('-trimmed.mr'):
+            fileName = fileName[:-11] + '.mr'
+        if fileName.endswith('-remediated.mr'):
+            fileName = fileName[:-13] + '.mr'
+
+        if '-div_' in fileName:
+            idx = fileName.index('-div_')
+            fileName = fileName[:idx] + '.mr'
+
+    if fileName.endswith('.str'):
+        if fileName.endswith('-corrected.str'):
+            fileName = fileName[:-14] + '.str'
+        if fileName.endswith('-trimmed.str'):
+            fileName = fileName[:-12] + '.str'
+        if fileName.endswith('-remediated.str'):
+            fileName = fileName[:-14] + '.str'
+
+        if '-div_' in fileName:
+            idx = fileName.index('-div_')
+            fileName = fileName[:idx] + '.str'
+
+    if fileName.endswith('.cif'):
+        if fileName.endswith('-corrected.cif'):
+            fileName = fileName[:-14] + '.cif'
+        if fileName.endswith('-trimmed.cif'):
+            fileName = fileName[:-12] + '.cif'
+        if fileName.endswith('-remediated.cif'):
+            fileName = fileName[:-14] + '.cif'
+
+        if '-div_' in fileName:
+            idx = fileName.index('-div_')
+            fileName = fileName[:idx] + '.cif'
+
+    return fileName
+
+
 def getSaveframe(mrSubtype: str, sf_framecode: str,
                  listId: Optional[int] = None, entryId: Optional[str] = None, fileName: Optional[str] = None,
                  constraintType: Optional[str] = None, potentialType: Optional[str] = None,
@@ -10979,6 +11038,14 @@ def getDistConstraintType(atomSelectionSet: List[List[dict]], dstFunc: dict, csS
     def is_like_ssbond():
         return (atom_id_1 == 'SG' and atom_id_2 == 'SG') or ('disulfide' in _hint or ('ss' in _hint and 'bond' in _hint))
 
+    def is_like_sebond_support():
+        return ((atom_id_1 == 'SE' and atom_id_2 == 'CB') or (atom_id_2 == 'SE' and atom_id_1 == 'CB'))\
+            and 'comp_id' in atom1 and 'comp_id' in atom2 and atom1['comp_id'] == atom2['comp_id']
+
+    def is_like_ssbond_support():
+        return ((atom_id_1 == 'SG' and atom_id_2 == 'CB') or (atom_id_2 == 'SG' and atom_id_1 == 'CB'))\
+            and 'comp_id' in atom1 and 'comp_id' in atom2 and atom1['comp_id'] == atom2['comp_id']
+
     ambig = len(atomSelectionSet[0]) * len(atomSelectionSet[1]) > 1\
         and (isAmbigAtomSelection(atomSelectionSet[0], csStat)
              or isAmbigAtomSelection(atomSelectionSet[1], csStat))
@@ -11005,9 +11072,6 @@ def getDistConstraintType(atomSelectionSet: List[List[dict]], dstFunc: dict, csS
     if 'not' in _hint and 'seen' in _hint:
         if (upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_MED):
             return 'NOE not seen'
-
-    if 'roe' in _hint:
-        return 'ROE'
 
     if upperLimit >= DIST_AMBIG_UP or lowerLimit >= DIST_AMBIG_UP:
 
@@ -11040,18 +11104,37 @@ def getDistConstraintType(atomSelectionSet: List[List[dict]], dstFunc: dict, csS
         if upperLimit >= DIST_AMBIG_MED and lowerLimit <= 0.0:
             return 'general distance'
 
-        return None
+        if upperLimit <= DIST_AMBIG_LOW and lowerLimit > 0.0:
+
+            if is_like_sebond():
+                return 'diselenide bond (lower bound)'
+
+            if is_like_ssbond():
+                return 'disufide bond (lower bound)'
+
+            if is_like_hbond():
+                return 'hydrogen bond (lower bound)'
+
+            return 'NOE (lower bound)' if 'roe' not in _hint else 'ROE (lower bound)'
+
+        return None if 'roe' not in _hint else 'ROE'
+
+    if is_like_sebond_support():
+        return 'reinforced diselenide bond'
+
+    if is_like_ssbond_support():
+        return 'reinforced disulfide bond'
 
     if is_like_sebond():
-        return 'diselenide bond'
+        return 'diselenide bond' if upperLimit > DIST_AMBIG_LOW or lowerLimit <= 0.0 else 'deselenide bond (lower bond)'
 
     if is_like_ssbond():
-        return 'disulfide bond'
+        return 'disulfide bond' if upperLimit > DIST_AMBIG_LOW or lowerLimit <= 0.0 else 'disulfide bond (lower bond)'
 
     if is_like_hbond():
-        return 'hydrogen bond'
+        return 'hydrogen bond' if upperLimit > DIST_AMBIG_LOW or lowerLimit <= 0.0 else 'hydrogen bond (lower bond)'
 
-    return None
+    return None if 'roe' not in _hint else 'ROE'
 
 
 def getPotentialType(fileType: str, mrSubtype: str, dstFunc: dict) -> Optional[str]:
@@ -11114,6 +11197,6 @@ def getPdbxNmrSoftwareName(name: str) -> str:
         return 'XwinNMR'
     if name == 'CCPN':
         return 'CcpNmr Analysis'
-    if name == 'SCHRODINGER':
+    if name == 'SCHRODINGER/ASL':
         return 'MacroModel'
     return name  # 'ARIA', 'CHARMM', 'CNS', 'CYANA', 'DYNAMO', 'PALES', 'TALOS', 'GROMACS', 'SYBYL', 'VNMR', 'XEASY'

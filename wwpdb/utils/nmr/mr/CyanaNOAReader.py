@@ -24,6 +24,7 @@ try:
     from wwpdb.utils.nmr.mr.CyanaNOAParser import CyanaNOAParser
     from wwpdb.utils.nmr.mr.CyanaNOAParserListener import CyanaNOAParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                                       retrieveOriginalFileName,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
@@ -38,6 +39,7 @@ except ImportError:
     from nmr.mr.CyanaNOAParser import CyanaNOAParser
     from nmr.mr.CyanaNOAParserListener import CyanaNOAParserListener
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                           retrieveOriginalFileName,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
@@ -184,8 +186,7 @@ class CyanaNOAReader:
             listener.setDebugMode(self.__debug)
             listener.createSfDict(createSfDict)
             if createSfDict:
-                if originalFileName is not None:
-                    listener.setOriginaFileName(originalFileName)
+                listener.setOriginaFileName(originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath))
                 if listIdCounter is not None:
                     listener.setListIdCounter(listIdCounter)
                 if entryId is not None:

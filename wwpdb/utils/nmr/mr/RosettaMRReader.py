@@ -24,6 +24,7 @@ try:
     from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
     from wwpdb.utils.nmr.mr.RosettaMRParserListener import RosettaMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                                       retrieveOriginalFileName,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
@@ -38,6 +39,7 @@ except ImportError:
     from nmr.mr.RosettaMRParser import RosettaMRParser
     from nmr.mr.RosettaMRParserListener import RosettaMRParserListener
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                           retrieveOriginalFileName,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
@@ -185,8 +187,7 @@ class RosettaMRReader:
             listener.setRemediateMode(self.__remediate)
             listener.createSfDict(createSfDict)
             if createSfDict:
-                if originalFileName is not None:
-                    listener.setOriginaFileName(originalFileName)
+                listener.setOriginaFileName(originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath))
                 if listIdCounter is not None:
                     listener.setListIdCounter(listIdCounter)
                 if entryId is not None:

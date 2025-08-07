@@ -24,6 +24,7 @@ try:
     from wwpdb.utils.nmr.mr.CyanaMRParser import CyanaMRParser
     from wwpdb.utils.nmr.mr.CyanaMRParserListener import CyanaMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                                       retrieveOriginalFileName,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
@@ -38,6 +39,7 @@ except ImportError:
     from nmr.mr.CyanaMRParser import CyanaMRParser
     from nmr.mr.CyanaMRParserListener import CyanaMRParserListener
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                           retrieveOriginalFileName,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
@@ -193,8 +195,7 @@ class CyanaMRReader:
             listener.setRemediateMode(self.__remediate)
             listener.createSfDict(createSfDict)
             if createSfDict:
-                if originalFileName is not None:
-                    listener.setOriginaFileName(originalFileName)
+                listener.setOriginaFileName(originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath))
                 if listIdCounter is not None:
                     listener.setListIdCounter(listIdCounter)
                 if entryId is not None:
@@ -228,6 +229,12 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-daother-10230/D_1300048971_mr-upload_P2.cyana.V2',
+                     '../../tests-nmr/mock-data-daother-10230/D_800848_model_P1.cif.V3')
+
     reasons_ = {'non_poly_remap': {'SAH': {76: {'chain_id': 'A', 'seq_id': 101, 'original_chain_id': None}}}}
     reader = CyanaMRReader(True, reasons=reasons_)
     reader.setDebugMode(True)

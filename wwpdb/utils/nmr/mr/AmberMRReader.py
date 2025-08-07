@@ -26,6 +26,7 @@ try:
     from wwpdb.utils.nmr.mr.AmberMRParserListener import AmberMRParserListener
     from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                                       retrieveOriginalFileName,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
@@ -41,6 +42,7 @@ except ImportError:
     from nmr.mr.AmberMRParserListener import AmberMRParserListener
     from nmr.mr.AmberPTReader import AmberPTReader
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                           retrieveOriginalFileName,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
@@ -206,8 +208,7 @@ class AmberMRReader:
                 listener.setDebugMode(self.__debug)
                 listener.createSfDict(createSfDict)
                 if createSfDict:
-                    if originalFileName is not None:
-                        listener.setOriginaFileName(originalFileName)
+                    listener.setOriginaFileName(originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath))
                     if listIdCounter is not None:
                         listener.setListIdCounter(copy.copy(listIdCounter))
                     if entryId is not None:

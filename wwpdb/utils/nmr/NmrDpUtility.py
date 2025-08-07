@@ -333,6 +333,7 @@ try:
                                                        getRestraintName,
                                                        contentSubtypeOf,
                                                        incListIdCounter,
+                                                       retrieveOriginalFileName,
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
@@ -501,6 +502,7 @@ except ImportError:
                                            getRestraintName,
                                            contentSubtypeOf,
                                            incListIdCounter,
+                                           retrieveOriginalFileName,
                                            getSaveframe,
                                            getLoop,
                                            getRow,
@@ -59645,15 +59647,29 @@ class NmrDpUtility:
 
                 fileListId = self.__file_path_list_len
 
+                file_names = []
+
                 for ar in self.__inputParamDict[ar_file_path_list]:
 
                     input_source = self.report.input_sources[fileListId]
                     input_source_dic = input_source.get()
 
-                    file_name = input_source_dic['file_name']
-                    cst_sf.add_tag('Data_file_name', file_name)
+                    fileListId += 1
 
-                    break
+                    ar_file_type = input_source_dic['file_type']
+
+                    if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
+                        continue
+
+                    if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
+                        file_name = ar['original_file_name']
+                    else:
+                        file_name = input_source_dic['file_name']
+
+                    file_names.append(retrieveOriginalFileName(file_name))
+
+                if len(file_names) > 0:
+                    cst_sf.add_tag('Data_file_name', ','.join(file_names))
 
         # statistics
 
@@ -60813,7 +60829,6 @@ class NmrDpUtility:
                             constraint_type, constraint_subtype = 'coordinate geometry', constraint_type
                         if constraint_subtype == 'unknown':  # DAOTHER-9471
                             constraint_subtype = 'Not applicable'
-
                     constraint_subsubtype = sf_item.get('constraint_subsubtype')
 
                     try:

@@ -25,6 +25,7 @@ try:
     from wwpdb.utils.nmr.mr.CharmmMRParserListener import CharmmMRParserListener
     from wwpdb.utils.nmr.mr.CharmmCRDReader import CharmmCRDReader
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                                       retrieveOriginalFileName,
                                                        MAX_ERROR_REPORT,
                                                        REPRESENTATIVE_MODEL_ID,
                                                        REPRESENTATIVE_ALT_ID)
@@ -40,6 +41,7 @@ except ImportError:
     from nmr.mr.CharmmMRParserListener import CharmmMRParserListener
     from nmr.mr.CharmmCRDReader import CharmmCRDReader
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                           retrieveOriginalFileName,
                                            MAX_ERROR_REPORT,
                                            REPRESENTATIVE_MODEL_ID,
                                            REPRESENTATIVE_ALT_ID)
@@ -212,8 +214,7 @@ class CharmmMRReader:
             listener.setNmrChainAssignments(self.__nmr_vs_model)
             listener.createSfDict(createSfDict)
             if createSfDict:
-                if originalFileName is not None:
-                    listener.setOriginaFileName(originalFileName)
+                listener.setOriginaFileName(originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath))
                 if listIdCounter is not None:
                     listener.setListIdCounter(listIdCounter)
                 if entryId is not None:

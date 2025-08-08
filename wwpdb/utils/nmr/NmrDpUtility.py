@@ -257,6 +257,7 @@ from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-
 try:
     from wwpdb.utils.nmr.nef.NEFTranslator import (NEFTranslator,
                                                    NEF_VERSION,
+                                                   NMR_STAR_VERSION,
                                                    altDistanceConstraintType,
                                                    altDihedralAngleConstraintType,
                                                    altRdcConstraintType,
@@ -426,6 +427,7 @@ try:
 except ImportError:
     from nmr.nef.NEFTranslator import (NEFTranslator,
                                        NEF_VERSION,
+                                       NMR_STAR_VERSION,
                                        altDistanceConstraintType,
                                        altDihedralAngleConstraintType,
                                        altRdcConstraintType,
@@ -59613,20 +59615,89 @@ class NmrDpUtility:
 
         sf_category = self.sf_categories[file_type][content_subtype]
 
+        sf_list = master_entry.get_saveframes_by_category(sf_category)
+
         try:
 
-            sf = master_entry.get_saveframes_by_category(sf_category)[0]
+            sf = sf_list[0]
 
             try:
+
                 loop = sf.get_loop('_Audit')
 
-                del sf[loop]
+                if self.__internal_mode:
+
+                    dat = loop.get_tag(['Revision_ID', 'Update_record'])
+
+                    if any(row for row in dat if row[1] == 'Initial release'):
+                        last_revision_id = int(dat[-1][0])
+
+                        row = [None] * len(loop.tags)
+                        row[loop.tags.index('Revision_ID')] = last_revision_id + 1
+                        row[loop.tags.index('Creation_date')] = datetime.today().strftime('%Y-%m-%d')
+                        row[loop.tags.index('Update_record')] = 'Remediation'
+                        row[loop.tags.index('Entry_ID')] = self.__entry_id
+
+                        loop.add_data(row)
+
+                else:
+                    del sf[loop]
 
             except KeyError:
                 pass
 
         except IndexError:
             pass
+
+        if len(sf_list) > 1:
+
+            for sf in sf_list[1:]:
+
+                try:
+
+                    loop = sf.get_loop('_Audit')
+
+                    if self.__internal_mode:
+
+                        dat = loop.get_tag(['Revision_ID', 'Update_record'])
+
+                        if any(row for row in dat if row[1] == 'Initial release'):
+                            last_revision_id = int(dat[-1][0])
+
+                            row = [None] * len(loop.tags)
+                            row[loop.tags.index('Revision_ID')] = last_revision_id + 1
+                            row[loop.tags.index('Creation_date')] = datetime.today().strftime('%Y-%m-%d')
+                            row[loop.tags.index('Update_record')] = 'Remediation'
+                            row[loop.tags.index('Entry_ID')] = self.__entry_id
+
+                            loop.add_data(row)
+
+                        sf_list[0].add_loop(loop)
+
+                except KeyError:
+                    pass
+
+                del master_entry[sf]
+
+        if self.__internal_mode and not self.__bmrb_only:
+            nmr_star_version = get_first_sf_tag(sf_list[0], 'NMR_STAR_version')
+
+            if len(nmr_star_version) == 0:
+                set_sf_tag(sf_list[0], 'NMR_star_version', NMR_STAR_VERSION)
+
+            sf_category = 'entry_interview'
+
+            sf_list = master_entry.get_saveframes_by_category(sf_category)
+
+            if len(sf_list) > 0:
+
+                pdb_deposition = get_first_sf_tag(sf_list[0], 'PDB_deposition')
+                if pdb_deposition == 'no':
+                    set_sf_tag(sf_list[0], 'PDB_deposition', 'yes')
+
+                view_mode = get_first_sf_tag(sf_list[0], 'View_mode')
+                if len(view_mode) > 0 and view_mode != 'PDB/BMRB':
+                    set_sf_tag(sf_list[0], 'View_mode', 'PDB/BMRB')
 
         # refresh _Constraint_stat_list saveframe
 
@@ -61082,6 +61153,36 @@ class NmrDpUtility:
                                 continue
                         else:
                             if any(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+
+                                if self.__internal_mode:
+                                    _sf = next(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode)
+                                    _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
+                                    data_file_name = get_first_sf_tag(sf, 'Data_file_name')
+                                    if len(_data_file_name) > 0 and _data_file_name != data_file_name:
+                                        set_sf_tag(sf, 'Data_file_name', _data_file_name)
+
+                                        fileListId = self.__file_path_list_len
+
+                                        for ar in self.__inputParamDict[ar_file_path_list]:
+
+                                            input_source = self.report.input_sources[fileListId]
+                                            input_source_dic = input_source.get()
+
+                                            fileListId += 1
+
+                                            ar_file_type = input_source_dic['file_type']
+
+                                            if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
+                                                continue
+
+                                            if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
+                                                if ar['original_file_name'] == data_file_name:
+                                                    ar['original_file_name'] = _data_file_name
+                                                    renamed_data_file_name = True
+                                                    break
+
+                                    master_entry.remove_saveframe(sf_framecode)
+
                                 err = f"Couldn't add a saveframe with name {sf_framecode!r} since a saveframe with that name already exists in {original_file_name!r} file. "\
                                       f"Please remove {sf_framecode!r} saveframe and re-upload the {self.readable_file_type[file_type]} file."
 
@@ -61097,34 +61198,8 @@ class NmrDpUtility:
 
         for sf in ext_mr_sf_holder:
 
-            if self.__internal_mode and any(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode):
-                _sf = next(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode)
-                _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
-                data_file_name = get_first_sf_tag(sf, 'Data_file_name')
-                if len(_data_file_name) > 0 and _data_file_name != data_file_name:
-                    set_sf_tag(sf, 'Data_file_name', _data_file_name)
-
-                    fileListId = self.__file_path_list_len
-
-                    for ar in self.__inputParamDict[ar_file_path_list]:
-
-                        input_source = self.report.input_sources[fileListId]
-                        input_source_dic = input_source.get()
-
-                        fileListId += 1
-
-                        ar_file_type = input_source_dic['file_type']
-
-                        if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
-                            continue
-
-                        if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
-                            if ar['original_file_name'] == data_file_name:
-                                ar['original_file_name'] = _data_file_name
-                                renamed_data_file_name = True
-                                break
-
-                master_entry.remove_saveframe(sf_framecode)
+            if self.__internal_mode and any(_sf for _sf in master_entry.frame_list if _sf.name == sf.name):
+                continue
 
             master_entry.add_saveframe(sf)
 

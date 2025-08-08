@@ -1017,7 +1017,7 @@ class CifToNmrStar:
 
             if has_list_id and sf.category != 'entry_information':
                 list_id_tag = 'ID' if sf.category != 'chem_comp' else 'PDB_code'
-                list_id = next(tag[1] for tag in sf.tags if tag[0] == list_id_tag)
+                list_id = next((tag[1] for tag in sf.tags if tag[0] == list_id_tag), None)
                 if list_id not in emptyValue:
                     self.set_local_sf_id(sf, list_id_dict[sf.category]
                                          if isinstance(list_id, int) or list_id.isdigit() else list_id)

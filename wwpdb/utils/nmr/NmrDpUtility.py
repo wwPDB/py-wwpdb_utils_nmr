@@ -11096,7 +11096,7 @@ class NmrDpUtility:
                     self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Error  - {err}\n")
 
         if (lp_counts['dist_restraint'] > 0 or lp_counts['dihed_restraint'] or lp_counts['rdc_restraint'])\
-           and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
+           and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only and not self.__internal_mode:
 
             err = "The assigned chemical shift file includes NMR restraints. "\
                 f"Please re-upload the {file_type.upper()} file as an NMR unified data file."
@@ -11129,7 +11129,7 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write(f"+{self.__class_name__}.__detectContentSubType() ++ Warning  - {warn}\n")
 
-        if has_spectral_peak and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
+        if has_spectral_peak and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only and not self.__internal_mode:
 
             err = "The assigned chemical shift file includes spectral peak lists. "\
                 f"Please re-upload the {file_type.upper()} file as an NMR unified data file."
@@ -60979,6 +60979,8 @@ class NmrDpUtility:
         if len(cf_loop) > 0:
             master_entry.add_saveframe(cst_sf)
 
+        renamed_data_file_name = False
+
         for content_subtype in self.mr_content_subtypes:
             if self.__mr_sf_dict_holder is not None and content_subtype in self.__mr_sf_dict_holder:
                 if content_subtype != 'other_restraint':
@@ -60994,17 +60996,50 @@ class NmrDpUtility:
                             if self.__internal_mode and self.__nmr_cif_sf_category_list is not None and sf.category in self.__nmr_cif_sf_category_list:
                                 continue
                         else:
+
                             if any(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode):
-                                err = f"Couldn't add a saveframe with name {sf_framecode!r} since a saveframe with that name already exists in {original_file_name!r} file. "\
-                                      f"Please remove {sf_framecode!r} saveframe and re-upload the {self.readable_file_type[file_type]} file."
 
-                                self.report.error.appendDescription('format_issue',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
+                                if self.__internal_mode:
+                                    _sf = next(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode)
+                                    _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
+                                    data_file_name = get_first_sf_tag(sf, 'Data_file_name')
+                                    if len(_data_file_name) > 0 and _data_file_name != data_file_name:
+                                        set_sf_tag(sf, 'Data_file_name', _data_file_name)
 
-                                self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - "
-                                                 f"{file_name} {err}\n")
-                                continue
+                                        fileListId = self.__file_path_list_len
+
+                                        for ar in self.__inputParamDict[ar_file_path_list]:
+
+                                            input_source = self.report.input_sources[fileListId]
+                                            input_source_dic = input_source.get()
+
+                                            fileListId += 1
+
+                                            ar_file_type = input_source_dic['file_type']
+
+                                            if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
+                                                continue
+
+                                            if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
+                                                if ar['original_file_name'] == data_file_name:
+                                                    ar['original_file_name'] = _data_file_name
+                                                    renamed_data_file_name = True
+                                                    break
+
+                                    master_entry.remove_saveframe(sf_framecode)
+
+                                else:
+
+                                    err = f"Couldn't add a saveframe with name {sf_framecode!r} since a saveframe with that name already exists in {original_file_name!r} file. "\
+                                          f"Please remove {sf_framecode!r} saveframe and re-upload the {self.readable_file_type[file_type]} file."
+
+                                    self.report.error.appendDescription('format_issue',
+                                                                        {'file_name': file_name, 'description': err})
+                                    self.report.setError()
+
+                                    self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - "
+                                                     f"{file_name} {err}\n")
+                                    continue
 
                         master_entry.add_saveframe(sf)
 
@@ -61061,7 +61096,65 @@ class NmrDpUtility:
                         master_entry.add_saveframe(sf)
 
         for sf in ext_mr_sf_holder:
+
+            if self.__internal_mode and any(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                _sf = next(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode)
+                _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
+                data_file_name = get_first_sf_tag(sf, 'Data_file_name')
+                if len(_data_file_name) > 0 and _data_file_name != data_file_name:
+                    set_sf_tag(sf, 'Data_file_name', _data_file_name)
+
+                    fileListId = self.__file_path_list_len
+
+                    for ar in self.__inputParamDict[ar_file_path_list]:
+
+                        input_source = self.report.input_sources[fileListId]
+                        input_source_dic = input_source.get()
+
+                        fileListId += 1
+
+                        ar_file_type = input_source_dic['file_type']
+
+                        if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
+                            continue
+
+                        if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
+                            if ar['original_file_name'] == data_file_name:
+                                ar['original_file_name'] = _data_file_name
+                                renamed_data_file_name = True
+                                break
+
+                master_entry.remove_saveframe(sf_framecode)
+
             master_entry.add_saveframe(sf)
+
+        if renamed_data_file_name:
+
+            fileListId = self.__file_path_list_len
+
+            file_names = []
+
+            for ar in self.__inputParamDict[ar_file_path_list]:
+
+                input_source = self.report.input_sources[fileListId]
+                input_source_dic = input_source.get()
+
+                fileListId += 1
+
+                ar_file_type = input_source_dic['file_type']
+
+                if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
+                    continue
+
+                if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
+                    file_name = ar['original_file_name']
+                else:
+                    file_name = input_source_dic['file_name']
+
+                file_names.append(retrieveOriginalFileName(file_name))
+
+            if len(file_names) > 0:
+                set_sf_tag(cst_sf, 'Data_file_name', ','.join(file_names))
 
         self.__mergeStrPk()
 

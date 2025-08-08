@@ -6,15 +6,19 @@ import pynmrstar
 import hashlib
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
-from typing import Any, List, Tuple, Union, Optional
+from typing import List, Tuple, Union, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
+    from wwpdb.utils.nmr.CifToNmrStar import get_first_sf_tag, set_sf_tag
     from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.nef.NEFTranslator import is_empty_loop
     auth_view = 'mock-data-combine-at-upload'
 except ImportError:
     from nmr.NmrDpUtility import NmrDpUtility
+    from nmr.CifToNmrStar import get_first_sf_tag, set_sf_tag
     from nmr.io.CifReader import CifReader
+    from nmr.nef.NEFTranslator import is_empty_loop
     auth_view = 'auth_view'
 
 
@@ -43,75 +47,6 @@ def get_inventory_list(star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, py
         lp_list.append(star_data.category)
 
     return sf_list, lp_list
-
-
-def is_empty_loop(star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str) -> bool:
-    """ Return whether one of specified loops is empty loop.
-        @return: True for empty loop exists, False otherwise
-    """
-
-    if isinstance(star_data, pynmrstar.Entry):
-        loops = star_data.get_loops_by_category(lp_category)
-
-        return any(len(loop) == 0 for loop in loops)
-
-    if isinstance(star_data, pynmrstar.Saveframe):
-        loop = star_data.get_loop(lp_category)
-
-        return len(loop) == 0
-
-    return len(star_data) == 0
-
-
-def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> Any:
-    """ Return the first value of a given saveframe tag with decoding symbol notation.
-        @return: The first tag value, '' (by default) otherwise.
-    """
-
-    if not isinstance(sf, pynmrstar.Saveframe) or tag is None:
-        return default
-
-    array = sf.get_tag(tag)
-
-    if len(array) == 0 or array[0] is None:
-        return default
-
-    if not isinstance(array[0], str):
-        return array[0]
-
-    value = array[0]
-
-    while value.startswith('$$'):
-        value = value[1:]
-
-    if len(value) == 0 or value == '$':
-        return default
-
-    return value if len(value) < 2 or value[0] != '$' else value[1:]
-
-
-def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
-    """ Set saveframe tag with a given value.
-    """
-
-    tagNames = [t[0] for t in sf.tags]
-
-    if isinstance(value, str):
-
-        if len(value) == 0:
-            value = None
-
-        while value.startswith('$$'):
-            value = value[1:]
-
-        if len(value) == 0 or value == '$':
-            value = None
-
-    if tag not in tagNames:
-        sf.add_tag(tag, value)
-        return
-
-    sf.tags[tagNames.index(tag)][1] = value
 
 
 def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
@@ -149,6 +84,12 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
 
                 original_file_name = {}
 
+                def add_origina_file_name(file_type, file_name):
+                    if file_type not in original_file_name:  # pylint: disable=cell-var-from-loop
+                        original_file_name[file_type] = []  # pylint: disable=cell-var-from-loop
+                    if file_name not in original_file_name[file_type]:  # pylint: disable=cell-var-from-loop
+                        original_file_name[file_type].append(file_name)  # pylint: disable=cell-var-from-loop
+
                 for row in dat:
 
                     if row[0] in emptyValue:
@@ -156,57 +97,31 @@ def is_combined_nmr_data(file_path: str) -> Tuple[bool, Optional[dict]]:
 
                     if row[1] not in emptyValue and row[2] not in emptyValue:
                         if row[2] in ('AMBER', 'Amber'):
-                            if 'nm-res-amb' not in original_file_name:
-                                original_file_name['nm-res-amb'] = []
-                            original_file_name['nm-res-amb'].append(row[1])
+                            add_origina_file_name('nm-res-amb', row[1])
                         elif row[2] == 'ARIA':
-                            if 'nm-res-ari' not in original_file_name:
-                                original_file_name['nm-res-ari'] = []
-                            original_file_name['nm-res-ari'].append(row[1])
+                            add_origina_file_name('nm-res-ari', row[1])
                         elif row[2] in ('BIOSYM', 'Discover'):
-                            if 'nm-res-bio' not in original_file_name:
-                                original_file_name['nm-res-bio'] = []
-                            original_file_name['nm-res-bio'].append(row[1])
+                            add_origina_file_name('nm-res-bio', row[1])
                         elif row[2] == 'CHARMM':
-                            if 'nm-res-cha' not in original_file_name:
-                                original_file_name['nm-res-cha'] = []
-                            original_file_name['nm-res-cha'].append(row[1])
+                            add_origina_file_name('nm-res-cha', row[1])
                         elif row[2] == 'CNS':
-                            if 'nm-res-cns' not in original_file_name:
-                                original_file_name['nm-res-cns'] = []
-                            original_file_name['nm-res-cns'].append(row[1])
+                            add_origina_file_name('nm-res-cns', row[1])
                         elif row[2] == 'CYANA':
-                            if 'nm-res-cya' not in original_file_name:
-                                original_file_name['nm-res-cya'] = []
-                            original_file_name['nm-res-cya'].append(row[1])
+                            add_origina_file_name('nm-res-cya', row[1])
                         elif row[2] == 'DYNAMO':
-                            if 'nm-res-dyn' not in original_file_name:
-                                original_file_name['nm-res-dyn'] = []
-                            original_file_name['nm-res-dyn'].append(row[1])
+                            add_origina_file_name('nm-res-dyn', row[1])
                         elif row[2] in ('ISD', 'Inferential Structure Determination (ISD)'):
-                            if 'nm-res-isd' not in original_file_name:
-                                original_file_name['nm-res-isd'] = []
-                            original_file_name['nm-res-isd'].append(row[1])
+                            add_origina_file_name('nm-res-isd', row[1])
                         elif row[2] == 'GROMACS':
-                            if 'nm-res-gro' not in original_file_name:
-                                original_file_name['nm-res-gro'] = []
-                            original_file_name['nm-res-gro'].append(row[1])
-                        elif row[2] == 'SCHRODINGER':
-                            if 'nm-res-sch' not in original_file_name:
-                                original_file_name['nm-res-sch'] = []
-                            original_file_name['nm-res-sch'].append(row[1])
+                            add_origina_file_name('nm-res-gro', row[1])
+                        elif row[2] == 'SCHRODINGER/ASL':
+                            add_origina_file_name('nm-res-sch', row[1])
                         elif row[2] == 'SYBYL':
-                            if 'nm-res-syb' not in original_file_name:
-                                original_file_name['nm-res-syb'] = []
-                            original_file_name['nm-res-syb'].append(row[1])
+                            add_origina_file_name('nm-res-syb', row[1])
                         elif row[2] in ('ROSETTA', 'Rosetta'):
-                            if 'nm-res-ros' not in original_file_name:
-                                original_file_name['nm-res-ros'] = []
-                            original_file_name['nm-res-ros'].append(row[1])
+                            add_origina_file_name('nm-res-ros', row[1])
                         elif row[2] in ('XPLOR-NIH', 'X-PLOR NIH'):
-                            if 'nm-res-xpl' not in original_file_name:
-                                original_file_name['nm-res-xpl'] = []
-                            original_file_name['nm-res-xpl'].append(row[1])
+                            add_origina_file_name('nm-res-xpl', row[1])
 
                 return combined, original_file_name
 

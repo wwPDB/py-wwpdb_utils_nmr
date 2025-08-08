@@ -2029,6 +2029,8 @@ class BMRBAnnTasks:
 
         if sf_category in self.__sfCategoryList and self.__internalMode:
 
+            update_sf_name = {}
+
             tags_2d = ['Volume', 'Height', 'Position_1', 'Position_2', 'Auth_asym_ID_1']
             tags_3d = ['Volume', 'Height', 'Position_1', 'Position_2', 'Position_3', 'Auth_asym_ID_1']
             tags_4d = ['Volume', 'Height', 'Position_1', 'Position_2', 'Position_3', 'Position_4', 'Auth_asym_ID_1']
@@ -2313,6 +2315,14 @@ class BMRBAnnTasks:
 
                     res_sf_framecode = sp_info[res_idx[idx]]['sf_framecode']
 
+                    if len(file_name) > 0:
+                        _sf = master_entry.get_saveframe_by_name(res_sf_framecode)
+                        _file_name = get_first_sf_tag(_sf, 'Data_file_name')
+                        if _file_name != file_name:
+                            set_sf_tag(_sf, 'Data_file_name', file_name)
+
+                    update_sf_name[res_sf_framecode] = sf_framecode
+
                     warn = f'There are equivalent NMR spectral peak lists, {res_sf_framecode!r} vs {sf_framecode!r}. '\
                         f'For the sake of simplicity, saveframe {sf_framecode!r} derived from {file_name!r} was ignored.'
 
@@ -2365,6 +2375,11 @@ class BMRBAnnTasks:
 
                     except (KeyError, ValueError):
                         pass
+
+            if len(update_sf_name) > 0:
+                for k, v in update_sf_name.items():
+                    sf = master_entry.get_saveframe_by_name(k)
+                    sf.name = v
 
         count = len(master_entry.get_saveframes_by_category(sf_category))
         if count > 0:

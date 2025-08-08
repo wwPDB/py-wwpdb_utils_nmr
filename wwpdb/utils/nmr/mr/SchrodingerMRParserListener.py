@@ -386,6 +386,9 @@ class SchrodingerMRParserListener(ParseTreeListener):
     # collection of atom selection
     atomSelectionSet = []
 
+    # FXTA multiplicity
+    atomSelectionSetForFxta = {}
+
     # collection of number selection
     numberSelection = []
 
@@ -3436,18 +3439,30 @@ class SchrodingerMRParserListener(ParseTreeListener):
                     print(f"subtype={self.__cur_subtype} (FXTA) id={self.dihedRestraints} angleName={angleName} "
                           f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} multiplicity={multiplicity} {dstFunc}")
                 if self.__createSfDict and sf is not None:
-                    if first_item:
+                    if multiplicity > 1:
+                        _atoms = str(atoms)
+                        if _atoms in self.atomSelectionSetForFxta:
+                            sf_id = self.atomSelectionSetForFxta[_atoms]['id']
+                            self.atomSelectionSetForFxta[_atoms]['cimbination_id'] += 1
+                            combinationId = self.atomSelectionSetForFxta[_atoms]['cimbination_id']
+                        else:
+                            sf['id'] += 1
+                            sf_id = sf['id']
+                            self.atomSelectionSetForFxta[_atoms] = {'id': sf_id,
+                                                                    'combination_id': combinationId}
+                    elif first_item:
                         sf['id'] += 1
+                        sf_id = sf['id']
                         first_item = False
                     sf['index_id'] += 1
-                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                    row = getRow(self.__cur_subtype, sf_id, sf['index_id'],
                                  combinationId, None, angleName,
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
                     sf['loop'].add_data(row)
 
-            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1 and multiplicity == 1:
                 sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
 
         finally:

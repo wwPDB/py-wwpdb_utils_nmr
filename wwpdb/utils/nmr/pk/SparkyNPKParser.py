@@ -27,7 +27,7 @@ def serializedATN():
         4,1,4,1,4,5,4,180,8,4,10,4,12,4,183,9,4,1,4,5,4,186,8,4,10,4,12,
         4,189,9,4,1,4,1,4,1,5,1,5,1,5,1,5,1,5,1,6,1,6,1,6,1,6,1,6,1,6,1,
         7,1,7,1,7,1,7,1,7,1,7,1,7,1,8,1,8,1,9,1,9,1,9,0,0,10,0,2,4,6,8,10,
-        12,14,16,18,0,7,2,0,1,1,10,12,1,0,39,40,1,1,18,18,1,0,10,12,1,0,
+        12,14,16,18,0,7,2,0,1,1,10,12,1,0,38,40,1,1,18,18,1,0,10,12,1,0,
         11,12,1,0,3,6,2,0,3,4,13,16,249,0,21,1,0,0,0,2,62,1,0,0,0,4,138,
         1,0,0,0,6,155,1,0,0,0,8,173,1,0,0,0,10,192,1,0,0,0,12,197,1,0,0,
         0,14,203,1,0,0,0,16,210,1,0,0,0,18,212,1,0,0,0,20,22,5,18,0,0,21,
@@ -522,6 +522,12 @@ class SparkyNPKParser ( Parser ):
         def RETURN(self):
             return self.getToken(SparkyNPKParser.RETURN, 0)
 
+        def Dummy_H_LA(self, i:int=None):
+            if i is None:
+                return self.getTokens(SparkyNPKParser.Dummy_H_LA)
+            else:
+                return self.getToken(SparkyNPKParser.Dummy_H_LA, i)
+
         def Height_LA(self, i:int=None):
             if i is None:
                 return self.getTokens(SparkyNPKParser.Height_LA)
@@ -652,7 +658,7 @@ class SparkyNPKParser ( Parser ):
             if la_ == 1:
                 self.state = 95
                 _la = self._input.LA(1)
-                if not(_la==39 or _la==40):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 1924145348608) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -662,10 +668,10 @@ class SparkyNPKParser ( Parser ):
             self.state = 99
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==39 or _la==40:
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 1924145348608) != 0):
                 self.state = 98
                 _la = self._input.LA(1)
-                if not(_la==39 or _la==40):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 1924145348608) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)

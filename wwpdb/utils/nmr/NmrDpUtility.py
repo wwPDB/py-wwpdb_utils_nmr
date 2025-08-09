@@ -61183,16 +61183,18 @@ class NmrDpUtility:
 
                                     master_entry.remove_saveframe(sf_framecode)
 
-                                err = f"Couldn't add a saveframe with name {sf_framecode!r} since a saveframe with that name already exists in {original_file_name!r} file. "\
-                                      f"Please remove {sf_framecode!r} saveframe and re-upload the {self.readable_file_type[file_type]} file."
+                                else:
 
-                                self.report.error.appendDescription('format_issue',
-                                                                    {'file_name': file_name, 'description': err})
-                                self.report.setError()
+                                    err = f"Couldn't add a saveframe with name {sf_framecode!r} since a saveframe with that name already exists in {original_file_name!r} file. "\
+                                          f"Please remove {sf_framecode!r} saveframe and re-upload the {self.readable_file_type[file_type]} file."
 
-                                self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - "
-                                                 f"{file_name} {err}\n")
-                                continue
+                                    self.report.error.appendDescription('format_issue',
+                                                                        {'file_name': file_name, 'description': err})
+                                    self.report.setError()
+
+                                    self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - "
+                                                     f"{file_name} {err}\n")
+                                    continue
 
                         master_entry.add_saveframe(sf)
 

@@ -61062,13 +61062,13 @@ class NmrDpUtility:
                         if content_subtype == 'fchiral_restraint':
                             set_sf_tag(sf, 'Stereo_assigned_count', sf_item['id'])
                         if self.__bmrb_only:
-                            if any(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                            if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
                                 continue
                             if self.__internal_mode and self.__nmr_cif_sf_category_list is not None and sf.category in self.__nmr_cif_sf_category_list:
                                 continue
                         else:
 
-                            if any(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                            if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
 
                                 if self.__internal_mode:
                                     _sf = next(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode)
@@ -61147,12 +61147,12 @@ class NmrDpUtility:
                         sf.add_tag('Text_data', getPrettyJson(other_data))
 
                         if self.__bmrb_only:
-                            if any(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                            if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
                                 continue
                             if self.__internal_mode and self.__nmr_cif_sf_category_list is not None and sf.category in self.__nmr_cif_sf_category_list:
                                 continue
                         else:
-                            if any(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                            if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
 
                                 if self.__internal_mode:
                                     _sf = next(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode)
@@ -61198,7 +61198,7 @@ class NmrDpUtility:
 
         for sf in ext_mr_sf_holder:
 
-            if self.__internal_mode and any(_sf for _sf in master_entry.frame_list if _sf.name == sf.name):
+            if self.__internal_mode and any(True for _sf in master_entry.frame_list if _sf.name == sf.name):
                 continue
 
             master_entry.add_saveframe(sf)

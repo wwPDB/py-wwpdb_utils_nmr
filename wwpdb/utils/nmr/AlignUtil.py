@@ -3901,6 +3901,8 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
     if len(nstd_residues_prev) == 0:
         return None
 
+    auth_comp_id = 'auth_comp_id' if cR_prev.hasItem('atom_site', 'auth_comp_id') else 'label_comp_id'
+
     coord_prev = cR_prev.getDictListWithFilter('atom_site',
                                                [{'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                 {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
@@ -3909,7 +3911,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                                                 ],
-                                               [{'name': 'auth_comp_id', 'type': 'enum', 'enum': nstd_residues_prev},
+                                               [{'name': auth_comp_id, 'type': 'enum', 'enum': nstd_residues_prev},
                                                 {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': rep_model_id},
                                                 {'name': 'label_alt_id', 'type': 'enum', 'enum': (rep_alt_id,)}
                                                 ])
@@ -3939,7 +3941,7 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
                                                     {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'},
                                                     {'name': 'pdbx_auth_atom_name', 'type': 'starts-with-alnum', 'alt_name': 'alt_atom_id'}
                                                     ],
-                                                   [{'name': 'auth_comp_id', 'type': 'enum', 'enum': nstd_residues_prev},
+                                                   [{'name': auth_comp_id, 'type': 'enum', 'enum': nstd_residues_prev},
                                                     {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': rep_model_id},
                                                     {'name': 'label_alt_id', 'type': 'enum', 'enum': (rep_alt_id,)}
                                                     ])

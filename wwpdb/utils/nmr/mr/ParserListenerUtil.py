@@ -7255,6 +7255,52 @@ def getWatsonCrickPtnr(cR, authAsymId: str) -> Optional[List[str]]:
     return list(set(sc['chain_id'] for sc in struct_conn))
 
 
+def getStructConnPtnrAtom(cR, authAsymId: str, authSeqId: int, authAtomId: str) -> Optional[dict]:
+    """ Return structually connected partner atom for a given atom.
+        @return: dictionary of connected partner atom in struct_conn loop
+    """
+
+    if cR is None or not cR.hasCategory('struct_conn'):
+        return None
+
+    try:
+
+        filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId},
+                       {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': authSeqId},
+                       {'name': 'ptnr1_label_atom_id', 'type': 'str', 'value': authAtomId}
+                       ]
+
+        struct_conn = cR.getDictListWithFilter('struct_conn',
+                                               [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                {'name': 'ptnr2_auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                {'name': 'ptnr2_auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                {'name': 'ptnr2_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}],
+                                               filterItems)
+
+        if len(struct_conn) == 1:
+            return struct_conn[0]
+
+        filterItems = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId},
+                       {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': authSeqId},
+                       {'name': 'ptnr2_label_atom_id', 'type': 'str', 'value': authAtomId}
+                       ]
+
+        struct_conn = cR.getDictListWithFilter('struct_conn',
+                                               [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                {'name': 'ptnr1_auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                {'name': 'ptnr1_auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                {'name': 'ptnr1_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}],
+                                               filterItems)
+
+        if len(struct_conn) == 1:
+            return struct_conn[0]
+
+    except Exception:
+        return None
+
+    return None
+
+
 def isStructConn(cR, authAsymId1: str, authSeqId1: int, authAtomId1: str,
                  authAsymId2: str, authSeqId2: int, authAtomId2: str,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,

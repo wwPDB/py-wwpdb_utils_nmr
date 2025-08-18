@@ -41,6 +41,7 @@ try:
                                                        isAmbigAtomSelection,
                                                        isCyclicPolymer,
                                                        isStructConn,
+                                                       getStructConnPtnrAtom,
                                                        getAltProtonIdInBondConstraint,
                                                        guessCompIdFromAtomId,
                                                        getTypeOfDihedralRestraint,
@@ -146,6 +147,7 @@ except ImportError:
                                            isAmbigAtomSelection,
                                            isCyclicPolymer,
                                            isStructConn,
+                                           getStructConnPtnrAtom,
                                            getAltProtonIdInBondConstraint,
                                            guessCompIdFromAtomId,
                                            getTypeOfDihedralRestraint,
@@ -5407,7 +5409,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     prevCifAtomId = None
                     prevOffset = None
 
-                    for atomId, offset in zip(atomNames, seqOffset):
+                    for ord, (atomId, offset) in enumerate(zip(atomNames, seqOffset)):
 
                         atomSelection = []
 
@@ -5454,6 +5456,17 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             if isinstance(atomId, str):
                                 cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+                                if cifAtomId is None:
+                                    if ord == 0:
+                                        _cifSeqId += seqOffset[ord + 1] - offset
+                                        ptnr = getStructConnPtnrAtom(self.__cR, chainId, _cifSeqId, atomNames[ord + 1])
+                                        if ptnr is not None and atomId[0] == ptnr['atom_id'][0]:
+                                            cifAtomId = ptnr['atom_id']
+                                    elif ord == 3:
+                                        _cifSeqId += seqOffset[ord - 1] - offset
+                                        ptnr = getStructConnPtnrAtom(self.__cR, chainId, _cifSeqId, atomNames[ord - 1])
+                                        if ptnr is not None and atomId[0] == ptnr['atom_id'][0]:
+                                            cifAtomId = ptnr['atom_id']
                             else:
                                 cifAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
                                               if atomId.match(cca[self.__ccU.ccaAtomId])
@@ -9268,7 +9281,7 @@ class CyanaMRParserListener(ParseTreeListener):
                     prevCifAtomId = None
                     prevOffset = None
 
-                    for atomId, offset in zip(atomNames, seqOffset):
+                    for ord, (atomId, offset) in enumerate(zip(atomNames, seqOffset)):
 
                         atomSelection = []
 
@@ -9315,6 +9328,17 @@ class CyanaMRParserListener(ParseTreeListener):
 
                             if isinstance(atomId, str):
                                 cifAtomId = next((cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == atomId), None)
+                                if cifAtomId is None:
+                                    if ord == 0:
+                                        _cifSeqId += seqOffset[ord + 1] - offset
+                                        ptnr = getStructConnPtnrAtom(self.__cR, chainId, _cifSeqId, atomNames[ord + 1])
+                                        if ptnr is not None and atomId[0] == ptnr['atom_id'][0]:
+                                            cifAtomId = ptnr['atom_id']
+                                    elif ord == 3:
+                                        _cifSeqId += seqOffset[ord - 1] - offset
+                                        ptnr = getStructConnPtnrAtom(self.__cR, chainId, _cifSeqId, atomNames[ord - 1])
+                                        if ptnr is not None and atomId[0] == ptnr['atom_id'][0]:
+                                            cifAtomId = ptnr['atom_id']
                             else:
                                 cifAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList
                                               if atomId.match(cca[self.__ccU.ccaAtomId])

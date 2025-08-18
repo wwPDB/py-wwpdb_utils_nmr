@@ -1684,8 +1684,21 @@ class BaseCSParserListener():
                 if segIdLike[idx]:
                     if segIdSpan[idx][1] > resNameSpan[idx][0]:
                         if numOfDim > 1 or not any(resNameLike[_idx] for _idx in range(idx + 1, lenStr))\
-                           or (resIdSpan[idx] and segIdSpan[idx][1] == resIdSpan[idx][0]):
-                            segIdLike[idx] = False
+                           or (resIdLike[idx] and segIdSpan[idx][1] == resIdSpan[idx][0]):
+                            _resName = _str[idx][resNameSpan[idx][0]:resNameSpan[idx][1]]
+                            _resId = next((int(_str[_idx][resIdSpan[_idx][0]:resIdSpan[_idx][1]]) for _idx in range(idx + 1, lenStr) if resIdLike[_idx]), None)
+                            _atomName = next((_str[_idx][atomNameSpan[_idx][0]:atomNameSpan[_idx][1]] for _idx in range(idx + 1, lenStr) if atomNameLike[_idx]), None)
+                            checked = True
+                            if _resId is not None and _atomName is not None and len(_resName) == 1 and len(self.polySeq) > 1:
+                                for ps in self.polySeq:
+                                    _, _, _compId_ = self.getRealChainSeqId(ps, _resId, None)
+                                    if _resName == ps['auth_chain_id'] and _compId_ in monDict3 and _resName != monDict3[_compId_]:
+                                        checked = False
+                                        break
+                            if checked:
+                                segIdLike[idx] = False
+                            else:
+                                resNameLike[idx] = False
                         else:
                             if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
                                and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]\

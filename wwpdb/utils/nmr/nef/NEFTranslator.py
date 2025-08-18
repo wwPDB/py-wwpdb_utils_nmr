@@ -4609,7 +4609,7 @@ class NEFTranslator:
                                 if mw in loop.tags:
                                     has_member = True
                                     break
-                            if not has_member:
+                            if not has_member and not all(mw.endswith('_max') or mw.endswith('_min') for mw in group['member-with']):
                                 set_mw = set(group['member-with'])
                                 set_mw.add(name)
                                 missing_tags = list(set_mw - set(loop.tags))

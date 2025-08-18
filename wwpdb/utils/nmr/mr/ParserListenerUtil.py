@@ -7489,6 +7489,8 @@ def getRestraintName(mrSubtype: str, title: bool = False) -> str:
         return "Nucleic acid base orientation restraints" if title else "nucleic acid base orientation restraints"
     if mrSubtype.startswith('csa'):
         return "Chemical shift anisotropy restraints" if title else "chemical shift anisotropy restraints"
+    if mrSubtype.startswith('ddc'):
+        return "Dipolar coupling restraints" if title else "dipolar coupling restraints"
     if mrSubtype.startswith('ang'):
         return "Angle databse restraints" if title else "angle database restraints"
     if mrSubtype.startswith('pre'):
@@ -9875,6 +9877,13 @@ def getRowForStrMr(contentSubtype: str, id: int, indexId: int, memberId: Optiona
         val = get_row_value('Principal_Euler_angle_gamma_val')
         if val is not None:
             row[key_size + 13] = val
+
+        if atom1 is not None:
+            row[key_size + 14], row[key_size + 15], row[key_size + 16], row[key_size + 17] =\
+                atom1['chain_id'], atom1['seq_id'], atom1['comp_id'], atom1['atom_id']
+        if atom2 is not None:
+            row[key_size + 18], row[key_size + 19], row[key_size + 20], row[key_size + 21] =\
+                atom2['chain_id'], atom2['seq_id'], atom2['comp_id'], atom2['atom_id']
 
     elif contentSubtype == 'hvycs_restraint':
         if star_atom3 is not None:

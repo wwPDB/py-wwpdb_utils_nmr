@@ -31496,7 +31496,7 @@ class NmrDpUtility:
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.aux_lp_categories[file_type][content_subtype][1]  # nef: _nef_sequence, nmr-star: _Entity_deleted_atom
 
-            if lp_category not in self.__lp_category_list[fileListId]:
+            if lp_category not in self.__lp_category_list:
                 continue
 
             seq_align_dic = self.report.sequence_alignment.get()

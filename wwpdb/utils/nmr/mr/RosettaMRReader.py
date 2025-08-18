@@ -221,6 +221,13 @@ class RosettaMRReader:
 
 
 if __name__ == "__main__":
+    reader = RosettaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/8vrc/bmr31140/work/data/D_1000281082_mr-upload_P1.rosetta.V1',
+                     '../../tests-nmr/mock-data-remediation/8vrc/8vrc.cif')
+    print(reader_listener.getReasonsForReparsing())
+
     reader = RosettaMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\

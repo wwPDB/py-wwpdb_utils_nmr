@@ -1770,18 +1770,48 @@ class RosettaMRParserListener(ParseTreeListener):
                                     f"of chain {refChainId} of the coordinates. "
                                     "Please update the sequence in the Macromolecules page.")
                 else:
-                    self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
-                                    f"{_seqId}:{atomId} is not present in the coordinates.")
-                    compIds = guessCompIdFromAtomId([atomId], self.__polySeq, self.__nefT)
-                    if compIds is not None:
-                        chainId = fixedChainId
-                        if chainId is None and len(self.__polySeq) == 1:
-                            chainId = self.__polySeq[0]['chain_id']
-                        if chainId is not None:
-                            if len(compIds) == 1:
-                                updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compIds[0])
-                            else:
-                                updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, seqId, compIds)
+                    ext_seq = False
+                    if self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT or len(atomId) == 1:
+                        auth_seq_id_list = list(filter(None, self.__polySeq[0]['auth_seq_id']))
+                        min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM
+                        if len(auth_seq_id_list) > 0:
+                            min_auth_seq_id = min(auth_seq_id_list)
+                            max_auth_seq_id = max(auth_seq_id_list)
+                        refChainIds = []
+                        _auth_seq_id_list = auth_seq_id_list
+                        for idx, ps in enumerate(self.__polySeq):
+                            if idx > 0:
+                                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
+                                _auth_seq_id_list.extend(auth_seq_id_list)
+                            if len(auth_seq_id_list) > 0:
+                                if idx > 0:
+                                    min_auth_seq_id = min(auth_seq_id_list)
+                                    max_auth_seq_id = max(auth_seq_id_list)
+                                if (seqId < min_auth_seq_id or seqId > max_auth_seq_id)\
+                                   and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                                    refChainIds.append(ps['auth_chain_id'])
+                                    ext_seq = True
+                        if ext_seq and seqId in _auth_seq_id_list:
+                            ext_seq = False
+                    if ext_seq:
+                        refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
+                        self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
+                                        f"The residue '{_seqId}' is not present in polymer sequence "
+                                        f"of chain {refChainId} of the coordinates. "
+                                        "Please update the sequence in the Macromolecules page.")
+                    else:
+                        self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
+                                        f"{_seqId}:{atomId} is not present in the coordinates.")
+                        compIds = guessCompIdFromAtomId([atomId], self.__polySeq, self.__nefT)
+                        if compIds is not None:
+                            chainId = fixedChainId
+                            if chainId is None and len(self.__polySeq) == 1:
+                                chainId = self.__polySeq[0]['chain_id']
+                            if chainId is not None:
+                                if len(compIds) == 1:
+                                    updatePolySeqRst(self.__polySeqRstFailed, chainId, seqId, compIds[0])
+                                else:
+                                    updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, chainId, seqId, compIds)
 
             else:
                 if len(self.__polySeq) == 1 and seqId < 1:
@@ -2203,6 +2233,9 @@ class RosettaMRParserListener(ParseTreeListener):
                            or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
                                and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
                                     or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
+                            ext_seq = True
+                        elif compId in monDict3 and len(atomId) == 1 and (seqId < min_auth_seq_id or seqId > max_auth_seq_id)\
+                                and self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT:
                             ext_seq = True
                     if chainId in LARGE_ASYM_ID:
                         if ext_seq:

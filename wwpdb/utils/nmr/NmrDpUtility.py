@@ -50095,6 +50095,11 @@ class NmrDpUtility:
 
                                 else:
 
+                                    if item == 'atom_not_found' and self.__internal_mode and file_type == 'nmr-star' and details_col != -1:
+                                        _details = loop.data[idx][details_col]
+                                        if _details == 'UNMAPPED':
+                                            continue
+
                                     self.report.error.appendDescription(item,
                                                                         {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category,
                                                                          'description': err})

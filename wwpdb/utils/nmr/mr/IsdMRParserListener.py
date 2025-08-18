@@ -1528,7 +1528,7 @@ class IsdMRParserListener(ParseTreeListener):
                             cifCompId = compId
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
+        if len(chainAssign) == 0 and len(atomId) > 1 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
             for ps in self.__polySeq:
                 if preferNonPoly:
                     continue
@@ -1605,7 +1605,8 @@ class IsdMRParserListener(ParseTreeListener):
                                     "Please update the sequence in the Macromolecules page.")
             else:
                 ext_seq = False
-                if (compId in monDict3 or compId in ('ACE', 'NH2')) and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                if (compId in monDict3 or compId in ('ACE', 'NH2')) and (self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                                                                         or len(atomId) == 1):
                     refChainIds = []
                     _auth_seq_id_list = auth_seq_id_list
                     for idx, ps in enumerate(self.__polySeq):
@@ -1620,8 +1621,12 @@ class IsdMRParserListener(ParseTreeListener):
                                and (compId in monDict3 or (compId == 'ACE' and seqId == min_auth_seq_id - 1)):
                                 refChainIds.append(ps['auth_chain_id'])
                                 ext_seq = True
-                            if max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ\
-                               and (compId in monDict3 or (compId == 'NH2' and seqId == max_auth_seq_id + 1)):
+                            elif max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ\
+                                    and (compId in monDict3 or (compId == 'NH2' and seqId == max_auth_seq_id + 1)):
+                                refChainIds.append(ps['auth_chain_id'])
+                                ext_seq = True
+                            elif compId in monDict3 and len(atomId) == 1 and (seqId < min_auth_seq_id or seqId > max_auth_seq_id)\
+                                    and self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT:
                                 refChainIds.append(ps['auth_chain_id'])
                                 ext_seq = True
                     if ext_seq and seqId in _auth_seq_id_list:
@@ -2114,6 +2119,9 @@ class IsdMRParserListener(ParseTreeListener):
                            or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
                                and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
                                     or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
+                            ext_seq = True
+                        elif compId in monDict3 and len(atomId) == 1 and (seqId < min_auth_seq_id or seqId > max_auth_seq_id)\
+                                and self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT:
                             ext_seq = True
                     if chainId in LARGE_ASYM_ID:
                         if ext_seq:

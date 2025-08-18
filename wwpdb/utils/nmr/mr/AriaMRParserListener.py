@@ -1567,7 +1567,7 @@ class AriaMRParserListener(ParseTreeListener):
                             cifCompId = compId
                     chainAssign.add((chainId, _seqId, cifCompId, True))
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
+        if len(chainAssign) == 0 and len(atomId) > 1 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
             for ps in self.__polySeq:
                 if preferNonPoly:
                     continue
@@ -1598,10 +1598,12 @@ class AriaMRParserListener(ParseTreeListener):
                                 if compId in (cifCompId, origCompId):
                                     self.__authSeqId = 'label_seq_id'
                                     self.__setLocalSeqScheme()
-                        elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
-                            self.__authSeqId = 'label_seq_id'
-                            self.__setLocalSeqScheme()
+                        else:
+                            _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                            if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
+                                self.__authSeqId = 'label_seq_id'
+                                self.__setLocalSeqScheme()
 
         if len(chainAssign) == 0:
             refChainId = chainId if fixedChainId is None else fixedChainId
@@ -1643,7 +1645,8 @@ class AriaMRParserListener(ParseTreeListener):
                                     "Please update the sequence in the Macromolecules page.")
             else:
                 ext_seq = False
-                if (compId in monDict3 or compId in ('ACE', 'NH2')) and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                if (compId in monDict3 or compId in ('ACE', 'NH2')) and (self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                                                                         or len(atomId) == 1):
                     refChainIds = []
                     _auth_seq_id_list = auth_seq_id_list
                     for idx, ps in enumerate(self.__polySeq):
@@ -1658,8 +1661,12 @@ class AriaMRParserListener(ParseTreeListener):
                                and (compId in monDict3 or (compId == 'ACE' and seqId == min_auth_seq_id - 1)):
                                 refChainIds.append(ps['auth_chain_id'])
                                 ext_seq = True
-                            if max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ\
-                               and (compId in monDict3 or (compId == 'NH2' and seqId == max_auth_seq_id + 1)):
+                            elif max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ\
+                                    and (compId in monDict3 or (compId == 'NH2' and seqId == max_auth_seq_id + 1)):
+                                refChainIds.append(ps['auth_chain_id'])
+                                ext_seq = True
+                            elif compId in monDict3 and len(atomId) == 1 and (seqId < min_auth_seq_id or seqId > max_auth_seq_id)\
+                                    and self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT:
                                 refChainIds.append(ps['auth_chain_id'])
                                 ext_seq = True
                     if ext_seq and seqId in _auth_seq_id_list:
@@ -2212,7 +2219,7 @@ class AriaMRParserListener(ParseTreeListener):
                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                         self.__chainNumberDict[refChainId] = chainId
 
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
+        if len(chainAssign) == 0 and len(atomId) > 1 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT or len(self.__polySeq) > 1):
             for ps in self.__polySeq:
                 if preferNonPoly:
                     continue
@@ -2248,12 +2255,14 @@ class AriaMRParserListener(ParseTreeListener):
                                     self.__setLocalSeqScheme()
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
                                         self.__chainNumberDict[refChainId] = chainId
-                        elif len(self.__nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
-                            self.__authSeqId = 'label_seq_id'
-                            self.__setLocalSeqScheme()
-                            if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
-                                self.__chainNumberDict[refChainId] = chainId
+                        else:
+                            _atomId, _, details = self.__nefT.get_valid_star_atom(cifCompId, atomId)
+                            if len(_atomId) > 0 and (details is None or _compId not in monDict3):
+                                chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
+                                self.__authSeqId = 'label_seq_id'
+                                self.__setLocalSeqScheme()
+                                if refChainId is not None and refChainId != chainId and refChainId not in self.__chainNumberDict:
+                                    self.__chainNumberDict[refChainId] = chainId
 
         if len(chainAssign) == 0:
             if seqId == 1 or (refChainId, seqId - 1) in self.__coordUnobsRes:
@@ -2294,7 +2303,8 @@ class AriaMRParserListener(ParseTreeListener):
                                     "Please update the sequence in the Macromolecules page.")
             else:
                 ext_seq = False
-                if (compId in monDict3 or compId in ('ACE', 'NH2')) and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
+                if (compId in monDict3 or compId in ('ACE', 'NH2')) and (self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
+                                                                         or len(atomId) == 1):
                     refChainIds = []
                     _auth_seq_id_list = auth_seq_id_list
                     for idx, ps in enumerate(self.__polySeq):
@@ -2309,8 +2319,12 @@ class AriaMRParserListener(ParseTreeListener):
                                and (compId in monDict3 or (compId == 'ACE' and seqId == min_auth_seq_id - 1)):
                                 refChainIds.append(ps['auth_chain_id'])
                                 ext_seq = True
-                            if max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ\
-                               and (compId in monDict3 or (compId == 'NH2' and seqId == max_auth_seq_id + 1)):
+                            elif max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ\
+                                    and (compId in monDict3 or (compId == 'NH2' and seqId == max_auth_seq_id + 1)):
+                                refChainIds.append(ps['auth_chain_id'])
+                                ext_seq = True
+                            elif compId in monDict3 and len(atomId) == 1 and (seqId < min_auth_seq_id or seqId > max_auth_seq_id)\
+                                    and self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT:
                                 refChainIds.append(ps['auth_chain_id'])
                                 ext_seq = True
                     if ext_seq and seqId in _auth_seq_id_list:
@@ -2814,6 +2828,9 @@ class AriaMRParserListener(ParseTreeListener):
                            or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
                                and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
                                     or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
+                            ext_seq = True
+                        elif compId in monDict3 and len(atomId) == 1 and (seqId < min_auth_seq_id or seqId > max_auth_seq_id)\
+                                and self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT:
                             ext_seq = True
                     if chainId in LARGE_ASYM_ID:
                         if ext_seq:

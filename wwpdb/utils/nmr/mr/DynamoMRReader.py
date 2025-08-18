@@ -218,6 +218,13 @@ class DynamoMRReader:
 if __name__ == "__main__":
     reader = DynamoMRReader(True)
     reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-D_1300044764/D_1300044764_mr-upload_P1.dynamo.V1',
+                     '../../tests-nmr/mock-data-D_1300044764/D_1300044764_model_P1.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = DynamoMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6o8t/6o8t-corrected.mr',
                  '../../tests-nmr/mock-data-remediation/6o8t/6o8t.cif')
 

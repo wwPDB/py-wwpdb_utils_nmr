@@ -31703,7 +31703,8 @@ class NmrDpUtility:
 
                                 if coord_atom_site_ is not None and coord_atom_site_['comp_id'] == cif_comp_id\
                                    and (atom_id_ in coord_atom_site_['atom_id']
-                                        or ('auth_atom_id' in coord_atom_site_ and atom_id_ in coord_atom_site_['auth_atom_id'])):
+                                        or ('auth_atom_id' in coord_atom_site_ and atom_id_ in coord_atom_site_['auth_atom_id']))\
+                                   and lp_category != '_Entity_deleted_atom':
 
                                     err = "Atom ("\
                                         + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\
@@ -31820,7 +31821,8 @@ class NmrDpUtility:
                             if coord_atom_site_ is not None and coord_atom_site_['comp_id'] == cif_comp_id\
                                and (atom_id_ in coord_atom_site_['atom_id']
                                     and (('auth_atom_id' in coord_atom_site_ and atom_id_ in coord_atom_site_['auth_atom_id'])
-                                         or 'auth_atom_id' not in coord_atom_site_)):
+                                         or 'auth_atom_id' not in coord_atom_site_))\
+                               and lp_category != '_Entity_deleted_atom':
 
                                 err = "Atom ("\
                                     + self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)\

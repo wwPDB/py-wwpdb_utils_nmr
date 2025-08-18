@@ -2897,6 +2897,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
+                        elif _compId == 'ION':
+                            if self.__nonPoly[0]['comp_id'][0] in SYMBOLS_ELEMENT:
+                                compId = _compId = self.__nonPoly[0]['comp_id'][0]
+                                ligands = 1
                 if self.__reasons is None and self.__uniqAtomIdToSeqKey is not None and atomId in self.__uniqAtomIdToSeqKey:
                     seqKey = self.__uniqAtomIdToSeqKey[atomId]
                     if _seqId != seqKey[1]:
@@ -3551,6 +3555,10 @@ class CyanaMRParserListener(ParseTreeListener):
                         if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
+                        elif _compId == 'ION':
+                            if self.__nonPoly[0]['comp_id'][0] in SYMBOLS_ELEMENT:
+                                compId = _compId = self.__nonPoly[0]['comp_id'][0]
+                                ligands = 1
                 if self.__reasons is None and self.__uniqAtomIdToSeqKey is not None and atomId in self.__uniqAtomIdToSeqKey:
                     seqKey = self.__uniqAtomIdToSeqKey[atomId]
                     if _seqId != seqKey[1]:

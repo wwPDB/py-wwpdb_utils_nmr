@@ -884,7 +884,7 @@ class CyanaNOAParserListener(ParseTreeListener):
                         atoms = [atom1, atom2]
                         if isIdenticalRestraint(atoms, self.__nefT):
                             continue
-                        if self.__createSfDict and isinstance(memberId, int):
+                        if self.__createSfDict and isinstance(memberId, int):  # pylint: disable=used-before-assignment
                             star_atom1 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom1))
                             star_atom2 = getStarAtom(self.__authToStarSeq, self.__authToOrigSeq, self.__offsetHolder, copy.copy(atom2))
                             if None in (star_atom1, star_atom2) or isIdenticalRestraint([star_atom1, star_atom2], self.__nefT):
@@ -1433,6 +1433,10 @@ class CyanaNOAParserListener(ParseTreeListener):
                         if self.__ccU.lastChemCompDict['_chem_comp.pdbx_release_status'] == 'OBS':
                             compId = _compId = self.__nonPoly[0]['comp_id'][0]
                             ligands = 1
+                        elif _compId == 'ION':
+                            if self.__nonPoly[0]['comp_id'][0] in SYMBOLS_ELEMENT:
+                                compId = _compId = self.__nonPoly[0]['comp_id'][0]
+                                ligands = 1
                 if self.__reasons is None and self.__uniqAtomIdToSeqKey is not None and atomId in self.__uniqAtomIdToSeqKey:
                     seqKey = self.__uniqAtomIdToSeqKey[atomId]
                     if _seqId != seqKey[1]:

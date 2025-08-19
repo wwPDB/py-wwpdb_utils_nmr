@@ -59722,6 +59722,7 @@ class NmrDpUtility:
                 pass
 
         if self.__internal_mode and not self.__bmrb_only:
+
             nmr_star_version = get_first_sf_tag(sf_list[0], 'NMR_STAR_version')
 
             if len(nmr_star_version) == 0:
@@ -61092,7 +61093,8 @@ class NmrDpUtility:
         if len(cf_loop) > 0:
             master_entry.add_saveframe(cst_sf)
 
-        renamed_data_file_name = False
+        update_data_file_name = False
+        data_file_name_map = {}
 
         for content_subtype in self.mr_content_subtypes:
             if self.__mr_sf_dict_holder is not None and content_subtype in self.__mr_sf_dict_holder:
@@ -61103,20 +61105,32 @@ class NmrDpUtility:
                         sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                         if content_subtype == 'fchiral_restraint':
                             set_sf_tag(sf, 'Stereo_assigned_count', sf_item['id'])
+
                         if self.__bmrb_only:
+
                             if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
                                 continue
                             if self.__internal_mode and self.__nmr_cif_sf_category_list is not None and sf.category in self.__nmr_cif_sf_category_list:
                                 continue
+
                         else:
 
-                            if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                            if 'XPLOR-NIH_' in sf_framecode or sf_framecode.startswith('CNS'):
+                                if 'XPLOR-NIH' in sf_framecode:
+                                    alt_sf_framecode = 'XPLOR-NIH/CNS' + sf_framecode[9:]
+                                else:
+                                    alt_sf_framecode = 'XPLOR-NIH/' + sf_framecode
+                            else:
+                                alt_sf_framecode = sf_framecode
+
+                            if any(True for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode)):
 
                                 if self.__internal_mode:
-                                    _sf = next(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode)
+                                    _sf = next(_sf for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode))
                                     _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
                                     data_file_name = get_first_sf_tag(sf, 'Data_file_name')
                                     if len(_data_file_name) > 0 and _data_file_name != data_file_name:
+                                        data_file_name_map[data_file_name] = _data_file_name
                                         set_sf_tag(sf, 'Data_file_name', _data_file_name)
 
                                         fileListId = self.__file_path_list_len
@@ -61136,10 +61150,15 @@ class NmrDpUtility:
                                             if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
                                                 if ar['original_file_name'] == data_file_name:
                                                     ar['original_file_name'] = _data_file_name
-                                                    renamed_data_file_name = True
+                                                    update_data_file_name = True
                                                     break
 
-                                    master_entry.remove_saveframe(sf_framecode)
+                                            elif getRestraintFormatName(ar_file_type).split()[0] in sf_framecode:
+                                                ar['original_file_name'] = _data_file_name
+                                                update_data_file_name = True
+                                                break
+
+                                    master_entry.remove_saveframe(sf_framecode if sf_framecode in master_entry.frame_list else alt_sf_framecode)
 
                                 else:
 
@@ -61189,11 +61208,14 @@ class NmrDpUtility:
                         sf.add_tag('Text_data', getPrettyJson(other_data))
 
                         if self.__bmrb_only:
+
                             if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
                                 continue
                             if self.__internal_mode and self.__nmr_cif_sf_category_list is not None and sf.category in self.__nmr_cif_sf_category_list:
                                 continue
+
                         else:
+
                             if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
 
                                 if self.__internal_mode:
@@ -61201,6 +61223,7 @@ class NmrDpUtility:
                                     _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
                                     data_file_name = get_first_sf_tag(sf, 'Data_file_name')
                                     if len(_data_file_name) > 0 and _data_file_name != data_file_name:
+                                        data_file_name_map[data_file_name] = _data_file_name
                                         set_sf_tag(sf, 'Data_file_name', _data_file_name)
 
                                         fileListId = self.__file_path_list_len
@@ -61220,8 +61243,13 @@ class NmrDpUtility:
                                             if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
                                                 if ar['original_file_name'] == data_file_name:
                                                     ar['original_file_name'] = _data_file_name
-                                                    renamed_data_file_name = True
+                                                    update_data_file_name = True
                                                     break
+
+                                            else:
+                                                ar['original_file_name'] = _data_file_name
+                                                update_data_file_name = True
+                                                break
 
                                     master_entry.remove_saveframe(sf_framecode)
 
@@ -61247,7 +61275,11 @@ class NmrDpUtility:
 
             master_entry.add_saveframe(sf)
 
-        if renamed_data_file_name:
+        if update_data_file_name:
+
+            for idx, row in enumerate(cf_loop):
+                if row[1] in data_file_name_map:
+                    cf_loop[idx][1] = data_file_name_map[row[1]]
 
             fileListId = self.__file_path_list_len
 

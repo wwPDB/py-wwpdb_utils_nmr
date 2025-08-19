@@ -59714,7 +59714,7 @@ class NmrDpUtility:
 
                     lp.add_tag(tags)
 
-                    lp.add_data([1, datetime.today().strftime('%Y-%m-%d'), 'Initial release', None, self.__entry_id])
+                    lp.add_data([1, datetime.today().strftime('%Y-%m-%d'), 'Preliminary version', None, self.__entry_id])
 
                     sf.add_loop(lp)
 

@@ -59621,6 +59621,8 @@ class NmrDpUtility:
         content_subtype = 'entry_info'
 
         sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = '_Audit'
+        update_audit = False
 
         sf_list = master_entry.get_saveframes_by_category(sf_category)
 
@@ -59630,7 +59632,7 @@ class NmrDpUtility:
 
             try:
 
-                loop = sf.get_loop('_Audit')
+                loop = sf.get_loop(lp_category)
 
                 if self.__internal_mode:
 
@@ -59647,6 +59649,8 @@ class NmrDpUtility:
 
                         loop.add_data(row)
 
+                        update_audit = True
+
                 else:
                     del sf[loop]
 
@@ -59662,7 +59666,7 @@ class NmrDpUtility:
 
                 try:
 
-                    loop = sf.get_loop('_Audit')
+                    loop = sf.get_loop(lp_category)
 
                     if self.__internal_mode:
 
@@ -59679,12 +59683,43 @@ class NmrDpUtility:
 
                             loop.add_data(row)
 
+                            update_audit = True
+
                         sf_list[0].add_loop(loop)
 
                 except KeyError:
                     pass
 
                 del master_entry[sf]
+
+        if self.__internal_mode and not update_audit:
+
+            sf_list = master_entry.get_saveframes_by_category(sf_category)
+
+            try:
+
+                sf = sf_list[0]
+
+                try:
+
+                    loop = sf.get_loop(lp_category)
+
+                except KeyError:
+
+                    lp = pynmrstar.Loop.from_scratch(lp_category)
+
+                    items = ['Revision_ID', 'Creation_date', 'Update_record', 'Creation_method', 'Entry_ID']
+
+                    tags = [lp_category + '.' + item for item in items]
+
+                    lp.add_tag(tags)
+
+                    lp.add_data([1, datetime.today().strftime('%Y-%m-%d'), 'Initial release', None, self.__entry_id])
+
+                    sf.add_loop(lp)
+
+            except IndexError:
+                pass
 
         if self.__internal_mode and not self.__bmrb_only:
             nmr_star_version = get_first_sf_tag(sf_list[0], 'NMR_STAR_version')

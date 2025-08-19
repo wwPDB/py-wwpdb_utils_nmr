@@ -8205,7 +8205,7 @@ def getStarAtom(authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict], of
 
     if asis:
         for seqKey in authToStarSeq:
-            if seqKey[0] != chainId:
+            if seqKey[0] != chainId or not isinstance(seqKey[1], int):
                 continue
             if seqKey[1] - MAX_ALLOWED_EXT_SEQ <= seqId <= seqKey[1] + MAX_ALLOWED_EXT_SEQ:
                 offset = seqId - seqKey[1]

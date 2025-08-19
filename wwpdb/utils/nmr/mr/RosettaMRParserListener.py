@@ -1771,7 +1771,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                     "Please update the sequence in the Macromolecules page.")
                 else:
                     ext_seq = False
-                    if self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT or atomId == 'H':
+                    if self.__reasons is None and (self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT or atomId == 'H'):
                         auth_seq_id_list = list(filter(None, self.__polySeq[0]['auth_seq_id']))
                         min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM
                         if len(auth_seq_id_list) > 0:
@@ -2234,7 +2234,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
                                     or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
                             ext_seq = True
-                        elif compId in monDict3 and len(atomId) == 1 and (seqId < min_auth_seq_id or seqId > max_auth_seq_id)\
+                        elif self.__reasons is None and compId in monDict3 and atomId == 'H' and seqId < min_auth_seq_id\
                                 and self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT:
                             ext_seq = True
                     if chainId in LARGE_ASYM_ID:

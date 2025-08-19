@@ -229,6 +229,13 @@ class CyanaMRReader:
 
 
 if __name__ == "__main__":
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2lum/2lum-corrected.mr',
+                     '../../tests-nmr/mock-data-remediation/2lum/2lum.cif')
+    print(reader_listener.getReasonsForReparsing())
+
     reader = CyanaMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\

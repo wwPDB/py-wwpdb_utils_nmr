@@ -1665,7 +1665,7 @@ class AriaMRParserListener(ParseTreeListener):
                                     and (compId in monDict3 or (compId == 'NH2' and seqId == max_auth_seq_id + 1)):
                                 refChainIds.append(ps['auth_chain_id'])
                                 ext_seq = True
-                            elif compId in monDict3 and atomId == 'H' and (seqId < min_auth_seq_id or seqId > max_auth_seq_id)\
+                            elif self.__reasons is None and compId in monDict3 and atomId == 'H' and seqId < min_auth_seq_id\
                                     and self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT:
                                 refChainIds.append(ps['auth_chain_id'])
                                 ext_seq = True
@@ -2323,7 +2323,7 @@ class AriaMRParserListener(ParseTreeListener):
                                     and (compId in monDict3 or (compId == 'NH2' and seqId == max_auth_seq_id + 1)):
                                 refChainIds.append(ps['auth_chain_id'])
                                 ext_seq = True
-                            elif compId in monDict3 and atomId == 'H' and (seqId < min_auth_seq_id or seqId > max_auth_seq_id)\
+                            elif self.__reasons is None and compId in monDict3 and atomId == 'H' and seqId < min_auth_seq_id\
                                     and self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT:
                                 refChainIds.append(ps['auth_chain_id'])
                                 ext_seq = True
@@ -2829,7 +2829,7 @@ class AriaMRParserListener(ParseTreeListener):
                                and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
                                     or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
                             ext_seq = True
-                        elif compId in monDict3 and len(atomId) == 1 and (seqId < min_auth_seq_id or seqId > max_auth_seq_id)\
+                        elif self.__reasons is None and compId in monDict3 and atomId == 'H' and seqId < min_auth_seq_id\
                                 and self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT:
                             ext_seq = True
                     if chainId in LARGE_ASYM_ID:

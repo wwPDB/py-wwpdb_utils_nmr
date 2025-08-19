@@ -59692,7 +59692,7 @@ class NmrDpUtility:
 
                 del master_entry[sf]
 
-        if self.__internal_mode and not update_audit:
+        if self.__internal_mode and not self.__bmrb_only and not update_audit:
 
             sf_list = master_entry.get_saveframes_by_category(sf_category)
 

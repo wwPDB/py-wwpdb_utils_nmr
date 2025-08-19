@@ -232,6 +232,13 @@ if __name__ == "__main__":
     reader = CyanaMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/2rsy/2rsy-corrected-div_dst-div_src.mr',
+                     '../../tests-nmr/mock-data-remediation/2rsy/2rsy.cif')
+    print(reader_listener.getReasonsForReparsing())
+
+    reader = CyanaMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/8rhm/bmr34888/work/data/D_1292134954_mr-upload_P1.cyana.V3',
                      '../../tests-nmr/mock-data-remediation/8rhm/8rhm.cif')
     print(reader_listener.getReasonsForReparsing())

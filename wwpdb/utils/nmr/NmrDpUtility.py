@@ -61158,7 +61158,10 @@ class NmrDpUtility:
                                                 update_data_file_name = True
                                                 break
 
-                                    master_entry.remove_saveframe(sf_framecode if sf_framecode in master_entry.frame_list else alt_sf_framecode)
+                                    if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                                        master_entry.remove_saveframe(sf_framecode)
+                                    else:
+                                        master_entry.remove_saveframe(alt_sf_framecode)
 
                                 else:
 

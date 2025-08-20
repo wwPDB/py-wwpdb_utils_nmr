@@ -26305,6 +26305,9 @@ class NmrDpUtility:
                            ccU=self.__ccU, csStat=self.__csStat, c2S=self.__c2S)
 
         if not self.__internal_mode and self.report.getInputSourceIdOfCoord() >= 0 and self.__cR.hasCategory('database_2'):
+
+            sf_category = 'entry_information'
+
             database_code = self.__cR.getDictListWithFilter('database_2',
                                                             [{'name': 'database_code', 'type': 'str'}],
                                                             [{'name': 'database_id', 'type': 'str', 'value': 'BMRB'}])
@@ -26312,8 +26315,6 @@ class NmrDpUtility:
             if len(database_code) > 0:
                 derived_entry_id = database_code[0]['database_code']
                 derived_entry_title = None
-
-                sf_category = 'entry_information'
 
                 if sf_category in self.__sf_category_list:
                     sf = master_entry.get_saveframes_by_category(sf_category)[0]
@@ -63522,22 +63523,109 @@ class NmrDpUtility:
                            self.__annotation_mode, self.__internal_mode, self.__sail_flag, self.report,
                            ccU=self.__ccU, csStat=self.__csStat, c2S=self.__c2S)
 
-        if not self.__internal_mode and self.report.getInputSourceIdOfCoord() >= 0 and self.__cR.hasCategory('database_2'):
+        if self.report.getInputSourceIdOfCoord() >= 0 and self.__cR.hasCategory('database_2'):
+
+            sf_category = 'entry_information'
+
             database_code = self.__cR.getDictListWithFilter('database_2',
                                                             [{'name': 'database_code', 'type': 'str'}],
                                                             [{'name': 'database_id', 'type': 'str', 'value': 'BMRB'}])
 
             if len(database_code) > 0:
                 derived_entry_id = database_code[0]['database_code']
-                derived_entry_title = None
 
-                sf_category = 'entry_information'
+                if not self.__internal_mode:
+                    derived_entry_title = None
 
-                if sf_category in self.__sf_category_list:
-                    sf = master_entry.get_saveframes_by_category(sf_category)[0]
-                    derived_entry_title = get_first_sf_tag(sf, 'Title', None)
+                    if sf_category in self.__sf_category_list:
+                        sf = master_entry.get_saveframes_by_category(sf_category)[0]
+                        derived_entry_title = get_first_sf_tag(sf, 'Title', None)
 
-                ann.setProvenanceInfo(derived_entry_id, derived_entry_title)
+                    ann.setProvenanceInfo(derived_entry_id, derived_entry_title)
+
+                elif not self.__bmrb_only:
+
+                    if sf_category in self.__sf_category_list:
+                        sf = master_entry.get_saveframes_by_category(sf_category)[0]
+                        derived_entry_title = get_first_sf_tag(sf, 'Title', None)
+
+                        if derived_entry_title in emptyValue:
+                            dir_path = self.__cR.getDirPath()
+
+                            if os.path.exists(os.path.join(dir_path, f'bmr{derived_entry_id}_3.str')):
+
+                                is_done, _, star_data = self.__nefT.read_input_file(os.path.join(dir_path, f'bmr{derived_entry_id}_3.str'))
+
+                                if is_done:
+
+                                    try:
+
+                                        _sf = star_data.get_saveframes_by_category(sf_category)[0]
+                                        derived_entry_title = get_first_sf_tag(_sf, 'Title', None)
+
+                                    except IndexError:
+                                        pass
+
+                            if derived_entry_title not in emptyValue:
+                                set_sf_tag(sf, 'Title', derived_entry_title)
+
+                        lp_category = '_Related_entries'
+
+                        try:
+
+                            lp = sf.get_loop(lp_category)
+
+                            tags = ['Database_name', 'Database_accession_code']
+
+                            if set(tags) & set(lp.tags) == set(tags):
+                                related_entries = lp.get_tag(tags)
+
+                                has_provenance = False
+                                for idx, row in enumerate(related_entries):
+                                    if row == ['BMRB', derived_entry_id]:
+                                        has_provenance = True
+                                        if derived_entry_title not in emptyValue:
+                                            lp.data[idx][lp.tags.index('Relationship')] = derived_entry_title
+                                        break
+
+                                if not has_provenance:
+                                    row = [None] * len(lp.tags)
+                                    row[lp.tags.index('Database_name')] = 'BMRB'
+                                    row[lp.tags.index('Database_accession_code')] = derived_entry_id
+                                    if derived_entry_title not in emptyValue:
+                                        row[lp.tags.index('Relationship')] = derived_entry_title
+                                    row[lp.tags.index('Entry_ID')] = self.__entry_id
+
+                                    lp.add_data(row)
+
+                                    lp.sort_rows(['Database_name', 'Database_accession_code'])
+
+                        except KeyError:
+                            items = ['Database_name', 'Database_accession_code', 'Relationship', 'Entry_ID']
+
+                            lp = pynmrstar.Loop.from_scratch(lp_category)
+
+                            tags = [lp_category + '.' + item for item in items]
+
+                            lp.add_tag(tags)
+
+                            lp.add_data(['BMRB', derived_entry_id, derived_entry_title, self.__entry_id])
+
+                            database_code = self.__cR.getDictListWithFilter('database_2',
+                                                                            [{'name': 'database_code', 'type': 'str'},
+                                                                             {'name': 'database_id', 'type': 'str'}])
+
+                            if len(database_code) > 0:
+                                for d in database_code:
+                                    if d['database_code'] in emptyValue or d['database_id'] in emptyValue\
+                                       or d['database_id'] in ('PDB', 'BMRB', 'WWPDB'):
+                                        continue
+                                    lp.add_data([d['database_id'], d['database_code'], None, self.__entry_id])
+
+                            if len(lp) > 1:
+                                lp.sort_rows(['Database_name', 'Database_accession_code'])
+
+                            sf.add_loop(lp)
 
         is_done = ann.perform(master_entry)
 

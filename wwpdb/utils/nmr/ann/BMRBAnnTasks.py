@@ -245,9 +245,11 @@ class BMRBAnnTasks:
                         related_entries = lp.get_tag(tags)
 
                         has_provenance = False
-                        for row in related_entries:
+                        for idx, row in enumerate(related_entries):
                             if row == ['BMRB', self.__derivedEntryId]:
                                 has_provenance = True
+                                if self.__derivedEntryTitle not in emptyValue:
+                                    lp.data[idx][lp.tags.index('Relationship')] = self.__derivedEntryTitle
                                 break
 
                         if not has_provenance:

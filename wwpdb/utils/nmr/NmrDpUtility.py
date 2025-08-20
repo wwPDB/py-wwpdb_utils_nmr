@@ -36562,8 +36562,9 @@ class NmrDpUtility:
                 if messageList is not None:
                     for description in messageList:
                         if 'SPARKY' in a_pk_format_name\
-                           and mismatched_input_err_msg in description['message']\
-                           and "expecting {Lw1_Hz_LA, Lw2_Hz_LA, Lw3_Hz_LA, Lw4_Hz_LA, S_N_LA" in description['message']\
+                           and (mismatched_input_err_msg in description['message']
+                                or extraneous_input_err_msg in description['message'])\
+                           and "expecting {Lw1_Hz_LA, Lw2_Hz_LA, Lw3_Hz_LA, Lw4_Hz_LA" in description['message']\
                            and ('Height' in description['message']
                                 or 'Data' in description['message']):
                             _type = 'reverse'

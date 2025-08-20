@@ -87,6 +87,7 @@ Dev_w4_LA:		[Dd] 'ev w4';
 Dummy_H_LA:		'Fit Height' 's'?;
 Height_LA:		('Data '? 'Height' 's'? | 'Data');
 Volume_LA:		'Volume';
+Dummy_Rms_LA:		'Fit RMS %';
 S_N_LA:			[Ss] '/' [Nn];
 Atom1_LA:		'Atom1' | 'ATOM1';
 Atom2_LA:		'Atom2' | 'ATOM2';

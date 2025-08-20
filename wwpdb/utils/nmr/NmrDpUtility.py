@@ -36527,7 +36527,7 @@ class NmrDpUtility:
                 if messageList is not None:
                     for description in messageList:
                         if 'SPARKY' in a_pk_format_name\
-                           and extraneous_input_err_msg in description['message']\
+                           and mismatched_input_err_msg in description['message']\
                            and "expecting {Lw1_Hz_LA, Lw2_Hz_LA, Lw3_Hz_LA, Lw4_Hz_LA, S_N_LA" in description['message']\
                            and ('Height' in description['message']
                                 or 'Data' in description['message']):
@@ -37448,7 +37448,6 @@ class NmrDpUtility:
                     skip, spa_type = deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)
                     if skip and spa_type == 'default':
                         continue
-
                 if spa_type == 'reverse':
                     self.__list_id_counter = copy.copy(__list_id_counter)
 

@@ -36,7 +36,7 @@ data_label:
 	(Assignment | Assignment_2d_ex | Assignment_3d_ex | Assignment_4d_ex) W1_LA W2_LA W3_LA? W4_LA?
 	W1_Hz_LA? W2_Hz_LA? W3_Hz_LA? W4_Hz_LA?
 	Dev_w1_LA? Dev_w2_LA? Dev_w3_LA? Dev_w4_LA?
-	(Dummy_H_LA | Height_LA | Volume_LA)? (Dummy_H_LA | Height_LA | Volume_LA)? S_N_LA?
+	(Dummy_H_LA? Height_LA | Volume_LA)? (Dummy_H_LA? Height_LA | Volume_LA)? Dummy_Rms_LA? S_N_LA?
 	Lw1_Hz_LA? Lw2_Hz_LA? Lw3_Hz_LA? Lw4_Hz_LA?
 	Atom1_LA? Atom2_LA? Atom3_LA? Atom4_LA? Distance_LA? Note_LA? RETURN_LA RETURN?;
 //	(peak_2d+ | peak_3d+ | peak_4d+);

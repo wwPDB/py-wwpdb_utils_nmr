@@ -44,6 +44,9 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
     __has_dev = False
     __has_height = False
     __has_volume = False
+    __has_rms = False
+    __has_dummy_height = False
+    __has_s_n = False
     __has_lw_hz = False
     __has_note = False
 
@@ -103,6 +106,18 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__has_volume = False
         if ctx.Volume_LA():
             self.__has_volume = True
+
+        self.__has_rms = False
+        if ctx.Dummy_Rms_LA():
+            self.__has_rms = True
+
+        self.__has_dummy_height = False
+        if ctx.Dummy_H_LA():
+            self.__has_dummy_height = True
+
+        self.__has_s_n = False
+        if ctx.S_N_LA():
+            self.__has_s_n = True
 
         self.__has_lw_hz = False
         if ctx.Lw2_Hz_LA():
@@ -171,6 +186,14 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                     y_dev = self.numberSelection[offset]
                     offset += 1
 
+            found_volume = False
+            if self.__has_volume and self.__has_real_vol\
+               and any(self.originalNumberSelection[_offset] == self.__real_vol for _offset in range(offset, len(self.originalNumberSelection))):
+                found_volume = True
+
+            if self.__has_dummy_height and found_volume:
+                offset += 1
+
             height = volume = None
             if self.__has_height and len(self.originalNumberSelection) > offset:
                 height = self.originalNumberSelection[offset]
@@ -183,6 +206,12 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                 else:
                     volume = self.originalNumberSelection[offset]
                     offset += 1
+
+            if self.__has_rms and found_volume:
+                offset += 1
+
+            if self.__has_s_n:
+                offset += 1
 
             x_lw_hz = y_lw_hz = None
             if self.__has_lw_hz:
@@ -297,6 +326,14 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                     z_dev = self.numberSelection[offset]
                     offset += 1
 
+            found_volume = False
+            if self.__has_volume and self.__has_real_vol\
+               and any(self.originalNumberSelection[_offset] == self.__real_vol for _offset in range(offset, len(self.originalNumberSelection))):
+                found_volume = True
+
+            if self.__has_dummy_height and found_volume:
+                offset += 1
+
             height = volume = None
             if self.__has_height and len(self.originalNumberSelection) > offset:
                 height = self.originalNumberSelection[offset]
@@ -309,6 +346,12 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                 else:
                     volume = self.originalNumberSelection[offset]
                     offset += 1
+
+            if self.__has_rms and found_volume:
+                offset += 1
+
+            if self.__has_s_n:
+                offset += 1
 
             x_lw_hz = y_lw_hz = z_lw_hz = None
             if self.__has_lw_hz:
@@ -434,6 +477,14 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                     a_dev = self.numberSelection[offset]
                     offset += 1
 
+            found_volume = False
+            if self.__has_volume and self.__has_real_vol\
+               and any(self.originalNumberSelection[_offset] == self.__real_vol for _offset in range(offset, len(self.originalNumberSelection))):
+                found_volume = True
+
+            if self.__has_dummy_height and found_volume:
+                offset += 1
+
             height = volume = None
             if self.__has_height and len(self.originalNumberSelection) > offset:
                 height = self.originalNumberSelection[offset]
@@ -446,6 +497,12 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                 else:
                     volume = self.originalNumberSelection[offset]
                     offset += 1
+
+            if self.__has_rms and found_volume:
+                offset += 1
+
+            if self.__has_s_n:
+                offset += 1
 
             x_lw_hz = y_lw_hz = z_lw_hz = a_lw_hz = None
             if self.__has_lw_hz:

@@ -46,6 +46,9 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
     __has_dev = False
     __has_height = False
     __has_volume = False
+    __has_rms = False
+    __has_dummy_height = False
+    __has_s_n = False
     __has_lw_hz = False
     __has_note = False
 
@@ -103,6 +106,18 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
         if ctx.Volume_LA():
             self.__has_volume = True
 
+        self.__has_rms = False
+        if ctx.Dummy_Rms_LA():
+            self.__has_rms = True
+
+        self.__has_dummy_height = False
+        if ctx.Dummy_H_LA():
+            self.__has_dummy_height = True
+
+        self.__has_s_n = False
+        if ctx.S_N_LA():
+            self.__has_s_n = True
+
         self.__has_lw_hz = False
         if ctx.Lw2_Hz_LA():
             self.__has_lw_hz = True
@@ -141,6 +156,18 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__has_volume = False
         if ctx.Volume_LA():
             self.__has_volume = True
+
+        self.__has_rms = False
+        if ctx.Dummy_Rms_LA():
+            self.__has_rms = True
+
+        self.__has_dummy_height = False
+        if ctx.Dummy_H_LA():
+            self.__has_dummy_height = True
+
+        self.__has_s_n = False
+        if ctx.S_N_LA():
+            self.__has_s_n = True
 
         self.__has_note = False
         if ctx.Note_LA():
@@ -206,16 +233,29 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                     offset += 1
 
             height = volume = None
+            found_volume = False
             if self.__has_volume and len(self.originalNumberSelection) > offset:
                 if self.__has_real_vol:
                     volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
                     if volume == self.originalNumberSelection[offset]:
+                        found_volume = True
                         offset += 1
                 else:
                     volume = self.originalNumberSelection[offset]
+                    found_volume = True
                     offset += 1
+
+            if self.__has_rms and found_volume:
+                offset += 1
+
+            if self.__has_dummy_height and found_volume:
+                offset += 1
+
             if self.__has_height and len(self.originalNumberSelection) > offset:
                 height = self.originalNumberSelection[offset]
+                offset += 1
+
+            if self.__has_s_n:
                 offset += 1
 
             x_lw_hz = y_lw_hz = None
@@ -332,16 +372,29 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                     offset += 1
 
             height = volume = None
+            found_volume = False
             if self.__has_volume and len(self.originalNumberSelection) > offset:
                 if self.__has_real_vol:
                     volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
                     if volume == self.originalNumberSelection[offset]:
+                        found_volume = True
                         offset += 1
                 else:
                     volume = self.originalNumberSelection[offset]
+                    found_volume = True
                     offset += 1
+
+            if self.__has_rms and found_volume:
+                offset += 1
+
+            if self.__has_dummy_height and found_volume:
+                offset += 1
+
             if self.__has_height and len(self.originalNumberSelection) > offset:
                 height = self.originalNumberSelection[offset]
+                offset += 1
+
+            if self.__has_s_n:
                 offset += 1
 
             x_lw_hz = y_lw_hz = z_lw_hz = None
@@ -469,16 +522,29 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                     offset += 1
 
             height = volume = None
+            found_volume = False
             if self.__has_volume and len(self.originalNumberSelection) > offset:
                 if self.__has_real_vol:
                     volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
                     if volume == self.originalNumberSelection[offset]:
+                        found_volume = True
                         offset += 1
                 else:
                     volume = self.originalNumberSelection[offset]
+                    found_volume = True
                     offset += 1
+
+            if self.__has_rms and found_volume:
+                offset += 1
+
+            if self.__has_dummy_height and found_volume:
+                offset += 1
+
             if self.__has_height and len(self.originalNumberSelection) > offset:
                 height = self.originalNumberSelection[offset]
+                offset += 1
+
+            if self.__has_s_n:
                 offset += 1
 
             x_lw_hz = y_lw_hz = z_lw_hz = a_lw_hz = None
@@ -598,16 +664,29 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                             offset += 1
 
                     height = volume = None
+                    found_volume = False
                     if self.__has_volume and len(self.originalNumberSelection) > offset:
                         if self.__has_real_vol:
                             volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
                             if volume == self.originalNumberSelection[offset]:
+                                found_volume = True
                                 offset += 1
                         else:
                             volume = self.originalNumberSelection[offset]
+                            found_volume = True
                             offset += 1
+
+                    if self.__has_rms and found_volume:
+                        offset += 1
+
+                    if self.__has_dummy_height and found_volume:
+                        offset += 1
+
                     if self.__has_height and len(self.originalNumberSelection) > offset:
                         height = self.originalNumberSelection[offset]
+                        offset += 1
+
+                    if self.__has_s_n:
                         offset += 1
 
                     x_lw_hz = y_lw_hz = None
@@ -691,16 +770,29 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                             offset += 1
 
                     height = volume = None
+                    found_volume = False
                     if self.__has_volume and len(self.originalNumberSelection) > offset:
                         if self.__has_real_vol:
                             volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
                             if volume == self.originalNumberSelection[offset]:
+                                found_volume = True
                                 offset += 1
                         else:
                             volume = self.originalNumberSelection[offset]
+                            found_volume = True
                             offset += 1
+
+                    if self.__has_rms and found_volume:
+                        offset += 1
+
+                    if self.__has_dummy_height and found_volume:
+                        offset += 1
+
                     if self.__has_height and len(self.originalNumberSelection) > offset:
                         height = self.originalNumberSelection[offset]
+                        offset += 1
+
+                    if self.__has_s_n:
                         offset += 1
 
                     x_lw_hz = y_lw_hz = z_lw_hz = None
@@ -795,16 +887,29 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                             offset += 1
 
                     height = volume = None
+                    found_volume = False
                     if self.__has_volume and len(self.originalNumberSelection) > offset:
                         if self.__has_real_vol:
                             volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
                             if volume == self.originalNumberSelection[offset]:
+                                found_volume = True
                                 offset += 1
                         else:
                             volume = self.originalNumberSelection[offset]
+                            found_volume = True
                             offset += 1
+
+                    if self.__has_rms and found_volume:
+                        offset += 1
+
+                    if self.__has_dummy_height and found_volume:
+                        offset += 1
+
                     if self.__has_height and len(self.originalNumberSelection) > offset:
                         height = self.originalNumberSelection[offset]
+                        offset += 1
+
+                    if self.__has_s_n:
                         offset += 1
 
                     x_lw_hz = y_lw_hz = z_lw_hz = a_lw_hz = None

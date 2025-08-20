@@ -242,6 +242,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 found_volume = True
 
             if self.__has_dummy_height and found_volume:
+                if not self.__has_height and len(self.originalNumberSelection) > offset:
+                    height = self.originalNumberSelection[offset]
+                    if height in ("0", "1"):
+                        height = None
                 offset += 1
 
             height = volume = None
@@ -382,6 +386,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 found_volume = True
 
             if self.__has_dummy_height and found_volume:
+                if not self.__has_height and len(self.originalNumberSelection) > offset:
+                    height = self.originalNumberSelection[offset]
+                    if height in ("0", "1"):
+                        height = None
                 offset += 1
 
             height = volume = None
@@ -533,6 +541,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                 found_volume = True
 
             if self.__has_dummy_height and found_volume:
+                if not self.__has_height and len(self.originalNumberSelection) > offset:
+                    height = self.originalNumberSelection[offset]
+                    if height in ("0", "1"):
+                        height = None
                 offset += 1
 
             height = volume = None
@@ -676,6 +688,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         found_volume = True
 
                     if self.__has_dummy_height and found_volume:
+                        if not self.__has_height and len(self.originalNumberSelection) > offset:
+                            height = self.originalNumberSelection[offset]
+                            if height in ("0", "1"):
+                                height = None
                         offset += 1
 
                     height = volume = None
@@ -783,6 +799,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         found_volume = True
 
                     if self.__has_dummy_height and found_volume:
+                        if not self.__has_height and len(self.originalNumberSelection) > offset:
+                            height = self.originalNumberSelection[offset]
+                            if height in ("0", "1"):
+                                height = None
                         offset += 1
 
                     height = volume = None
@@ -901,6 +921,10 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                         found_volume = True
 
                     if self.__has_dummy_height and found_volume:
+                        if not self.__has_height and len(self.originalNumberSelection) > offset:
+                            height = self.originalNumberSelection[offset]
+                            if height in ("0", "1"):
+                                height = None
                         offset += 1
 
                     height = volume = None

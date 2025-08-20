@@ -54,8 +54,8 @@ def serializedATN():
         0,0,74,75,1,0,0,0,75,77,1,0,0,0,76,78,5,37,0,0,77,76,1,0,0,0,77,
         78,1,0,0,0,78,80,1,0,0,0,79,81,5,40,0,0,80,79,1,0,0,0,80,81,1,0,
         0,0,81,83,1,0,0,0,82,84,5,41,0,0,83,82,1,0,0,0,83,84,1,0,0,0,84,
-        89,1,0,0,0,85,87,5,38,0,0,86,85,1,0,0,0,86,87,1,0,0,0,87,88,1,0,
-        0,0,88,90,5,39,0,0,89,86,1,0,0,0,89,90,1,0,0,0,90,92,1,0,0,0,91,
+        86,1,0,0,0,85,87,5,38,0,0,86,85,1,0,0,0,86,87,1,0,0,0,87,89,1,0,
+        0,0,88,90,5,39,0,0,89,88,1,0,0,0,89,90,1,0,0,0,90,92,1,0,0,0,91,
         93,5,42,0,0,92,91,1,0,0,0,92,93,1,0,0,0,93,95,1,0,0,0,94,96,5,26,
         0,0,95,94,1,0,0,0,95,96,1,0,0,0,96,98,1,0,0,0,97,99,5,27,0,0,98,
         97,1,0,0,0,98,99,1,0,0,0,99,101,1,0,0,0,100,102,5,28,0,0,101,100,
@@ -80,8 +80,8 @@ def serializedATN():
         1,0,0,0,156,158,1,0,0,0,157,159,5,37,0,0,158,157,1,0,0,0,158,159,
         1,0,0,0,159,161,1,0,0,0,160,162,5,40,0,0,161,160,1,0,0,0,161,162,
         1,0,0,0,162,164,1,0,0,0,163,165,5,41,0,0,164,163,1,0,0,0,164,165,
-        1,0,0,0,165,170,1,0,0,0,166,168,5,38,0,0,167,166,1,0,0,0,167,168,
-        1,0,0,0,168,169,1,0,0,0,169,171,5,39,0,0,170,167,1,0,0,0,170,171,
+        1,0,0,0,165,167,1,0,0,0,166,168,5,38,0,0,167,166,1,0,0,0,167,168,
+        1,0,0,0,168,170,1,0,0,0,169,171,5,39,0,0,170,169,1,0,0,0,170,171,
         1,0,0,0,171,173,1,0,0,0,172,174,5,42,0,0,173,172,1,0,0,0,173,174,
         1,0,0,0,174,176,1,0,0,0,175,177,5,26,0,0,176,175,1,0,0,0,176,177,
         1,0,0,0,177,179,1,0,0,0,178,180,5,27,0,0,179,178,1,0,0,0,179,180,
@@ -457,6 +457,9 @@ class SparkyRPKParser ( Parser ):
         def Dummy_Rms_LA(self):
             return self.getToken(SparkyRPKParser.Dummy_Rms_LA, 0)
 
+        def Dummy_H_LA(self):
+            return self.getToken(SparkyRPKParser.Dummy_H_LA, 0)
+
         def Height_LA(self):
             return self.getToken(SparkyRPKParser.Height_LA, 0)
 
@@ -495,9 +498,6 @@ class SparkyRPKParser ( Parser ):
 
         def RETURN(self):
             return self.getToken(SparkyRPKParser.RETURN, 0)
-
-        def Dummy_H_LA(self):
-            return self.getToken(SparkyRPKParser.Dummy_H_LA, 0)
 
         def getRuleIndex(self):
             return SparkyRPKParser.RULE_data_label
@@ -627,18 +627,18 @@ class SparkyRPKParser ( Parser ):
                 self.match(SparkyRPKParser.Dummy_Rms_LA)
 
 
+            self.state = 86
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if _la==38:
+                self.state = 85
+                self.match(SparkyRPKParser.Dummy_H_LA)
+
+
             self.state = 89
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==38 or _la==39:
-                self.state = 86
-                self._errHandler.sync(self)
-                _la = self._input.LA(1)
-                if _la==38:
-                    self.state = 85
-                    self.match(SparkyRPKParser.Dummy_H_LA)
-
-
+            if _la==39:
                 self.state = 88
                 self.match(SparkyRPKParser.Height_LA)
 
@@ -802,6 +802,9 @@ class SparkyRPKParser ( Parser ):
         def Dummy_Rms_LA(self):
             return self.getToken(SparkyRPKParser.Dummy_Rms_LA, 0)
 
+        def Dummy_H_LA(self):
+            return self.getToken(SparkyRPKParser.Dummy_H_LA, 0)
+
         def Height_LA(self):
             return self.getToken(SparkyRPKParser.Height_LA, 0)
 
@@ -835,9 +838,6 @@ class SparkyRPKParser ( Parser ):
             else:
                 return self.getTypedRuleContext(SparkyRPKParser.Peak_wo_assignContext,i)
 
-
-        def Dummy_H_LA(self):
-            return self.getToken(SparkyRPKParser.Dummy_H_LA, 0)
 
         def getRuleIndex(self):
             return SparkyRPKParser.RULE_data_label_wo_assign
@@ -960,18 +960,18 @@ class SparkyRPKParser ( Parser ):
                 self.match(SparkyRPKParser.Dummy_Rms_LA)
 
 
+            self.state = 167
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if _la==38:
+                self.state = 166
+                self.match(SparkyRPKParser.Dummy_H_LA)
+
+
             self.state = 170
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==38 or _la==39:
-                self.state = 167
-                self._errHandler.sync(self)
-                _la = self._input.LA(1)
-                if _la==38:
-                    self.state = 166
-                    self.match(SparkyRPKParser.Dummy_H_LA)
-
-
+            if _la==39:
                 self.state = 169
                 self.match(SparkyRPKParser.Height_LA)
 

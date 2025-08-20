@@ -179,7 +179,6 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
     def enterPeak_list_2d(self, ctx: XeasyPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
         self.num_of_dim = 2
         self.initSpectralDim()
-        print('enter')
         self.fillSpectralDimWithLabels()
 
     # Exit a parse tree produced by XeasyPKParser#peak_list_2d.

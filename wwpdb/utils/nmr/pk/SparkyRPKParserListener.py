@@ -249,6 +249,10 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                 offset += 1
 
             if self.__has_dummy_height and found_volume:
+                if not self.__has_height and len(self.originalNumberSelection) > offset:
+                    height = self.originalNumberSelection[offset]
+                    if height in ("0", "1"):
+                        height = None
                 offset += 1
 
             if self.__has_height and len(self.originalNumberSelection) > offset:
@@ -388,6 +392,10 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                 offset += 1
 
             if self.__has_dummy_height and found_volume:
+                if not self.__has_height and len(self.originalNumberSelection) > offset:
+                    height = self.originalNumberSelection[offset]
+                    if height in ("0", "1"):
+                        height = None
                 offset += 1
 
             if self.__has_height and len(self.originalNumberSelection) > offset:
@@ -538,6 +546,10 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                 offset += 1
 
             if self.__has_dummy_height and found_volume:
+                if not self.__has_height and len(self.originalNumberSelection) > offset:
+                    height = self.originalNumberSelection[offset]
+                    if height in ("0", "1"):
+                        height = None
                 offset += 1
 
             if self.__has_height and len(self.originalNumberSelection) > offset:
@@ -680,6 +692,10 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                         offset += 1
 
                     if self.__has_dummy_height and found_volume:
+                        if not self.__has_height and len(self.originalNumberSelection) > offset:
+                            height = self.originalNumberSelection[offset]
+                            if height in ("0", "1"):
+                                height = None
                         offset += 1
 
                     if self.__has_height and len(self.originalNumberSelection) > offset:
@@ -786,6 +802,10 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                         offset += 1
 
                     if self.__has_dummy_height and found_volume:
+                        if not self.__has_height and len(self.originalNumberSelection) > offset:
+                            height = self.originalNumberSelection[offset]
+                            if height in ("0", "1"):
+                                height = None
                         offset += 1
 
                     if self.__has_height and len(self.originalNumberSelection) > offset:
@@ -903,6 +923,10 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                         offset += 1
 
                     if self.__has_dummy_height and found_volume:
+                        if not self.__has_height and len(self.originalNumberSelection) > offset:
+                            height = self.originalNumberSelection[offset]
+                            if height in ("0", "1"):
+                                height = None
                         offset += 1
 
                     if self.__has_height and len(self.originalNumberSelection) > offset:

@@ -3068,6 +3068,8 @@ class BasePKParserListener():
 
         details_col = loop.tags.index('Details')
 
+        del_idx_list = []
+
         for dim_id_1, dim_id_2 in onebond_transfers:
 
             if use_peak_row_format:
@@ -3105,6 +3107,10 @@ class BasePKParserListener():
                         if any(b for b in self.ccU.lastBonds
                                if ((b[self.ccU.ccbAtomId1] in _atom_ids and b[self.ccU.ccbAtomId2] in _atom_ids2)
                                    or (b[self.ccU.ccbAtomId1] in _atom_ids2 and b[self.ccU.ccbAtomId2] in _atom_ids))):
+                            continue
+
+                        if self.software_name == 'PIPP':
+                            del_idx_list.append(idx)
                             continue
 
                         _atom_id, _atom_id2 = _atom_ids[0], _atom_ids2[0]
@@ -3655,6 +3661,10 @@ class BasePKParserListener():
                                or (b[self.ccU.ccbAtomId1] in _atom_ids2 and b[self.ccU.ccbAtomId2] in _atom_ids))):
                             continue
 
+                        if self.software_name == 'PIPP':
+                            del_idx_list.extend(list(range(idx - num_of_dim + 1, idx + 1)))
+                            continue
+
                         _atom_id, _atom_id2 = _atom_ids[0], _atom_ids2[0]
 
                         _atom_id2_ = self.ccU.getBondedAtoms(comp_id, _atom_id, exclProton=_atom_id[0] in protonBeginCode, onlyProton=_atom_id[0] not in protonBeginCode)
@@ -4129,6 +4139,10 @@ class BasePKParserListener():
                         if is_reparsable:
                             self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
                             is_reparsable = False
+
+        if len(del_idx_list) > 0:
+            for _idx in reversed(del_idx_list):
+                del loop.data[_idx]
 
     def __remediatePeakAssignmentForJcouplingTransfer(self, num_of_dim: int, jcoupling_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
 

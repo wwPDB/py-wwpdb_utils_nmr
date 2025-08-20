@@ -22,6 +22,8 @@ Num_of_peaks:		'#' ~[\t\r\n]* 'Number of peaks' -> pushMode(NUM_OF_PEAK_MODE);
 
 Format:			'#FORMAT' -> pushMode(FORMAT_MODE);
 
+XEASY_WO_FORMAT:	'#' ~[\r\n]* 'xeasy' [234] 'D' ~[\r\n]* [\r\n]+ -> channel(HIDDEN);
+
 Iname:			'#INAME' -> pushMode(INAME_MODE);
 
 Cyana_format:		'#CYANAFORMAT' -> pushMode(CYANA_FORMAT_MODE);

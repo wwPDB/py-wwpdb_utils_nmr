@@ -31,7 +31,7 @@ SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
-fragment ASS_EACH_AXIS:	SIMPLE_NAME ([:;&/,.()] SIMPLE_NAME)*;
+fragment ASS_EACH_AXIS:	SIMPLE_NAME ([:;&/,.()] SIMPLE_NAME [&"]*)*;
 
 Assignment_2d_ex:	ASS_EACH_AXIS '-' ASS_EACH_AXIS;
 Assignment_3d_ex:	ASS_EACH_AXIS '-' ASS_EACH_AXIS '-' ASS_EACH_AXIS;

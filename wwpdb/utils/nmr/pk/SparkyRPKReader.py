@@ -225,6 +225,12 @@ class SparkyRPKReader:
 
 
 if __name__ == "__main__":
+    reader = SparkyRPKReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6kfj/bmr36268/work/data/D_1300012879_nmr-peaks-upload_P1.dat.V2',
+                     '../../tests-nmr/mock-data-remediation/6kfj/6kfj.cif')
+
     reader = SparkyRPKReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\

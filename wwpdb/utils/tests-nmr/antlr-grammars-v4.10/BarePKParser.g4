@@ -33,6 +33,9 @@ bare_pk:
 	rev_raw_format_2d |
 	rev_raw_format_3d |
 	rev_raw_format_4d |
+	raw_format_wo_label_2d |
+	raw_format_wo_label_3d |
+	raw_format_wo_label_4d
 	RETURN
 	)*
 	EOF;
@@ -113,6 +116,15 @@ rev_raw_format_3d:
 
 rev_raw_format_4d:
 	Peak A_ppm Z_ppm Y_ppm X_ppm Amplitude? Volume? Label? Comment? RETURN_FO
+	peak_list_raw_4d+;
+
+raw_format_wo_label_2d:
+	peak_list_raw_2d+;
+
+raw_format_wo_label_3d:
+	peak_list_raw_3d+;
+
+raw_format_wo_label_4d:
 	peak_list_raw_4d+;
 
 peak_list_raw_2d:

@@ -232,6 +232,12 @@ class BarePKReader:
 if __name__ == "__main__":
     reader = BarePKReader(True)
     reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/8ep5/bmr31045/work/data/D_1000268785_nmr-peaks-upload_P1.dat.V1',
+                     '../../tests-nmr/mock-data-remediation/8ep5/8ep5.cif')
+
+    reader = BarePKReader(True)
+    reader.setDebugMode(True)
     reader.setInternalMode(True)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/6m6j/bmr36325/work/data/D_1300010166_nmr-peaks-upload_P1.dat.V2',

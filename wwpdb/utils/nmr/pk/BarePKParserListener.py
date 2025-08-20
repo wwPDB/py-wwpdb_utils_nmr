@@ -967,6 +967,42 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
     def exitRev_raw_format_4d(self, ctx: BarePKParser.Rev_raw_format_4dContext):  # pylint: disable=unused-argument
         pass
 
+        # Enter a parse tree produced by BarePKParser#raw_format_wo_label_2d.
+    def enterRaw_format_wo_label_2d(self, ctx: BarePKParser.Raw_format_wo_label_2dContext):  # pylint: disable=unused-argument
+        self.num_of_dim = 2
+        self.initSpectralDim()
+
+        self.__position_order = True
+        self.__has_amplitude = True
+
+    # Exit a parse tree produced by BarePKParser#raw_format_wo_label_2d.
+    def exitRaw_format_wo_label_2d(self, ctx: BarePKParser.Raw_format_wo_label_2dContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BarePKParser#raw_format_wo_label_3d.
+    def enterRaw_format_wo_label_3d(self, ctx: BarePKParser.Raw_format_wo_label_3dContext):  # pylint: disable=unused-argument
+        self.num_of_dim = 3
+        self.initSpectralDim()
+
+        self.__position_order = True
+        self.__has_amplitude = True
+
+    # Exit a parse tree produced by BarePKParser#raw_format_wo_label_3d.
+    def exitRaw_format_wo_label_3d(self, ctx: BarePKParser.Raw_format_wo_label_3dContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BarePKParser#raw_format_wo_label_4d.
+    def enterRaw_format_wo_label_4d(self, ctx: BarePKParser.Raw_format_wo_label_4dContext):  # pylint: disable=unused-argument
+        self.num_of_dim = 4
+        self.initSpectralDim()
+
+        self.__position_order = True
+        self.__has_amplitude = True
+
+    # Exit a parse tree produced by BarePKParser#raw_format_wo_label_4d.
+    def exitRaw_format_wo_label_4d(self, ctx: BarePKParser.Raw_format_wo_label_4dContext):  # pylint: disable=unused-argument
+        pass
+
     # Enter a parse tree produced by BarePKParser#peak_list_raw_2d.
     def enterPeak_list_raw_2d(self, ctx: BarePKParser.Peak_list_raw_2dContext):  # pylint: disable=unused-argument
         self.peaks2D += 1

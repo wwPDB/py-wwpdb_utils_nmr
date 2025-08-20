@@ -1345,6 +1345,39 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
             except (ValueError, TypeError):
                 pass
 
+    if '1Dim' in header and '2Dim' in header and 'Intensity' in header:  # 8ep5
+        if '3Dim' not in header and '4Dim' not in header\
+           and len_col > 3:
+            try:
+                int(col[0])
+                float(col[1])
+                float(col[2])
+                return 'nm-pea-bar' if asCode else 'unknown'
+            except (ValueError, TypeError):
+                pass
+
+        elif '4Dim' not in header\
+                and len_col > 4:
+            try:
+                int(col[0])
+                float(col[1])
+                float(col[2])
+                float(col[3])
+                return 'nm-pea-bar' if asCode else 'unknown'
+            except (ValueError, TypeError):
+                pass
+
+        elif len_col > 5:
+            try:
+                int(col[0])
+                float(col[1])
+                float(col[2])
+                float(col[3])
+                float(col[4])
+                return 'nm-pea-bar' if asCode else 'unknown'
+            except (ValueError, TypeError):
+                pass
+
     if 'label' in header and 'data' in header and 'dataset' not in header\
        and 'sw' in col and 'sf' in col:
         return 'nm-pea-vie' if asCode else 'NMRView'  # header broken NMRVIEW
@@ -1659,11 +1692,11 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
                 return val.count(',')
 
     if file_format == 'unknown':
-        if 'F4' in line or 'f4' in line:
+        if 'F4' in line or 'f4' in line or '4Dim' in line:
             return 4
-        if 'F3' in line or 'f3' in line:
+        if 'F3' in line or 'f3' in line or '3Dim' in line:
             return 3
-        if 'F2' in line or 'f2' in line:
+        if 'F2' in line or 'f2' in line or '2Dim' in line:
             return 2
 
     return None

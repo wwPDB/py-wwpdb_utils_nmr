@@ -230,6 +230,19 @@ class SparkyNPKReader:
 
 
 if __name__ == "__main__":
+    reader = SparkyNPKReader(False)
+    reader.setDebugMode(False)
+    reader.setInternalMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6k3y/bmr36253/work/data/D_1300010070_nmr-peaks-upload_P1.dat.V1',
+                     '../../tests-nmr/mock-data-remediation/6k3y/6k3y.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = SparkyNPKReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.setInternalMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6k3y/bmr36253/work/data/D_1300010070_nmr-peaks-upload_P1.dat.V1',
+                 '../../tests-nmr/mock-data-remediation/6k3y/6k3y.cif')
+
     reader = SparkyNPKReader(True)
     reader.setDebugMode(True)
     reader.setInternalMode(True)

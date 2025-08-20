@@ -1182,7 +1182,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
     """ Return peak list format for a given input.
     """
 
-    col = re.split(r'[\s\t]+', string)
+    col = re.split(r'[\s\t]+', string.strip())
     string = ' '.join(col)
     len_col = len(col)
 
@@ -1432,7 +1432,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
                 if file_type in ('Sparky', 'nm-pea-spa') and idx < 20 and header is not None\
                    and 'Assignment' in header and 'Shift (ppm)' in header:
 
-                    col = re.split(r'[\s\t]+', line)
+                    col = re.split(r'[\s\t]+', line.strip())
                     len_col = len(col)
 
                     if sparky_assignment_pattern.match(col[0]):
@@ -1538,7 +1538,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
                 if file_type in ('Sparky', 'nm-pea-spa') and header is None\
                    and ' w1 ' not in line and ' w2' not in line:
 
-                    col = re.split(r'[\s\t]+', line)
+                    col = re.split(r'[\s\t]+', line.strip())
                     len_col = len(col)
 
                     if sparky_assignment_pattern.match(col[0]):
@@ -1589,7 +1589,7 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
     """ Return number of dimensions of peak list of given format and input.
     """
 
-    col = re.split(r'[\s\t]+', line)
+    col = re.split(r'[\s\t]+', line.strip())
     len_col = len(col)
 
     if file_format == 'XEASY':

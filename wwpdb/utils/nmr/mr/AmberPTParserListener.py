@@ -220,6 +220,10 @@ class AmberPTParserListener(ParseTreeListener):
         self.capInfoStatements = 0
         self.capInfo2Statements = 0
         self.chargeStatements = 0
+        self.cmapCountStatements = 0
+        self.cmapResolutionStatements = 0
+        self.cmapParameterStatements = 0
+        self.cmapIndexStatements = 0
         self.dihedralForceConstantStatements = 0
         self.dihedralPeriodicityStatements = 0
         self.dihedralPhaseStatements = 0
@@ -1438,6 +1442,46 @@ class AmberPTParserListener(ParseTreeListener):
             return
         self.chargeStatements -= 1
 
+    # Enter a parse tree produced by AmberPTParser#cmap_count_statement.
+    def enterCmap_count_statement(self, ctx: AmberPTParser.Cmap_count_statementContext):  # pylint: disable=unused-argument
+        self.cmapCountStatements += 1
+
+    # Exit a parse tree produced by AmberPTParser#cmap_count_statement.
+    def exitCmap_count_statement(self, ctx: AmberPTParser.Cmap_count_statementContext):
+        if ctx.Integer(0):
+            return
+        self.cmapCountStatements -= 1
+
+    # Enter a parse tree produced by AmberPTParser#cmap_resolution_statement.
+    def enterCmap_resolution_statement(self, ctx: AmberPTParser.Cmap_resolution_statementContext):  # pylint: disable=unused-argument
+        self.cmapResolutionStatements += 1
+
+    # Exit a parse tree produced by AmberPTParser#cmap_resolution_statement.
+    def exitCmap_resolution_statement(self, ctx: AmberPTParser.Cmap_resolution_statementContext):
+        if ctx.Integer(0):
+            return
+        self.cmapResolutionStatements -= 1
+
+    # Enter a parse tree produced by AmberPTParser#cmap_parameter_statement.
+    def enterCmap_parameter_statement(self, ctx: AmberPTParser.Cmap_parameter_statementContext):  # pylint: disable=unused-argument
+        self.cmapParameterStatements += 1
+
+    # Exit a parse tree produced by AmberPTParser#cmap_parameter_statement.
+    def exitCmap_parameter_statement(self, ctx: AmberPTParser.Cmap_parameter_statementContext):
+        if ctx.Real(0):
+            return
+        self.cmapParameterStatements -= 1
+
+    # Enter a parse tree produced by AmberPTParser#cmap_index_statement.
+    def enterCmap_index_statement(self, ctx: AmberPTParser.Cmap_index_statementContext):  # pylint: disable=unused-argument
+        self.cmapIndexStatements += 1
+
+    # Exit a parse tree produced by AmberPTParser#cmap_index_statement.
+    def exitCmap_index_statement(self, ctx: AmberPTParser.Cmap_index_statementContext):
+        if ctx.Integer(0):
+            return
+        self.cmapIndexStatements -= 1
+
     # Enter a parse tree produced by AmberPTParser#dihedral_force_constant_statement.
     def enterDihedral_force_constant_statement(self, ctx: AmberPTParser.Dihedral_force_constant_statementContext):  # pylint: disable=unused-argument
         self.dihedralForceConstantStatements += 1
@@ -1820,6 +1864,10 @@ class AmberPTParserListener(ParseTreeListener):
                           'cap_info': self.capInfoStatements,
                           'cap_info2': self.capInfo2Statements,
                           'charge': self.chargeStatements,
+                          'cmap_count': self.cmapCountStatements,
+                          'cmap_resolution': self.cmapResolutionStatements,
+                          'cmap_parameter': self.cmapParameterStatements,
+                          'cmap_index': self.cmapIndexStatements,
                           'dihedral_force_constant': self.dihedralForceConstantStatements,
                           'dihedral_periodicity': self.dihedralPeriodicityStatements,
                           'dihedral_phase': self.dihedralPhaseStatements,

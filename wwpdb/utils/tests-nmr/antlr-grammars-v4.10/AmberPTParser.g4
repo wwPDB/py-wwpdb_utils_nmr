@@ -38,6 +38,10 @@ amber_pt:
 	cap_info_statement |
 	cap_info2_statement |
 	charge_statement |
+	cmap_count_statement |
+	cmap_resolution_statement |
+	cmap_parameter_statement |
+	cmap_index_statement |
 	dihedral_force_constant_statement |
 	dihedral_periodicity_statement |
 	dihedral_phase_statement |
@@ -165,6 +169,28 @@ charge_statement:
 	CHARGE
 	format_function
 	Real* (FLAG_EA | EOF);
+
+cmap_count_statement:
+	CMAP_COUNT
+	format_function
+	Integer* (FLAG_IA | EOF);
+
+cmap_resolution_statement:
+	CMAP_RESOLUTION
+	format_function
+	Integer* (FLAG_IA | EOF);
+
+cmap_parameter_statement:
+	(CMAP_PARAMETER_01 | CMAP_PARAMETER_02 | CMAP_PARAMETER_03 | CMAP_PARAMETER_04 | CMAP_PARAMETER_05 |
+	 CMAP_PARAMETER_06 | CMAP_PARAMETER_07 | CMAP_PARAMETER_08 | CMAP_PARAMETER_09 | CMAP_PARAMETER_10 |
+	 CMAP_PARAMETER_11 | CMAP_PARAMETER_12 | CMAP_PARAMETER_13 | CMAP_PARAMETER_14)
+	format_function
+	Real* (FLAG_EA | EOF);
+
+cmap_index_statement:
+	CMAP_INDEX
+	format_function
+	Integer* (FLAG_IA | EOF);
 
 dihedral_force_constant_statement:
 	DIHEDRAL_FORCE_CONSTANT

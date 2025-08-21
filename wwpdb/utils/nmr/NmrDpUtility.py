@@ -249,7 +249,7 @@ from munkres import Munkres
 from operator import itemgetter
 from striprtf.striprtf import rtf_to_text
 from typing import Any, IO, List, Set, Tuple, Union, Optional
-from datetime import datetime
+from datetime import (datetime, timedelta)
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 from wwpdb.utils.align.alignlib import PairwiseAlign  # pylint: disable=no-name-in-module
@@ -59661,6 +59661,12 @@ class NmrDpUtility:
 
         sf_list = master_entry.get_saveframes_by_category(sf_category)
 
+        if self.__internal_mode:
+            today = datetime.today()
+            today_weekday = today.weekday()
+            days_ahead = (4 - today_weekday) % 7
+            this_friday = today + timedelta(days=days_ahead)
+
         try:
 
             sf = sf_list[0]
@@ -59678,7 +59684,7 @@ class NmrDpUtility:
 
                         row = [None] * len(loop.tags)
                         row[loop.tags.index('Revision_ID')] = last_revision_id + 1
-                        row[loop.tags.index('Creation_date')] = datetime.today().strftime('%Y-%m-%d')
+                        row[loop.tags.index('Creation_date')] = this_friday.strftime('%Y-%m-%d')
                         row[loop.tags.index('Update_record')] = 'Remediation'
                         row[loop.tags.index('Entry_ID')] = self.__entry_id
 
@@ -59712,7 +59718,7 @@ class NmrDpUtility:
 
                             row = [None] * len(loop.tags)
                             row[loop.tags.index('Revision_ID')] = last_revision_id + 1
-                            row[loop.tags.index('Creation_date')] = datetime.today().strftime('%Y-%m-%d')
+                            row[loop.tags.index('Creation_date')] = this_friday.strftime('%Y-%m-%d')
                             row[loop.tags.index('Update_record')] = 'Remediation'
                             row[loop.tags.index('Entry_ID')] = self.__entry_id
 
@@ -59749,7 +59755,7 @@ class NmrDpUtility:
 
                     lp.add_tag(tags)
 
-                    lp.add_data([1, datetime.today().strftime('%Y-%m-%d'), 'Preliminary version', None, self.__entry_id])
+                    lp.add_data([1, this_friday.strftime('%Y-%m-%d'), 'Preliminary version', None, self.__entry_id])
 
                     sf.add_loop(lp)
 

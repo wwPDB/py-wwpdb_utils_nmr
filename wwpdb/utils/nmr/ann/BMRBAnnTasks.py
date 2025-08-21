@@ -2380,8 +2380,11 @@ class BMRBAnnTasks:
 
             if len(update_sf_name) > 0:
                 for k, v in update_sf_name.items():
-                    sf = master_entry.get_saveframe_by_name(k)
-                    sf.name = v
+                    try:
+                        sf = master_entry.get_saveframe_by_name(k)
+                        sf.name = v
+                    except KeyError:
+                        pass
 
         count = len(master_entry.get_saveframes_by_category(sf_category))
         if count > 0:

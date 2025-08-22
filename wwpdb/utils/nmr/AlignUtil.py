@@ -656,6 +656,8 @@ def getRestraintFormatName(fileType: str, ambig: bool = False) -> str:
         return 'ARIA spectral peak list'
     if fileType == 'nm-pea-ccp':
         return 'CCPN spectral peak list'
+    if fileType == 'nm-pea-oli':
+        return 'OLIVIA spectral peak list'
     if fileType == 'nm-pea-pip':
         return 'NMRPIPE spectral peak list'
     if fileType == 'nm-pea-pon':

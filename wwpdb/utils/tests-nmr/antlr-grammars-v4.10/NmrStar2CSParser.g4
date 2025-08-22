@@ -61,6 +61,6 @@ cs_tags:
 cs_data:
 	any+ RETURN;
 
-/* any data expression in peak list */
+/* any data expression in chemical shift list */
 any:	Float | Integer | Simple_name | Double_quote_string | Single_quote_string;
 

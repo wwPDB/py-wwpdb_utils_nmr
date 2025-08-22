@@ -219,6 +219,7 @@
 # 11-Jun-2025  M. Yokochi - reconstruct atom name mapping from revision history and PDB Versioned Archive if possible (DAOTHER-7829, 8905)
 # 25-Jul-2025  M. Yokochi - enable to configure whether to enforce to use _Peak_row_format loop for spectral peak list remediation (DAOTHER-8905, 9785)
 # 06-Aug-2025  M. Yokochi - add support for SCHRODINGER/ASL MR format (DAOTHER-7902, 10172, NMR data remediation)
+# 22-Aug-2025  M. Yokochi - add support for OLIVIA spectral peak list (DAOTHER-8905, 9785)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -395,6 +396,7 @@ try:
     from wwpdb.utils.nmr.pk.AriaPKReader import AriaPKReader
     from wwpdb.utils.nmr.pk.BarePKReader import BarePKReader
     from wwpdb.utils.nmr.pk.CcpnPKReader import CcpnPKReader
+    from wwpdb.utils.nmr.pk.OliviaPKReader import OliviaPKReader
     from wwpdb.utils.nmr.pk.NmrPipePKReader import NmrPipePKReader
     from wwpdb.utils.nmr.pk.PonderosaPKReader import PonderosaPKReader
     from wwpdb.utils.nmr.pk.NmrViewPKReader import NmrViewPKReader
@@ -565,6 +567,7 @@ except ImportError:
     from nmr.pk.AriaPKReader import AriaPKReader
     from nmr.pk.BarePKReader import BarePKReader
     from nmr.pk.CcpnPKReader import CcpnPKReader
+    from nmr.pk.OliviaPKReader import OliviaPKReader
     from nmr.pk.NmrPipePKReader import NmrPipePKReader
     from nmr.pk.PonderosaPKReader import PonderosaPKReader
     from nmr.pk.NmrViewPKReader import NmrViewPKReader
@@ -726,9 +729,10 @@ archival_mr_file_types = ('nmr-star',
                           'nm-res-sch', 'nm-res-syb', 'nm-res-ros', 'nm-res-xpl')
 
 parsable_pk_file_types = ('nm-aux-xea',
-                          'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-pip',
-                          'nm-pea-pon', 'nm-pea-spa', 'nm-pea-sps', 'nm-pea-top',
-                          'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi')
+                          'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-oli',
+                          'nm-pea-pip', 'nm-pea-pon', 'nm-pea-spa', 'nm-pea-sps',
+                          'nm-pea-top', 'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea',
+                          'nm-pea-xwi')
 
 
 def detect_bom(fPath: str, default: str = 'utf-8') -> str:
@@ -1199,6 +1203,9 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
     if 'label' in string and 'dataset' in string and 'sw' in string and 'sf' in string:  # NMRView peak list
         return 'nm-pea-vie' if asCode else 'NMRView'
 
+    if 'TYPEDEF IDX_TBL_' in string or 'TYPEDEF ASS_TBL_' in string:  # OLIVIA
+        return 'nm-pea-oli' if asCode else 'Olivia'
+
     if 'VARS' in string and 'X_PPM' in string and 'Y_PPM' in string:  # NMRPipe peak list
         return 'nm-pea-pip' if asCode else 'NMRPipe'
 
@@ -1596,6 +1603,12 @@ def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: st
         if 'Number of dimensions' in line:
             if col[-1].isdigit():
                 return int(col[-1])
+        if 'xeasy2D' in line:
+            return 2
+        if 'xeasy3D' in line:
+            return 3
+        if 'xeasy4D' in line:
+            return 4
         if line.startswith('#CYANAFORMAT'):
             if all(a.isalpha() for a in col[1]):
                 return len(col[1])
@@ -13305,6 +13318,11 @@ class NmrDpUtility:
                                   self.__ccU, self.__csStat, self.__nefT,
                                   reasons)
             return reader
+        if file_type == 'nm-pea-oli':
+            reader = OliviaPKReader(verbose, self.__lfh, None, None, None, None, None,
+                                    self.__ccU, self.__csStat, self.__nefT,
+                                    reasons)
+            return reader
         if file_type == 'nm-pea-pip':
             reader = NmrPipePKReader(verbose, self.__lfh, None, None, None, None, None,
                                      self.__ccU, self.__csStat, self.__nefT,
@@ -15517,6 +15535,17 @@ class NmrDpUtility:
         if _file_type == 'nm-pea-ccp' and file_type != 'nm-pea-ccp':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-ccp')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if _file_type == 'nm-pea-oli' and file_type != 'nm-pea-oli':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-pea-oli')
 
             is_valid |= _is_valid
             err += _err
@@ -37298,6 +37327,84 @@ class NmrDpUtility:
                                     if sf not in pk_sf_dict_holder[content_subtype]:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
+            elif file_type == 'nm-pea-oli':
+                reader = OliviaPKReader(self.__verbose, self.__lfh,
+                                        self.__representative_model_id,
+                                        self.__representative_alt_id,
+                                        self.__mr_atom_name_mapping,
+                                        self.__cR, self.__caC,
+                                        self.__ccU, self.__csStat, self.__nefT)
+                reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                listener, parser_err_listener, lexer_err_listener =\
+                    reader.parse(file_path, self.__cifPath,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                 csLoops=self.__lp_data['chem_shift'])
+
+                _content_subtype = listener.getContentSubtype() if listener is not None else None
+                if _content_subtype is not None and len(_content_subtype) == 0:
+                    _content_subtype = None
+
+                if None not in (lexer_err_listener, parser_err_listener, listener)\
+                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                        or _content_subtype is not None):
+                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
+
+                        reader = OliviaPKReader(self.__verbose, self.__lfh,
+                                                self.__representative_model_id,
+                                                self.__representative_alt_id,
+                                                self.__mr_atom_name_mapping,
+                                                self.__cR, self.__caC,
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                reasons)
+                        reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
+
+                        listener, _, _ = reader.parse(file_path, self.__cifPath,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                      csLoops=self.__lp_data['chem_shift'])
+
+                    deal_pea_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        poly_seq_set.append(poly_seq)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate NMR spectral peak list file (OLIVIA) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in pk_sf_dict_holder:
+                                    pk_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in pk_sf_dict_holder[content_subtype]:
+                                        pk_sf_dict_holder[content_subtype].append(sf)
+
             elif file_type == 'nm-pea-pip':
                 reader = NmrPipePKReader(self.__verbose, self.__lfh,
                                          self.__representative_model_id,
@@ -37484,6 +37591,7 @@ class NmrDpUtility:
                     skip, spa_type = deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)
                     if skip and spa_type == 'default':
                         continue
+
                 if spa_type == 'reverse':
                     self.__list_id_counter = copy.copy(__list_id_counter)
 
@@ -52871,6 +52979,8 @@ class NmrDpUtility:
                 file_type = 'nm-pea-ari'
             elif data_format == 'CCPN':
                 file_type = 'nm-pea-ccp'
+            elif data_format == 'Olivia':
+                file_type = 'nm-pea-oli'
             elif data_format == 'NMRPipe':
                 file_type = 'nm-pea-pip'
             elif data_format == 'PONDEROSA':
@@ -52954,6 +53064,8 @@ class NmrDpUtility:
                     file_type = 'nm-pea-ari'
                 elif data_format == 'CCPN':
                     file_type = 'nm-pea-ccp'
+                elif data_format == 'Olivia':
+                    file_type = 'nm-pea-oli'
                 elif data_format == 'NMRPipe':
                     file_type = 'nm-pea-pip'
                 elif data_format == 'PONDEROSA':
@@ -53470,6 +53582,72 @@ class NmrDpUtility:
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate NMR spectral peak list file (CCPN) {data_file_name!r}."
+
+                    self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - {err}\n")
+
+                self.__list_id_counter, sf_dict = listener.getSfDict()
+                if sf_dict is not None:
+                    for k, v in sf_dict.items():
+                        content_subtype = contentSubtypeOf(k[0])
+                        if content_subtype not in pk_sf_dict_holder:
+                            pk_sf_dict_holder[content_subtype] = []
+                        for sf in v:
+                            if sf not in pk_sf_dict_holder[content_subtype]:
+                                pk_sf_dict_holder[content_subtype].append(sf)
+
+        elif file_type == 'nm-pea-oli':
+            reader = OliviaPKReader(self.__verbose, self.__lfh,
+                                    self.__representative_model_id,
+                                    self.__representative_alt_id,
+                                    self.__mr_atom_name_mapping,
+                                    self.__cR, self.__caC,
+                                    self.__ccU, self.__csStat, self.__nefT)
+            reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
+
+            _list_id_counter = copy.copy(self.__list_id_counter)
+
+            listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
+                                          createSfDict=True, originalFileName=data_file_name,
+                                          listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                          csLoops=self.__lp_data['chem_shift'])
+
+            if listener is not None:
+                reasons = listener.getReasonsForReparsing()
+
+                if reasons is not None:
+                    deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
+
+                    reader = OliviaPKReader(self.__verbose, self.__lfh,
+                                            self.__representative_model_id,
+                                            self.__representative_alt_id,
+                                            self.__mr_atom_name_mapping,
+                                            self.__cR, self.__caC,
+                                            self.__ccU, self.__csStat, self.__nefT,
+                                            reasons)
+                    reader.enforcePeakRowFormat(self.__enforce_peak_row_format)
+
+                    listener, _, _ = reader.parse(text_data, self.__cifPath, isFilePath=False,
+                                                  createSfDict=True, originalFileName=data_file_name,
+                                                  listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id,
+                                                  csLoops=self.__lp_data['chem_shift'])
+
+                deal_pea_warn_message(data_file_name, listener)
+
+                poly_seq = listener.getPolymerSequence()
+                if poly_seq is not None:
+                    input_source.setItemValue('polymer_sequence', poly_seq)
+                    poly_seq_set.append(poly_seq)
+
+                seq_align = listener.getSequenceAlignment()
+                if seq_align is not None:
+                    self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+
+                if len(listener.getContentSubtype()) == 0:
+                    err = f"Failed to validate NMR spectral peak list file (OLIVIA) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()

@@ -335,6 +335,7 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-pea-ari`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in ARIA format
 `nm-pea-bar`|**internal use**|`nmr-peaks` / `any`|Bare WSV/TSV spectral peak list file with a header
 `nm-pea-ccp`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in CCPN format
+`nm-pea-oli`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in OLIVIA format
 `nm-pea-pip`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in NMRPIPE/PIPP format
 `nm-pea-pon`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in PONDEROSA format
 `nm-pea-spa`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in SPARKY format

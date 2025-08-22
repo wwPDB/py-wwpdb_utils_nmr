@@ -104,6 +104,7 @@
 # 28-May-2025  M. Yokochi - add 'conflicted_peak_list' and 'inconsistent_peak_list' warning types (DAOTHER-10010)
 # 29-May-2025  M. Yokochi - add 'unsupported_peak_list' warning type (DAOTHER-10099)
 # 06-Aug-2025  M. Yokochi - add 'nm-res-sch' file type for SCHRODINGER/ASL restraint format (DAOTHER-7902, 10172, NMR data remediation)
+# 22-Aug-2025  M. Yokochi - add 'nm-pea-oli' file type for OLIVIA spectral peak list file (DAOTHER-8905, 9785)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1861,9 +1862,9 @@ class NmrDpReportInputSource:
                            'nm-res-cya', 'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-mr',
                            'nm-res-noa', 'nm-res-oth', 'nm-res-ros', 'nm-res-sax', 'nm-res-sch',
                            'nm-res-syb', 'nm-res-xpl',
-                           'nm-pea-any', 'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-pip',
-                           'nm-pea-pon', 'nm-pea-spa', 'nm-pea-sps', 'nm-pea-top', 'nm-pea-vie',
-                           'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi',
+                           'nm-pea-any', 'nm-pea-ari', 'nm-pea-bar', 'nm-pea-ccp', 'nm-pea-oli',
+                           'nm-pea-pip', 'nm-pea-pon', 'nm-pea-spa', 'nm-pea-sps', 'nm-pea-top',
+                           'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi',
                            'nm-shi-ari', 'nm-shi-bar', 'nm-shi-gar', 'nm-shi-npi', 'nm-shi-pip',
                            'nm-shi-ppm', 'nm-shi-st2', 'nm-shi-xea')
         self.content_types = ('model',

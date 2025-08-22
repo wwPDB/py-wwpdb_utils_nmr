@@ -11257,4 +11257,6 @@ def getPdbxNmrSoftwareName(name: str) -> str:
         return 'CcpNmr Analysis'
     if name == 'SCHRODINGER/ASL':
         return 'MacroModel'
+    if name == 'OLIVIA':
+        return 'Olivia'
     return name  # 'ARIA', 'CHARMM', 'CNS', 'CYANA', 'DYNAMO', 'PALES', 'TALOS', 'GROMACS', 'SYBYL', 'VNMR', 'XEASY'

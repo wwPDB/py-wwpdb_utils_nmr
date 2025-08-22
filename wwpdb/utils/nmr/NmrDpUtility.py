@@ -220,6 +220,7 @@
 # 25-Jul-2025  M. Yokochi - enable to configure whether to enforce to use _Peak_row_format loop for spectral peak list remediation (DAOTHER-8905, 9785)
 # 06-Aug-2025  M. Yokochi - add support for SCHRODINGER/ASL MR format (DAOTHER-7902, 10172, NMR data remediation)
 # 22-Aug-2025  M. Yokochi - add support for OLIVIA spectral peak list (DAOTHER-8905, 9785)
+# 22-Aug-2025  M. Yokochi - add 'nm-shi-oli' file type for OLIVIA spectral peak list file (DAOTHER-9785)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -419,6 +420,7 @@ try:
     from wwpdb.utils.nmr.cs.BareCSReader import BareCSReader
     from wwpdb.utils.nmr.cs.GarretCSReader import GarretCSReader
     from wwpdb.utils.nmr.cs.NmrPipeCSReader import NmrPipeCSReader
+    from wwpdb.utils.nmr.cs.OliviaCSReader import OliviaCSReader
     from wwpdb.utils.nmr.cs.PippCSReader import PippCSReader
     from wwpdb.utils.nmr.cs.PpmCSReader import PpmCSReader
     from wwpdb.utils.nmr.cs.NmrStar2CSReader import NmrStar2CSReader
@@ -590,6 +592,7 @@ except ImportError:
     from nmr.cs.BareCSReader import BareCSReader
     from nmr.cs.GarretCSReader import GarretCSReader
     from nmr.cs.NmrPipeCSReader import NmrPipeCSReader
+    from nmr.cs.OliviaCSReader import OliviaCSReader
     from nmr.cs.PippCSReader import PippCSReader
     from nmr.cs.PpmCSReader import PpmCSReader
     from nmr.cs.NmrStar2CSReader import NmrStar2CSReader
@@ -1758,6 +1761,9 @@ def get_chem_shift_format_from_string(string: str) -> Optional[str]:
 
     if 'SHIFT_FL_FRMT' in string and 'RES_SIAD' in string:
         return 'nm-shi-pip'
+
+    if 'TYPEDEF SEQUENCE' in string or 'TYPEDEF ASS_TBL_' in string:
+        return 'nm-shi-oli'
 
     return None
 
@@ -38888,6 +38894,65 @@ class NmrDpUtility:
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (NMRPIPE) {file_name!r}."
+
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyCs() ++ Error  - " + err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyCs() ++ Error  - {err}\n")
+
+                        self.__list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in cs_sf_dict_holder:
+                                    cs_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in cs_sf_dict_holder[content_subtype]:
+                                        cs_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-shi-oli':
+                reader = OliviaCSReader(self.__verbose, self.__lfh,
+                                        nmr_poly_seq, entity_assembly,
+                                        self.__ccU, self.__csStat, self.__nefT)
+
+                _list_id_counter = copy.copy(self.__list_id_counter)
+
+                # ignore lexer error beacuse of imcomplete XML file format
+                listener, parser_err_listener, _ =\
+                    reader.parse(file_path,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                if None not in (parser_err_listener, listener)\
+                   and parser_err_listener.getMessageList() is None:
+                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
+
+                        reader = OliviaCSReader(self.__verbose, self.__lfh,
+                                                nmr_poly_seq, entity_assembly,
+                                                self.__ccU, self.__csStat, self.__nefT,
+                                                reasons)
+
+                        listener, _, _ = reader.parse(file_path,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids, entryId=self.__entry_id)
+
+                    deal_shi_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate assigned chemical shift file (OLIVIA) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyCs() ++ Error  - " + err)
                             self.report.setError()

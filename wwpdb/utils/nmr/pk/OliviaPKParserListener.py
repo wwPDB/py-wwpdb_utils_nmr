@@ -72,7 +72,7 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                          mrAtomNameMapping, cR, caC, ccU, csStat, nefT, reasons)
 
         self.file_type = 'nm-pea-oli'
-        self.software_name = 'OLIVIA'
+        self.software_name = 'Olivia'
 
     # Enter a parse tree produced by OliviaPKParser#nmrpipe_pk.
     def enterOlivia_pk(self, ctx: OliviaPKParser.Olivia_pkContext):  # pylint: disable=unused-argument

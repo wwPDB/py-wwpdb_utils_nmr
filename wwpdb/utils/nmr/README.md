@@ -352,6 +352,7 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-shi-bar`|**internal use**|`nmr-chemical-shifts` / `any`|Bare WSV/TSV/CSV chemical shift file (residue per line, atom per line, SPARKY's resonance list)
 `nm-shi-gar`|**internal use**|`nmr-chemical-shifts` / `any`|GARRET chemical shift file (CAMRA)
 `nm-shi-npi`|**internal use**|`nmr-chemical-shifts` / `any`|NMRPIPE chemical shift file
+`nm-shi-oli`|**internal use**|`nmr-chemical-shifts` / `any`|OLIVIA chemical shift file
 `nm-shi-pip`|**internal use**|`nmr-chemical-shifts` / `any`|PIPP chemical shift file
 `nm-shi-ppm`|**internal use**|`nmr-chemical-shifts` / `any`|PPM chemical shift file (NMRVIEW, CAMRA)
 `nm-shi-st2`|**internal use**|`nmr-chemical-shifts` / `any`|NMR-STAR V2.1 chemical shift file (loop only)

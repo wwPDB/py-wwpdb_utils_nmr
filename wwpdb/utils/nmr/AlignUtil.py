@@ -720,6 +720,9 @@ def getChemShiftFormatName(fileType: str) -> str:
     if fileType == 'nm-shi-npi':
         return 'NMRPIPE chemical shift assignment'
 
+    if fileType == 'nm-shi-oli':
+        return 'OLIVIA chemical shift assignment'
+
     if fileType == 'nm-shi-pip':
         return 'PIPP chemical shift assignment'
 

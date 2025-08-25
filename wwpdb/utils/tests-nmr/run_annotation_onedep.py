@@ -282,6 +282,9 @@ class gen_auth_view_onedep:
 
                 file_path = os.path.join(self.__data_dir, file_name)
 
+                if os.path.exists(file_path + '-ignored'):
+                    continue
+
                 if content_type == 'amber':
 
                     if self.is_amb_top_file(file_path):
@@ -412,6 +415,9 @@ class gen_auth_view_onedep:
 
                         file_path = os.path.join(self.__data_dir, file_name)
 
+                        if os.path.exists(file_path + '-ignored'):
+                            continue
+
                         if content_type == 'amber':
                             if key in ax_dic:
                                 if (version > ax_dic[key]['version'] and mile_stone == ax_dic[key]['mile_stone'])\
@@ -484,6 +490,9 @@ class gen_auth_view_onedep:
 
                         file_path = os.path.join(self.__data_dir, file_name)
 
+                        if os.path.exists(file_path + '-ignored'):
+                            continue
+
                         if content_type == 'gromacs':
                             if key in ax_dic:
                                 if (version > ax_dic[key]['version'] and mile_stone == ax_dic[key]['mile_stone'])\
@@ -555,6 +564,9 @@ class gen_auth_view_onedep:
                         key = content_type + g[1]
 
                         file_path = os.path.join(self.__data_dir, file_name)
+
+                        if os.path.exists(file_path + '-ignored'):
+                            continue
 
                         if content_type == 'charmm':
                             if key in ax_dic:
@@ -783,6 +795,9 @@ class gen_auth_view_onedep:
 
                 file_path = os.path.join(self.__data_dir, file_name)
 
+                if os.path.exists(file_path + '-ignored'):
+                    continue
+
                 if key in pk_dic:
                     if version > pk_dic[key]['version']:
                         pk_dic[key]['version'] = version
@@ -809,6 +824,9 @@ class gen_auth_view_onedep:
                     file_path = os.path.join(self.__data_dir, file_name)
 
                     if file_path in pk_file_lists:
+                        continue
+
+                    if os.path.exists(file_path + '-ignored'):
                         continue
 
                     with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:

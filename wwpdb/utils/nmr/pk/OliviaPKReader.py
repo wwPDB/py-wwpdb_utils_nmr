@@ -222,3 +222,10 @@ class OliviaPKReader:
         finally:
             if isFilePath and ifh is not None:
                 ifh.close()
+
+
+if __name__ == "__main__":
+    reader = OliviaPKReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-olivia-peak-list/idx_tbl_2d.tbl',
+                 '../../tests-nmr/mock-data-remediation/2js7/2js7.cif')  # dummy

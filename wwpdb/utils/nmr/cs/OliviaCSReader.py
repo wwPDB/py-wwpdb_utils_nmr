@@ -182,3 +182,14 @@ class OliviaCSReader:
         finally:
             if isFilePath and ifh is not None:
                 ifh.close()
+
+
+if __name__ == "__main__":
+    nmr_poly_seq = [{'chain_id': '1',
+                     'seq_id': [1, 2, 3, 4, 5, 6],
+                     'comp_id': ['PRO', 'GLY', 'ALA', 'ARG', 'GLN', 'GLU']
+                     }]
+    entity_assembly = {'1': {'entity_id': 1, 'auth_asym_id': '.'}}
+    reader = OliviaCSReader(True, polySeq=nmr_poly_seq, entityAssembly=entity_assembly)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-atypical-cs/olivia/olivia_example.tbl')

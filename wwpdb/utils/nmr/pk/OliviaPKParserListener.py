@@ -84,6 +84,157 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
     def exitOlivia_pk(self, ctx: OliviaPKParser.Olivia_pkContext):  # pylint: disable=unused-argument
         self.exit(self.__spectrum_names if len(self.__spectrum_names) > 0 else None)
 
+    # Enter a parse tree produced by OliviaPKParser#comment.
+    def enterComment(self, ctx: OliviaPKParser.CommentContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by OliviaPKParser#comment.
+    def exitComment(self, ctx: OliviaPKParser.CommentContext):
+        comment = []
+        for col in range(20):
+            if ctx.Any_name(col):
+                text = str(ctx.Any_name(col))
+                if text[0] in ('#', '!'):
+                    break
+                if text[0] in ('>', '<'):
+                    continue
+                comment.append(str(ctx.Any_name(col)))
+            else:
+                break
+        last_comment = None if len(comment) == 0 else ' '.join(comment)
+
+        if last_comment is None or ':' not in last_comment:  # pylint: disable=unsupported-membership-test
+            return
+
+        remark = last_comment.split(':')
+
+        key = remark[0].strip()
+        value = remark[1].strip()
+
+        if key == 'Dimension':
+            if value == '2':
+                self.num_of_dim = 2
+            elif value == '3':
+                self.num_of_dim = 3
+            elif value == '4':
+                self.num_of_dim = 4
+
+        elif key == 'Experiment':
+            self.spectrum_name = value
+
+        elif key == 'Axis Label':
+            labels = [_label[:_label.index('(')] for _label in value.split(',')]
+
+            for _dim_id, _axis_code in enumerate(labels, start=1):
+                if _dim_id not in self.cur_spectral_dim:
+                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
+                else:
+                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
+
+                cur_spectral_dim['axis_code'] = _axis_code
+
+                digits = re.findall(r'\d+', _axis_code)
+                for digit in digits:
+                    num = int(digit)
+                    nuc = next((k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if num == v[0]), None)
+                    if nuc is not None:
+                        cur_spectral_dim['atom_type'] = nuc
+                        cur_spectral_dim['atom_isotope_number'] = num
+                        break
+                if cur_spectral_dim['atom_type'] is None:
+                    for a in _axis_code:
+                        a = a.upper()
+                        if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                            cur_spectral_dim['atom_type'] = a
+                            cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
+                            break
+
+                isotope_number = cur_spectral_dim['atom_isotope_number']
+
+                cur_spectral_dim['acquisition'] = 'yes' if _dim_id == self.acq_dim_id\
+                    and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
+
+                if _dim_id == 1 and cur_spectral_dim['acquisition'] == 'no':
+                    self.acq_dim_id = self.num_of_dim
+
+                cur_spectral_dim['under_sampling_type'] = 'not observed' if cur_spectral_dim['acquisition'] == 'yes' else 'aliased'
+
+                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
+
+        elif key == 'Obs. Freq.':
+            value = value[:value.index('[')].strip()
+            obs_freq = [float(_obs_freq[:_obs_freq.index('(')]) for _obs_freq in value.split(',')]
+
+            for _dim_id, _obs_freq in enumerate(obs_freq, start=1):
+                if _dim_id not in self.cur_spectral_dim:
+                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
+                else:
+                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
+
+                cur_spectral_dim['spectrometer_frequency'] = _obs_freq
+
+                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
+
+        elif key == 'Spec.Center':
+            value = value[:value.index('[')].strip()
+            spec_center = [float(_obs_freq[:_obs_freq.index('(')]) for _obs_freq in value.split(',')]
+
+            for _dim_id, _spec_center in enumerate(spec_center, start=1):
+                if _dim_id not in self.cur_spectral_dim:
+                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
+                else:
+                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
+
+                cur_spectral_dim['center_frequency_offset'] = _spec_center
+
+                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
+
+        elif key == 'Orig.Freq.':
+            value = value[:value.index('[')].strip()
+            orig_freq = [float(_obs_freq[:_obs_freq.index('(')]) for _obs_freq in value.split(',')]
+
+            for _dim_id, _orig_freq in enumerate(orig_freq, start=1):
+                if _dim_id not in self.cur_spectral_dim:
+                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
+                else:
+                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
+
+                max_eff_digits = getMaxEffDigits([str(f) for f in orig_freq])
+
+                if 'specrometer_frequency' in cur_spectral_dim:
+                    cur_spectral_dim['center_frequency_offset'] = float(roundString(str(orig_freq / cur_spectral_dim['spectrometer_frequency']),
+                                                                                    max_eff_digits))
+
+                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
+
+        elif key == 'Spec.Width':
+            value = value[:value.index('[')].strip()
+            spec_width = [float(_obs_freq[:_obs_freq.index('(')]) for _obs_freq in value.split(',')]
+
+            for _dim_id, _spec_width in enumerate(spec_width, start=1):
+                if _dim_id not in self.cur_spectral_dim:
+                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
+                else:
+                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
+
+                cur_spectral_dim['sweep_width'] = _spec_width
+
+                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
+
+        elif key == 'Orig.Width':
+            value = value[:value.index('[')].strip()
+            spec_width = [float(_obs_freq[:_obs_freq.index('(')]) for _obs_freq in value.split(',')]
+
+            for _dim_id, _spec_width in enumerate(spec_width, start=1):
+                if _dim_id not in self.cur_spectral_dim:
+                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
+                else:
+                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
+
+                cur_spectral_dim['sweep_width'] = _spec_width
+
+                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
+
     def enterIdx_peak_list_2d(self, ctx: OliviaPKParser.Idx_peak_list_2dContext):  # pylint: disable=unused-argument
         if self.num_of_dim != 2:
             self.num_of_dim = 2
@@ -110,9 +261,9 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by OliviaPKParser#idx_peak_2d.
     def exitIdx_peak_2d(self, ctx: OliviaPKParser.Idx_peak_2dContext):
-        self.__exitIdx_peak_2d(int(str(ctx.Integer(0))))
+        self.__exit_peak_2d(int(str(ctx.Integer(0))))
 
-    def __exitIdx_peak_2d(self, index):
+    def __exit_peak_2d(self, index):
 
         try:
 
@@ -234,9 +385,9 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by OliviaPKParser#idx_peak_3d.
     def exitIdx_peak_3d(self, ctx: OliviaPKParser.Idx_peak_3dContext):
-        self.__exitIdx_peak_3d(int(str(ctx.Integer(0))))
+        self.__exit_peak_3d(int(str(ctx.Integer(0))))
 
-    def __exitIdx_peak_3d(self, index):
+    def __exit_peak_3d(self, index):
 
         try:
 
@@ -366,9 +517,9 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by OliviaPKParser#idx_peak_4d.
     def exitIdx_peak_4d(self, ctx: OliviaPKParser.Idx_peak_4dContext):
-        self.__exitIdx_peak_4d(int(str(ctx.Integer(0))))
+        self.__exit_peak_4d(int(str(ctx.Integer(0))))
 
-    def __exitIdx_peak_4d(self, index):
+    def __exit_peak_4d(self, index):
 
         try:
 
@@ -486,7 +637,7 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by OliviaPKParser#ass_peak_list_2d.
     def exitAss_peak_list_2d(self, ctx: OliviaPKParser.Ass_peak_list_2dContext):  # pylint: disable=unused-argument
-        self.exitIdx_peak_list_2d(ctx)
+        pass
 
     # Enter a parse tree produced by OliviaPKParser#ass_peak_2d.
     def enterAss_peak_2d(self, ctx: OliviaPKParser.Ass_peak_2dContext):  # pylint: disable=unused-argument
@@ -498,7 +649,7 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by OliviaPKParser#ass_peak_2d.
     def exitAss_peak_2d(self, ctx: OliviaPKParser.Ass_peak_2dContext):
-        self.__exitIdx_peak_2d(int(str(ctx.Integer(0))))
+        self.__exit_peak_2d(int(str(ctx.Integer(0))))
 
     # Enter a parse tree produced by OliviaPKParser#ass_peak_list_3d.
     def enterAss_peak_list_3d(self, ctx: OliviaPKParser.Ass_peak_list_3dContext):  # pylint: disable=unused-argument
@@ -535,7 +686,7 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by OliviaPKParser#ass_peak_3d.
     def exitAss_peak_3d(self, ctx: OliviaPKParser.Ass_peak_3dContext):
-        self.__exitIdx_peak_3d(int(str(ctx.Integer(0))))
+        self.__exit_peak_3d(int(str(ctx.Integer(0))))
 
     # Enter a parse tree produced by OliviaPKParser#ass_peak_list_4d.
     def enterAss_peak_list_4d(self, ctx: OliviaPKParser.Ass_peak_list_4dContext):  # pylint: disable=unused-argument
@@ -572,7 +723,7 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Exit a parse tree produced by OliviaPKParser#ass_peak_4d.
     def exitAss_peak_4d(self, ctx: OliviaPKParser.Ass_peak_4dContext):
-        self.__exitIdx_peak_4d(int(str(ctx.Integer(0))))
+        self.__exit_peak_4d(int(str(ctx.Integer(0))))
 
     # Enter a parse tree produced by OliviaPKParser#def_2d_axis_order_ppm.
     def enterDef_2d_axis_order_ppm(self, ctx: OliviaPKParser.Def_2d_axis_order_ppmContext):  # pylint: disable=unused-argument
@@ -735,143 +886,6 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
     # Exit a parse tree produced by OliviaPKParser#number.
     def exitNumber(self, ctx: OliviaPKParser.NumberContext):  # pylint: disable=unused-argument
         pass
-
-    # Enter a parse tree produced by OliviaPKParser#comment.
-    def enterComment(self, ctx: OliviaPKParser.CommentContext):  # pylint: disable=unused-argument
-        pass
-
-    # Exit a parse tree produced by OliviaPKParser#comment.
-    def exitComment(self, ctx: OliviaPKParser.CommentContext):
-        comment = []
-        for col in range(20):
-            if ctx.Any_name(col):
-                text = str(ctx.Any_name(col))
-                if text[0] in ('#', '!'):
-                    break
-                if text[0] in ('>', '<'):
-                    continue
-                comment.append(str(ctx.Any_name(col)))
-            else:
-                break
-        last_comment = None if len(comment) == 0 else ' '.join(comment)
-
-        if last_comment is None or ':' not in last_comment:  # pylint: disable=unsupported-membership-test
-            return
-
-        remark = last_comment.split(':')
-
-        key = remark[0].strip()
-        value = remark[1].strip()
-
-        if key == 'Dimension':
-            if value == '2':
-                self.num_of_dim = 2
-            elif value == '3':
-                self.num_of_dim = 3
-            elif value == '4':
-                self.num_of_dim = 4
-
-        elif key == 'Experiment':
-            self.spectrum_name = value
-
-        elif key == 'Axis Label':
-            labels = [_label[:_label.index('(')] for _label in value.split(',')]
-
-            for _dim_id, _axis_code in enumerate(labels, start=1):
-                if _dim_id not in self.cur_spectral_dim:
-                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
-                else:
-                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
-
-                cur_spectral_dim['axis_code'] = _axis_code
-
-                digits = re.findall(r'\d+', _axis_code)
-                for digit in digits:
-                    num = int(digit)
-                    nuc = next((k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if num == v[0]), None)
-                    if nuc is not None:
-                        cur_spectral_dim['atom_type'] = nuc
-                        cur_spectral_dim['atom_isotope_number'] = num
-                        break
-                if cur_spectral_dim['atom_type'] is None:
-                    for a in _axis_code:
-                        a = a.upper()
-                        if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                            cur_spectral_dim['atom_type'] = a
-                            cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
-                            break
-
-                isotope_number = cur_spectral_dim['atom_isotope_number']
-
-                cur_spectral_dim['acquisition'] = 'yes' if _dim_id == self.acq_dim_id\
-                    and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
-
-                if _dim_id == 1 and cur_spectral_dim['acquisition'] == 'no':
-                    self.acq_dim_id = self.num_of_dim
-
-                cur_spectral_dim['under_sampling_type'] = 'not observed' if cur_spectral_dim['acquisition'] == 'yes' else 'aliased'
-
-                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
-
-        elif key == 'Obs. Freq.':
-            value = value[:value.index('[')].strip()
-            obs_freq = [float(_obs_freq[:_obs_freq.index('(')]) for _obs_freq in value.split(',')]
-
-            for _dim_id, _obs_freq in enumerate(obs_freq, start=1):
-                if _dim_id not in self.cur_spectral_dim:
-                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
-                else:
-                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
-
-                cur_spectral_dim['spectrometer_frequency'] = _obs_freq
-
-                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
-
-        elif key == 'Spec.Center':
-            value = value[:value.index('[')].strip()
-            spec_center = [float(_obs_freq[:_obs_freq.index('(')]) for _obs_freq in value.split(',')]
-
-            for _dim_id, _spec_center in enumerate(spec_center, start=1):
-                if _dim_id not in self.cur_spectral_dim:
-                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
-                else:
-                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
-
-                cur_spectral_dim['center_frequency_offset'] = _spec_center
-
-                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
-
-        elif key == 'Orig.Freq.':
-            value = value[:value.index('[')].strip()
-            orig_freq = [float(_obs_freq[:_obs_freq.index('(')]) for _obs_freq in value.split(',')]
-
-            for _dim_id, _orig_freq in enumerate(orig_freq, start=1):
-                if _dim_id not in self.cur_spectral_dim:
-                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
-                else:
-                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
-
-                max_eff_digits = getMaxEffDigits([str(f) for f in orig_freq])
-
-                if 'specrometer_frequency' in cur_spectral_dim:
-                    cur_spectral_dim['center_frequency_offset'] = float(roundString(str(orig_freq / cur_spectral_dim['spectrometer_frequency']),
-                                                                                    max_eff_digits))
-
-                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
-
-        elif key == 'Orig.Width':
-            value = value[:value.index('[')].strip()
-            spec_width = [float(_obs_freq[:_obs_freq.index('(')]) for _obs_freq in value.split(',')]
-
-            for _dim_id, _spec_width in enumerate(spec_width, start=1):
-                if _dim_id not in self.cur_spectral_dim:
-                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
-                else:
-                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
-
-                cur_spectral_dim['sweep_width'] = _spec_width
-
-                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
 
     # Enter a parse tree produced by OliviaPKParser#memo.
     def enterMemo(self, ctx: OliviaPKParser.MemoContext):

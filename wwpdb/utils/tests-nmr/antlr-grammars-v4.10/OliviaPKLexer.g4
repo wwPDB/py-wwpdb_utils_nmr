@@ -41,8 +41,8 @@ SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 //SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
-Double_quote_string:	'"' [~"\t\r\n]* '"';
-Single_quote_string:	'\'' [~'\t\r\n]* '\'';
+Double_quote_string:	'"' SIMPLE_NAME? (' ' SIMPLE_NAME)* '"';
+Single_quote_string:	'\'' SIMPLE_NAME? (' ' SIMPLE_NAME)* '\'';
 Simple_name:		SIMPLE_NAME;
 
 //Residue_number:	Integer;
@@ -99,7 +99,7 @@ Z_hz:			'Z_HZ';
 A_hz:			'A_HZ';
 Amplitude:		'AMPLITUDE';
 Volume:			'VOLUME';
-Vol_err:		'VOR_ERR';
+Vol_err:		'VOL_ERR';
 X_chain:		'X_CHAIN';
 Y_chain:		'Y_CHAIN';
 Z_chain:		'Z_CHAIN';
@@ -138,5 +138,5 @@ mode COMMENT_MODE;
 Any_name:		~[ \t\r\n]+;
 
 SPACE_CM:		[ \t]+ -> skip;
-RETURN_CM:		[\r\n]+ -> popMode;
+RETURN_CM:		[\r\n]+ -> mode(DEFAULT_MODE);
 

@@ -21,7 +21,7 @@ options { tokenVocab=OliviaPKLexer; }
 olivia_pk:
 	RETURN?
 	(
-	comment
+	comment |
 	idx_peak_list_2d |
 	idx_peak_list_3d |
 	idx_peak_list_4d |
@@ -31,6 +31,9 @@ olivia_pk:
 	RETURN
 	)*
 	EOF;
+
+comment:
+	COMMENT Any_name* (RETURN_CM | EOF);
 
 idx_peak_list_2d:
 	Typedef Idx_tbl_2d RETURN_TD
@@ -268,9 +271,6 @@ integer:
 
 /* number expression in peak list */
 number:	Integer | Float | Real;
-
-comment:
-	COMMENT Any_name* RETURN_CM;
 
 memo:	Double_quote_string | Single_quote_string | Simple_name;
 

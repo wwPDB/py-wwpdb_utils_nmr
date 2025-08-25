@@ -107,7 +107,8 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
             self.__polySeq.append({'chain_id': chain_id, 'seq_id': [], 'comp_id': []})
             ps = self.__polySeq[-1]
             entity_assembly_id = len(ps)
-            self.__entityAssembly[str(entity_assembly_id)] = {'entity_id': entity_assembly_id, 'auth_asym_id': 'chain_id'}
+            self.__entityAssembly[str(entity_assembly_id)] = {'entity_id': entity_assembly_id, 'auth_asym_id': chain_id}
+            self.predictSequenceNumberOffsetByFirstResidue(chain_id, seq_id, comp_id)
 
         ps['seq_id'].append(seq_id)
         ps['comp_id'].append(comp_id)
@@ -180,7 +181,7 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
             L = f'{chain_id}:{seq_id}:{comp_id}:{atom_id}'
 
-            assignment = self.extractAssignment(1, L, index, with_compid=comp_id)
+            assignment = self.extractAssignment(1, L, index, with_segid=chain_id, with_compid=comp_id)
 
             if assignment is None:
                 self.chemShifts -= 1

@@ -1027,15 +1027,15 @@ class gen_auth_view_onedep:
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print(f"{self.__bmrb_id}: {report['information']['status']}, {error_type}")
-        """
-        if self.__has_peak and os.path.exists(self.__annotated_star_file_path):
-            star_data = pynmrstar.Entry.from_file(self.__annotated_star_file_path)
-            for sf in star_data.get_saveframes_by_category('spectral_peak_list'):
-                text_data = get_first_sf_tag(sf, 'Text_data')
-                if len(text_data) > 0:
-                    set_sf_tag(sf, 'Text_data', '.')
-            star_data.write_to_file(self.__ann_wo_raw_pk_star_file_path, show_comments=True, skip_empty_loops=True, skip_empty_tags=False)
-        """
+        # """
+        # if self.__has_peak and os.path.exists(self.__annotated_star_file_path):
+        #     star_data = pynmrstar.Entry.from_file(self.__annotated_star_file_path)
+        #     for sf in star_data.get_saveframes_by_category('spectral_peak_list'):
+        #         text_data = get_first_sf_tag(sf, 'Text_data')
+        #         if len(text_data) > 0:
+        #             set_sf_tag(sf, 'Text_data', '.')
+        #     star_data.write_to_file(self.__ann_wo_raw_pk_star_file_path, show_comments=True, skip_empty_loops=True, skip_empty_tags=False)
+        # """
 
 
 if __name__ == '__main__':

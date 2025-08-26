@@ -10,13 +10,13 @@ from typing import List, Tuple, Union, Optional
 
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-    from wwpdb.utils.nmr.CifToNmrStar import get_first_sf_tag, set_sf_tag
+    from wwpdb.utils.nmr.CifToNmrStar import get_first_sf_tag  # , set_sf_tag
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.nef.NEFTranslator import is_empty_loop
     auth_view = 'mock-data-combine-at-upload'
 except ImportError:
     from nmr.NmrDpUtility import NmrDpUtility
-    from nmr.CifToNmrStar import get_first_sf_tag, set_sf_tag
+    from nmr.CifToNmrStar import get_first_sf_tag  # , set_sf_tag
     from nmr.io.CifReader import CifReader
     from nmr.nef.NEFTranslator import is_empty_loop
     auth_view = 'auth_view'
@@ -170,13 +170,13 @@ class gen_auth_view_onedep:
 
         self.__annotated_log_file_path = os.path.join(self.__entry_dir, 'bmr' + self.__bmrb_id + '-annotated-log.json')
 
-        self.__ann_wo_raw_pk_star_file_path = os.path.join(self.__entry_dir, 'bmr' + self.__bmrb_id + '_ann_wo_raw_pk.str')
+        # self.__ann_wo_raw_pk_star_file_path = os.path.join(self.__entry_dir, 'bmr' + self.__bmrb_id + '_ann_wo_raw_pk.str')
 
         self.__avs_letter_path = os.path.join(self.__entry_dir, 'AVS_anomalous_bmr' + self.__bmrb_id + '_3.ltr')
 
         self.__return_letter_path = os.path.join(self.__entry_dir, 'return_' + self.__bmrb_id + '.ltr')
 
-        self.__has_peak = False
+        # self.__has_peak = False
 
         if not os.path.exists(self.__star_file_path):
             print('Not found NMR-STAR file.')
@@ -807,7 +807,7 @@ class gen_auth_view_onedep:
                     pk_dic[key]['version'] = version
                     pk_dic[key]['file_name'] = file_path
 
-                self.__has_peak = True
+                # self.__has_peak = True
 
         if len(pk_dic) < len(pk_file_lists):
             pk_file_lists, md5_list = [], []
@@ -1027,7 +1027,7 @@ class gen_auth_view_onedep:
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print(f"{self.__bmrb_id}: {report['information']['status']}, {error_type}")
-
+        """
         if self.__has_peak and os.path.exists(self.__annotated_star_file_path):
             star_data = pynmrstar.Entry.from_file(self.__annotated_star_file_path)
             for sf in star_data.get_saveframes_by_category('spectral_peak_list'):
@@ -1035,6 +1035,7 @@ class gen_auth_view_onedep:
                 if len(text_data) > 0:
                     set_sf_tag(sf, 'Text_data', '.')
             star_data.write_to_file(self.__ann_wo_raw_pk_star_file_path, show_comments=True, skip_empty_loops=True, skip_empty_tags=False)
+        """
 
 
 if __name__ == '__main__':

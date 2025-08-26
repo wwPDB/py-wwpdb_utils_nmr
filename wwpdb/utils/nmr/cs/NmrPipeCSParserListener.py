@@ -77,6 +77,8 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.__open_sequence = True
 
+        self.offset = {}
+
     # Exit a parse tree produced by NmrPipeCSParser#sequence.
     def exitSequence(self, ctx: NmrPipeCSParser.SequenceContext):  # pylint: disable=unused-argument
         pass
@@ -90,6 +92,8 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
         self.__open_sequence = False
 
         if self.__has_sequence and not self.hasPolySeq:
+            self.hasPolySeq = True
+
             def get_comp_id(one_letter_code: str):
                 return next((k for k, v in monDict3.items() if v == one_letter_code and len(k) == 3), one_letter_code)
 
@@ -130,7 +134,6 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
         self.cur_list_id += 1
 
         self.chemShifts = 0
-        self.offset = {}
 
         self.cur_subtype = 'chem_shift'
 
@@ -199,7 +202,6 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
         self.cur_list_id += 1
 
         self.chemShifts = 0
-        self.offset = {}
 
         self.cur_subtype = 'chem_shift'
 
@@ -269,7 +271,6 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
         self.cur_list_id += 1
 
         self.chemShifts = 0
-        self.offset = {}
 
         self.cur_subtype = 'chem_shift'
 

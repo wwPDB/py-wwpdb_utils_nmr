@@ -634,7 +634,7 @@ class BaseCSParserListener():
         return dstFunc
 
     def predictSequenceNumberOffsetByFirstResidue(self, chain_id: Optional[str], seq_id: int, comp_id: Optional[str]):
-        if self.reasons is not None:
+        if self.reasons is not None or self.polySeq is None:
             return
 
         if chain_id is not None and any(ps for ps in self.polySeq if ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id']):
@@ -878,6 +878,9 @@ class BaseCSParserListener():
             if hasOneLetterCodeSet and not useOneLetterCodeSet and resNameLike[idx] and len(term[resNameSpan[idx][0]:resNameSpan[idx][1]]) > 1:
                 hasOneLetterCodeSet = False
 
+            if with_compid is not None and len(with_compid) > 1:
+                hasOneLetterCodeSet = False
+
             if not resNameLike[idx] and hasOneLetterCodeSet:
                 if not any(compId in term for compId in monDict3 if len(compId) == 3):
                     for compId in oneLetterCodeSet:
@@ -1064,7 +1067,7 @@ class BaseCSParserListener():
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                         resNameLike[idx] = False
                                     break
-                                if with_compid is not None and atomId.startswith(with_compid):
+                                if with_compid is not None and (atomId.startswith(with_compid) or (atomId in with_compid and index < resNameSpan[idx][1])):
                                     continue
                                 _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
@@ -1123,7 +1126,7 @@ class BaseCSParserListener():
                                         if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
                                         break
-                                    if with_compid is not None and atomId.startswith(with_compid):
+                                    if with_compid is not None and (atomId.startswith(with_compid) or (atomId in with_compid and index < resNameSpan[idx][1])):
                                         continue
                                     _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)

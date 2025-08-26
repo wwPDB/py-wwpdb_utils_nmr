@@ -21,7 +21,7 @@ options { tokenVocab=OliviaCSLexer; }
 olivia_cs:
 	RETURN?
 	(
-	comment
+	comment |
 	sequence |
 	chemical_shifts |
 	RETURN

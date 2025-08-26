@@ -60,6 +60,7 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
     def enterSequence(self, ctx: OliviaCSParser.SequenceContext):  # pylint: disable=unused-argument
         self.__polySeq = []
         self.__entityAssembly = {}
+        self.offset = {}
 
     # Exit a parse tree produced by OliviaCSParser#sequence.
     def exitSequence(self, ctx: OliviaCSParser.SequenceContext):  # pylint: disable=unused-argument
@@ -68,6 +69,7 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
             self.polySeq = self.__polySeq
             self.entityAssembly = self.__entityAssembly
+            self.hasPolySeq = True
 
             self.labelToAuthSeq = {}
             for ps in self.polySeq:
@@ -106,7 +108,7 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
         if ps is None:
             self.__polySeq.append({'chain_id': chain_id, 'seq_id': [], 'comp_id': []})
             ps = self.__polySeq[-1]
-            entity_assembly_id = len(ps)
+            entity_assembly_id = len(self.__polySeq)
             self.__entityAssembly[str(entity_assembly_id)] = {'entity_id': entity_assembly_id, 'auth_asym_id': chain_id}
             self.predictSequenceNumberOffsetByFirstResidue(chain_id, seq_id, comp_id)
 
@@ -119,12 +121,10 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
     # Enter a parse tree produced by OliviaCSParser#chemical_shifts.
     def enterChemical_shifts(self, ctx: OliviaCSParser.Chemical_shiftsContext):  # pylint: disable=unused-argument
-
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1
 
         self.chemShifts = 0
-        self.offset = {}
 
         self.cur_subtype = 'chem_shift'
 

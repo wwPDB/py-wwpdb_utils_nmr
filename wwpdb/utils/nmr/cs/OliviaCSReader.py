@@ -185,6 +185,10 @@ class OliviaCSReader:
 
 
 if __name__ == "__main__":
+    reader = OliviaCSReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-atypical-cs/olivia/ch_ub.ass')
+
     nmr_poly_seq = [{'chain_id': '1',
                      'seq_id': [1, 2, 3, 4, 5, 6],
                      'comp_id': ['PRO', 'GLY', 'ALA', 'ARG', 'GLN', 'GLU']

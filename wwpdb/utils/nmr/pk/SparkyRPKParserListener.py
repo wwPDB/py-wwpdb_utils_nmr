@@ -303,6 +303,17 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                 has_assignments, has_multiple_assignments, asis1, asis2 =\
                     self.checkAssignments2D(index, assignments, dstFunc)
 
+                if not has_assignments and any(a[0]['comp_id'] == 'ARG' and a[0]['atom_id'] == 'NH' for a in assignments if a is not None):
+                    _ass_ = ass.replace('NH', 'HN')
+                    assignments = []
+                    hint = None
+                    for _ass in _ass_.split('-'):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                        hint = assignments[-1] if assignments[-1] is not None else None
+
+                    has_assignments, has_multiple_assignments, asis1, asis2 =\
+                        self.checkAssignments2D(index, assignments, dstFunc)
+
             self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2,
                                     f'{ass} -> ',
@@ -449,6 +460,17 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
                     self.checkAssignments3D(index, assignments, dstFunc)
+
+                if not has_assignments and any(a[0]['comp_id'] == 'ARG' and a[0]['atom_id'] == 'NH' for a in assignments if a is not None):
+                    _ass_ = ass.replace('NH', 'HN')
+                    assignments = []
+                    hint = None
+                    for _ass in _ass_.split('-'):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                        hint = assignments[-1] if assignments[-1] is not None else None
+
+                    has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
+                        self.checkAssignments3D(index, assignments, dstFunc)
 
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
@@ -607,6 +629,17 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
                     self.checkAssignments4D(index, assignments, dstFunc)
+
+                if not has_assignments and any(a[0]['comp_id'] == 'ARG' and a[0]['atom_id'] == 'NH' for a in assignments if a is not None):
+                    _ass_ = ass.replace('NH', 'HN')
+                    assignments = []
+                    hint = None
+                    for _ass in _ass_.split('-'):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                        hint = assignments[-1] if assignments[-1] is not None else None
+
+                    has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
+                        self.checkAssignments4D(index, assignments, dstFunc)
 
             self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3, asis4,

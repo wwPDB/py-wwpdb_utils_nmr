@@ -37,8 +37,9 @@ Simple_name:		SIMPLE_NAME;
 
 fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
-fragment START_CHAR:	ALPHA_NUM | '_' | '+' | '.' | '*' | '?';
-fragment NAME_CHAR:	START_CHAR | '\'' | '"' | ',' | ';' | '#' | '%';
+fragment START_CHAR:	ALPHA_NUM | '_' | '-' | '+' | '.' | '*' | '?' | '(' | '{';
+fragment NAME_CHAR:	START_CHAR | '\'' | '"' | ';' | '#' | '%' | '|' | '/' | ')' | '}';
+
 //fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
@@ -85,6 +86,8 @@ Path_name:		'pathname';
 Dimension:		'dimension';
 Shift:			'shift';
 Points:			'points';
+
+Extra_peak_planes:	'extraPeakPlanes';
 
 Assign_multi_axis_guess:	'assignMultiAxisGuess';
 Assign_guess_threshhold:	'assignGuessThreshold';

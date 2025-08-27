@@ -181,7 +181,7 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
             L = f'{chain_id}:{seq_id}:{comp_id}:{atom_id}'
 
-            assignment = self.extractAssignment(1, L, index, with_segid=chain_id, with_compid=comp_id)
+            assignment = self.extractAssignment(1, L, index, chain_id, comp_id)
 
             if assignment is None:
                 self.chemShifts -= 1

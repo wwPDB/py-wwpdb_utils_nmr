@@ -1408,7 +1408,8 @@ class OneDepAnnTasks:
                                     for tag_map in sf_tag_maps:
                                         if tag_map[0] == cif_category and tag_map[1] in row and tag_map[3] not in ('Sf_framecode', 'Sf_category', 'ID', 'Entry_ID'):
                                             if row[tag_map[1]] in emptyValue:
-                                                if len(get_first_sf_tag(sf, tag_map[3])) > 0:
+                                                _id = get_first_sf_tag(sf, tag_map[3])
+                                                if isinstance(_id, int) or len(_id) > 0:
                                                     continue
                                             set_sf_tag(sf, tag_map[3], row[tag_map[1]])
                                             has_uniq_sf_tag = True

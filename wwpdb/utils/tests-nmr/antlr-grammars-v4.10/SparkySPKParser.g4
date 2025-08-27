@@ -49,10 +49,11 @@ spectrum_block:
 spectrum_statement:
 	RETURN_SP |
 	Name_SP	spectrum_name* RETURN_SP |
-	Path_name Any_name_SP RETURN_SP |
+	Path_name spectrum_name* RETURN_SP |
 	Dimension Integer_SP RETURN_SP |
 	Shift Float_SP+ RETURN_SP |
 	Points Integer_SP+ RETURN_SP |
+	Extra_peak_planes Integer_SP+ RETURN_SP |
 	Assign_multi_axis_guess Integer_SP RETURN_SP |
 	Assign_guess_threshhold Float_SP RETURN_SP |
 	Assign_relation Integer_SP+ RETURN_SP |

@@ -38244,9 +38244,24 @@ class NmrDpUtility:
                                     if sf not in pk_sf_dict_holder[content_subtype]:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
-        if content_subtype in pk_sf_dict_holder:
+        master_entry = self.__star_data[0]
 
-            master_entry = self.__star_data[0]
+        prefix_sf_name = None
+        sf_name_map = {}
+        for sf in master_entry.get_saveframes_by_category(sf_category):
+            sf_id = get_first_sf_tag(sf, 'ID')
+            if isinstance(sf_id, str):
+                sf_id = int(sf_id)
+            sf_name_map[sf.name] = sf_id
+            if prefix_sf_name is None:
+                prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
+        if prefix_sf_name is not None and all(n.startswith(prefix_sf_name) for n in sf_name_map)\
+           and not all(sf_name[len(prefix_sf_name) + 1:] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
+            for sf in master_entry.get_saveframes_by_category(sf_category):
+                sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
+                set_sf_tag(sf, 'Sf_framecode', sf.name)
+
+        if content_subtype in pk_sf_dict_holder:
 
             for sf in pk_sf_dict_holder[content_subtype]:
 
@@ -38263,7 +38278,10 @@ class NmrDpUtility:
                 if data_file_name not in emptyValue and len(master_entry.get_saveframes_by_tag_and_value('Data_file_name', data_file_name)) > 0:
                     continue
 
-                master_entry.add_saveframe(sf['saveframe'])
+                try:
+                    master_entry.add_saveframe(sf['saveframe'])
+                except ValueError:
+                    pass
 
             self.__pk_sf_holder = pk_sf_dict_holder['spectral_peak']
 
@@ -52981,6 +52999,47 @@ class NmrDpUtility:
         """
 
         if self.__op != 'nmr-cs-mr-merge' and not self.__internal_mode:  # This rediculaus reverse implementation is for OneDep only
+
+            if self.__bmrb_only:
+                input_source = self.report.input_sources[0]
+                input_source_dic = input_source.get()
+
+                file_type = input_source_dic['file_type']
+
+                if file_type == 'nef':
+                    return True
+
+                content_subtype = 'spectral_peak'
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+
+                master_entry = self.__star_data[0]
+
+                prefix_sf_name = None
+                sf_name_map = {}
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    tagNames = [t[0] for t in sf.tags]
+                    if 'Text_data' in tagNames and get_first_sf_tag(sf, 'Text_data') in emptyValue:
+                        sf.remove_tag('Text_data')
+                        if 'Text_data_format' in tagNames:
+                            sf.remove_tag('Text_data_format')
+                    sf_id = get_first_sf_tag(sf, 'ID')
+                    if isinstance(sf_id, str):
+                        sf_id = int(sf_id)
+                    sf_name_map[sf.name] = sf_id
+                    if prefix_sf_name is None:
+                        prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
+                if prefix_sf_name is not None and all(n.startswith(prefix_sf_name) for n in sf_name_map)\
+                   and not all(sf_name[len(prefix_sf_name) + 1:] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
+                    for sf in master_entry.get_saveframes_by_category(sf_category):
+                        sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
+                        set_sf_tag(sf, 'Sf_framecode', sf.name)
+
+                self.__c2S.set_entry_id(master_entry, self.__bmrb_id)
+                self.__c2S.normalize_str(master_entry)
+
+                master_entry.write_to_file(self.__srcPath, show_comments=True, skip_empty_loops=True, skip_empty_tags=False)
+
             return True
 
         if len(self.__star_data) == 0 or self.__star_data_type[0] != 'Entry':
@@ -63909,6 +63968,43 @@ class NmrDpUtility:
                                 lp.sort_rows(['Database_name', 'Database_accession_code'])
 
                             sf.add_loop(lp)
+
+        if self.__op == 'nmr-cs-mr-merge' and self.__bmrb_only:
+            sf_category = 'spectral_peak_list'
+            if sf_category in self.__sf_category_list:
+                prefix_sf_name = None
+                sf_name_map = {}
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    tagNames = [t[0] for t in sf.tags]
+                    if 'Text_data' in tagNames and get_first_sf_tag(sf, 'Text_data') in emptyValue:
+                        sf.remove_tag('Text_data')
+                        if 'Text_data_format' in tagNames:
+                            sf.remove_tag('Text_data_format')
+                    sf_id = get_first_sf_tag(sf, 'ID')
+                    if isinstance(sf_id, str):
+                        sf_id = int(sf_id)
+                    sf_name_map[sf.name] = sf_id
+                    if prefix_sf_name is None:
+                        prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
+                if prefix_sf_name is not None and all(n.startswith(prefix_sf_name) for n in sf_name_map)\
+                   and not all(sf_name[len(prefix_sf_name) + 1:] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
+                    for sf in master_entry.get_saveframes_by_category(sf_category):
+                        sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
+                        set_sf_tag(sf, 'Sf_framecode', sf.name)
+
+                cs_file_path_list = 'chem_shift_file_path_list'
+
+                cs = self.__inputParamDict[cs_file_path_list][0]
+
+                if isinstance(cs, str):
+                    cs_path = cs
+                else:
+                    cs_path = cs['file_name']
+
+                self.__c2S.set_entry_id(master_entry, self.__bmrb_id)
+                self.__c2S.normalize_str(master_entry)
+
+                master_entry.write_to_file(cs_path, show_comments=True, skip_empty_loops=True, skip_empty_tags=False)
 
         is_done = ann.perform(master_entry)
 

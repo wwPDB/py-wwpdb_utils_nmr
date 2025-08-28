@@ -1758,6 +1758,11 @@ class OneDepAnnTasks:
             prefix_sf_name = None
             sf_name_map = {}
             for sf in master_entry.get_saveframes_by_category(pk_list_sf_category):
+                tagNames = [t[0] for t in sf.tags]
+                if 'Text_data' in tagNames and get_first_sf_tag(sf, 'Text_data') in emptyValue:
+                    sf.remove_tag('Text_data')
+                    if 'Text_data_format' in tagNames:
+                        sf.remove_tag('Text_data_format')
                 sf_id = get_first_sf_tag(sf, 'ID')
                 if isinstance(sf_id, str):
                     sf_id = int(sf_id)

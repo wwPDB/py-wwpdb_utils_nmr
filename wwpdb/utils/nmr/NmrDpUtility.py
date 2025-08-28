@@ -63992,19 +63992,19 @@ class NmrDpUtility:
                         sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
                         set_sf_tag(sf, 'Sf_framecode', sf.name)
 
-                cs_file_path_list = 'chem_shift_file_path_list'
+            cs_file_path_list = 'chem_shift_file_path_list'
 
-                cs = self.__inputParamDict[cs_file_path_list][0]
+            cs = self.__inputParamDict[cs_file_path_list][0]
 
-                if isinstance(cs, str):
-                    cs_path = cs
-                else:
-                    cs_path = cs['file_name']
+            if isinstance(cs, str):
+                cs_path = cs
+            else:
+                cs_path = cs['file_name']
 
-                self.__c2S.set_entry_id(master_entry, self.__bmrb_id)
-                self.__c2S.normalize_str(master_entry)
+            self.__c2S.set_entry_id(master_entry, self.__bmrb_id)
+            self.__c2S.normalize_str(master_entry)
 
-                master_entry.write_to_file(cs_path, show_comments=True, skip_empty_loops=True, skip_empty_tags=False)
+            master_entry.write_to_file(cs_path, show_comments=True, skip_empty_loops=True, skip_empty_tags=False)
 
         is_done = ann.perform(master_entry)
 

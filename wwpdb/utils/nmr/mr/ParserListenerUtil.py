@@ -5488,6 +5488,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                 if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
                                     _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
                                     authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
+
                             ext_mappings = 0
                             ext_fw = 0.0
                             for extSeq in nmrExtPolySeq:
@@ -5513,6 +5514,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                     if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
                                         _altKey = (item['auth_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
                                         authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
+
                             for extSeq in nmrExtPolySeq:
                                 if extSeq['auth_chain_id'] not in authAsymIds:
                                     continue
@@ -5559,6 +5561,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                     if item['label_asym_id'] not in labelAsymIds:
                                         labelAsymIds.append(item['label_asym_id'])
                                     compIds.add(item['comp_id'])
+
                                 for extSeq in nmrExtPolySeq:
                                     if extSeq['chain_id'] != labelAsymId:
                                         continue
@@ -5579,6 +5582,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                             if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
                                                 _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
                                                 authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
+
                                         ext_mappings = 0
                                         ext_fw = 0.0
                                         for extSeq in nmrExtPolySeq:
@@ -5655,6 +5659,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
                                     if item['label_asym_id'] not in labelAsymIds:
                                         labelAsymIds.append(item['label_asym_id'])
+
                             ext_mappings = 0
                             ext_fw = 0.0
                             for extSeq in nmrExtPolySeq:
@@ -5680,6 +5685,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
                                             _altKey = (item['auth_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
                                             authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
+
                             for extSeq in nmrExtPolySeq:
                                 if extSeq['auth_chain_id'] == _authAsymId:
                                     altKey = (extSeq['auth_chain_id'], extSeq['auth_seq_id'], extSeq['comp_id'])

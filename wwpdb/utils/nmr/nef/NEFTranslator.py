@@ -8690,7 +8690,7 @@ class NEFTranslator:
                                 offset = _cif_seq - _nef_seq
                         if cif_ps is not None and 'auth_seq_id' in cif_ps:
                             _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
-                    except IndexError:
+                    except (IndexError, ValueError):
                         pass
 
                 nef_seq = str(_nef_seq)

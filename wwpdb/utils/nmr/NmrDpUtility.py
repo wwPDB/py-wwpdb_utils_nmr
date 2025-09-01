@@ -21168,7 +21168,8 @@ class NmrDpUtility:
                                         cc_name = f"(Not available due to CCD status code {cc_rel_status})"
                                 cc_name = '' if cc_name is None else ', ' + cc_name
 
-                                if content_subtype.startswith('spectral_peak'):
+                                if content_subtype.startswith('spectral_peak') or (self.__csStat.peptideLike(comp_id)
+                                                                                   and atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3')):
 
                                     err = f"Unmatched atom name {atom_id!r} (comp_id {comp_id!r}{cc_name}) in a loop {lp_category}."
 

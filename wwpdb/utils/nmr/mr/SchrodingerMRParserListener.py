@@ -4022,7 +4022,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                                               for atom in _atomSelection
                                               if isinstance(atom, dict))] if len(_atomSelection) > 1 else _atomSelection
 
-        if len(atomSelection) > 0:
+        if len(atomSelection) > 0 and (self.depth == 0 or not self.__top_union_expr):
             self.stackSelections.append(atomSelection)
 
         if self.depth == 0 or not self.__top_union_expr:
@@ -9488,7 +9488,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
         self.exitSelection(ctx)
 
         if len(self.atomSelectionSet) == 1 and len(self.atomSelectionSet[0]) > 0 and self.__cur_store_name not in emptyValue:
-            self.storeSet[self.__cur_store_name] = copy.deepcopy(self.atomSelectionSet[0])
+            self.storeSet[self.__cur_store_name] = copy.copy(self.atomSelectionSet[0])
 
         self.atomSelectionSet.clear()
         self.__g.clear()

@@ -4,9 +4,12 @@ import json
 import re
 import pynmrstar
 import hashlib
+import requests
+import datetime
 
 from mmcif.io.IoAdapterPy import IoAdapterPy
 from typing import List, Tuple, Union, Optional
+from dateutil.parser import parse as parsedate
 
 try:
     from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
@@ -176,6 +179,9 @@ class gen_auth_view_onedep:
 
         self.__return_letter_path = os.path.join(self.__entry_dir, 'return_' + self.__bmrb_id + '.ltr')
 
+        self.__url_for_divided = 'https://files.pdbj.org/pub/pdb/data/structures/divided/'
+        self.__url_for_mmcif = self.__url_for_divided + 'mmCIF/'
+
         # self.__has_peak = False
 
         if not os.path.exists(self.__star_file_path):
@@ -216,6 +222,68 @@ class gen_auth_view_onedep:
         if self.__cif_file_path is None:
             print('Not found coordinates.')
             sys.exit(1)
+
+        def download_mmcif(work_dir, pdb_id):
+            cif_file = pdb_id + '.cif.gz'
+            cif_path = pdb_id[1:3] + '/' + cif_file
+
+            try:
+                print(f'Downloading {self.__url_for_mmcif + cif_path} -> {work_dir}/{cif_file} ...')
+                r = requests.get(self.__url_for_mmcif + cif_path, timeout=5.0)
+                with open(os.path.join(work_dir, cif_file), 'wb') as f:
+                    f.write(r.content)
+                cif_file = cif_file[:-3]
+                if os.path.exists(os.path.join(work_dir, cif_file)):
+                    os.remove(os.path.join(work_dir, cif_file))
+            except Exception as e:
+                print(str(e))
+
+        pdb_id = None
+        pk_file_lists = []
+
+        try:
+
+            cR = CifReader(False, sys.stderr)
+
+            if cR.parse(self.__cif_file_path):
+                database_2 = cR.getDictList('database_2')
+
+                for row in database_2:
+                    if row['database_id'] == 'PDB':
+                        pdb_id = row['database_code']
+                        break
+
+                pk_file_lists = cR.getDictList('pdbx_nmr_spectral_peak_list')
+
+        except Exception:
+            pass
+
+        if pdb_id is not None:
+            pdb_id = pdb_id.lower()
+
+            cif_file = pdb_id + '.cif.gz'
+            cif_path = pdb_id[1:3] + '/' + cif_file
+
+            try:
+                print(f'HEAD {self.__url_for_mmcif + cif_path}')
+                r = requests.head(self.__url_for_mmcif + cif_path, timeout=5.0)
+            except Exception as e:
+                print(str(e))
+
+            if r.status_code == 200:
+                url_last_modified = parsedate(r.headers['Last-Modified']).astimezone()
+
+                work_dir = cR.getDirPath()
+
+                if not os.path.exists(os.path.join(work_dir, cif_file)):
+                    download_mmcif(work_dir, pdb_id)
+
+                else:
+                    file_last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(work_dir, cif_file))).astimezone()
+                    if url_last_modified > file_last_modified:
+                        download_mmcif(work_dir, pdb_id)
+
+                self.__cif_file_path = os.path.join(work_dir, cif_file)
 
         self.__nmr_cif_file_path = None
         _version = None
@@ -770,18 +838,6 @@ class gen_auth_view_onedep:
 
                 else:
                     self.__mr_file_path.append(d['file_name'])
-
-        pk_file_lists = []
-
-        try:
-
-            cR = CifReader(False, sys.stderr)
-
-            if cR.parse(self.__cif_file_path):
-                pk_file_lists = cR.getDictList('pdbx_nmr_spectral_peak_list')
-
-        except Exception:
-            pass
 
         pk_dic = {}
 

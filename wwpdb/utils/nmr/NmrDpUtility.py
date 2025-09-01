@@ -61465,6 +61465,7 @@ class NmrDpUtility:
                                     alt_sf_framecode = 'XPLOR-NIH/CNS' + sf_framecode[9:]
                                 else:
                                     alt_sf_framecode = 'XPLOR-NIH/' + sf_framecode
+
                             else:
                                 alt_sf_framecode = sf_framecode
 
@@ -61564,10 +61565,19 @@ class NmrDpUtility:
 
                         else:
 
-                            if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                            if 'XPLOR-NIH_' in sf_framecode or sf_framecode.startswith('CNS'):
+                                if 'XPLOR-NIH' in sf_framecode:
+                                    alt_sf_framecode = 'XPLOR-NIH/CNS' + sf_framecode[9:]
+                                else:
+                                    alt_sf_framecode = 'XPLOR-NIH/' + sf_framecode
+
+                            else:
+                                alt_sf_framecode = sf_framecode
+
+                            if any(True for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode)):
 
                                 if self.__internal_mode:
-                                    _sf = next(_sf for _sf in master_entry.frame_list if _sf.name == sf_framecode)
+                                    _sf = next(_sf for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode))
                                     _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
                                     data_file_name = get_first_sf_tag(sf, 'Data_file_name')
                                     if len(_data_file_name) > 0 and _data_file_name != data_file_name:
@@ -61599,7 +61609,10 @@ class NmrDpUtility:
                                                 update_data_file_name = True
                                                 break
 
-                                    master_entry.remove_saveframe(sf_framecode)
+                                    if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                                        master_entry.remove_saveframe(sf_framecode)
+                                    else:
+                                        master_entry.remove_saveframe(alt_sf_framecode)
 
                                 else:
 

@@ -10184,7 +10184,7 @@ class XplorMRParserListener(ParseTreeListener):
                                               for atom in _atomSelection
                                               if isinstance(atom, dict))] if len(_atomSelection) > 1 else _atomSelection
 
-        if len(atomSelection) > 0:
+        if len(atomSelection) > 0 and (self.depth == 0 or not self.__top_union_expr):
             self.stackSelections.append(atomSelection)
 
         if self.depth == 0 or not self.__top_union_expr:
@@ -13613,7 +13613,7 @@ class XplorMRParserListener(ParseTreeListener):
                                 f"The 'store{num}' clause has no effect "
                                 "because the internal vector statement is not set yet.")
             else:
-                self.factor = copy.copy(self.storeSet[num])
+                self.factor = copy.deepcopy(self.storeSet[num])
 
         try:
 
@@ -15867,6 +15867,10 @@ class XplorMRParserListener(ParseTreeListener):
                 while self.stackVflc:
                     vector['value'] = self.stackVflc.pop()
                 self.vectorDo[vector_name].append(vector)
+
+        self.stackSelections.clear()
+        self.stackTerms = []
+        self.factor = {}
 
     # Enter a parse tree produced by XplorMRParser#vector_mode.
     def enterVector_mode(self, ctx: XplorMRParser.Vector_modeContext):

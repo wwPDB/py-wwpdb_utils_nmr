@@ -283,7 +283,7 @@ class gen_auth_view_onedep:
                     if url_last_modified > file_last_modified:
                         download_mmcif(work_dir, pdb_id)
 
-                self.__cif_file_path = os.path.join(work_dir, cif_file)
+                # self.__cif_file_path = os.path.join(work_dir, cif_file)
 
         self.__nmr_cif_file_path = None
         _version = None

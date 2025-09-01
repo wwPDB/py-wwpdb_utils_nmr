@@ -38247,20 +38247,21 @@ class NmrDpUtility:
 
         master_entry = self.__star_data[0]
 
-        prefix_sf_name = None
-        sf_name_map = {}
-        for sf in master_entry.get_saveframes_by_category(sf_category):
-            sf_id = get_first_sf_tag(sf, 'ID')
-            if isinstance(sf_id, str):
-                sf_id = int(sf_id)
-            sf_name_map[sf.name] = sf_id
-            if prefix_sf_name is None:
-                prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
-        if prefix_sf_name is not None and all(n.startswith(prefix_sf_name) for n in sf_name_map)\
-           and not all(sf_name[len(prefix_sf_name) + 1:] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
+        if self.__star_data_type[0] == 'Entry':
+            prefix_sf_name = None
+            sf_name_map = {}
             for sf in master_entry.get_saveframes_by_category(sf_category):
-                sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
-                set_sf_tag(sf, 'Sf_framecode', sf.name)
+                sf_id = get_first_sf_tag(sf, 'ID')
+                if isinstance(sf_id, str):
+                    sf_id = int(sf_id)
+                sf_name_map[sf.name] = sf_id
+                if prefix_sf_name is None:
+                    prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
+            if prefix_sf_name is not None and all(n.startswith(prefix_sf_name) for n in sf_name_map)\
+               and not all(sf_name[len(prefix_sf_name) + 1:] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
+                    set_sf_tag(sf, 'Sf_framecode', sf.name)
 
         if content_subtype in pk_sf_dict_holder:
 

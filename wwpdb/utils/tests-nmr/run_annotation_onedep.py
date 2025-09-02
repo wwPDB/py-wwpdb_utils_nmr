@@ -931,7 +931,7 @@ class gen_auth_view_onedep:
         has_loop = False
         has_stop = False
 
-        with open(file_path, "r") as ifh:
+        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
             for line in ifh:
                 if self.__datablock_pattern.match(line):
                     has_datablock = True
@@ -948,7 +948,7 @@ class gen_auth_view_onedep:
 
     def is_amb_top_file(self, file_path: str) -> bool:
 
-        with open(file_path, "r") as ifh:
+        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
             for line in ifh:
                 if self.__amb_top_pattern.match(line):
                     return True
@@ -957,7 +957,7 @@ class gen_auth_view_onedep:
 
     def is_amb_rst_file(self, file_path) -> bool:
 
-        with open(file_path, "r") as ifh:
+        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
             for line in ifh:
                 if self.__amb_rst_pattern.match(line):
                     return True
@@ -966,7 +966,7 @@ class gen_auth_view_onedep:
 
     def is_gro_top_file(self, file_path) -> bool:
 
-        with open(file_path, "r") as ifh:
+        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
             for line in ifh:
                 if self.__gro_top_pattern.match(line):
                     return True
@@ -975,7 +975,7 @@ class gen_auth_view_onedep:
 
     def is_gro_rst_file(self, file_path) -> bool:
 
-        with open(file_path, "r") as ifh:
+        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
             for line in ifh:
                 if self.__gro_rst_pattern.match(line):
                     return True
@@ -984,7 +984,7 @@ class gen_auth_view_onedep:
 
     def is_cha_top_file(self, file_path) -> bool:
 
-        with open(file_path, "r") as ifh:
+        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
             for line in ifh:
                 if self.__cha_top_pattern.match(line):
                     return True
@@ -993,7 +993,7 @@ class gen_auth_view_onedep:
 
     def is_cha_rst_file(self, file_path) -> bool:
 
-        with open(file_path, "r") as ifh:
+        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
             for line in ifh:
                 if self.__cha_rst_pattern.match(line):
                     return True
@@ -1056,7 +1056,7 @@ class gen_auth_view_onedep:
         utility.addOutput(name='return_letter_path', value=self.__return_letter_path, type='file')
         utility.setDestination(self.__annotated_star_file_path)
         utility.setLog(self.__annotated_log_file_path)
-        utility.setVerbose(True)
+        utility.setVerbose(False)
 
         utility.op('nmr-cs-mr-merge')
 

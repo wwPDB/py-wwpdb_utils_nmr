@@ -2066,6 +2066,7 @@ class BMRBAnnTasks:
                             num_of_dim = sp_info[idx]['num_of_dim'] = int(num_of_dim)
 
                         has_volume = has_height = has_assign = False
+                        details = 0
                         signature = []
 
                         if num_of_dim == 2:
@@ -2097,6 +2098,12 @@ class BMRBAnnTasks:
                                 if row[4] not in emptyValue:
                                     has_assign = True
 
+                            if has_assign and 'Details' in lp.tags:
+                                dat = lp.get_tag(['Details'])
+                                for row in dat:
+                                    if row not in emptyValue:
+                                        details += 1
+
                         elif num_of_dim == 3:
                             dat = lp.get_tag(tags_3d)
 
@@ -2125,6 +2132,12 @@ class BMRBAnnTasks:
                                     has_assign = True
                                     if _idx > MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY:
                                         break
+
+                            if has_assign and 'Details' in lp.tags:
+                                dat = lp.get_tag(['Details'])
+                                for row in dat:
+                                    if row not in emptyValue:
+                                        details += 1
 
                         elif num_of_dim == 4:
                             dat = lp.get_tag(tags_4d)
@@ -2155,9 +2168,16 @@ class BMRBAnnTasks:
                                     if _idx > MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY:
                                         break
 
+                            if has_assign and 'Details' in lp.tags:
+                                dat = lp.get_tag(['Details'])
+                                for row in dat:
+                                    if row not in emptyValue:
+                                        details += 1
+
                         sp_info[idx]['has_volume'] = has_volume
                         sp_info[idx]['has_height'] = has_height
                         sp_info[idx]['has_assign'] = has_assign
+                        sp_info[idx]['details'] = details
                         sp_info[idx]['signature'] = signature
 
                 except KeyError:
@@ -2182,6 +2202,7 @@ class BMRBAnnTasks:
                                 num_of_dim = sp_info[idx]['num_of_dim'] = int(num_of_dim)
 
                             has_volume = has_height = has_assign = False
+                            details = 0
                             signature = []
 
                             dat_pk_char = pk_char.get_tag(tags_pk_char)
@@ -2221,13 +2242,19 @@ class BMRBAnnTasks:
                             sp_info[idx]['has_volume'] = has_volume
                             sp_info[idx]['has_height'] = has_height
                             sp_info[idx]['has_assign'] = False
+                            sp_info[idx]['details'] = 0
                             try:
                                 pk_cs = sf.get_loop('_Assigned_peak_chem_shift')
-                                dat_pk_cs = pk_cs.get_tag('Auth_entity_ID')
+                                dat_pk_cs = pk_cs.get_tag(['Auth_entity_ID'])
                                 for row_pk_cs in dat_pk_cs:
                                     if row_pk_cs not in emptyValue:
                                         sp_info[idx]['has_assign'] = True
                                         break
+                                if sp_info[idx]['has_assign'] and 'Details' in pk_cs.tags:
+                                    dat_pk_cs = pk_cs.get_tag(['Details'])
+                                    for row_pk_cs in dat_pk_cs:
+                                        if row_pk_cs not in emptyValue:
+                                            sp_info[idx]['details'] += 1
                             except KeyError:
                                 pass
                             sp_info[idx]['signature'] = signature
@@ -2267,6 +2294,16 @@ class BMRBAnnTasks:
                             dup_idx.add(idx1)
                             res_idx[idx1] = idx2
                         continue
+
+                    if sp_info[idx1]['has_assign'] and sp_info[idx2]['has_assign']:
+                        if sp_info[idx1]['details'] < sp_info[idx2]['details']:
+                            dup_idx.add(idx2)
+                            res_idx[idx2] = idx1
+                            continue
+                        if sp_info[idx1]['details'] > sp_info[idx2]['details']:
+                            dup_idx.add(idx1)
+                            res_idx[idx1] = idx2
+                            continue
 
                     if sp_info[idx1]['has_volume'] != sp_info[idx2]['has_volume']:
                         if sp_info[idx1]['has_volume']:

@@ -35,7 +35,8 @@ try:
                                                        WELL_KNOWN_ISOTOPE_NUMBERS,
                                                        CS_UNCERTAINTY_RANGE,
                                                        getMaxEffDigits,
-                                                       roundString)
+                                                       roundString,
+                                                       retrieveOriginalFileName)
     from wwpdb.utils.nmr.CifToNmrStar import (CifToNmrStar,
                                               get_first_sf_tag,
                                               set_sf_tag)
@@ -53,7 +54,8 @@ except ImportError:
                                            WELL_KNOWN_ISOTOPE_NUMBERS,
                                            CS_UNCERTAINTY_RANGE,
                                            getMaxEffDigits,
-                                           roundString)
+                                           roundString,
+                                           retrieveOriginalFileName)
     from nmr.CifToNmrStar import (CifToNmrStar,
                                   get_first_sf_tag,
                                   set_sf_tag)
@@ -2347,18 +2349,26 @@ class BMRBAnnTasks:
                     dup_idx.add(idx2)
                     res_idx[idx2] = idx1
 
+                pk_name_pattern = re.compile(r'D_[0-9]+_nmr-peaks-upload_P([0-9]+).dat.V([0-9]+)$')
+                mr_name_pattern = re.compile(r'D_[0-9]+_mr-(\S+)_P([0-9]+).(\S+).V([0-9]+)$')
+
                 for idx in sorted(list(dup_idx)):
                     sf_framecode = sp_info[idx]['sf_framecode']
                     sf = master_entry.get_saveframe_by_name(sf_framecode)
                     file_name = get_first_sf_tag(sf, 'Data_file_name')
+                    file_name_ = retrieveOriginalFileName(file_name) if file_name not in emptyValue else file_name
 
                     res_sf_framecode = sp_info[res_idx[idx]]['sf_framecode']
 
-                    if len(file_name) > 0:
+                    if len(file_name_) > 0:
                         _sf = master_entry.get_saveframe_by_name(res_sf_framecode)
                         _file_name = get_first_sf_tag(_sf, 'Data_file_name')
-                        if _file_name != file_name:
-                            set_sf_tag(_sf, 'Data_file_name', file_name)
+                        _file_name_ = retrieveOriginalFileName(_file_name) if _file_name not in emptyValue else _file_name
+                        if _file_name != _file_name_:
+                            set_sf_tag(_sf, 'Data_file_name', _file_name_)
+                        if _file_name_ != file_name_ and not mr_name_pattern.match(file_name_)\
+                           and (len(_file_name_) == 0 or pk_name_pattern.match(_file_name_)):
+                            set_sf_tag(_sf, 'Data_file_name', file_name_)
 
                     update_sf_name[res_sf_framecode] = sf_framecode
 

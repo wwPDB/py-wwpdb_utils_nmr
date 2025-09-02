@@ -1752,29 +1752,6 @@ class OneDepAnnTasks:
                                         lp.data[idx][sw_name_col] = _sw_name
                                         break
 
-        # refresh saveframe name of spectral peak list if need
-        pk_list_sf_category = 'spectral_peak_list'
-        if pk_list_sf_category in self.__sfCategoryList:
-            prefix_sf_name = None
-            sf_name_map = {}
-            for sf in master_entry.get_saveframes_by_category(pk_list_sf_category):
-                tagNames = [t[0] for t in sf.tags]
-                if 'Text_data' in tagNames and get_first_sf_tag(sf, 'Text_data') in emptyValue:
-                    sf.remove_tag('Text_data')
-                    if 'Text_data_format' in tagNames:
-                        sf.remove_tag('Text_data_format')
-                sf_id = get_first_sf_tag(sf, 'ID')
-                if isinstance(sf_id, str):
-                    sf_id = int(sf_id)
-                sf_name_map[sf.name] = sf_id
-                if prefix_sf_name is None:
-                    prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
-            if prefix_sf_name is not None and all(n.startswith(prefix_sf_name) for n in sf_name_map)\
-               and not all(sf_name[len(prefix_sf_name) + 1:] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
-                for sf in master_entry.get_saveframes_by_category(pk_list_sf_category):
-                    sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
-                    set_sf_tag(sf, 'Sf_framecode', sf.name)
-
         # resolve through-space?
         pk_list_sf_category = 'spectral_peak_list'
         exp_list_sf_category = 'experiment_list'

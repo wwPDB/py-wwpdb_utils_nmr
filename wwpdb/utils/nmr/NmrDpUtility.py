@@ -32049,7 +32049,7 @@ class NmrDpUtility:
 
         if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode or self.__native_combined):  # DAOTHER-8751, 8817 (D_1300043061)
 
-            if len(self.__star_data) == 0:
+            if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
                 return True
 
             master_entry = self.__star_data[0]
@@ -38245,47 +38245,32 @@ class NmrDpUtility:
                                     if sf not in pk_sf_dict_holder[content_subtype]:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
-        master_entry = self.__star_data[0]
+        if len(self.__star_data) > 0 and isinstance(self.__star_data[0], pynmrstar.Entry):
+            master_entry = self.__star_data[0]
 
-        if self.__star_data_type[0] == 'Entry':
-            prefix_sf_name = None
-            sf_name_map = {}
-            for sf in master_entry.get_saveframes_by_category(sf_category):
-                sf_id = get_first_sf_tag(sf, 'ID')
-                if isinstance(sf_id, str):
-                    sf_id = int(sf_id)
-                sf_name_map[sf.name] = sf_id
-                if prefix_sf_name is None:
-                    prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
-            if prefix_sf_name is not None and all(n.startswith(prefix_sf_name) for n in sf_name_map)\
-               and not all(sf_name[len(prefix_sf_name) + 1:] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
-                for sf in master_entry.get_saveframes_by_category(sf_category):
-                    sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
-                    set_sf_tag(sf, 'Sf_framecode', sf.name)
+            if content_subtype in pk_sf_dict_holder:
 
-        if content_subtype in pk_sf_dict_holder:
+                for sf in pk_sf_dict_holder[content_subtype]:
 
-            for sf in pk_sf_dict_holder[content_subtype]:
+                    cs_list = get_first_sf_tag(sf['saveframe'], 'Chemical_shift_list')
 
-                cs_list = get_first_sf_tag(sf['saveframe'], 'Chemical_shift_list')
+                    if cs_list in emptyValue:
+                        sf_category = self.sf_categories['nmr-star']['chem_shift']
+                        cs_sf_list = master_entry.get_saveframes_by_category(sf_category)
+                        if len(cs_sf_list) == 1:
+                            set_sf_tag(sf['saveframe'], 'Chemical_shift_list', get_first_sf_tag(cs_sf_list[0], 'Sf_framecode'))
 
-                if cs_list in emptyValue:
-                    sf_category = self.sf_categories['nmr-star']['chem_shift']
-                    cs_sf_list = master_entry.get_saveframes_by_category(sf_category)
-                    if len(cs_sf_list) == 1:
-                        set_sf_tag(sf['saveframe'], 'Chemical_shift_list', get_first_sf_tag(cs_sf_list[0], 'Sf_framecode'))
+                    # prevent duplication of spectral peak list
+                    data_file_name = get_first_sf_tag(sf['saveframe'], 'Data_file_name')
+                    if data_file_name not in emptyValue and len(master_entry.get_saveframes_by_tag_and_value('Data_file_name', data_file_name)) > 0:
+                        continue
 
-                # prevent duplication of spectral peak list
-                data_file_name = get_first_sf_tag(sf['saveframe'], 'Data_file_name')
-                if data_file_name not in emptyValue and len(master_entry.get_saveframes_by_tag_and_value('Data_file_name', data_file_name)) > 0:
-                    continue
+                    try:
+                        master_entry.add_saveframe(sf['saveframe'])
+                    except ValueError:
+                        pass
 
-                try:
-                    master_entry.add_saveframe(sf['saveframe'])
-                except ValueError:
-                    pass
-
-            self.__pk_sf_holder = pk_sf_dict_holder['spectral_peak']
+                self.__pk_sf_holder = pk_sf_dict_holder['spectral_peak']
 
         if len(poly_seq_set) > 1:
 
@@ -39226,8 +39211,7 @@ class NmrDpUtility:
                                     if sf not in cs_sf_dict_holder[content_subtype]:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
-        if content_subtype in cs_sf_dict_holder:
-
+        if content_subtype in cs_sf_dict_holder and len(self.__star_data) > 0 and isinstance(self.__star_data[0], pynmrstar.Entry):
             master_entry = self.__star_data[0]
 
             for sf in cs_sf_dict_holder[content_subtype]:
@@ -39459,7 +39443,7 @@ class NmrDpUtility:
 
         if self.__combined_mode and (not self.__remediation_mode or self.__annotation_mode or self.__native_combined):  # DAOTHER-8751, 8817 (D_1300043061)
 
-            if len(self.__star_data) == 0:
+            if len(self.__star_data) == 0 or not isinstance(self.__star_data[0], pynmrstar.Entry):
                 return True
 
             master_entry = self.__star_data[0]
@@ -53011,15 +52995,12 @@ class NmrDpUtility:
                 if file_type == 'nef':
                     return True
 
-                content_subtype = 'spectral_peak'
-
-                sf_category = self.sf_categories[file_type][content_subtype]
-
                 master_entry = self.__star_data[0]
 
-                prefix_sf_name = None
+                sf_category = 'spectral_peak_list'
+
                 sf_name_map = {}
-                for sf in master_entry.get_saveframes_by_category(sf_category):
+                for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
                     tagNames = [t[0] for t in sf.tags]
                     if 'Text_data' in tagNames and get_first_sf_tag(sf, 'Text_data') in emptyValue:
                         sf.remove_tag('Text_data')
@@ -53027,13 +53008,12 @@ class NmrDpUtility:
                             sf.remove_tag('Text_data_format')
                     sf_id = get_first_sf_tag(sf, 'ID')
                     if isinstance(sf_id, str):
-                        sf_id = int(sf_id)
+                        sf_id = int(sf_id) if len(sf_id) > 0 else idx
                     sf_name_map[sf.name] = sf_id
-                    if prefix_sf_name is None:
-                        prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
-                if prefix_sf_name is not None and all(n.startswith(prefix_sf_name) for n in sf_name_map)\
-                   and not all(sf_name[len(prefix_sf_name) + 1:] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
+
+                if not all(sf_name.split('_')[-1] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
                     for sf in master_entry.get_saveframes_by_category(sf_category):
+                        prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
                         sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
                         set_sf_tag(sf, 'Sf_framecode', sf.name)
 
@@ -53045,7 +53025,7 @@ class NmrDpUtility:
 
             return True
 
-        if len(self.__star_data) == 0 or self.__star_data_type[0] != 'Entry':
+        if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
             return False
 
         input_source = self.report.input_sources[0]
@@ -59407,6 +59387,26 @@ class NmrDpUtility:
             if (self.__bmrb_only or self.__internal_mode) and self.__dstPath is not None:
                 master_entry = self.__c2S.normalize(self.__star_data[0])
 
+                sf_category = 'spectral_peak_list'
+
+                sf_name_map = {}
+                for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
+                    tagNames = [t[0] for t in sf.tags]
+                    if 'Text_data' in tagNames and get_first_sf_tag(sf, 'Text_data') in emptyValue:
+                        sf.remove_tag('Text_data')
+                        if 'Text_data_format' in tagNames:
+                            sf.remove_tag('Text_data_format')
+                    sf_id = get_first_sf_tag(sf, 'ID')
+                    if isinstance(sf_id, str):
+                        sf_id = int(sf_id) if len(sf_id) > 0 else idx
+                    sf_name_map[sf.name] = sf_id
+
+                if not all(sf_name.split('_')[-1] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
+                    for sf in master_entry.get_saveframes_by_category(sf_category):
+                        prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
+                        sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
+                        set_sf_tag(sf, 'Sf_framecode', sf.name)
+
                 master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
             return True
@@ -59466,6 +59466,26 @@ class NmrDpUtility:
 
                 if self.__dstPath__ is None:
                     self.__dstPath__ = self.__outputParamDict['nmr_cif_file_path']
+
+                sf_category = 'spectral_peak_list'
+
+                sf_name_map = {}
+                for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
+                    tagNames = [t[0] for t in sf.tags]
+                    if 'Text_data' in tagNames and get_first_sf_tag(sf, 'Text_data') in emptyValue:
+                        sf.remove_tag('Text_data')
+                        if 'Text_data_format' in tagNames:
+                            sf.remove_tag('Text_data_format')
+                    sf_id = get_first_sf_tag(sf, 'ID')
+                    if isinstance(sf_id, str):
+                        sf_id = int(sf_id) if len(sf_id) > 0 else idx
+                    sf_name_map[sf.name] = sf_id
+
+                if not all(sf_name.split('_')[-1] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
+                    for sf in master_entry.get_saveframes_by_category(sf_category):
+                        prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
+                        sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
+                        set_sf_tag(sf, 'Sf_framecode', sf.name)
 
                 master_entry.write_to_file(self.__dstPath__, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
@@ -59905,13 +59925,10 @@ class NmrDpUtility:
         if self.__combined_mode or not self.__remediation_mode or self.__dstPath is None:
             return True
 
-        if len(self.__star_data) == 0 or self.__star_data[0] is None:
+        if len(self.__star_data) == 0 or not isinstance(self.__star_data[0], pynmrstar.Entry):
             return False
 
         master_entry = self.__star_data[0]
-
-        if not isinstance(master_entry, pynmrstar.Entry):
-            return False
 
         sf_framecode = 'constraint_statistics'
 
@@ -62052,13 +62069,10 @@ class NmrDpUtility:
         if file_type == 'nef':
             return True
 
-        if len(self.__star_data) == 0 or self.__star_data[0] is None:
+        if len(self.__star_data) == 0 or not isinstance(self.__star_data[0], pynmrstar.Entry):
             return False
 
         master_entry = self.__star_data[0]
-
-        if not isinstance(master_entry, pynmrstar.Entry):
-            return False
 
         if 'constraint_statistics' in self.__sf_category_list and self.__list_id_counter is not None:
             return False
@@ -63353,7 +63367,7 @@ class NmrDpUtility:
         if file_type == 'nef':
             return True
 
-        if len(self.__star_data) == 0 or self.__star_data[0] is None:
+        if len(self.__star_data) == 0 or not isinstance(self.__star_data[0], pynmrstar.Entry):
             return False
 
         master_entry = self.__star_data[0]
@@ -63986,28 +64000,6 @@ class NmrDpUtility:
                             sf.add_loop(lp)
 
         if self.__op == 'nmr-cs-mr-merge' and self.__bmrb_only:
-            sf_category = 'spectral_peak_list'
-            if sf_category in self.__sf_category_list:
-                prefix_sf_name = None
-                sf_name_map = {}
-                for sf in master_entry.get_saveframes_by_category(sf_category):
-                    tagNames = [t[0] for t in sf.tags]
-                    if 'Text_data' in tagNames and get_first_sf_tag(sf, 'Text_data') in emptyValue:
-                        sf.remove_tag('Text_data')
-                        if 'Text_data_format' in tagNames:
-                            sf.remove_tag('Text_data_format')
-                    sf_id = get_first_sf_tag(sf, 'ID')
-                    if isinstance(sf_id, str):
-                        sf_id = int(sf_id)
-                    sf_name_map[sf.name] = sf_id
-                    if prefix_sf_name is None:
-                        prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
-                if prefix_sf_name is not None and all(n.startswith(prefix_sf_name) for n in sf_name_map)\
-                   and not all(sf_name[len(prefix_sf_name) + 1:] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
-                    for sf in master_entry.get_saveframes_by_category(sf_category):
-                        sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
-                        set_sf_tag(sf, 'Sf_framecode', sf.name)
-
             cs_file_path_list = 'chem_shift_file_path_list'
 
             cs = self.__inputParamDict[cs_file_path_list][0]

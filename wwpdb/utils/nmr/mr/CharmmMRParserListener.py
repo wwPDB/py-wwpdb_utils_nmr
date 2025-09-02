@@ -7839,10 +7839,11 @@ class CharmmMRParserListener(ParseTreeListener):
                     self.factor = self.__consumeFactor_expressions(self.factor, cifCheck=True)
                     if 'atom_selection' in self.factor:
                         self.factor['atom_selection'] = [atom for atom in _refAtomSelection
-                                                         if not any(_atom for _atom in self.factor['atom_selection']
-                                                                    if _atom['chain_id'] == atom['chain_id']
-                                                                    and _atom['seq_id'] == atom['seq_id']
-                                                                    and _atom['atom_id'] == atom['atom_id'])]
+                                                         if isinstance(atom, dict)
+                                                         and not any(_atom for _atom in self.factor['atom_selection']
+                                                                     if _atom['chain_id'] == atom['chain_id']
+                                                                     and _atom['seq_id'] == atom['seq_id']
+                                                                     and _atom['atom_id'] == atom['atom_id'])]
                     else:
                         self.factor['atom_selection'] = _refAtomSelection
                     if len(self.factor['atom_selection']) == 0:

@@ -241,7 +241,6 @@ if __name__ == "__main__":
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/7cv3/bmr36374/work/data/D_1300018300_mr-upload_P5.xplor-nih.V2',
                      '../../tests-nmr/mock-data-remediation/7cv3/7cv3.cif')
-    print(reader_listener.getReasonsForReparsing())
 
     reader = XplorMRReader(True)
     reader.setDebugMode(True)

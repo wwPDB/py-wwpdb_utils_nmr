@@ -3598,8 +3598,14 @@ class CharmmMRParserListener(ParseTreeListener):
                                               for atom in _atomSelection
                                               if isinstance(atom, dict))] if len(_atomSelection) > 1 else _atomSelection
 
-        if len(atomSelection) > 0 and (self.depth == 0 or not self.__top_union_expr):
-            self.stackSelections.append(atomSelection)
+        if len(atomSelection) > 0:
+            if self.depth == 0 and not self.__top_union_expr:
+                self.stackSelections.append(atomSelection)
+            elif self.depth > 0 and self.__top_union_expr and not self.__cur_union_expr:
+                if len(self.stackSelections) > 0 and isinstance(self.stackSelections[-1], str):
+                    self.stackSelections.append(atomSelection)
+            else:
+                self.stackSelections.append(atomSelection)
 
         if self.depth == 0 or not self.__top_union_expr:
             self.factor = {}

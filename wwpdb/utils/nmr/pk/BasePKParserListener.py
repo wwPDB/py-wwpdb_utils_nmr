@@ -6798,6 +6798,19 @@ class BasePKParserListener():
                         atomId = term[index:len(term)]
                         if index - 1 >= 0 and term[index - 1] in PEAK_HALF_SPIN_NUCLEUS:
                             if not resNameLike[idx]:
+                                if hint is not None and 'comp_id' in hint[0]:
+                                    compId = hint[0]['comp_id']
+                                    _index = term.index(elem)
+                                    _atomId = term[_index:len(term)]
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                    if details is None:
+                                        atomNameLike[idx] = True
+                                        atomNameSpan[idx] = (_index, len(term))
+                                    else:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                        if details is None:
+                                            atomNameLike[idx] = True
+                                            atomNameSpan[idx] = (index, len(term))
                                 continue
                             if compId[-1] in PEAK_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
                                 pass

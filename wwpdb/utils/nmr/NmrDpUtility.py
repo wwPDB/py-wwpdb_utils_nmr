@@ -52997,7 +52997,7 @@ class NmrDpUtility:
 
                 master_entry = self.__star_data[0]
 
-                self.__remediateSpectralPeakListSaveframes(master_entry)
+                self.__remediateSpectralPeakListSaveframe(master_entry)
 
                 if self.__srcPath is not None:
                     self.__c2S.set_entry_id(master_entry, self.__bmrb_id)
@@ -59360,8 +59360,8 @@ class NmrDpUtility:
 
         return True
 
-    def __remediateSpectralPeakListSaveframes(self, star_data: pynmrstar.Entry):
-        """ Remediate spectral peak list saveframes
+    def __remediateSpectralPeakListSaveframe(self, star_data: pynmrstar.Entry):
+        """ Remediate spectral peak list saveframe
         """
 
         if not self.__bmrb_only:
@@ -59373,9 +59373,10 @@ class NmrDpUtility:
         for idx, sf in enumerate(star_data.get_saveframes_by_category(sf_category), start=1):
             tagNames = [t[0] for t in sf.tags]
             if 'Text_data' in tagNames and get_first_sf_tag(sf, 'Text_data') in emptyValue:
-                sf.remove_tag('Text_data')
+                # sf.remove_tag('Text_data')
                 if 'Text_data_format' in tagNames:
-                    sf.remove_tag('Text_data_format')
+                    set_sf_tag(sf, 'Text_data_format', '.')
+                    # sf.remove_tag('Text_data_format')
             sf_id = get_first_sf_tag(sf, 'ID')
             if isinstance(sf_id, str):
                 sf_id = int(sf_id) if len(sf_id) > 0 else idx
@@ -59467,7 +59468,7 @@ class NmrDpUtility:
             if (self.__bmrb_only or self.__internal_mode) and self.__dstPath is not None:
                 master_entry = self.__c2S.normalize(self.__star_data[0])
 
-                self.__remediateSpectralPeakListSaveframes(master_entry)
+                self.__remediateSpectralPeakListSaveframe(master_entry)
 
                 master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
@@ -59529,7 +59530,7 @@ class NmrDpUtility:
                 if self.__dstPath__ is None:
                     self.__dstPath__ = self.__outputParamDict['nmr_cif_file_path']
 
-                self.__remediateSpectralPeakListSaveframes(master_entry)
+                self.__remediateSpectralPeakListSaveframe(master_entry)
 
                 master_entry.write_to_file(self.__dstPath__, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 

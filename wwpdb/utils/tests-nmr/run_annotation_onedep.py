@@ -1024,21 +1024,20 @@ class gen_auth_view_onedep:
         if self.__nmr_cif_file_path is None and not self.__master_has_cs_loop and self.__cs_ann_file_path is not None:
             cs_path_list.append(self.__cs_ann_file_path)
         utility.addInput(name='chem_shift_file_path_list', value=cs_path_list, type='file_list')
-        combined, original_file_name = is_combined_nmr_data(self.__star_file_path)
+        _, original_file_name = is_combined_nmr_data(self.__star_file_path)
         if self.__nmr_cif_file_path is not None:
             utility.addInput(name='nmr_cif_file_path', value=self.__nmr_cif_file_path, type='file')
-        if not combined:
-            if len(self.__mr_file_path) > 0:
-                utility.addInput(name="restraint_file_path_list", value=self.__mr_file_path, type="file_list")
-            if len(self.__ar_file_path) > 0:
-                ar_path_list = []
-                for ar_file_path, ar_file_type in zip(self.__ar_file_path, self.__ar_file_type):
-                    if original_file_name is not None and ar_file_type in original_file_name and len(original_file_name[ar_file_type]) > 0:
-                        ar_path_list.append({'file_name': ar_file_path, 'file_type': ar_file_type,
-                                             'original_file_name': original_file_name[ar_file_type].pop(0)})
-                    else:
-                        ar_path_list.append({'file_name': ar_file_path, 'file_type': ar_file_type})
-                utility.addInput(name='atypical_restraint_file_path_list', value=ar_path_list, type='file_dict_list')
+        if len(self.__mr_file_path) > 0:
+            utility.addInput(name="restraint_file_path_list", value=self.__mr_file_path, type="file_list")
+        if len(self.__ar_file_path) > 0:
+            ar_path_list = []
+            for ar_file_path, ar_file_type in zip(self.__ar_file_path, self.__ar_file_type):
+                if original_file_name is not None and ar_file_type in original_file_name and len(original_file_name[ar_file_type]) > 0:
+                    ar_path_list.append({'file_name': ar_file_path, 'file_type': ar_file_type,
+                                         'original_file_name': original_file_name[ar_file_type].pop(0)})
+                else:
+                    ar_path_list.append({'file_name': ar_file_path, 'file_type': ar_file_type})
+            utility.addInput(name='atypical_restraint_file_path_list', value=ar_path_list, type='file_dict_list')
         utility.addInput(name='coordinate_file_path', value=self.__cif_file_path, type='file')
         utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         utility.addInput(name='nonblk_bad_nterm', value=True, type='param')

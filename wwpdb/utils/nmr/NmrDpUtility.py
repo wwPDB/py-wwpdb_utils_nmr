@@ -34504,7 +34504,7 @@ class NmrDpUtility:
         """ Validate data content of legacy NMR restraint files.
         """
 
-        if self.__combined_mode:
+        if self.__combined_mode and not self.__bmrb_only:
             return True
 
         ar_file_path_list = 'atypical_restraint_file_path_list'
@@ -36516,7 +36516,7 @@ class NmrDpUtility:
         """ Validate data content of legacy NMR spectral peak files and merge them if possible.
         """
 
-        if self.__combined_mode:
+        if self.__combined_mode and not self.__bmrb_only:
             return True
 
         ar_file_path_list = 'atypical_restraint_file_path_list'
@@ -52997,25 +52997,7 @@ class NmrDpUtility:
 
                 master_entry = self.__star_data[0]
 
-                sf_category = 'spectral_peak_list'
-
-                sf_name_map = {}
-                for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
-                    tagNames = [t[0] for t in sf.tags]
-                    if 'Text_data' in tagNames and get_first_sf_tag(sf, 'Text_data') in emptyValue:
-                        sf.remove_tag('Text_data')
-                        if 'Text_data_format' in tagNames:
-                            sf.remove_tag('Text_data_format')
-                    sf_id = get_first_sf_tag(sf, 'ID')
-                    if isinstance(sf_id, str):
-                        sf_id = int(sf_id) if len(sf_id) > 0 else idx
-                    sf_name_map[sf.name] = sf_id
-
-                if not all(sf_name.split('_')[-1] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
-                    for sf in master_entry.get_saveframes_by_category(sf_category):
-                        prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
-                        sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
-                        set_sf_tag(sf, 'Sf_framecode', sf.name)
+                self.__remediateSpectralPeakListSaveframes(master_entry)
 
                 if self.__srcPath is not None:
                     self.__c2S.set_entry_id(master_entry, self.__bmrb_id)
@@ -59378,6 +59360,104 @@ class NmrDpUtility:
 
         return True
 
+    def __remediateSpectralPeakListSaveframes(self, star_data: pynmrstar.Entry):
+        """ Remediate spectral peak list saveframes
+        """
+
+        if not self.__bmrb_only:
+            return
+
+        sf_category = 'spectral_peak_list'
+
+        sf_name_map = {}
+        for idx, sf in enumerate(star_data.get_saveframes_by_category(sf_category), start=1):
+            tagNames = [t[0] for t in sf.tags]
+            if 'Text_data' in tagNames and get_first_sf_tag(sf, 'Text_data') in emptyValue:
+                sf.remove_tag('Text_data')
+                if 'Text_data_format' in tagNames:
+                    sf.remove_tag('Text_data_format')
+            sf_id = get_first_sf_tag(sf, 'ID')
+            if isinstance(sf_id, str):
+                sf_id = int(sf_id) if len(sf_id) > 0 else idx
+            sf_name_map[sf.name] = sf_id
+
+        if not all(sf_name.split('_')[-1] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
+            for sf in star_data.get_saveframes_by_category(sf_category):
+                prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
+                sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
+                set_sf_tag(sf, 'Sf_framecode', sf.name)
+
+        truncated = False
+        for sf in star_data.get_saveframes_by_category(sf_category):
+
+            lp_category = '_Peak_row_format'
+
+            try:
+
+                sf.get_loop(lp_category)
+                continue
+
+            except KeyError:
+
+                lp_category = '_Peak_char'
+
+                try:
+
+                    sf.get_loop(lp_category)
+                    continue
+
+                except KeyError:
+                    pass
+
+            if get_first_sf_tag(sf, 'Text_data') in emptyValue:
+                star_data.remove_saveframe(sf.name)
+                truncated = True
+
+        if truncated:
+
+            total_peak_lists = len(star_data.get_saveframes_by_category(sf_category))
+
+            if total_peak_lists == 0:
+
+                sf_category = 'entry_interview'
+
+                if sf_category in self.__sf_category_list:
+
+                    int_sf = star_data.get_saveframes_by_category(sf_category)[0]
+
+                    set_sf_tag(int_sf, 'Spectral_peak_lists', '.')
+
+            sf_category = 'entry_information'
+
+            if sf_category in self.__sf_category_list:
+
+                inf_sf = star_data.get_saveframes_by_category(sf_category)[0]
+
+                lp_category = '_Data_set'
+
+                try:
+
+                    lp = inf_sf.get_loop(lp_category)
+
+                    type_col = lp.tags.index('Type')
+                    count_col = lp.tags.index('Count')
+
+                    for idx, row in enumerate(lp):
+
+                        if row[type_col] != 'spectral_peak_list':
+                            continue
+
+                        if total_peak_lists == 0:
+                            del lp.data[idx]
+
+                        else:
+                            lp.data[idx][count_col] = total_peak_lists
+
+                        break
+
+                except KeyError:
+                    pass
+
     def __depositNmrData(self) -> bool:
         """ Deposit next NMR unified data file.
         """
@@ -59387,25 +59467,7 @@ class NmrDpUtility:
             if (self.__bmrb_only or self.__internal_mode) and self.__dstPath is not None:
                 master_entry = self.__c2S.normalize(self.__star_data[0])
 
-                sf_category = 'spectral_peak_list'
-
-                sf_name_map = {}
-                for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
-                    tagNames = [t[0] for t in sf.tags]
-                    if 'Text_data' in tagNames and get_first_sf_tag(sf, 'Text_data') in emptyValue:
-                        sf.remove_tag('Text_data')
-                        if 'Text_data_format' in tagNames:
-                            sf.remove_tag('Text_data_format')
-                    sf_id = get_first_sf_tag(sf, 'ID')
-                    if isinstance(sf_id, str):
-                        sf_id = int(sf_id) if len(sf_id) > 0 else idx
-                    sf_name_map[sf.name] = sf_id
-
-                if not all(sf_name.split('_')[-1] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
-                    for sf in master_entry.get_saveframes_by_category(sf_category):
-                        prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
-                        sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
-                        set_sf_tag(sf, 'Sf_framecode', sf.name)
+                self.__remediateSpectralPeakListSaveframes(master_entry)
 
                 master_entry.write_to_file(self.__dstPath, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 
@@ -59467,25 +59529,7 @@ class NmrDpUtility:
                 if self.__dstPath__ is None:
                     self.__dstPath__ = self.__outputParamDict['nmr_cif_file_path']
 
-                sf_category = 'spectral_peak_list'
-
-                sf_name_map = {}
-                for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
-                    tagNames = [t[0] for t in sf.tags]
-                    if 'Text_data' in tagNames and get_first_sf_tag(sf, 'Text_data') in emptyValue:
-                        sf.remove_tag('Text_data')
-                        if 'Text_data_format' in tagNames:
-                            sf.remove_tag('Text_data_format')
-                    sf_id = get_first_sf_tag(sf, 'ID')
-                    if isinstance(sf_id, str):
-                        sf_id = int(sf_id) if len(sf_id) > 0 else idx
-                    sf_name_map[sf.name] = sf_id
-
-                if not all(sf_name.split('_')[-1] == str(sf_id) for sf_name, sf_id in sf_name_map.items()):
-                    for sf in master_entry.get_saveframes_by_category(sf_category):
-                        prefix_sf_name = '_'.join(sf.name.split('_')[:-1])
-                        sf.name = f'{prefix_sf_name}_{sf_name_map[sf.name]}'
-                        set_sf_tag(sf, 'Sf_framecode', sf.name)
+                self.__remediateSpectralPeakListSaveframes(master_entry)
 
                 master_entry.write_to_file(self.__dstPath__, show_comments=(self.__bmrb_only and self.__internal_mode), skip_empty_loops=True, skip_empty_tags=False)
 

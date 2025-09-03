@@ -30169,7 +30169,7 @@ class NmrDpUtility:
                                 if sp_dim['ID'] != i:
                                     continue
                                 axis_codes.append(sp_dim['Axis_code'])
-                                if 'Atom_isotope_number' in sp_dim and 'Atom_type' in sp_dim:
+                                if 'Atom_isotope_number' in sp_dim and 'Atom_type' in sp_dim and sp_dim['Atom_type'] is not None:
                                     alt_axis_codes.append(str(sp_dim['Atom_isotope_number']) + sp_dim['Atom_type'])
                                 else:
                                     alt_axis_codes.append(sp_dim['Axis_code'])
@@ -30667,7 +30667,7 @@ class NmrDpUtility:
                             if sp_dim['ID'] != i:
                                 continue
                             axis_codes.append(sp_dim['Axis_code'])
-                            if 'Atom_isotope_number' in sp_dim and 'Atom_type' in sp_dim:
+                            if 'Atom_isotope_number' in sp_dim and 'Atom_type' in sp_dim and sp_dim['Atom_type'] is not None:
                                 alt_axis_codes.append(str(sp_dim['Atom_isotope_number']) + sp_dim['Atom_type'])
                             else:
                                 alt_axis_codes.append(sp_dim['Axis_code'])

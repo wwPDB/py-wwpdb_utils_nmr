@@ -774,8 +774,11 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
         _region1 = _dict1['_spectral_region']
         if _region1 == 'H' and d == 2:  # all
             for _dim_id2, _dict2 in cur_spectral_dim.items():
-                if _dim_id1 == _dim_id2 or _dict2['_spectral_region'] != _region1:
+                if _dim_id1 == _dim_id2:
                     continue
+                if 'long_range' not in cur_spectral_dim[1]:
+                    if _dict2['_spectral_region'] != _region1:
+                        continue
                 if not any(_transfer for _transfer in cur_spectral_dim_transfer
                            if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
@@ -792,8 +795,11 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
             _region1 = _dict1['_spectral_region']
             if _region1 == 'C':  # all
                 for _dim_id2, _dict2 in cur_spectral_dim.items():
-                    if _dim_id1 == _dim_id2 or _dict2['_spectral_region'] != _region1:
+                    if _dim_id1 == _dim_id2:
                         continue
+                    if 'long_range' not in cur_spectral_dim[1]:
+                        if _dict2['_spectral_region'] != _region1:
+                            continue
                     if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
@@ -2344,8 +2350,11 @@ class BasePKParserListener():
                         _region1 = _dict1['_spectral_region']
                         if _region1 == 'H' and d == 2:  # all
                             for _dim_id2, _dict2 in cur_spectral_dim.items():
-                                if _dim_id1 == _dim_id2 or _dict2['_spectral_region'] != _region1:
+                                if _dim_id1 == _dim_id2:
                                     continue
+                                if 'long_range' not in cur_spectral_dim[1]:
+                                    if _dict2['_spectral_region'] != _region1:
+                                        continue
                                 if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                            if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
                                     if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):
@@ -2362,8 +2371,11 @@ class BasePKParserListener():
                             _region1 = _dict1['_spectral_region']
                             if _region1 == 'C':  # all
                                 for _dim_id2, _dict2 in cur_spectral_dim.items():
-                                    if _dim_id1 == _dim_id2 or _dict2['_spectral_region'] != _region1:
+                                    if _dim_id1 == _dim_id2:
                                         continue
+                                    if 'long_range' not in cur_spectral_dim[1]:
+                                        if _dict2['_spectral_region'] != _region1:
+                                            continue
                                     if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                                if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
                                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):

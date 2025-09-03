@@ -799,6 +799,18 @@ def is_rtf_file(fPath: str) -> bool:
     return False
 
 
+def is_eps_or_pdf_file(fPath: str) -> bool:
+    """ Check if there are EPS/PDF header characters in a file.
+    """
+
+    with open(fPath, 'rb') as ifh:
+        chunk = ifh.read(5)
+        if chunk in (b'%!PS-', b'%PDF-'):
+            return True
+
+    return False
+
+
 def detect_encoding(line: str) -> str:
     """ Return encoding of a given string.
     """
@@ -12823,7 +12835,7 @@ class NmrDpUtility:
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
 
-            if is_binary_file(file_path):  # DAOTHER-9425
+            if is_binary_file(file_path) or is_eps_or_pdf_file(file_path):  # DAOTHER-9425
 
                 err = f"The spectal peak list file {file_name!r} (any plain text format) is not plain text file."
 
@@ -15881,7 +15893,7 @@ class NmrDpUtility:
 
             self.__cur_original_ar_file_name = original_file_name
 
-            if is_binary_file(src_file):
+            if is_binary_file(src_file) or is_eps_or_pdf_file(src_file):
 
                 if not src_file.endswith('.gz'):
 

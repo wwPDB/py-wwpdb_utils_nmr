@@ -1296,7 +1296,7 @@ class OneDepAnnTasks:
 
                 if new_flag:
                     if sf_category in self.__sfCategoryList:
-                        if sf_category == 'sample':
+                        if sf_category in ('sample', 'sample_conditions'):
                             continue
                         for sf in master_entry.get_saveframes_by_category(sf_category):
                             del master_entry[sf]

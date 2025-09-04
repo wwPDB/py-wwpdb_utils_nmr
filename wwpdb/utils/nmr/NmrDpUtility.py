@@ -32130,7 +32130,7 @@ class NmrDpUtility:
                                     if self.__verbose:
                                         self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
-                                    eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 and not self.__internal_mode else 0
+                                    eff_block_id = 1  # if len(containerList[0].getObjNameList()) == 0 and not self.__internal_mode else 0
                                     abandon_symbolic_labels(containerList)
                                     myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
@@ -39507,7 +39507,7 @@ class NmrDpUtility:
                                 if self.__verbose:
                                     self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
-                                eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 and not self.__internal_mode else 0
+                                eff_block_id = 1  # if len(containerList[0].getObjNameList()) == 0 and not self.__internal_mode else 0
                                 abandon_symbolic_labels(containerList)
                                 myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
@@ -59558,7 +59558,7 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
-                    eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 and not self.__internal_mode else 0
+                    eff_block_id = 1  # if len(containerList[0].getObjNameList()) == 0 and not self.__internal_mode else 0
                     abandon_symbolic_labels(containerList)
                     myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
@@ -59966,7 +59966,7 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
-                    eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 and not self.__internal_mode else 0
+                    eff_block_id = 1  # if len(containerList[0].getObjNameList()) == 0 and not self.__internal_mode else 0
                     abandon_symbolic_labels(containerList)
                     myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 
@@ -63713,7 +63713,7 @@ class NmrDpUtility:
                         if self.__verbose:
                             self.__lfh.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
 
-                        eff_block_id = 1 if len(containerList[0].getObjNameList()) == 0 and not self.__internal_mode else 0
+                        eff_block_id = 1  # if len(containerList[0].getObjNameList()) == 0 and not self.__internal_mode else 0
                         abandon_symbolic_labels(containerList)
                         myIo.writeFile(self.__outputParamDict['nmr_cif_file_path'], containerList=containerList[eff_block_id:])
 

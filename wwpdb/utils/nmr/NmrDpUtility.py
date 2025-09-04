@@ -53012,6 +53012,8 @@ class NmrDpUtility:
                 self.__remediateSpectralPeakListSaveframe(master_entry)
 
                 if self.__srcPath is not None:
+                    self.__performBMRBjAnnTasks(True)
+
                     self.__c2S.set_entry_id(master_entry, self.__bmrb_id)
                     self.__c2S.normalize_str(master_entry)
 
@@ -62098,12 +62100,12 @@ class NmrDpUtility:
 
         return {k: v for k, v in datum_counter.items() if v > 0}
 
-    def __performBMRBjAnnTasks(self) -> bool:
+    def __performBMRBjAnnTasks(self, enforce: bool = False) -> bool:
         """ Perform a series of BMRBj specific annotation tasks.
             @note: this method requires additional software packages, network access to PubMed, NCBI Taxonomy, BMRB-API, BMRB ETS, etc
         """
 
-        if self.__combined_mode or not self.__remediation_mode or self.__dstPath is None:
+        if self.__combined_mode or not self.__remediation_mode or (self.__dstPath is None and not enforce):
             return True
 
         if len(self.__star_data) == 0 or self.__star_data[0] is None:

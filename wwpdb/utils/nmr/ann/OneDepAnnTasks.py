@@ -1296,6 +1296,8 @@ class OneDepAnnTasks:
 
                 if new_flag:
                     if sf_category in self.__sfCategoryList:
+                        if sf_category == 'sample':
+                            continue
                         for sf in master_entry.get_saveframes_by_category(sf_category):
                             del master_entry[sf]
 
@@ -1458,6 +1460,11 @@ class OneDepAnnTasks:
                             elif len(master_entry.get_saveframes_by_tag_and_value('Experiment_type', data_file_name)) > 0:
                                 sf = master_entry.get_saveframes_by_tag_and_value('Experiment_type', data_file_name)[0]
                                 has_uniq_sf_tag = False
+
+                    # prevent overwrite of chemical shift
+                    if sf_category == 'assigned_chemical_shifts':
+                        if sf_category in self.__sfCategoryList:
+                            has_uniq_sf_tag = False
 
                     if page not in self.__lpCategory or sf_tag_prefix not in self.__lpCategory[page]:
                         if reset and has_uniq_sf_tag:

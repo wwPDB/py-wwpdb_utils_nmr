@@ -61513,6 +61513,40 @@ class NmrDpUtility:
         if len(cf_loop) > 0:
             master_entry.add_saveframe(cst_sf)
 
+        # resolve CYANA distance subtype
+
+        dat = cf_loop.get_tag(['Constraint_filename', 'Software_name', 'Block_ID', 'Constraint_type', 'Constraint_subtype', 'Constraint_subsubtype'])
+
+        for dist_subtype in ['NOE', 'ROE', 'hydrogen bond', 'disulfide bond', 'diselenide bond']:
+            cyana_subtype = {}
+            for row in dat:
+                if row[1] == 'CYANA' and row[3] == 'distance' and row[4] == dist_subtype and row[5] == 'simple':
+                    if row[0] not in cyana_subtype or row[2] in emptyValue:
+                        cyana_subtype[row[0]] = []
+                    cyana_subtype[row[0]].append(row[2] if isinstance(row[2], str) else str(row[2]))
+
+            if any(len(v) > 1 for v in cyana_subtype.values()):
+                for v in cyana_subtype.values():
+                    if len(v) < 2:
+                        continue
+                    cyana_potential_type = {}
+                    for block_id in v:
+                        for sf in master_entry.get_saveframes_by_category('general_distance_constraints'):
+                            _block_id = get_first_sf_tag(sf, 'Block_ID')
+                            if _block_id in emptyValue:
+                                continue
+                            if isinstance(_block_id, int):
+                                _block_id = str(_block_id)
+                            if _block_id == block_id:
+                                cyana_potential_type[get_first_sf_tag(sf, 'Potential_type').split('-')[0]] = block_id
+                    if len(cyana_potential_type) > 1:
+                        if 'upper' in cyana_potential_type:
+                            block_id = cyana_potential_type['upper']
+                            for idx, row in enumerate(dat):
+                                if row[1] == 'CYANA' and row[3] == 'distance' and row[4] == dist_subtype and row[5] == 'simple'\
+                                   and (row[2] if isinstance(row[2], str) else str(row[2])) == block_id:
+                                    cf_loop.data[idx][cf_loop.tags.index('Constraint_subtype')] = f'{dist_subtype} (upper bound)'
+
         update_data_file_name = False
         data_file_name_map = {}
 
@@ -61538,11 +61572,11 @@ class NmrDpUtility:
 
                         if any(True for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode)):
 
-                            if self.__internal_mode:
+                            if self.__internal_mode or self.__bmrb_only:
                                 _sf = next(_sf for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode))
                                 _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
                                 data_file_name = get_first_sf_tag(sf, 'Data_file_name')
-                                if len(_data_file_name) > 0 and _data_file_name != data_file_name:
+                                if len(_data_file_name) > 0 and _data_file_name != data_file_name and self.__internal_mode:
                                     data_file_name_map[data_file_name] = _data_file_name
                                     set_sf_tag(sf, 'Data_file_name', _data_file_name)
 
@@ -61634,11 +61668,11 @@ class NmrDpUtility:
 
                         if any(True for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode)):
 
-                            if self.__internal_mode:
+                            if self.__internal_mode or self.__bmrb_only:
                                 _sf = next(_sf for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode))
                                 _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
                                 data_file_name = get_first_sf_tag(sf, 'Data_file_name')
-                                if len(_data_file_name) > 0 and _data_file_name != data_file_name:
+                                if len(_data_file_name) > 0 and _data_file_name != data_file_name and self.__bmrb_only:
                                     data_file_name_map[data_file_name] = _data_file_name
                                     set_sf_tag(sf, 'Data_file_name', _data_file_name)
 
@@ -63315,6 +63349,40 @@ class NmrDpUtility:
 
             if len(cf_loop) > 0:
                 master_entry.add_saveframe(cst_sf)
+
+        # resolve CYANA distance subtype
+
+        dat = cf_loop.get_tag(['Constraint_filename', 'Software_name', 'Block_ID', 'Constraint_type', 'Constraint_subtype', 'Constraint_subsubtype'])
+
+        for dist_subtype in ['NOE', 'ROE', 'hydrogen bond', 'disulfide bond', 'diselenide bond']:
+            cyana_subtype = {}
+            for row in dat:
+                if row[1] == 'CYANA' and row[3] == 'distance' and row[4] == dist_subtype and row[5] == 'simple':
+                    if row[0] not in cyana_subtype or row[2] in emptyValue:
+                        cyana_subtype[row[0]] = []
+                    cyana_subtype[row[0]].append(row[2] if isinstance(row[2], str) else str(row[2]))
+
+            if any(len(v) > 1 for v in cyana_subtype.values()):
+                for v in cyana_subtype.values():
+                    if len(v) < 2:
+                        continue
+                    cyana_potential_type = {}
+                    for block_id in v:
+                        for sf in master_entry.get_saveframes_by_category('general_distance_constraints'):
+                            _block_id = get_first_sf_tag(sf, 'Block_ID')
+                            if _block_id in emptyValue:
+                                continue
+                            if isinstance(_block_id, int):
+                                _block_id = str(_block_id)
+                            if _block_id == block_id:
+                                cyana_potential_type[get_first_sf_tag(sf, 'Potential_type').split('-')[0]] = block_id
+                    if len(cyana_potential_type) > 1:
+                        if 'upper' in cyana_potential_type:
+                            block_id = cyana_potential_type['upper']
+                            for idx, row in enumerate(dat):
+                                if row[1] == 'CYANA' and row[3] == 'distance' and row[4] == dist_subtype and row[5] == 'simple'\
+                                   and (row[2] if isinstance(row[2], str) else str(row[2])) == block_id:
+                                    cf_loop.data[idx][cf_loop.tags.index('Constraint_subtype')] = f'{dist_subtype} (upper bound)'
 
         # update _Data_set/Datum loop
 

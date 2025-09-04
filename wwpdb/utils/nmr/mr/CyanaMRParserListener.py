@@ -2426,6 +2426,11 @@ class CyanaMRParserListener(ParseTreeListener):
                     self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
                                     f"The lower limit value='{lower_limit:.3f}' must be less than the upper limit value '{upper_limit:.3f}'.")
 
+            if upper_limit is None and lower_limit is not None and lower_limit <= 0.0:  # ignore meaningless lower limit restraint
+                self.__f.append(f"[Range value error] {self.__getCurrentRestraint()}"
+                                f"The lower limit value='{lower_limit:.3f}' must be within range {DIST_RESTRAINT_ERROR}.")
+                validRange = False
+
         if not validRange:
             return None
 

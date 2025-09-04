@@ -234,6 +234,12 @@ if __name__ == "__main__":
     reader = CnsMRReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-combine-at-upload/bmr36393/data/D_1300019003_mr-upload_P3.cns.V3',
+                     '../../tests-nmr/mock-data-combine-at-upload/bmr36393/data/D_1300019003_model-release_P1.cif.V3')
+
+    reader = CnsMRReader(True)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/8voi/bmr31139/work/data/D_1000280655_mr-upload_P1.cns.V2',
                      '../../tests-nmr/mock-data-remediation/8voi/8voi.cif')
 

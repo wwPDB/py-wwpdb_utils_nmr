@@ -61523,79 +61523,71 @@ class NmrDpUtility:
                     for sf_item in self.__mr_sf_dict_holder[content_subtype]:
                         sf = sf_item['saveframe']
                         sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
+
                         if content_subtype == 'fchiral_restraint':
                             set_sf_tag(sf, 'Stereo_assigned_count', sf_item['id'])
 
-                        if self.__bmrb_only:
-
-                            if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
-                                continue
-                            if self.__internal_mode and self.__nmr_cif_sf_category_list is not None and sf.category in self.__nmr_cif_sf_category_list:
-                                continue
+                        if 'XPLOR-NIH_' in sf_framecode or sf_framecode.startswith('CNS'):
+                            if 'XPLOR-NIH' in sf_framecode:
+                                alt_sf_framecode = 'XPLOR-NIH/CNS' + sf_framecode[9:]
+                            else:
+                                alt_sf_framecode = 'XPLOR-NIH/' + sf_framecode
 
                         else:
+                            alt_sf_framecode = sf_framecode
 
-                            if 'XPLOR-NIH_' in sf_framecode or sf_framecode.startswith('CNS'):
-                                if 'XPLOR-NIH' in sf_framecode:
-                                    alt_sf_framecode = 'XPLOR-NIH/CNS' + sf_framecode[9:]
-                                else:
-                                    alt_sf_framecode = 'XPLOR-NIH/' + sf_framecode
+                        if any(True for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode)):
 
-                            else:
-                                alt_sf_framecode = sf_framecode
+                            if self.__internal_mode:
+                                _sf = next(_sf for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode))
+                                _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
+                                data_file_name = get_first_sf_tag(sf, 'Data_file_name')
+                                if len(_data_file_name) > 0 and _data_file_name != data_file_name:
+                                    data_file_name_map[data_file_name] = _data_file_name
+                                    set_sf_tag(sf, 'Data_file_name', _data_file_name)
 
-                            if any(True for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode)):
+                                    fileListId = self.__file_path_list_len
 
-                                if self.__internal_mode:
-                                    _sf = next(_sf for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode))
-                                    _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
-                                    data_file_name = get_first_sf_tag(sf, 'Data_file_name')
-                                    if len(_data_file_name) > 0 and _data_file_name != data_file_name:
-                                        data_file_name_map[data_file_name] = _data_file_name
-                                        set_sf_tag(sf, 'Data_file_name', _data_file_name)
+                                    for ar in self.__inputParamDict[ar_file_path_list]:
 
-                                        fileListId = self.__file_path_list_len
+                                        input_source = self.report.input_sources[fileListId]
+                                        input_source_dic = input_source.get()
 
-                                        for ar in self.__inputParamDict[ar_file_path_list]:
+                                        fileListId += 1
 
-                                            input_source = self.report.input_sources[fileListId]
-                                            input_source_dic = input_source.get()
+                                        ar_file_type = input_source_dic['file_type']
 
-                                            fileListId += 1
+                                        if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
+                                            continue
 
-                                            ar_file_type = input_source_dic['file_type']
-
-                                            if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
-                                                continue
-
-                                            if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
-                                                if ar['original_file_name'] == data_file_name:
-                                                    ar['original_file_name'] = _data_file_name
-                                                    update_data_file_name = True
-                                                    break
-
-                                            elif getRestraintFormatName(ar_file_type).split()[0] in sf_framecode:
+                                        if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
+                                            if ar['original_file_name'] == data_file_name:
                                                 ar['original_file_name'] = _data_file_name
                                                 update_data_file_name = True
                                                 break
 
-                                    if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
-                                        master_entry.remove_saveframe(sf_framecode)
-                                    else:
-                                        master_entry.remove_saveframe(alt_sf_framecode)
+                                        elif getRestraintFormatName(ar_file_type).split()[0] in sf_framecode:
+                                            ar['original_file_name'] = _data_file_name
+                                            update_data_file_name = True
+                                            break
 
+                                if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                                    master_entry.remove_saveframe(sf_framecode)
                                 else:
+                                    master_entry.remove_saveframe(alt_sf_framecode)
 
-                                    err = f"Couldn't add a saveframe with name {sf_framecode!r} since a saveframe with that name already exists in {original_file_name!r} file. "\
-                                          f"Please remove {sf_framecode!r} saveframe and re-upload the {self.readable_file_type[file_type]} file."
+                            else:
 
-                                    self.report.error.appendDescription('format_issue',
-                                                                        {'file_name': file_name, 'description': err})
-                                    self.report.setError()
+                                err = f"Couldn't add a saveframe with name {sf_framecode!r} since a saveframe with that name already exists in {original_file_name!r} file. "\
+                                      f"Please remove {sf_framecode!r} saveframe and re-upload the {self.readable_file_type[file_type]} file."
 
-                                    self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - "
-                                                     f"{file_name} {err}\n")
-                                    continue
+                                self.report.error.appendDescription('format_issue',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                                self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - "
+                                                 f"{file_name} {err}\n")
+                                continue
 
                         master_entry.add_saveframe(sf)
 
@@ -61631,76 +61623,67 @@ class NmrDpUtility:
                         sf.add_tag('Text_data_format', 'json')
                         sf.add_tag('Text_data', getPrettyJson(other_data))
 
-                        if self.__bmrb_only:
-
-                            if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
-                                continue
-                            if self.__internal_mode and self.__nmr_cif_sf_category_list is not None and sf.category in self.__nmr_cif_sf_category_list:
-                                continue
+                        if 'XPLOR-NIH_' in sf_framecode or sf_framecode.startswith('CNS'):
+                            if 'XPLOR-NIH' in sf_framecode:
+                                alt_sf_framecode = 'XPLOR-NIH/CNS' + sf_framecode[9:]
+                            else:
+                                alt_sf_framecode = 'XPLOR-NIH/' + sf_framecode
 
                         else:
+                            alt_sf_framecode = sf_framecode
 
-                            if 'XPLOR-NIH_' in sf_framecode or sf_framecode.startswith('CNS'):
-                                if 'XPLOR-NIH' in sf_framecode:
-                                    alt_sf_framecode = 'XPLOR-NIH/CNS' + sf_framecode[9:]
-                                else:
-                                    alt_sf_framecode = 'XPLOR-NIH/' + sf_framecode
+                        if any(True for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode)):
 
-                            else:
-                                alt_sf_framecode = sf_framecode
+                            if self.__internal_mode:
+                                _sf = next(_sf for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode))
+                                _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
+                                data_file_name = get_first_sf_tag(sf, 'Data_file_name')
+                                if len(_data_file_name) > 0 and _data_file_name != data_file_name:
+                                    data_file_name_map[data_file_name] = _data_file_name
+                                    set_sf_tag(sf, 'Data_file_name', _data_file_name)
 
-                            if any(True for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode)):
+                                    fileListId = self.__file_path_list_len
 
-                                if self.__internal_mode:
-                                    _sf = next(_sf for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode))
-                                    _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
-                                    data_file_name = get_first_sf_tag(sf, 'Data_file_name')
-                                    if len(_data_file_name) > 0 and _data_file_name != data_file_name:
-                                        data_file_name_map[data_file_name] = _data_file_name
-                                        set_sf_tag(sf, 'Data_file_name', _data_file_name)
+                                    for ar in self.__inputParamDict[ar_file_path_list]:
 
-                                        fileListId = self.__file_path_list_len
+                                        input_source = self.report.input_sources[fileListId]
+                                        input_source_dic = input_source.get()
 
-                                        for ar in self.__inputParamDict[ar_file_path_list]:
+                                        fileListId += 1
 
-                                            input_source = self.report.input_sources[fileListId]
-                                            input_source_dic = input_source.get()
+                                        ar_file_type = input_source_dic['file_type']
 
-                                            fileListId += 1
+                                        if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
+                                            continue
 
-                                            ar_file_type = input_source_dic['file_type']
-
-                                            if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
-                                                continue
-
-                                            if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
-                                                if ar['original_file_name'] == data_file_name:
-                                                    ar['original_file_name'] = _data_file_name
-                                                    update_data_file_name = True
-                                                    break
-
-                                            else:
+                                        if 'original_file_name' in ar and ar['original_file_name'] not in emptyValue:
+                                            if ar['original_file_name'] == data_file_name:
                                                 ar['original_file_name'] = _data_file_name
                                                 update_data_file_name = True
                                                 break
 
-                                    if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
-                                        master_entry.remove_saveframe(sf_framecode)
-                                    else:
-                                        master_entry.remove_saveframe(alt_sf_framecode)
+                                        else:
+                                            ar['original_file_name'] = _data_file_name
+                                            update_data_file_name = True
+                                            break
 
+                                if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
+                                    master_entry.remove_saveframe(sf_framecode)
                                 else:
+                                    master_entry.remove_saveframe(alt_sf_framecode)
 
-                                    err = f"Couldn't add a saveframe with name {sf_framecode!r} since a saveframe with that name already exists in {original_file_name!r} file. "\
-                                          f"Please remove {sf_framecode!r} saveframe and re-upload the {self.readable_file_type[file_type]} file."
+                            else:
 
-                                    self.report.error.appendDescription('format_issue',
-                                                                        {'file_name': file_name, 'description': err})
-                                    self.report.setError()
+                                err = f"Couldn't add a saveframe with name {sf_framecode!r} since a saveframe with that name already exists in {original_file_name!r} file. "\
+                                      f"Please remove {sf_framecode!r} saveframe and re-upload the {self.readable_file_type[file_type]} file."
 
-                                    self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - "
-                                                     f"{file_name} {err}\n")
-                                    continue
+                                self.report.error.appendDescription('format_issue',
+                                                                    {'file_name': file_name, 'description': err})
+                                self.report.setError()
+
+                                self.__lfh.write(f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - "
+                                                 f"{file_name} {err}\n")
+                                continue
 
                         master_entry.add_saveframe(sf)
 

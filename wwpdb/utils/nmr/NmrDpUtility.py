@@ -9024,7 +9024,7 @@ class NmrDpUtility:
                                 sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                                 self.__star_data[0].remove_saveframe(sf_framecode)
                         continue
-                    if self.__star_data_type[csListId] == 'Entry' and self.__star_data[csListId] is not None:
+                    if csListId < len(self.__star_data) and self.__star_data_type[csListId] == 'Entry' and self.__star_data[csListId] is not None:
                         src_sf_category_list, _ = self.__nefT.get_inventory_list(self.__star_data[csListId])
 
                         # copy cs data of the annotated cs file to the master template

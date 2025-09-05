@@ -1081,8 +1081,10 @@ class gen_auth_view_onedep:
             print(f"{self.__bmrb_id}: {report['information']['status']}")
         elif 'format_issue' in report['error']:
             print(f"{self.__bmrb_id}: {report['information']['status']}\n format_issue: {report['error']['format_issue'][0]['description']}")
+            os.remove(self.__annotated_star_file_path)
         elif 'missing_mandatory_content' in report['error']:
             print(f"{self.__bmrb_id}: {report['information']['status']}\n missing_mandatory_content: {report['error']['missing_mandatory_content'][0]['description']}")
+            os.remove(self.__annotated_star_file_path)
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print(f"{self.__bmrb_id}: {report['information']['status']}, {error_type}")

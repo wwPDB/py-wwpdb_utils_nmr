@@ -408,8 +408,10 @@ class BMRBAnnTasks:
                 if cs_ref_id in cs_ref_sf_framecode:
                     set_sf_tag(sf, 'Chem_shift_reference_label', f'${cs_ref_sf_framecode[cs_ref_id]}')
                 else:
+                    cs_ref_id = min(list(cs_ref_sf_framecode.keys()))
+                    set_sf_tag(sf, 'Chem_shift_reference_ID', cs_ref_id)
+                    set_sf_tag(sf, 'Chem_shift_reference_label', f'${cs_ref_sf_framecode[cs_ref_id]}')
                     isotope_nums[cs_ref_id] = set()
-                    cs_ref_sf_framecode[cs_ref_id] = f'chem_shift_reference_{cs_ref_id}'
 
                 smpl_cond_list_id = get_first_sf_tag(sf, 'Sample_condition_list_ID')
                 if not isinstance(smpl_cond_list_id, int):
@@ -421,7 +423,9 @@ class BMRBAnnTasks:
                 if smpl_cond_list_id in smpl_cond_sf_framecode:
                     set_sf_tag(sf, 'Sample_condition_list_label', f'${smpl_cond_sf_framecode[smpl_cond_list_id]}')
                 else:
-                    set_sf_tag(sf, 'Sample_condition_list_ID', 1)
+                    smpl_cond_list_id = min(list(smpl_cond_sf_framecode.keys()))
+                    set_sf_tag(sf, 'Sample_condition_list_ID', smpl_cond_list_id)
+                    set_sf_tag(sf, 'Sample_condition_list_label', f'${smpl_cond_sf_framecode[smpl_cond_list_id]}')
 
                 exp_list_sf_category = 'experiment_list'
 

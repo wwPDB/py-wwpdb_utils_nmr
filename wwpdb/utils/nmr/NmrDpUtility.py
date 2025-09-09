@@ -27159,8 +27159,7 @@ class NmrDpUtility:
                     _seq_key = seq_key if seq_key in coord_atom_site else _seq_key
                 if _seq_key in coord_atom_site\
                    and (coord_atom_site[_seq_key]['comp_id'] == comp_id
-                        or _seq_key not in coord_unobs_res
-                        or coord_unobs_res[_seq_key]['comp_id'] != comp_id):  # 8b9r: A:24:VAL (unobserved), A:24:CU
+                        or (_seq_key in coord_unobs_res and coord_unobs_res[_seq_key]['comp_id'] != comp_id)):  # 8b9r: A:24:VAL (unobserved), A:24:CU
                     _coord_atom_site = coord_atom_site[_seq_key]
                     _atom_site_atom_id = _coord_atom_site['atom_id']
                     # DAOTHER-8817

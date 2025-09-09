@@ -238,6 +238,11 @@ class XplorMRReader:
 if __name__ == "__main__":
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-combine-at-upload/bmr36213/data/D_1300009464_mr-upload_P1.xplor-nih.V2',
+                 '../../tests-nmr/mock-data-combine-at-upload/bmr36213/data/D_1300009464_model-release_P1.cif.V1')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/7cv3/bmr36374/work/data/D_1300018300_mr-upload_P5.xplor-nih.V2',
                      '../../tests-nmr/mock-data-remediation/7cv3/7cv3.cif')

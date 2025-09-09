@@ -12435,6 +12435,9 @@ class XplorMRParserListener(ParseTreeListener):
                                 desc = '(nitroxide spin label)'
                             self.spinLabeling = desc
 
+                        if coordAtomSite is not None and compId != coordAtomSite['comp_id'] and any(_atomId not in atomSiteAtomId for _atomId in atomIds):
+                            atomIds = self.getAtomIdList(_factor, coordAtomSite['comp_id'], _atomId)
+
                         for _atomId in atomIds:
                             ccdCheck = not cifCheck
 

@@ -48,6 +48,7 @@ except ImportError:
 # This class defines a complete listener for a parse tree produced by XeasyPKParser.
 class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
+    __spectrum_names = None
     __index = None
     __labels = None
     __axis_order = None
@@ -73,18 +74,21 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
     # Enter a parse tree produced by XeasyPKParser#xeasy_pk.
     def enterXeasy_pk(self, ctx: XeasyPKParser.Xeasy_pkContext):  # pylint: disable=unused-argument
+        self.__spectrum_names = {}
+
         self.enter()
         self.__g = []
 
     # Exit a parse tree produced by XeasyPKParser#xeasy_pk.
     def exitXeasy_pk(self, ctx: XeasyPKParser.Xeasy_pkContext):  # pylint: disable=unused-argument
-        self.exit()
+        self.exit(self.__spectrum_names if len(self.__spectrum_names) > 0 else None)
 
     # Enter a parse tree produced by XeasyPKParser#dimension.
     def enterDimension(self, ctx: XeasyPKParser.DimensionContext):
         if ctx.Integer_ND():
             self.num_of_dim = int(str(ctx.Integer_ND()))
             self.acq_dim_id = 1
+        self.spectrum_name = None
         self.__index = None
         self.__labels = {}
         self.__axis_order = {}
@@ -154,6 +158,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
     def enterSpectrum(self, ctx: XeasyPKParser.SpectrumContext):
         _dim_id = 0
         if ctx.Simple_name_SP(_dim_id):
+            self.spectrum_name = str(ctx.Simple_name_SP(0))
             _dim_id += 1
             while ctx.Simple_name_SP(_dim_id):
                 self.num_of_dim = max(self.num_of_dim, _dim_id)
@@ -180,6 +185,10 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.num_of_dim = 2
         self.initSpectralDim()
         self.fillSpectralDimWithLabels()
+        if self.num_of_dim not in self.__spectrum_names:
+            self.__spectrum_names[self.num_of_dim] = {}
+        if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
+            self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
 
     # Exit a parse tree produced by XeasyPKParser#peak_list_2d.
     def exitPeak_list_2d(self, ctx: XeasyPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
@@ -277,6 +286,10 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.num_of_dim = 3
         self.initSpectralDim()
         self.fillSpectralDimWithLabels()
+        if self.num_of_dim not in self.__spectrum_names:
+            self.__spectrum_names[self.num_of_dim] = {}
+        if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
+            self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
 
     # Exit a parse tree produced by XeasyPKParser#peak_list_3d.
     def exitPeak_list_3d(self, ctx: XeasyPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
@@ -376,6 +389,10 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.num_of_dim = 4
         self.initSpectralDim()
         self.fillSpectralDimWithLabels()
+        if self.num_of_dim not in self.__spectrum_names:
+            self.__spectrum_names[self.num_of_dim] = {}
+        if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
+            self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
 
     # Exit a parse tree produced by XeasyPKParser#peak_list_4d.
     def exitPeak_list_4d(self, ctx: XeasyPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument

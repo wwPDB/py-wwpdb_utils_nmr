@@ -1272,6 +1272,17 @@ class OneDepAnnTasks:
         if not isinstance(master_entry, pynmrstar.Entry):
             return False
 
+        exp_lp = exp_id_list = None
+        exp_list_sf_category = 'experiment_list'
+        if exp_list_sf_category in self.__sfCategoryList:
+            exp_list_sf = master_entry.get_saveframes_by_category(exp_list_sf_category)[0]
+            exp_lp_category = '_Experiment'
+            try:
+                exp_lp = exp_list_sf.get_loop(exp_lp_category)
+                exp_id_list = exp_lp.get_tag('ID')
+            except KeyError:
+                exp_lp = None
+
         for page in self.__pages:
 
             for sf_category, sf_tag_prefix, new_flag in zip(self.__sfCategory[page], self.__sfTagPrefix[page], self.__sfNewFlag[page]):
@@ -1413,7 +1424,10 @@ class OneDepAnnTasks:
                                                 _id = get_first_sf_tag(sf, tag_map[3])
                                                 if isinstance(_id, int) or len(_id) > 0:
                                                     continue
-                                            set_sf_tag(sf, tag_map[3], row[tag_map[1]])
+                                            if tag_map[3] == 'Experiment_ID' and exp_id_list is not None and row[tag_map[1]] not in exp_id_list:
+                                                pass
+                                            else:
+                                                set_sf_tag(sf, tag_map[3], row[tag_map[1]])
                                             has_uniq_sf_tag = True
 
                                     if not has_uniq_sf_tag and reset:
@@ -1761,14 +1775,7 @@ class OneDepAnnTasks:
 
         # resolve through-space?
         pk_list_sf_category = 'spectral_peak_list'
-        exp_list_sf_category = 'experiment_list'
         if pk_list_sf_category in self.__sfCategoryList and exp_list_sf_category in self.__sfCategoryList:
-            exp_list_sf = master_entry.get_saveframes_by_category(exp_list_sf_category)[0]
-            exp_lp_category = '_Experiment'
-            try:
-                exp_lp = exp_list_sf.get_loop(exp_lp_category)
-            except KeyError:
-                exp_lp = None
             if exp_lp is not None:
                 exp_tags = ['ID', 'Name']
                 if set(exp_tags) & set(exp_lp.tags) == set(exp_tags):

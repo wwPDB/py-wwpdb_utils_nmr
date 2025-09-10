@@ -107,6 +107,7 @@
 # 12-Mar-2025  M. Yokochi - allow to reset auth_seq_id of cs loop if necessary (v4.3.0, DAOTHER-9927)
 # 09-Apr-2025  M. Yokochi - allow missing of chemical shift loop for standalone NMR data conversion service (v4.4.0, DAOTHER-9785)
 # 23-May-2025  M. Yokochi - resolve pseudo atom name of non-standard residue based on local CCD derived from the coordinated (v4.5.0, DAOTHER-10105)
+# 11-Sep-2025  M. Yokochi - disallow chemical shift zero value except for methyl atoms (DAOTHER-9785)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -4386,6 +4387,7 @@ class NEFTranslator:
         is_nef_dihed_lp = 'nef_dihedral_restraint' in lp_category
         is_star_dist_lp = 'Gen_dist_constraint' in lp_category
         is_star_dihed_lp = 'Torsion_angle_constraint' in lp_category
+        is_cs_lp = 'nef_chemical_shift' in lp_category or 'Atom_chem_shift' in lp_category
         is_target_lp = is_nef_dist_lp or is_nef_dihed_lp or is_star_dist_lp or is_star_dihed_lp
 
         def skip_empty_value_error(lp, idx):
@@ -5633,6 +5635,12 @@ class NEFTranslator:
                                         try:
                                             _range = d['range']
                                             ent[name] = float(val)
+                                            if is_cs_lp and ent[name] == 0.0 and name in ('value', 'Val'):
+                                                comp_id = row[tags.index('residue_name' if 'nef' in lp_category else 'Comp_ID')]
+                                                atom_id = row[tags.index('atom_name' if 'nef' in lp_category else 'Atom_ID')]
+                                                atom_ids, _, details = self.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)[0]
+                                                if details is None and not any(methyl_atom in atom_ids for methyl_atom in self.__csStat.getMethylAtoms(comp_id)):
+                                                    remove_bad_pattern = True
                                         except KeyError:
                                             raise ValueError(f"Range of data item {name} is not defined")
                                         except (ValueError, TypeError):

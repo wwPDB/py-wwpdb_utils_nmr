@@ -213,6 +213,9 @@ C_METHYL_CENTER_MIN = 10
 HN_AROMATIC_CENTER_MAX = 9
 HN_AROMATIC_CENTER_MIN = 6
 
+H_IMIDE_CENTER_MAX = 15
+H_IMIDE_CENTER_MIN = 10
+
 H_ALL_CENTER_MAX = HN_AROMATIC_CENTER_MIN
 H_ALL_CENTER_MIN = 4
 
@@ -1652,6 +1655,8 @@ class BasePKParserListener():
                 return 'HN/H-aromatic'
             if H_ALL_CENTER_MIN < _position <= H_ALL_CENTER_MAX and atom_type == 'H':
                 return 'H'  # all
+            if H_IMIDE_CENTER_MIN < _position <= H_IMIDE_CENTER_MAX and atom_type == 'H':
+                return 'H-imide'
             max_ppm = max(cur_spectral_dim['freq_hint']) if len(cur_spectral_dim['freq_hint']) > 0 else _position
             if H_ALIPHATIC_CENTER_MIN < _position <= H_ALIPHATIC_CENTER_MAX and atom_type == 'H':
                 return 'H-aliphatic' if max_ppm < 7 else 'H'
@@ -6881,10 +6886,28 @@ class BasePKParserListener():
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                         resNameLike[idx] = False
                                     break
-                                elif compId in ('DT', 'T') and atomId == 'CM':
-                                    cur_sp_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-                                    if all('fixed' in cur_sp_dim[_dim_id] and cur_sp_dim[_dim_id]['atom_type'] == 'H' for _dim_id in range(1, self.num_of_dim + 1)):
+                                cur_sp_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+                                if all('fixed' in cur_sp_dim[_dim_id] and cur_sp_dim[_dim_id]['atom_type'] == 'H' for _dim_id in range(1, self.num_of_dim + 1)):
+                                    if compId in ('DT', 'T') and atomId == 'CM':
                                         _str[idx] = _str[idx].replace('CM', 'H7')
+                                        _string = ' '.join(_str)
+                                        return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                    if compId in ('DC', 'C') and atomId.startswith("NH"):
+                                        if atomId == "NH''":
+                                            _str[idx] = _str[idx].replace("NH''", 'H42')
+                                        elif atomId == "NH'":
+                                            _str[idx] = _str[idx].replace("NH'", 'H41')
+                                        else:
+                                            _str[idx] = _str[idx].replace("NH", 'H4')
+                                        _string = ' '.join(_str)
+                                        return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                    if compId in ('DA', 'A') and atomId.startswith("NH"):
+                                        if atomId == "NH''":
+                                            _str[idx] = _str[idx].replace("NH''", 'H62')
+                                        elif atomId == "NH'":
+                                            _str[idx] = _str[idx].replace("NH'", 'H61')
+                                        else:
+                                            _str[idx] = _str[idx].replace("NH", 'H6')
                                         _string = ' '.join(_str)
                                         return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
                                 if with_compid is not None and (atomId.startswith(with_compid) or (atomId in with_compid and index < resNameSpan[idx][1])):
@@ -6897,6 +6920,38 @@ class BasePKParserListener():
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                         resNameLike[idx] = False
                                     break
+
+                        if not atomNameLike[idx] and hint is not None and 'comp_id' in hint[0]:
+                            _compId = hint[0]['comp_id']
+                            cur_sp_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+                            if all('fixed' in cur_sp_dim[_dim_id] and cur_sp_dim[_dim_id]['atom_type'] == 'H' for _dim_id in range(1, self.num_of_dim + 1)):
+                                if _compId in ('DT', 'T') and atomId == 'C7':
+                                    _str[idx] = _str[idx].replace('C7', 'H7')
+                                    _string = ' '.join(_str)
+                                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                if _compId in ('DT', 'T') and atomId == 'CM':
+                                    _str[idx] = _str[idx].replace('CM', 'H7')
+                                    _string = ' '.join(_str)
+                                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                if _compId in ('DC', 'C') and atomId.startswith("NH"):
+                                    if atomId == "NH''":
+                                        _str[idx] = _str[idx].replace("NH''", 'H42')
+                                    elif atomId == "NH'":
+                                        _str[idx] = _str[idx].replace("NH'", 'H41')
+                                    else:
+                                        _str[idx] = _str[idx].replace("NH", 'H4')
+                                    _string = ' '.join(_str)
+                                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                if _compId in ('DA', 'A') and atomId.startswith("NH"):
+                                    if atomId == "NH''":
+                                        _str[idx] = _str[idx].replace("NH''", 'H62')
+                                    elif atomId == "NH'":
+                                        _str[idx] = _str[idx].replace("NH'", 'H61')
+                                    else:
+                                        _str[idx] = _str[idx].replace("NH", 'H6')
+                                    _string = ' '.join(_str)
+                                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+
                         for compId in self.compIdSet:
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                             if details is None:

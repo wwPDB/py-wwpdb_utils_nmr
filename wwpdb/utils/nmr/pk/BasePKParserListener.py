@@ -6870,6 +6870,12 @@ class BasePKParserListener():
                                 compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == compId)
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                 if details is None:
+                                    if compId in ('DT', 'T') and atomId.startswith('C7'):
+                                        cur_sp_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+                                        if all('fixed' in cur_sp_dim[_dim_id] and cur_sp_dim[_dim_id]['atom_type'] == 'H' for _dim_id in range(1, self.num_of_dim + 1)):
+                                            _str[idx] = _str[idx].replace('C7', 'H7')
+                                            _string = ' '.join(_str)
+                                            return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
                                     atomNameLike[idx] = useOneLetterCodeSet = True
                                     atomNameSpan[idx] = (index, len(term))
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:

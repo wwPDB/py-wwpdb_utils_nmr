@@ -68,6 +68,7 @@ class XeasyPKReader:
         self.__lfh = log
         self.__debug = False
         self.__enforce_peak_row_format = False
+        self.__internal = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
         self.__maxParserErrorReport = MAX_ERROR_REPORT
@@ -105,6 +106,9 @@ class XeasyPKReader:
 
     def enforcePeakRowFormat(self, enforce_peak_row_format: bool):
         self.__enforce_peak_row_format = enforce_peak_row_format
+
+    def setInternalMode(self, internal: bool):
+        self.__internal = internal
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
         self.__maxLexerErrorReport = maxErrReport
@@ -201,6 +205,7 @@ class XeasyPKReader:
                                              self.__atomNumberDict, self.__reasons)
             listener.setDebugMode(self.__debug)
             listener.enforsePeakRowFormat(self.__enforce_peak_row_format)
+            listener.setInternalMode(self.__internal)
             listener.createSfDict(createSfDict)
             if createSfDict:
                 if originalFileName is not None:
@@ -242,6 +247,13 @@ class XeasyPKReader:
 
 
 if __name__ == "__main__":
+    reader = XeasyPKReader(True)
+    reader.setDebugMode(True)
+    reader.setInternalMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/6lek/bmr36301/work/data/D_1300014649_nmr-peaks-upload_P1.dat.V1',
+                     '../../tests-nmr/mock-data-remediation/6lek/6lek.cif')
+
     reader = XeasyPKReader(True)
     reader.setDebugMode(True)
     reader_listener, _, _ =\

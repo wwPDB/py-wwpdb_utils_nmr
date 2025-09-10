@@ -64130,6 +64130,24 @@ class NmrDpUtility:
         is_done = ann.perform(master_entry)
 
         if is_done:
+
+            if self.__bmrb_only:
+                input_source = self.report.input_sources[0]
+                input_source_dic = input_source.get()
+
+                file_type = input_source_dic['file_type']
+
+                self.__sf_category_list, self.__lp_category_list = self.__nefT.get_inventory_list(master_entry)
+
+                lp_counts = {t: 0 for t in self.nmr_content_subtypes}
+                for lp_category in self.__lp_category_list:
+                    if lp_category in self.lp_categories[file_type].values():
+                        lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
+
+                content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
+
+                input_source.setItemValue('content_subtype', content_subtypes)
+
             self.__depositNmrData()
 
         return is_done

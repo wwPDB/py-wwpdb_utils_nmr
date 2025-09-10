@@ -2952,6 +2952,114 @@ class BMRBAnnTasks:
                                 except (KeyError, ValueError):
                                     continue
 
+                            else:
+                                num_of_dim = get_first_sf_tag(_sf, 'Number_of_spectral_dimensions')
+                                if num_of_dim in emptyValue:
+                                    set_sf_tag(_sf, 'Experiment_ID', None)
+                                    continue
+                                if isinstance(num_of_dim, str):
+                                    if num_of_dim.isdigit():
+                                        num_of_dim = int(num_of_dim)
+                                    else:
+                                        set_sf_tag(_sf, 'Experiment_ID', None)
+                                        continue
+                                exp_class = get_first_sf_tag(_sf, 'Experiment_class')
+                                if exp_class in emptyValue:
+                                    set_sf_tag(_sf, 'Experiment_ID', None)
+                                    continue
+                                if 'through-space' in exp_class:
+                                    exp_rows = [row for row in exp_list if f'{num_of_dim}D' in row[1] and 'NOE' in row[1]]
+                                    if len(exp_rows) != 1:
+                                        set_sf_tag(_sf, 'Experiment_ID', None)
+                                        continue
+                                    exp_row = exp_rows[0]
+                                    set_sf_tag(_sf, 'Experiment_ID', exp_row[0])
+                                    set_sf_tag(_sf, 'Experiment_name', exp_row[1])
+                                if 'relayed' in exp_class:
+                                    exp_rows = [row for row in exp_list if f'{num_of_dim}D' in row[1] and 'TOCSY' in row[1]]
+                                    if len(exp_rows) != 1:
+                                        set_sf_tag(_sf, 'Experiment_ID', None)
+                                        continue
+                                    exp_row = exp_rows[0]
+                                    set_sf_tag(_sf, 'Experiment_ID', exp_row[0])
+                                    set_sf_tag(_sf, 'Experiment_name', exp_row[1])
+                                if 'jcoupling' in exp_class:
+                                    exp_rows = [row for row in exp_list if f'{num_of_dim}D' in row[1] and 'COSY' in row[1]]
+                                    if len(exp_rows) != 1:
+                                        set_sf_tag(_sf, 'Experiment_ID', None)
+                                        continue
+                                    exp_row = exp_rows[0]
+                                    set_sf_tag(_sf, 'Experiment_ID', exp_row[0])
+                                    set_sf_tag(_sf, 'Experiment_name', exp_row[1])
+
+                                spectrometer_id = exp_row[2]
+
+                                if spectrometer_id in emptyValue:
+                                    continue
+
+                                if isinstance(spectrometer_id, str):
+
+                                    if not spectrometer_id.isdigit():
+                                        continue
+
+                                    spectrometer_id = int(spectrometer_id)
+
+                                if spectrometer_id not in spectrometer_dict:
+                                    continue
+
+                                field_strength = spectrometer_dict[spectrometer_id]['field_strength']
+
+                                try:
+
+                                    if isinstance(field_strength, str):
+                                        field_strength = float(field_strength)
+
+                                except ValueError:
+                                    continue
+
+                                cs_ref_ratio_map = {}
+
+                                _lp_category = 'Chem_shift_ref'
+
+                                try:
+
+                                    for _lp in master_entry.get_loops_by_category(_lp_category):
+                                        isotope_num_col = _lp.tags.index('Atom_isotope_number')
+                                        ratio_col = _lp.tags.index('Indirect_shift_ratio')
+
+                                        for _row in _lp:
+                                            isotope_num = _row[isotope_num_col]
+                                            ratio = float(_row[ratio_col])
+
+                                            if isotope_num not in cs_ref_ratio_map:
+                                                cs_ref_ratio_map[isotope_num] = ratio
+
+                                except (KeyError, ValueError):
+                                    continue
+
+                                if len(cs_ref_ratio_map) == 0:
+                                    continue
+
+                                _lp_category = 'Spectral_dim'
+
+                                try:
+
+                                    _lp = _sf.get_loop(_lp_category)
+
+                                    isotope_num_col = _lp.tags.index('Atom_isotope_number')
+                                    spec_freq_col = _lp.tags.index('Spectrometer_frequency')
+
+                                    for idx, _row in enumerate(_lp):
+                                        isotope_num = _row[isotope_num_col]
+                                        spec_freq = _row[spec_freq_col]
+
+                                        if spec_freq in emptyValue and isotope_num in cs_ref_ratio_map:
+                                            _lp.data[idx][spec_freq_col] = roundString(f'{field_strength * cs_ref_ratio_map[isotope_num]}',
+                                                                                       field_strength_max_didits)
+
+                                except (KeyError, ValueError):
+                                    continue
+
             except KeyError:
                 pass
 

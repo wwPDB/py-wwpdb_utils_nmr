@@ -65,6 +65,7 @@ class AriaPKReader:
         self.__lfh = log
         self.__debug = False
         self.__enforce_peak_row_format = False
+        self.__internal = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
         self.__maxParserErrorReport = MAX_ERROR_REPORT
@@ -99,6 +100,9 @@ class AriaPKReader:
 
     def enforcePeakRowFormat(self, enforce_peak_row_format: bool):
         self.__enforce_peak_row_format = enforce_peak_row_format
+
+    def setInternalMode(self, internal: bool):
+        self.__internal = internal
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
         self.__maxLexerErrorReport = maxErrReport
@@ -184,6 +188,7 @@ class AriaPKReader:
                                             self.__reasons)
             listener.setDebugMode(self.__debug)
             listener.enforsePeakRowFormat(self.__enforce_peak_row_format)
+            listener.setInternalMode(self.__internal)
             listener.createSfDict(createSfDict)
             if createSfDict:
                 if originalFileName is not None:

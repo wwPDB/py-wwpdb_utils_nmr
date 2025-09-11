@@ -72,9 +72,6 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.__atomNumberDict = atomNumberDict
 
-    def setInternalMode(self, internal: bool):
-        self.internal = internal
-
     # Enter a parse tree produced by XeasyPKParser#xeasy_pk.
     def enterXeasy_pk(self, ctx: XeasyPKParser.Xeasy_pkContext):  # pylint: disable=unused-argument
         self.__spectrum_names = {}

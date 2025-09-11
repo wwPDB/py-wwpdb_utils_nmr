@@ -1186,6 +1186,9 @@ class BasePKParserListener():
     def enforsePeakRowFormat(self, enforce_peak_row_format: bool):
         self.enforce_peak_row_format = enforce_peak_row_format
 
+    def setInternalMode(self, internal: bool):
+        self.internal = internal
+
     def createSfDict(self, createSfDict: bool):
         self.createSfDict__ = createSfDict
 

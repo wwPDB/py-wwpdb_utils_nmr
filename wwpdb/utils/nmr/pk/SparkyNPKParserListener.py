@@ -71,9 +71,6 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
         if reasons is not None and 'has_real_vol' in reasons:
             self.__has_real_vol = True
 
-    def setInternalMode(self, internal: bool):
-        self.internal = internal
-
     # Enter a parse tree produced by SparkyNPKParser#sparky_npk.
     def enterSparky_npk(self, ctx: SparkyNPKParser.Sparky_npkContext):  # pylint: disable=unused-argument
         self.enter()

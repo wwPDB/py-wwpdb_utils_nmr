@@ -59,9 +59,6 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         self.file_type = 'nm-pea-bar'
 
-    def setInternalMode(self, internal: bool):
-        self.internal = internal
-
     # Enter a parse tree produced by BarePKParser#ccpn_pk.
     def enterBare_pk(self, ctx: BarePKParser.Bare_pkContext):  # pylint: disable=unused-argument
         self.enter()

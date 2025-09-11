@@ -1688,7 +1688,15 @@ class BasePKParserListener():
                 return False
             if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                 _atom_type = predict_spectral_region_from_position()
-                if len(_atom_type) == 0 or not _atom_type.startswith(atom_type):
+                if len(_atom_type) == 0:
+                    if self.num_of_dim == 2 and self.peaks2D < 20:
+                        return True
+                    if self.num_of_dim == 3 and self.peaks3D < 20:
+                        return True
+                    if self.num_of_dim == 4 and self.peaks4D < 20:
+                        return True
+                    return False
+                if not _atom_type.startswith(atom_type):
                     return False
                 cur_spectral_dim['fixed'] = True
                 cur_spectral_dim['atom_type'] = None
@@ -1697,7 +1705,15 @@ class BasePKParserListener():
                 return True
         if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
             _atom_type = predict_spectral_region_from_position()
-            if len(_atom_type) == 0 or not _atom_type.startswith(atom_type):
+            if len(_atom_type) == 0:
+                if self.num_of_dim == 2 and self.peaks2D < 20:
+                    return True
+                if self.num_of_dim == 3 and self.peaks3D < 20:
+                    return True
+                if self.num_of_dim == 4 and self.peaks4D < 20:
+                    return True
+                return False
+            if not _atom_type.startswith(atom_type):
                 return False
             cur_spectral_dim['atom_type'] = atom_type
             cur_spectral_dim['axis_code'] = atom_type

@@ -1214,6 +1214,8 @@ class BMRBAnnTasks:
                     val_unit_col = lp.tags.index('Val_units')
 
                     for idx, row in enumerate(dat):
+                        if not isinstance(row[1], str):
+                            continue
                         minus_code_count = row[1].count('-')
                         if minus_code_count == 1:
                             if row[1].startswith('+-') or row[1].startswith('-+'):
@@ -1675,9 +1677,9 @@ class BMRBAnnTasks:
                                 if effective_labeling:
                                     lp.data[idx][isotopic_labeling_col] = f'[{"; ".join(isotopic_labelings)}]'
 
-                        if row[8] not in emptyValue:
+                        if row[8] not in emptyValue and isinstance(row[8], str):
                             for delimiter in ('-', '/', ':', ',', '~'):
-                                if isinstance(row[8], int) or delimiter not in row[8]:
+                                if delimiter not in row[8]:
                                     continue
                                 code_count = row[8].count(delimiter)
                                 if code_count == 1:

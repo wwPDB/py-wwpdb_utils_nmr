@@ -85,7 +85,7 @@ class BMRBAnnTasks:
 
     def __init__(self, verbose: bool, log: IO,
                  sfCategoryList: List[str], entryId: str,
-                 annotationMode: bool, internalMode: bool, sailFlag: bool, report: NmrDpReport,
+                 annotationMode: bool, internalMode: bool, enforcePeakRowFormat: bool, sailFlag: bool, report: NmrDpReport,
                  ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
                  c2S: Optional[CifToNmrStar] = None):
         self.__class_name__ = self.__class__.__name__
@@ -99,6 +99,7 @@ class BMRBAnnTasks:
 
         self.__annotationMode = annotationMode
         self.__internalMode = internalMode
+        self.__enforcePeakRowFormat = enforcePeakRowFormat
         self.__sailFlag = sailFlag
         self.__report = report
 
@@ -2286,7 +2287,7 @@ class BMRBAnnTasks:
                 for idx1, idx2 in itertools.combinations(sp_info, 2):
 
                     if sp_info[idx1]['num_of_dim'] != sp_info[idx2]['num_of_dim']\
-                       or sp_info[idx1]['size'] != sp_info[idx2]['size']:
+                       or (not self.__enforcePeakRowFormat and sp_info[idx1]['size'] != sp_info[idx2]['size']):
                         continue
 
                     if not all(sig1['position'] == sig2['position']

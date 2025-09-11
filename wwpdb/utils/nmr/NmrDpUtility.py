@@ -26382,7 +26382,8 @@ class NmrDpUtility:
 
         ann = BMRBAnnTasks(self.__verbose, self.__lfh,
                            self.__sf_category_list, self.__entry_id,
-                           self.__annotation_mode, self.__internal_mode, self.__sail_flag, self.report,
+                           self.__annotation_mode, self.__internal_mode, self.__enforce_peak_row_format,
+                           self.__sail_flag, self.report,
                            ccU=self.__ccU, csStat=self.__csStat, c2S=self.__c2S)
 
         if not self.__internal_mode and self.report.getInputSourceIdOfCoord() >= 0 and self.__cR.hasCategory('database_2'):
@@ -64055,7 +64056,8 @@ class NmrDpUtility:
 
         ann = BMRBAnnTasks(self.__verbose, self.__lfh,
                            self.__sf_category_list, self.__entry_id,
-                           self.__annotation_mode, self.__internal_mode, self.__sail_flag, self.report,
+                           self.__annotation_mode, self.__internal_mode, self.__enforce_peak_row_format,
+                           self.__sail_flag, self.report,
                            ccU=self.__ccU, csStat=self.__csStat, c2S=self.__c2S)
 
         if self.report.getInputSourceIdOfCoord() >= 0 and self.__cR.hasCategory('database_2'):

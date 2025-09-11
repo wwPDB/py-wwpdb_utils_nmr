@@ -5638,9 +5638,11 @@ class NEFTranslator:
                                             if is_cs_lp and ent[name] == 0.0 and name in ('value', 'Val'):
                                                 comp_id = row[tags.index('residue_name' if 'nef' in lp_category else 'Comp_ID')]
                                                 atom_id = row[tags.index('atom_name' if 'nef' in lp_category else 'Atom_ID')]
-                                                atom_ids, _, details = self.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)[0]
-                                                if details is None and not any(methyl_atom in atom_ids for methyl_atom in self.__csStat.getMethylAtoms(comp_id)):
+                                                atom_ids, _, details = self.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)
+                                                methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+                                                if details is None or (len(methyl_atoms) == 0 or not any(methyl_atom in atom_ids for methyl_atom in methyl_atoms)):
                                                     remove_bad_pattern = True
+                                                    continue
                                         except KeyError:
                                             raise ValueError(f"Range of data item {name} is not defined")
                                         except (ValueError, TypeError):
@@ -6236,14 +6238,18 @@ class NEFTranslator:
         else:
             loops = [star_data]
 
+        is_cs_lp = 'nef_chemical_shift' in lp_category or 'Atom_chem_shift' in lp_category
+
         data = []  # data of all loops
 
-        key_names = [k['name'] for k in key_items if 'remove-bad-pattern' in k and k['remove-bad-pattern']]
+        key_names = [k['name'] for k in key_items if 'remove-bad-pattern' in k
+                     and (k['remove-bad-pattern'] or (is_cs_lp and k['name'] in ('residue_name', 'atom_name', 'Comp_ID', 'Atom_ID')))]
         data_names = [d['name'] for d in data_items if 'remove-bad-pattern' in d and d['remove-bad-pattern']]
 
         key_names.extend(data_names)
 
-        key_types = [k['type'] for k in key_items if 'remove-bad-pattern' in k and k['remove-bad-pattern']]
+        key_types = [k['type'] for k in key_items if 'remove-bad-pattern' in k
+                     and (k['remove-bad-pattern'] or (is_cs_lp and k['name'] in ('residue_name', 'atom_name', 'Comp_ID', 'Atom_ID')))]
         data_types = [d['type'] for d in data_items if 'remove-bad-pattern' in d and d['remove-bad-pattern']]
 
         key_types.extend(data_types)
@@ -6276,7 +6282,15 @@ class NEFTranslator:
                                     bad_ids.add(idx)
                         elif 'float' in dat_type:
                             try:
-                                float(dat)
+                                val = float(dat)
+                                if is_cs_lp and val == 0.0 and key_names[col] in ('value', 'Val'):
+                                    comp_id = row[key_names.index('residue_name' if 'nef' in lp_category else 'Comp_ID')]
+                                    atom_id = row[key_names.index('atom_name' if 'nef' in lp_category else 'Atom_ID')]
+                                    atom_ids, _, details = self.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)
+                                    methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+                                    if details is None or (len(methyl_atoms) == 0 or not any(methyl_atom in atom_ids for methyl_atom in methyl_atoms)):
+                                        if idx < len_loop:
+                                            bad_ids.add(idx)
                             except ValueError:
                                 if idx < len_loop:
                                     bad_ids.add(idx)

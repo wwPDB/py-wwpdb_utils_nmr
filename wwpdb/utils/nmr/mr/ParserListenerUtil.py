@@ -155,7 +155,7 @@ CCR_RESTRAINT_RANGE = {'min_inclusive': -10.0, 'max_inclusive': 10.0}
 CCR_RESTRAINT_ERROR = {'min_exclusive': -20.0, 'max_exclusive': 20.0}
 
 
-PRE_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 200.0}
+PRE_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 5000.0}  # 2mp0 (5000)
 PRE_RESTRAINT_ERROR = {'min_exclusive': -5.0, 'max_exclusive': 10000.0}
 
 

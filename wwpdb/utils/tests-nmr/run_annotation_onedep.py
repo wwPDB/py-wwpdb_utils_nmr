@@ -1025,8 +1025,8 @@ class gen_auth_view_onedep:
             cs_path_list.append(self.__cs_ann_file_path)
         utility.addInput(name='chem_shift_file_path_list', value=cs_path_list, type='file_list')
         _, original_file_name = is_combined_nmr_data(self.__star_file_path)
-        if self.__nmr_cif_file_path is not None:
-            utility.addInput(name='nmr_cif_file_path', value=self.__nmr_cif_file_path, type='file')
+        # if self.__nmr_cif_file_path is not None:
+        #     utility.addInput(name='nmr_cif_file_path', value=self.__nmr_cif_file_path, type='file')
         if len(self.__mr_file_path) > 0:
             utility.addInput(name="restraint_file_path_list", value=self.__mr_file_path, type="file_list")
         if len(self.__ar_file_path) > 0:

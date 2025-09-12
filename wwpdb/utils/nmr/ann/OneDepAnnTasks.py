@@ -1413,7 +1413,12 @@ class OneDepAnnTasks:
                                                 _id = get_first_sf_tag(sf, tag_map[3])
                                                 if isinstance(_id, int) or len(_id) > 0:
                                                     continue
-                                            set_sf_tag(sf, tag_map[3], row[tag_map[1]])
+                                            if new_flag or tag_map[1] not in emptyValue:
+                                                set_sf_tag(sf, tag_map[3], row[tag_map[1]])
+                                            else:
+                                                _val = get_first_sf_tag(sf, tag_map[3])
+                                                if _val in emptyValue:
+                                                     set_sf_tag(sf, tag_map[3], row[tag_map[1]])
                                             has_uniq_sf_tag = True
 
                                     if not has_uniq_sf_tag and reset:

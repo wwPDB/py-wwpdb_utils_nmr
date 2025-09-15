@@ -1566,7 +1566,8 @@ class BMRBAnnTasks:
                                 if entity['sample_type'] in ('protein', 'peptide', 'DNA', 'RNA', 'DNA/RNA hybrid'):
                                     has_poly_entity = True
                             elif row[1] in solvent_system:
-                                lp.data[idx][isotopic_labeling_col] = solvent_isotope[row[1]]
+                                if row[1] in solvent_isotope:
+                                    lp.data[idx][isotopic_labeling_col] = solvent_isotope[row[1]]
                                 lp.data[idx][type_col] = 'solvent'
                                 lp.data[idx][concentration_val_col] = solvent_system[row[1]]
                                 if row[11] in emptyValue:
@@ -1823,7 +1824,8 @@ class BMRBAnnTasks:
                         row = [None] * len(lp.tags)
                         row[id_col] = cur_id
                         row[mol_common_name_col] = solvent
-                        row[isotopic_labeling_col] = solvent_isotope[solvent]
+                        if solvent in solvent_isotope:
+                            row[isotopic_labeling_col] = solvent_isotope[solvent]
                         row[type_col] = 'solvent'
                         row[concentration_val_col] = solvent_system[solvent]
                         row[concentration_val_units_col] = '%'
@@ -1834,7 +1836,7 @@ class BMRBAnnTasks:
                         lp.add_data(row)
                         cur_id += 1
 
-                        if '?' in solvent_isotope[solvent]:
+                        if solvent in solvent_isotope and '?' in solvent_isotope[solvent]:
                             has_perdeuteration_sol = True
 
                     if has_hvy_shifts_with_natural_abundance:

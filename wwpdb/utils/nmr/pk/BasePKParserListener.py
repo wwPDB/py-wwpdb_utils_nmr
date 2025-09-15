@@ -6894,7 +6894,7 @@ class BasePKParserListener():
                                 compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == compId)
                                 _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                                 if details is None:
-                                    if compId in ('DT', 'T') and atomId == 'C7':
+                                    if compId in ('DT', 'T') and atomId == 'C7' and self.cur_list_id != -1:
                                         cur_sp_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
                                         if all('fixed' in cur_sp_dim[_dim_id] and cur_sp_dim[_dim_id]['atom_type'] == 'H' for _dim_id in range(1, self.num_of_dim + 1)):
                                             _str[idx] = _str[idx].replace('C7', 'H7')
@@ -6905,30 +6905,31 @@ class BasePKParserListener():
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                         resNameLike[idx] = False
                                     break
-                                cur_sp_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-                                if all('fixed' in cur_sp_dim[_dim_id] and cur_sp_dim[_dim_id]['atom_type'] == 'H' for _dim_id in range(1, self.num_of_dim + 1)):
-                                    if compId in ('DT', 'T') and atomId == 'CM':
-                                        _str[idx] = _str[idx].replace('CM', 'H7')
-                                        _string = ' '.join(_str)
-                                        return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
-                                    if compId in ('DC', 'C') and atomId.startswith("NH"):
-                                        if atomId == "NH''":
-                                            _str[idx] = _str[idx].replace("NH''", 'H42')
-                                        elif atomId == "NH'":
-                                            _str[idx] = _str[idx].replace("NH'", 'H41')
-                                        else:
-                                            _str[idx] = _str[idx].replace("NH", 'H4')
-                                        _string = ' '.join(_str)
-                                        return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
-                                    if compId in ('DA', 'A') and atomId.startswith("NH"):
-                                        if atomId == "NH''":
-                                            _str[idx] = _str[idx].replace("NH''", 'H62')
-                                        elif atomId == "NH'":
-                                            _str[idx] = _str[idx].replace("NH'", 'H61')
-                                        else:
-                                            _str[idx] = _str[idx].replace("NH", 'H6')
-                                        _string = ' '.join(_str)
-                                        return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                if self.cur_list_id != -1:
+                                    cur_sp_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+                                    if all('fixed' in cur_sp_dim[_dim_id] and cur_sp_dim[_dim_id]['atom_type'] == 'H' for _dim_id in range(1, self.num_of_dim + 1)):
+                                        if compId in ('DT', 'T') and atomId == 'CM':
+                                            _str[idx] = _str[idx].replace('CM', 'H7')
+                                            _string = ' '.join(_str)
+                                            return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                        if compId in ('DC', 'C') and atomId.startswith("NH"):
+                                            if atomId == "NH''":
+                                                _str[idx] = _str[idx].replace("NH''", 'H42')
+                                            elif atomId == "NH'":
+                                                _str[idx] = _str[idx].replace("NH'", 'H41')
+                                            else:
+                                                _str[idx] = _str[idx].replace("NH", 'H4')
+                                            _string = ' '.join(_str)
+                                            return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                        if compId in ('DA', 'A') and atomId.startswith("NH"):
+                                            if atomId == "NH''":
+                                                _str[idx] = _str[idx].replace("NH''", 'H62')
+                                            elif atomId == "NH'":
+                                                _str[idx] = _str[idx].replace("NH'", 'H61')
+                                            else:
+                                                _str[idx] = _str[idx].replace("NH", 'H6')
+                                            _string = ' '.join(_str)
+                                            return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
                                 if with_compid is not None and (atomId.startswith(with_compid) or (atomId in with_compid and index < resNameSpan[idx][1])):
                                     continue
                                 _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
@@ -6940,7 +6941,7 @@ class BasePKParserListener():
                                         resNameLike[idx] = False
                                     break
 
-                        if not atomNameLike[idx] and hint is not None and 'comp_id' in hint[0]:
+                        if not atomNameLike[idx] and hint is not None and 'comp_id' in hint[0] and self.cur_list_id != -1:
                             _compId = hint[0]['comp_id']
                             cur_sp_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
                             if all('fixed' in cur_sp_dim[_dim_id] and cur_sp_dim[_dim_id]['atom_type'] == 'H' for _dim_id in range(1, self.num_of_dim + 1)):
@@ -7766,7 +7767,7 @@ class BasePKParserListener():
                                             self.reasonsForReParsing['default_seg_id'] = {}
                                         if self.num_of_dim not in self.reasonsForReParsing['default_seg_id']:
                                             self.reasonsForReParsing['default_seg_id'][self.num_of_dim] = {}
-                                        if self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
+                                        if self.cur_list_id != -1 and self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
                                             self.reasonsForReParsing['default_seg_id'][self.num_of_dim][self.cur_list_id] = self.__defaultSegId
                                 else:
                                     idx = 0
@@ -7873,7 +7874,7 @@ class BasePKParserListener():
                                             self.reasonsForReParsing['default_seg_id'] = {}
                                         if self.num_of_dim not in self.reasonsForReParsing['default_seg_id']:
                                             self.reasonsForReParsing['default_seg_id'][self.num_of_dim] = {}
-                                        if self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
+                                        if self.cur_list_id != -1 and self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
                                             self.reasonsForReParsing['default_seg_id'][self.num_of_dim][self.cur_list_id] = self.__defaultSegId
                                 else:
                                     idx = 0
@@ -7980,7 +7981,7 @@ class BasePKParserListener():
                                             self.reasonsForReParsing['default_seg_id'] = {}
                                         if self.num_of_dim not in self.reasonsForReParsing['default_seg_id']:
                                             self.reasonsForReParsing['default_seg_id'][self.num_of_dim] = {}
-                                        if self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
+                                        if self.cur_list_id != -1 and self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
                                             self.reasonsForReParsing['default_seg_id'][self.num_of_dim][self.cur_list_id] = self.__defaultSegId
                                 else:
                                     idx = 0
@@ -8089,7 +8090,7 @@ class BasePKParserListener():
                                             self.reasonsForReParsing['default_seg_id'] = {}
                                         if self.num_of_dim not in self.reasonsForReParsing['default_seg_id']:
                                             self.reasonsForReParsing['default_seg_id'][self.num_of_dim] = {}
-                                        if self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
+                                        if self.cur_list_id != -1 and self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
                                             self.reasonsForReParsing['default_seg_id'][self.num_of_dim][self.cur_list_id] = self.__defaultSegId
                                 else:
                                     idx = 0
@@ -8196,7 +8197,7 @@ class BasePKParserListener():
                                                 self.reasonsForReParsing['default_seg_id'] = {}
                                             if self.num_of_dim not in self.reasonsForReParsing['default_seg_id']:
                                                 self.reasonsForReParsing['default_seg_id'][self.num_of_dim] = {}
-                                            if self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
+                                            if self.cur_list_id != -1 and self.cur_list_id not in self.reasonsForReParsing['default_seg_id'][self.num_of_dim]:
                                                 self.reasonsForReParsing['default_seg_id'][self.num_of_dim][self.cur_list_id] = self.__defaultSegId
                                     else:
                                         idx = 0

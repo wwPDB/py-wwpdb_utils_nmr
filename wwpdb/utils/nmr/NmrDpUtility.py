@@ -47982,6 +47982,49 @@ class NmrDpUtility:
 
         __errors = self.report.getTotalErrors()
 
+        ent_asm_id_map = {}
+        ign_chain_ids = []
+
+        if self.__star_data_type[0] == 'Entry':
+            input_source = self.report.input_sources[0]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+
+            if file_type == 'nmr-star':
+
+                sf_category = 'assembly'
+
+                try:
+
+                    sf = self.__star_data[0].get_saveframes_by_category(sf_category)[0]
+
+                    lp_category = '_Entity_assembly'
+
+                    lp = sf.get_loop(lp_category)
+
+                    tags = ['ID', 'PDB_chain_ID', 'Experimental_data_reported']
+
+                    if set(tags) & set(lp.tags) == set(tags):
+
+                        dat = lp.get_tag(tags)
+
+                        for row in dat:
+
+                            if row[2] != 'yes':
+                                ign_chain_ids.append(row[0])
+
+                            if ',' in row[1]:
+                                continue
+
+                            ent_asm_id_map[row[0]] = row[1]
+
+                    if len(ent_asm_id_map) + len(ign_chain_ids) != len(dat):
+                        ent_asm_id_map = {}
+
+                except (IndexError, KeyError):
+                    pass
+
         for fileListId in range(self.__file_path_list_len):
 
             nmr_input_source = self.report.input_sources[fileListId]
@@ -48016,6 +48059,29 @@ class NmrDpUtility:
 
                 mat, indices = [], []
 
+                valid_ent_asm_id_map = fileListId == 0 and len(ent_asm_id_map) > 0\
+                    and all(ps1['auth_chain_id'] in ent_asm_id_map.values() for ps1 in cif_poly_seq)\
+                    and all(ps2['chain_id'] in ent_asm_id_map or ps2['chain_id'] in ign_chain_ids for ps2 in nmr_poly_seq)
+
+                if valid_ent_asm_id_map:
+                    for k, v in ent_asm_id_map.items():
+                        ps1 = next((ps for ps in cif_poly_seq if ps['auth_chain_id'] == v), None)
+                        ps2 = next((ps for ps in nmr_poly_seq if ps['chain_id'] == k), None)
+                        if ps1 is None or ps2 is None:
+                            valid_ent_asm_id_map = False
+                            break
+
+                        result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
+                                       if seq_align['ref_chain_id'] == v
+                                       and seq_align['test_chain_id'] == k), None)
+                        if result is None:
+                            valid_ent_asm_id_map = False
+                            break
+
+                        if result['unmapped'] + result['conflict'] - result['length'] >= 0:
+                            valid_ent_asm_id_map = False
+                            break
+
                 for ps1 in cif_poly_seq:
                     chain_id = ps1['chain_id']
 
@@ -48023,6 +48089,9 @@ class NmrDpUtility:
 
                     for ps2 in nmr_poly_seq:
                         chain_id2 = ps2['chain_id']
+
+                        if valid_ent_asm_id_map and (chain_id2 in ign_chain_ids or ent_asm_id_map[chain_id2] != chain_id):
+                            continue
 
                         result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                        if seq_align['ref_chain_id'] == chain_id
@@ -48293,6 +48362,9 @@ class NmrDpUtility:
 
                     for ps2 in cif_poly_seq:
                         chain_id2 = ps2['chain_id']
+
+                        if valid_ent_asm_id_map and (chain_id in ign_chain_ids or ent_asm_id_map[chain_id] != chain_id2):
+                            continue
 
                         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq']
                                        if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2), None)
@@ -48806,6 +48878,9 @@ class NmrDpUtility:
 
                     for ps2 in nmr_poly_seq:
                         chain_id2 = ps2['chain_id']
+
+                        if valid_ent_asm_id_map and (chain_id2 in ign_chain_ids or ent_asm_id_map[chain_id2] != chain_id):
+                            continue
 
                         result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq']
                                        if seq_align['ref_chain_id'] == chain_id

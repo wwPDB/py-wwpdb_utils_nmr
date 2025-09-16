@@ -315,8 +315,11 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                 atom_type = __v['atom_type']
                 if C_AROMATIC_CENTER_MIN_TOR < center <= C_AROMATIC_CENTER_MAX and atom_type == 'C':
                     __v['spectral_region'] = 'C-aromatic'
-                elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX and atom_type == 'N':
-                    __v['spectral_region'] = 'N'
+                elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX:
+                    if atom_type == 'N':
+                        __v['spectral_region'] = 'N'
+                    if atom_type == 'C':
+                        __v['spectral_region'] = 'C-aromatic'
                 elif C_CARBONYL_CENTER_MIN <= center <= C_CARBONYL_CENTER_MAX and atom_type == 'C':
                     __v['spectral_region'] = 'CO'
                 elif HN_AROMATIC_CENTER_MIN < center <= HN_AROMATIC_CENTER_MAX and atom_type == 'H':
@@ -1650,8 +1653,11 @@ class BasePKParserListener():
 
             if C_AROMATIC_CENTER_MIN_TOR < _position <= C_AROMATIC_CENTER_MAX and atom_type == 'C':
                 return 'C-aromatic'
-            if N_AMIDE_CENTER_MIN < _position <= N_AMIDE_CENTER_MAX and atom_type == 'N':
-                return 'N'
+            if N_AMIDE_CENTER_MIN < _position <= N_AMIDE_CENTER_MAX:
+                if atom_type == 'N':
+                    return 'N'
+                if atom_type == 'C':
+                    return 'C-aromatic'
             if C_CARBONYL_CENTER_MIN <= _position <= C_CARBONYL_CENTER_MAX and atom_type == 'C':
                 return 'CO'
             if HN_AROMATIC_CENTER_MIN < _position <= HN_AROMATIC_CENTER_MAX and atom_type == 'H':
@@ -1805,8 +1811,11 @@ class BasePKParserListener():
                                 atom_type = __v['atom_type']
                                 if C_AROMATIC_CENTER_MIN_TOR < center <= C_AROMATIC_CENTER_MAX and atom_type == 'C':
                                     __v['spectral_region'] = 'C-aromatic'
-                                elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX and atom_type == 'N':
-                                    __v['spectral_region'] = 'N'
+                                elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX:
+                                    if atom_type == 'N':
+                                        __v['spectral_region'] = 'N'
+                                    if atom_type == 'C':
+                                        __v['spectral_region'] = 'C-aromatic'
                                 elif C_CARBONYL_CENTER_MIN <= center <= C_CARBONYL_CENTER_MAX and atom_type == 'C':
                                     __v['spectral_region'] = 'CO'
                                 elif HN_AROMATIC_CENTER_MIN < center <= HN_AROMATIC_CENTER_MAX and atom_type == 'H':

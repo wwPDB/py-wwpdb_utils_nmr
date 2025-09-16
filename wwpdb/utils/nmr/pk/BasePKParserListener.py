@@ -6587,7 +6587,7 @@ class BasePKParserListener():
 
     def extractPeakAssignment(self, numOfDim: int, string: str, src_index: int,
                               with_segid: Optional[str] = None, with_compid: Optional[str] = None,
-                              hint: Optional[List[dict]] = None) -> Optional[List[dict]]:
+                              hint: Optional[List[dict]] = None, dim_id_hint: Optional[int] = None) -> Optional[List[dict]]:
         """ Extract peak assignment from a given string.
         """
 
@@ -6908,7 +6908,11 @@ class BasePKParserListener():
                                         if all('fixed' in cur_sp_dim[_dim_id] and cur_sp_dim[_dim_id]['atom_type'] == 'H' for _dim_id in range(1, self.num_of_dim + 1)):
                                             _str[idx] = _str[idx].replace('C7', 'H7')
                                             _string = ' '.join(_str)
-                                            return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                            return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
+                                        if dim_id_hint is not None and 'freq_hint' in cur_sp_dim[dim_id_hint] and cur_sp_dim[dim_id_hint]['freq_hint'][-1] < H_METHYL_CENTER_MAX:
+                                            _str[idx] = _str[idx].replace('C7', 'H7')
+                                            _string = ' '.join(_str)
+                                            return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
                                     atomNameLike[idx] = useOneLetterCodeSet = True
                                     atomNameSpan[idx] = (index, len(term))
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
@@ -6920,7 +6924,7 @@ class BasePKParserListener():
                                         if compId in ('DT', 'T') and atomId == 'CM':
                                             _str[idx] = _str[idx].replace('CM', 'H7')
                                             _string = ' '.join(_str)
-                                            return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                            return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
                                         if compId in ('DC', 'C') and atomId.startswith("NH"):
                                             if atomId == "NH''":
                                                 _str[idx] = _str[idx].replace("NH''", 'H42')
@@ -6929,7 +6933,7 @@ class BasePKParserListener():
                                             else:
                                                 _str[idx] = _str[idx].replace("NH", 'H4')
                                             _string = ' '.join(_str)
-                                            return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                            return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
                                         if compId in ('DA', 'A') and atomId.startswith("NH"):
                                             if atomId == "NH''":
                                                 _str[idx] = _str[idx].replace("NH''", 'H62')
@@ -6938,7 +6942,12 @@ class BasePKParserListener():
                                             else:
                                                 _str[idx] = _str[idx].replace("NH", 'H6')
                                             _string = ' '.join(_str)
-                                            return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                            return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
+                                    if dim_id_hint is not None and 'freq_hint' in cur_sp_dim[dim_id_hint] and cur_sp_dim[dim_id_hint]['freq_hint'][-1] < H_METHYL_CENTER_MAX:
+                                        if compId in ('DT', 'T') and atomId == 'CM':
+                                            _str[idx] = _str[idx].replace('CM', 'H7')
+                                            _string = ' '.join(_str)
+                                            return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
                                 if with_compid is not None and (atomId.startswith(with_compid) or (atomId in with_compid and index < resNameSpan[idx][1])):
                                     continue
                                 _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
@@ -6957,11 +6966,11 @@ class BasePKParserListener():
                                 if _compId in ('DT', 'T') and atomId == 'C7':
                                     _str[idx] = _str[idx].replace('C7', 'H7')
                                     _string = ' '.join(_str)
-                                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
                                 if _compId in ('DT', 'T') and atomId == 'CM':
                                     _str[idx] = _str[idx].replace('CM', 'H7')
                                     _string = ' '.join(_str)
-                                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
                                 if _compId in ('DC', 'C') and atomId.startswith("NH"):
                                     if atomId == "NH''":
                                         _str[idx] = _str[idx].replace("NH''", 'H42')
@@ -6970,7 +6979,7 @@ class BasePKParserListener():
                                     else:
                                         _str[idx] = _str[idx].replace("NH", 'H4')
                                     _string = ' '.join(_str)
-                                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
                                 if _compId in ('DA', 'A') and atomId.startswith("NH"):
                                     if atomId == "NH''":
                                         _str[idx] = _str[idx].replace("NH''", 'H62')
@@ -6979,7 +6988,16 @@ class BasePKParserListener():
                                     else:
                                         _str[idx] = _str[idx].replace("NH", 'H6')
                                     _string = ' '.join(_str)
-                                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
+                            if dim_id_hint is not None and 'freq_hint' in cur_sp_dim[dim_id_hint] and cur_sp_dim[dim_id_hint]['freq_hint'][-1] < H_METHYL_CENTER_MAX:
+                                if _compId in ('DT', 'T') and atomId == 'C7':
+                                    _str[idx] = _str[idx].replace('C7', 'H7')
+                                    _string = ' '.join(_str)
+                                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
+                                if _compId in ('DT', 'T') and atomId == 'CM':
+                                    _str[idx] = _str[idx].replace('CM', 'H7')
+                                    _string = ' '.join(_str)
+                                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
 
                         for compId in self.compIdSet:
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
@@ -7471,12 +7489,12 @@ class BasePKParserListener():
                         for np in self.nonPoly:
                             if 'alt_comp_id' in np and _str[0][0] == np['alt_comp_id'][0][0]:
                                 _string = f"{np['auth_chain_id']} {np['auth_seq_id'][0]} {np['comp_id'][0]}{string[atomNameSpan[0][1]:]}"
-                                return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                                return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
 
                 if _str[0][0] == 'X' and term[atomNameSpan[idx][0]] != 'X' and len(self.nonPoly) == 1:
                     np = self.nonPoly[0]
                     _string = f"{np['auth_chain_id']} {np['auth_seq_id'][0]} {np['comp_id'][0]}{string[atomNameSpan[0][0]:]}"
-                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint)
+                    return self.extractPeakAssignment(numOfDim, _string, src_index, with_segid, with_compid, hint, dim_id_hint)
 
             if self.ass_expr_debug:
                 print(f'{idx} {term!r} segid:{segIdLike[idx]} {term[segIdSpan[idx][0]:segIdSpan[idx][1]] if segIdLike[idx] else ""}, '

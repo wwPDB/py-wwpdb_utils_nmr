@@ -247,23 +247,23 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 assignments = []
                 if len(ass.split('-')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split('-'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split('-'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(':')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(':'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(':'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(';')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(';'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(';'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(',')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(','):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(','), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 else:
                     assignments = [None] * self.num_of_dim
@@ -360,23 +360,23 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 assignments = []
                 if len(ass.split('-')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split('-'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split('-'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(':')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(':'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(':'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(';')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(';'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(';'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(',')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(','):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(','), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 else:
                     assignments = [None] * self.num_of_dim
@@ -479,23 +479,23 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 assignments = []
                 if len(ass.split('-')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split('-'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split('-'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(':')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(':'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(':'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(';')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(';'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(';'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(',')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(','):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(','), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 else:
                     assignments = [None] * self.num_of_dim
@@ -600,23 +600,23 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 assignments = []
                 if len(ass.split('-')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split('-'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split('-'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(':')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(':'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(':'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(';')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(';'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(';'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(',')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(','):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(','), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 else:
                     assignments = [None] * self.num_of_dim
@@ -705,23 +705,23 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 assignments = []
                 if len(ass.split('-')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split('-'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split('-'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(':')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(':'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(':'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(';')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(';'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(';'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(',')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(','):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(','), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 else:
                     assignments = [None] * self.num_of_dim
@@ -813,23 +813,23 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 assignments = []
                 if len(ass.split('-')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split('-'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split('-'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(':')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(':'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(':'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(';')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(';'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(';'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 elif len(ass.split(',')) == self.num_of_dim:
                     hint = None
-                    for _ass in ass.split(','):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(ass.split(','), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
                 else:
                     assignments = [None] * self.num_of_dim

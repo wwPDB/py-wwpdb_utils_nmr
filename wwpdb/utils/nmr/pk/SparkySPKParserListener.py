@@ -357,8 +357,8 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
             if ass is not None:
                 assignments = []
                 hint = None
-                for _ass in ass.split('-'):
-                    assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                for _dim_id, _ass in enumerate(ass.split('-'), start=1):
+                    assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                     hint = assignments[-1] if assignments[-1] is not None else None
 
                 has_assignments, has_multiple_assignments, asis1, asis2 =\
@@ -368,8 +368,8 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
                     _ass_ = ass.replace('NH', 'HN')
                     assignments = []
                     hint = None
-                    for _ass in _ass_.split('-'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(_ass_.split('-'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
 
                     has_assignments, has_multiple_assignments, asis1, asis2 =\
@@ -430,8 +430,8 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
             if ass is not None:
                 assignments = []
                 hint = None
-                for _ass in ass.split('-'):
-                    assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                for _dim_id, _ass in enumerate(ass.split('-'), start=1):
+                    assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                     hint = assignments[-1] if assignments[-1] is not None else None
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
@@ -441,8 +441,8 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
                     _ass_ = ass.replace('NH', 'HN')
                     assignments = []
                     hint = None
-                    for _ass in _ass_.split('-'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(_ass_.split('-'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
 
                     has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
@@ -504,8 +504,8 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
             if ass is not None:
                 assignments = []
                 hint = None
-                for _ass in ass.split('-'):
-                    assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                for _dim_id, _ass in enumerate(ass.split('-'), start=1):
+                    assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                     hint = assignments[-1] if assignments[-1] is not None else None
 
                 has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
@@ -515,8 +515,8 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
                     _ass_ = ass.replace('NH', 'HN')
                     assignments = []
                     hint = None
-                    for _ass in _ass_.split('-'):
-                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint))
+                    for _dim_id, _ass in enumerate(_ass_.split('-'), start=1):
+                        assignments.append(self.extractPeakAssignment(1, _ass, index, hint=hint, dim_id_hint=_dim_id))
                         hint = assignments[-1] if assignments[-1] is not None else None
 
                     has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\

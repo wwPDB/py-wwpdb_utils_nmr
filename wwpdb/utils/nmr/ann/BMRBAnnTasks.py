@@ -1335,7 +1335,8 @@ class BMRBAnnTasks:
         solvent_with_percent_pat = re.compile(r'(\d+)%\s*([\S ]+)')
         deuterated_pat = re.compile(r'(?:[Dd]2[Oo]|\S+(\s\S+)?-[Dd]\d+|.*deuterate.*)')
         perdeuterated_pat = re.compile(r'.*perdeuterate.*')
-        percent_value_pattern = re.compile(r'(\d+|\d+\.\d+)\s*%')
+        percent_value_pat = re.compile(r'(\d+|\d+\.\d+)\s*%')
+        redundant_solvent_pat = re.compile(r'\d?%?\s*([\S]+)\s+and\s+100%\s*([\S]+)')
         and_pat = r'\s[Aa][Nn][Dd]\s'
         has_salt = has_buffer = has_reducing_agent = has_chelating_agent = False
         default_internal_reference = 'DSS'
@@ -1370,6 +1371,10 @@ class BMRBAnnTasks:
                             if solvent_with_percent_pat.match(_solvent):
                                 g = solvent_with_percent_pat.search(_solvent).groups()
                                 solvent_name = g[1].strip()
+                                if redundant_solvent_pat.match(solvent_name):
+                                    h = redundant_solvent_pat.search(solvent_name)
+                                    if h[1] == h[2]:
+                                        solvent_name = h[1]
                                 solvent_system[solvent_name] = int(g[0])
                                 solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name) and not perdeuterated_pat.match(solvent_name)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
@@ -1392,6 +1397,10 @@ class BMRBAnnTasks:
                             if solvent_with_percent_pat.match(_solvent):
                                 g = solvent_with_percent_pat.search(_solvent).groups()
                                 solvent_name = g[1].strip()
+                                if redundant_solvent_pat.match(solvent_name):
+                                    h = redundant_solvent_pat.search(solvent_name)
+                                    if h[1] == h[2]:
+                                        solvent_name = h[1]
                                 solvent_system[solvent_name] = int(g[0])
                                 solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name) and not perdeuterated_pat.match(solvent_name)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
@@ -1411,6 +1420,10 @@ class BMRBAnnTasks:
                         if solvent_with_percent_pat.match(_solvent_system):
                             g = solvent_with_percent_pat.search(_solvent_system).groups()
                             solvent_name = g[1].strip()
+                            if redundant_solvent_pat.match(solvent_name):
+                                h = redundant_solvent_pat.search(solvent_name)
+                                if h[1] == h[2]:
+                                    solvent_name = h[1]
                             solvent_system[solvent_name] = int(g[0])
                             solvent_isotope[solvent_name] = '[U-2H]' if deuterated_pat.match(solvent_name) and not perdeuterated_pat.match(solvent_name)\
                                 else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
@@ -1480,6 +1493,10 @@ class BMRBAnnTasks:
                                 has_poly_entity = True
                                 touched_entity_id.append(entity_id)
                         elif row[1] not in emptyValue:
+                            if redundant_solvent_pat.match(row[1]):
+                                h = redundant_solvent_pat.search(row[1])
+                                if h[1] == h[2]:
+                                    row[1] = lp.data[idx][mol_common_name_col] = h[1]
                             _name = row[1].lower()
                             if _name not in ('nacl', 'kcl', 'cacl2', 'zncl2', 'mgcl2', 'ca+2', 'zn+2', 'mg+2', 'ca2+', 'zn2+', 'mg2+')\
                                and 'chloride' not in _name:
@@ -1643,7 +1660,7 @@ class BMRBAnnTasks:
                                                 break
                                             if '%' in _txt:
                                                 try:
-                                                    g = percent_value_pattern.search(_txt).groups()
+                                                    g = percent_value_pat.search(_txt).groups()
                                                     p = float(g[0]) if '.' in g[0] else int(g[0])
                                                     if 0 < p <= 100:
                                                         isotopic_labelings.append(f'U-{p}% {iso_name}')
@@ -1664,7 +1681,7 @@ class BMRBAnnTasks:
                                             break
                                         if '%' in txt:
                                             try:
-                                                g = percent_value_pattern.search(txt).groups()
+                                                g = percent_value_pat.search(txt).groups()
                                                 p = float(g[0]) if '.' in g[0] else int(g[0])
                                                 if 0 < p <= 100:
                                                     isotopic_labelings.append(f'U-{p}% {iso_name}')
@@ -2366,8 +2383,8 @@ class BMRBAnnTasks:
                     dup_idx.add(idx2)
                     res_idx[idx2] = idx1
 
-                pk_name_pattern = re.compile(r'D_[0-9]+_nmr-peaks-upload_P([0-9]+).dat.V([0-9]+)$')
-                mr_name_pattern = re.compile(r'D_[0-9]+_mr-(\S+)_P([0-9]+).(\S+).V([0-9]+)$')
+                pk_name_pat = re.compile(r'D_[0-9]+_nmr-peaks-upload_P([0-9]+).dat.V([0-9]+)$')
+                mr_name_pat = re.compile(r'D_[0-9]+_mr-(\S+)_P([0-9]+).(\S+).V([0-9]+)$')
 
                 for idx in sorted(list(dup_idx)):
                     sf_framecode = sp_info[idx]['sf_framecode']
@@ -2383,8 +2400,8 @@ class BMRBAnnTasks:
                         _file_name_ = retrieveOriginalFileName(_file_name) if _file_name not in emptyValue else _file_name
                         if _file_name != _file_name_:
                             set_sf_tag(_sf, 'Data_file_name', _file_name_)
-                        if _file_name_ != file_name_ and not mr_name_pattern.match(file_name_)\
-                           and (len(_file_name_) == 0 or pk_name_pattern.match(_file_name_)):
+                        if _file_name_ != file_name_ and not mr_name_pat.match(file_name_)\
+                           and (len(_file_name_) == 0 or pk_name_pat.match(_file_name_)):
                             set_sf_tag(_sf, 'Data_file_name', file_name_)
 
                     update_sf_name[res_sf_framecode] = sf_framecode

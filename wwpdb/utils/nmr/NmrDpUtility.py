@@ -46469,7 +46469,7 @@ class NmrDpUtility:
                                                 com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
                                                 result = subprocess.run(com, check=False)
                                                 ret_code = result.returncode
-                                                print(f'{" ".join(com)}\n -> {ret_code}')
+                                                # print(f'{" ".join(com)}\n -> {ret_code}')
                                                 if ret_code == 0:
                                                     break
                                             elif file_name.endswith('.cif'):
@@ -46478,7 +46478,7 @@ class NmrDpUtility:
                                                 com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
                                                 result = subprocess.run(com, check=False)
                                                 ret_code = result.returncode
-                                                print(f'{" ".join(com)}\n -> {ret_code}')
+                                                # print(f'{" ".join(com)}\n -> {ret_code}')
                                                 if ret_code == 0:
                                                     break
                                     if ret_code != 0:
@@ -46494,7 +46494,7 @@ class NmrDpUtility:
                                                     com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
                                                     result = subprocess.run(com, check=False)
                                                     ret_code = result.returncode
-                                                    print(f'{" ".join(com)}\n -> {ret_code}')
+                                                    # print(f'{" ".join(com)}\n -> {ret_code}')
                                                     if ret_code == 0:
                                                         break
                                                 elif file_name.endswith('.cif'):
@@ -46503,7 +46503,7 @@ class NmrDpUtility:
                                                     com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
                                                     result = subprocess.run(com, check=False)
                                                     ret_code = result.returncode
-                                                    print(f'{" ".join(com)}\n -> {ret_code}')
+                                                    # print(f'{" ".join(com)}\n -> {ret_code}')
                                                     if ret_code == 0:
                                                         break
                                     if ret_code != 0:
@@ -46515,7 +46515,7 @@ class NmrDpUtility:
                                                     com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
                                                     result = subprocess.run(com, check=False)
                                                     ret_code = result.returncode
-                                                    print(f'{" ".join(com)}\n -> {ret_code}')
+                                                    # print(f'{" ".join(com)}\n -> {ret_code}')
                                                     if ret_code == 0:
                                                         break
                                             if ret_code != 0:
@@ -46525,7 +46525,7 @@ class NmrDpUtility:
                                                         com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
                                                         result = subprocess.run(com, check=False)
                                                         ret_code = result.returncode
-                                                        print(f'{" ".join(com)}\n -> {ret_code}')
+                                                        # print(f'{" ".join(com)}\n -> {ret_code}')
                                                         if ret_code == 0:
                                                             break
 
@@ -51003,6 +51003,8 @@ class NmrDpUtility:
 
         if len(self.__star_data) == 0 or self.__star_data[0] is None or self.__star_data_type[0] != 'Entry':
             return False
+
+        self.__nefT.set_merge_rescue_mode(False)  # D_1300021766 vs DAOTHER-9927
 
         self.__extractPolymerSequence()
         self.__extractPolymerSequenceInLoop()

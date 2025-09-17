@@ -152,6 +152,8 @@ class CcpnPKReader:
                 if self.__cR is None:
                     self.__cR = CifReader(self.__verbose, self.__lfh)
                     if not self.__cR.parse(cifFilePath):
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.parse() {cifFilePath} is not CIF file.\n")
                         return None, None, None
 
             lexer = CcpnPKLexer(input)
@@ -230,6 +232,11 @@ class CcpnPKReader:
 
 
 if __name__ == "__main__":
+    reader = CcpnPKReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-combine-at-upload/bmr36456/data/D_1300025766_nmr-peaks-upload_P1.dat.V1',
+                 '../../tests-nmr/mock-data-combine-at-upload/bmr36456/data/D_1300025766_model-release_P1.cif.V1')
+
     reader = CcpnPKReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/7v6v/bmr36441/work/data/D_1300024190_nmr-peaks-upload_P1.dat.V1',

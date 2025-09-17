@@ -152,6 +152,8 @@ class BarePKReader:
                 if self.__cR is None:
                     self.__cR = CifReader(self.__verbose, self.__lfh)
                     if not self.__cR.parse(cifFilePath):
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.parse() {cifFilePath} is not CIF file.\n")
                         return None, None, None
 
             lexer = BarePKLexer(input)

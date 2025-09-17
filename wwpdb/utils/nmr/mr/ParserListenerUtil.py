@@ -2672,7 +2672,30 @@ def translateToStdAtomName(atomId: str, refCompId: Optional[str] = None,
             if atomId in _refAtomIdList:
                 return atomId
 
-            peptide, _, carbohydrate = ccU.getTypeOfCompId(refCompId)
+            peptide, nucleotide, carbohydrate = ccU.getTypeOfCompId(refCompId)
+
+            if nucleotide and lenAtomId > 2:
+                if atomId.endswith('A'):  # 7w0x
+                    if refAtomIdList is not None:
+                        if atomId[:-1] + '1' in refAtomIdList:
+                            return atomId[:-1] + '1'
+                        if atomId[-2] == "'" and atomId[:-1] in refAtomIdList:
+                            return atomId[:-1]
+                    if atomId[:-1] + '1' in _refAtomIdList:
+                        return atomId[:-1] + '1'
+                    if atomId[-2] == "'" and atomId[:-1] in _refAtomIdList:
+                        return atomId[:-1]
+
+                if atomId.endswith('B'):  # 7w0x
+                    if refAtomIdList is not None:
+                        if atomId[:-1] + '2' in refAtomIdList:
+                            return atomId[:-1] + '2'
+                        if atomId[-2] == "'" and atomId[:-1] + "'" in refAtomIdList:
+                            return atomId[:-1] + "'"
+                    if atomId[:-1] + '2' in _refAtomIdList:
+                        return atomId[:-1] + '2'
+                    if atomId[-2] == "'" and atomId[:-1] + "'" in _refAtomIdList:
+                        return atomId[:-1] + "'"
 
             if peptide and atomId in aminoProtonCode and refAtomIdList is not None:
                 if atomId[-1] in ('%', '*', '#') and not unambig:

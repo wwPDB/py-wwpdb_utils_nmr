@@ -4251,8 +4251,23 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                               if sa['ref_chain_id'] == ref_chain_id
                               and sa['test_chain_id'] == test_chain_id)
 
-                    if sa['conflict'] > 0 or sa['unmapped'] == 0:
+                    if sa['conflict'] > 0:
                         continue
+
+                    if sa['unmapped'] > 0:
+                        has_strict_match = False
+
+                        for _ca in chainAssign:
+                            if _ca['ref_chain_id'] == ref_chain_id and _ca['test_chain_id'] != test_chain_id:
+                                _sa = next(_sa for _sa in seqAlign
+                                           if _sa['ref_chain_id'] == ref_chain_id
+                                           and _sa['test_chain_id'] == _ca['test_chain_id'])
+                                if _sa['conflict'] == 0 and _sa['unmapped'] == 0:
+                                    has_strict_match = True
+                                    break
+
+                        if has_strict_match:
+                            continue
 
                     ps1 = next(ps1 for ps1 in nmrPolySeq if ps1['chain_id'] == test_chain_id)
                     ps2 = next(ps2 for ps2 in polySeq if ps2['auth_chain_id'] == ref_chain_id)

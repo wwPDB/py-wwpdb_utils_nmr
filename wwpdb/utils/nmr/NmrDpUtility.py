@@ -47985,7 +47985,7 @@ class NmrDpUtility:
         ent_asm_id_map = {}
         ign_chain_ids = []
 
-        if self.__star_data_type[0] == 'Entry':
+        if len(self.__star_data) > 0 and isinstance(self.__star_data[0], pynmrstar.Entry):
             input_source = self.report.input_sources[0]
             input_source_dic = input_source.get()
 
@@ -48060,7 +48060,7 @@ class NmrDpUtility:
                 mat, indices = [], []
 
                 valid_ent_asm_id_map = fileListId == 0 and len(ent_asm_id_map) > 0\
-                    and all(ps1['auth_chain_id'] in ent_asm_id_map.values() for ps1 in cif_poly_seq)\
+                    and all('auth_chain_id' in ps1 and ps1['auth_chain_id'] in ent_asm_id_map.values() for ps1 in cif_poly_seq)\
                     and all(ps2['chain_id'] in ent_asm_id_map or ps2['chain_id'] in ign_chain_ids for ps2 in nmr_poly_seq)
 
                 if valid_ent_asm_id_map:

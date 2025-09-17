@@ -2798,8 +2798,7 @@ class NEFTranslator:
                             return False
 
                         valid = True
-                        if self.__merge_rescue_mode and 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags and 'Details' in loop.tags\
-                           and 'PDB_residue_no' in loop.tags:
+                        if self.__merge_rescue_mode and 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags and 'Details' in loop.tags:
                             pre_tags = ['Comp_index_ID', 'Comp_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Details']
                             pre_seq_data = loop.get_tag(pre_tags)
                             count = 0
@@ -3069,8 +3068,7 @@ class NEFTranslator:
                                 r[seq_id_col] = r[alt_seq_id_col]
 
                 valid = True
-                if self.__merge_rescue_mode and 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags and 'Details' in loop.tags\
-                   and 'PDB_residue_no' in loop.tags:
+                if self.__merge_rescue_mode and 'Auth_seq_ID' in loop.tags and 'Auth_comp_ID' in loop.tags and 'Details' in loop.tags:
                     pre_tags = ['Comp_index_ID', 'Comp_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Details']
                     pre_seq_data = loop.get_tag(pre_tags)
                     count = 0

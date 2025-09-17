@@ -6260,7 +6260,8 @@ class AmberMRParserListener(ParseTreeListener):
 
                     if compId not in monDict3 and self.__mrAtomNameMapping is not None:
                         _, _, authAtomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId,
-                                                                      authCompId, authAtomId, compId, coordAtomSite)
+                                                                      authCompId, authAtomId, compId, coordAtomSite,
+                                                                      ignoreSeqId=True)
 
                     fixed = False
                     if self.__reasons is not None:

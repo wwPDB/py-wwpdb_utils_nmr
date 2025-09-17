@@ -7507,8 +7507,7 @@ class NmrDpUtility:
         self.__versioned_atom_name_mapping = None
 
         # atom name mapping derived from the original uploaded coordinate file
-        self.__internal_atom_name_mapping = None
-        self.__internal_atom_name_mapping0 = None
+        self.__internal_atom_name_mapping = {}
 
         # RCI
         self.__rci = RCI(False, self.__lfh)
@@ -34548,15 +34547,13 @@ class NmrDpUtility:
                 if atom_map not in self.__mr_atom_name_mapping:
                     self.__mr_atom_name_mapping.append(atom_map)
 
-        if self.__internal_atom_name_mapping is not None:
-            for atom_map in self.__internal_atom_name_mapping:
-                if atom_map not in self.__mr_atom_name_mapping:
-                    self.__mr_atom_name_mapping.append(atom_map)
-
-        if self.__internal_atom_name_mapping0 is not None:
-            for atom_map in self.__internal_atom_name_mapping0:
-                if atom_map not in self.__mr_atom_name_mapping:
-                    self.__mr_atom_name_mapping.append(atom_map)
+        if len(self.__internal_atom_name_mapping) > 0:
+            for ver in sorted(list(self.__internal_atom_name_mapping), reverse=True):
+                if self.__internal_atom_name_mapping[ver] is None:
+                    continue
+                for atom_map in self.__internal_atom_name_mapping[ver]:
+                    if atom_map not in self.__mr_atom_name_mapping:
+                        self.__mr_atom_name_mapping.append(atom_map)
 
         if self.__mr_atom_name_mapping is not None and len(self.__mr_atom_name_mapping) > 1:
             self.__mr_atom_name_mapping = list(reversed(self.__mr_atom_name_mapping))
@@ -46380,8 +46377,7 @@ class NmrDpUtility:
                 self.__recvd_nmr_data = pdbx_database_status[0]['recvd_nmr_data'] == 'Y'
 
             self.__versioned_atom_name_mapping = None
-            self.__internal_atom_name_mapping = None
-            self.__internal_atom_name_mapping0 = None
+            self.__internal_atom_name_mapping = {}
 
             maxitpath = os.getenv('MAXITPATH')
             if maxitpath is None:
@@ -46442,7 +46438,9 @@ class NmrDpUtility:
 
                     internal_cif_file = os.path.join(self.__cR.getDirPath(), f'{extended_pdb_id[-4:]}_model-upload_P1.cif.V1')
                     internal_cif_file0 = os.path.join(self.__cR.getDirPath(), f'{extended_pdb_id[-4:]}_model-upload_P1.cif.V0')
+                    internal_cif_file_prefix = os.path.join(self.__cR.getDirPath(), f'{extended_pdb_id[-4:]}_model-upload_P1.cif.V')
 
+                    max_ver = 1
                     if not os.path.exists(internal_cif_file):
 
                         try:
@@ -46466,21 +46464,23 @@ class NmrDpUtility:
                                             if file_name.endswith('.pdb'):
                                                 if not has_coordinates(file_path):
                                                     continue
-                                                com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '1']
+                                                com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file_prefix}{max_ver}', '-o', '1']
                                                 result = subprocess.run(com, check=False)
                                                 ret_code = result.returncode
                                                 # print(f'{" ".join(com)}\n -> {ret_code}')
                                                 if ret_code == 0:
-                                                    break
+                                                    max_ver += 1
+                                                    # break
                                             elif file_name.endswith('.cif'):
                                                 if not has_cif_coordinates(file_path):
                                                     continue
-                                                com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
+                                                com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file_prefix}{max_ver}', '-o', '8']
                                                 result = subprocess.run(com, check=False)
                                                 ret_code = result.returncode
                                                 # print(f'{" ".join(com)}\n -> {ret_code}')
                                                 if ret_code == 0:
-                                                    break
+                                                    max_ver += 1
+                                                    # break
                                     if ret_code != 0:
                                         intnl_upload_dir = os.path.join(self.__cR.getDirPath(), f'bmr{bmrb_id}/work')
                                         if os.path.isdir(intnl_upload_dir):
@@ -46587,19 +46587,27 @@ class NmrDpUtility:
                             print(str(e))
 
                     if os.path.exists(internal_cif_file):
-                        self.__internal_atom_name_mapping =\
-                            retrieveAtomNameMappingFromInternal(self.__cR, self.__cacheDirPath, revision_history, internal_cif_file,
-                                                                self.__representative_model_id, self.__representative_alt_id)
+                        for ver in range(1, 10):
+                            if not os.path.exists(f'{internal_cif_file_prefix}{ver}'):
+                                break
+                            max_ver = ver + 1
+                        for ver in range(1, max_ver):
+                            major = max(revision_history)
+                            minor = revision_history[major] + ver - 1
+                            revision_history[major] = minor
+                            self.__internal_atom_name_mapping[ver] =\
+                                retrieveAtomNameMappingFromInternal(self.__cR, self.__cacheDirPath, revision_history, f'{internal_cif_file_prefix}{ver}',
+                                                                    self.__representative_model_id, self.__representative_alt_id)
 
                     if os.path.exists(internal_cif_file0):
                         major = max(revision_history)
                         minor = revision_history[major] - 1
                         revision_history[major] = minor
-                        self.__internal_atom_name_mapping0 =\
+                        self.__internal_atom_name_mapping[0] =\
                             retrieveAtomNameMappingFromInternal(self.__cR, self.__cacheDirPath, revision_history, internal_cif_file0,
                                                                 self.__representative_model_id, self.__representative_alt_id)
 
-            if self.__internal_atom_name_mapping is None:
+            if len(self.__internal_atom_name_mapping) == 0:
                 cif_file_name = os.path.basename(self.__cifPath)
 
                 if onedep_model_file_pattern.match(cif_file_name):
@@ -46642,7 +46650,7 @@ class NmrDpUtility:
                                             break
                             if ret_code != 0:
                                 for file_name in os.listdir(cur_dir_path):
-                                    if file_name == f'{dep_id}_modelP1.cif.V1':
+                                    if file_name == f'{dep_id}_model_P1.cif.V1':
                                         file_path = os.path.join(cur_dir_path, file_name)
                                         com = [maxitpath, '-input', f'{file_path}', '-output', f'{internal_cif_file}', '-o', '8']
                                         result = subprocess.run(com, check=False)
@@ -46651,7 +46659,7 @@ class NmrDpUtility:
                                             break
 
                         if os.path.exists(internal_cif_file):
-                            self.__internal_atom_name_mapping =\
+                            self.__internal_atom_name_mapping[1] =\
                                 retrieveAtomNameMappingFromInternal(self.__cR, self.__cacheDirPath, {0: 0}, internal_cif_file,
                                                                     self.__representative_model_id, self.__representative_alt_id)
 

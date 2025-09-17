@@ -2835,9 +2835,12 @@ class NEFTranslator:
                                         _auth_seq_id_ = int(row[2]) if isinstance(row[2], str) else row[2]
                                     except ValueError:
                                         continue
-                                    if _seq_id_ != _auth_seq_id_ and row[3] in monDict3 and row[1] not in emptyValue and row[4] in emptyValue:
-                                        _k = (row[1], _auth_seq_id_, row[3])
-                                        if _k in coord_assembly_checker['auth_to_star_seq']:
+                                    if row[3] in monDict3 and row[1] not in emptyValue and row[4] in emptyValue:
+                                        if _seq_id_ != _auth_seq_id_:
+                                            _k = (row[1], _auth_seq_id_, row[3])
+                                            if _k in coord_assembly_checker['auth_to_star_seq']:
+                                                count += 1
+                                        else:
                                             count += 1
                                 if 0 < count < len(loop):  # DAOTHER-9927: reset auth_seq_id derived from BMRB archive
                                     auth_seq_id_col = loop.tags.index('Auth_seq_ID')

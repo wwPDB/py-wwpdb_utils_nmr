@@ -11183,7 +11183,7 @@ class NmrDpUtility:
         if not has_spectral_peak and self.__combined_mode:
 
             primary_spectra_for_structure_determination =\
-                'NOESY or ROESY' if self.__exptl_method != 'SOLID-STATE NMR' else 'REDOR, DARR or RFDR'
+                'NOESY or ROESY' if self.__exptl_method != 'SOLID-STATE NMR' else 'DARR, REDOR, TEDOR or RFDR'
 
             warn = "The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, "\
                 f"in particular those generated from the {primary_spectra_for_structure_determination} spectra."
@@ -46053,7 +46053,7 @@ class NmrDpUtility:
                     continue
 
         primary_spectra_for_structure_determination =\
-            'NOESY or ROESY' if not solid_state_nmr else 'REDOR, DARR or RFDR'
+            'NOESY or ROESY' if not solid_state_nmr else 'DARR, REDOR, TEDOR or RFDR'
 
         hint = f" classified into {', '.join(exp_classes)}, respectively" if len(exp_classes) > 0 else ''
 

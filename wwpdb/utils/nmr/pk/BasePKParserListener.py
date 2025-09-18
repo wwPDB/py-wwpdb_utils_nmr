@@ -191,6 +191,7 @@ CS_ERROR_MAX = CS_RESTRAINT_ERROR['max_exclusive']
 WEIGHT_RANGE_MIN = WEIGHT_RANGE['min_inclusive']
 WEIGHT_RANGE_MAX = WEIGHT_RANGE['max_inclusive']
 
+C_CARBONYL_CENTER_MAX_TOR = 190
 C_CARBONYL_CENTER_MAX = 180
 C_CARBONYL_CENTER_MIN = 170
 
@@ -257,13 +258,15 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
             if __v['freq_hint'].size > 0:
                 center = numpy.mean(__v['freq_hint'])
                 max_ppm = __v['freq_hint'].max()
+                min_ppm = __v['freq_hint'].min()
 
                 if __v['atom_isotope_number'] is None:
                     if (C_AROMATIC_CENTER_MIN_TOR if 'aro' in file_name or 'anoe' in file_name else C_AROMATIC_CENTER_MIN)\
-                       < center <= C_AROMATIC_CENTER_MAX:
+                       < center <= C_AROMATIC_CENTER_MAX and min_ppm > C_ALL_CENTER_MAX:
                         __v['atom_type'] = 'C'
+                        __v['atom_isotope_number'] = 13
                         __v['axis_code'] = 'C-aromatic'
-                    elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX:
+                    elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX and min_ppm > C_ALL_CENTER_MIN and max_ppm < C_CARBONYL_CENTER_MIN:
                         __v['atom_type'] = 'N'
                         __v['atom_isotope_number'] = 15
                         __v['axis_code'] = 'N'
@@ -299,6 +302,10 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                         __v['atom_type'] = 'C'
                         __v['atom_isotope_number'] = 13
                         __v['axis_code'] = 'C-methyl'
+                    elif C_METHYL_CENTER_MIN < min_ppm and max_ppm < C_CARBONYL_CENTER_MAX_TOR:
+                        __v['atom_type'] = 'C'
+                        __v['atom_isotope_number'] = 13
+                        __v['axis_code'] = 'C'  # all
 
                 isotope_number = __v['atom_isotope_number']
 
@@ -313,9 +320,9 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
 
             if __v['spectral_region'] is None and __v['freq_hint'].size > 0:
                 atom_type = __v['atom_type']
-                if C_AROMATIC_CENTER_MIN_TOR < center <= C_AROMATIC_CENTER_MAX and atom_type == 'C':
+                if C_AROMATIC_CENTER_MIN_TOR < center <= C_AROMATIC_CENTER_MAX and min_ppm > C_ALL_CENTER_MAX and atom_type == 'C':
                     __v['spectral_region'] = 'C-aromatic'
-                elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX:
+                elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX and min_ppm > C_ALL_CENTER_MAX:
                     if atom_type == 'N':
                         __v['spectral_region'] = 'N'
                     if atom_type == 'C':
@@ -735,14 +742,14 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                             if transfer in cur_spectral_dim_transfer:
                                 continue
                             cur_spectral_dim_transfer.append(transfer)
-                            if d == 2 and _dict1['spectral_region'] == _dict2['spectral_region']:
+                            if d == 2:  # and _dict1['spectral_region'] == _dict2['spectral_region']:
                                 nuc = _dict1[1]['spectral_regison'][0]
                                 _dict1['spectral_region'] = _dict2['spectral_region'] = nuc
                                 if _dict1['axis_code'] == _dict2['axis_code']:
                                     _dict1['axis_code'] = f'{nuc}{dim_to_code[_dim_id1]}'
                                     _dict2['axis_code'] = f'{nuc}{dim_to_code[_dim_id2]}'
 
-        elif 'redor' in file_name:
+        elif 'redor' in file_name or 'tedor' in file_name:
             for _dim_id1, _dict1 in cur_spectral_dim.items():
                 _iso_num1 = _dict1['atom_isotope_number']
                 if _iso_num1 in (13, 15, 19, 31):
@@ -1752,14 +1759,15 @@ class BasePKParserListener():
                             if __v['freq_hint'].size > 0:
                                 center = numpy.mean(__v['freq_hint'])
                                 max_ppm = __v['freq_hint'].max()
+                                min_ppm = __v['freq_hint'].min()
 
                                 if __v['atom_isotope_number'] is None:
                                     if (C_AROMATIC_CENTER_MIN_TOR if any('aro' in n for n in _file_names) or any('anoe' in n for n in _file_names) else C_AROMATIC_CENTER_MIN)\
-                                       < center <= C_AROMATIC_CENTER_MAX:
+                                       < center <= C_AROMATIC_CENTER_MAX and min_ppm > C_ALL_CENTER_MAX:
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C-aromatic'
-                                    elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX:
+                                    elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX and min_ppm > C_ALL_CENTER_MIN and max_ppm < C_CARBONYL_CENTER_MIN:
                                         __v['atom_type'] = 'N'
                                         __v['atom_isotope_number'] = 15
                                         __v['axis_code'] = 'N'
@@ -1795,6 +1803,10 @@ class BasePKParserListener():
                                         __v['atom_type'] = 'C'
                                         __v['atom_isotope_number'] = 13
                                         __v['axis_code'] = 'C-methyl'
+                                    elif C_METHYL_CENTER_MIN < min_ppm and max_ppm < C_CARBONYL_CENTER_MAX_TOR:
+                                        __v['atom_type'] = 'C'
+                                        __v['atom_isotope_number'] = 13
+                                        __v['axis_code'] = 'C'  # all
 
                                 isotope_number = __v['atom_isotope_number']
 
@@ -1809,9 +1821,9 @@ class BasePKParserListener():
 
                             if __v['spectral_region'] is None and __v['freq_hint'].size > 0:
                                 atom_type = __v['atom_type']
-                                if C_AROMATIC_CENTER_MIN_TOR < center <= C_AROMATIC_CENTER_MAX and atom_type == 'C':
+                                if C_AROMATIC_CENTER_MIN_TOR < center <= C_AROMATIC_CENTER_MAX and min_ppm > C_ALL_CENTER_MAX and atom_type == 'C':
                                     __v['spectral_region'] = 'C-aromatic'
-                                elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX:
+                                elif N_AMIDE_CENTER_MIN < center <= N_AMIDE_CENTER_MAX and min_ppm > C_ALL_CENTER_MAX:
                                     if atom_type == 'N':
                                         __v['spectral_region'] = 'N'
                                     if atom_type == 'C':
@@ -2338,14 +2350,14 @@ class BasePKParserListener():
                                             if transfer in cur_spectral_dim_transfer:
                                                 continue
                                             cur_spectral_dim_transfer.append(transfer)
-                                            if d == 2 and _dict1['spectral_region'] == _dict2['spectral_region']:
+                                            if d == 2:  # and _dict1['spectral_region'] == _dict2['spectral_region']:
                                                 nuc = _dict1[1]['spectral_regison'][0]
                                                 _dict1['spectral_region'] = _dict2['spectral_region'] = nuc
                                                 if _dict1['axis_code'] == _dict2['axis_code']:
                                                     _dict1['axis_code'] = f'{nuc}{dim_to_code[_dim_id1]}'
                                                     _dict2['axis_code'] = f'{nuc}{dim_to_code[_dim_id2]}'
 
-                        elif any('redor' in n for n in _file_names):
+                        elif any('redor' in n for n in _file_names) or any('tedor' in n for n in _file_names):
                             for _dim_id1, _dict1 in cur_spectral_dim.items():
                                 _iso_num1 = _dict1['atom_isotope_number']
                                 if _iso_num1 in (13, 15, 19, 31):
@@ -2407,8 +2419,10 @@ class BasePKParserListener():
                                     if _dim_id1 == _dim_id2:
                                         continue
                                     if 'long_range' not in cur_spectral_dim[1]:
-                                        if _dict2['_spectral_region'] != _region1:
-                                            continue
+                                        _region2 = _dict2['_spectral_region']
+                                        if _region2 != _region1:
+                                            if {_region1, _region2} != {'C', 'C-aliphatic'}:  # darr
+                                                continue
                                     if not any(_transfer for _transfer in cur_spectral_dim_transfer
                                                if {_dim_id1, _dim_id2} == {_transfer['spectral_dim_id_1'], _transfer['spectral_dim_id_2']}):
                                         if 'yes' in (_dict1['acquisition'], _dict2['acquisition']):

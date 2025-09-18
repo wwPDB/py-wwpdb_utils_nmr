@@ -2084,6 +2084,19 @@ class BMRBAnnTasks:
             for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category)):
                 sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
+                sp_dim = {}
+
+                try:
+
+                    _lp_category = '_Spectral_dim'
+                    _lp = sf.get_loop(_lp_category)
+                    _dat = _lp.get_tag(['ID', 'Atom_type'])
+                    for _row in _dat:
+                        sp_dim[int(_row[0]) if isinstance(_row[0], str) else _row[0]] = _row[1]
+
+                except KeyError:
+                    pass
+
                 lp_category = '_Peak_row_format'
 
                 try:
@@ -2095,6 +2108,7 @@ class BMRBAnnTasks:
                                         'num_of_dim': get_first_sf_tag(sf, 'Number_of_spectral_dimensions'),
                                         'class': get_first_sf_tag(sf, 'Experiment_class').replace('?', ''),
                                         'type': get_first_sf_tag(sf, 'Experiment_type'),
+                                        'spectral_dim': sp_dim,
                                         'size': len(lp)}
 
                         num_of_dim = sp_info[idx]['num_of_dim']
@@ -2231,6 +2245,7 @@ class BMRBAnnTasks:
                                             'num_of_dim': get_first_sf_tag(sf, 'Number_of_spectral_dimensions'),
                                             'class': get_first_sf_tag(sf, 'Experiment_class').replace('?', ''),
                                             'type': get_first_sf_tag(sf, 'Experiment_type'),
+                                            'spectral_dim': sp_dim,
                                             'size': len(lp)}
 
                             num_of_dim = sp_info[idx]['num_of_dim']
@@ -2306,6 +2321,7 @@ class BMRBAnnTasks:
                 for idx1, idx2 in itertools.combinations(sp_info, 2):
 
                     if sp_info[idx1]['num_of_dim'] != sp_info[idx2]['num_of_dim']\
+                       or sp_info[idx1]['spectral_dim'] != sp_info[idx2]['spectral_dim']\
                        or (not self.__enforcePeakRowFormat and sp_info[idx1]['size'] != sp_info[idx2]['size']):
                         continue
 

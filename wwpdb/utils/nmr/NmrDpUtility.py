@@ -35227,12 +35227,23 @@ class NmrDpUtility:
                 err = f"To verify AMBER restraint file {file_name!r}, AMBER topology file must be uploaded "\
                     "or Sander comments should be included in the AMBER restraint file."
 
-                self.report.error.appendDescription('missing_mandatory_content',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
+                if self.__internal_mode:
 
-                if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
+                    self.report.warning.appendDescription('missing_content',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {err}\n")
+
+                else:
+
+                    self.report.error.appendDescription('missing_mandatory_content',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                 continue
 
@@ -35240,12 +35251,23 @@ class NmrDpUtility:
 
                 err = f"GROMACS topology file must be uploaded to verify GROMACS restraint file {file_name!r}."
 
-                self.report.error.appendDescription('missing_mandatory_content',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
+                if self.__internal_mode:
 
-                if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
+                    self.report.warning.appendDescription('missing_content',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {err}\n")
+
+                else:
+
+                    self.report.error.appendDescription('missing_mandatory_content',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
                 continue
 
@@ -35253,8 +35275,25 @@ class NmrDpUtility:
 
                 err = f"CHARMM topology file (aka. CRD or CHARM CARD) must be uploaded to verify CHARMM restraint file {file_name!r}."
 
-                suspended_errors_for_lazy_eval.append({'missing_mandatory_content':
-                                                       {'file_name': file_name, 'description': err}})
+                if self.__internal_mode:
+
+                    self.report.warning.appendDescription('missing_content',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {err}\n")
+
+                else:
+
+                    self.report.error.appendDescription('missing_mandatory_content',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
+
+                continue
 
             if content_subtype is None or len(content_subtype) == 0:
                 continue
@@ -37097,7 +37136,7 @@ class NmrDpUtility:
 
                 continue
 
-            if file_type == 'nm-pea-xea' and not has_nm_aux_xea_file:
+            if file_type == 'nm-pea-xea' and not has_nm_aux_xea_file and not self.__internal_mode:
 
                 err = f"XEASY PROT file should be uploaded to verify XEASY spectral peak list file {file_name!r}."
 

@@ -70,6 +70,7 @@ class AmberMRReader:
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
+        self.__internal = False
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
         self.__maxParserErrorReport = MAX_ERROR_REPORT
@@ -105,6 +106,9 @@ class AmberMRReader:
 
     def setDebugMode(self, debug: bool):
         self.__debug = debug
+
+    def setInternalMode(self, internal: bool):
+        self.__internal = internal
 
     def setLexerMaxErrorReport(self, maxErrReport: int):
         self.__maxLexerErrorReport = maxErrReport
@@ -208,6 +212,7 @@ class AmberMRReader:
                                                  self.__ccU, self.__csStat, self.__nefT,
                                                  self.__atomNumberDict, self.__reasons)
                 listener.setDebugMode(self.__debug)
+                listener.setInternalMode(self.__internal)
                 listener.createSfDict(createSfDict)
                 if createSfDict:
                     listener.setOriginaFileName(originalFileName if originalFileName is not None else retrieveOriginalFileName(mrFilePath))

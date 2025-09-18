@@ -35230,7 +35230,7 @@ class NmrDpUtility:
                 if self.__internal_mode:
 
                     self.report.warning.appendDescription('missing_content',
-                                                        {'file_name': file_name, 'description': err})
+                                                          {'file_name': file_name, 'description': err})
                     self.report.setWarning()
 
                     if self.__verbose:
@@ -35254,7 +35254,7 @@ class NmrDpUtility:
                 if self.__internal_mode:
 
                     self.report.warning.appendDescription('missing_content',
-                                                        {'file_name': file_name, 'description': err})
+                                                          {'file_name': file_name, 'description': err})
                     self.report.setWarning()
 
                     if self.__verbose:
@@ -35278,7 +35278,7 @@ class NmrDpUtility:
                 if self.__internal_mode:
 
                     self.report.warning.appendDescription('missing_content',
-                                                        {'file_name': file_name, 'description': err})
+                                                          {'file_name': file_name, 'description': err})
                     self.report.setWarning()
 
                     if self.__verbose:
@@ -35325,6 +35325,7 @@ class NmrDpUtility:
                                        self.__ccU, self.__csStat, self.__nefT,
                                        amberAtomNumberDict, _amberAtomNumberDict,
                                        reasons)
+                reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
 
@@ -35346,6 +35347,7 @@ class NmrDpUtility:
                                                self.__ccU, self.__csStat, self.__nefT,
                                                amberAtomNumberDict, _amberAtomNumberDict,
                                                None)
+                        reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,

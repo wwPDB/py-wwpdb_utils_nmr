@@ -1265,7 +1265,7 @@ class OneDepAnnTasks:
     #     return data_map
     # """
 
-    def merge(self, master_entry: pynmrstar.Entry, nmrif) -> bool:
+    def merge(self, master_entry: pynmrstar.Entry, nmrif, bmrb_annotation: bool) -> bool:
         """ Merge NMRIF metadata to NMR-STAR.
         """
 
@@ -1293,6 +1293,9 @@ class OneDepAnnTasks:
                         self.__lfh.write(f"+{self.__class_name__}.perform() ++ Warning  - {cif_category!r} saveframe category does not exist in NMRIF\n")
                 if not has_cif_category:
                     continue
+
+                if page == 'chem_shift_ref' and bmrb_annotation:
+                    new_flag = False
 
                 if new_flag:
                     if sf_category in self.__sfCategoryList:
@@ -1418,7 +1421,7 @@ class OneDepAnnTasks:
                                             else:
                                                 _val = get_first_sf_tag(sf, tag_map[3])
                                                 if _val in emptyValue:
-                                                     set_sf_tag(sf, tag_map[3], row[tag_map[1]])
+                                                    set_sf_tag(sf, tag_map[3], row[tag_map[1]])
                                             has_uniq_sf_tag = True
 
                                     if not has_uniq_sf_tag and reset:

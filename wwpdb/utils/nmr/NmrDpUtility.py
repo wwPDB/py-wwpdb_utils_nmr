@@ -64121,7 +64121,7 @@ class NmrDpUtility:
         ann = OneDepAnnTasks(self.__verbose, self.__lfh,
                              self.__sf_category_list, self.__entry_id)
 
-        is_done = ann.merge(master_entry, self.__cR)
+        is_done = ann.merge(master_entry, self.__cR, self.__bmrb_only and self.__internal_mode)
 
         # the following __performBMRBAnnTasks() will deposit, instead
         # if is_done:

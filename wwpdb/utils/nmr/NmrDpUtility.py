@@ -35349,7 +35349,7 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
-                continue
+                    continue
 
             if file_type == 'nm-res-cha' and charmmAtomNumberDict is None and not has_nm_aux_cha_file:
 
@@ -35373,7 +35373,7 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
-                continue
+                    continue
 
             if file_type == 'nm-res-gro' and gromacsAtomNumberDict is None and not has_nm_aux_gro_file:
 
@@ -35397,7 +35397,7 @@ class NmrDpUtility:
                     if self.__verbose:
                         self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {err}\n")
 
-                continue
+                    continue
 
             if content_subtype is None or len(content_subtype) == 0:
                 continue

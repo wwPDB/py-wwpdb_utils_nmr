@@ -35,7 +35,7 @@ coordinates:
 	atom_coordinate+;
 
 atom_coordinate:
-	Atom Integer Simple_name Simple_name (Simple_name? Integer | Simple_name) Float Float Float Float Float Simple_name RETURN;
+	Atom Integer Simple_name Simple_name (Simple_name? Integer | Simple_name) Float Float Float Float? Float? Simple_name? RETURN;
 
 terminal:
 	Ter RETURN | End;

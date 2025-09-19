@@ -255,6 +255,12 @@ class GromacsPTParserListener(ParseTreeListener):
             def is_ligand(prev_comp_id, comp_id):
                 if prev_comp_id is None or not self.__hasNonPolyModel:
                     return False
+                prev_comp_id = prev_comp_id.upper()
+                comp_id = comp_id.upper()
+                for np in self.__nonPolyModel:
+                    if prev_comp_id in np['comp_id']:
+                        if not any(np for np in self.__nonPolyModel if comp_id in np['comp_id']):
+                            return True
                 if not prev_comp_id.endswith('3') or prev_comp_id == comp_id:
                     return False
                 for np in self.__nonPolyModel:
@@ -299,7 +305,9 @@ class GromacsPTParserListener(ParseTreeListener):
                         atomName = _atomName
                         retrievedAtomNumList.append(atomNum)
 
-                if (0 < atomNum < len(terminus) + 1 and terminus[atomNum - 1] and ancAtomName.endswith('T'))\
+                if (0 < atomNum < len(terminus) + 1
+                    and ((terminus[atomNum - 1] and ancAtomName.endswith('T'))
+                         or (terminus[atomNum - 2] and prevAtomName.endswith('T') and prevCompId != compId)))\
                    or is_segment(prevCompId, prevAtomName, compId, atomName)\
                    or is_ligand(prevCompId, compId)\
                    or is_metal_ion(compId, atomName)\
@@ -1163,7 +1171,8 @@ class GromacsPTParserListener(ParseTreeListener):
                         if atomId in chemCompAtomIds:
                             atomNum['atom_id'] = atomId
                         else:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, None, compId, authAtomId, None, None, True)
+                            if self.__mrAtomNameMapping is not None:
+                                _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, None, compId, authAtomId, None, None, True)
 
                             if atomId in chemCompAtomIds:
                                 atomNum['atom_id'] = atomId

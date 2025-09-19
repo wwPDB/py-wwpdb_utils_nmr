@@ -11710,6 +11710,7 @@ class NmrDpUtility:
 
                 elif is_aux_pdb:
 
+                    has_top_num = False
                     atom_names = 0
 
                 atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
@@ -11956,6 +11957,8 @@ class NmrDpUtility:
                                     comp_id = l_split[3]
                                     atom_id = l_split[2]
                                     if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                        if atom_num == 1:
+                                            has_top_num = True
                                         atom_names += 1
                                 except ValueError:
                                     pass
@@ -12139,7 +12142,7 @@ class NmrDpUtility:
 
                 elif is_aux_pdb:
 
-                    if atom_names > 0:
+                    if has_top_num and atom_names > 0:
                         has_topology = True
 
             if file_type in light_mr_file_types and not has_dist_restraint:  # DAOTHER-7491
@@ -34816,7 +34819,15 @@ class NmrDpUtility:
 
                         deal_aux_warn_message(file_name, listener)
 
-                        pdbAtomNumberDict = listener.getAtomNumberDict()
+                        _pdbAtomNumberDict = listener.getAtomNumberDict()
+
+                        if _pdbAtomNumberDict is not None:
+                            if pdbAtomNumberDict is None:
+                                pdbAtomNumberDict = _pdbAtomNumberDict
+                            else:
+                                for k, v in _pdbAtomNumberDict.items():
+                                    if k not in pdbAtomNumberDict:
+                                        pdbAtomNumberDict[k] = v
 
                         poly_seq = listener.getPolymerSequence()
                         if poly_seq is not None:

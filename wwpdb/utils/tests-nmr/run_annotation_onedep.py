@@ -162,6 +162,18 @@ class gen_auth_view_onedep:
         self.__gro_rst_pattern = re.compile(r"^\[ (distance|dihedral|orientation)_restraints \]\s*")
 
         self.__pdb_top_pattern = re.compile(r"^ATOM\s+\d+\s+\S+\s+\S+\s+(\S+\s+)?\d+\s+([+-]?(\d+(\.\d*)?|\.\d+)\s+){5}\S+.*$")
+        self.__pdb_top_unsupport = ('OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND', 'SOURCE', 'KEYWDS', 'EXPDTA',
+                                    'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL',
+                                    'DBREF', 'DBREF1', 'DBREF2', 'SEQADV', 'SEQRES', 'MODRES',
+                                    'HET ', 'HETNAM', 'HETSYN', 'FORMUL',
+                                    'HELIX ', 'SHEET ',
+                                    'SSBOND', 'LINK ', 'CISPEP',
+                                    'SITE ',
+                                    'CRYST1', 'ORIGX1', 'ORIGX2', 'ORIGX3', 'SCALE1', 'SCALE2', 'SCALE3',
+                                    'MTRIX1', 'MTRIX2', 'MTRIX3',
+                                    'MODEL ', 'ANISOU', 'HETATM', 'ENDMDL',
+                                    'CONECT',
+                                    'MASTER')
 
         self.__bmrb_id = ''.join(c for c in sys.argv[1] if c.isdigit())
 
@@ -856,6 +868,20 @@ class gen_auth_view_onedep:
                 else:
                     self.__mr_file_path.append(d['file_name'])
 
+        if len(self.__ar_file_path) == 0:
+            for file_name in sorted(os.listdir(self.__data_dir)):
+                if not file_name.endswith('pdb'):
+                    continue
+
+                file_path = os.path.join(self.__data_dir, file_name)
+
+                if os.path.exists(file_path + '-ignored'):
+                    continue
+
+                if self.is_pdb_top_file(file_path):
+                    self.__ar_file_type.append('nm-aux-pdb')
+                    self.__ar_file_path.append(file_path)
+
         pk_dic = {}
 
         for file_name in sorted(os.listdir(self.__data_dir)):
@@ -1014,13 +1040,18 @@ class gen_auth_view_onedep:
         return False
 
     def is_pdb_top_file(self, file_path) -> bool:
+        has_atom = False
 
         with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
             for line in ifh:
-                if self.__pdb_top_pattern.match(line):
-                    return True
+                if not has_atom and self.__pdb_top_pattern.match(line):
+                    has_atom = True
+                elif any(line.startswith(h) for h in self.__pdb_top_unsupport):
+                    return False
+                elif line.startswith('TER') and len(line.split()) > 1:
+                    return False
 
-        return False
+        return has_atom
 
     def has_cs_loop(self, file_path) -> bool:  # pylint: disable=no-self-use
         try:

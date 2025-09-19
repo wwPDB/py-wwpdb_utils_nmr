@@ -110,6 +110,8 @@ class BarePDBParserListener(ParseTreeListener):
 
     # atoms
     __atoms = []
+    __is_first_atom = True
+    __ter_count = 0
 
     # PDB atom number dictionary
     __atomNumberDict = None
@@ -158,6 +160,8 @@ class BarePDBParserListener(ParseTreeListener):
         self.__atomNumberDict = {}
         self.__polySeqPrmTop = []
         self.__f = []
+        self.__is_first_atom = True
+        self.__ter_count = 0
 
     # Exit a parse tree produced by BarePDBParser#bare_pdb.
     def exitBare_pdb(self, ctx: BarePDBParser.Bare_pdbContext):  # pylint: disable=unused-argument
@@ -173,17 +177,33 @@ class BarePDBParserListener(ParseTreeListener):
             chainIndex = letterToDigit(self.__polySeqModel[0]['chain_id']) - 1  # set tentative chain_id from label_asym_id, which will be assigned to coordinate auth_asym_id
             chainId = indexToLetter(chainIndex)
 
+            terminus = [atom['auth_atom_id'].endswith('T') for atom in self.__atoms if isinstance(atom, dict)]
+
+            atomTotal = len(terminus)
+            if terminus[0]:
+                terminus[0] = False
+            for i in range(0, atomTotal - 1):
+                j = i + 1
+                if terminus[i] and terminus[j]:
+                    terminus[i] = False
+            if terminus[-1]:
+                terminus[-1] = False
+
             seqIdList, compIdList, retrievedAtomNumList = [], [], []
 
             NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S')
 
-            def is_segment(prev_asym_id, prev_comp_id, asym_id, comp_id):
+            def is_segment(prev_asym_id, prev_comp_id, prev_atom_name, asym_id, comp_id, atom_name):
                 if prev_asym_id is None or prev_comp_id is None:
                     return False
                 if prev_asym_id != asym_id:
                     return True
+                is_prev_term_atom = prev_atom_name.endswith('T')
+                if is_prev_term_atom and atom_name.endswith('T'):
+                    return True
                 is_prev_3_prime_comp = prev_comp_id.endswith('3')
-                if is_prev_3_prime_comp and self.__csStat.peptideLike(translateToStdResName(comp_id, ccU=self.__ccU)):
+                if is_prev_3_prime_comp and (is_prev_term_atom
+                                             or self.__csStat.peptideLike(translateToStdResName(comp_id, ccU=self.__ccU))):
                     return True
                 return comp_id.endswith('5')\
                     and (is_prev_3_prime_comp
@@ -192,6 +212,12 @@ class BarePDBParserListener(ParseTreeListener):
             def is_ligand(prev_comp_id, comp_id):
                 if prev_comp_id is None or not self.__hasNonPolyModel:
                     return False
+                prev_comp_id = prev_comp_id.upper()
+                comp_id = comp_id.upper()
+                for np in self.__nonPolyModel:
+                    if prev_comp_id in np['comp_id']:
+                        if not any(np for np in self.__nonPolyModel if comp_id in np['comp_id']):
+                            return True
                 if not prev_comp_id.endswith('3') or prev_comp_id == comp_id:
                     return False
                 for np in self.__nonPolyModel:
@@ -217,7 +243,7 @@ class BarePDBParserListener(ParseTreeListener):
                 return prev_seq_id != seq_id and prev_atom_name[0] not in NON_METAL_ELEMENTS
 
             hasSegCompId = False
-            prevAtomName = ''
+            ancAtomName = prevAtomName = ''
             prevAsymId = prevSeqId = prevCompId = None
             offset = 0
             for atom in self.__atoms:
@@ -247,11 +273,15 @@ class BarePDBParserListener(ParseTreeListener):
                         atomName = _atomName
                         retrievedAtomNumList.append(atomNum)
 
-                if offset > 0 and (is_segment(prevAsymId, prevCompId, asymId, compId)
-                                   or is_ligand(prevCompId, compId)
-                                   or is_metal_ion(compId, atomName)
-                                   or is_metal_ion(prevCompId, prevAtomName)
-                                   or is_metal_elem(prevAtomName, prevSeqId, _seqId)):
+                if (offset > 0 or self.__ter_count == 0)\
+                   and ((0 < atomNum < len(terminus) + 1
+                         and ((terminus[atomNum - 1] and ancAtomName.endswith('T'))
+                              or (terminus[atomNum - 2] and prevAtomName.endswith('T') and prevCompId != compId)))
+                        or is_segment(prevAsymId, prevCompId, prevAtomName, asymId, compId, atomName)
+                        or is_ligand(prevCompId, compId)
+                        or is_metal_ion(compId, atomName)
+                        or is_metal_ion(prevCompId, prevAtomName)
+                        or is_metal_elem(prevAtomName, prevSeqId, _seqId)):
 
                     self.__polySeqPrmTop.append({'chain_id': chainId,
                                                  'seq_id': seqIdList,
@@ -269,10 +299,17 @@ class BarePDBParserListener(ParseTreeListener):
                                                   'seq_id': seqId,
                                                   'auth_comp_id': compId,
                                                   'auth_atom_id': atomName}
+                ancAtomName = prevAtomName
                 prevAtomName = atomName
                 prevAsymId = asymId
                 prevSeqId = _seqId
                 prevCompId = compId
+
+            if len(self.__polySeqPrmTop) == 0:
+                if len(seqIdList) > 0:
+                    self.__polySeqPrmTop.append({'chain_id': chainId,
+                                                 'seq_id': seqIdList,
+                                                 'auth_comp_id': compIdList})
 
             nonPolyCompIdList = []
             if self.__hasNonPolyModel:
@@ -923,7 +960,8 @@ class BarePDBParserListener(ParseTreeListener):
                         if atomId in chemCompAtomIds:
                             atomNum['atom_id'] = atomId
                         else:
-                            _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, None, compId, authAtomId, None, None, True)
+                            if self.__mrAtomNameMapping is not None:
+                                _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, None, compId, authAtomId, None, None, True)
 
                             if atomId in chemCompAtomIds:
                                 atomNum['atom_id'] = atomId
@@ -963,6 +1001,11 @@ class BarePDBParserListener(ParseTreeListener):
         try:
 
             nr = int(str(ctx.Integer(0)))
+            if self.__is_first_atom:
+                if nr == 1:
+                    self.__is_first_atom = False
+                else:
+                    return
 
             if ctx.Integer(1):
                 seqId = int(str(ctx.Integer(1)))
@@ -996,6 +1039,7 @@ class BarePDBParserListener(ParseTreeListener):
     def exitTerminal(self, ctx: BarePDBParser.TerminalContext):  # pylint: disable=unused-argument
         if ctx.Ter():
             self.__atoms.append('TER')
+            self.__ter_count += 1
 
     def getContentSubtype(self) -> dict:
         """ Return content subtype of Bare PDB file.

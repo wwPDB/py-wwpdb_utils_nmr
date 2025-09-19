@@ -161,7 +161,7 @@ class gen_auth_view_onedep:
         self.__gro_top_pattern = re.compile(r"^\[ atoms \]\s*")
         self.__gro_rst_pattern = re.compile(r"^\[ (distance|dihedral|orientation)_restraints \]\s*")
 
-        self.__pdb_top_pattern = re.compile(r"^ATOM\s+\d+\s+\S+\s+\S+\s+(\S+\s+)?\d+\s+([+-]?(\d+(\.\d*)?|\.\d+)\s+){5}\S+.*$")
+        self.__pdb_top_pattern = re.compile(r"^ATOM\s+\d+\s+\S+\s+\S+\s+(\S+\s+)?\d+\s+([+-]?(\d+(\.\d*)?|\.\d+)\s+){3}.*$")
         self.__pdb_top_unsupport = ('OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND', 'SOURCE', 'KEYWDS', 'EXPDTA',
                                     'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL',
                                     'DBREF', 'DBREF1', 'DBREF2', 'SEQADV', 'SEQRES', 'MODRES',

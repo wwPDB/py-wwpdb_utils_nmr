@@ -617,6 +617,8 @@ def getRestraintFormatName(fileType: str, ambig: bool = False) -> str:
         return 'CHARMM topology'
     if fileType == 'nm-aux-gro':
         return 'GROMACS topology'
+    if fileType == 'nm-aux-pdb':
+        return 'PDB topology'
 
     if fileType == 'nm-res-amb':
         return 'AMBER restraint'
@@ -649,7 +651,7 @@ def getRestraintFormatName(fileType: str, ambig: bool = False) -> str:
     if fileType == 'nm-res-xpl':
         return 'XPLOR-NIH/CNS restraint' if ambig else 'XPLOR-NIH restraint'
 
-    if fileType == 'nm-aux-xea':
+    if fileType in ('nm-aux-xea', 'nm-shi-xea'):
         return 'XEASY PROT assignment'
 
     if fileType == 'nm-pea-ari':

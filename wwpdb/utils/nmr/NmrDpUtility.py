@@ -221,6 +221,7 @@
 # 06-Aug-2025  M. Yokochi - add support for SCHRODINGER/ASL MR format (DAOTHER-7902, 10172, NMR data remediation)
 # 22-Aug-2025  M. Yokochi - add support for OLIVIA spectral peak list (DAOTHER-8905, 9785)
 # 22-Aug-2025  M. Yokochi - add 'nm-shi-oli' file type for OLIVIA spectral peak list file (DAOTHER-9785)
+# 19-Sep-2025  M. Yokochi - add 'nm-aux-pdb' file type for bare PDB file as AMBER/CHARMM/GROMACS topology (DAOTHER-7829, 9785, NMR data remediation)
 ##
 """ Wrapper class for NMR data processing.
     @author: Masashi Yokochi
@@ -380,6 +381,7 @@ try:
     from wwpdb.utils.nmr.mr.AmberMRReader import AmberMRReader
     from wwpdb.utils.nmr.mr.AmberPTReader import AmberPTReader
     from wwpdb.utils.nmr.mr.AriaMRReader import AriaMRReader
+    from wwpdb.utils.nmr.mr.BarePDBReader import BarePDBReader
     from wwpdb.utils.nmr.mr.BiosymMRReader import BiosymMRReader
     from wwpdb.utils.nmr.mr.CharmmCRDReader import CharmmCRDReader
     from wwpdb.utils.nmr.mr.CharmmMRReader import CharmmMRReader
@@ -552,6 +554,7 @@ except ImportError:
     from nmr.mr.AmberMRReader import AmberMRReader
     from nmr.mr.AmberPTReader import AmberPTReader
     from nmr.mr.AriaMRReader import AriaMRReader
+    from nmr.mr.BarePDBReader import BarePDBReader
     from nmr.mr.BiosymMRReader import BiosymMRReader
     from nmr.mr.CharmmCRDReader import CharmmCRDReader
     from nmr.mr.CharmmMRReader import CharmmMRReader
@@ -718,14 +721,14 @@ retrial_mr_file_types = ('nm-res-ari', 'nm-res-bio', 'nm-res-cns', 'nm-res-cha',
                          'nm-res-cya', 'nm-res-dyn', 'nm-res-isd', 'nm-res-noa',
                          'nm-res-ros', 'nm-res-sch', 'nm-res-syb', 'nm-res-xpl')
 
-parsable_mr_file_types = ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro',
+parsable_mr_file_types = ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb',
                           'nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha',
                           'nm-res-cns', 'nm-res-cya', 'nm-res-dyn', 'nm-res-gro',
                           'nm-res-isd', 'nm-res-noa', 'nm-res-sch', 'nm-res-syb',
                           'nm-res-ros', 'nm-res-xpl')
 
 archival_mr_file_types = ('nmr-star',
-                          'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro',
+                          'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb',
                           'nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha',
                           'nm-res-cns', 'nm-res-cya', 'nm-res-dyn', 'nm-res-gro',
                           'nm-res-isd', 'nm-res-noa', 'nm-res-oth', 'nm-res-sax',
@@ -11311,8 +11314,9 @@ class NmrDpUtility:
                 md5_list.append(hashlib.md5(ifh.read().encode('utf-8')).hexdigest())
 
             is_aux_amb = file_type == 'nm-aux-amb'
-            is_aux_gro = file_type == 'nm-aux-gro'
             is_aux_cha = file_type == 'nm-aux-cha'
+            is_aux_gro = file_type == 'nm-aux-gro'
+            is_aux_pdb = file_type == 'nm-aux-pdb'
 
             _mr_format_name = getRestraintFormatName(file_type)
             mr_format_name = _mr_format_name.split()[0]
@@ -11320,7 +11324,8 @@ class NmrDpUtility:
 
             atom_like_names =\
                 self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ros', 'nm-res-bio', 'nm-res-dyn', 'nm-res-syb',
-                                                                                 'nm-res-isd', 'nm-res-ari', 'nm-res-oth') or is_aux_amb or is_aux_gro or is_aux_cha else 1))
+                                                                                 'nm-res-isd', 'nm-res-ari', 'nm-res-oth')
+                                                              or is_aux_amb or is_aux_cha or is_aux_gro or is_aux_pdb else 1))
             cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))  # DAOTHER-7491
 
             has_chem_shift = has_dist_restraint = has_dihed_restraint = has_rdc_restraint =\
@@ -11680,7 +11685,7 @@ class NmrDpUtility:
                                 elif '=' in t:
                                     in_iat = in_igr1 = in_igr2 = False
 
-            elif file_type in light_mr_file_types or is_aux_amb or is_aux_gro or is_aux_cha:
+            elif file_type in light_mr_file_types or is_aux_amb or is_aux_cha or is_aux_gro or is_aux_pdb:
 
                 if is_aux_amb:
 
@@ -11690,6 +11695,12 @@ class NmrDpUtility:
 
                     atom_names = residue_labels = residue_pointers = amb_atom_types = 0
 
+                elif is_aux_cha:
+
+                    has_ext = in_atoms = False
+
+                    atom_names = 0
+
                 elif is_aux_gro:
 
                     has_system = has_molecules = has_atoms =\
@@ -11697,9 +11708,7 @@ class NmrDpUtility:
 
                     system_names = molecule_names = atom_names = 0
 
-                elif is_aux_cha:
-
-                    has_ext = in_atoms = False
+                elif is_aux_pdb:
 
                     atom_names = 0
 
@@ -11859,6 +11868,34 @@ class NmrDpUtility:
                                     end += max_char
                                     col += 1
 
+                        elif is_aux_cha:
+
+                            if 'EXT' in line:
+                                l_split = line.split()
+                                _line = ' '.join(l_split)
+
+                                if len(_line) > 1 and _line[0].isdigit() and _line[1] == 'EXT':
+                                    has_ext = in_atoms = True
+                                    continue
+
+                            elif in_atoms:
+                                l_split = line.split()
+                                _line = ' '.join(l_split)
+
+                                if len(_line) == 0 or _line.startswith('#') or _line.startswith('!') or _line.startswith(';'):
+                                    continue
+
+                                if len(l_split) >= 10:
+                                    try:
+                                        atom_num = int(l_split[0])
+                                        seq_id = int(l_split[8])
+                                        comp_id = l_split[2]
+                                        atom_id = l_split[3]
+                                        if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                            atom_names += 1
+                                    except ValueError:
+                                        pass
+
                         elif is_aux_gro:
 
                             if line.startswith('['):
@@ -11904,33 +11941,24 @@ class NmrDpUtility:
                                         except ValueError:
                                             pass
 
-                        elif is_aux_cha:
+                        elif is_aux_pdb:
 
-                            if 'EXT' in line:
-                                l_split = line.split()
-                                _line = ' '.join(l_split)
+                            l_split = line.split()
+                            _line = ' '.join(l_split)
 
-                                if len(_line) > 1 and _line[0].isdigit() and _line[1] == 'EXT':
-                                    has_ext = in_atoms = True
-                                    continue
+                            if len(_line) == 0 or _line.startswith('#') or _line.startswith('!') or _line.startswith(';'):
+                                continue
 
-                            elif in_atoms:
-                                l_split = line.split()
-                                _line = ' '.join(l_split)
-
-                                if len(_line) == 0 or _line.startswith('#') or _line.startswith('!') or _line.startswith(';'):
-                                    continue
-
-                                if len(l_split) >= 10:
-                                    try:
-                                        atom_num = int(l_split[0])
-                                        seq_id = int(l_split[8])
-                                        comp_id = l_split[2]
-                                        atom_id = l_split[3]
-                                        if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
-                                            atom_names += 1
-                                    except ValueError:
-                                        pass
+                            if len(l_split) >= 10:
+                                try:
+                                    atom_num = int(l_split[1])
+                                    seq_id = int(l_split[4] if l_split[4].isdigit() else l_split[5])
+                                    comp_id = l_split[3]
+                                    atom_id = l_split[2]
+                                    if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
+                                        atom_names += 1
+                                except ValueError:
+                                    pass
 
                         _line = ' '.join(line.split())
 
@@ -12098,15 +12126,20 @@ class NmrDpUtility:
                     if has_amb_coord and (not has_first_atom or has_ens_coord):
                         has_amb_coord = False
 
+                elif is_aux_cha:
+
+                    if has_ext and atom_names > 0:
+                        has_topology = True
+
                 elif is_aux_gro:
 
                     if has_system and has_molecules and has_atoms\
                        and system_names > 0 and molecule_names > 0 and atom_names > 0:
                         has_topology = True
 
-                elif is_aux_cha:
+                elif is_aux_pdb:
 
-                    if has_ext and atom_names > 0:
+                    if atom_names > 0:
                         has_topology = True
 
             if file_type in light_mr_file_types and not has_dist_restraint:  # DAOTHER-7491
@@ -12240,7 +12273,7 @@ class NmrDpUtility:
                     content_subtype = listener.getContentSubtype() if listener is not None else None
                     if content_subtype is not None and len(content_subtype) == 0:
                         content_subtype = None
-                    elif file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-aux-cha'):
+                    elif file_type in ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb'):
                         has_topology = True
                         content_subtype = {'topology': 1}
 
@@ -12399,7 +12432,7 @@ class NmrDpUtility:
             if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
                     and not has_plane_restraint and not has_hbond_restraint and not has_ssbond_restraint:
 
-                if not is_aux_amb and not is_aux_gro and not is_aux_cha:
+                if not is_aux_amb and not is_aux_cha and not is_aux_gro and not is_aux_pdb:
                     err = f"The {mr_format_name} restraint file includes coordinates. "\
                         "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
                 else:
@@ -12438,7 +12471,7 @@ class NmrDpUtility:
 
                 elif valid:
 
-                    if not is_aux_amb and not is_aux_gro and not is_aux_cha:
+                    if not is_aux_amb and not is_aux_cha and not is_aux_gro and not is_aux_pdb:
                         err = f"The {mr_format_name} restraint file includes assigned chemical shifts. "\
                             "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
                     else:
@@ -12491,7 +12524,8 @@ class NmrDpUtility:
                 if 'ssbond_restraint' in content_subtype:
                     has_ssbond_restraint = True
 
-            if not is_aux_amb and not is_aux_gro and not is_aux_cha and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
+            if not is_aux_amb and not is_aux_cha and not is_aux_gro and not is_aux_pdb\
+               and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
                and not has_plane_restraint and not has_hbond_restraint and not has_ssbond_restraint and not valid:
 
                 hint = ''
@@ -12554,40 +12588,6 @@ class NmrDpUtility:
                 if self.__verbose:
                     self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
-            elif is_aux_gro and not has_topology:
-
-                subtype_name = ''
-                if has_chem_shift:
-                    subtype_name += "Assigned chemical shifts, "
-                if has_dist_restraint:
-                    subtype_name += "Distance restraints, "
-                if has_dihed_restraint:
-                    subtype_name += "Dihedral angle restraints, "
-                if has_rdc_restraint:
-                    subtype_name += "RDC restraints, "
-                if has_plane_restraint:
-                    subtype_name += "Planarity restraints, "
-                if has_hbond_restraint:
-                    subtype_name += "Hydrogen bond restraints, "
-                if has_ssbond_restraint:
-                    subtype_name += "Disulfide bond restraints, "
-
-                if len(subtype_name) > 0:
-                    subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
-
-                hint = " Tips for GROMACS topology: Proper contents starting with '[ system ]', '[ molecules ]', "\
-                    "and '[ atoms ]' lines must be present in the file."
-
-                err = f"{file_name} is not GROMACS topology {subtype_name}."\
-                    + hint + " Did you accidentally select the wrong format? Please re-upload the GROMACS topology file."
-
-                self.report.error.appendDescription('content_mismatch',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
-
             elif is_aux_cha and not has_topology:
 
                 subtype_name = ''
@@ -12623,6 +12623,40 @@ class NmrDpUtility:
                 if self.__verbose:
                     self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
+            elif is_aux_gro and not has_topology:
+
+                subtype_name = ''
+                if has_chem_shift:
+                    subtype_name += "Assigned chemical shifts, "
+                if has_dist_restraint:
+                    subtype_name += "Distance restraints, "
+                if has_dihed_restraint:
+                    subtype_name += "Dihedral angle restraints, "
+                if has_rdc_restraint:
+                    subtype_name += "RDC restraints, "
+                if has_plane_restraint:
+                    subtype_name += "Planarity restraints, "
+                if has_hbond_restraint:
+                    subtype_name += "Hydrogen bond restraints, "
+                if has_ssbond_restraint:
+                    subtype_name += "Disulfide bond restraints, "
+
+                if len(subtype_name) > 0:
+                    subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
+
+                hint = " Tips for GROMACS topology: Proper contents starting with '[ system ]', '[ molecules ]', "\
+                    "and '[ atoms ]' lines must be present in the file."
+
+                err = f"{file_name} is not GROMACS topology {subtype_name}."\
+                    + hint + " Did you accidentally select the wrong format? Please re-upload the GROMACS topology file."
+
+                self.report.error.appendDescription('content_mismatch',
+                                                    {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+
             self.__legacy_dist_restraint_uploaded |= has_dist_restraint
 
             input_source.setItemValue('content_subtype', content_subtype)
@@ -12646,7 +12680,7 @@ class NmrDpUtility:
                     continue
 
                 if (content_subtype is not None and 'dist_restraint' in content_subtype)\
-                   or file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-aux-cha'):
+                   or file_type in ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb'):
                     continue
 
                 if content_subtype is None:
@@ -13245,6 +13279,9 @@ class NmrDpUtility:
         if file_type == 'nm-aux-gro':
             return GromacsPTReader(verbose, self.__lfh, None, None, None, None, None,
                                    self.__ccU, self.__csStat, self.__nefT)
+        if file_type == 'nm-aux-pdb':
+            return BarePDBReader(verbose, self.__lfh, None, None, None, None, None,
+                                 self.__ccU, self.__csStat)
 
         if file_type == 'nm-res-amb':
             return AmberMRReader(verbose, self.__lfh, None, None, None, None, None,
@@ -14348,7 +14385,7 @@ class NmrDpUtility:
         err_input = err_desc.get('input', '')
 
         xplor_file_type = file_type in ('nm-res-xpl', 'nm-res-cns')
-        amber_file_type = file_type = 'nm-res-amb'
+        amber_file_type = file_type == 'nm-res-amb'
         gromacs_file_type = file_type in ('nm-res-gro', 'nm-aux-gro')
 
         xplor_ends_wo_statement = xplor_file_type and (bool(xplor_extra_end_err_msg_pattern.match(err_message))
@@ -34558,10 +34595,11 @@ class NmrDpUtility:
         if self.__mr_atom_name_mapping is not None and len(self.__mr_atom_name_mapping) > 1:
             self.__mr_atom_name_mapping = list(reversed(self.__mr_atom_name_mapping))
 
-        amberAtomNumberDict = gromacsAtomNumberDict = charmmAtomNumberDict = None
+        amberAtomNumberDict = charmmAtomNumberDict = gromacsAtomNumberDict = pdbAtomNumberDict = None
         _amberAtomNumberDict = {}
 
-        has_nm_aux_gro_file = has_nm_aux_cha_file = False
+        has_nm_aux_cha_file = has_nm_aux_gro_file = False
+        has_nm_res_amb_file = has_nm_res_cha_file = has_nm_res_gro_file = False
 
         cyanaUplDistRest = cyanaLolDistRest = 0
 
@@ -34621,11 +34659,20 @@ class NmrDpUtility:
 
             fileListId += 1
 
+            if file_type == 'nm-aux-cha':
+                has_nm_aux_cha_file = True
+
             if file_type == 'nm-aux-gro':
                 has_nm_aux_gro_file = True
 
-            if file_type == 'nm-aux-cha':
-                has_nm_aux_cha_file = True
+            if file_type == 'nm-res-amb':
+                has_nm_res_amb_file = True
+
+            if file_type == 'nm-res-cha':
+                has_nm_res_cha_file = True
+
+            if file_type == 'nm-res-gro':
+                has_nm_res_gro_file = True
 
             if file_type == 'nm-aux-amb' and content_subtype is not None and 'topology' in content_subtype:
 
@@ -34741,12 +34788,58 @@ class NmrDpUtility:
                         if seq_align is not None:
                             self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
 
+            elif file_type == 'nm-aux-pdb' and content_subtype is not None and 'topology' in content_subtype:
+
+                if 'is_valid' in ar and ar['is_valid']:
+
+                    file_name = input_source_dic['file_name']
+
+                    original_file_name = None
+                    if 'original_file_name' in input_source_dic:
+                        if input_source_dic['original_file_name'] is not None:
+                            original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                        if file_name != original_file_name and original_file_name is not None:
+                            file_name = f"{original_file_name} ({file_name})"
+
+                    self.__cur_original_ar_file_name = original_file_name
+
+                    reader = BarePDBReader(self.__verbose, self.__lfh,
+                                           self.__representative_model_id,
+                                           self.__representative_alt_id,
+                                           self.__mr_atom_name_mapping,
+                                           self.__cR, self.__caC,
+                                           self.__ccU, self.__csStat)
+
+                    listener, _, _ = reader.parse(file_path, self.__cifPath)
+
+                    if listener is not None:
+
+                        deal_aux_warn_message(file_name, listener)
+
+                        pdbAtomNumberDict = listener.getAtomNumberDict()
+
+                        poly_seq = listener.getPolymerSequence()
+                        if poly_seq is not None:
+                            input_source.setItemValue('polymer_sequence', poly_seq)
+
+                        seq_align = listener.getSequenceAlignment()
+                        if seq_align is not None:
+                            self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
+
             elif file_type == 'nm-res-cya' and content_subtype is not None and 'dist_restraint' in content_subtype:
                 if 'is_valid' in ar and ar['is_valid']:
                     if ar['dist_type'] in ('upl', 'both'):
                         cyanaUplDistRest += 1
                     if ar['dist_type'] in ('lol', 'both'):
                         cyanaLolDistRest += 1
+
+        if pdbAtomNumberDict is not None:
+            if has_nm_res_amb_file and amberAtomNumberDict is None:
+                amberAtomNumberDict = pdbAtomNumberDict
+            if has_nm_res_cha_file and charmmAtomNumberDict is None:
+                charmmAtomNumberDict = pdbAtomNumberDict
+            if has_nm_res_gro_file and gromacsAtomNumberDict is None:
+                gromacsAtomNumberDict = pdbAtomNumberDict
 
         fileListId = self.__file_path_list_len
 
@@ -34771,7 +34864,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-aux-cha', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
+            if file_type in ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
                 continue
 
             if self.__remediation_mode and os.path.exists(file_path + '-ignored'):
@@ -35205,7 +35298,7 @@ class NmrDpUtility:
 
             ignore_error = False if 'ignore_error' not in input_source_dic else input_source_dic['ignore_error']
 
-            if file_type in ('nm-aux-amb', 'nm-aux-gro', 'nm-aux-cha', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
+            if file_type in ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb', 'nm-res-oth', 'nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
                 continue
 
             if self.__remediation_mode and os.path.exists(file_path + '-ignored'):
@@ -35247,9 +35340,9 @@ class NmrDpUtility:
 
                 continue
 
-            if file_type == 'nm-res-gro' and not has_nm_aux_gro_file:
+            if file_type == 'nm-res-cha' and charmmAtomNumberDict is None and not has_nm_aux_cha_file:
 
-                err = f"GROMACS topology file must be uploaded to verify GROMACS restraint file {file_name!r}."
+                err = f"CHARMM topology file (aka. CRD or CHARM CARD) must be uploaded to verify CHARMM restraint file {file_name!r}."
 
                 if self.__internal_mode:
 
@@ -35271,9 +35364,9 @@ class NmrDpUtility:
 
                 continue
 
-            if file_type == 'nm-res-cha' and not has_nm_aux_cha_file:
+            if file_type == 'nm-res-gro' and gromacsAtomNumberDict is None and not has_nm_aux_gro_file:
 
-                err = f"CHARMM topology file (aka. CRD or CHARM CARD) must be uploaded to verify CHARMM restraint file {file_name!r}."
+                err = f"GROMACS topology file must be uploaded to verify GROMACS restraint file {file_name!r}."
 
                 if self.__internal_mode:
 

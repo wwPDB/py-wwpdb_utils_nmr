@@ -155,11 +155,13 @@ class gen_auth_view_onedep:
         self.__amb_top_pattern = re.compile(r"^\%FLAG ATOM_NAME\s*")
         self.__amb_rst_pattern = re.compile(r"\s*\&rst\s*")
 
+        self.__cha_top_pattern = re.compile(r"^\s*\d+\sEXT\s*")
+        self.__cha_rst_pattern = re.compile(r"^\s*KMAX\s+\d+\s+\-\s*")
+
         self.__gro_top_pattern = re.compile(r"^\[ atoms \]\s*")
         self.__gro_rst_pattern = re.compile(r"^\[ (distance|dihedral|orientation)_restraints \]\s*")
 
-        self.__cha_top_pattern = re.compile(r"^\s*\d+\sEXT\s*")
-        self.__cha_rst_pattern = re.compile(r"^\s*KMAX\s+\d+\s+\-\s*")
+        self.__pdb_top_pattern = re.compile(r"^ATOM\s+\d+\s+\S+\s+\S+\s+(\S+\s+)?\d+\s+([+-]?(\d+(\.\d*)?|\.\d+)\s+){5}\S+.*$")
 
         self.__bmrb_id = ''.join(c for c in sys.argv[1] if c.isdigit())
 
@@ -332,8 +334,8 @@ class gen_auth_view_onedep:
                         self.__cs_ann_file_path = os.path.join(self.__data_dir, file_name)
 
         has_amber = False
-        has_gromacs = False
         has_charmm = False
+        has_gromacs = False
 
         mr_dic = {}
         ax_dic = {}
@@ -359,7 +361,7 @@ class gen_auth_view_onedep:
 
                 if content_type == 'amber':
 
-                    if self.is_amb_top_file(file_path):
+                    if self.is_amb_top_file(file_path) or self.is_pdb_top_file(file_path):
                         content_type = 'dat'
 
                     has_amber = True
@@ -379,12 +381,12 @@ class gen_auth_view_onedep:
                         ax_dic[key]['file_name'] = file_path
                         ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
 
-                elif content_type == 'gromacs':
+                elif content_type == 'charmm':
 
-                    if self.is_gro_top_file(file_path):
+                    if self.is_cha_top_file(file_path) or self.is_pdb_top_file(file_path):
                         content_type = 'dat'
 
-                    has_gromacs = True
+                    has_charmm = True
                     if key in ax_dic:
                         if (version > ax_dic[key]['version'] and mile_stone == ax_dic[key]['mile_stone'])\
                            or (mile_stone == 'annotate' and mile_stone != ax_dic[key]['mile_stone']):
@@ -401,12 +403,12 @@ class gen_auth_view_onedep:
                         ax_dic[key]['file_name'] = file_path
                         ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
 
-                elif content_type == 'charmm':
+                elif content_type == 'gromacs':
 
-                    if self.is_cha_top_file(file_path):
+                    if self.is_gro_top_file(file_path) or self.is_pdb_top_file(file_path):
                         content_type = 'dat'
 
-                    has_charmm = True
+                    has_gromacs = True
                     if key in ax_dic:
                         if (version > ax_dic[key]['version'] and mile_stone == ax_dic[key]['mile_stone'])\
                            or (mile_stone == 'annotate' and mile_stone != ax_dic[key]['mile_stone']):
@@ -428,10 +430,10 @@ class gen_auth_view_onedep:
                     if content_type == 'dat':
                         if self.is_amb_rst_file(file_path):
                             content_type = 'amber'
-                        if self.is_gro_rst_file(file_path):
-                            content_type = 'gromacs'
                         if self.is_cha_rst_file(file_path):
                             content_type = 'charmm'
+                        if self.is_gro_rst_file(file_path):
+                            content_type = 'gromacs'
 
                     if key in mr_dic:
                         if (version > mr_dic[key]['version'] and mile_stone == mr_dic[key]['mile_stone'])\
@@ -524,81 +526,6 @@ class gen_auth_view_onedep:
                                 mr_dic[key]['file_name'] = file_path
                                 mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
 
-        if has_gromacs:
-
-            gro_count = 0
-            dat_count = 0
-
-            for d in ax_dic.values():
-                if not d['is_star_file']:
-                    content_type = d['content_type']
-                    if content_type == 'gromacs':
-                        gro_count += 1
-
-            for d in mr_dic.values():
-                if not d['is_star_file']:
-                    content_type = d['content_type']
-                    if content_type == 'dat':
-                        dat_count += 1
-
-            if gro_count == 1 and dat_count > 1:
-
-                mr_dic = {}
-                ax_dic = {}
-
-                for file_name in sorted(os.listdir(self.__data_dir)):
-
-                    if self.__mr_name_pattern.match(file_name):
-                        g = self.__mr_name_pattern.search(file_name).groups()
-                        mile_stone = g[0]
-                        # part = int(g[1])
-                        content_type = g[2]
-                        version = int(g[3])
-
-                        if mile_stone == 'release' and content_type == 'mr':
-                            continue
-
-                        key = content_type + g[1]
-
-                        file_path = os.path.join(self.__data_dir, file_name)
-
-                        if os.path.exists(file_path + '-ignored'):
-                            continue
-
-                        if content_type == 'gromacs':
-                            if key in ax_dic:
-                                if (version > ax_dic[key]['version'] and mile_stone == ax_dic[key]['mile_stone'])\
-                                   or (mile_stone == 'annotate' and mile_stone != ax_dic[key]['mile_stone']):
-                                    ax_dic[key]['mile_stone'] = mile_stone
-                                    ax_dic[key]['version'] = version
-                                    ax_dic[key]['content_type'] = 'dat'
-                                    ax_dic[key]['file_name'] = file_path
-                                    ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
-                            else:
-                                ax_dic[key] = {}
-                                ax_dic[key]['mile_stone'] = mile_stone
-                                ax_dic[key]['version'] = version
-                                ax_dic[key]['content_type'] = 'dat'
-                                ax_dic[key]['file_name'] = file_path
-                                ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
-
-                        else:
-                            if key in mr_dic:
-                                if (version > mr_dic[key]['version'] and mile_stone == mr_dic[key]['mile_stone'])\
-                                   or (mile_stone == 'annotate' and mile_stone != mr_dic[key]['mile_stone']):
-                                    mr_dic[key]['mile_stone'] = mile_stone
-                                    mr_dic[key]['version'] = version
-                                    mr_dic[key]['content_type'] = 'gromacs' if content_type == 'dat' else content_type
-                                    mr_dic[key]['file_name'] = file_path
-                                    mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
-                            else:
-                                mr_dic[key] = {}
-                                mr_dic[key]['mile_stone'] = mile_stone
-                                mr_dic[key]['version'] = version
-                                mr_dic[key]['content_type'] = 'gromacs' if content_type == 'dat' else content_type
-                                mr_dic[key]['file_name'] = file_path
-                                mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
-
         if has_charmm:
 
             cha_count = 0
@@ -674,6 +601,81 @@ class gen_auth_view_onedep:
                                 mr_dic[key]['file_name'] = file_path
                                 mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
 
+        if has_gromacs:
+
+            gro_count = 0
+            dat_count = 0
+
+            for d in ax_dic.values():
+                if not d['is_star_file']:
+                    content_type = d['content_type']
+                    if content_type == 'gromacs':
+                        gro_count += 1
+
+            for d in mr_dic.values():
+                if not d['is_star_file']:
+                    content_type = d['content_type']
+                    if content_type == 'dat':
+                        dat_count += 1
+
+            if gro_count == 1 and dat_count > 1:
+
+                mr_dic = {}
+                ax_dic = {}
+
+                for file_name in sorted(os.listdir(self.__data_dir)):
+
+                    if self.__mr_name_pattern.match(file_name):
+                        g = self.__mr_name_pattern.search(file_name).groups()
+                        mile_stone = g[0]
+                        # part = int(g[1])
+                        content_type = g[2]
+                        version = int(g[3])
+
+                        if mile_stone == 'release' and content_type == 'mr':
+                            continue
+
+                        key = content_type + g[1]
+
+                        file_path = os.path.join(self.__data_dir, file_name)
+
+                        if os.path.exists(file_path + '-ignored'):
+                            continue
+
+                        if content_type == 'gromacs':
+                            if key in ax_dic:
+                                if (version > ax_dic[key]['version'] and mile_stone == ax_dic[key]['mile_stone'])\
+                                   or (mile_stone == 'annotate' and mile_stone != ax_dic[key]['mile_stone']):
+                                    ax_dic[key]['mile_stone'] = mile_stone
+                                    ax_dic[key]['version'] = version
+                                    ax_dic[key]['content_type'] = 'dat'
+                                    ax_dic[key]['file_name'] = file_path
+                                    ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                            else:
+                                ax_dic[key] = {}
+                                ax_dic[key]['mile_stone'] = mile_stone
+                                ax_dic[key]['version'] = version
+                                ax_dic[key]['content_type'] = 'dat'
+                                ax_dic[key]['file_name'] = file_path
+                                ax_dic[key]['is_star_file'] = self.is_star_file(file_path)
+
+                        else:
+                            if key in mr_dic:
+                                if (version > mr_dic[key]['version'] and mile_stone == mr_dic[key]['mile_stone'])\
+                                   or (mile_stone == 'annotate' and mile_stone != mr_dic[key]['mile_stone']):
+                                    mr_dic[key]['mile_stone'] = mile_stone
+                                    mr_dic[key]['version'] = version
+                                    mr_dic[key]['content_type'] = 'gromacs' if content_type == 'dat' else content_type
+                                    mr_dic[key]['file_name'] = file_path
+                                    mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
+                            else:
+                                mr_dic[key] = {}
+                                mr_dic[key]['mile_stone'] = mile_stone
+                                mr_dic[key]['version'] = version
+                                mr_dic[key]['content_type'] = 'gromacs' if content_type == 'dat' else content_type
+                                mr_dic[key]['file_name'] = file_path
+                                mr_dic[key]['is_star_file'] = self.is_star_file(file_path)
+
         self.__mr_file_path = []
         self.__ar_file_path = []
         self.__ar_file_type = []
@@ -709,12 +711,14 @@ class gen_auth_view_onedep:
                     self.__ar_file_type.append('nm-res-xpl')
 
                 elif content_type == 'dat':
-                    if has_amber:
+                    if self.is_pdb_top_file(d['file_name']):
+                        self.__ar_file_type.append('nm-aux-pdb')
+                    elif has_amber:
                         self.__ar_file_type.append('nm-aux-amb')
-                    elif has_gromacs:
-                        self.__ar_file_type.append('nm-aux-gro')
                     elif has_charmm:
                         self.__ar_file_type.append('nm-aux-cha')
+                    elif has_gromacs:
+                        self.__ar_file_type.append('nm-aux-gro')
                     else:
                         self.__ar_file_type.append('nm-res-oth')
 
@@ -756,47 +760,10 @@ class gen_auth_view_onedep:
                         self.__ar_file_type.append('nm-res-xpl')
 
                     elif content_type == 'dat':
-                        self.__ar_file_type.append('nm-aux-amb')
-
-                    self.__ar_file_path.append(d['file_name'])
-
-                else:
-                    self.__mr_file_path.append(d['file_name'])
-
-        if has_gromacs:
-
-            for d in ax_dic.values():
-                if not d['is_star_file']:
-                    content_type = d['content_type']
-                    if content_type == 'amber':
-                        self.__ar_file_type.append('nm-res-amb')
-                    elif content_type == 'aria':
-                        self.__ar_file_type.append('nm-res-ari')
-                    elif content_type == 'biosym':
-                        self.__ar_file_type.append('nm-res-bio')
-                    elif content_type == 'charmm':
-                        self.__ar_file_type.append('nm-res-cha')
-                    elif content_type == 'cns':
-                        self.__ar_file_type.append('nm-res-cns')
-                    elif content_type == 'cyana':
-                        self.__ar_file_type.append('nm-res-cya')
-                    elif content_type == 'dynamo':
-                        self.__ar_file_type.append('nm-res-dyn')
-                    elif content_type == 'gromacs':
-                        self.__ar_file_type.append('nm-res-gro')
-                    elif content_type == 'isd':
-                        self.__ar_file_type.append('nm-res-isd')
-                    elif content_type == 'rosetta':
-                        self.__ar_file_type.append('nm-res-ros')
-                    elif content_type == 'schrodinger':
-                        self.__ar_file_type.append('nm-res-sch')
-                    elif content_type == 'sybyl':
-                        self.__ar_file_type.append('nm-res-syb')
-                    elif content_type == 'xplor-nih':
-                        self.__ar_file_type.append('nm-res-xpl')
-
-                    elif content_type == 'dat':
-                        self.__ar_file_type.append('nm-aux-gro')
+                        if self.is_pdb_top_file(d['file_name']):
+                            self.__ar_file_type.append('nm-aux-pdb')
+                        else:
+                            self.__ar_file_type.append('nm-aux-amb')
 
                     self.__ar_file_path.append(d['file_name'])
 
@@ -836,7 +803,53 @@ class gen_auth_view_onedep:
                         self.__ar_file_type.append('nm-res-xpl')
 
                     elif content_type == 'dat':
-                        self.__ar_file_type.append('nm-aux-cha')
+                        if self.is_pdb_top_file(d['file_name']):
+                            self.__ar_file_type.append('nm-aux-pdb')
+                        else:
+                            self.__ar_file_type.append('nm-aux-cha')
+
+                    self.__ar_file_path.append(d['file_name'])
+
+                else:
+                    self.__mr_file_path.append(d['file_name'])
+
+        if has_gromacs:
+
+            for d in ax_dic.values():
+                if not d['is_star_file']:
+                    content_type = d['content_type']
+                    if content_type == 'amber':
+                        self.__ar_file_type.append('nm-res-amb')
+                    elif content_type == 'aria':
+                        self.__ar_file_type.append('nm-res-ari')
+                    elif content_type == 'biosym':
+                        self.__ar_file_type.append('nm-res-bio')
+                    elif content_type == 'charmm':
+                        self.__ar_file_type.append('nm-res-cha')
+                    elif content_type == 'cns':
+                        self.__ar_file_type.append('nm-res-cns')
+                    elif content_type == 'cyana':
+                        self.__ar_file_type.append('nm-res-cya')
+                    elif content_type == 'dynamo':
+                        self.__ar_file_type.append('nm-res-dyn')
+                    elif content_type == 'gromacs':
+                        self.__ar_file_type.append('nm-res-gro')
+                    elif content_type == 'isd':
+                        self.__ar_file_type.append('nm-res-isd')
+                    elif content_type == 'rosetta':
+                        self.__ar_file_type.append('nm-res-ros')
+                    elif content_type == 'schrodinger':
+                        self.__ar_file_type.append('nm-res-sch')
+                    elif content_type == 'sybyl':
+                        self.__ar_file_type.append('nm-res-syb')
+                    elif content_type == 'xplor-nih':
+                        self.__ar_file_type.append('nm-res-xpl')
+
+                    elif content_type == 'dat':
+                        if self.is_pdb_top_file(d['file_name']):
+                            self.__ar_file_type.append('nm-aux-pdb')
+                        else:
+                            self.__ar_file_type.append('nm-aux-gro')
 
                     self.__ar_file_path.append(d['file_name'])
 
@@ -964,6 +977,24 @@ class gen_auth_view_onedep:
 
         return False
 
+    def is_cha_top_file(self, file_path) -> bool:
+
+        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
+            for line in ifh:
+                if self.__cha_top_pattern.match(line):
+                    return True
+
+        return False
+
+    def is_cha_rst_file(self, file_path) -> bool:
+
+        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
+            for line in ifh:
+                if self.__cha_rst_pattern.match(line):
+                    return True
+
+        return False
+
     def is_gro_top_file(self, file_path) -> bool:
 
         with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -982,20 +1013,11 @@ class gen_auth_view_onedep:
 
         return False
 
-    def is_cha_top_file(self, file_path) -> bool:
+    def is_pdb_top_file(self, file_path) -> bool:
 
         with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
             for line in ifh:
-                if self.__cha_top_pattern.match(line):
-                    return True
-
-        return False
-
-    def is_cha_rst_file(self, file_path) -> bool:
-
-        with open(file_path, "r", encoding='utf-8', errors='ignore') as ifh:
-            for line in ifh:
-                if self.__cha_rst_pattern.match(line):
+                if self.__pdb_top_pattern.match(line):
                     return True
 
         return False

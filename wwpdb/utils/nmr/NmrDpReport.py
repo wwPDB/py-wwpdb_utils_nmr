@@ -106,6 +106,7 @@
 # 06-Aug-2025  M. Yokochi - add 'nm-res-sch' file type for SCHRODINGER/ASL restraint format (DAOTHER-7902, 10172, NMR data remediation)
 # 22-Aug-2025  M. Yokochi - add 'nm-pea-oli' file type for OLIVIA spectral peak list file (DAOTHER-8905, 9785)
 # 22-Aug-2025  M. Yokochi - add 'nm-shi-oli' file type for OLIVIA spectral peak list file (DAOTHER-9785)
+# 19-Sep-2025  M. Yokochi - add 'nm-aux-pdb' file type for Bare PDB file acting as AMBER/CHARMM/GROMACS topology definition (DAOTHER-7829, 9785, NMR data remediation)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1858,7 +1859,7 @@ class NmrDpReportInputSource:
                       'stats_of_exptl_data', 'ignore_error')
         self.file_types = ('pdbx',
                            'nef', 'nmr-star',
-                           'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-xea',
+                           'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb', 'nm-aux-xea',
                            'nm-res-amb', 'nm-res-ari', 'nm-res-bio', 'nm-res-cha', 'nm-res-cns',
                            'nm-res-cya', 'nm-res-dyn', 'nm-res-gro', 'nm-res-isd', 'nm-res-mr',
                            'nm-res-noa', 'nm-res-oth', 'nm-res-ros', 'nm-res-sax', 'nm-res-sch',

@@ -325,6 +325,7 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-res-gro`|`nm-res-gro`|`nmr-restraints` / `gromacs`|Restraint file in GROMACS format
 `nm-res-isd`|`nm-res-isd`|`nmr-restraints` / `isd`|Restraint file in ISD format
 `nm-res-noa`|`nm-res-cya`,<br/>`nm-res-oth`|`nmr-restraints` / `cyana`|Restraint file in CYANA NOA format
+`nm-aux-pdb`|**internal use**|`nmr-restraints` / `any`|Topology file in Bare PDB format
 `nm-res-ros`|`nm-res-ros`|`nmr-restraints` / `rosetta`|Restraint file in ROSETTA format
 `nm-res-sch`|`nm-res-sch`|`nmr-restraints` / `schrodinger`|Restraint file in Schröginder/ASL format
 `nm-res-syb`|`nm-res-syb`|`nmr-restraints` / `sybyl`|Restraint file in SYBYL format

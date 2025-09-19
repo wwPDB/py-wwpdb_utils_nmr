@@ -276,7 +276,8 @@ class BarePDBParserListener(ParseTreeListener):
                 if (offset > 0 or self.__ter_count == 0)\
                    and ((0 < atomNum < len(terminus) + 1
                          and ((terminus[atomNum - 1] and ancAtomName.endswith('T'))
-                              or (terminus[atomNum - 2] and prevAtomName.endswith('T') and prevCompId != compId)))
+                              or (terminus[atomNum - 2] and prevAtomName.endswith('T')
+                                  and self.__csStat.getTypeOfCompId(prevCompId) != self.__csStat.getTypeOfCompId(compId))))
                         or is_segment(prevAsymId, prevCompId, prevAtomName, asymId, compId, atomName)
                         or is_ligand(prevCompId, compId)
                         or is_metal_ion(compId, atomName)

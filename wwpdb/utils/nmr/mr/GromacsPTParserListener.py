@@ -307,7 +307,8 @@ class GromacsPTParserListener(ParseTreeListener):
 
                 if (0 < atomNum < len(terminus) + 1
                     and ((terminus[atomNum - 1] and ancAtomName.endswith('T'))
-                         or (terminus[atomNum - 2] and prevAtomName.endswith('T') and prevCompId != compId)))\
+                         or (terminus[atomNum - 2] and prevAtomName.endswith('T')
+                             and self.__csStat.getTypeOfCompId(prevCompId) != self.__csStat.getTypeOfCompId(compId))))\
                    or is_segment(prevCompId, prevAtomName, compId, atomName)\
                    or is_ligand(prevCompId, compId)\
                    or is_metal_ion(compId, atomName)\

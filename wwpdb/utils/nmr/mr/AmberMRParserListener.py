@@ -75,6 +75,7 @@ try:
                                                        CS_RESTRAINT_ERROR,
                                                        DIST_AMBIG_LOW,
                                                        DIST_AMBIG_UP,
+                                                       NMR_STAR_LP_KEY_ITEMS,
                                                        CARTN_DATA_ITEMS,
                                                        AUTH_ATOM_CARTN_DATA_ITEMS)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
@@ -153,6 +154,7 @@ except ImportError:
                                            CS_RESTRAINT_ERROR,
                                            DIST_AMBIG_LOW,
                                            DIST_AMBIG_UP,
+                                           NMR_STAR_LP_KEY_ITEMS,
                                            CARTN_DATA_ITEMS,
                                            AUTH_ATOM_CARTN_DATA_ITEMS)
     from nmr.ChemCompUtil import ChemCompUtil
@@ -1455,6 +1457,9 @@ class AmberMRParserListener(ParseTreeListener):
                     if any(len(atomSelection) == 0 for atomSelection in self.atomSelectionSet):
                         return
 
+                    if self.__createSfDict:
+                        len_keys = len(NMR_STAR_LP_KEY_ITEMS[contentSubtypeOf(self.__cur_subtype)])
+
                     lenIat = len(self.iat)
 
                     if self.__cur_subtype in ('dist', 'geo'):
@@ -1514,6 +1519,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                  sf['list_id'], self.__entryId, dstFunc,
                                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                                  atom1, atom2)
+                                    if any(_dat is None for _dat in row[1:len_keys]):
+                                        sf['index_id'] -= 1
+                                        continue
                                     sf['loop'].add_data(row)
 
                                     if sf['constraint_subsubtype'] == 'ambi':
@@ -1759,7 +1767,11 @@ class AmberMRParserListener(ParseTreeListener):
                         if self.__createSfDict:
                             sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
 
-                        compId = self.atomSelectionSet[0][0]['comp_id']
+                        try:
+                            compId = self.atomSelectionSet[0][0]['comp_id']
+                        except KeyError:
+                            return
+
                         peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(compId)
 
                         first_item = True
@@ -1802,6 +1814,9 @@ class AmberMRParserListener(ParseTreeListener):
                                              sf['list_id'], self.__entryId, dstFunc,
                                              self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                              atom1, atom2, atom3, atom4)
+                                if any(_dat is None for _dat in row[1:len_keys]):
+                                    sf['index_id'] -= 1
+                                    continue
                                 sf['loop'].add_data(row)
 
                     # plane-(point/plane) angle
@@ -3724,6 +3739,9 @@ class AmberMRParserListener(ParseTreeListener):
                                                  sf['list_id'], self.__entryId, dstFunc,
                                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                                  atom1, atom2)
+                                    if any(_dat is None for _dat in row[1:len_keys]):
+                                        sf['index_id'] -= 1
+                                        continue
                                     sf['loop'].add_data(row)
 
                                     if sf['constraint_subsubtype'] == 'ambi':
@@ -4060,6 +4078,9 @@ class AmberMRParserListener(ParseTreeListener):
                                              sf['list_id'], self.__entryId, dstFunc,
                                              self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                              atom1, atom2, atom3, atom4)
+                                if any(_dat is None for _dat in row[1:len_keys]):
+                                    sf['index_id'] -= 1
+                                    continue
                                 sf['loop'].add_data(row)
 
                     # plane-(point/plane) angle
@@ -8481,6 +8502,7 @@ class AmberMRParserListener(ParseTreeListener):
                         if self.__createSfDict:
                             sf = self.__getSf()
                             sf['id'] += 1
+                            len_keys = len(NMR_STAR_LP_KEY_ITEMS[contentSubtypeOf(self.__cur_subtype)])
 
                         updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
@@ -8501,6 +8523,9 @@ class AmberMRParserListener(ParseTreeListener):
                                              sf['list_id'], self.__entryId, dstFunc,
                                              self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                              atom1, atom2)
+                                if any(_dat is None for _dat in row[1:len_keys]):
+                                    sf['index_id'] -= 1
+                                    continue
                                 sf['loop'].add_data(row)
 
                     elif self.__hasPolySeq:
@@ -8813,6 +8838,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.__createSfDict:
                         sf = self.__getSf()
                         sf['id'] += 1
+                        len_keys = len(NMR_STAR_LP_KEY_ITEMS[contentSubtypeOf(self.__cur_subtype)])
 
                     for atom in self.atomSelectionSet[0]:
                         if self.__debug:
@@ -8825,6 +8851,9 @@ class AmberMRParserListener(ParseTreeListener):
                                          sf['list_id'], self.__entryId, dstFunc,
                                          self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          atom)
+                            if any(_dat is None for _dat in row[1:len_keys]):
+                                sf['index_id'] -= 1
+                                continue
                             sf['loop'].add_data(row)
 
                 elif self.__hasPolySeq:
@@ -9324,6 +9353,7 @@ class AmberMRParserListener(ParseTreeListener):
                 if self.__createSfDict:
                     sf = self.__getSf()
                     sf['id'] += 1
+                    len_keys = len(NMR_STAR_LP_KEY_ITEMS[contentSubtypeOf(self.__cur_subtype)])
 
                 updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
@@ -9341,6 +9371,9 @@ class AmberMRParserListener(ParseTreeListener):
                                      sf['list_id'], self.__entryId, dstFunc,
                                      self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom)
+                        if any(_dat is None for _dat in row[1:len_keys]):
+                            sf['index_id'] -= 1
+                            continue
                         sf['loop'].add_data(row)
 
             elif self.__hasPolySeq:
@@ -9821,6 +9854,7 @@ class AmberMRParserListener(ParseTreeListener):
                         sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                           rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]))
                         sf['id'] += 1
+                        len_keys = len(NMR_STAR_LP_KEY_ITEMS[contentSubtypeOf(self.__cur_subtype)])
 
                     updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
@@ -9844,6 +9878,9 @@ class AmberMRParserListener(ParseTreeListener):
                                          sf['list_id'], self.__entryId, dstFunc,
                                          self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          atom1, atom2)
+                            if any(_dat is None for _dat in row[1:len_keys]):
+                                sf['index_id'] -= 1
+                                continue
                             sf['loop'].add_data(row)
 
                 elif self.__hasPolySeq:
@@ -10484,6 +10521,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.__createSfDict:
                         sf = self.__getSf()
                         sf['id'] += 1
+                        len_keys = len(NMR_STAR_LP_KEY_ITEMS[contentSubtypeOf(self.__cur_subtype)])
 
                     updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
@@ -10505,6 +10543,9 @@ class AmberMRParserListener(ParseTreeListener):
                                          sf['list_id'], self.__entryId, dstFunc,
                                          self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          atom2)
+                            if any(_dat is None for _dat in row[1:len_keys]):
+                                sf['index_id'] -= 1
+                                continue
                             sf['loop'].add_data(row)
 
                 elif self.__hasPolySeq:

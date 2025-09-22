@@ -59,6 +59,7 @@ try:
                                                        RDC_RESTRAINT_ERROR,
                                                        DIST_AMBIG_LOW,
                                                        DIST_AMBIG_UP,
+                                                       NMR_STAR_LP_KEY_ITEMS,
                                                        CARTN_DATA_ITEMS)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -113,6 +114,7 @@ except ImportError:
                                            RDC_RESTRAINT_ERROR,
                                            DIST_AMBIG_LOW,
                                            DIST_AMBIG_UP,
+                                           NMR_STAR_LP_KEY_ITEMS,
                                            CARTN_DATA_ITEMS)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
@@ -502,6 +504,7 @@ class GromacsMRParserListener(ParseTreeListener):
                             or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                         memberId = 0
                         _atom1 = _atom2 = None
+                len_keys = len(NMR_STAR_LP_KEY_ITEMS[contentSubtypeOf(self.__cur_subtype)])
 
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
@@ -537,6 +540,9 @@ class GromacsMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
+                    if any(_dat is None for _dat in row[1:len_keys]):
+                        sf['index_id'] -= 1
+                        continue
                     sf['loop'].add_data(row)
 
                     if sf['constraint_subsubtype'] == 'ambi':
@@ -1035,6 +1041,7 @@ class GromacsMRParserListener(ParseTreeListener):
             sf = None
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                len_keys = len(NMR_STAR_LP_KEY_ITEMS[contentSubtypeOf(self.__cur_subtype)])
 
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
@@ -1081,6 +1088,9 @@ class GromacsMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
+                    if any(_dat is None for _dat in row[1:len_keys]):
+                        sf['index_id'] -= 1
+                        continue
                     sf['loop'].add_data(row)
 
         except ValueError:
@@ -1339,6 +1349,7 @@ class GromacsMRParserListener(ParseTreeListener):
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
                                   rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]))
                 sf['id'] += 1
+                len_keys = len(NMR_STAR_LP_KEY_ITEMS[contentSubtypeOf(self.__cur_subtype)])
 
             updatePolySeqRstFromAtomSelectionSet(self.__polySeqRst, self.atomSelectionSet)
 
@@ -1359,6 +1370,9 @@ class GromacsMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
+                    if any(_dat is None for _dat in row[1:len_keys]):
+                        sf['index_id'] -= 1
+                        continue
                     sf['loop'].add_data(row)
 
         except ValueError:

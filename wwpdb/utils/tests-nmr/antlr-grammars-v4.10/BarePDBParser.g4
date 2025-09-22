@@ -19,12 +19,11 @@ parser grammar BarePDBParser;
 options { tokenVocab=BarePDBLexer; }
 
 bare_pdb:
-	RETURN?
 	(
 	comment |
 	coordinates |
 	terminal |
-	RETURN
+	End
 	)*
 	EOF;
 
@@ -35,7 +34,10 @@ coordinates:
 	atom_coordinate+;
 
 atom_coordinate:
-	Atom Integer Simple_name Simple_name (Simple_name? Integer | Simple_name) Float Float Float Float? Float? Simple_name? RETURN;
+	(Atom | Hetatm) Integer Simple_name Simple_name (Integer Integer | Simple_name? Integer | Simple_name) Float Float Float (Float Float)? non_float? non_float?;
+
+non_float:
+	Simple_name | Integer;
 
 terminal:
-	Ter RETURN | End;
+	Ter Any_name* (RETURN_CM | EOF);

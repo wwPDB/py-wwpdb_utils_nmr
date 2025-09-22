@@ -25,7 +25,7 @@ fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
-COMMENT:		('*' | '#' | '!')+ -> mode(COMMENT_MODE);
+COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
 
 Ext:			'EXT';
 
@@ -34,7 +34,7 @@ Simple_name:		SIMPLE_NAME | Ext;
 fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_';
-fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"';
+fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"' | '*';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 SPACE:			[ \t\r\n]+ -> skip;

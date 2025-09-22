@@ -162,18 +162,6 @@ class gen_auth_view_onedep:
         self.__gro_rst_pattern = re.compile(r"^\[ (distance|dihedral|orientation)_restraints \]\s*")
 
         self.__pdb_top_pattern = re.compile(r"^ATOM\s+\d+\s+\S+\s+\S+\s+(\S+\s+)?\d+\s+([+-]?(\d+(\.\d*)?|\.\d+)\s+){3}.*$")
-        self.__pdb_top_unsupport = ('OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND', 'SOURCE', 'KEYWDS', 'EXPDTA',
-                                    'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL',
-                                    'DBREF', 'DBREF1', 'DBREF2', 'SEQADV', 'SEQRES', 'MODRES',
-                                    'HET ', 'HETNAM', 'HETSYN', 'FORMUL',
-                                    'HELIX ', 'SHEET ',
-                                    'SSBOND', 'LINK ', 'CISPEP',
-                                    'SITE ',
-                                    'CRYST1', 'ORIGX1', 'ORIGX2', 'ORIGX3', 'SCALE1', 'SCALE2', 'SCALE3',
-                                    'MTRIX1', 'MTRIX2', 'MTRIX3',
-                                    'MODEL ', 'ANISOU', 'HETATM', 'ENDMDL',
-                                    'CONECT',
-                                    'MASTER')
 
         self.__bmrb_id = ''.join(c for c in sys.argv[1] if c.isdigit())
 
@@ -1046,10 +1034,6 @@ class gen_auth_view_onedep:
             for line in ifh:
                 if not has_atom and self.__pdb_top_pattern.match(line):
                     has_atom = True
-                elif any(line.startswith(h) for h in self.__pdb_top_unsupport):
-                    return False
-                elif line.startswith('TER') and len(line.split()) > 1:
-                    return False
 
         return has_atom
 

@@ -297,7 +297,7 @@ LEGACY_PDB_RECORDS = ('HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND'
                       'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL', 'REMARK',
                       'DBREF', 'DBREF1', 'DBREF2', 'SEQADV', 'SEQRES', 'MODRES',
                       'HET ', 'HETNAM', 'HETSYN', 'FORMUL',
-                      'HELIX ', 'SHEET ',
+                      'HELIX ', 'SHEET ', 'TURN',
                       'SSBOND', 'LINK ', 'CISPEP',
                       'SITE ',
                       'CRYST1', 'ORIGX1', 'ORIGX2', 'ORIGX3', 'SCALE1', 'SCALE2', 'SCALE3',
@@ -9185,6 +9185,8 @@ def getPkChemShiftRow(pkSubtype: str, indexId: int, listId: int, entryId: str, d
                     atom['atom_id'] = atom['orig_atom_id']
             row[8], row[9], row[10], row[11], row[12] =\
                 star_atom['chain_id'], star_atom['entity_id'], star_atom['seq_id'], star_atom['comp_id'], star_atom['atom_id']
+        else:
+            return None
         row[13] = ambig_code
         # row[14]: Ambiguity_set_ID
 

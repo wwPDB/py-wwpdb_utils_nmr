@@ -11710,7 +11710,7 @@ class NmrDpUtility:
 
                 elif is_aux_pdb:
 
-                    has_top_num = False
+                    # has_top_num = False
                     atom_names = 0
 
                 atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
@@ -11957,8 +11957,8 @@ class NmrDpUtility:
                                     comp_id = l_split[3]
                                     atom_id = l_split[2]
                                     if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes and atom_id in atom_like_names_oth:
-                                        if atom_num == 1:
-                                            has_top_num = True
+                                        # if atom_num == 1:
+                                        #     has_top_num = True
                                         atom_names += 1
                                 except ValueError:
                                     pass
@@ -12142,7 +12142,7 @@ class NmrDpUtility:
 
                 elif is_aux_pdb:
 
-                    if has_top_num and atom_names > 0:
+                    if atom_names > 0:  # and has_top_num:
                         has_topology = True
 
             if file_type in light_mr_file_types and not has_dist_restraint:  # DAOTHER-7491
@@ -34601,12 +34601,14 @@ class NmrDpUtility:
         amberAtomNumberDict = charmmAtomNumberDict = gromacsAtomNumberDict = pdbAtomNumberDict = None
         _amberAtomNumberDict = {}
 
-        has_nm_aux_cha_file = has_nm_aux_gro_file = False
+        has_nm_aux_amb_file = has_nm_aux_cha_file = has_nm_aux_gro_file = False
         has_nm_res_amb_file = has_nm_res_cha_file = has_nm_res_gro_file = False
 
         cyanaUplDistRest = cyanaLolDistRest = 0
 
-        def deal_aux_warn_message(file_name, listener):
+        def deal_aux_warn_message(file_name, listener, dry_run=False):
+
+            valid = True
 
             if listener.warningMessage is not None:
 
@@ -34615,39 +34617,53 @@ class NmrDpUtility:
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
 
                     if warn.startswith('[Concatenated sequence]'):
-                        self.report.warning.appendDescription('concatenated_sequence', msg_dict)
-                        self.report.setWarning()
+                        if not dry_run:
+                            self.report.warning.appendDescription('concatenated_sequence', msg_dict)
+                            self.report.setWarning()
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
-                        self.report.error.appendDescription('sequence_mismatch', msg_dict)
-                        self.report.setError()
+                        if not dry_run:
+                            self.report.error.appendDescription('sequence_mismatch', msg_dict)
+                            self.report.setError()
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {warn}\n")
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - {warn}\n")
+
+                        valid = False
 
                     elif warn.startswith('[Unknown atom name]'):
-                        self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
-                        self.report.setWarning()
+                        if not dry_run:
+                            self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                            self.report.setWarning()
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Unknown residue name]'):
-                        self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
-                        self.report.setWarning()
+                        if not dry_run:
+                            self.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                            self.report.setWarning()
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ Warning  - {warn}\n")
 
                     else:
-                        self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ KeyError  - " + warn)
-                        self.report.setError()
+                        if not dry_run:
+                            self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ KeyError  - " + warn)
+                            self.report.setError()
 
-                        if self.__verbose:
-                            self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ KeyError  - {warn}\n")
+                            if self.__verbose:
+                                self.__lfh.write(f"+{self.__class_name__}.__validateLegacyMr() ++ KeyError  - {warn}\n")
+
+                        valid = False
+
+            else:
+                valid = False
+
+            return valid
 
         fileListId = self.__file_path_list_len
 
@@ -34658,9 +34674,11 @@ class NmrDpUtility:
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
-            content_subtype = input_source_dic['content_subtype']
 
             fileListId += 1
+
+            if file_type == 'nm-aux-amb':
+                has_nm_aux_amb_file = True
 
             if file_type == 'nm-aux-cha':
                 has_nm_aux_cha_file = True
@@ -34676,6 +34694,19 @@ class NmrDpUtility:
 
             if file_type == 'nm-res-gro':
                 has_nm_res_gro_file = True
+
+        fileListId = self.__file_path_list_len
+
+        for ar in self.__inputParamDict[ar_file_path_list]:
+            file_path = ar['file_name']
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+            content_subtype = input_source_dic['content_subtype']
+
+            fileListId += 1
 
             if file_type == 'nm-aux-amb' and content_subtype is not None and 'topology' in content_subtype:
 
@@ -34795,47 +34826,73 @@ class NmrDpUtility:
 
                 if 'is_valid' in ar and ar['is_valid']:
 
-                    file_name = input_source_dic['file_name']
+                    if (has_nm_res_amb_file and not has_nm_aux_amb_file)\
+                       or (has_nm_res_cha_file and not has_nm_aux_cha_file)\
+                       or (has_nm_res_gro_file and not has_nm_aux_gro_file):
 
-                    original_file_name = None
-                    if 'original_file_name' in input_source_dic:
-                        if input_source_dic['original_file_name'] is not None:
-                            original_file_name = os.path.basename(input_source_dic['original_file_name'])
-                        if file_name != original_file_name and original_file_name is not None:
-                            file_name = f"{original_file_name} ({file_name})"
+                        file_name = input_source_dic['file_name']
 
-                    self.__cur_original_ar_file_name = original_file_name
+                        original_file_name = None
+                        if 'original_file_name' in input_source_dic:
+                            if input_source_dic['original_file_name'] is not None:
+                                original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                            if file_name != original_file_name and original_file_name is not None:
+                                file_name = f"{original_file_name} ({file_name})"
 
-                    reader = BarePDBReader(self.__verbose, self.__lfh,
-                                           self.__representative_model_id,
-                                           self.__representative_alt_id,
-                                           self.__mr_atom_name_mapping,
-                                           self.__cR, self.__caC,
-                                           self.__ccU, self.__csStat)
+                        self.__cur_original_ar_file_name = original_file_name
 
-                    listener, _, _ = reader.parse(file_path, self.__cifPath)
+                        reader = BarePDBReader(self.__verbose, self.__lfh,
+                                               self.__representative_model_id,
+                                               self.__representative_alt_id,
+                                               self.__mr_atom_name_mapping,
+                                               self.__cR, self.__caC,
+                                               self.__ccU, self.__csStat)
 
-                    if listener is not None:
+                        listener, _, _ = reader.parse(file_path, self.__cifPath)
 
-                        deal_aux_warn_message(file_name, listener)
+                        if listener is not None:
 
-                        _pdbAtomNumberDict = listener.getAtomNumberDict()
+                            valid = deal_aux_warn_message(file_name, listener, True)
 
-                        if _pdbAtomNumberDict is not None:
-                            if pdbAtomNumberDict is None:
-                                pdbAtomNumberDict = _pdbAtomNumberDict
-                            else:
-                                for k, v in _pdbAtomNumberDict.items():
-                                    if k not in pdbAtomNumberDict:
-                                        pdbAtomNumberDict[k] = v
+                            if not valid:
+                                continue
 
-                        poly_seq = listener.getPolymerSequence()
-                        if poly_seq is not None:
-                            input_source.setItemValue('polymer_sequence', poly_seq)
+                            poly_seq = listener.getPolymerSequence()
 
-                        seq_align = listener.getSequenceAlignment()
-                        if seq_align is not None:
-                            self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
+                            if any(len(pdb_ps['seq_id']) == 0 for pdb_ps in poly_seq):
+                                continue
+
+                            if poly_seq is not None:
+                                input_source.setItemValue('polymer_sequence', poly_seq)
+
+                            seq_align = listener.getSequenceAlignment()
+                            if seq_align is not None:
+                                self.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
+
+                                if valid or not has_nm_res_amb_file:
+
+                                    for sa in seq_align:
+                                        ref_chain_id = sa['ref_chain_id']
+                                        test_chain_id = sa['test_chain_id']
+                                        cif_ps = next((cif_ps for cif_ps in self.__caC['polymer_sequence'] if cif_ps['auth_chain_id'] == ref_chain_id), None)
+                                        pdb_ps = next(pdb_ps for pdb_ps in poly_seq if pdb_ps['chain_id'] == test_chain_id)
+
+                                        if cif_ps is None or len(cif_ps['seq_id']) > len(pdb_ps['seq_id']):
+                                            valid = False
+                                            break
+
+                                    if valid:
+                                        _pdbAtomNumberDict = listener.getAtomNumberDict()
+
+                                        if _pdbAtomNumberDict is not None:
+                                            if pdbAtomNumberDict is None:
+                                                pdbAtomNumberDict = _pdbAtomNumberDict
+                                            else:
+                                                for k, v in _pdbAtomNumberDict.items():
+                                                    if k not in pdbAtomNumberDict:
+                                                        pdbAtomNumberDict[k] = v
+
+                                        deal_aux_warn_message(file_name, listener, False)
 
             elif file_type == 'nm-res-cya' and content_subtype is not None and 'dist_restraint' in content_subtype:
                 if 'is_valid' in ar and ar['is_valid']:
@@ -50228,12 +50285,15 @@ class NmrDpUtility:
         for idx, row in enumerate(lp_data):
 
             for j in range(num_dim):
-                chain_id = row[chain_id_names[j]]
-                seq_id = alt_seq_id = row[seq_id_names[j]]
-                comp_id = row[comp_id_names[j]]
-                atom_id = row[atom_id_names[j]]
-                if file_type == 'nmr-star' and alt_seq_id_names[j] in row:
-                    alt_seq_id = row[alt_seq_id_names[j]]
+                try:
+                    chain_id = row[chain_id_names[j]]
+                    seq_id = alt_seq_id = row[seq_id_names[j]]
+                    comp_id = row[comp_id_names[j]]
+                    atom_id = row[atom_id_names[j]]
+                    if file_type == 'nmr-star' and alt_seq_id_names[j] in row:
+                        alt_seq_id = row[alt_seq_id_names[j]]
+                except KeyError:
+                    continue
 
                 if content_subtype.startswith('spectral_peak')\
                    and (chain_id in emptyValue or seq_id in emptyValue or comp_id in emptyValue or atom_id in emptyValue):
@@ -64256,7 +64316,7 @@ class NmrDpUtility:
         ann = OneDepAnnTasks(self.__verbose, self.__lfh,
                              self.__sf_category_list, self.__entry_id)
 
-        is_done = ann.merge(master_entry, self.__nmrIfR)
+        is_done = ann.merge(master_entry, self.__nmrIfR, self.__bmrb_only and self.__internal_mode)
 
         # the following __performBMRBAnnTasks() will deposit, instead
         # if is_done:

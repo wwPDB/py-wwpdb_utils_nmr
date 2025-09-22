@@ -3913,6 +3913,9 @@ class BasePKParserListener():
                                     self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
                                     is_reparsable = False
 
+                                else:
+                                    del_idx_list.extend(list(range(idx - num_of_dim + 1, idx + 1)))
+
                                 continue
 
                             if shift is None and shift_ is not None:
@@ -3967,6 +3970,9 @@ class BasePKParserListener():
                                 if is_reparsable:
                                     self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
                                     is_reparsable = False
+
+                                else:
+                                    del_idx_list.extend(list(range(idx - num_of_dim + 1, idx + 1)))
 
                                 continue
 
@@ -4085,6 +4091,9 @@ class BasePKParserListener():
                             self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
                             is_reparsable = False
 
+                        else:
+                            del_idx_list.extend(list(range(idx - num_of_dim + 1, idx + 1)))
+
                     elif chain_id != chain_id2:
                         position, position2 = positions[_dim_id_1], positions[_dim_id_2]
 
@@ -4132,6 +4141,9 @@ class BasePKParserListener():
                                     self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
                                     is_reparsable = False
 
+                                else:
+                                    del_idx_list.extend(list(range(idx - num_of_dim + 1, idx + 1)))
+
                                 continue
 
                             if shift is None and shift_ is not None:
@@ -4153,6 +4165,9 @@ class BasePKParserListener():
                             if is_reparsable:
                                 self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
                                 is_reparsable = False
+
+                            else:
+                                del_idx_list.extend(list(range(idx - num_of_dim + 1, idx + 1)))
 
                             continue
 
@@ -4199,9 +4214,44 @@ class BasePKParserListener():
                             self.reasonsForReParsing['onebond_idx_history'] = self.onebond_idx_history
                             is_reparsable = False
 
+                        else:
+                            del_idx_list.extend(list(range(idx - num_of_dim + 1, idx + 1)))
+
         if len(del_idx_list) > 0:
             for _idx in reversed(del_idx_list):
                 del loop.data[_idx]
+
+        if not use_peak_row_format:
+            peak_set = {}
+
+            tags = ['Peak_ID', 'Set_ID']
+
+            dat = loop.get_tag(tags)
+
+            for row in dat:
+                key = (row[0], row[1])
+                if key not in peak_set:
+                    peak_set[key] = 1
+                else:
+                    peak_set[key] += 1
+
+            imcomplete_peak_set = []
+
+            for k, v in peak_set.items():
+                if v == num_of_dim:
+                    continue
+                imcomplete_peak_set.append(k)
+
+            if len(imcomplete_peak_set) > 0:
+                del_idx_list = []
+
+                for idx, row in enumerate(dat):
+                    key = (row[0], row[1])
+                    if key in imcomplete_peak_set:
+                        del_idx_list.append(idx)
+
+                for _idx in reversed(del_idx_list):
+                    del loop.data[_idx]
 
     def __remediatePeakAssignmentForJcouplingTransfer(self, num_of_dim: int, jcoupling_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
 
@@ -5962,6 +6012,8 @@ class BasePKParserListener():
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                             common_atom, asis, ambig_code)
+                                    if row is None:
+                                        continue
                                     sf['alt_loops'][3].add_data(row)
                                     uniqAtoms.append(common_atom)
                     else:
@@ -6023,6 +6075,8 @@ class BasePKParserListener():
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                             common_atom, asis, ambig_code)
+                                    if row is None:
+                                        continue
                                     sf['alt_loops'][3].add_data(row)
                                     uniqAtoms.append(common_atom)
                             set_id += 1
@@ -6222,6 +6276,8 @@ class BasePKParserListener():
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                             common_atom, asis, ambig_code)
+                                    if row is None:
+                                        continue
                                     sf['alt_loops'][3].add_data(row)
                                     uniqAtoms.append(common_atom)
                     else:
@@ -6286,6 +6342,8 @@ class BasePKParserListener():
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                             common_atom, asis, ambig_code)
+                                    if row is None:
+                                        continue
                                     sf['alt_loops'][3].add_data(row)
                                     uniqAtoms.append(common_atom)
                             set_id += 1
@@ -6520,6 +6578,8 @@ class BasePKParserListener():
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                             common_atom, asis, ambig_code)
+                                    if row is None:
+                                        continue
                                     sf['alt_loops'][3].add_data(row)
                                     uniqAtoms.append(common_atom)
                     else:
@@ -6595,6 +6655,8 @@ class BasePKParserListener():
                                     row = getPkChemShiftRow(self.cur_subtype, sf['id'], sf['list_id'], self.entryId, dstFunc, set_id, idx + 1,
                                                             self.authToStarSeq, self.authToOrigSeq, self.offsetHolder,
                                                             common_atom, asis, ambig_code)
+                                    if row is None:
+                                        continue
                                     sf['alt_loops'][3].add_data(row)
                                     uniqAtoms.append(common_atom)
                             set_id += 1

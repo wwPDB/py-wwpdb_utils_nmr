@@ -76,6 +76,7 @@ try:
                                                        DIST_AMBIG_UP,
                                                        DIST_AMBIG_MED,
                                                        DIST_AMBIG_UNCERT,
+                                                       NMR_STAR_LP_KEY_ITEMS,
                                                        CARTN_DATA_ITEMS,
                                                        AUTH_ATOM_DATA_ITEMS,
                                                        ATOM_NAME_DATA_ITEMS,
@@ -173,6 +174,7 @@ except ImportError:
                                            DIST_AMBIG_UP,
                                            DIST_AMBIG_MED,
                                            DIST_AMBIG_UNCERT,
+                                           NMR_STAR_LP_KEY_ITEMS,
                                            CARTN_DATA_ITEMS,
                                            AUTH_ATOM_DATA_ITEMS,
                                            ATOM_NAME_DATA_ITEMS,
@@ -2304,6 +2306,7 @@ class CharmmMRParserListener(ParseTreeListener):
                         or isAmbigAtomSelection(self.atomSelectionSet[1], self.__csStat)):
                     memberId = 0
                     _atom1 = _atom2 = None
+                len_keys = len(NMR_STAR_LP_KEY_ITEMS[contentSubtypeOf(self.__cur_subtype)])
 
             for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
                                                   self.atomSelectionSet[1]):
@@ -2337,6 +2340,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2)
+                    if any(_dat is None for _dat in row[1:len_keys]):
+                        sf['index_id'] -= 1
+                        continue
                     sf['loop'].add_data(row)
 
                     if sf['constraint_subsubtype'] == 'ambi':
@@ -2447,6 +2453,7 @@ class CharmmMRParserListener(ParseTreeListener):
             sf = None
             if self.__createSfDict:
                 sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc))
+                len_keys = len(NMR_STAR_LP_KEY_ITEMS[contentSubtypeOf(self.__cur_subtype)])
 
             first_item = True
 
@@ -2490,6 +2497,9 @@ class CharmmMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
+                    if any(_dat is None for _dat in row[1:len_keys]):
+                        sf['index_id'] -= 1
+                        continue
                     sf['loop'].add_data(row)
 
             if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:

@@ -20,15 +20,21 @@ lexer grammar BarePDBLexer;
 */
 Integer:		'-'? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
-Double_quote_string:	'"' ~["\r\n]* '"';
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
-COMMENT:		('*' | '#' | '!')+ -> mode(COMMENT_MODE);
+fragment PDB_IGNORED:	'HEADER' | 'OBSLTE' | 'TITLE ' | 'SPLIT ' | 'CAVEAT' | 'COMPND' | 'SOURCE' | 'KEYWDS' | 'EXPDTA' | 'NUMMDL' | 'MDLTYP' |
+			'AUTHOR' | 'REVDAT' | 'SPRSDE' | 'JRNL' | 'REMARK' | 'DBREF' | 'DBREF1' | 'DBREF2' | 'SEQADV' | 'SEQRES' | 'MODRES' |
+			'HET ' | 'HETNAM' | 'HETSYN' | 'FORMUL' | 'HELIX ' | 'SHEET ' | 'SSBOND' | 'TURN' | 'LINK ' | 'CISPEP' | 'SITE ' |
+			'CRYST1' | 'ORIGX1' | 'ORIGX2' | 'ORIGX3' | 'SCALE1' | 'SCALE2' | 'SCALE3' | 'MTRIX1' | 'MTRIX2' | 'MTRIX3' | 'MODEL '
+			| 'ANISOU' | 'ENDMDL' | 'CONECT' | 'MASTER';
+
+COMMENT:		('#'+ | '!'+ | PDB_IGNORED) -> mode(COMMENT_MODE);
 
 Atom:			'ATOM';
-Ter:			'TER';
+Hetatm:			'HETATM';
+Ter:			'TER' -> mode(COMMENT_MODE);
 End:			'END';
 
 Simple_name:		SIMPLE_NAME;
@@ -36,15 +42,13 @@ Simple_name:		SIMPLE_NAME;
 fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
 fragment START_CHAR:	ALPHA_NUM | '_';
-fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"';
+fragment NAME_CHAR:	START_CHAR | '\'' | '/' | '-' | '+' | '.' | ',' | ':' | '"' | '*';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
-SPACE:			[ \t]+ -> skip;
-RETURN:			[\r\n]+;
-CONTINUE:		'-'+ SPACE -> skip;
+SPACE:			[ \t\r\n]+ -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	(';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' | 'HEADER') ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT:		(';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' | 'HEADER') ~[\r\n]* -> channel(HIDDEN);
+SECTION_COMMENT:	(';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+) ' '* [\r\n]+ -> channel(HIDDEN);
+LINE_COMMENT:		(';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+) ~[\r\n]* -> channel(HIDDEN);
 
 mode COMMENT_MODE;
 

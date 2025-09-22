@@ -110,7 +110,7 @@ class BarePDBParserListener(ParseTreeListener):
 
     # atoms
     __atoms = []
-    __is_first_atom = True
+    # __is_first_atom = True
     __ter_count = 0
 
     # PDB atom number dictionary
@@ -160,7 +160,7 @@ class BarePDBParserListener(ParseTreeListener):
         self.__atomNumberDict = {}
         self.__polySeqPrmTop = []
         self.__f = []
-        self.__is_first_atom = True
+        # self.__is_first_atom = True
         self.__ter_count = 0
 
     # Exit a parse tree produced by BarePDBParser#bare_pdb.
@@ -180,6 +180,10 @@ class BarePDBParserListener(ParseTreeListener):
             terminus = [atom['auth_atom_id'].endswith('T') for atom in self.__atoms if isinstance(atom, dict)]
 
             atomTotal = len(terminus)
+
+            if atomTotal == 0:
+                return
+
             if terminus[0]:
                 terminus[0] = False
             for i in range(0, atomTotal - 1):
@@ -1002,13 +1006,16 @@ class BarePDBParserListener(ParseTreeListener):
         try:
 
             nr = int(str(ctx.Integer(0)))
-            if self.__is_first_atom:
-                if nr == 1:
-                    self.__is_first_atom = False
-                else:
-                    return
+            # if self.__is_first_atom:
+            #     if nr == 1:
+            #         self.__is_first_atom = False
+            #     else:
+            #         return
 
-            if ctx.Integer(1):
+            if ctx.Integer(2):
+                chainId = str(ctx.Integer(1))
+                seqId = int(str(ctx.Integer(2)))
+            elif ctx.Integer(1):
                 seqId = int(str(ctx.Integer(1)))
                 chainId = str(ctx.Simple_name(2)) if ctx.Simple_name(3) else None
             else:
@@ -1038,9 +1045,8 @@ class BarePDBParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by BarePDBParser#terminal.
     def exitTerminal(self, ctx: BarePDBParser.TerminalContext):  # pylint: disable=unused-argument
-        if ctx.Ter():
-            self.__atoms.append('TER')
-            self.__ter_count += 1
+        self.__atoms.append('TER')
+        self.__ter_count += 1
 
     def getContentSubtype(self) -> dict:
         """ Return content subtype of Bare PDB file.

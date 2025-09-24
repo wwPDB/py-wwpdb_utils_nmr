@@ -34,6 +34,7 @@ try:
                                                        REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            protonBeginCode,
                                            aminoProtonCode,
@@ -58,6 +59,7 @@ except ImportError:
                                            REPRESENTATIVE_ALT_ID)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (monDict3,
                                protonBeginCode,
                                aminoProtonCode,
@@ -86,6 +88,9 @@ class CharmmCRDParserListener(ParseTreeListener):
     # BMRB chemical shift statistics
     __csStat = None
 
+    # NEFTranslator
+    __nefT = None
+
     # Pairwise align
     __pA = None
 
@@ -108,7 +113,9 @@ class CharmmCRDParserListener(ParseTreeListener):
     __chainAssign = None
 
     # atoms
-    __atoms = []
+    __atoms = None
+    # previous atom number
+    __prev_nr = -1
 
     # CHARMM atom number dictionary
     __atomNumberDict = None
@@ -121,7 +128,7 @@ class CharmmCRDParserListener(ParseTreeListener):
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None):
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None):
 
         self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
@@ -145,6 +152,11 @@ class CharmmCRDParserListener(ParseTreeListener):
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
 
+        # NEFTranslator
+        self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+        if nefT is None:
+            self.__nefT.set_remediation_mode(True)
+
         # Pairwise align
         if self.__hasPolySeqModel:
             self.__pA = PairwiseAlign()
@@ -157,6 +169,8 @@ class CharmmCRDParserListener(ParseTreeListener):
         self.__atomNumberDict = {}
         self.__polySeqPrmTop = []
         self.__f = []
+        self.__atoms = []
+        self.__prev_nr = -1
 
     # Exit a parse tree produced by CharmmCRDParser#charmm_crd.
     def exitCharmm_crd(self, ctx: CharmmCRDParser.Charmm_crdContext):  # pylint: disable=unused-argument
@@ -304,13 +318,15 @@ class CharmmCRDParserListener(ParseTreeListener):
                 chainId = ps['chain_id']
                 compIdList = []
                 for seqId, authCompId in zip(ps['seq_id'], ps['auth_comp_id']):
-                    authAtomIds = [translateToStdAtomName(atomNum['auth_atom_id'], atomNum['auth_comp_id'],
+                    authCompId = translateToStdResName(authCompId, ccU=self.__ccU)
+                    _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.__ccU))
+                    authAtomIds = [translateToStdAtomName(atomNum['auth_atom_id'] if not atomNum['auth_atom_id'].endswith('*')
+                                                          else atomNum['auth_atom_id'][:-1] + ("'" if nucleotide else ""), atomNum['auth_comp_id'],
                                                           ccU=self.__ccU, unambig=True)
                                    for atomNum in self.__atomNumberDict.values()
                                    if atomNum['chain_id'] == chainId
                                    and atomNum['seq_id'] == seqId
                                    and atomNum['auth_atom_id'][0] not in protonBeginCode]
-                    authCompId = translateToStdResName(authCompId, ccU=self.__ccU)
                     if self.__ccU.updateChemCompDict(authCompId):
                         chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                         valid = True
@@ -332,6 +348,9 @@ class CharmmCRDParserListener(ParseTreeListener):
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
+                                    if atomId.endswith('*'):
+                                        atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                                     atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
 
                                     if atomId[0] not in protonBeginCode or atomId in chemCompAtomIds:
@@ -339,6 +358,10 @@ class CharmmCRDParserListener(ParseTreeListener):
                                     else:
                                         if atomId in chemCompAtomIds:
                                             atomNum['atom_id'] = atomId
+                                        else:
+                                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(authCompId, atomId)
+                                            if details is None:
+                                                atomNum['atom_id'] = _atomId[0]
 
                         else:
                             compId = self.__csStat.getSimilarCompIdFromAtomIds([translateToStdAtomName(atomNum['auth_atom_id'],
@@ -387,6 +410,10 @@ class CharmmCRDParserListener(ParseTreeListener):
                                         else:
                                             atomId = atomNum['auth_atom_id']
 
+                                        if atomId.endswith('*'):
+                                            _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.__ccU))
+                                            atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                                         atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
 
                                         if chemCompAtomIds is not None and atomId in chemCompAtomIds:
@@ -394,6 +421,10 @@ class CharmmCRDParserListener(ParseTreeListener):
                                         elif chemCompAtomIds is not None:
                                             if atomId in chemCompAtomIds:
                                                 atomNum['atom_id'] = atomId
+                                            else:
+                                                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)
+                                                if details is None:
+                                                    atomNum['atom_id'] = _atomId[0]
                             else:
                                 compIdList.append('.')
                                 unknownAtomIds = [_atomId for _atomId in authAtomIds if _atomId not in chemCompAtomIds]
@@ -443,6 +474,10 @@ class CharmmCRDParserListener(ParseTreeListener):
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
+                                    if atomId.endswith('*'):
+                                        _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.__ccU))
+                                        atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                                     atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
 
                                     if chemCompAtomIds is not None and atomId in chemCompAtomIds:
@@ -450,6 +485,10 @@ class CharmmCRDParserListener(ParseTreeListener):
                                     elif chemCompAtomIds is not None:
                                         if atomId in chemCompAtomIds:
                                             atomNum['atom_id'] = atomId
+                                        else:
+                                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)
+                                            if details is None:
+                                                atomNum['atom_id'] = _atomId[0]
                         else:
                             compIdList.append('.')
                             """ deferred to assignNonPolymer()
@@ -985,6 +1024,12 @@ class CharmmCRDParserListener(ParseTreeListener):
         try:
 
             nr = int(str(ctx.Integer(0)))
+
+            if nr < 0 or nr <= self.__prev_nr:
+                return
+
+            self.__prev_nr = nr
+
             seqId = int(str(ctx.Integer(1)))
 
             compId = str(ctx.Simple_name(0))

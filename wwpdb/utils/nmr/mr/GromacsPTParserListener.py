@@ -119,7 +119,9 @@ class GromacsPTParserListener(ParseTreeListener):
     __system = None
 
     # atoms
-    __atoms = []
+    __atoms = None
+    # previous atom number
+    __prev_nr = -1
 
     # molecules
     __molecules = []
@@ -207,6 +209,8 @@ class GromacsPTParserListener(ParseTreeListener):
         self.__atomNumberDict = {}
         self.__polySeqPrmTop = []
         self.__f = []
+        self.__atoms = []
+        self.__prev_nr = -1
 
     # Exit a parse tree produced by GromacsPTParser#gromacs_pt.
     def exitGromacs_pt(self, ctx: GromacsPTParser.Gromacs_ptContext):  # pylint: disable=unused-argument
@@ -352,13 +356,15 @@ class GromacsPTParserListener(ParseTreeListener):
                 chainId = ps['chain_id']
                 compIdList = []
                 for seqId, authCompId in zip(ps['seq_id'], ps['auth_comp_id']):
-                    authAtomIds = [translateToStdAtomName(atomNum['auth_atom_id'], atomNum['auth_comp_id'],
+                    authCompId = translateToStdResName(authCompId, ccU=self.__ccU)
+                    _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.__ccU))
+                    authAtomIds = [translateToStdAtomName(atomNum['auth_atom_id'] if not atomNum['auth_atom_id'].endswith('*')
+                                                          else atomNum['auth_atom_id'][:-1] + ("'" if nucleotide else ""), atomNum['auth_comp_id'],
                                                           ccU=self.__ccU, unambig=True)
                                    for atomNum in self.__atomNumberDict.values()
                                    if atomNum['chain_id'] == chainId
                                    and atomNum['seq_id'] == seqId
                                    and atomNum['auth_atom_id'][0] not in protonBeginCode]
-                    authCompId = translateToStdResName(authCompId, ccU=self.__ccU)
                     if self.__ccU.updateChemCompDict(authCompId):
                         chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                         valid = True
@@ -380,6 +386,9 @@ class GromacsPTParserListener(ParseTreeListener):
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
+                                    if atomId.endswith('*'):
+                                        atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                                     atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
 
                                     if atomId[0] not in protonBeginCode or atomId in chemCompAtomIds:
@@ -391,6 +400,12 @@ class GromacsPTParserListener(ParseTreeListener):
                                             atomNum['atom_id'] = atomId
                                             if 'atom_type' in atomNum:
                                                 del atomNum['atom_type']
+                                        else:
+                                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(authCompId, atomId)
+                                            if details is None:
+                                                atomNum['atom_id'] = _atomId[0]
+                                                if 'atom_type' in atomNum:
+                                                    del atomNum['atom_type']
 
                         else:
                             compId = self.__csStat.getSimilarCompIdFromAtomIds([translateToStdAtomName(atomNum['auth_atom_id'],
@@ -439,6 +454,10 @@ class GromacsPTParserListener(ParseTreeListener):
                                         else:
                                             atomId = atomNum['auth_atom_id']
 
+                                        if atomId.endswith('*'):
+                                            _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.__ccU))
+                                            atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                                         atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
 
                                         if chemCompAtomIds is not None and atomId in chemCompAtomIds:
@@ -450,6 +469,12 @@ class GromacsPTParserListener(ParseTreeListener):
                                                 atomNum['atom_id'] = atomId
                                                 if 'atom_type' in atomNum:
                                                     del atomNum['atom_type']
+                                            else:
+                                                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)
+                                                if details is None:
+                                                    atomNum['atom_id'] = _atomId[0]
+                                                    if 'atom_type' in atomNum:
+                                                        del atomNum['atom_type']
                             else:
                                 compIdList.append('.')
                                 unknownAtomIds = [_atomId for _atomId in authAtomIds if _atomId not in chemCompAtomIds]
@@ -499,6 +524,10 @@ class GromacsPTParserListener(ParseTreeListener):
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
+                                    if atomId.endswith('*'):
+                                        _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.__ccU))
+                                        atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                                     atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
 
                                     if chemCompAtomIds is not None and atomId in chemCompAtomIds:
@@ -510,6 +539,12 @@ class GromacsPTParserListener(ParseTreeListener):
                                             atomNum['atom_id'] = atomId
                                             if 'atom_type' in atomNum:
                                                 del atomNum['atom_type']
+                                        else:
+                                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)
+                                            if details is None:
+                                                atomNum['atom_id'] = _atomId[0]
+                                                if 'atom_type' in atomNum:
+                                                    del atomNum['atom_type']
                         else:
                             compIdList.append('.')
                             """ deferred to assignNonPolymer()
@@ -568,6 +603,7 @@ class GromacsPTParserListener(ParseTreeListener):
                             atomId = atomNum['auth_atom_id']
 
                         atomId = translateToStdAtomName(atomId, authCompId, ccU=self.__ccU, unambig=True)
+
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(authCompId, atomId)[0]
                         if len(atomIds) == 1:
                             atomNum['atom_id'] = atomIds[0]
@@ -1361,6 +1397,12 @@ class GromacsPTParserListener(ParseTreeListener):
         try:
 
             nr = int(str(ctx.Integer(0)))
+
+            if nr < 0 or nr <= self.__prev_nr:
+                return
+
+            self.__prev_nr = nr
+
             seqId = int(str(ctx.Integer(1)))
             # cgnr = int(str(ctx.Integer(2)))
 

@@ -20,32 +20,42 @@ lexer grammar BarePDBLexer;
 */
 Integer:		'-'? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
-fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
+fragment DEC_DOT_DEC:	(DECIMAL '.' PRECISION?) | ('.' PRECISION);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
+fragment PRECISION:	DEC_DIGIT DEC_DIGIT? DEC_DIGIT?;
 
-fragment PDB_IGNORED:	'HEADER' | 'OBSLTE' | 'TITLE' | 'SPLIT' | 'CAVEAT' | 'COMPND' | 'SOURCE' | 'KEYWDS' | 'EXPDTA' | 'NUMMDL' | 'MDLTYP' |
-			'AUTHOR' | 'REVDAT' | 'SPRSDE' | 'JRNL' | 'REMARK' | 'DBREF' | 'DBREF1' | 'DBREF2' | 'SEQADV' | 'SEQRES' | 'MODRES' |
-			'HET' | 'HETNAM' | 'HETSYN' | 'FORMUL' | 'HELIX' | 'SHEET' | 'SSBOND' | 'TURN' | 'LINK' | 'CISPEP' | 'SITE' |
-			'CRYST1' | 'ORIGX1' | 'ORIGX2' | 'ORIGX3' | 'SCALE1' | 'SCALE2' | 'SCALE3' | 'MTRIX1' | 'MTRIX2' | 'MTRIX3' | 'MODEL'
-			| 'ANISOU' | 'ENDMDL' | 'CONECT' | 'MASTER';
+fragment PDB_IGNORED:	'HEADER' DECIMAL? | 'OBSLTE' DECIMAL? | 'TITLE' DECIMAL? | 'SPLIT' DECIMAL? | 'CAVEAT' DECIMAL? | 'COMPND' DECIMAL? |
+			'SOURCE' DECIMAL? | 'KEYWDS' DECIMAL? | 'EXPDTA' DECIMAL? | 'NUMMDL' DECIMAL? | 'MDLTYP' DECIMAL? |
+			'AUTHOR' DECIMAL? | 'REVDAT' DECIMAL? | 'SPRSDE' DECIMAL? | 'JRNL' | 'REMARK' DECIMAL? | 'DBREF' | 'DBREF1' DECIMAL? |
+			'DBREF2' DECIMAL? | 'SEQADV' DECIMAL? | 'SEQRES' DECIMAL? | 'MODRES' DECIMAL? | 'HET' | 'HETNAM' DECIMAL? |
+			'HETSYN' DECIMAL? | 'FORMUL' DECIMAL? | 'HELIX' | 'SHEET' | 'SSBOND' DECIMAL? | 'TURN' | 'LINK' | 'CISPEP' DECIMAL? |
+			'SITE' | 'CRYST1' DECIMAL? | 'ORIGX1' DECIMAL? | 'ORIGX2' DECIMAL? | 'ORIGX3' DECIMAL? | 'SCALE1' DECIMAL?
+			| 'SCALE2' DECIMAL? | 'SCALE3' DECIMAL? | 'MTRIX1' DECIMAL? | 'MTRIX2' DECIMAL? | 'MTRIX3' DECIMAL? | 'MODEL'
+			| 'ANISOU' DECIMAL? | 'ENDMDL' DECIMAL? | 'CONECT' DECIMAL? | 'MASTER' DECIMAL?;
 
 COMMENT:		('#'+ | '!'+ | PDB_IGNORED) -> mode(COMMENT_MODE);
 
 Hetatm_decimal:		'HETATM' DECIMAL;
-Float_concat_2:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) '-' DEC_DOT_DEC;
-Float_concat_3:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) '-' DEC_DOT_DEC '-' DEC_DOT_DEC;
+
+Integer_concat_alt:	'-'? DECIMAL [A-Z];
+
+Float_concat_2:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('-' | '1') DEC_DOT_DEC;
+Float_concat_3:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('-' | '1') DEC_DOT_DEC ('-' | '1') DEC_DOT_DEC;
+
+Float_100_concat:	(DECIMAL | DEC_DOT_DEC) '100.' '0'+;
 
 Atom:			'ATOM';
 Hetatm:			'HETATM';
 Ter:			'TER' -> mode(COMMENT_MODE);
-End:			'END';
+End:			'END' -> mode(COMMENT_MODE);
 
 Simple_name:		SIMPLE_NAME;
+Null_value:		'?' | '-' | '.';
 
 fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
-fragment START_CHAR:	ALPHA_NUM | '_';
+fragment START_CHAR:	ALPHA_NUM | '_' | '\'';
 fragment NAME_CHAR:	START_CHAR | '\'' | '/' | '-' | '+' | '.' | ',' | ':' | '"' | '*';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 

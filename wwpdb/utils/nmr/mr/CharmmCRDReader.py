@@ -30,6 +30,7 @@ try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
 except ImportError:
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
@@ -43,6 +44,7 @@ except ImportError:
     from nmr.io.CifReader import CifReader
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.nef.NEFTranslator import NEFTranslator
 
 
 class CharmmCRDReader:
@@ -54,7 +56,7 @@ class CharmmCRDReader:
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None):
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None):
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -81,6 +83,11 @@ class CharmmCRDReader:
 
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
+
+        # NEFTranslator
+        self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+        if nefT is None:
+            self.__nefT.set_remediation_mode(True)
 
     def setDebugMode(self, debug: bool):
         self.__debug = debug
@@ -165,7 +172,7 @@ class CharmmCRDReader:
                                                self.__representativeAltId,
                                                self.__mrAtomNameMapping,
                                                self.__cR, self.__caC,
-                                               self.__ccU, self.__csStat)
+                                               self.__ccU, self.__csStat, self.__nefT)
             walker.walk(listener, tree)
 
             messageList = parser_error_listener.getMessageList()

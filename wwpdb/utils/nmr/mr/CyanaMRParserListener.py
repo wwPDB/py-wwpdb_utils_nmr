@@ -9656,6 +9656,419 @@ class CyanaMRParserListener(ParseTreeListener):
         finally:
             self.numberSelection.clear()
 
+    # Enter a parse tree produced by CyanaMRParser#rdc_w_chain_restraints.
+    def enterRdc_w_chain_restraints(self, ctx: CyanaMRParser.Rdc_w_chain_restraintsContext):  # pylint: disable=unused-argument
+        self.__cur_subtype = 'rdc'
+        self.__cur_dist_type = ''
+
+        self.__cur_subtype_altered = False
+
+    # Exit a parse tree produced by CyanaMRParser#rdc_w_chain_restraints.
+    def exitRdc_w_chain_restraints(self, ctx: CyanaMRParser.Rdc_w_chain_restraintsContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by CyanaMRParser#rdc_w_chain_restraint.
+    def enterRdc_w_chain_restraint(self, ctx: CyanaMRParser.Rdc_w_chain_restraintContext):  # pylint: disable=unused-argument
+        self.rdcRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by CyanaMRParser#rdc_w_chain_restraint.
+    def exitRdc_w_chain_restraint(self, ctx: CyanaMRParser.Rdc_w_chain_restraintContext):  # pylint: disable=unused-argument
+
+        try:
+
+            unambig = True
+
+            seqId1 = int(str(ctx.Integer(0)))
+            seqId2 = int(str(ctx.Integer(1)))
+            jVal = [''] * 6
+            for j in range(6):
+                jVal[j] = str(ctx.Simple_name(j)).upper()
+
+            minLenCompId = 2 if self.__polyPeptide else (1 if self.__polyDeoxyribonucleotide else 0)
+            if minLenCompId == 0:
+                if any(_compId for _compId in jVal if _compId.startswith('R')):
+                    minLenCompId = 1
+
+            if len(self.__col_order_of_dist_w_chain) == 0:
+                for j in range(3):
+                    if len(jVal[j]) > minLenCompId and translateToStdResName(jVal[j], ccU=self.__ccU) in monDict3:
+                        compId = translateToStdResName(jVal[j], ccU=self.__ccU)
+                        if self.__ccU.updateChemCompDict(compId):
+                            for k in range(3):
+                                if k == j:
+                                    continue
+                                atomId = jVal[k]
+                                chainId = jVal[3 - (j + k)]
+                                if atomId in ('M', 'Q'):
+                                    continue
+                                if self.__hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
+                                    if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                                        _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                        if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                            _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+                                    if details is not None or atomId.endswith('"'):
+                                        _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU, unambig=unambig)
+                                        if _atomId_ != atomId:
+                                            if atomId.startswith('HT') and len(_atomId_) == 2:
+                                                _atomId_ = 'H'
+                                            _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                    if len(_atomId) > 0:
+                                        continue
+                                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                    if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                        _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+                                if details is not None or atomId.endswith('"'):
+                                    _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU, unambig=unambig)
+                                    if _atomId_ != atomId:
+                                        if atomId.startswith('HT') and len(_atomId_) == 2:
+                                            _atomId_ = 'H'
+                                        _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                if len(_atomId) > 0:
+                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId[0]), None)
+                                    if cca is not None:
+                                        if minLenCompId == 0 and 3 - (j + k) != 0:
+                                            continue
+                                        self.__col_order_of_dist_w_chain['comp_id_1'] = j
+                                        self.__col_order_of_dist_w_chain['atom_id_1'] = k
+                                        self.__col_order_of_dist_w_chain['chain_id_1'] = 3 - (j + k)
+                                        break
+                            if len(self.__col_order_of_dist_w_chain) == 3:
+                                break
+                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.__ccU) not in monDict3:
+                        compId = translateToStdResName(jVal[j], ccU=self.__ccU)
+                        if self.__ccU.updateChemCompDict(compId):
+                            for k in range(3):
+                                if k == j:
+                                    continue
+                                atomId = jVal[k]
+                                chainId = jVal[3 - (j + k)]
+                                if atomId in ('M', 'Q'):
+                                    continue
+                                if self.__hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
+                                    if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                                        _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                        if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                            _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+                                    if details is not None or atomId.endswith('"'):
+                                        _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU, unambig=unambig)
+                                        if _atomId_ != atomId:
+                                            if atomId.startswith('HT') and len(_atomId_) == 2:
+                                                _atomId_ = 'H'
+                                            _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                    if len(_atomId) > 0:
+                                        continue
+                                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                    if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                        _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+                                if details is not None or atomId.endswith('"'):
+                                    _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU, unambig=unambig)
+                                    if _atomId_ != atomId:
+                                        if atomId.startswith('HT') and len(_atomId_) == 2:
+                                            _atomId_ = 'H'
+                                        _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                if len(_atomId) > 0:
+                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId[0]), None)
+                                    if cca is not None:
+                                        self.__col_order_of_dist_w_chain['comp_id_1'] = j
+                                        self.__col_order_of_dist_w_chain['atom_id_1'] = k
+                                        self.__col_order_of_dist_w_chain['chain_id_1'] = 3 - (j + k)
+                                        break
+                            if len(self.__col_order_of_dist_w_chain) == 3:
+                                break
+                for j in range(3, 6):
+                    if len(jVal[j]) > minLenCompId and translateToStdResName(jVal[j], ccU=self.__ccU) in monDict3:
+                        compId = translateToStdResName(jVal[j], ccU=self.__ccU)
+                        if self.__ccU.updateChemCompDict(compId):
+                            for k in range(3, 6):
+                                if k == j:
+                                    continue
+                                atomId = jVal[k]
+                                chainId = jVal[12 - (j + k)]
+                                if atomId in ('M', 'Q'):
+                                    continue
+                                if self.__hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
+                                    if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                                        _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                        if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                            _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+                                    if details is not None or atomId.endswith('"'):
+                                        _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU, unambig=unambig)
+                                        if atomId.startswith('HT') and len(_atomId_) == 2:
+                                            _atomId_ = 'H'
+                                        if _atomId_ != atomId:
+                                            _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                    if len(_atomId) > 0:
+                                        continue
+                                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                    if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                        _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+                                if details is not None or atomId.endswith('"'):
+                                    _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU, unambig=unambig)
+                                    if atomId.startswith('HT') and len(_atomId_) == 2:
+                                        _atomId_ = 'H'
+                                    if _atomId_ != atomId:
+                                        _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                if len(_atomId) > 0:
+                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId[0]), None)
+                                    if cca is not None:
+                                        if minLenCompId == 0 and 12 - (j + k) != 3:
+                                            continue
+                                        self.__col_order_of_dist_w_chain['comp_id_2'] = j
+                                        self.__col_order_of_dist_w_chain['atom_id_2'] = k
+                                        self.__col_order_of_dist_w_chain['chain_id_2'] = 12 - (j + k)
+                                        break
+                            if len(self.__col_order_of_dist_w_chain) == 6:
+                                break
+                    elif len(jVal[j]) > 1 and translateToStdResName(jVal[j], ccU=self.__ccU) not in monDict3:
+                        compId = translateToStdResName(jVal[j], ccU=self.__ccU)
+                        if self.__ccU.updateChemCompDict(compId):
+                            for k in range(3, 6):
+                                if k == j:
+                                    continue
+                                atomId = jVal[k]
+                                chainId = jVal[12 - (j + k)]
+                                if atomId in ('M', 'Q'):
+                                    continue
+                                if self.__hasPolySeq and len(atomId) < len(chainId) and any(ps for ps in self.__polySeq if atomId in (ps['auth_chain_id'], ps['chain_id'])):
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, chainId, leave_unmatched=True)
+                                    if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                                        _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                        if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                            _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+                                    if details is not None or atomId.endswith('"'):
+                                        _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU, unambig=unambig)
+                                        if atomId.startswith('HT') and len(_atomId_) == 2:
+                                            _atomId_ = 'H'
+                                        if _atomId_ != atomId:
+                                            _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                    if len(_atomId) > 0:
+                                        continue
+                                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is not None and len(atomId) > 1 and not atomId[-1].isalpha():
+                                    _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId[:-1], leave_unmatched=True)
+                                    if atomId[-1].isdigit() and int(atomId[-1]) <= len(_atomId):
+                                        _atomId = [_atomId[int(atomId[-1]) - 1]]
+
+                                if details is not None or atomId.endswith('"'):
+                                    _atomId_ = translateToStdAtomName(atomId, compId, ccU=self.__ccU, unambig=unambig)
+                                    if atomId.startswith('HT') and len(_atomId_) == 2:
+                                        _atomId_ = 'H'
+                                    if _atomId_ != atomId:
+                                        _atomId = self.__nefT.get_valid_star_atom_in_xplor(compId, _atomId_)[0]
+                                if len(_atomId) > 0:
+                                    cca = next((cca for cca in self.__ccU.lastAtomList if cca[self.__ccU.ccaAtomId] == _atomId[0]), None)
+                                    if cca is not None:
+                                        self.__col_order_of_dist_w_chain['comp_id_2'] = j
+                                        self.__col_order_of_dist_w_chain['atom_id_2'] = k
+                                        self.__col_order_of_dist_w_chain['chain_id_2'] = 12 - (j + k)
+                                        break
+                            if len(self.__col_order_of_dist_w_chain) == 6:
+                                break
+
+            if len(self.__col_order_of_dist_w_chain) != 6:
+
+                if not self.__hasPolySeq:
+                    return
+
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Failed to identify columns for comp_id_1, atom_id_1, chain_id_1, comp_id_2, atom_id_2, chain_id_2.")
+                self.rdcRestraints -= 1
+                return
+
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.rdcRestraints -= 1
+                return
+
+            target = self.numberSelection[0]
+            error = abs(self.numberSelection[1])
+            weight = self.numberSelection[2]
+            orientation = int(str(ctx.Integer(2)))
+
+            if weight < 0.0:
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' must not be a negative value.")
+                return
+            if weight == 0.0:
+                self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
+                                f"The relative weight value of '{weight}' should be a positive value.")
+
+            if orientation not in self.rdcParameterDict:
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The orientation '{orientation}' must be defined before you start to describe RDC restraints.")
+                return
+
+            if seqId1 == self.rdcParameterDict[orientation]['orientation_center_seq_id']:
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The residue number '{seqId1}' must not be the same as the center of orientation.")
+                return
+
+            if seqId2 == self.rdcParameterDict[orientation]['orientation_center_seq_id']:
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                f"The residue number '{seqId2}' must not be the same as the center of orientation.")
+                return
+
+            target_value = target
+            lower_limit = target - error
+            upper_limit = target + error
+
+            dstFunc = self.validateRdcRange(weight, orientation, target_value, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                return
+
+            if not self.__hasPolySeq and not self.__hasNonPolySeq:
+                return
+
+            chainId1 = jVal[self.__col_order_of_dist_w_chain['chain_id_1']]
+            chainId2 = jVal[self.__col_order_of_dist_w_chain['chain_id_2']]
+            compId1 = jVal[self.__col_order_of_dist_w_chain['comp_id_1']]
+            compId2 = jVal[self.__col_order_of_dist_w_chain['comp_id_2']]
+            atomId1 = jVal[self.__col_order_of_dist_w_chain['atom_id_1']]
+            atomId2 = jVal[self.__col_order_of_dist_w_chain['atom_id_2']]
+
+            self.__retrieveLocalSeqScheme()
+
+            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
+
+            if 0 in (len(chainAssign1), len(chainAssign2)):
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+            """
+            if not self.areUniqueCoordAtoms('an RDC'):
+                return
+            """
+            try:
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+            except IndexError:
+                self.areUniqueCoordAtoms('an RDC')
+                return
+
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Non-magnetic susceptible spin appears in RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                return
+
+            if chain_id_1 != chain_id_2:
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
+                                    "Found inter-chain RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
+
+            elif abs(seq_id_1 - seq_id_2) > 1:
+                ps1 = next((ps for ps in self.__polySeq if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                if ps1 is None:
+                    self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
+
+            elif abs(seq_id_1 - seq_id_2) == 1:
+
+                if self.__csStat.peptideLike(comp_id_1) and self.__csStat.peptideLike(comp_id_2) and\
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in rdcBbPairCode)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in rdcBbPairCode and atom_id_2 == 'C')
+                         or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                         or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
+                    pass
+
+                else:
+                    self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
+                                    "Found inter-residue RDC vector; "
+                                    f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
+
+            elif atom_id_1 == atom_id_2:
+                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                "Found zero RDC vector; "
+                                f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                return
+
+            elif self.__ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                if not self.__ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
+
+                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.__f.append(f"[Anomalous RDC vector] {self.__getCurrentRestraint()}"
+                                        "Found an RDC vector over multiple covalent bonds; "
+                                        f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, {chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+
+            combinationId = '.'
+            if self.__createSfDict:
+                cyanaParameter = None if orientation not in self.rdcParameterDict else self.rdcParameterDict[orientation]
+                sf = self.__getSf(potentialType=getPotentialType(self.__file_type, self.__cur_subtype, dstFunc),
+                                  rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]),
+                                  orientationId=orientation, cyanaParameter=cyanaParameter)
+                sf['id'] += 1
+                if len(self.atomSelectionSet[0]) > 1 or len(self.atomSelectionSet[1]) > 1:
+                    combinationId = 0
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                atoms = [atom1, atom2]
+                if isIdenticalRestraint(atoms, self.__nefT):
+                    continue
+                if isLongRangeRestraint(atoms, self.__polySeq if self.__gapInAuthSeq else None):
+                    continue
+                if isinstance(combinationId, int):
+                    combinationId += 1
+                if self.__debug:
+                    print(f"subtype={self.__cur_subtype} id={self.rdcRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.__createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.__cur_subtype, sf['id'], sf['index_id'],
+                                 combinationId, None, None,
+                                 sf['list_id'], self.__entryId, dstFunc,
+                                 self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
+                                 atom1, atom2, asis1=asis1, asis2=asis2)
+                    sf['loop'].add_data(row)
+
+            if self.__createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.__cur_subtype, sf['loop'].data[-1])
+
+        except ValueError:
+            self.rdcRestraints -= 1
+
+        finally:
+            self.numberSelection.clear()
+
     # Enter a parse tree produced by CyanaMRParser#cco_restraints.
     def enterCco_restraints(self, ctx: CyanaMRParser.Cco_restraintsContext):  # pylint: disable=unused-argument
         self.__cur_subtype = 'jcoup'

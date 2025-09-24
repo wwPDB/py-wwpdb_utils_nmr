@@ -23,7 +23,7 @@ bare_pdb:
 	comment |
 	coordinates |
 	terminal |
-	End
+	end
 	)*
 	EOF;
 
@@ -34,16 +34,33 @@ coordinates:
 	atom_coordinate+;
 
 atom_coordinate:
-	atom_num Simple_name Simple_name (Integer Integer | Simple_name? Integer | Simple_name) xyz (Float Float)? non_float? non_float?;
+	atom_num atom_name Simple_name (Integer Integer | Simple_name? (Integer | Integer_concat_alt) | Simple_name) xyz ((number number) | Float_100_concat)? undefined? undefined?;
 
 atom_num:
 	(Atom Integer | Hetatm Integer | Hetatm_decimal);
 
-xyz:
-	(Float Float Float | Float Float_concat_2 | Float_concat_2 Float | Float_concat_3);
+atom_name:
+	Simple_name | Integer_concat_alt;
 
-non_float:
-	Simple_name | Integer;
+xyz:
+	(number number number | x_yz | xy_z | x_y_z);
+
+x_yz:
+	number Float_concat_2;
+
+xy_z:
+	Float_concat_2 number;
+
+x_y_z:
+	Float_concat_3;
+
+undefined:
+	Simple_name | Integer | Float | Null_value;
+
+number:
+	Float | Integer;
 
 terminal:
-	Ter Any_name* (RETURN_CM | EOF);
+	Atom? Hetatm? Ter Any_name* (RETURN_CM | EOF);
+
+end:	End Any_name* (RETURN_CM | EOF);

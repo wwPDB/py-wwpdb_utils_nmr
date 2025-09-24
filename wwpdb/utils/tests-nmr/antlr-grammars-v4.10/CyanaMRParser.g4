@@ -37,6 +37,7 @@ cyana_mr:
 	torsion_angle_restraints |
 	torsion_angle_w_chain_restraints |
 	rdc_restraints |
+	rdc_w_chain_restraints |
 	pcs_restraints |
 	cco_restraints |
 	ssbond_macro |
@@ -206,6 +207,16 @@ torsion_angle_w_chain_restraints:
 
 torsion_angle_w_chain_restraint:
 	Simple_name Integer Simple_name Simple_name number number number? (Type Equ_op Integer)? Or?;
+
+/* CYANA (undocumented) - arbitrary order among chain_id, comp_id, and atom_id
+*/
+rdc_w_chain_restraints:
+	rdc_w_chain_restraint+;
+
+rdc_w_chain_restraint:
+	Simple_name Integer Simple_name Simple_name
+	Simple_name Integer Simple_name Simple_name
+	number number number Integer number?;
 
 /* CYANA (undocumented) - Scalar coupling constant restraint
  See also https://www.las.jp/english/products/cyana/DyanaManual.pdf

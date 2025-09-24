@@ -442,6 +442,10 @@ class AmberPTParserListener(ParseTreeListener):
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
+                                    if atomId.endswith('*'):
+                                        _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.__ccU))
+                                        atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                                     atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
 
                                     if atomId[0] not in protonBeginCode or atomId in chemCompAtomIds:
@@ -500,6 +504,10 @@ class AmberPTParserListener(ParseTreeListener):
                                             _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, None, compId, atomNum['auth_atom_id'], None, None, True)
                                         else:
                                             atomId = atomNum['auth_atom_id']
+
+                                        if atomId.endswith('*'):
+                                            _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.__ccU))
+                                            atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
                                         atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
 
@@ -561,6 +569,10 @@ class AmberPTParserListener(ParseTreeListener):
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
+                                    if atomId.endswith('*'):
+                                        _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.__ccU))
+                                        atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                                     atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
 
                                     if chemCompAtomIds is not None and atomId in chemCompAtomIds:
@@ -596,6 +608,10 @@ class AmberPTParserListener(ParseTreeListener):
                         else:
                             atomId = atomNum['auth_atom_id']
 
+                        if atomId.endswith('*'):
+                            _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.__ccU))
+                            atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                         atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
 
                         if atomId is not None and atomId in chemCompAtomIds:
@@ -613,6 +629,10 @@ class AmberPTParserListener(ParseTreeListener):
                                 else:
                                     atomId = atomNum['auth_atom_id']
 
+                                if atomId.endswith('*'):
+                                    _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.__ccU))
+                                    atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                                 atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
 
                                 if atomId is not None and atomId in chemCompAtomIds:
@@ -628,6 +648,10 @@ class AmberPTParserListener(ParseTreeListener):
                             _, _, atomId = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, None, authCompId, atomNum['auth_atom_id'], None, None, True)
                         else:
                             atomId = atomNum['auth_atom_id']
+
+                        if atomId.endswith('*'):
+                            _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.__ccU))
+                            atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
                         atomId = translateToStdAtomName(atomId, authCompId, ccU=self.__ccU, unambig=True)
                         atomIds = self.__nefT.get_valid_star_atom_in_xplor(authCompId, atomId)[0]
@@ -738,6 +762,10 @@ class AmberPTParserListener(ParseTreeListener):
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
+                                    if atomId.endswith('*'):
+                                        _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.__ccU))
+                                        atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                                     atomNum['atom_id'] = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
                                     del atomNum['atom_type']
 
@@ -756,6 +784,11 @@ class AmberPTParserListener(ParseTreeListener):
 
                         if self.__ccU.updateChemCompDict(authCompId):
                             chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+
+                            if atomId.endswith('*'):
+                                _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.__ccU))
+                                atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                             atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
                             if atomId in chemCompAtomIds:
                                 atomNum['atom_id'] = atomId
@@ -794,6 +827,11 @@ class AmberPTParserListener(ParseTreeListener):
 
                         if self.__ccU.updateChemCompDict(authCompId):
                             chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+
+                            if atomId.endswith('*'):
+                                _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.__ccU))
+                                atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                             atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
                             if atomId in chemCompAtomIds:
                                 atomNum['atom_id'] = atomId
@@ -900,6 +938,11 @@ class AmberPTParserListener(ParseTreeListener):
                                 atomId = atomNum['auth_atom_id']
                                 if self.__ccU.updateChemCompDict(compId):
                                     chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+
+                                    if atomId.endswith('*'):
+                                        _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.__ccU))
+                                        atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                                     atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
                                     if atomId in chemCompAtomIds:
                                         atomNum['atom_id'] = atomId
@@ -1109,6 +1152,11 @@ class AmberPTParserListener(ParseTreeListener):
                                     atomId = atomNum['auth_atom_id']
                                     if self.__ccU.updateChemCompDict(compId):
                                         chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
+
+                                        if atomId.endswith('*'):
+                                            _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.__ccU))
+                                            atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                                         atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
                                         if atomId in chemCompAtomIds:
                                             atomNum['atom_id'] = atomId
@@ -1232,6 +1280,10 @@ class AmberPTParserListener(ParseTreeListener):
                             atomId = translateToStdAtomNameOfDmpc(authAtomId, dmpcNameSystemId)
                         else:
                             atomId = translateToStdAtomName(authAtomId, compId, chemCompAtomIds, ccU=self.__ccU)
+
+                        if atomId.endswith('*'):
+                            _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.__ccU))
+                            atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
 
                         if atomId in chemCompAtomIds:
                             atomNum['atom_id'] = atomId

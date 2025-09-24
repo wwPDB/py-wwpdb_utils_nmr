@@ -12222,16 +12222,18 @@ class NmrDpUtility:
 
             except UnicodeDecodeError as e:  # catch exception due to binary format (DAOTHER-9425)
 
-                err = f"The {mr_format_name} restraint file {file_name!r} is not plain text file. {str(e)}"
+                if file_type != 'nm-aux-pdb':
 
-                self.report.error.appendDescription('format_issue',
-                                                    {'file_name': file_name, 'description': err})
-                self.report.setError()
+                    err = f"The {mr_format_name} restraint file {file_name!r} is not plain text file. {str(e)}"
 
-                if self.__verbose:
-                    self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+                    self.report.error.appendDescription('format_issue',
+                                                        {'file_name': file_name, 'description': err})
+                    self.report.setError()
 
-                valid = False
+                    if self.__verbose:
+                        self.__lfh.write(f"+{self.__class_name__}.__detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+
+                    valid = False
 
             if prompt_type is not None:
 
@@ -13278,13 +13280,13 @@ class NmrDpUtility:
                                  self.__ccU, self.__csStat, self.__nefT)
         if file_type == 'nm-aux-cha':
             return CharmmCRDReader(verbose, self.__lfh, None, None, None, None, None,
-                                   self.__ccU, self.__csStat)
+                                   self.__ccU, self.__csStat, self.__nefT)
         if file_type == 'nm-aux-gro':
             return GromacsPTReader(verbose, self.__lfh, None, None, None, None, None,
                                    self.__ccU, self.__csStat, self.__nefT)
         if file_type == 'nm-aux-pdb':
             return BarePDBReader(verbose, self.__lfh, None, None, None, None, None,
-                                 self.__ccU, self.__csStat)
+                                 self.__ccU, self.__csStat, self.__nefT)
 
         if file_type == 'nm-res-amb':
             return AmberMRReader(verbose, self.__lfh, None, None, None, None, None,
@@ -34766,7 +34768,7 @@ class NmrDpUtility:
                                              self.__representative_alt_id,
                                              self.__mr_atom_name_mapping,
                                              self.__cR, self.__caC,
-                                             self.__ccU, self.__csStat)
+                                             self.__ccU, self.__csStat, self.__nefT)
 
                     listener, _, _ = reader.parse(file_path, self.__cifPath)
 
@@ -34846,7 +34848,10 @@ class NmrDpUtility:
                                                self.__representative_alt_id,
                                                self.__mr_atom_name_mapping,
                                                self.__cR, self.__caC,
-                                               self.__ccU, self.__csStat)
+                                               self.__ccU, self.__csStat, self.__nefT)
+
+                        if os.path.exists(file_path + '-corrected'):
+                            file_path = file_path + '-corrected'
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath)
 

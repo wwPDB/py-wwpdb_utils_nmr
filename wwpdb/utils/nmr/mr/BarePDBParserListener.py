@@ -35,6 +35,7 @@ try:
                                                        REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            protonBeginCode,
                                            aminoProtonCode,
@@ -59,6 +60,7 @@ except ImportError:
                                            REPRESENTATIVE_ALT_ID)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.AlignUtil import (monDict3,
                                protonBeginCode,
                                aminoProtonCode,
@@ -87,6 +89,9 @@ class BarePDBParserListener(ParseTreeListener):
     # BMRB chemical shift statistics
     __csStat = None
 
+    # NEFTranslator
+    __nefT = None
+
     # Pairwise align
     __pA = None
 
@@ -108,13 +113,18 @@ class BarePDBParserListener(ParseTreeListener):
     __seqAlign = None
     __chainAssign = None
 
+    # atoms
+    __atoms = None
     # current atom number
     __cur_nr = -1
-
-    # atoms
-    __atoms = []
-    # __is_first_atom = True
+    # previous atom number
+    __prev_nr = -1
+    # current atom name
+    __cur_atom_name = None
+    # total appearances of TER clause
     __ter_count = 0
+    # END clause
+    __end = False
 
     # PDB atom number dictionary
     __atomNumberDict = None
@@ -127,7 +137,7 @@ class BarePDBParserListener(ParseTreeListener):
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None):
+                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None):
 
         self.__mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
@@ -151,6 +161,11 @@ class BarePDBParserListener(ParseTreeListener):
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
 
+        # NEFTranslator
+        self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+        if nefT is None:
+            self.__nefT.set_remediation_mode(True)
+
         # Pairwise align
         if self.__hasPolySeqModel:
             self.__pA = PairwiseAlign()
@@ -163,8 +178,11 @@ class BarePDBParserListener(ParseTreeListener):
         self.__atomNumberDict = {}
         self.__polySeqPrmTop = []
         self.__f = []
-        # self.__is_first_atom = True
+        self.__atoms = []
+        self.__cur_nr = -1
+        self.__prev_nr = -1
         self.__ter_count = 0
+        self.__end = False
 
     # Exit a parse tree produced by BarePDBParser#bare_pdb.
     def exitBare_pdb(self, ctx: BarePDBParser.Bare_pdbContext):  # pylint: disable=unused-argument
@@ -330,13 +348,15 @@ class BarePDBParserListener(ParseTreeListener):
                 chainId = ps['chain_id']
                 compIdList = []
                 for seqId, authCompId in zip(ps['seq_id'], ps['auth_comp_id']):
-                    authAtomIds = [translateToStdAtomName(atomNum['auth_atom_id'], atomNum['auth_comp_id'],
+                    authCompId = translateToStdResName(authCompId, ccU=self.__ccU)
+                    _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(authCompId, ccU=self.__ccU))
+                    authAtomIds = [translateToStdAtomName(atomNum['auth_atom_id'] if not atomNum['auth_atom_id'].endswith('*')
+                                                          else atomNum['auth_atom_id'][:-1] + ("'" if nucleotide else ""), atomNum['auth_comp_id'],
                                                           ccU=self.__ccU, unambig=True)
                                    for atomNum in self.__atomNumberDict.values()
                                    if atomNum['chain_id'] == chainId
                                    and atomNum['seq_id'] == seqId
                                    and atomNum['auth_atom_id'][0] not in protonBeginCode]
-                    authCompId = translateToStdResName(authCompId, ccU=self.__ccU)
                     if self.__ccU.updateChemCompDict(authCompId):
                         chemCompAtomIds = [cca[self.__ccU.ccaAtomId] for cca in self.__ccU.lastAtomList]
                         valid = True
@@ -358,6 +378,9 @@ class BarePDBParserListener(ParseTreeListener):
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
+                                    if atomId.endswith('*'):
+                                        atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                                     atomId = translateToStdAtomName(atomId, authCompId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
 
                                     if atomId[0] not in protonBeginCode or atomId in chemCompAtomIds:
@@ -365,6 +388,10 @@ class BarePDBParserListener(ParseTreeListener):
                                     else:
                                         if atomId in chemCompAtomIds:
                                             atomNum['atom_id'] = atomId
+                                        else:
+                                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(authCompId, atomId)
+                                            if details is None:
+                                                atomNum['atom_id'] = _atomId[0]
 
                         else:
                             compId = self.__csStat.getSimilarCompIdFromAtomIds([translateToStdAtomName(atomNum['auth_atom_id'],
@@ -413,6 +440,10 @@ class BarePDBParserListener(ParseTreeListener):
                                         else:
                                             atomId = atomNum['auth_atom_id']
 
+                                        if atomId.endswith('*'):
+                                            _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.__ccU))
+                                            atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                                         atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
 
                                         if chemCompAtomIds is not None and atomId in chemCompAtomIds:
@@ -420,6 +451,10 @@ class BarePDBParserListener(ParseTreeListener):
                                         elif chemCompAtomIds is not None:
                                             if atomId in chemCompAtomIds:
                                                 atomNum['atom_id'] = atomId
+                                            else:
+                                                _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)
+                                                if details is None:
+                                                    atomNum['atom_id'] = _atomId[0]
                             else:
                                 compIdList.append('.')
                                 unknownAtomIds = [_atomId for _atomId in authAtomIds if _atomId not in chemCompAtomIds]
@@ -469,6 +504,10 @@ class BarePDBParserListener(ParseTreeListener):
                                     else:
                                         atomId = atomNum['auth_atom_id']
 
+                                    if atomId.endswith('*'):
+                                        _, nucleotide, _ = self.__csStat.getTypeOfCompId(translateToStdResName(compId, ccU=self.__ccU))
+                                        atomId = atomId[:-1] + ("'" if nucleotide and not atomId[0].isdigit() else "")
+
                                     atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
 
                                     if chemCompAtomIds is not None and atomId in chemCompAtomIds:
@@ -476,6 +515,10 @@ class BarePDBParserListener(ParseTreeListener):
                                     elif chemCompAtomIds is not None:
                                         if atomId in chemCompAtomIds:
                                             atomNum['atom_id'] = atomId
+                                        else:
+                                            _atomId, _, details = self.__nefT.get_valid_star_atom_in_xplor(compId, atomId)
+                                            if details is None:
+                                                atomNum['atom_id'] = _atomId[0]
                         else:
                             compIdList.append('.')
                             """ deferred to assignNonPolymer()
@@ -1008,27 +1051,36 @@ class BarePDBParserListener(ParseTreeListener):
 
         try:
 
+            if self.__end:
+                return
+
             nr = self.__cur_nr
-            # if self.__is_first_atom:
-            #     if nr == 1:
-            #         self.__is_first_atom = False
-            #     else:
-            #         return
+
+            if nr < 0 or nr <= self.__prev_nr:
+                return
+
+            self.__prev_nr = nr
 
             if ctx.Integer(1):
                 chainId = str(ctx.Integer(0))
                 seqId = int(str(ctx.Integer(1)))
             elif ctx.Integer(0):
                 seqId = int(str(ctx.Integer(0)))
-                chainId = str(ctx.Simple_name(2)) if ctx.Simple_name(2) else None
+                chainId = str(ctx.Simple_name(1)) if ctx.Simple_name(1) else None
+            elif ctx.Integer_concat_alt():
+                seqId = int(str(ctx.Integer_concat_alt())[:-1])
+                chainId = str(ctx.Simple_name(1)) if ctx.Simple_name(1) else None
             else:
-                concat_string = str(ctx.Simple_name(2))
+                concat_string = str(ctx.Simple_name(1))
                 integers = re.findall(r'\d+', concat_string)
                 seqId = int(integers[0])
                 chainId = concat_string[:concat_string.index(integers[0])]
 
-            compId = str(ctx.Simple_name(1))
-            atomId = str(ctx.Simple_name(0))
+            compId = str(ctx.Simple_name(0))
+            atomId = self.__cur_atom_name
+
+            if atomId is None:
+                return
 
             atom = {'atom_number': nr,
                     'auth_chain_id': chainId,
@@ -1044,16 +1096,29 @@ class BarePDBParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by BarePDBParser#atom_num.
     def enterAtom_num(self, ctx: BarePDBParser.Atom_numContext):
-        if ctx.Atom():
+        if ctx.Atom() and ctx.Integer():
             self.__cur_nr = int(str(ctx.Integer()))
-        elif ctx.Hetatm():
+        elif ctx.Hetatm() and ctx.Integer():
             self.__cur_nr = int(str(ctx.Integer()))
-        else:
+        elif ctx.Hetatm_decimal():
             concat_string = str(ctx.Hetatm_decimal())
             self.__cur_nr = int(concat_string[6:])
+        else:
+            self.__cur_nr = -1
 
     # Exit a parse tree produced by BarePDBParser#atom_num.
     def exitAtom_num(self, ctx: BarePDBParser.Atom_numContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BarePDBParser#atom_name.
+    def enterAtom_name(self, ctx: BarePDBParser.Atom_nameContext):
+        if ctx.Simple_name():
+            self.__cur_atom_name = str(ctx.Simple_name())
+        else:
+            self.__cur_atom_name = str(ctx.Integer_concat_alt())
+
+    # Exit a parse tree produced by BarePDBParser#atom_name.
+    def exitAtom_name(self, ctx: BarePDBParser.Atom_nameContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by BarePDBParser#xyz.
@@ -1064,12 +1129,44 @@ class BarePDBParserListener(ParseTreeListener):
     def exitXyz(self, ctx: BarePDBParser.XyzContext):  # pylint: disable=unused-argument
         pass
 
-    # Enter a parse tree produced by BarePDBParser#non_float.
-    def enterNon_float(self, ctx: BarePDBParser.Non_floatContext):  # pylint: disable=unused-argument
+    # Enter a parse tree produced by BarePDBParser#x_yz.
+    def enterX_yz(self, ctx: BarePDBParser.X_yzContext):  # pylint: disable=unused-argument
         pass
 
-    # Exit a parse tree produced by BarePDBParser#non_float.
-    def exitNon_float(self, ctx: BarePDBParser.Non_floatContext):  # pylint: disable=unused-argument
+    # Exit a parse tree produced by BarePDBParser#x_yz.
+    def exitX_yz(self, ctx: BarePDBParser.X_yzContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BarePDBParser#xy_z.
+    def enterXy_z(self, ctx: BarePDBParser.Xy_zContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by BarePDBParser#xy_z.
+    def exitXy_z(self, ctx: BarePDBParser.Xy_zContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BarePDBParser#x_y_z.
+    def enterX_y_z(self, ctx: BarePDBParser.X_y_zContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by BarePDBParser#x_y_z.
+    def exitX_y_z(self, ctx: BarePDBParser.X_y_zContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BarePDBParser#undefined.
+    def enterUndefined(self, ctx: BarePDBParser.UndefinedContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by BarePDBParser#undefined.
+    def exitUndefined(self, ctx: BarePDBParser.UndefinedContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BarePDBParser#number.
+    def enterNumber(self, ctx: BarePDBParser.NumberContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by BarePDBParser#number.
+    def exitNumber(self, ctx: BarePDBParser.NumberContext):  # pylint: disable=unused-argument
         pass
 
     # Enter a parse tree produced by BarePDBParser#terminal.
@@ -1080,6 +1177,14 @@ class BarePDBParserListener(ParseTreeListener):
     def exitTerminal(self, ctx: BarePDBParser.TerminalContext):  # pylint: disable=unused-argument
         self.__atoms.append('TER')
         self.__ter_count += 1
+
+    # Enter a parse tree produced by BarePDBParser#end.
+    def enterEnd(self, ctx: BarePDBParser.EndContext):  # pylint: disable=unused-argument
+        self.__end = True
+
+    # Exit a parse tree produced by BarePDBParser#end.
+    def exitEnd(self, ctx: BarePDBParser.EndContext):  # pylint: disable=unused-argument
+        pass
 
     def getContentSubtype(self) -> dict:
         """ Return content subtype of Bare PDB file.

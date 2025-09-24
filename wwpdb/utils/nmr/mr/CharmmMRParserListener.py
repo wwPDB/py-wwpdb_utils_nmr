@@ -3773,7 +3773,7 @@ class CharmmMRParserListener(ParseTreeListener):
 
                 return _factor
 
-        if ('atom_id' in _factor and _factor['atom_id'][0] is None)\
+        if ('atom_id' in _factor and (len(_factor['atom_id']) == 0 or _factor['atom_id'][0] is None))\
            or ('atom_selection' in _factor and (_factor['atom_selection'] is None or len(_factor['atom_selection']) == 0)):
             return {'atom_selection': []}
 
@@ -8078,11 +8078,11 @@ class CharmmMRParserListener(ParseTreeListener):
                                 self.factor['seq_id'].append(_factor['seq_id'])
                             if 'comp_id' not in self.factor:
                                 self.factor['comp_id'] = []
-                            if _factor['comp_id'] not in self.factor['comp_id']:
+                            if 'comp_id' in _factor and _factor['comp_id'] not in self.factor['comp_id']:
                                 self.factor['comp_id'].append(_factor['comp_id'])
                             if 'atom_id' not in self.factor:
                                 self.factor['atom_id'] = []
-                            if _factor['atom_id'] not in self.factor['atom_id']:
+                            if 'atom_id' in _factor and _factor['atom_id'] not in self.factor['atom_id']:
                                 self.factor['atom_id'].append(_factor['atom_id'])
                             self.factor['atom_num'].remove(ai)
                             if len(self.factor['atom_num']) == 0:

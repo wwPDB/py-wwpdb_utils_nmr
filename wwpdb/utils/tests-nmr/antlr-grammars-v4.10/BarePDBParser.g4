@@ -34,7 +34,13 @@ coordinates:
 	atom_coordinate+;
 
 atom_coordinate:
-	(Atom | Hetatm) Integer Simple_name Simple_name (Integer Integer | Simple_name? Integer | Simple_name) Float Float Float (Float Float)? non_float? non_float?;
+	atom_num Simple_name Simple_name (Integer Integer | Simple_name? Integer | Simple_name) xyz (Float Float)? non_float? non_float?;
+
+atom_num:
+	(Atom Integer | Hetatm Integer | Hetatm_decimal);
+
+xyz:
+	(Float Float Float | Float Float_concat_2 | Float_concat_2 Float | Float_concat_3);
 
 non_float:
 	Simple_name | Integer;

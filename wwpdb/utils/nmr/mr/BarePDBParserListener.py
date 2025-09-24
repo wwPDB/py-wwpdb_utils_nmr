@@ -108,6 +108,9 @@ class BarePDBParserListener(ParseTreeListener):
     __seqAlign = None
     __chainAssign = None
 
+    # current atom number
+    __cur_nr = -1
+
     # atoms
     __atoms = []
     # __is_first_atom = True
@@ -1005,19 +1008,19 @@ class BarePDBParserListener(ParseTreeListener):
 
         try:
 
-            nr = int(str(ctx.Integer(0)))
+            nr = self.__cur_nr
             # if self.__is_first_atom:
             #     if nr == 1:
             #         self.__is_first_atom = False
             #     else:
             #         return
 
-            if ctx.Integer(2):
-                chainId = str(ctx.Integer(1))
-                seqId = int(str(ctx.Integer(2)))
-            elif ctx.Integer(1):
+            if ctx.Integer(1):
+                chainId = str(ctx.Integer(0))
                 seqId = int(str(ctx.Integer(1)))
-                chainId = str(ctx.Simple_name(2)) if ctx.Simple_name(3) else None
+            elif ctx.Integer(0):
+                seqId = int(str(ctx.Integer(0)))
+                chainId = str(ctx.Simple_name(2)) if ctx.Simple_name(2) else None
             else:
                 concat_string = str(ctx.Simple_name(2))
                 integers = re.findall(r'\d+', concat_string)
@@ -1038,6 +1041,36 @@ class BarePDBParserListener(ParseTreeListener):
 
         except (ValueError, IndexError):
             pass
+
+    # Enter a parse tree produced by BarePDBParser#atom_num.
+    def enterAtom_num(self, ctx: BarePDBParser.Atom_numContext):
+        if ctx.Atom():
+            self.__cur_nr = int(str(ctx.Integer()))
+        elif ctx.Hetatm():
+            self.__cur_nr = int(str(ctx.Integer()))
+        else:
+            concat_string = str(ctx.Hetatm_decimal())
+            self.__cur_nr = int(concat_string[6:])
+
+    # Exit a parse tree produced by BarePDBParser#atom_num.
+    def exitAtom_num(self, ctx: BarePDBParser.Atom_numContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BarePDBParser#xyz.
+    def enterXyz(self, ctx: BarePDBParser.XyzContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by BarePDBParser#xyz.
+    def exitXyz(self, ctx: BarePDBParser.XyzContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by BarePDBParser#non_float.
+    def enterNon_float(self, ctx: BarePDBParser.Non_floatContext):  # pylint: disable=unused-argument
+        pass
+
+    # Exit a parse tree produced by BarePDBParser#non_float.
+    def exitNon_float(self, ctx: BarePDBParser.Non_floatContext):  # pylint: disable=unused-argument
+        pass
 
     # Enter a parse tree produced by BarePDBParser#terminal.
     def enterTerminal(self, ctx: BarePDBParser.TerminalContext):  # pylint: disable=unused-argument

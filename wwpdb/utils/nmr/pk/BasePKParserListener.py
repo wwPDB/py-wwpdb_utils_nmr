@@ -2634,6 +2634,8 @@ class BasePKParserListener():
 
                         self.__remediatePeakAssignmentForAtomType(d, self.atom_type_history[d][_id], sf['peak_row_format'], lp)
 
+                        self.__remediateIncompletePeakAssignment(d, sf['peak_row_format'], lp)
+
                         if any(transfer['type'] == 'onebond' for transfer in cur_spectral_dim_transfer):
                             onebond_dim_transfers = [[transfer['spectral_dim_id_1'], transfer['spectral_dim_id_2']]
                                                      for transfer in cur_spectral_dim_transfer
@@ -3120,6 +3122,53 @@ class BasePKParserListener():
                     self.reasonsForReParsing['atom_type_history'] = self.atom_type_history
 
                     return
+
+    def __remediateIncompletePeakAssignment(self, num_of_dim: int, use_peak_row_format: bool, loop: pynmrstar.Loop):  # pylint: disable=no-self-use
+
+        del_idx_list = []
+
+        if use_peak_row_format:
+            tags = [f'Atom_ID_{_dim_id}' for _dim_id in range(1, num_of_dim + 1)]
+
+            dat = loop.get_tag(tags)
+
+            for idx, row in enumerate(dat):
+                if all(row[_dim_id] in emptyValue for _dim_id in range(num_of_dim))\
+                   or all(row[_dim_id] not in emptyValue for _dim_id in range(num_of_dim)):
+                    continue
+                del_idx_list.append(idx)
+
+        else:
+            tags = ['Peak_ID', 'Set_ID']
+
+            dat = loop.get_tag(tags)
+
+            peak_set = {}
+
+            for row in dat:
+                key = (row[0], row[1])
+                if key not in peak_set:
+                    peak_set[key] = 1
+                else:
+                    peak_set[key] += 1
+
+            incomplete_peak_idx = []
+
+            for k, v in peak_set.items():
+                if v == num_of_dim:
+                    continue
+                incomplete_peak_idx.append(k)
+
+            if len(incomplete_peak_idx) > 0:
+
+                for idx, row in enumerate(dat):
+                    key = (row[0], row[1])
+                    if key in incomplete_peak_idx:
+                        del_idx_list.append(idx)
+
+        if len(del_idx_list) > 0:
+            for _idx in reversed(del_idx_list):
+                del loop.data[_idx]
 
     def __remediatePeakAssignmentForOneBondTransfer(self, num_of_dim: int, onebond_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
 
@@ -4220,38 +4269,6 @@ class BasePKParserListener():
         if len(del_idx_list) > 0:
             for _idx in reversed(del_idx_list):
                 del loop.data[_idx]
-
-        if not use_peak_row_format:
-            peak_set = {}
-
-            tags = ['Peak_ID', 'Set_ID']
-
-            dat = loop.get_tag(tags)
-
-            for row in dat:
-                key = (row[0], row[1])
-                if key not in peak_set:
-                    peak_set[key] = 1
-                else:
-                    peak_set[key] += 1
-
-            imcomplete_peak_set = []
-
-            for k, v in peak_set.items():
-                if v == num_of_dim:
-                    continue
-                imcomplete_peak_set.append(k)
-
-            if len(imcomplete_peak_set) > 0:
-                del_idx_list = []
-
-                for idx, row in enumerate(dat):
-                    key = (row[0], row[1])
-                    if key in imcomplete_peak_set:
-                        del_idx_list.append(idx)
-
-                for _idx in reversed(del_idx_list):
-                    del loop.data[_idx]
 
     def __remediatePeakAssignmentForJcouplingTransfer(self, num_of_dim: int, jcoupling_transfers: List[List[int]], use_peak_row_format: bool, loop: pynmrstar.Loop):
 

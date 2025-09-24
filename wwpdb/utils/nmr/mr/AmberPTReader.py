@@ -204,7 +204,7 @@ if __name__ == "__main__":
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/7dta/bmr36404/work/data/D_1300020063_mr-upload_P1.amber.V1',
                  '../../tests-nmr/mock-data-remediation/7dta/7dta.cif')
-    sys.exit()
+
     reader = AmberPTReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-D_1300062637/leap.top',

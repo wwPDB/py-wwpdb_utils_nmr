@@ -24,13 +24,17 @@ fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
-fragment PDB_IGNORED:	'HEADER' | 'OBSLTE' | 'TITLE ' | 'SPLIT ' | 'CAVEAT' | 'COMPND' | 'SOURCE' | 'KEYWDS' | 'EXPDTA' | 'NUMMDL' | 'MDLTYP' |
+fragment PDB_IGNORED:	'HEADER' | 'OBSLTE' | 'TITLE' | 'SPLIT' | 'CAVEAT' | 'COMPND' | 'SOURCE' | 'KEYWDS' | 'EXPDTA' | 'NUMMDL' | 'MDLTYP' |
 			'AUTHOR' | 'REVDAT' | 'SPRSDE' | 'JRNL' | 'REMARK' | 'DBREF' | 'DBREF1' | 'DBREF2' | 'SEQADV' | 'SEQRES' | 'MODRES' |
-			'HET ' | 'HETNAM' | 'HETSYN' | 'FORMUL' | 'HELIX ' | 'SHEET ' | 'SSBOND' | 'TURN' | 'LINK ' | 'CISPEP' | 'SITE ' |
-			'CRYST1' | 'ORIGX1' | 'ORIGX2' | 'ORIGX3' | 'SCALE1' | 'SCALE2' | 'SCALE3' | 'MTRIX1' | 'MTRIX2' | 'MTRIX3' | 'MODEL '
+			'HET' | 'HETNAM' | 'HETSYN' | 'FORMUL' | 'HELIX' | 'SHEET' | 'SSBOND' | 'TURN' | 'LINK' | 'CISPEP' | 'SITE' |
+			'CRYST1' | 'ORIGX1' | 'ORIGX2' | 'ORIGX3' | 'SCALE1' | 'SCALE2' | 'SCALE3' | 'MTRIX1' | 'MTRIX2' | 'MTRIX3' | 'MODEL'
 			| 'ANISOU' | 'ENDMDL' | 'CONECT' | 'MASTER';
 
 COMMENT:		('#'+ | '!'+ | PDB_IGNORED) -> mode(COMMENT_MODE);
+
+Hetatm_decimal:		'HETATM' DECIMAL;
+Float_concat_2:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) '-' DEC_DOT_DEC;
+Float_concat_3:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) '-' DEC_DOT_DEC '-' DEC_DOT_DEC;
 
 Atom:			'ATOM';
 Hetatm:			'HETATM';

@@ -17880,19 +17880,22 @@ class NmrDpUtility:
                         with open(touch_file, 'w') as ofh:
                             ofh.write('')
 
-                    hint = ' or is not recognized properly'
+                    if not any('/work/data' in ar['file_name'] for ar in self.__inputParamDict[ar_file_path_list]
+                               if ar['file_type'].startswith('nm-res') and ar['file_type'] != 'nm-res-mr'):
 
-                    if len_peak_file_list > 0:
-                        hint = f', except for {len_peak_file_list} peak list file(s)'
+                        hint = ' or is not recognized properly'
 
-                    err = f"NMR restraint file contains no restraints{hint}. "\
-                        "Please re-upload the NMR restraint file."
+                        if len_peak_file_list > 0:
+                            hint = f', except for {len_peak_file_list} peak list file(s)'
 
-                    self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
-                                                                 {'file_name': mr_file_name, 'description': err}})
+                        err = f"NMR restraint file contains no restraints{hint}. "\
+                            "Please re-upload the NMR restraint file."
 
-                    if self.__verbose:
-                        self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
+                        self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
+                                                                     {'file_name': mr_file_name, 'description': err}})
+
+                        if self.__verbose:
+                            self.__lfh.write(f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - {err}\n")
 
         if has_spectral_peak:
 

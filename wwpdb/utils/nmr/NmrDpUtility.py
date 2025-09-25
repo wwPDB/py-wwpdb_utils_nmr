@@ -665,6 +665,7 @@ mr_file_header_pattern = re.compile(r'(.*)# Restraints file (\d+): (\S+)\s*')
 
 sel_mr_file_header_pattern = re.compile(r'^# Restraints file \((\S+)\): (\S+)\s*')
 sel_pk_file_header_pattern = re.compile(r'^# Peak list file \((\S+)\): (\S+)\s*')
+sel_cs_file_header_pattern = re.compile(r'^# Chemical shifts file \((\S+)\): (\S+)\s*')
 
 pynmrstar_lp_obj_pattern = re.compile(r"\<pynmrstar\.Loop '(.*)'\>")
 pdb_first_atom_pattern = re.compile(r'ATOM +1 .*')
@@ -12963,7 +12964,8 @@ class NmrDpUtility:
 
                         if mr_file_header_pattern.match(line)\
                            or sel_mr_file_header_pattern.match(line)\
-                           or sel_pk_file_header_pattern.match(line):
+                           or sel_pk_file_header_pattern.match(line)\
+                           or sel_cs_file_header_pattern.match(line):
                             has_mr_header = True
 
                         # skip legacy PDB
@@ -16122,7 +16124,8 @@ class NmrDpUtility:
 
                         if mr_file_header_pattern.match(line)\
                            or sel_mr_file_header_pattern.match(line)\
-                           or sel_pk_file_header_pattern.match(line):
+                           or sel_pk_file_header_pattern.match(line)\
+                           or sel_cs_file_header_pattern.match(line):
                             has_mr_header = True
 
                         # skip legacy PDB
@@ -17071,7 +17074,8 @@ class NmrDpUtility:
                             original_file_path_list.append(_dst_file)
                             ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
 
-                        elif sel_mr_file_header_pattern.match(line) or sel_pk_file_header_pattern.match(line):
+                        elif sel_mr_file_header_pattern.match(line)\
+                                or sel_pk_file_header_pattern.match(line):
                             if sel_mr_file_header_pattern.match(line):
                                 g = sel_mr_file_header_pattern.search(line).groups()
                             else:
@@ -17088,6 +17092,22 @@ class NmrDpUtility:
                             original_file_path_list.append(_dst_file)
                             ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
                             _dst_file_w_sel = _dst_file + f'-selected-as-{g[0][-7:]}'
+                            ofh_w_sel = open(_dst_file_w_sel, 'w')  # pylint: disable=consider-using-with
+
+                        elif sel_cs_file_header_pattern.match(line):
+                            g = sel_cs_file_header_pattern.search(line).groups()
+
+                            if ofh is not None:
+                                ofh.close()
+                                ofh_w_sel.close()
+                                if j == 0:
+                                    os.remove(original_file_path_list.pop())
+
+                            j = 0
+                            _dst_file = os.path.join(dir_path, g[1])
+                            original_file_path_list.append(_dst_file)
+                            ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
+                            _dst_file_w_sel = _dst_file + f'-ignored'
                             ofh_w_sel = open(_dst_file_w_sel, 'w')  # pylint: disable=consider-using-with
 
                         elif not line.isspace() and not comment_pattern.match(line):

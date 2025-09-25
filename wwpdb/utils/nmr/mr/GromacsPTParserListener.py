@@ -1095,6 +1095,20 @@ class GromacsPTParserListener(ParseTreeListener):
                                                     atomNum['atom_id'] = atomId
                                                     continue
 
+            # resolve ligand split during annotation (2miv)
+            if self.__mrAtomNameMapping is not None:
+                for v in self.__atomNumberDict.values():
+                    authCompId = v['auth_comp_id']
+                    if translateToStdResName(authCompId, ccU=self.__ccU) in monDict3:
+                        continue
+                    seqId = v['seq_id']
+                    authAtomId = v['auth_atom_id']
+                    _seqId_, _compId_, _atomId_ = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, authCompId, authAtomId)
+                    if _seqId_ != seqId and _compId_ != authCompId:
+                        v['seq_id'] = _seqId_
+                        v['comp_id'] = _compId_
+                        v['atom_id'] = _atomId_
+
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)
 

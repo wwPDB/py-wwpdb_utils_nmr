@@ -293,7 +293,7 @@ class BarePDBParserListener(ParseTreeListener):
                 if not hasSegCompId and (compId.endswith('5') or compId.endswith('3')):
                     hasSegCompId = True
                 if not hasSegCompId and compId not in monDict3 and self.__mrAtomNameMapping is not None and atomName[0] in protonBeginCode:
-                    _, compId, _atomName = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, compId, atomName)
+                    _seqId_, compId, _atomName = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, _seqId, compId, atomName)
                     if _atomName != atomName:
                         atomName = _atomName
                         retrievedAtomNumList.append(atomNum)
@@ -897,6 +897,20 @@ class BarePDBParserListener(ParseTreeListener):
                                         atomId = translateToStdAtomName(atomId, compId, chemCompAtomIds, ccU=self.__ccU, unambig=True)
                                         if atomId in chemCompAtomIds:
                                             atomNum['atom_id'] = atomId
+
+            # resolve ligand split during annotation (2miv)
+            if self.__mrAtomNameMapping is not None:
+                for v in self.__atomNumberDict.values():
+                    authCompId = v['auth_comp_id']
+                    if translateToStdResName(authCompId, ccU=self.__ccU) in monDict3:
+                        continue
+                    seqId = v['seq_id']
+                    authAtomId = v['auth_atom_id']
+                    _seqId_, _compId_, _atomId_ = retrieveAtomIdentFromMRMap(self.__ccU, self.__mrAtomNameMapping, seqId, authCompId, authAtomId)
+                    if _seqId_ != seqId and _compId_ != authCompId:
+                        v['seq_id'] = _seqId_
+                        v['comp_id'] = _compId_
+                        v['atom_id'] = _atomId_
 
         finally:
             self.warningMessage = sorted(list(set(self.__f)), key=self.__f.index)

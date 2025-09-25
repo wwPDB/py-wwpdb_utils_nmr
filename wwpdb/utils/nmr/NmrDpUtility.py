@@ -12258,6 +12258,9 @@ class NmrDpUtility:
                     if file_path in self.__sll_pred_holder and file_type in self.__sll_pred_holder[file_path]:
                         sll_pred = self.__sll_pred_holder[file_path][file_type]
 
+                    if os.path.exists(file_path + '-corrected'):
+                        file_path = file_path + '-corrected'
+
                     reader = self.__getSimpleFileReader(file_type, self.__verbose, sll_pred=sll_pred)
 
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
@@ -15511,6 +15514,18 @@ class NmrDpUtility:
         if (not is_valid or multiple_check) and file_type != 'nm-res-isd':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-res-isd')
+
+            is_valid |= _is_valid
+            err += _err
+            if _genuine_type is not None:
+                genuine_type.append(_genuine_type)
+                multiple_check = False
+            valid_types.update(_valid_types)
+            possible_types.update(_possible_types)
+
+        if (not is_valid or multiple_check) and file_type != 'nm-aux-pdb':
+            _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
+                self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines, 'nm-aux-pdb')
 
             is_valid |= _is_valid
             err += _err
@@ -34882,7 +34897,17 @@ class NmrDpUtility:
                                         cif_ps = next((cif_ps for cif_ps in self.__caC['polymer_sequence'] if cif_ps['auth_chain_id'] == ref_chain_id), None)
                                         pdb_ps = next(pdb_ps for pdb_ps in poly_seq if pdb_ps['chain_id'] == test_chain_id)
 
-                                        if cif_ps is None or len(cif_ps['seq_id']) > len(pdb_ps['seq_id']):
+                                        if cif_ps is None:
+                                            valid = False
+                                            break
+
+                                        unobs_res_count = 0
+                                        for seq_id in cif_ps['seq_id']:
+                                            seq_key = (ref_chain_id, seq_id)
+                                            if seq_key in self.__caC['coord_unobs_res']:
+                                                unobs_res_count += 1
+
+                                        if len(cif_ps['seq_id']) - unobs_res_count > len(pdb_ps['seq_id']):
                                             valid = False
                                             break
 

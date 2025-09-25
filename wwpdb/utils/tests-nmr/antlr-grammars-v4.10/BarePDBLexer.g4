@@ -43,8 +43,6 @@ Integer_concat_alt:	'-'? DECIMAL [A-Z];
 Float_concat_2:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('-' | '1') DEC_DOT_DEC;
 Float_concat_3:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('-' | '1') DEC_DOT_DEC ('-' | '1') DEC_DOT_DEC;
 
-Float_100_concat:	(DECIMAL | DEC_DOT_DEC) '100.' '0'+;
-
 Atom:			'ATOM';
 Hetatm:			'HETATM';
 Ter:			'TER' -> mode(COMMENT_MODE);

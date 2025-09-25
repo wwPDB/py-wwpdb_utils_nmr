@@ -34,7 +34,7 @@ coordinates:
 	atom_coordinate+;
 
 atom_coordinate:
-	atom_num atom_name Simple_name (Integer Integer | Simple_name? (Integer | Integer_concat_alt) | Simple_name) xyz ((number number) | Float_100_concat)? undefined? undefined?;
+	atom_num atom_name Simple_name (Integer Integer | Simple_name? (Integer | Integer_concat_alt) | Simple_name) xyz (number number | Float_concat_2)? undefined? undefined?;
 
 atom_num:
 	(Atom Integer | Hetatm Integer | Hetatm_decimal);

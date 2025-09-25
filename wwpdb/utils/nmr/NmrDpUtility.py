@@ -663,6 +663,9 @@ onedep_upload_file_pattern = re.compile(r'(.*)\-upload_(.*)\.V(.*)$')
 onedep_file_pattern = re.compile(r'(.*)\.V(.*)$')
 mr_file_header_pattern = re.compile(r'(.*)# Restraints file (\d+): (\S+)\s*')
 
+sel_mr_file_header_pattern = re.compile(r'^# Restraints file \((\S+)\): (\S+)\s*')
+sel_pk_file_header_pattern = re.compile(r'^# Peak list file \((\S+)\): (\S+)\s*')
+
 pynmrstar_lp_obj_pattern = re.compile(r"\<pynmrstar\.Loop '(.*)'\>")
 pdb_first_atom_pattern = re.compile(r'ATOM +1 .*')
 
@@ -12862,7 +12865,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if not file_type.startswith('nm-pea'):
+            if file_type is None or not file_type.startswith('nm-pea'):
                 continue
 
             # DAOTHER-8905: ignore the file in NMR data remediation (Phase 2)
@@ -12958,7 +12961,9 @@ class NmrDpUtility:
                             in_header = False
                             continue
 
-                        if mr_file_header_pattern.match(line):
+                        if mr_file_header_pattern.match(line)\
+                           or sel_mr_file_header_pattern.match(line)\
+                           or sel_pk_file_header_pattern.match(line):
                             has_mr_header = True
 
                         # skip legacy PDB
@@ -16115,7 +16120,9 @@ class NmrDpUtility:
                                 in_header = False
                                 continue
 
-                        if mr_file_header_pattern.match(line):
+                        if mr_file_header_pattern.match(line)\
+                           or sel_mr_file_header_pattern.match(line)\
+                           or sel_pk_file_header_pattern.match(line):
                             has_mr_header = True
 
                         # skip legacy PDB
@@ -17042,7 +17049,7 @@ class NmrDpUtility:
 
                 original_file_path_list = []
 
-                ofh = None
+                ofh = ofh_w_sel = None
                 j = 0
 
                 with open(dst_file, 'r') as ifh:
@@ -17064,6 +17071,25 @@ class NmrDpUtility:
                             original_file_path_list.append(_dst_file)
                             ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
 
+                        elif sel_mr_file_header_pattern.match(line) or sel_pk_file_header_pattern.match(line):
+                            if sel_mr_file_header_pattern.match(line):
+                                g = sel_mr_file_header_pattern.search(line).groups()
+                            else:
+                                g = sel_pk_file_header_pattern.search(line).groups()
+
+                            if ofh is not None:
+                                ofh.close()
+                                ofh_w_sel.close()
+                                if j == 0:
+                                    os.remove(original_file_path_list.pop())
+
+                            j = 0
+                            _dst_file = os.path.join(dir_path, g[1])
+                            original_file_path_list.append(_dst_file)
+                            ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
+                            _dst_file_w_sel = _dst_file + f'-selected-as-{g[0][-7:]}'
+                            ofh_w_sel = open(_dst_file_w_sel, 'w')  # pylint: disable=consider-using-with
+
                         elif not line.isspace() and not comment_pattern.match(line):
                             j += 1
                             if ofh is None:
@@ -17071,14 +17097,20 @@ class NmrDpUtility:
                                 original_file_path_list.append(_dst_file)
                                 ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
                             ofh.write(line)
+                            if ofh_w_sel is not None:
+                                ofh_w_sel.write(line)
 
                         elif ofh is not None:
                             ofh.write(line)
+                            if ofh_w_sel is not None:
+                                ofh_w_sel.write(line)
 
                 if ofh is not None:
                     ofh.close()
                     if j == 0:
                         os.remove(original_file_path_list.pop())
+                    if ofh_w_sel is not None:
+                        ofh_w_sel.close()
 
                 distict = True
                 if len(original_file_path_list) == 0:
@@ -26497,6 +26529,9 @@ class NmrDpUtility:
         __errors = self.report.getTotalErrors()
 
         for fileListId in range(self.__file_path_list_len):
+
+            if fileListId >= len(self.__star_data):
+                break
 
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
@@ -38921,7 +38956,7 @@ class NmrDpUtility:
 
             fileListId += 1
 
-            if not file_type.startswith('nm-shi-') and file_type != 'nm-aux-xea':
+            if file_type is None or (not file_type.startswith('nm-shi-') and file_type != 'nm-aux-xea'):
                 continue
 
             if self.__remediation_mode and os.path.exists(file_path + '-ignored'):
@@ -64581,7 +64616,7 @@ class NmrDpUtility:
             for ar in self.__inputParamDict[ar_file_path_list]:
                 file_type = ar['file_type']
 
-                if not file_type.startswith('nm-pea'):
+                if file_type is None or not file_type.startswith('nm-pea'):
                     continue
 
                 file_path = ar['file_name']

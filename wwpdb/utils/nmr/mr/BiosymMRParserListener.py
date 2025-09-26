@@ -1211,7 +1211,8 @@ class BiosymMRParserListener(ParseTreeListener):
             compId = translateToStdResName(_compId, ccU=self.__ccU)
         return compId
 
-    def getRealChainSeqId(self, ps: dict, seqId: int, compId: str, isPolySeq: bool = True) -> Tuple[str, int, Optional[str]]:
+    def getRealChainSeqId(self, ps: dict, seqId: int, compId: str, isPolySeq: bool = True,
+                          isFirstTrial: bool = True) -> Tuple[str, int, Optional[str]]:
         compId = _compId = translateToStdResName(compId, ccU=self.__ccU)
         if len(_compId) == 2 and _compId.startswith('D'):
             _compId = compId[1]
@@ -1243,6 +1244,12 @@ class BiosymMRParserListener(ParseTreeListener):
             if _ps is not None:
                 if seqId in _ps['seq_id']:
                     return ps['auth_chain_id'], seqId, _ps['comp_id'][_ps['seq_id'].index(seqId)]
+        if 'Check the 1th row of' in self.__getCurrentRestraint() and isFirstTrial:
+            self.__preferAuthSeq = not self.__preferAuthSeq
+            trial = self.getRealChainSeqId(ps, seqId, compId, isPolySeq, False)
+            if trial[2] is not None:
+                return trial
+            self.__preferAuthSeq = not self.__preferAuthSeq
         return ps['auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequence(self, refChainId: str, seqId: int, compId: str, atomId: str

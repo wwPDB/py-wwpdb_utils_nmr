@@ -2293,7 +2293,8 @@ class BaseCSParserListener():
 
         return ret if len(ret) > 0 else None
 
-    def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str], isPolySeq: bool = True) -> Tuple[str, int, Optional[str]]:
+    def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str], isPolySeq: bool = True,
+                          isFirstTrial: bool = True) -> Tuple[str, int, Optional[str]]:
         if compId is not None:
             compId = _compId = translateToStdResName(compId, ccU=self.ccU)
             if len(_compId) == 2 and _compId.startswith('D'):
@@ -2328,6 +2329,12 @@ class BaseCSParserListener():
             if _ps is not None:
                 if seqId in _ps['seq_id']:
                     return ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'], seqId, _ps['comp_id'][_ps['seq_id'].index(seqId)]
+        if 'Check the 1th row of' in self.getCurrentAssignment(-1) and isFirstTrial:
+            self.__preferAuthSeq = not self.__preferAuthSeq
+            trial = self.getRealChainSeqId(ps, seqId, compId, isPolySeq, False)
+            if trial[2] is not None:
+                return trial
+            self.__preferAuthSeq = not self.__preferAuthSeq
         return ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'], seqId, None
 
     def translateToStdResNameWrapper(self, seqId: int, compId: str, preferNonPoly: bool = False) -> str:

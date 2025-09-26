@@ -37,7 +37,6 @@ cyana_mr:
 	torsion_angle_restraints |
 	torsion_angle_w_chain_restraints |
 	rdc_restraints |
-	rdc_w_chain_restraints |
 	pcs_restraints |
 	cco_restraints |
 	ssbond_macro |
@@ -85,7 +84,7 @@ rdc_restraints:
 	(Orientation_header | comment | rdc_restraint)+;
 
 rdc_parameter:
-	Integer number number Integer;
+	Integer number number (Integer | Simple_name);
 
 rdc_restraint:
 	Integer Simple_name Simple_name
@@ -100,7 +99,7 @@ pcs_restraints:
 	(Orientation_header | comment | pcs_restraint)+;
 
 pcs_parameter:
-	Integer number number Integer;
+	Integer number number (Integer | Simple_name);
 
 pcs_restraint:
 	Integer Simple_name Simple_name
@@ -182,7 +181,8 @@ distance_w_chain_restraints:
 distance_w_chain_restraint:
 	Integer Simple_name Simple_name Simple_name
 	Integer Simple_name Simple_name Simple_name
-	number number? number?;
+	number number? number?
+	number? number? number?;	// extensions for .cco file
 
 distance_w_chain2_restraints:
 	distance_w_chain2_restraint+;
@@ -190,7 +190,8 @@ distance_w_chain2_restraints:
 distance_w_chain2_restraint:
 	Simple_name Integer Simple_name Simple_name
 	Simple_name Integer Simple_name Simple_name
-	number number? number?;
+	number number? number?
+	number? number? number?;	// extensions for .cco file
 
 distance_w_chain3_restraints:
 	distance_w_chain3_restraint+;
@@ -198,7 +199,8 @@ distance_w_chain3_restraints:
 distance_w_chain3_restraint:
 	Simple_name Simple_name Integer Simple_name
 	Simple_name Simple_name Integer Simple_name
-	number number? number?;
+	number number? number?
+	number? number? number?;	// extensions for .cco file
 
 /* CYANA (undocumented) - arbitrary order among chain_id, comp_id, and atom_id
 */
@@ -208,16 +210,7 @@ torsion_angle_w_chain_restraints:
 torsion_angle_w_chain_restraint:
 	Simple_name Integer Simple_name Simple_name number number number? (Type Equ_op Integer)? Or?;
 
-/* CYANA (undocumented) - arbitrary order among chain_id, comp_id, and atom_id
 */
-rdc_w_chain_restraints:
-	rdc_w_chain_restraint+;
-
-rdc_w_chain_restraint:
-	Simple_name Integer Simple_name Simple_name
-	Simple_name Integer Simple_name Simple_name
-	number number number Integer number?;
-
 /* CYANA (undocumented) - Scalar coupling constant restraint
  See also https://www.las.jp/english/products/cyana/DyanaManual.pdf
 */

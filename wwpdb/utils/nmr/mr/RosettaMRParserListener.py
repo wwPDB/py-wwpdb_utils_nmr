@@ -1466,7 +1466,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def getRealChainSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True) -> Tuple[str, int, Optional[str]]:
+    def getRealChainSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True,
+                          isFirstTrial: bool = True) -> Tuple[str, int, Optional[str]]:
         offset = 0
         if not self.__preferAuthSeq:
             if isPolySeq and self.__reasons is not None and 'global_auth_sequence_offset' in self.__reasons\
@@ -1515,6 +1516,12 @@ class RosettaMRParserListener(ParseTreeListener):
             if _ps is not None:
                 if seqId + offset in _ps['seq_id']:
                     return ps['auth_chain_id'], seqId + offset, _ps['comp_id'][_ps['seq_id'].index(seqId + offset)]
+        if 'Check the 1th row of' in self.__getCurrentRestraint() and isFirstTrial:
+            self.__preferAuthSeq = not self.__preferAuthSeq
+            trial = self.getRealChainSeqId(ps, seqId, isPolySeq, False)
+            if trial[2] is not None:
+                return trial
+            self.__preferAuthSeq = not self.__preferAuthSeq
         return ps['auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequence(self, seqId: int, atomId: Optional[str] = None, fixedChainId: Optional[str] = None

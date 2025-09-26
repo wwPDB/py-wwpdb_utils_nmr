@@ -17090,7 +17090,9 @@ class NmrDpUtility:
 
                             if ofh is not None:
                                 ofh.close()
-                                ofh_w_sel.close()
+                                if ofh_w_sel is not None:
+                                    ofh_w_sel.close()
+                                    ofh_w_sel = None
                                 if j == 0:
                                     os.remove(original_file_path_list.pop())
 
@@ -17106,7 +17108,9 @@ class NmrDpUtility:
 
                             if ofh is not None:
                                 ofh.close()
-                                ofh_w_sel.close()
+                                if ofh_w_sel is not None:
+                                    ofh_w_sel.close()
+                                    ofh_w_sel = None
                                 if j == 0:
                                     os.remove(original_file_path_list.pop())
 

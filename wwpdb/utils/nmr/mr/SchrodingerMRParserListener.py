@@ -2308,6 +2308,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.distRestraints -= 1
                 return
 
             fc = self.numberSelection[2]
@@ -2684,6 +2685,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.dihedRestraints -= 1
                 return
 
             target = self.numberSelection[0]
@@ -3011,6 +3013,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.angRestraints -= 1
                 return
 
             target_value = self.numberSelection[0]
@@ -3132,6 +3135,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.distRestraints -= 1
                 return
 
             target_value = self.numberSelection[1]
@@ -3318,6 +3322,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.dihedRestraints -= 1
                 return
 
             target_value = self.numberSelection[1]
@@ -3509,6 +3514,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.angRestraints -= 1
                 return
 
             target_value = self.numberSelection[1]

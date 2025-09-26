@@ -3181,6 +3181,7 @@ class RosettaMRParserListener(ParseTreeListener):
             _seqId2 = str(ctx.Simple_name(3)).upper()
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.geoRestraints -= 1
                 return
 
             cartX = self.numberSelection[0]
@@ -3313,6 +3314,7 @@ class RosettaMRParserListener(ParseTreeListener):
             atomId4 = str(ctx.Simple_name(3)).upper()
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.geoRestraints -= 1
                 return
 
             cartX = self.numberSelection[0]
@@ -3597,6 +3599,7 @@ class RosettaMRParserListener(ParseTreeListener):
             seqId2 = int(str(ctx.Integer(1)))
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.geoRestraints -= 1
                 return
 
             target_value = self.numberSelection[0]
@@ -3702,6 +3705,7 @@ class RosettaMRParserListener(ParseTreeListener):
             binChar = str(ctx.Simple_name())
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.geoRestraints -= 1
                 return
 
             sDev = self.numberSelection[0]
@@ -4709,6 +4713,7 @@ class RosettaMRParserListener(ParseTreeListener):
             atomId2 = str(ctx.Simple_name(1)).upper()
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.rdcRestraints -= 1
                 return
 
             target_value = self.numberSelection[0]

@@ -420,6 +420,7 @@ class GromacsMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.distRestraints -= 1
                 return
 
             ai = int(str(ctx.Integer(0)))
@@ -954,6 +955,7 @@ class GromacsMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.dihedRestraints -= 1
                 return
 
             ai = int(str(ctx.Integer(0)))
@@ -1206,6 +1208,7 @@ class GromacsMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.rdcRestraints -= 1
                 return
 
             ai = int(str(ctx.Integer(0)))
@@ -1476,6 +1479,7 @@ class GromacsMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.angRestraints -= 1
                 return
 
             ai = int(str(ctx.Integer(0)))
@@ -1677,6 +1681,7 @@ class GromacsMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.angRestraints -= 1
                 return
 
             ai = int(str(ctx.Integer(0)))
@@ -1807,6 +1812,7 @@ class GromacsMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.geoRestraints -= 1
                 return
 
             ai = int(str(ctx.Integer(0)))

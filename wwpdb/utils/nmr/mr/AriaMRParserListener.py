@@ -775,6 +775,10 @@ class AriaMRParserListener(ParseTreeListener):
 
         try:
 
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.distRestraints -= 1
+                return
+
             # ref_spec = str(ctx.RefSpecName()).rstrip(',')
             # ref_peak = int(str(ctx.Integer(0)).rstrip(','))
             # id = int(str(ctx.Integer(1)).rstrip(','))

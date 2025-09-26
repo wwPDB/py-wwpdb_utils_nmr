@@ -762,6 +762,7 @@ class SybylMRParserListener(ParseTreeListener):
                 return
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.distRestraints -= 1
                 return
 
             target_value = None

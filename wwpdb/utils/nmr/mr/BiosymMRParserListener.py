@@ -794,6 +794,7 @@ class BiosymMRParserListener(ParseTreeListener):
             chainId2, seqId2, compId2, atomId2 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.distRestraints -= 1
                 return
 
             target_value = None
@@ -938,6 +939,7 @@ class BiosymMRParserListener(ParseTreeListener):
             chainId2, seqId2, compId2, atomId2 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.dihedRestraints -= 1
                 return
 
             target_value = None
@@ -2751,6 +2753,7 @@ class BiosymMRParserListener(ParseTreeListener):
             chainId4, seqId4, compId4, atomId4 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(3)))
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.dihedRestraints -= 1
                 return
 
             # cco = self.numberSelection[0]
@@ -2975,6 +2978,7 @@ class BiosymMRParserListener(ParseTreeListener):
             chainId4, seqId4, compId4, atomId4 = self.splitAtomSelectionExpr(str(ctx.Atom_selection(3)))
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.dihedRestraints -= 1
                 return
 
             target_value = None

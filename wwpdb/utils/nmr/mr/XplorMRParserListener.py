@@ -3306,6 +3306,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.distRestraints -= 1
                 return
 
             if len(self.atomSelectionSet) == 2 and len(self.numberSelection) == 2 and not self.__in_block:
@@ -3390,9 +3391,6 @@ class XplorMRParserListener(ParseTreeListener):
 
             else:
                 dminus = dplus = 0.0
-
-            if len(self.numberSelection) == 0 or None in self.numberSelection:
-                return
 
             scale = self.scale if self.scale_a is None else self.scale_a
 
@@ -3846,6 +3844,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.dihedRestraints -= 1
                 return
 
             energyConst = self.numberSelection[0]
@@ -4242,6 +4241,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.rdcRestraints -= 1
                 return
 
             target = self.numberSelection[0]
@@ -4703,6 +4703,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.rdcRestraints -= 1
                 return
 
             target = self.numberSelection[0]
@@ -5021,6 +5022,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.rdcRestraints -= 1
                 return
 
             if len(self.numberSelection) > 3:
@@ -5314,6 +5316,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.rdcRestraints -= 1
                 return
 
             target = self.numberSelection[0]
@@ -5502,6 +5505,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.rdcRestraints -= 1
                 return
 
             target = self.numberSelection[0]
@@ -5768,6 +5772,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.geoRestraints -= 1
                 return
 
             self.vector3D = [self.numberSelection[0], self.numberSelection[1], self.numberSelection[2]]
@@ -5939,6 +5944,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.jcoupRestraints -= 1
                 return
 
             target = self.numberSelection[0]
@@ -6215,6 +6221,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.hvycsRestraints -= 1
                 return
 
             ca_shift = self.numberSelection[0]
@@ -6433,6 +6440,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.procsRestraints -= 1
                 return
 
             obs_value = self.numberSelection[0]
@@ -7020,6 +7028,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.radiRestraints -= 1
                 return
 
             forceConst = self.numberSelection[0]
@@ -7124,6 +7133,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.diffRestraints -= 1
                 return
 
             target = self.numberSelection[0]
@@ -7703,6 +7713,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.csaRestraints -= 1
                 return
 
             target = self.numberSelection[0]
@@ -8229,6 +8240,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.preRestraints -= 1
                 return
 
             target = self.numberSelection[0]
@@ -8475,6 +8487,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.pcsRestraints -= 1
                 return
 
             if not self.__in_block:
@@ -8762,6 +8775,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.prdcRestraints -= 1
                 return
 
             target = self.numberSelection[0]
@@ -8924,6 +8938,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.pangRestraints -= 1
                 return
 
             theta = self.numberSelection[0]
@@ -9086,6 +9101,7 @@ class XplorMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.pccrRestraints -= 1
                 return
 
             target = self.numberSelection[0]

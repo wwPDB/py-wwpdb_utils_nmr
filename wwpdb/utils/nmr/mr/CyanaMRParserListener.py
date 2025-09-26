@@ -8230,6 +8230,7 @@ class CyanaMRParserListener(ParseTreeListener):
             upper_limit = None
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.distRestraints -= 1
                 return
 
             value = self.numberSelection[0]

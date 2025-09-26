@@ -2861,6 +2861,7 @@ class CnsMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.distRestraints -= 1
                 return
 
             target = self.numberSelection[0]
@@ -3325,6 +3326,7 @@ class CnsMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.dihedRestraints -= 1
                 return
 
             energyConst = self.numberSelection[0]
@@ -3777,6 +3779,7 @@ class CnsMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.geoRestraints -= 1
                 return
 
             self.vector3D = [self.numberSelection[0], self.numberSelection[1], self.numberSelection[2]]
@@ -3838,6 +3841,7 @@ class CnsMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.rdcRestraints -= 1
                 return
 
             target = self.numberSelection[0]
@@ -4257,6 +4261,7 @@ class CnsMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.jcoupRestraints -= 1
                 return
 
             target = self.numberSelection[0]
@@ -4497,6 +4502,7 @@ class CnsMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.hvycsRestraints -= 1
                 return
 
             ca_shift = self.numberSelection[0]
@@ -4717,6 +4723,7 @@ class CnsMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.procsRestraints -= 1
                 return
 
             obs_value = self.numberSelection[0]
@@ -5274,6 +5281,7 @@ class CnsMRParserListener(ParseTreeListener):
         try:
 
             if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.diffRestraints -= 1
                 return
 
             target = self.numberSelection[0]

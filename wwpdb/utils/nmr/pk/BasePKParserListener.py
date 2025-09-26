@@ -4889,14 +4889,14 @@ class BasePKParserListener():
             dstFunc['position_1'] = str(pos_1)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_1='{pos_1}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if CS_ERROR_MIN < pos_2 < CS_ERROR_MAX:
             dstFunc['position_2'] = str(pos_2)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_2='{pos_2}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if not validRange:
@@ -4905,13 +4905,13 @@ class BasePKParserListener():
         if CS_RANGE_MIN <= pos_1 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_1='{pos_1}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if CS_RANGE_MIN <= pos_2 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_2='{pos_2}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if height is not None and float(height) != 0.0:
@@ -4924,7 +4924,7 @@ class BasePKParserListener():
             dstFunc['volume_uncertainty'] = volume_uncertainty
 
         if 'height' not in dstFunc and 'volume' not in dstFunc and not self.internal:
-            self.f.append(f"[Missing data] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
                           "Neither peak height nor peak volume value are set. Please re-upload the NMR spectral peak list file.")
             return None
 
@@ -4946,7 +4946,7 @@ class BasePKParserListener():
             if WEIGHT_RANGE_MIN <= figure_of_merit <= WEIGHT_RANGE_MAX:
                 dstFunc['figure_of_merit'] = str(figure_of_merit)
             else:
-                self.f.append(f"[Range value warning] {self.getCurrentSpctralPeak(n=index)}"
+                self.f.append(f"[Range value warning] {self.getCurrentSpectralPeak(n=index)}"
                               f"The figure_of_merit='{figure_of_merit}' should be within range {WEIGHT_RANGE}.")
 
         if self.peaks2D == 1 and self.__defaultSegId__ is not None:
@@ -4975,21 +4975,21 @@ class BasePKParserListener():
             dstFunc['position_1'] = str(pos_1)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_1='{pos_1}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if CS_ERROR_MIN < pos_2 < CS_ERROR_MAX:
             dstFunc['position_2'] = str(pos_2)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_2='{pos_2}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if CS_ERROR_MIN < pos_3 < CS_ERROR_MAX:
             dstFunc['position_3'] = str(pos_3)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_3='{pos_3}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if not validRange:
@@ -4998,19 +4998,19 @@ class BasePKParserListener():
         if CS_RANGE_MIN <= pos_1 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_1='{pos_1}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if CS_RANGE_MIN <= pos_2 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_2='{pos_2}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if CS_RANGE_MIN <= pos_3 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_3='{pos_3}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if height is not None and float(height) != 0.0:
@@ -5023,7 +5023,7 @@ class BasePKParserListener():
             dstFunc['volume_uncertainty'] = volume_uncertainty
 
         if 'height' not in dstFunc and 'volume' not in dstFunc and not self.internal:
-            self.f.append(f"[Missing data] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
                           "Neither peak height nor peak volume value are set. Please re-upload the NMR spectral peak list file.")
             return None
 
@@ -5051,7 +5051,7 @@ class BasePKParserListener():
             if WEIGHT_RANGE_MIN <= figure_of_merit <= WEIGHT_RANGE_MAX:
                 dstFunc['figure_of_merit'] = str(figure_of_merit)
             else:
-                self.f.append(f"[Range value warning] {self.getCurrentSpctralPeak(n=index)}"
+                self.f.append(f"[Range value warning] {self.getCurrentSpectralPeak(n=index)}"
                               f"The figure_of_merit='{figure_of_merit}' should be within range {WEIGHT_RANGE}.")
 
         if self.peaks3D == 1 and self.__defaultSegId__ is not None:
@@ -5080,28 +5080,28 @@ class BasePKParserListener():
             dstFunc['position_1'] = str(pos_1)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_1='{pos_1}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if CS_ERROR_MIN < pos_2 < CS_ERROR_MAX:
             dstFunc['position_2'] = str(pos_2)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_2='{pos_2}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if CS_ERROR_MIN < pos_3 < CS_ERROR_MAX:
             dstFunc['position_3'] = str(pos_3)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_3='{pos_3}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if CS_ERROR_MIN < pos_4 < CS_ERROR_MAX:
             dstFunc['position_4'] = str(pos_4)
         else:
             validRange = False
-            self.f.append(f"[Range value error] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value error] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_4='{pos_4}' must be within range {CS_RESTRAINT_ERROR}.")
 
         if not validRange:
@@ -5110,25 +5110,25 @@ class BasePKParserListener():
         if CS_RANGE_MIN <= pos_1 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_1='{pos_1}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if CS_RANGE_MIN <= pos_2 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_2='{pos_2}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if CS_RANGE_MIN <= pos_3 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_3='{pos_3}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if CS_RANGE_MIN <= pos_4 <= CS_RANGE_MAX:
             pass
         else:
-            self.f.append(f"[Range value warning] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Range value warning] {self.getCurrentSpectralPeak(n=index)}"
                           f"The position_4='{pos_4}' should be within range {CS_RESTRAINT_RANGE}.")
 
         if height is not None and float(height) != 0.0:
@@ -5141,7 +5141,7 @@ class BasePKParserListener():
             dstFunc['volume_uncertainty'] = volume_uncertainty
 
         if 'height' not in dstFunc and 'volume' not in dstFunc and not self.internal:
-            self.f.append(f"[Missing data] {self.getCurrentSpctralPeak(n=index)}"
+            self.f.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
                           "Neither peak height nor peak volume value are set. Please re-upload the NMR spectral peak list file.")
             return None
 
@@ -5175,7 +5175,7 @@ class BasePKParserListener():
             if WEIGHT_RANGE_MIN <= figure_of_merit <= WEIGHT_RANGE_MAX:
                 dstFunc['figure_of_merit'] = str(figure_of_merit)
             else:
-                self.f.append(f"[Range value warning] {self.getCurrentSpctralPeak(n=index)}"
+                self.f.append(f"[Range value warning] {self.getCurrentSpectralPeak(n=index)}"
                               f"The figure_of_merit='{figure_of_merit}' should be within range {WEIGHT_RANGE}.")
 
         if self.peaks4D == 1 and self.__defaultSegId__ is not None:
@@ -5970,7 +5970,7 @@ class BasePKParserListener():
                     sf['loop'].add_data(row)
 
                 if not has_assignments and details is not None:
-                    self.f.append(f"[Conflicted peak assignment] {self.getCurrentSpctralPeak(n=index)}"
+                    self.f.append(f"[Conflicted peak assignment] {self.getCurrentSpectralPeak(n=index)}"
                                   f"Peak assignments {details!r} could not map to the coordinates.")
 
                 sf['index_id'] += 1
@@ -6234,7 +6234,7 @@ class BasePKParserListener():
                     sf['loop'].add_data(row)
 
                 if not has_assignments and details is not None:
-                    self.f.append(f"[Conflicted peak assignment] {self.getCurrentSpctralPeak(n=index)}"
+                    self.f.append(f"[Conflicted peak assignment] {self.getCurrentSpectralPeak(n=index)}"
                                   f"Peak assignments {details!r} could not map to the coordinates.")
 
                 sf['index_id'] += 1
@@ -6531,7 +6531,7 @@ class BasePKParserListener():
                     sf['loop'].add_data(row)
 
                 if not has_assignments and details is not None:
-                    self.f.append(f"[Conflicted peak assignment] {self.getCurrentSpctralPeak(n=index)}"
+                    self.f.append(f"[Conflicted peak assignment] {self.getCurrentSpectralPeak(n=index)}"
                                   f"Peak assignments {details!r} could not map to the coordinates.")
 
                 sf['index_id'] += 1
@@ -8393,7 +8393,7 @@ class BasePKParserListener():
             if _ps is not None:
                 if seqId in _ps['seq_id']:
                     return ps['auth_chain_id'], seqId, _ps['comp_id'][_ps['seq_id'].index(seqId)]
-        if 'Check the 1th row of' in self.getCurrentSpctralPeak(-1) and isFirstTrial:
+        if 'Check the 1th row of' in self.getCurrentSpectralPeak(-1) and isFirstTrial:
             self.__preferAuthSeq = not self.__preferAuthSeq
             trial = self.getRealChainSeqId(ps, seqId, compId, isPolySeq, False)
             if trial[2] is not None:
@@ -9016,7 +9016,7 @@ class BasePKParserListener():
                    or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
                        and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
                             or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
-                    self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpctralPeak(n=index)}"
+                    self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                   f"of chain {refChainId} of the coordinates. "
                                   "Please update the sequence in the Macromolecules page.")
@@ -9026,7 +9026,7 @@ class BasePKParserListener():
                     chainAssign.add((refChainId, _seqId, compId, True))
                     asis = True
                 elif compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
-                    self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpctralPeak(n=index)}"
+                    self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                   f"of chain {refChainId} of the coordinates. "
                                   "Please update the sequence in the Macromolecules page.")
@@ -9034,7 +9034,7 @@ class BasePKParserListener():
                     if resKey not in self.extResKey:
                         self.extResKey.append(resKey)
                 elif self.no_extra_comment:
-                    self.f.append(f"[Atom not found] {self.getCurrentSpctralPeak(n=index)}"
+                    self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                   f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                   f"The residue number '{_seqId}' is not present in polymer sequence "
                                   f"of chain {refChainId} of the coordinates. "
@@ -9064,7 +9064,7 @@ class BasePKParserListener():
                         ext_seq = False
                 if ext_seq:
                     refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
-                    self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpctralPeak(n=index)}"
+                    self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                   f"of chain {refChainId} of the coordinates. "
                                   "Please update the sequence in the Macromolecules page.")
@@ -9078,7 +9078,7 @@ class BasePKParserListener():
                             chainAssign.add((_refChainId, _seqId, compId, True))
                     asis = True
                 elif self.no_extra_comment:
-                    self.f.append(f"[Atom not found] {self.getCurrentSpctralPeak(n=index)}"
+                    self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                   f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                 updatePolySeqRst(self.polySeqRstFailed, self.polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, compId, _compId)
 
@@ -9687,7 +9687,7 @@ class BasePKParserListener():
                        or (compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT
                            and (min_auth_seq_id - MAX_ALLOWED_EXT_SEQ <= seqId < min_auth_seq_id
                                 or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
-                        self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpctralPeak(n=index)}"
+                        self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                       f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                       f"of chain {refChainId} of the coordinates. "
                                       "Please update the sequence in the Macromolecules page.")
@@ -9697,7 +9697,7 @@ class BasePKParserListener():
                         chainAssign.add((refChainId, _seqId, compId, True))
                         asis = True
                     elif compId in monDict3 and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
-                        self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpctralPeak(n=index)}"
+                        self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                       f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                       f"of chain {refChainId} of the coordinates. "
                                       "Please update the sequence in the Macromolecules page.")
@@ -9705,7 +9705,7 @@ class BasePKParserListener():
                         if resKey not in self.extResKey:
                             self.extResKey.append(resKey)
                     elif self.no_extra_comment:
-                        self.f.append(f"[Atom not found] {self.getCurrentSpctralPeak(n=index)}"
+                        self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                       f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                       f"The residue number '{_seqId}' is not present in polymer sequence "
                                       f"of chain {refChainId} of the coordinates. "
@@ -9735,7 +9735,7 @@ class BasePKParserListener():
                             ext_seq = False
                     if ext_seq:
                         refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
-                        self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpctralPeak(n=index)}"
+                        self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                       f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
                                       f"of chain {refChainId} of the coordinates. "
                                       "Please update the sequence in the Macromolecules page.")
@@ -9749,7 +9749,7 @@ class BasePKParserListener():
                                 chainAssign.add((_refChainId, _seqId, compId, True))
                         asis = True
                     elif self.no_extra_comment:
-                        self.f.append(f"[Atom not found] {self.getCurrentSpctralPeak(n=index)}"
+                        self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                       f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                     updatePolySeqRst(self.polySeqRstFailed, str(refChainId), _seqId, compId, _compId)
 
@@ -9948,20 +9948,20 @@ class BasePKParserListener():
                     return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1', index)
             if atomId is not None and (('-' in atomId and ':' in atomId) or '.' in atomId):
                 if self.no_extra_comment:
-                    self.f.append(f"[Atom not found] {self.getCurrentSpctralPeak(n=index)}"
+                    self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                   f"{_seqId}:?:{atomId} is not present in the coordinates.")
             elif atomId is not None:
                 if len(self.polySeq) == 1 and seqId < 1:
                     refChainId = self.polySeq[0]['auth_chain_id']
                     if self.no_extra_comment:
-                        self.f.append(f"[Atom not found] {self.getCurrentSpctralPeak(n=index)}"
+                        self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                       f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                       f"The residue number '{_seqId}' is not present in polymer sequence "
                                       f"of chain {refChainId} of the coordinates. "
                                       "Please update the sequence in the Macromolecules page.")
                 else:
                     if self.no_extra_comment:
-                        self.f.append(f"[Atom not found] {self.getCurrentSpctralPeak(n=index)}"
+                        self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                       f"{_seqId}:{atomId} is not present in the coordinates.")
                     compIds = guessCompIdFromAtomId([atomId], self.polySeq, self.nefT)
                     if compIds is not None:
@@ -10167,20 +10167,20 @@ class BasePKParserListener():
                     return self.assignCoordPolymerSequenceWithChainIdWithoutCompId(fixedChainId, seqId, 'H1', index)
             if (('-' in atomId and ':' in atomId) or '.' in atomId):
                 if self.no_extra_comment:
-                    self.f.append(f"[Atom not found] {self.getCurrentSpctralPeak(n=index)}"
+                    self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                   f"{fixedChainId}:{_seqId}:?:{atomId} is not present in the coordinates.")
             else:
                 if len(self.polySeq) == 1 and seqId < 1:
                     refChainId = self.polySeq[0]['auth_chain_id']
                     if self.no_extra_comment:
-                        self.f.append(f"[Atom not found] {self.getCurrentSpctralPeak(n=index)}"
+                        self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                       f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                       f"The residue number '{_seqId}' is not present in polymer sequence "
                                       f"of chain {refChainId} of the coordinates. "
                                       "Please update the sequence in the Macromolecules page.")
                 else:
                     if self.no_extra_comment:
-                        self.f.append(f"[Atom not found] {self.getCurrentSpctralPeak(n=index)}"
+                        self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                       f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates.")
                     compIds = guessCompIdFromAtomId([atomId], self.polySeq, self.nefT)
                     if compIds is not None:
@@ -10333,7 +10333,7 @@ class BasePKParserListener():
                                 self.__authSeqId = 'label_seq_id'
                                 self.__setLocalSeqScheme()
                                 continue
-                    self.f.append(f"[Sequence mismatch] {self.getCurrentSpctralPeak(n=index)}"
+                    self.f.append(f"[Sequence mismatch] {self.getCurrentSpectralPeak(n=index)}"
                                   f"Residue name {__compId!r} of the spectral peak list does not match with {chainId}:{cifSeqId}:{cifCompId} of the coordinates.")
                     continue
 
@@ -10350,11 +10350,11 @@ class BasePKParserListener():
                 if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
                     self.selectCoordAtoms(chainAssign, seqId, compId, atomId, index, allowAmbig, offset=1)
                     return
-                self.f.append(f"[Invalid atom nomenclature] {self.getCurrentSpctralPeak(n=index)}"
+                self.f.append(f"[Invalid atom nomenclature] {self.getCurrentSpectralPeak(n=index)}"
                               f"{seqId}:{__compId}:{__atomId} is invalid atom nomenclature.")
                 continue
             if lenAtomId > 1 and not allowAmbig:
-                self.f.append(f"[Invalid atom selection] {self.getCurrentSpctralPeak(n=index)}"
+                self.f.append(f"[Invalid atom selection] {self.getCurrentSpectralPeak(n=index)}"
                               f"Ambiguous atom selection '{seqId}:{__compId}:{__atomId}' is not allowed as a angle restraint.")
                 continue
 
@@ -10605,7 +10605,7 @@ class BasePKParserListener():
                                    or (self.csStat.peptideLike(compId)
                                        and cca[self.ccU.ccaNTerminalAtomFlag] == 'N'
                                        and cca[self.ccU.ccaCTerminalAtomFlag] == 'N'):
-                                    self.f.append(f"[Hydrogen not instantiated] {self.getCurrentSpctralPeak(n=index)}"
+                                    self.f.append(f"[Hydrogen not instantiated] {self.getCurrentSpectralPeak(n=index)}"
                                                   f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                                   "Please re-upload the model file.")
                                     return atomId, asis
@@ -10615,7 +10615,7 @@ class BasePKParserListener():
                        or (chainId, seqId + 1) in self.__coordUnobsRes and self.csStat.peptideLike(compId):
                         if coordAtomSite is not None and atomId in carboxylCode\
                            and not isCyclicPolymer(self.cR, self.polySeq, chainId, self.representativeModelId, self.representativeAltId, self.modelNumName):
-                            self.f.append(f"[Coordinate issue] {self.getCurrentSpctralPeak(n=index)}"
+                            self.f.append(f"[Coordinate issue] {self.getCurrentSpectralPeak(n=index)}"
                                           f"{chainId}:{seqId}:{compId}:{atomId} is not properly instantiated in the coordinates. "
                                           "Please re-upload the model file.")
                             return atomId, asis
@@ -10632,7 +10632,7 @@ class BasePKParserListener():
                         if ext_seq:
                             return atomId, asis
                         if self.__allow_ext_seq:
-                            self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpctralPeak(n=index)}"
+                            self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                           f"The residue '{chainId}:{seqId}:{compId}' is not present in polymer sequence "
                                           f"of chain {chainId} of the coordinates. "
                                           "Please update the sequence in the Macromolecules page.")
@@ -10644,11 +10644,11 @@ class BasePKParserListener():
                                         and any(bondedTo for bondedTo in self.ccU.getBondedAtoms(compId, atomId, exclProton=True)
                                                 if bondedTo in self.__coordUnobsAtom[seqKey]['atom_ids']))):
                                 if self.no_extra_comment:
-                                    self.f.append(f"[Coordinate issue] {self.getCurrentSpctralPeak(n=index)}"
+                                    self.f.append(f"[Coordinate issue] {self.getCurrentSpectralPeak(n=index)}"
                                                   f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                                 return atomId, asis
                             if self.no_extra_comment:
-                                self.f.append(f"[Atom not found] {self.getCurrentSpctralPeak(n=index)}"
+                                self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                               f"{chainId}:{seqId}:{compId}:{atomId} is not present in the coordinates.")
                             updatePolySeqRst(self.polySeqRstFailed, chainId, seqId, compId)
         return atomId, asis
@@ -10688,7 +10688,7 @@ class BasePKParserListener():
                         return seqKey, self.__coordAtomSite[seqKey]
         return seqKey, None
 
-    def getCurrentSpctralPeak(self, n: int) -> str:
+    def getCurrentSpectralPeak(self, n: int) -> str:
         if self.cur_subtype == 'peak2d':
             return f"[Check the {self.peaks2D}th row of 2D spectral peaks (list_id={self.cur_list_id}, index={n}), {self.__def_err_sf_framecode}] "
         if self.cur_subtype == 'peak3d':

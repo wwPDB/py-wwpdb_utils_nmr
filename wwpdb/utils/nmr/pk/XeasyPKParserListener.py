@@ -581,11 +581,11 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                     if ai == 0:
                         pass
                     elif self.__atomNumberDict is None:
-                        self.__g.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
+                        self.__g.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
                                         "Failed to recognize XEASY atom numbers in the spectral peak list file "
                                         "because XEASY PROT file is not available.")
                     elif ai not in self.__atomNumberDict:
-                        self.__g.append(f"[Missing data] {self.getCurrentRestraint(n=index)}"
+                        self.__g.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
                                         f"'{ai})' is not defined in the XEASY PROT file.")
                 else:
                     _factor = copy.copy(self.__atomNumberDict[ai])

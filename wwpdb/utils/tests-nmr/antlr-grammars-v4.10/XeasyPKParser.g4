@@ -28,6 +28,7 @@ xeasy_pk:
 	cyana_format |
 	spectrum |
 	tolerance |
+	comment |
 	peak_list_2d |
 	peak_list_3d |
 	peak_list_4d |
@@ -58,7 +59,7 @@ tolerance:
 	Tolerance Float_TO+ RETURN_TO;
 
 peak_list_2d:
-	(peak_2d | comment)+;
+	(peak_2d comment*)+;
 
 peak_2d:
 	Integer
@@ -70,7 +71,7 @@ peak_2d:
 	(assign assign Integer? Integer? (RETURN | comment | EOF))*;
 
 peak_list_3d:
-	(peak_3d | comment)+;
+	(peak_3d comment*)+;
 
 peak_3d:
 	Integer
@@ -82,7 +83,7 @@ peak_3d:
 	(assign assign assign Integer? Integer? (RETURN | comment | EOF))*;
 
 peak_list_4d:
-	(peak_4d | comment)+;
+	(peak_4d comment*)+;
 
 peak_4d:
 	Integer

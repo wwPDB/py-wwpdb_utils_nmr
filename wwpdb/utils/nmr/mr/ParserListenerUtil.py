@@ -294,7 +294,7 @@ NITROOXIDE_ANCHOR_RES_NAMES = ('CYS', 'SER', 'GLU', 'ASP', 'GLN', 'ASN', 'LYS', 
 HEME_LIKE_RES_NAMES = ('HEM', 'HEB', 'HEC', 'MH0')
 
 LEGACY_PDB_RECORDS = ('HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND', 'SOURCE', 'KEYWDS', 'EXPDTA',
-                      'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL', 'REMARK',
+                      'NUMMDL', 'MDLTYP', 'AUTHOR', 'REVDAT', 'SPRSDE', 'JRNL',
                       'DBREF', 'DBREF1', 'DBREF2', 'SEQADV', 'SEQRES', 'MODRES',
                       'HET ', 'HETNAM', 'HETSYN', 'FORMUL',
                       'HELIX ', 'SHEET ', 'TURN',
@@ -6574,7 +6574,7 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
 
     seqIds = [a['seq_id'] for a in atoms]
 
-    if any(seqId is None for seqId in seqIds) or any('atom_id' not in a for a in atoms):
+    if len(atoms) != 4 or any(seqId is None for seqId in seqIds) or any('atom_id' not in a for a in atoms):
         return None
 
     chainIds = [a['chain_id'] for a in atoms]
@@ -6616,6 +6616,7 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
 
             # PHI or PSI
             if commonSeqId[0][1] == 3 and commonSeqId[1][1] == 1:
+                _atomIds = copy.deepcopy(atomIds)
 
                 # PHI
                 prevSeqId = commonSeqId[1][0]
@@ -6623,9 +6624,9 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
                 if commonSeqId[0][0] == prevSeqId + 1:
 
                     j = 0
-                    if seqIds[j] == prevSeqId and atomIds[j] == 'C':
-                        atomIds.pop(j)
-                        if atomIds == phiPsiCommonAtomIds:
+                    if seqIds[j] == prevSeqId and _atomIds[j] == 'C':
+                        _atomIds.pop(j)
+                        if _atomIds == phiPsiCommonAtomIds:
                             return 'PHI'
 
                 # PSI
@@ -6634,9 +6635,9 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
                 if commonSeqId[0][0] == nextSeqId - 1:
 
                     j = 3
-                    if seqIds[j] == nextSeqId and atomIds[j] == 'N':
-                        atomIds.pop(j)
-                        if atomIds == phiPsiCommonAtomIds:
+                    if seqIds[j] == nextSeqId and _atomIds[j] == 'N':
+                        _atomIds.pop(j)
+                        if _atomIds == phiPsiCommonAtomIds:
                             return 'PSI'
 
             if atomIds == ['C', 'N', 'CA', 'C']:  # i-1, i, i, i
@@ -6661,8 +6662,7 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
                     return f'pseudo OMEGA (0, {seqIds[0] - seqIds[1]}, {seqIds[3] - seqIds[2]}, 0)'
 
             # OMEGA - modified CYANA definition
-            if atomIds[0] == 'O' and atomIds[1] == 'C' and atomIds[2] == 'N'\
-               and (atomIds[3] == 'H' or atomIds[3] == 'CD')\
+            if atomIds[0] == 'O' and atomIds[1] == 'C' and atomIds[2] == 'N' and (atomIds[3] in ('H', 'CD'))\
                and seqIds[0] == seqIds[1] and seqIds[1] + 1 == seqIds[2] and seqIds[2] == seqIds[3]:
                 return 'OMEGA'
 

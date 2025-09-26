@@ -189,6 +189,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__spectrum_names[self.num_of_dim] = {}
         if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
             self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
+        self.assignmentSelection.clear()
 
     # Exit a parse tree produced by XeasyPKParser#peak_list_2d.
     def exitPeak_list_2d(self, ctx: XeasyPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
@@ -290,6 +291,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__spectrum_names[self.num_of_dim] = {}
         if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
             self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
+        self.assignmentSelection.clear()
 
     # Exit a parse tree produced by XeasyPKParser#peak_list_3d.
     def exitPeak_list_3d(self, ctx: XeasyPKParser.Peak_list_3dContext):  # pylint: disable=unused-argument
@@ -393,6 +395,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
             self.__spectrum_names[self.num_of_dim] = {}
         if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
             self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
+        self.assignmentSelection.clear()
 
     # Exit a parse tree produced by XeasyPKParser#peak_list_4d.
     def exitPeak_list_4d(self, ctx: XeasyPKParser.Peak_list_4dContext):  # pylint: disable=unused-argument

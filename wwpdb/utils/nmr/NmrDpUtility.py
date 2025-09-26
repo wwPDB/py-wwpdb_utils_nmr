@@ -633,7 +633,7 @@ ANGLE_UNCERT_MAX = ANGLE_UNCERTAINTY_RANGE['max_inclusive']
 
 RDC_UNCERT_MAX = RDC_UNCERTAINTY_RANGE['max_inclusive']
 
-bmrb_nmr_star_file_name_pattern = re.compile(r'^bmr\d[0-9]{1,5}_3.str$')
+bmrb_nmr_star_file_name_pattern = re.compile(r'^bmr[0-9]{1,5}_3.str$')
 mr_file_name_pattern = re.compile(r'^([Pp][Dd][Bb]_)?([0-9]{4})?[0-9][0-9A-Za-z]{3}.mr$')
 proc_mr_file_name_pattern = re.compile(r'^D_[0-9]{6,10}_mr(-(upload|upload-convert|deposit|annotate|release|review))?'
                                        r'_P\d+\.(amber|aria|biosym|charmm|cns|cyana|dynamo|gromacs|isd|rosetta|schrodinger|sybyl|xplor-nih)\.V\d+$')
@@ -8440,7 +8440,7 @@ class NmrDpUtility:
                     input_source.setItemValue('file_name', os.path.basename(arPath))
                     input_source.setItemValue('file_type', ar['file_type'])
                     input_source.setItemValue('content_type',
-                                              'nmr-restraints' if ar['file_type'].startswith('nm-res') else 'nmr-peaks')
+                                              'nmr-restraints' if not ar['file_type'].startswith('nm-pea') else 'nmr-peaks')
                     if 'original_file_name' in ar:
                         input_source.setItemValue('original_file_name', ar['original_file_name'])
                     input_source.setItemValue('ignore_error', False if 'ignore_error' not in ar else ar['ignore_error'])
@@ -12777,8 +12777,13 @@ class NmrDpUtility:
                     else:
                         file_type = 'spectral peak list/restraint'
 
-                    if self.__internal_mode and os.path.exists(self.__inputParamDict[ar_file_path_list][j]['file_name'] + '-ignored'):
-                        continue
+                    if self.__internal_mode:
+                        if os.path.exists(self.__inputParamDict[ar_file_path_list][j]['file_name'] + '-ignored'):
+                            continue
+                        if '-selected-as-' in file_name_1 or '-selected-as-' in file_name_2:
+                            continue
+                        if re.search(r'\/bmr\d+\/work\/data\/', file_name_1) or re.search(r'\/bmr\d+\/work\/data\/', file_name_2):
+                            continue
 
                     err = f"You have uploaded the same NMR {file_type} file twice. "\
                         f"Please replace/delete either {file_name_1} or {file_name_2}."
@@ -15934,6 +15939,9 @@ class NmrDpUtility:
 
             fileListId += 1
 
+            if ar['file_type'] == 'nm-aux-pdb':
+                continue
+
             if file_type != 'nm-res-mr':
 
                 if file_type in linear_mr_file_types:
@@ -16771,7 +16779,6 @@ class NmrDpUtility:
             if not has_mr_header:
 
                 dst_name_prefix = os.path.splitext(os.path.basename(dst_file))[0]
-
                 dst_file_list = [os.path.join(dir_path, div_name) for div_name in div_file_names if div_name.startswith(dst_name_prefix)]
 
                 if (not file_name.endswith('str') or mr_file_path.endswith('-remediated.mr')) and len(dst_file_list) == 0:
@@ -17932,7 +17939,7 @@ class NmrDpUtility:
                         with open(touch_file, 'w') as ofh:
                             ofh.write('')
 
-                    if not any('/work/data' in ar['file_name'] for ar in self.__inputParamDict[ar_file_path_list]
+                    if not any(re.search(r'\/bmr\d+\/work\/data\/', ar['file_name']) for ar in self.__inputParamDict[ar_file_path_list]
                                if ar['file_type'].startswith('nm-res') and ar['file_type'] != 'nm-res-mr'):
 
                         hint = ' or is not recognized properly'
@@ -18043,8 +18050,6 @@ class NmrDpUtility:
                         pk_file_path = pk_list_path['nmr-peaks']
                         if 'original_file_name' in pk_list_path and pk_list_path['original_file_name'] is not None:
                             original_file_name = pk_list_path['original_file_name']
-                        else:
-                            original_file_name = os.path.basename(file_path)
 
                         rem_pk_file_path = os.path.join(pk_dir, original_file_name)
 
@@ -37363,15 +37368,16 @@ class NmrDpUtility:
 
             file_name = input_source_dic['file_name']
 
-            original_file_name = None
-            if 'original_file_name' in input_source_dic:
-                if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
-                if file_name != original_file_name and original_file_name is not None:
-                    file_name = f"{original_file_name} ({file_name})"
-            if original_file_name in emptyValue:
-                original_file_name = file_name
-
+            original_file_name = os.path.basename(file_path)
+            # """
+            # if 'original_file_name' in input_source_dic:
+            #     if input_source_dic['original_file_name'] is not None:
+            #         original_file_name = os.path.basename(input_source_dic['original_file_name'])
+            #     if file_name != original_file_name and original_file_name is not None:
+            #         file_name = f"{original_file_name} ({file_name})"
+            # if original_file_name in emptyValue:
+            #     original_file_name = file_name
+            # """
             if file_type == 'nm-pea-any':
 
                 warn = f'We could not identify peak list file format of {file_name!r}. '\

@@ -788,7 +788,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             elif ass2 is not None:
                 ass = ass2
 
-            if ass is not None:
+            if ass is not None and self.reasons is not None and 'onebond_resolved' in self.reasons:
                 assignments = []
                 if len(ass.split('-')) == self.num_of_dim:
                     hint = None
@@ -1094,6 +1094,248 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
+
+    def enterPipp_row_peak_list_2d(self, ctx: NmrPipePKParser.Pipp_row_peak_list_2dContext):  # pylint: disable=unused-argument
+        if self.num_of_dim != 2:
+            self.num_of_dim = 2
+        self.initSpectralDim()
+        self.software_name = 'PIPP'
+
+    # Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_list_2d.
+    def exitPipp_row_peak_list_2d(self, ctx: NmrPipePKParser.Pipp_row_peak_list_2dContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_2d.
+    def enterPipp_row_peak_2d(self, ctx: NmrPipePKParser.Pipp_row_peak_2dContext):  # pylint: disable=unused-argument
+        self.peaks2D += 1
+
+        self.atomSelectionSets.clear()
+        self.asIsSets.clear()
+
+    # Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_2d.
+    def exitPipp_row_peak_2d(self, ctx: NmrPipePKParser.Pipp_row_peak_2dContext):
+
+        try:
+
+            index = int(str(ctx.Integer_PR(0)))
+            x_ppm = float(str(ctx.Float_PR(0)))
+            y_ppm = float(str(ctx.Float_PR(1)))
+            height = str(ctx.Real_PR())
+
+            ass = None
+            if ctx.Assignments_PR():
+                ass = str(ctx.Assignments_PR())[1:-1]
+
+        except IndexError:
+            self.peaks2D -= 1
+            return
+
+        if not self.hasPolySeq and not self.hasNonPolySeq:
+            return
+
+        if None in (x_ppm, y_ppm):
+            self.peaks2D -= 1
+            return
+
+        dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, None, None, None, None,
+                                      None, None, None, None, height, None, None, None)
+
+        if dstFunc is None:
+            self.peaks2D -= 1
+            return
+
+        if self.num_of_dim != 2:
+            self.num_of_dim = 2
+            self.initSpectralDim()
+
+        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+
+        cur_spectral_dim[1]['freq_hint'].append(x_ppm)
+        cur_spectral_dim[2]['freq_hint'].append(y_ppm)
+
+        asis1 = asis2 = None
+        has_assignments = has_multiple_assignments = False
+
+        if ass is not None and self.reasons is not None and 'onebond_resolved' in self.reasons:
+            assignments = [None] * self.num_of_dim
+            _assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
+            if _assignments is not None and len(_assignments) == self.num_of_dim:
+                for idx in range(self.num_of_dim):
+                    assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
+
+            has_assignments, has_multiple_assignments, asis1, asis2 =\
+                self.checkAssignments2D(index, assignments, dstFunc)
+
+        self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                asis1, asis2,
+                                f'{ass} -> ',
+                                None if has_assignments and not has_multiple_assignments else ass)
+
+    # Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_list_3d.
+    def enterPipp_row_peak_list_3d(self, ctx: NmrPipePKParser.Pipp_row_peak_list_3dContext):  # pylint: disable=unused-argument
+        if self.num_of_dim != 3:
+            self.num_of_dim = 3
+        self.initSpectralDim()
+        self.software_name = 'PIPP'
+
+    # Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_list_3d.
+    def exitPipp_row_peak_list_3d(self, ctx: NmrPipePKParser.Pipp_row_peak_list_3dContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_3d.
+    def enterPipp_row_peak_3d(self, ctx: NmrPipePKParser.Pipp_row_peak_3dContext):  # pylint: disable=unused-argument
+        self.peaks3D += 1
+
+        self.atomSelectionSets.clear()
+        self.asIsSets.clear()
+
+    # Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_3d.
+    def exitPipp_row_peak_3d(self, ctx: NmrPipePKParser.Pipp_row_peak_3dContext):
+
+        try:
+
+            index = int(str(ctx.Integer_PR(0)))
+            x_ppm = float(str(ctx.Float_PR(0)))
+            y_ppm = float(str(ctx.Float_PR(1)))
+            z_ppm = float(str(ctx.Float_PR(2)))
+            height = str(ctx.Real_PR())
+
+            ass = None
+            if ctx.Assignments_PR():
+                ass = str(ctx.Assignments_PR())[1:-1]
+
+        except IndexError:
+            self.peaks3D -= 1
+            return
+
+        if not self.hasPolySeq and not self.hasNonPolySeq:
+            return
+
+        if None in (x_ppm, y_ppm, z_ppm):
+            self.peaks3D -= 1
+            return
+
+        dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, None, None, None, None, None, None,
+                                      None, None, None, None, None, None, height, None, None, None)
+
+        if dstFunc is None:
+            self.peaks3D -= 1
+            return
+
+        if self.num_of_dim != 3:
+            self.num_of_dim = 3
+            self.initSpectralDim()
+
+        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+
+        cur_spectral_dim[1]['freq_hint'].append(x_ppm)
+        cur_spectral_dim[2]['freq_hint'].append(y_ppm)
+        cur_spectral_dim[3]['freq_hint'].append(z_ppm)
+
+        asis1 = asis2 = asis3 = None
+        has_assignments = has_multiple_assignments = False
+
+        if ass is not None and self.reasons is not None and 'onebond_resolved' in self.reasons:
+
+            if self.extractPeakAssignment(self.num_of_dim, ass, index) is not None:
+                onebondOrder = 0
+            else:
+                onebondOrder = 1
+
+            assignments = [None] * self.num_of_dim
+            _assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
+            if _assignments is not None and len(_assignments) == self.num_of_dim:
+                for idx in range(self.num_of_dim):
+                    assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
+
+            has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
+                self.checkAssignments3D(index, assignments, dstFunc, onebondOrder)
+
+        self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                asis1, asis2, asis3,
+                                f'{ass} -> ',
+                                None if has_assignments and not has_multiple_assignments else ass)
+
+    # Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_list_4d.
+    def enterPipp_row_peak_list_4d(self, ctx: NmrPipePKParser.Pipp_row_peak_list_4dContext):  # pylint: disable=unused-argument
+        if self.num_of_dim != 4:
+            self.num_of_dim = 4
+        self.initSpectralDim()
+        self.software_name = 'PIPP'
+
+    # Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_list_4d.
+    def exitPipp_row_peak_list_4d(self, ctx: NmrPipePKParser.Pipp_row_peak_list_4dContext):  # pylint: disable=unused-argument
+        pass
+
+    # Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_4d.
+    def enterPipp_row_peak_4d(self, ctx: NmrPipePKParser.Pipp_row_peak_4dContext):  # pylint: disable=unused-argument
+        self.peaks4D += 1
+
+        self.atomSelectionSets.clear()
+        self.asIsSets.clear()
+
+    # Exit a parse tree produced by NmrPipePKParser#pipp_row_peak_4d.
+    def exitPipp_row_peak_4d(self, ctx: NmrPipePKParser.Pipp_row_peak_4dContext):
+
+        try:
+
+            index = int(str(ctx.Integer_PR(0)))
+            x_ppm = float(str(ctx.Float_PR(0)))
+            y_ppm = float(str(ctx.Float_PR(1)))
+            z_ppm = float(str(ctx.Float_PR(2)))
+            a_ppm = float(str(ctx.Float_PR(3)))
+            height = str(ctx.Real_PR())
+
+            ass = None
+            if ctx.Assignments_PR():
+                ass = str(ctx.Assignments_PR())[1:-1]
+
+        except IndexError:
+            self.peaks4D -= 1
+            return
+
+        if not self.hasPolySeq and not self.hasNonPolySeq:
+            return
+
+        if None in (x_ppm, y_ppm, z_ppm, a_ppm):
+            self.peaks4D -= 1
+            return
+
+        dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, None, None, None, None, None, None, None, None,
+                                      None, None, None, None, None, None, None, None, height, None, None, None)
+
+        if dstFunc is None:
+            self.peaks4D -= 1
+            return
+
+        if self.num_of_dim != 4:
+            self.num_of_dim = 4
+            self.initSpectralDim()
+
+        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+
+        cur_spectral_dim[1]['freq_hint'].append(x_ppm)
+        cur_spectral_dim[2]['freq_hint'].append(y_ppm)
+        cur_spectral_dim[3]['freq_hint'].append(z_ppm)
+        cur_spectral_dim[4]['freq_hint'].append(a_ppm)
+
+        asis1 = asis2 = asis3 = asis4 = None
+        has_assignments = has_multiple_assignments = False
+
+        if ass is not None and self.reasons is not None and 'onebond_resolved' in self.reasons:
+            assignments = [None] * self.num_of_dim
+            _assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
+            if _assignments is not None and len(_assignments) == self.num_of_dim:
+                for idx in range(self.num_of_dim):
+                    assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
+
+            has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
+                self.checkAssignments4D(index, assignments, dstFunc)
+
+        self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                asis1, asis2, asis3, asis4,
+                                f'{ass} -> ',
+                                None if has_assignments and not has_multiple_assignments else ass)
 
     def enterNumber(self, ctx: NmrPipePKParser.NumberContext):  # pylint: disable=unused-argument
 

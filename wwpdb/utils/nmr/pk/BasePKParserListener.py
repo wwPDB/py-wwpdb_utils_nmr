@@ -2534,7 +2534,18 @@ class BasePKParserListener():
                         print(f'experiment class: {exp_class}')
 
                     if self.software_name == 'PIPP' and any(transfer['type'] == 'onebond' for transfer in cur_spectral_dim_transfer):
-                        if d == 3:
+                        if d == 2:
+                            transfer = next(transfer for transfer in cur_spectral_dim_transfer if transfer['type'] == 'onebond')
+                            pro_axis = hvy_axis = -1
+                            for _dim_id, _dict in cur_spectral_dim.items():
+                                if _dim_id in (transfer['spectral_dim_id_1'], transfer['spectral_dim_id_2']):
+                                    if _dict['atom_isotope_number'] == 1:
+                                        pro_axis = _dim_id
+                                    else:
+                                        hvy_axis = _dim_id
+                            if pro_axis != -1 and hvy_axis != -1:
+                                self.reasonsForReParsing['onebond_resolved'] = {0: hvy_axis - 1, 1: pro_axis - 1}
+                        elif d == 3:
                             transfer = next(transfer for transfer in cur_spectral_dim_transfer if transfer['type'] == 'onebond')
                             pro_axis = hvy_axis = -1
                             for _dim_id, _dict in cur_spectral_dim.items():
@@ -5305,6 +5316,12 @@ class BasePKParserListener():
                 primary_specral_dim['long_range'] = True
 
         if all(assignment is not None for assignment in assignments):
+
+            if self.reasons is not None and 'onebond_resolved' in self.reasons:
+                _assignments = [None] * 2
+                for k, v in self.reasons['onebond_resolved'].items():
+                    _assignments[v] = assignments[k]
+                assignments = _assignments
 
             self.retrieveLocalSeqScheme()
 
@@ -8393,13 +8410,18 @@ class BasePKParserListener():
             if _ps is not None:
                 if seqId in _ps['seq_id']:
                     return ps['auth_chain_id'], seqId, _ps['comp_id'][_ps['seq_id'].index(seqId)]
-        if isPolySeq and 'Check the 1th row of' in self.getCurrentSpectralPeak(-1) and isFirstTrial:
-            if len(self.polySeq) == 1 or not any(seqId in _ps['auth_seq_id'] for _ps in self.polySeq):
-                self.__preferAuthSeq = not self.__preferAuthSeq
-                trial = self.getRealChainSeqId(ps, seqId, compId, isPolySeq, False)
-                if trial[2] is not None and compId == trial[2]:
-                    return trial
-                self.__preferAuthSeq = not self.__preferAuthSeq
+        if 'Check the 1th row of' in self.getCurrentSpectralPeak(-1) and isFirstTrial and isPolySeq:
+            try:
+                if len(self.polySeq) == 1\
+                   or not any(_ps['auth_seq_id'][0] - len(_ps['seq_id']) <= seqId <= _ps['auth_seq_id'][-1] + len(_ps['seq_id'])
+                              for _ps in self.polySeq):
+                    self.__preferAuthSeq = not self.__preferAuthSeq
+                    trial = self.getRealChainSeqId(ps, seqId, compId, isPolySeq, False)
+                    if trial[2] is not None and compId == trial[2]:
+                        return trial
+                    self.__preferAuthSeq = not self.__preferAuthSeq
+            except ValueError:
+                pass
         return ps['auth_chain_id'], seqId, None
 
     def translateToStdResNameWrapper(self, seqId: int, compId: str, preferNonPoly: bool = False) -> str:

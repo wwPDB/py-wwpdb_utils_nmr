@@ -1234,6 +1234,9 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
     if 'VARS' in string and 'PkID' in string and 'X' in string and 'Y' in string and 'Intensity' in string:  # PIPP peak list
         return 'nm-pea-pip' if asCode else 'NMRPipe'
 
+    if 'DATA' in string and 'DIMCOUNT' in string:
+        return 'nm-pea-pip' if asCode else 'NMRPipe'
+
     if '<!DOCTYPE spectrum SYSTEM' in string or '<spectrum name=' in string:  # ARIA peak list
         return 'nm-pea-ari' if asCode else 'ARIA'
 
@@ -17118,7 +17121,7 @@ class NmrDpUtility:
                             _dst_file = os.path.join(dir_path, g[1])
                             original_file_path_list.append(_dst_file)
                             ofh = open(_dst_file, 'w')  # pylint: disable=consider-using-with
-                            _dst_file_w_sel = _dst_file + f'-ignored'
+                            _dst_file_w_sel = _dst_file + '-ignored'
                             ofh_w_sel = open(_dst_file_w_sel, 'w')  # pylint: disable=consider-using-with
 
                         elif not line.isspace() and not comment_pattern.match(line):

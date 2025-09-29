@@ -1054,12 +1054,17 @@ class IsdMRParserListener(ParseTreeListener):
                 if seqId in _ps['seq_id']:
                     return ps['auth_chain_id'], seqId, _ps['comp_id'][_ps['seq_id'].index(seqId)]
         if 'Check the 1th row of' in self.__getCurrentRestraint() and isFirstTrial and isPolySeq:
-            if len(self.__polySeq) == 1 or not any(seqId in _ps['auth_seq_id'] for _ps in self.__polySeq):
-                self.__preferAuthSeq = not self.__preferAuthSeq
-                trial = self.getRealChainSeqId(ps, seqId, compId, isPolySeq, False)
-                if trial[2] is not None and compId == trial[2]:
-                    return trial
-                self.__preferAuthSeq = not self.__preferAuthSeq
+            try:
+                if len(self.__polySeq) == 1\
+                   or not any(_ps['auth_seq_id'][0] - len(_ps['seq_id']) <= seqId <= _ps['auth_seq_id'][-1] + len(_ps['seq_id'])
+                              for _ps in self.__polySeq):
+                    self.__preferAuthSeq = not self.__preferAuthSeq
+                    trial = self.getRealChainSeqId(ps, seqId, compId, isPolySeq, False)
+                    if trial[2] is not None and compId == trial[2]:
+                        return trial
+                    self.__preferAuthSeq = not self.__preferAuthSeq
+            except ValueError:
+                pass
         return ps['auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequence(self, seqId: int, compId: str, atomId: str) -> Tuple[List[Tuple[str, int, str, bool]], bool]:

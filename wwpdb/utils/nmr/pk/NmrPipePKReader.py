@@ -235,6 +235,16 @@ if __name__ == "__main__":
     reader = NmrPipePKReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-D_1300063895/a8_hsqc.ASG',
+                     '../../tests-nmr/mock-data-D_1300063895/D_800854_model_P1.cif.V3')
+    reader = NmrPipePKReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-D_1300063895/a8_hsqc.ASG',
+                 '../../tests-nmr/mock-data-D_1300063895/D_800854_model_P1.cif.V3')
+
+    reader = NmrPipePKReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/6lkf/bmr36303/work/data/D_1300014965_nmr-peaks-upload_P3.dat.V1',
                      '../../tests-nmr/mock-data-remediation/6lkf/6lkf.cif')
     reader = NmrPipePKReader(True, reasons=reader_listener.getReasonsForReparsing())

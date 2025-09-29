@@ -29,6 +29,9 @@ nmrpipe_pk:
 	pipp_peak_list_2d |
 	pipp_peak_list_3d |
 	pipp_peak_list_4d |
+	pipp_row_peak_list_2d |
+	pipp_row_peak_list_3d |
+	pipp_row_peak_list_4d |
 	RETURN
 	)*
 	EOF;
@@ -194,6 +197,39 @@ pipp_peak_list_4d:
 
 pipp_peak_4d:
 	Integer Integer? Integer? number number number number number+ (RETURN | EOF);
+
+pipp_row_peak_list_2d:
+	pipp_row_peak_2d+;
+
+pipp_row_peak_2d:
+	L_paren Float_PR Comma Float_PR Semicolon
+	Number_sign Integer_PR Semicolon
+	(Assignments_PR | L_brkt Float_PR Comma Float_PR R_brkt)
+	Caret Real_PR Semicolon
+	Percent_sign Integer_PR Semicolon
+	R_paren (RETURN_PR | EOF);
+
+pipp_row_peak_list_3d:
+	pipp_row_peak_3d+;
+
+pipp_row_peak_3d:
+	L_paren Float_PR Comma Float_PR Comma Float_PR Semicolon
+	Number_sign Integer_PR Semicolon
+	(Assignments_PR | L_brkt Float_PR Comma Float_PR Comma Float_PR R_brkt)
+	Caret Real_PR Semicolon
+	Percent_sign Integer_PR Semicolon
+	R_paren (RETURN_PR | EOF);
+
+pipp_row_peak_list_4d:
+	pipp_row_peak_4d+;
+
+pipp_row_peak_4d:
+	L_paren Float_PR Comma Float_PR Comma Float_PR Comma Float_PR Semicolon
+	Number_sign Integer_PR Semicolon
+	(Assignments_PR | L_brkt Float_PR Comma Float_PR Comma Float_PR Comma Float_PR R_brkt)
+	Caret Real_PR Semicolon
+	Percent_sign Integer_PR Semicolon
+	R_paren (RETURN_PR | EOF);
 
 /* number expression in peak list */
 number:	Integer | Float | Real | Any_name;

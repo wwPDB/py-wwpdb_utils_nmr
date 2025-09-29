@@ -29,6 +29,8 @@ Format:			'FORMAT' -> pushMode(FORMAT_MODE);
 Null_value:		'NULLVALUE' -> pushMode(NULL_VALUE_MODE);
 Null_string:		'NULLSTRING' -> pushMode(NULL_STRING_MODE);
 
+L_paren:		'(' -> pushMode(PIPP_ROW_MODE);
+
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
 Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ([Ee] ('+' | '-')? DECIMAL)?;
@@ -187,4 +189,24 @@ Any_name_NS:		~[ \t\r\n]+;
 
 SPACE_NS:		[ \t]+ -> skip;
 RETURN_NS:		[\r\n]+ -> popMode;
+
+mode PIPP_ROW_MODE;
+
+R_paren:		')';
+L_brkt:			'[';
+R_brkt:			']';
+Comma:			',';
+Semicolon:		';';
+Number_sign:		'#';
+Percent_sign:		'%';
+Caret:			'^';
+
+Integer_PR:		('+' | '-')? DECIMAL;
+Float_PR:		('+' | '-')? (DECIMAL | DEC_DOT_DEC);
+Real_PR:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ([Ee] ('+' | '-')? DECIMAL)?;
+
+Assignments_PR:		'<' SIMPLE_NAME+ '>';
+
+SPACE_PR:		[ \t]+ -> skip;
+RETURN_PR:		[\r\n]+ -> popMode;
 

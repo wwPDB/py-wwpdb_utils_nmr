@@ -7354,7 +7354,8 @@ class NEFTranslator:
                     valid = False
                     break
                 _atom_list.extend(_atom_list_)
-                _ambiguity_code = max(_ambiguity_code, _ambiguity_code_)
+                if _ambiguity_code_ is not None:
+                    _ambiguity_code = max(_ambiguity_code, _ambiguity_code_)
             if valid and len(_atom_list) > 0:
                 _atom_list = sorted(set(_atom_list))
                 if len(_atom_list) > 1 and _ambiguity_code < 2:

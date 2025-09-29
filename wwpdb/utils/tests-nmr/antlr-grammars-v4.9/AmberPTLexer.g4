@@ -148,7 +148,7 @@ FORMAT:			'%FORMAT'
 			-> pushMode(FORMAT_MODE);
 
 SPACE:			[ \t\r\n]+ -> skip;
-LINE_COMMENT:		('#' | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | R E M A R K | '%COMMENT') ~[\r\n]* -> channel(HIDDEN);
+LINE_COMMENT:		('#' | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | R E M A R K S? | '%COMMENT') ~[\r\n]* -> channel(HIDDEN);
 
 mode VERSION_MODE;
 

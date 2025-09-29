@@ -210,7 +210,7 @@ torsion_angle_w_chain_restraints:
 torsion_angle_w_chain_restraint:
 	Simple_name Integer Simple_name Simple_name number number number? (Type Equ_op Integer)? Or?;
 
-*/
+
 /* CYANA (undocumented) - Scalar coupling constant restraint
  See also https://www.las.jp/english/products/cyana/DyanaManual.pdf
 */

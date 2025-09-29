@@ -1516,12 +1516,13 @@ class RosettaMRParserListener(ParseTreeListener):
             if _ps is not None:
                 if seqId + offset in _ps['seq_id']:
                     return ps['auth_chain_id'], seqId + offset, _ps['comp_id'][_ps['seq_id'].index(seqId + offset)]
-        if 'Check the 1th row of' in self.__getCurrentRestraint() and isFirstTrial:
-            self.__preferAuthSeq = not self.__preferAuthSeq
-            trial = self.getRealChainSeqId(ps, seqId, isPolySeq, False)
-            if trial[2] is not None:
-                return trial
-            self.__preferAuthSeq = not self.__preferAuthSeq
+        if 'Check the 1th row of' in self.__getCurrentRestraint() and isFirstTrial and isPolySeq:
+            if len(self.__polySeq) == 1 or not any(seqId in _ps['auth_seq_id'] for _ps in self.__polySeq):
+                self.__preferAuthSeq = not self.__preferAuthSeq
+                trial = self.getRealChainSeqId(ps, seqId, isPolySeq, False)
+                if trial[2] is not None:
+                    return trial
+                self.__preferAuthSeq = not self.__preferAuthSeq
         return ps['auth_chain_id'], seqId, None
 
     def assignCoordPolymerSequence(self, seqId: int, atomId: Optional[str] = None, fixedChainId: Optional[str] = None

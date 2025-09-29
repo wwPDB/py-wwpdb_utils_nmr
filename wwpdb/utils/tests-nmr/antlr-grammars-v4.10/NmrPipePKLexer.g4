@@ -58,8 +58,8 @@ RETURN:			[\r\n]+;
 fragment COMMENT_START_CHAR:	('!' | '\\' | '&' | '/' | '=');
 
 //ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('#' | COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '='+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
-LINE_COMMENT:		(('#' (' ' | ALPHA_NUM)) | COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '='+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
+SECTION_COMMENT:	('#' | COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '='+ | 'REMARK' 'S'?) ' '* RETURN -> channel(HIDDEN);
+LINE_COMMENT:		(('#' (' ' | ALPHA_NUM)) | COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '='+ | 'REMARK' 'S'?) ~[\r\n]* RETURN -> channel(HIDDEN);
 
 mode DATA_MODE;
 
@@ -84,8 +84,8 @@ Simple_name_DA:		SIMPLE_NAME;
 SPACE_DA:		[ \t]+ -> skip;
 RETURN_DA:		[\r\n]+ -> popMode;
 
-//SECTION_COMMENT_DA:	('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* RETURN_DA -> channel(HIDDEN);
-LINE_COMMENT_DA:	('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* RETURN_DA -> channel(HIDDEN);
+//SECTION_COMMENT_DA:	('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ' '* RETURN_DA -> channel(HIDDEN);
+LINE_COMMENT_DA:	('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ~[\r\n]* RETURN_DA -> channel(HIDDEN);
 
 mode VARS_MODE;
 
@@ -161,8 +161,8 @@ Simple_name_VA:		SIMPLE_NAME;
 SPACE_VA:		[ \t]+ -> skip;
 RETURN_VA:		[\r\n]+ -> popMode;
 
-//SECTION_COMMENT_VA:	('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* RETURN_VA -> channel(HIDDEN);
-LINE_COMMENT_VA:	('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* RETURN_VA -> channel(HIDDEN);
+//SECTION_COMMENT_VA:	('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ' '* RETURN_VA -> channel(HIDDEN);
+LINE_COMMENT_VA:	('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ~[\r\n]* RETURN_VA -> channel(HIDDEN);
 
 mode FORMAT_MODE;
 
@@ -171,8 +171,8 @@ Format_code:		'%' '+'? DECIMAL? ('s' | 'd' | '.' DECIMAL ('f' | 'e') | '+'? 'e')
 SPACE_FO:		[ \t]+ -> skip;
 RETURN_FO:		[\r\n]+ -> popMode;
 
-//SECTION_COMMENT_FO:	('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ' '* RETURN_FO -> channel(HIDDEN);
-LINE_COMMENT_FO:	('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK') ~[\r\n]* RETURN_FO -> channel(HIDDEN);
+//SECTION_COMMENT_FO:	('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ' '* RETURN_FO -> channel(HIDDEN);
+LINE_COMMENT_FO:	('#' | '!' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ~[\r\n]* RETURN_FO -> channel(HIDDEN);
 
 mode NULL_VALUE_MODE;
 

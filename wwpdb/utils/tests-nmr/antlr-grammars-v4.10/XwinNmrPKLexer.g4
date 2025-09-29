@@ -44,8 +44,8 @@ RETURN:			[\r\n]+;
 
 fragment COMMENT_START_CHAR:	('#' | '/' | '*' | '-' | '+' | '=' | '>');
 
-SECTION_COMMENT:	(';' | '\\' | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '-'+ | COMMENT_START_CHAR '+'+ | COMMENT_START_CHAR '='+ | COMMENT_START_CHAR '>'+ | 'REMARK') ' '* RETURN -> channel(HIDDEN);
-LINE_COMMENT:		(';' | '\\' | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '-'+ | COMMENT_START_CHAR '+'+ | COMMENT_START_CHAR '='+ | COMMENT_START_CHAR '>'+ | 'REMARK') ~[\r\n]* RETURN -> channel(HIDDEN);
+SECTION_COMMENT:	(';' | '\\' | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '-'+ | COMMENT_START_CHAR '+'+ | COMMENT_START_CHAR '='+ | COMMENT_START_CHAR '>'+ | 'REMARK' 'S'?) ' '* RETURN -> channel(HIDDEN);
+LINE_COMMENT:		(';' | '\\' | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '-'+ | COMMENT_START_CHAR '+'+ | COMMENT_START_CHAR '='+ | COMMENT_START_CHAR '>'+ | 'REMARK' 'S'?) ~[\r\n]* RETURN -> channel(HIDDEN);
 
 Annotation:		~[ \t\r\n]+;
 

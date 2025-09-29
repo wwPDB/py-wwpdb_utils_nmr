@@ -202,6 +202,11 @@ class AmberPTReader:
 if __name__ == "__main__":
     reader = AmberPTReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-daother-8828/D_1292133069_mr-upload_P1.dat.V1',
+                 '../../tests-nmr/mock-data-daother-8828/D_800607_model_P1.cif.V13')
+
+    reader = AmberPTReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-daother-10291/D_1000299610_mr-upload_P1.dat.V1',
                  '../../tests-nmr/mock-data-daother-10291/D_800856_model_P1.cif.V3')
 

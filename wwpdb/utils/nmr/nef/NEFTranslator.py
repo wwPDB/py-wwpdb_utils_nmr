@@ -228,7 +228,7 @@ FERROMAGNETIC_ELEMENTS = ('CR', 'FE', 'CO', 'NI')
 LANTHANOID_ELEMENTS = ('LA', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM', 'YB', 'LU')
 
 # non-metal elements
-NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S', 'SE')
+NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'F', 'P', 'S', 'SE')
 
 
 # limit number of dimensions

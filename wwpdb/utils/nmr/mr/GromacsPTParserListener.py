@@ -34,7 +34,8 @@ try:
                                                        REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NEFTranslator import (NEFTranslator,
+                                                   NON_METAL_ELEMENTS)
     from wwpdb.utils.nmr.AlignUtil import (monDict3,
                                            protonBeginCode,
                                            aminoProtonCode,
@@ -59,7 +60,8 @@ except ImportError:
                                            REPRESENTATIVE_ALT_ID)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NEFTranslator import (NEFTranslator,
+                                       NON_METAL_ELEMENTS)
     from nmr.AlignUtil import (monDict3,
                                protonBeginCode,
                                aminoProtonCode,
@@ -240,8 +242,6 @@ class GromacsPTParserListener(ParseTreeListener):
 
             seqIdList, compIdList, retrievedAtomNumList = [], [], []
 
-            NON_METAL_ELEMENTS = ('H', 'C', 'N', 'O', 'P', 'S')
-
             def is_segment(prev_comp_id, prev_atom_name, comp_id, atom_name):
                 if prev_comp_id is None:
                     return False
@@ -280,6 +280,8 @@ class GromacsPTParserListener(ParseTreeListener):
                 if comp_id is None:
                     return False
                 if not comp_id.startswith(atom_name):
+                    return False
+                if atom_name in NON_METAL_ELEMENTS:
                     return False
                 return (len(comp_id) > 2 and comp_id[:2].title() in NAMES_ELEMENT)\
                     or (comp_id[-1] in ('+', '-') and comp_id[:-1].title() in NAMES_ELEMENT)\

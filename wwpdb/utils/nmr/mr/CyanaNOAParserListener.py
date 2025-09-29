@@ -1101,7 +1101,7 @@ class CyanaNOAParserListener(ParseTreeListener):
             if _ps is not None:
                 if seqId in _ps['seq_id']:
                     return ps['auth_chain_id'], seqId, _ps['comp_id'][_ps['seq_id'].index(seqId)]
-        if 'Check the 1th row of' in self.__getCurrentRestraint() and isFirstTrial and isPolySeq:
+        if self.__reasons is None and 'Check the 1th row of' in self.__getCurrentRestraint() and isFirstTrial and isPolySeq:
             try:
                 if len(self.__polySeq) == 1\
                    or not any(_ps['auth_seq_id'][0] - len(_ps['seq_id']) <= seqId <= _ps['auth_seq_id'][-1] + len(_ps['seq_id'])

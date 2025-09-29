@@ -246,10 +246,11 @@ class XeasyPROTParserListener(ParseTreeListener):
             def is_metal_ion(comp_id, atom_name):
                 if comp_id is None:
                     return False
-                if comp_id != atom_name:
+                if not comp_id.startswith(atom_name):
                     return False
-                return comp_id.split('+')[0].title() in NAMES_ELEMENT\
-                    or comp_id.split('-')[0].title() in NAMES_ELEMENT
+                return (len(comp_id) > 2 and comp_id[:2].title() in NAMES_ELEMENT)\
+                    or (comp_id[-1] in ('+', '-') and comp_id[:-1].title() in NAMES_ELEMENT)\
+                    or (len(comp_id) > 2 and comp_id[-2] in ('+', '-') and comp_id[:-2].title() in NAMES_ELEMENT)
 
             def is_metal_elem(prev_atom_name, prev_seq_id, seq_id):
                 if len(prev_atom_name) == 0:
@@ -770,7 +771,11 @@ class XeasyPROTParserListener(ParseTreeListener):
 
                     # metal ion
                     if any(ps for ps in self.__polySeqPrmTop
-                           if len(ps['seq_id']) == 1 and ps['comp_id'][0].title() in NAMES_ELEMENT):
+                           if len(ps['seq_id']) == 1 and (ps['comp_id'][0].title() in NAMES_ELEMENT
+                                                          or (len(ps['comp_id'][0]) > 2 and ps['comp_id'][0][:2].title() in NAMES_ELEMENT)
+                                                          or (ps['comp_id'][0][-1] in ('+', '-') and ps['comp_id'][0][:-1].title() in NAMES_ELEMENT)
+                                                          or (len(ps['comp_id'][0]) > 2 and ps['comp_id'][0][-2] in ('+', '-')
+                                                              and ps['comp_id'][0][:-2].title() in NAMES_ELEMENT))):
                         self.assignMetalIon()
 
                     # other non-polymer
@@ -858,10 +863,23 @@ class XeasyPROTParserListener(ParseTreeListener):
             return
 
         metals = collections.Counter(ps['comp_id'][0] for ps in self.__polySeqPrmTop
-                                     if len(ps['seq_id']) == 1 and ps['comp_id'][0].title() in NAMES_ELEMENT).most_common()
+                                     if len(ps['seq_id']) == 1
+                                     and (ps['comp_id'][0].title() in NAMES_ELEMENT
+                                          or (len(ps['comp_id'][0]) > 2 and ps['comp_id'][0][:2].title() in NAMES_ELEMENT)
+                                          or (ps['comp_id'][0][-1] in ('+', '-') and ps['comp_id'][0][:-1].title() in NAMES_ELEMENT)
+                                          or (len(ps['comp_id'][0]) > 2 and ps['comp_id'][0][-2] in ('+', '-')
+                                              and ps['comp_id'][0][:-2].title() in NAMES_ELEMENT))).most_common()
 
         for metal in metals:
             compId = metal[0]
+            if compId.title() in NAMES_ELEMENT:
+                pass
+            elif len(compId) > 2 and compId[:2].title() in NAMES_ELEMENT:
+                compId = compId[:2]
+            elif compId[-1] in ('+', '-') and compId[:-1].title() in NAMES_ELEMENT:
+                compId = compId[:-1]
+            else:
+                compId = compId[:-2]
 
             atomNums = [atomNum for atomNum in self.__atomNumberDict.values()
                         if atomNum['auth_comp_id'] == compId and atomNum['auth_atom_id'] == compId]

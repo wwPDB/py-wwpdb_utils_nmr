@@ -6247,6 +6247,13 @@ def isIdenticalRestraint(atoms: List[dict], nefT=None) -> bool:
                     for atomId2 in _atomId2:
                         if atomId2 in _atomId1:
                             return True
+            if 'segment_id' in a1 and 'segment_id' in a2:
+                if a1['segment_id'] == a2['segment_id']:
+                    if a1['chain_id'] != a2['chain_id']:
+                        return True
+                else:
+                    if a1['chain_id'] == a2['chain_id']:
+                        return True
 
     except KeyError:
         pass

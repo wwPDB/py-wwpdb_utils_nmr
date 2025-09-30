@@ -6417,6 +6417,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
                                     if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
                                        and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId, 'is_poly': isPolySeq}
+                                        if 'segment_id' in _factor:
+                                            selection['segment_id'] = _factor['segment_id']
                                         if len(self.__cur_auth_atom_id) > 0:
                                             selection['auth_atom_id'] = self.__cur_auth_atom_id
                                         if not atomSpecified or not seqSpecified:
@@ -6496,6 +6498,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
                                         continue
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId, 'is_poly': isPolySeq}
+                                        if 'segment_id' in _factor:
+                                            selection['segment_id'] = _factor['segment_id']
                                         if len(self.__cur_auth_atom_id) > 0:
                                             selection['auth_atom_id'] = self.__cur_auth_atom_id
                                         if _atomId.startswith('HOP') and isinstance(origAtomId, str) and '*' in origAtomId:
@@ -7196,16 +7200,21 @@ class SchrodingerMRParserListener(ParseTreeListener):
         elif isinstance(atomSelection[0], str) and atomSelection[0] == '*':
             return _factor
 
-        factor_has_is_poly = factor_has_auth_atom_id = atomsel_has_is_poly = atomsel_has_auth_atom_id = None
+        factor_has_is_poly = factor_has_auth_atom_id = factor_has_segment_id =\
+            atomsel_has_is_poly = atomsel_has_auth_atom_id = atomsel_has_segment_id = None
         if len(_factor['atom_selection']) > 0:
             factor_has_is_poly = 'is_poly' in _factor['atom_selection'][0]
             factor_has_auth_atom_id = 'auth_atom_id' in _factor['atom_selection'][0]
+            factor_has_segment_id = 'segment_id' in _factor['atom_selection'][0]
         if atomSelection is not None and len(atomSelection) > 0:
             atomsel_has_is_poly = 'is_poly' in atomSelection[0]
             atomsel_has_auth_atom_id = 'auth_atom_id' in atomSelection[0]
+            atomsel_has_segment_id = 'segment_id' in atomSelection[0]
 
         refAtomSelection = _factor['atom_selection']
-        if factor_has_is_poly != atomsel_has_is_poly or factor_has_auth_atom_id != atomsel_has_auth_atom_id:
+        if factor_has_is_poly != atomsel_has_is_poly\
+           or factor_has_auth_atom_id != atomsel_has_auth_atom_id\
+           or factor_has_segment_id != atomsel_has_segment_id:
             refAtomSelection = copy.deepcopy(_factor['atom_selection'])
             if factor_has_is_poly != atomsel_has_is_poly:
                 if factor_has_is_poly:
@@ -7233,6 +7242,15 @@ class SchrodingerMRParserListener(ParseTreeListener):
                             del _atom['auth_atom_id']
                         except KeyError:
                             pass
+            if factor_has_segment_id != atomsel_has_segment_id:
+                if factor_has_segment_id:
+                    segment_id = _factor['atom_selection'][0]['segment_id']
+                    for _atom in atomSelection:
+                        _atom['segment_id'] = segment_id
+                if atomsel_has_segment_id:
+                    segment_id = atomSelection[0]['segment_id']
+                    for _atom in refAtomSelection:
+                        _atom['segment_id'] = segment_id
 
         _atomSelection = []
         for _atom, _atom_ in zip(refAtomSelection, _factor['atom_selection']):
@@ -7258,12 +7276,24 @@ class SchrodingerMRParserListener(ParseTreeListener):
         if isinstance(_selection2[0], str) and _selection2[0] == '*':
             return _selection1
 
-        hasAuthSeqId1 = any(_atom for _atom in _selection1 if 'auth_atom_id' in _atom)
-        hasAuthSeqId2 = any(_atom for _atom in _selection2 if 'auth_atom_id' in _atom)
+        hasAuthAtomId1 = any(_atom for _atom in _selection1 if 'auth_atom_id' in _atom)
+        hasAuthAtomId2 = any(_atom for _atom in _selection2 if 'auth_atom_id' in _atom)
+        hasSegmentId1 = any(_atom for _atom in _selection1 if 'segment_id' in _atom)
+        hasSegmentId2 = any(_atom for _atom in _selection2 if 'segment_id' in _atom)
 
         _atomSelection = []
 
-        if not hasAuthSeqId1 and not hasAuthSeqId2:
+        if hasSegmentId1 != hasSegmentId2:
+            if hasSegmentId1:
+                segmentId = next(_atom['segment_id'] for _atom in _selection1 if 'segment_id' in _atom)
+                for _atom in _selection2:
+                    _atom['segment_id'] = segmentId
+            else:
+                segmentId = next(_atom['segment_id'] for _atom in _selection2 if 'segment_id' in _atom)
+                for _atom in _selection1:
+                    _atom['segment_id'] = segmentId
+
+        if not hasAuthAtomId1 and not hasAuthAtomId2:
             for _atom in _selection1:
                 if isinstance(_atom, str) and _atom == '*':
                     return _selection2
@@ -7275,7 +7305,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                     if any(_atom2 for _atom2 in _selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
                         _atomSelection.append(_atom)
 
-        elif hasAuthSeqId1 and not hasAuthSeqId2:
+        elif hasAuthAtomId1 and not hasAuthAtomId2:
             __selection1 = copy.deepcopy(_selection1)
             for _atom in __selection1:
                 if 'auth_atom_id' in _atom:
@@ -7291,7 +7321,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                     if any(_atom2 for _atom2 in _selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
                         _atomSelection.append(_selection1[idx])
 
-        elif not hasAuthSeqId1 and hasAuthSeqId2:
+        elif not hasAuthAtomId1 and hasAuthAtomId2:
             __selection2 = copy.deepcopy(_selection2)
             for idx, _atom in enumerate(__selection2):
                 if 'auth_atom_id' in _atom:
@@ -9035,6 +9065,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
                                 del atom['is_poly']
                             if 'auth_atom_id' in atom:
                                 del atom['auth_atom_id']
+                            if 'segment_id' in atom:
+                                del atom['segment_id']
 
                         try:
 
@@ -9086,6 +9118,8 @@ class SchrodingerMRParserListener(ParseTreeListener):
                             del atom['is_poly']
                         if 'auth_atom_id' in atom:
                             del atom['auth_atom_id']
+                        if 'segment_id' in atom:
+                            del atom['segment_id']
 
                     _refAtomSelection = [atom for atom in _refAtomSelection if atom in _atomSelection]
 

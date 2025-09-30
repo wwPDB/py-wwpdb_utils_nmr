@@ -176,7 +176,7 @@
 # 13-Sep-2023  M. Yokochi - construct pseudo CCD from the coordinates (DAOTHER-8817)
 # 29-Sep-2023  M. Yokochi - add 'nmr-str2cif-annotation' workflow operation (DAOTHER-8817, 8828)
 # 02-Oct-2023  M. Yokochi - do not reorganize _Gen_dist_constraint.ID of native combined NMR data (DAOTHER-8855)
-# 10-Nov-2023  M. Yokochi - raise a content mismatch error properly for NMR spectral peak list when the file is irrelevant (DAOTHER-8949)
+# 10-Nov-2023  M. Yokochi - raise a content mismatch error properly for spectral peak list when the file is irrelevant (DAOTHER-8949)
 # 13-Dec-2023  M. Yokochi - add 'hydrogen_non_instantiated' warning (DAOTHER-8945)
 # 11-Jan-2024  M. Yokochi - convert RTF to ASCII file if necessary (DAOTHER-9063)
 # 12-Jan-2024  M. Yokochi - preserve the original sequence offset of CS loop of UNMAPPED residue (DAOTHER-9065)
@@ -714,6 +714,9 @@ possible_typo_for_comment_out_pattern = re.compile(r'\s*([13])$')
 
 sparky_assignment_pattern = re.compile(r'[\w\+\*\?\'\"\/]+-[\w\+\*\?\'\"\/]+\S*')
 
+deep_l_parens_pattern = re.compile(r'.*\(\s*\(\s*\(\s*\(.*')
+deep_r_parens_pattern = re.compile(r'.*\)\s*\)\s*\)\s*\).*')
+
 comment_code_mixed_set = {'#', '!'}
 
 default_coord_properties = {'tautomer': {}, 'rotamer': {}, 'near_ring': {}, 'near_para_ferro': {}, 'bond_length': {},
@@ -1184,8 +1187,8 @@ def predict_rotamer_state_of_isoleucine(cd1_chem_shift: Optional[float]) -> Tupl
     return (1.0 - pgm) * (4.0 / 85.0), (1.0 - pgm) * (81.0 / 85.0), pgm
 
 
-def concat_nmr_restraint_names(content_subtype: Optional[str]) -> str:
-    """ Return concatenated NMR restraint names.
+def concat_restraint_names(content_subtype: Optional[str]) -> str:
+    """ Return concatenated restraint names.
     """
 
     if content_subtype is None:
@@ -2293,6 +2296,7 @@ class NmrDpUtility:
         self.__remediation_loop_count = 0
 
         self.__sll_pred_holder = {}
+        self.__sll_pred_forced = []
 
         self.__list_id_counter = None
         self.__mr_sf_dict_holder = None
@@ -7731,6 +7735,7 @@ class NmrDpUtility:
         self.__remediation_loop_count = 0
 
         self.__sll_pred_holder = {}
+        self.__sll_pred_forced = []
 
         self.__submission_mode = 'merge-deposit' in op
         self.__annotation_mode = 'annotate' in op
@@ -11094,7 +11099,7 @@ class NmrDpUtility:
 
             if self.__remediation_mode and lp_counts['dist_restraint'] + lp_counts['dihed_restraint'] + lp_counts['rdc_restraint'] > 0:
 
-                warn = "NMR restraint file includes assigned chemical shifts. "\
+                warn = "The restraint file includes assigned chemical shifts. "\
                     "which will be ignored during remediation."
 
                 self.report.warning.appendDescription('corrected_format_issue',
@@ -11106,7 +11111,7 @@ class NmrDpUtility:
 
             else:
 
-                err = "NMR restraint file includes assigned chemical shifts. "\
+                err = "The restraint file includes assigned chemical shifts. "\
                     f"Please re-upload the {file_type.upper()} file as an NMR unified data file."
 
                 self.report.error.appendDescription('content_mismatch',
@@ -11148,7 +11153,7 @@ class NmrDpUtility:
 
                     if len(sf_framecodes_wo_loop) > 0:
                         _sf_framecodes_wo_loop = "', '".join(sf_framecodes_wo_loop)
-                        warn += f" Uninterpreted NMR restraints are stored in {_sf_framecodes_wo_loop!r} "\
+                        warn += f" Uninterpreted restraints are stored in {_sf_framecodes_wo_loop!r} "\
                             f"saveframe{'s' if len(sf_framecodes_wo_loop) > 1 else ''} as raw text format. "\
                             "Please consider incorporating those restraints into well-known formats that OneDep supports, if possible."
 
@@ -11174,7 +11179,7 @@ class NmrDpUtility:
         if (lp_counts['dist_restraint'] > 0 or lp_counts['dihed_restraint'] or lp_counts['rdc_restraint'])\
            and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only and not self.__internal_mode:
 
-            err = "The assigned chemical shift file includes NMR restraints. "\
+            err = "The assigned chemical shift file includes restraints. "\
                 f"Please re-upload the {file_type.upper()} file as an NMR unified data file."
 
             self.report.error.appendDescription('content_mismatch',
@@ -11235,7 +11240,7 @@ class NmrDpUtility:
 
                 if 'other_data_types' not in self.__sf_category_list:
 
-                    err = "Deposition of NMR restraints used for the structure determination is mandatory. "\
+                    err = "Deposition of restraints used for the structure determination is mandatory. "\
                         f"Please re-upload the {file_type.upper()} file."
 
                     self.report.error.appendDescription('missing_mandatory_content',
@@ -11265,7 +11270,7 @@ class NmrDpUtility:
         input_source.setItemValue('content_subtype', content_subtypes)
 
     def __detectContentSubTypeOfLegacyMr(self) -> bool:
-        """ Detect content subtype of legacy NMR restraint files.
+        """ Detect content subtype of legacy restraint files.
         """
 
         if self.__combined_mode:
@@ -12268,6 +12273,20 @@ class NmrDpUtility:
                     if os.path.exists(file_path + '-corrected'):
                         file_path = file_path + '-corrected'
 
+                    # use ANTLR SSL predition mode for performance gain if restaurants have deep but simple atom selection (DAOTHER-10315)
+                    if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cha'):
+                        has_deep_l_pattern = False
+                        with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
+                            for idx, line in enumerate(ifh):
+                                if deep_l_parens_pattern.match(line):
+                                    has_deep_l_pattern = True
+                                if has_deep_l_pattern and deep_r_parens_pattern.match(line):
+                                    self.__sll_pred_forced.append(file_path)
+                                    sll_pred = True
+                                    break
+                                if idx >= 40:
+                                    break
+
                     reader = self.__getSimpleFileReader(file_type, self.__verbose, sll_pred=sll_pred)
 
                     listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
@@ -12449,10 +12468,10 @@ class NmrDpUtility:
 
                 if not is_aux_amb and not is_aux_cha and not is_aux_gro and not is_aux_pdb:
                     err = f"The {mr_format_name} restraint file includes coordinates. "\
-                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+                        "Did you accidentally select wrong format? Please re-upload the restraint file."
                 else:
                     err = f"The {mr_format_name} topology file includes coordinates. "\
-                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+                        "Did you accidentally select wrong format? Please re-upload the restraint file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -12471,9 +12490,9 @@ class NmrDpUtility:
                     hint = 'assign ( resid # and name OO ) ( resid # and name X ) ( resid # and name Y ) ( resid # and name Z ) "\
                         "( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.#'
 
-                    err = f"The NMR restraint file {file_name!r} may be a malformed XPLOR-NIH RDC restraint file. "\
+                    err = f"The restraint file {file_name!r} may be a malformed XPLOR-NIH RDC restraint file. "\
                         f"Tips for XPLOR-NIH RDC restraints: {hint!r} pattern must be present in the file. "\
-                        "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+                        "Did you accidentally select wrong format? Please re-upload the restraint file."
 
                     self.report.error.appendDescription('content_mismatch',
                                                         {'file_name': file_name, 'description': err})
@@ -12488,10 +12507,10 @@ class NmrDpUtility:
 
                     if not is_aux_amb and not is_aux_cha and not is_aux_gro and not is_aux_pdb:
                         err = f"The {mr_format_name} restraint file includes assigned chemical shifts. "\
-                            "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+                            "Did you accidentally select wrong format? Please re-upload the restraint file."
                     else:
                         err = f"The {mr_format_name} topology file includes assigned chemical shifts. "\
-                            "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+                            "Did you accidentally select rong format? Please re-upload the restraint file."
 
                     self.report.error.appendDescription('content_mismatch',
                                                         {'file_name': file_name, 'description': err})
@@ -12506,7 +12525,7 @@ class NmrDpUtility:
             if has_spectral_peak:
 
                 err = f"The {mr_format_name} restraint file includes spectral peak list. "\
-                    "Did you accidentally select the wrong format? Please re-upload the file as spectral peak list file."
+                    "Did you accidentally select wrong format? Please re-upload the file as spectral peak list file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -12544,7 +12563,7 @@ class NmrDpUtility:
                and not has_plane_restraint and not has_hbond_restraint and not has_ssbond_restraint and not valid:
 
                 hint = ''
-                if len(concat_nmr_restraint_names(content_subtype)) == 0:
+                if len(concat_restraint_names(content_subtype)) == 0:
                     if file_type in ('nm-res-xpl', 'nm-res-cns') and not has_rdc_origins:
                         hint = 'assign ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.# #.#'
                     elif file_type == 'nm-res-amb':
@@ -12553,8 +12572,8 @@ class NmrDpUtility:
                 if len(hint) > 0:
                     hint = f" Tips for {mr_format_name} restraints: {hint!r} pattern must be present in the file."
 
-                warn = f"Constraint type of the NMR restraint file ({mr_format_name}) could not be identified."\
-                    + hint + " Did you accidentally select the wrong format?"
+                warn = f"Constraint type of the restraint file ({mr_format_name}) could not be identified."\
+                    + hint + " Did you accidentally select wrong format?"
 
                 self.report.warning.appendDescription('missing_content',
                                                       {'file_name': file_name, 'description': warn})
@@ -12594,7 +12613,7 @@ class NmrDpUtility:
                         "to ensure that AMBER atomic IDs, referred as 'iat' in the AMBER restraint file, are preserved in the file."
 
                 err = f"{file_name} is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb){subtype_name}."\
-                    + hint + " Did you accidentally select the wrong format? Please re-upload the AMBER topology file."
+                    + hint + " Did you accidentally select wrong format? Please re-upload the AMBER topology file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -12629,7 +12648,7 @@ class NmrDpUtility:
                     "{segment_id} {auth_seq_id} {B_iso_or_equiv}' lines."
 
                 err = f"{file_name} is not CHARMM topology (aka. CRD or CHARM CARD file) {subtype_name}."\
-                    + hint + " Did you accidentally select the wrong format? Please re-upload the GROMACS topology file."
+                    + hint + " Did you accidentally select wrong format? Please re-upload the GROMACS topology file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -12663,7 +12682,7 @@ class NmrDpUtility:
                     "and '[ atoms ]' lines must be present in the file."
 
                 err = f"{file_name} is not GROMACS topology {subtype_name}."\
-                    + hint + " Did you accidentally select the wrong format? Please re-upload the GROMACS topology file."
+                    + hint + " Did you accidentally select wrong format? Please re-upload the GROMACS topology file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -12702,7 +12721,7 @@ class NmrDpUtility:
 
                     if self.__allow_missing_legacy_dist_restraint:
 
-                        err = f"NMR restraint file is not recognized properly {file_type}. "\
+                        err = f"The restraint file is not recognized properly {file_type}. "\
                             "Please fix the file so that it conformes to the format specifications."
 
                         self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
@@ -12713,9 +12732,9 @@ class NmrDpUtility:
 
                     else:
 
-                        err = "NMR restraint file is not recognized properly "\
+                        err = "The restraint file is not recognized properly "\
                             "so that there is no mandatory distance restraints int the set of uploaded restraint files. "\
-                            "Please re-upload the NMR restraint file."
+                            "Please re-upload the restraint file."
 
                         self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
                                                                       {'file_name': file_name, 'description': err}})
@@ -12729,7 +12748,7 @@ class NmrDpUtility:
 
                         if self.__allow_missing_legacy_dist_restraint:
 
-                            warn = f"NMR restraint file includes {concat_nmr_restraint_names(content_subtype)}. "\
+                            warn = f"The restraint file includes {concat_restraint_names(content_subtype)}. "\
                                 "However, distance restraints are missing in the set of uploaded restraint file(s). "\
                                 "The wwPDB NMR Validation Task Force highly recommends the submission of distance restraints "\
                                 "used for the structure determination."
@@ -12742,9 +12761,9 @@ class NmrDpUtility:
 
                         else:
 
-                            err = f"NMR restraint file includes {concat_nmr_restraint_names(content_subtype)}. "\
+                            err = f"The restraint file includes {concat_restraint_names(content_subtype)}. "\
                                 "However, deposition of distance restraints is mandatory. "\
-                                "Please re-upload the NMR restraint file."
+                                "Please re-upload the restraint file."
 
                             self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
                                                                           {'file_name': file_name, 'description': err}})
@@ -12850,7 +12869,7 @@ class NmrDpUtility:
         return not self.report.isError()
 
     def __detectContentSubTypeOfLegacyPk(self) -> bool:
-        """ Detect content subtype of legacy NMR spectral peak files.
+        """ Detect content subtype of legacy spectral peak files.
         """
 
         if self.__combined_mode:
@@ -13012,7 +13031,7 @@ class NmrDpUtility:
 
                 if has_pdb_format:
                     err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as coordinate file. "\
-                        "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
+                        "Did you accidentally select wrong format? Please re-upload the spectral peak list file."
 
                     self.report.error.appendDescription('content_mismatch',
                                                         {'file_name': file_name, 'description': err})
@@ -13025,7 +13044,7 @@ class NmrDpUtility:
 
                 if has_mr_header:
                     err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as {getRestraintFormatName('nm-res-mr')}. "\
-                        "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
+                        "Did you accidentally select wrong format? Please re-upload the spectral peak list file."
 
                     self.report.error.appendDescription('content_mismatch',
                                                         {'file_name': file_name, 'description': err})
@@ -13072,7 +13091,7 @@ class NmrDpUtility:
                 if cs_str:
                     err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as "\
                         f"{self.readable_file_type[message['file_type']]} formatted assigned chemical shift file. "\
-                        "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
+                        "Did you accidentally select wrong format? Please re-upload the spectral peak list file."
 
                     self.report.error.appendDescription('content_mismatch',
                                                         {'file_name': file_name, 'description': err})
@@ -13086,7 +13105,7 @@ class NmrDpUtility:
                 if mr_str:
                     err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as "\
                         f"{self.readable_file_type[message['file_type']]} formatted restraint file. "\
-                        "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
+                        "Did you accidentally select wrong format? Please re-upload the spectral peak list file."
 
                     self.report.error.appendDescription('content_mismatch',
                                                         {'file_name': file_name, 'description': err})
@@ -13148,7 +13167,7 @@ class NmrDpUtility:
                         continue
 
                 err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as {getRestraintFormatNames(valid_types)} file. "\
-                    "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
+                    "Did you accidentally select wrong format? Please re-upload the spectral peak list file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -13160,7 +13179,7 @@ class NmrDpUtility:
             elif len_valid_types == 0:
 
                 err = f"The spectral peak list file {file_name!r} (any plain text format) can be {possible_types}. "\
-                    "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
+                    "Did you accidentally select wrong format? Please re-upload the spectral peak list file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -13173,7 +13192,7 @@ class NmrDpUtility:
 
                 err = f"The spectral peak list file {file_name!r} (any plain text format) is identified as {getRestraintFormatNames(valid_types)} file"\
                     f"and can be {getRestraintFormatNames(possible_types)} file as well. "\
-                    "Did you accidentally select the wrong format? Please re-upload the spectral peak list file."
+                    "Did you accidentally select wrong format? Please re-upload the spectral peak list file."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -13448,7 +13467,7 @@ class NmrDpUtility:
         return None
 
     def __divideLegacyMrIfNecessary(self, file_path: str, file_type: str, err_desc: dict, src_path: str, offset: int) -> bool:
-        """ Divive legacy NMR restraint file if necessary.
+        """ Divive legacy restraint file if necessary.
         """
 
         src_basename = os.path.splitext(file_path)[0]
@@ -14772,7 +14791,7 @@ class NmrDpUtility:
         return True
 
     def __divideLegacyMr(self, file_path: str, file_type: str, err_desc: dict, src_path: str, offset: int) -> bool:
-        """ Divive legacy NMR restraint file.
+        """ Divive legacy restraint file.
         """
 
         src_basename = os.path.splitext(file_path)[0]
@@ -15380,7 +15399,7 @@ class NmrDpUtility:
     def __detectOtherPossibleFormatAsErrorOfLegacyMr(self, file_path: str, file_name: str, file_type: str,
                                                      dismiss_err_lines: List[int], multiple_check: bool = False
                                                      ) -> Tuple[bool, str, List[str], List[str]]:
-        """ Report other possible format as error of a given legacy NMR restraint file.
+        """ Report other possible format as error of a given legacy restraint file.
         """
 
         is_valid = agreed_w_cns = False
@@ -15776,7 +15795,7 @@ class NmrDpUtility:
     def __detectOtherPossibleFormatAsErrorOfLegacyMr__(self, file_path: str, file_name: str, file_type: str, dismiss_err_lines: List[int],
                                                        _file_type: str, agreed_w_cns: bool = False
                                                        ) -> Tuple[bool, str, Optional[str], dict, dict]:
-        """ Report other possible format as error of a given legacy NMR restraint file.
+        """ Report other possible format as error of a given legacy restraint file.
         """
 
         _mr_format_name = getRestraintFormatName(file_type)
@@ -15838,9 +15857,9 @@ class NmrDpUtility:
                     if (has_lexer_error or has_parser_error) and _file_type == 'nm-aux-xea':  # 2lcn
                         is_valid = False
 
-                    err = f"The NMR restraint file {file_name!r} ({mr_format_name}) looks like {_a_mr_format_name} file, "\
-                          f"which has {concat_nmr_restraint_names(_content_subtype)}. "\
-                          "Did you accidentally select the wrong format? Please re-upload the NMR restraint file."
+                    err = f"The restraint file {file_name!r} ({mr_format_name}) looks like {_a_mr_format_name} file, "\
+                          f"which has {concat_restraint_names(_content_subtype)}. "\
+                          "Did you accidentally select wrong format? Please re-upload the restraint file."
 
                     if has_content:
                         _err = ''
@@ -15905,7 +15924,7 @@ class NmrDpUtility:
         return is_valid, err, genuine_type, valid_types, possible_types
 
     def __extractPublicMrFileIntoLegacyMr(self) -> bool:
-        """ Extract/split public MR file into legacy NMR restraint files for NMR restraint remediation.
+        """ Extract/split public MR file into legacy restraint files for NMR restraint remediation.
         """
 
         if self.__combined_mode or not self.__remediation_mode:
@@ -15971,7 +15990,7 @@ class NmrDpUtility:
 
                 if not src_file.endswith('.gz'):
 
-                    err = f"The NMR restraint file {src_file!r} (MR format) is neither ASCII file nor gzip compressed file."
+                    err = f"The restraint file {src_file!r} (MR format) is neither ASCII file nor gzip compressed file."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
                     self.report.setError()
@@ -16949,8 +16968,8 @@ class NmrDpUtility:
                         else:
                             _file_name = ''
 
-                        err = f"The NMR restraint file {file_name!r} {_file_name}{ins_msg}does not match with any known restraint format. "\
-                            "@todo: It needs to be reviewed or marked as entry without NMR restraints."
+                        err = f"The restraint file {file_name!r} {_file_name}{ins_msg}does not match with any known restraint format. "\
+                            "@todo: It needs to be reviewed or marked as entry without restraints."
 
                         self.report.error.appendDescription('internal_error',
                                                             {'file_name': file_name, 'description': err})
@@ -17010,7 +17029,7 @@ class NmrDpUtility:
                             _ar['file_type'] = valid_types[0]
                             split_file_list.append(_ar)
 
-                            err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
+                            err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
                                 "@todo: It needs to be split properly."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
@@ -17029,7 +17048,7 @@ class NmrDpUtility:
                         _ar['file_type'] = possible_types[0]
                         split_file_list.append(_ar)
 
-                        err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\
+                        err = f"The restraint file {file_name!r} (MR format) can be {possible_types}. "\
                             "@todo: It needs to be reviewed."
 
                         self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
@@ -17046,7 +17065,7 @@ class NmrDpUtility:
                         _ar['file_type'] = valid_types[0]
                         split_file_list.append(_ar)
 
-                        err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
+                        err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
                             "@todo: It needs to be reviewed."
 
                         self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
@@ -17753,8 +17772,8 @@ class NmrDpUtility:
                             else:
                                 _file_name = ''
 
-                            err = f"The NMR restraint file {file_name!r} {_file_name}{ins_msg}does not match with any known restraint format. "\
-                                "@todo: It needs to be reviewed or marked as entry without NMR restraints."
+                            err = f"The restraint file {file_name!r} {_file_name}{ins_msg}does not match with any known restraint format. "\
+                                "@todo: It needs to be reviewed or marked as entry without restraints."
 
                             self.report.error.appendDescription('internal_error',
                                                                 {'file_name': file_name, 'description': err})
@@ -17830,7 +17849,7 @@ class NmrDpUtility:
                                 if distict:
                                     _ar['original_file_name'] = file_name
 
-                                err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
+                                err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types}. "\
                                     "@todo: It needs to be split properly."
 
                                 self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
@@ -17848,7 +17867,7 @@ class NmrDpUtility:
                             if distict:
                                 _ar['original_file_name'] = file_name
 
-                            err = f"The NMR restraint file {file_name!r} (MR format) can be {possible_types}. "\
+                            err = f"The restraint file {file_name!r} (MR format) can be {possible_types}. "\
                                 "@todo: It needs to be reviewed."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
@@ -17866,7 +17885,7 @@ class NmrDpUtility:
                             if distict:
                                 _ar['original_file_name'] = file_name
 
-                            err = f"The NMR restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
+                            err = f"The restraint file {file_name!r} (MR format) is identified as {valid_types} and can be {possible_types} as well. "\
                                 "@todo: It needs to be reviewed."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__extractPublicMrFileIntoLegacyMr() ++ Error  - " + err)
@@ -17954,8 +17973,8 @@ class NmrDpUtility:
                         if len_peak_file_list > 0:
                             hint = f', except for {len_peak_file_list} peak list file(s)'
 
-                        err = f"NMR restraint file contains no restraints{hint}. "\
-                            "Please re-upload the NMR restraint file."
+                        err = f"The restraint file contains no restraints{hint}. "\
+                            "Please re-upload the restraint file."
 
                         self.__suspended_errors_for_lazy_eval.append({'content_mismatch':
                                                                      {'file_name': mr_file_name, 'description': err}})
@@ -29861,7 +29880,7 @@ class NmrDpUtility:
                                         row[0] = self.__chain_id_map_for_remediation[row[0]]
 
     def __testCsPseudoAtomNameConsistencyInMrLoop(self) -> bool:
-        """ Perform consistency test on pseudo atom names between assigned chemical shifts and NMR restraints. (DAOTHER-7681, issue #1)
+        """ Perform consistency test on pseudo atom names between assigned chemical shifts and restraints. (DAOTHER-7681, issue #1)
         """
 
         __errors = self.report.getTotalErrors()
@@ -34514,7 +34533,7 @@ class NmrDpUtility:
 
             if get_chem_shift_format(file_path) is not None:
 
-                err = "NMR spectral peak list file includes assigned chemical shifts."
+                err = "The spectral peak list file includes assigned chemical shifts."
 
                 self.report.error.appendDescription('content_mismatch',
                                                     {'file_name': file_name, 'description': err})
@@ -34640,7 +34659,7 @@ class NmrDpUtility:
         return True
 
     def __validateLegacyMr(self) -> bool:
-        """ Validate data content of legacy NMR restraint files.
+        """ Validate data content of legacy restraint files.
         """
 
         if self.__combined_mode and not self.__bmrb_only:
@@ -35644,7 +35663,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR restraint file (AMBER) {file_name!r}."
+                            err = f"Failed to validate the restraint file (AMBER) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -35712,7 +35731,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR restraint file (ARIA) {file_name!r}."
+                            err = f"Failed to validate the restraint file (ARIA) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -35780,7 +35799,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR restraint file (BIOSYM) {file_name!r}."
+                            err = f"Failed to validate the restraint file (BIOSYM) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -35809,6 +35828,8 @@ class NmrDpUtility:
                                         reasons)
                 reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
                 reader.setNmrChainAssignments(nmr_vs_model)
+                if file_path in self.__sll_pred_forced:
+                    reader.setSllPredMode(True)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
                 __list_id_counter = copy.copy(self.__list_id_counter)
@@ -35832,6 +35853,8 @@ class NmrDpUtility:
                                                 None)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
                         reader.setNmrChainAssignments(nmr_vs_model)
+                        if file_path in self.__sll_pred_forced:
+                            reader.setSllPredMode(True)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -35861,6 +35884,8 @@ class NmrDpUtility:
                                                 reasons)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
                         reader.setNmrChainAssignments(nmr_vs_model)
+                        if file_path in self.__sll_pred_forced:
+                            reader.setSllPredMode(True)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -35879,7 +35904,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR restraint file (CHARMM) {file_name!r}."
+                            err = f"Failed to validate the restraint file (CHARMM) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -35907,6 +35932,8 @@ class NmrDpUtility:
                                      reasons)
                 reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
                 reader.setNmrChainAssignments(nmr_vs_model)
+                if file_path in self.__sll_pred_forced:
+                    reader.setSllPredMode(True)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
                 __list_id_counter = copy.copy(self.__list_id_counter)
@@ -35929,6 +35956,8 @@ class NmrDpUtility:
                                              None)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
                         reader.setNmrChainAssignments(nmr_vs_model)
+                        if file_path in self.__sll_pred_forced:
+                            reader.setSllPredMode(True)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -35957,6 +35986,8 @@ class NmrDpUtility:
                                              reasons)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
                         reader.setNmrChainAssignments(nmr_vs_model)
+                        if file_path in self.__sll_pred_forced:
+                            reader.setSllPredMode(True)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -35975,7 +36006,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR restraint file (CNS) {file_name!r}."
+                            err = f"Failed to validate the restraint file (CNS) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -36089,7 +36120,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR restraint file (CYANA) {file_name!r}."
+                            err = f"Failed to validate the restraint file (CYANA) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -36157,7 +36188,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR restraint file (DYNAMO/PALES/TALOS) {file_name!r}."
+                            err = f"Failed to validate the restraint file (DYNAMO/PALES/TALOS) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -36225,7 +36256,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR restraint file (ISD) {file_name!r}."
+                            err = f"Failed to validate the restraint file (ISD) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -36270,7 +36301,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR restraint file (GROMACS) {file_name!r}."
+                            err = f"Failed to validate the restraint file (GROMACS) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -36363,7 +36394,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR restraint file (CYANA NOA) {file_name!r}."
+                            err = f"Failed to validate the restraint file (CYANA NOA) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -36456,7 +36487,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR restraint file (ROSETTA) {file_name!r}."
+                            err = f"Failed to validate the restraint file (ROSETTA) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -36552,7 +36583,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR restraint file (SCHRODINGER/ASL) {file_name!r}."
+                            err = f"Failed to validate the restraint file (SCHRODINGER/ASL) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -36620,7 +36651,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR restraint file (SYBYL) {file_name!r}."
+                            err = f"Failed to validate the restraint file (SYBYL) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -36649,6 +36680,8 @@ class NmrDpUtility:
                 reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
                 reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
                 reader.setNmrChainAssignments(nmr_vs_model)
+                if file_path in self.__sll_pred_forced:
+                    reader.setSllPredMode(True)
 
                 _list_id_counter = copy.copy(self.__list_id_counter)
                 __list_id_counter = copy.copy(self.__list_id_counter)
@@ -36672,6 +36705,8 @@ class NmrDpUtility:
                         reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
                         reader.setNmrChainAssignments(nmr_vs_model)
+                        if file_path in self.__sll_pred_forced:
+                            reader.setSllPredMode(True)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -36701,6 +36736,8 @@ class NmrDpUtility:
                         reader.setRemediateMode(self.__remediation_mode and derived_from_public_mr)
                         reader.setInternalMode(self.__internal_mode and derived_from_public_mr)
                         reader.setNmrChainAssignments(nmr_vs_model)
+                        if file_path in self.__sll_pred_forced:
+                            reader.setSllPredMode(True)
 
                         listener, _, _ = reader.parse(file_path, self.__cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
@@ -36722,7 +36759,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR restraint file (XPLOR-NIH) {file_name!r}."
+                            err = f"Failed to validate the restraint file (XPLOR-NIH) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyMr() ++ Error  - " + err)
                             self.report.setError()
@@ -36825,7 +36862,7 @@ class NmrDpUtility:
         return not self.report.isError()
 
     def __validateLegacyPk(self) -> bool:
-        """ Validate data content of legacy NMR spectral peak files and merge them if possible.
+        """ Validate data content of legacy spectral peak files and merge them if possible.
         """
 
         if self.__combined_mode and not self.__bmrb_only:
@@ -36934,8 +36971,8 @@ class NmrDpUtility:
             if len(_err) == 0:
                 return False, _type
 
-            err = f"The NMR spectral peak list file {file_name!r} looks like {a_pk_format_name} file. "\
-                "Please re-upload the NMR spectral peak list file.\n"\
+            err = f"The spectral peak list file {file_name!r} looks like {a_pk_format_name} file. "\
+                "Please re-upload the spectral peak list file.\n"\
                 "The following issues need to be fixed before re-upload.\n" + _err[:-1]
 
             self.report.error.appendDescription('format_issue',
@@ -37476,7 +37513,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR spectral peak list file (ARIA) {file_name!r}."
+                            err = f"Failed to validate spectral peak list file (ARIA) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
@@ -37553,7 +37590,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR spectral peak list file {file_name!r}."
+                            err = f"Failed to validate spectral peak list file {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
@@ -37633,7 +37670,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR spectral peak list file (CCPN) {file_name!r}."
+                            err = f"Failed to validate spectral peak list file (CCPN) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
@@ -37713,7 +37750,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR spectral peak list file (OLIVIA) {file_name!r}."
+                            err = f"Failed to validate spectral peak list file (OLIVIA) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
@@ -37793,7 +37830,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR spectral peak list file (NMRPIPE) {file_name!r}."
+                            err = f"Failed to validate spectral peak list file (NMRPIPE) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
@@ -37873,7 +37910,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR spectral peak list file (PONDEROSA) {file_name!r}."
+                            err = f"Failed to validate spectral peak list file (PONDEROSA) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
@@ -37985,7 +38022,7 @@ class NmrDpUtility:
                                 continue
 
                     else:
-                        warn = 'Neither peak height nor peak volume are included in the file. Please re-upload the NMR spectral peak list file.'
+                        warn = 'Neither peak height nor peak volume are included in the file. Please re-upload the spectral peak list file.'
                         msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
 
                         self.report.error.appendDescription('format_issue', msg_dict)
@@ -38048,7 +38085,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR spectral peak list file (SPARKY) {file_name!r}."
+                            err = f"Failed to validate spectral peak list file (SPARKY) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
@@ -38128,7 +38165,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR spectral peak list file (SPARKY) {file_name!r}."
+                            err = f"Failed to validate spectral peak list file (SPARKY) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
@@ -38202,7 +38239,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR spectral peak list file (TOPSPIN) {file_name!r}."
+                            err = f"Failed to validate spectral peak list file (TOPSPIN) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
@@ -38326,7 +38363,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR spectral peak list file (NMRVIEW) {file_name!r}."
+                            err = f"Failed to validate spectral peak list file (NMRVIEW) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
@@ -38406,7 +38443,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR spectral peak list file (VNMR) {file_name!r}."
+                            err = f"Failed to validate spectral peak list file (VNMR) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
@@ -38488,7 +38525,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR spectral peak list file (XEASY) {file_name!r}."
+                            err = f"Failed to validate spectral peak list file (XEASY) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
@@ -38566,7 +38603,7 @@ class NmrDpUtility:
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate NMR spectral peak list file (XWINNMR) {file_name!r}."
+                            err = f"Failed to validate spectral peak list file (XWINNMR) {file_name!r}."
 
                             self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__validateLegacyPk() ++ Error  - " + err)
                             self.report.setError()
@@ -47465,8 +47502,8 @@ class NmrDpUtility:
                     r = next((r for r in rmsd if r['model_id'] == conformer_id), rmsd[0])
 
                     warn = f"The coordinates (chain_id {chain_id}) are not superimposed. "\
-                        f"The RMSD ({r['raw_rmsd']}Å) for a well-defined region "\
-                        f"(Sequence ranges {r['range']}) is greater than the predicted value ({r['rmsd']}Å). "\
+                        f"RMSD ({r['raw_rmsd']}Å) for a well-defined region "\
+                        f"(Sequence ranges {r['range']}) is greater than predicted value ({r['rmsd']}Å). "\
                         "Please superimpose the coordinates and re-upload the model file."
 
                     self.report.warning.appendDescription('not_superimposed_model',
@@ -53970,7 +54007,7 @@ class NmrDpUtility:
                     self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
-                    err = f"Failed to validate NMR spectral peak list file (ARIA) {data_file_name!r}."
+                    err = f"Failed to validate spectral peak list file (ARIA) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
@@ -54038,7 +54075,7 @@ class NmrDpUtility:
                     self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
-                    err = f"Failed to validate NMR spectral peak list file (Bare WSV/TSV) {data_file_name!r}."
+                    err = f"Failed to validate spectral peak list file (Bare WSV/TSV) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
@@ -54106,7 +54143,7 @@ class NmrDpUtility:
                     self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
-                    err = f"Failed to validate NMR spectral peak list file (CCPN) {data_file_name!r}."
+                    err = f"Failed to validate spectral peak list file (CCPN) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
@@ -54174,7 +54211,7 @@ class NmrDpUtility:
                     self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
-                    err = f"Failed to validate NMR spectral peak list file (OLIVIA) {data_file_name!r}."
+                    err = f"Failed to validate spectral peak list file (OLIVIA) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
@@ -54242,7 +54279,7 @@ class NmrDpUtility:
                     self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
-                    err = f"Failed to validate NMR spectral peak list file (NMRPIPE) {data_file_name!r}."
+                    err = f"Failed to validate spectral peak list file (NMRPIPE) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
@@ -54310,7 +54347,7 @@ class NmrDpUtility:
                     self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
-                    err = f"Failed to validate NMR spectral peak list file (PONDEROSA) {data_file_name!r}."
+                    err = f"Failed to validate spectral peak list file (PONDEROSA) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
@@ -54378,7 +54415,7 @@ class NmrDpUtility:
                     self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
-                    err = f"Failed to validate NMR spectral peak list file (SPARKY) {data_file_name!r}."
+                    err = f"Failed to validate spectral peak list file (SPARKY) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
@@ -54446,7 +54483,7 @@ class NmrDpUtility:
                     self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
-                    err = f"Failed to validate NMR spectral peak list file (SPARKY) {data_file_name!r}."
+                    err = f"Failed to validate spectral peak list file (SPARKY) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
@@ -54512,7 +54549,7 @@ class NmrDpUtility:
                     self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
-                    err = f"Failed to validate NMR spectral peak list file (TOPSPIN) {data_file_name!r}."
+                    err = f"Failed to validate spectral peak list file (TOPSPIN) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
@@ -54580,7 +54617,7 @@ class NmrDpUtility:
                     self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
-                    err = f"Failed to validate NMR spectral peak list file (NMRVIEW) {data_file_name!r}."
+                    err = f"Failed to validate spectral peak list file (NMRVIEW) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
@@ -54648,7 +54685,7 @@ class NmrDpUtility:
                     self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
-                    err = f"Failed to validate NMR spectral peak list file (VNMR) {data_file_name!r}."
+                    err = f"Failed to validate spectral peak list file (VNMR) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
@@ -54718,7 +54755,7 @@ class NmrDpUtility:
                     self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
-                    err = f"Failed to validate NMR spectral peak list file (XEASY) {data_file_name!r}."
+                    err = f"Failed to validate spectral peak list file (XEASY) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
@@ -54784,7 +54821,7 @@ class NmrDpUtility:
                     self.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
-                    err = f"Failed to validate NMR spectral peak list file (XWINNMR) {data_file_name!r}."
+                    err = f"Failed to validate spectral peak list file (XWINNMR) {data_file_name!r}."
 
                     self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__remediateRawTextPk() ++ Error  - " + err)
                     self.report.setError()
@@ -61926,7 +61963,7 @@ class NmrDpUtility:
 
                     if self.__internal_mode:
 
-                        err = f"Uninterpreted NMR restraints are stored in {sf_framecode} saveframe as raw text format. "\
+                        err = f"Uninterpreted restraints are stored in {sf_framecode} saveframe as raw text format. "\
                             "@todo: It needs to be reviewed."
 
                         self.report.error.appendDescription('internal_error', f"+{self.__class_name__}.__mergeLegacyCsAndMr() ++ Error  - {err}")
@@ -62370,7 +62407,7 @@ class NmrDpUtility:
                         + (f's, {mr_file_names}, are' if len(mr_file_names) > 1 else f', {mr_file_names[0]!r}, is')\
                         + ' consistent with the coordinates'
 
-                    err = "Deposition of NMR restraints used for the structure determination is mandatory. "\
+                    err = "Deposition of restraints used for the structure determination is mandatory. "\
                         f"Please verify {desc} and re-upload valid restraint file(s)."
 
                     self.report.error.appendDescription('missing_mandatory_content',

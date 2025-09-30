@@ -2329,7 +2329,9 @@ class BaseCSParserListener():
             if _ps is not None:
                 if seqId in _ps['seq_id']:
                     return ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'], seqId, _ps['comp_id'][_ps['seq_id'].index(seqId)]
-        if 'Check the 1th row of' in self.getCurrentAssignment(-1) and isFirstTrial and isPolySeq:
+        if 'Check the 1th row of' in self.getCurrentAssignment(-1) and isFirstTrial and isPolySeq\
+           and (self.reasons is None
+                or not ('seq_id_remap' in self.reasons or 'chain_seq_id_remap' in self.reasons or 'ext_chain_seq_id_remap' in self.reasons)):
             try:
                 if not any(_ps['auth_seq_id'][0] - len(_ps['seq_id']) <= seqId <= _ps['auth_seq_id'][-1] + len(_ps['seq_id'])
                            for _ps in self.polySeq):

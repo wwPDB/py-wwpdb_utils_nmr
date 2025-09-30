@@ -6417,7 +6417,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                                     if ('comp_id' not in _factor or _atom['comp_id'] in _compIdList)\
                                        and ('type_symbol' not in _factor or _atom['type_symbol'] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': _atom['comp_id'], 'atom_id': _atomId, 'is_poly': isPolySeq}
-                                        if 'segment_id' in _factor:
+                                        if 'segment_id' in _factor and not self.__cur_union_expr:
                                             selection['segment_id'] = _factor['segment_id']
                                         if len(self.__cur_auth_atom_id) > 0:
                                             selection['auth_atom_id'] = self.__cur_auth_atom_id
@@ -6498,7 +6498,7 @@ class SchrodingerMRParserListener(ParseTreeListener):
                                         continue
                                     if cca is not None and ('type_symbol' not in _factor or cca[self.__ccU.ccaTypeSymbol] in _factor['type_symbol']):
                                         selection = {'chain_id': chainId, 'seq_id': seqId, 'comp_id': compId, 'atom_id': _atomId, 'is_poly': isPolySeq}
-                                        if 'segment_id' in _factor:
+                                        if 'segment_id' in _factor and not self.__cur_union_expr:
                                             selection['segment_id'] = _factor['segment_id']
                                         if len(self.__cur_auth_atom_id) > 0:
                                             selection['auth_atom_id'] = self.__cur_auth_atom_id

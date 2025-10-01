@@ -13581,7 +13581,7 @@ class NmrDpUtility:
 
                     concat_input = err_input[err_column_position:]
 
-                    if comment_pattern.match(concat_input) or concat_input[0].isalnum():
+                    if comment_pattern.match(concat_input) or (len(concat_input) > 0 and concat_input[0].isalnum()):
 
                         if self.__mr_debug:
                             self.__lfh.write('DIV-MR-EXIT #1-1\n')
@@ -15967,7 +15967,7 @@ class NmrDpUtility:
             if file_type != 'nm-res-mr':
 
                 if file_type in linear_mr_file_types:
-                    with open(src_file, 'r') as ifh:
+                    with open(src_file, 'r', errors='ignore') as ifh:
                         for line in ifh:
                             if 'Submitted Coord H atom name' in line:
                                 input_source.setItemValue('file_type', 'nm-res-mr')
@@ -61909,7 +61909,7 @@ class NmrDpUtility:
                 if os.path.exists(unknown_mr_desc):
                     with open(unknown_mr_desc, 'r') as ifh:
                         details = ifh.read().splitlines()
-                        data_format = details.split(' ')[0]
+                        data_format = details[0].split(' ')[0]
                         if not data_format.isupper():
                             data_format = None
                         break

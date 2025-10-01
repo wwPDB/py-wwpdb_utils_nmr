@@ -212,46 +212,52 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = int(str(ctx.Integer(0)))
 
-            # j_simple_name_offset = 0
-            j_eclose_data__offset = 0
+            try:
 
-            L1 = self.__enclose_data[0]
-            P1 = self.numberSelection[0]
-            W1 = self.numberSelection[1]
-            B1 = self.numberSelection[2]
-            # E1 = str(ctx.Simple_name(0))
-            # J1 = self.__jcouplings[0]
-            # if self.__jcoupling_types[0] == 'simple_name':
-            #     j_simple_name_offset += 1
-            if len(self.__jcoupling_types) > 0 and self.__jcoupling_types[0] == 'enclose_data':
-                j_eclose_data__offset += 1
-            # U1 = self.__enclose_data[1 + j_eclose_data__offset]
+                # j_simple_name_offset = 0
+                j_eclose_data__offset = 0
 
-            L2 = self.__enclose_data[2 + j_eclose_data__offset]
-            P2 = self.numberSelection[3]
-            W2 = self.numberSelection[4]
-            B2 = self.numberSelection[5]
-            # E2 = str(ctx.Simple_name(1 + j_simple_name_offset))
-            # J2 = self.__jcouplings[1]
-            # if self.__jcoupling_types[1] == 'simple_name':
-            #     j_simple_name_offset += 1
-            if len(self.__jcoupling_types) > 1 and self.__jcoupling_types[1] == 'enclose_data':
-                j_eclose_data__offset += 1
-            # U2 = self.__enclose_data[3 + j_eclose_data__offset]
+                L1 = self.__enclose_data[0]
+                P1 = self.numberSelection[0]
+                W1 = self.numberSelection[1]
+                B1 = self.numberSelection[2]
+                # E1 = str(ctx.Simple_name(0))
+                # J1 = self.__jcouplings[0]
+                # if self.__jcoupling_types[0] == 'simple_name':
+                #     j_simple_name_offset += 1
+                if len(self.__jcoupling_types) > 0 and self.__jcoupling_types[0] == 'enclose_data':
+                    j_eclose_data__offset += 1
+                # U1 = self.__enclose_data[1 + j_eclose_data__offset]
 
-            vol = self.originalNumberSelection[6]
-            _int = self.originalNumberSelection[7]
-            # try:
-            #     stat = int(str(ctx.Integer(1)))
-            # except ValueError:
-            #     stat = None
-            if len(self.__enclose_data) > 4 + j_eclose_data__offset:
-                comment = self.__enclose_data[4 + j_eclose_data__offset]
-                if comment in emptyValue:
+                L2 = self.__enclose_data[2 + j_eclose_data__offset]
+                P2 = self.numberSelection[3]
+                W2 = self.numberSelection[4]
+                B2 = self.numberSelection[5]
+                # E2 = str(ctx.Simple_name(1 + j_simple_name_offset))
+                # J2 = self.__jcouplings[1]
+                # if self.__jcoupling_types[1] == 'simple_name':
+                #     j_simple_name_offset += 1
+                if len(self.__jcoupling_types) > 1 and self.__jcoupling_types[1] == 'enclose_data':
+                    j_eclose_data__offset += 1
+                # U2 = self.__enclose_data[3 + j_eclose_data__offset]
+
+                vol = self.originalNumberSelection[6]
+                _int = self.originalNumberSelection[7]
+                # try:
+                #     stat = int(str(ctx.Integer(1)))
+                # except ValueError:
+                #     stat = None
+                if len(self.__enclose_data) > 4 + j_eclose_data__offset:
+                    comment = self.__enclose_data[4 + j_eclose_data__offset]
+                    if comment in emptyValue:
+                        comment = None
+                else:
                     comment = None
-            else:
-                comment = None
-            # flag0 = int(str(ctx.Integer(2)))
+                # flag0 = int(str(ctx.Integer(2)))
+
+            except IndexError:
+                self.peaks2D -= 1
+                return
 
             if L1 in emptyValue:
                 L1 = None
@@ -357,58 +363,64 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = int(str(ctx.Integer(0)))
 
-            # j_simple_name_offset = 0
-            j_eclose_data__offset = 0
+            try:
 
-            L1 = self.__enclose_data[0]
-            P1 = self.numberSelection[0]
-            W1 = self.numberSelection[1]
-            B1 = self.numberSelection[2]
-            # E1 = str(ctx.Simple_name(0))
-            # J1 = self.__jcouplings[0]
-            # if self.__jcoupling_types[0] == 'simple_name':
-            #     j_simple_name_offset += 1
-            if len(self.__jcoupling_types) > 0 and self.__jcoupling_types[0] == 'enclose_data':
-                j_eclose_data__offset += 1
-            # U1 = self.__enclose_data[1 + j_eclose_data__offset]
+                # j_simple_name_offset = 0
+                j_eclose_data__offset = 0
 
-            L2 = self.__enclose_data[2 + j_eclose_data__offset]
-            P2 = self.numberSelection[3]
-            W2 = self.numberSelection[4]
-            B2 = self.numberSelection[5]
-            # E2 = str(ctx.Simple_name(1 + j_simple_name_offset))
-            # J2 = self.__jcouplings[1]
-            # if self.__jcoupling_types[1] == 'simple_name':
-            #     j_simple_name_offset += 1
-            if len(self.__jcoupling_types) > 1 and self.__jcoupling_types[1] == 'enclose_data':
-                j_eclose_data__offset += 1
-            # U2 = self.__enclose_data[3 + j_eclose_data__offset]
+                L1 = self.__enclose_data[0]
+                P1 = self.numberSelection[0]
+                W1 = self.numberSelection[1]
+                B1 = self.numberSelection[2]
+                # E1 = str(ctx.Simple_name(0))
+                # J1 = self.__jcouplings[0]
+                # if self.__jcoupling_types[0] == 'simple_name':
+                #     j_simple_name_offset += 1
+                if len(self.__jcoupling_types) > 0 and self.__jcoupling_types[0] == 'enclose_data':
+                    j_eclose_data__offset += 1
+                # U1 = self.__enclose_data[1 + j_eclose_data__offset]
 
-            L3 = self.__enclose_data[4 + j_eclose_data__offset]
-            P3 = self.numberSelection[6]
-            W3 = self.numberSelection[7]
-            B3 = self.numberSelection[8]
-            # E3 = str(ctx.Simple_name(2 + j_simple_name_offset))
-            # J3 = self.__jcouplings[2]
-            # if self.__jcoupling_types[2] == 'simple_name':
-            #     j_simple_name_offset += 1
-            if len(self.__jcoupling_types) > 2 and self.__jcoupling_types[2] == 'enclose_data':
-                j_eclose_data__offset += 1
-            # U3 = self.__enclose_data[5 + j_eclose_data__offset]
+                L2 = self.__enclose_data[2 + j_eclose_data__offset]
+                P2 = self.numberSelection[3]
+                W2 = self.numberSelection[4]
+                B2 = self.numberSelection[5]
+                # E2 = str(ctx.Simple_name(1 + j_simple_name_offset))
+                # J2 = self.__jcouplings[1]
+                # if self.__jcoupling_types[1] == 'simple_name':
+                #     j_simple_name_offset += 1
+                if len(self.__jcoupling_types) > 1 and self.__jcoupling_types[1] == 'enclose_data':
+                    j_eclose_data__offset += 1
+                # U2 = self.__enclose_data[3 + j_eclose_data__offset]
 
-            vol = self.originalNumberSelection[9]
-            _int = self.originalNumberSelection[10]
-            # try:
-            #     stat = int(str(ctx.Integer(1)))
-            # except ValueError:
-            #     stat = None
-            if len(self.__enclose_data) > 6 + j_eclose_data__offset:
-                comment = self.__enclose_data[6 + j_eclose_data__offset]
-                if comment in emptyValue:
+                L3 = self.__enclose_data[4 + j_eclose_data__offset]
+                P3 = self.numberSelection[6]
+                W3 = self.numberSelection[7]
+                B3 = self.numberSelection[8]
+                # E3 = str(ctx.Simple_name(2 + j_simple_name_offset))
+                # J3 = self.__jcouplings[2]
+                # if self.__jcoupling_types[2] == 'simple_name':
+                #     j_simple_name_offset += 1
+                if len(self.__jcoupling_types) > 2 and self.__jcoupling_types[2] == 'enclose_data':
+                    j_eclose_data__offset += 1
+                # U3 = self.__enclose_data[5 + j_eclose_data__offset]
+
+                vol = self.originalNumberSelection[9]
+                _int = self.originalNumberSelection[10]
+                # try:
+                #     stat = int(str(ctx.Integer(1)))
+                # except ValueError:
+                #     stat = None
+                if len(self.__enclose_data) > 6 + j_eclose_data__offset:
+                    comment = self.__enclose_data[6 + j_eclose_data__offset]
+                    if comment in emptyValue:
+                        comment = None
+                else:
                     comment = None
-            else:
-                comment = None
-            # flag0 = int(str(ctx.Integer(2)))
+                # flag0 = int(str(ctx.Integer(2)))
+
+            except IndexError:
+                self.peaks3D -= 1
+                return
 
             if L1 in emptyValue:
                 L1 = None
@@ -529,70 +541,76 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = int(str(ctx.Integer(0)))
 
-            # j_simple_name_offset = 0
-            j_eclose_data__offset = 0
+            try:
 
-            L1 = self.__enclose_data[0]
-            P1 = self.numberSelection[0]
-            W1 = self.numberSelection[1]
-            B1 = self.numberSelection[2]
-            # E1 = str(ctx.Simple_name(0))
-            # J1 = self.__jcouplings[0]
-            # if self.__jcoupling_types[0] == 'simple_name':
-            #     j_simple_name_offset += 1
-            if len(self.__jcoupling_types) > 0 and self.__jcoupling_types[0] == 'enclose_data':
-                j_eclose_data__offset += 1
-            # U1 = self.__enclose_data[1 + j_eclose_data__offset]
+                # j_simple_name_offset = 0
+                j_eclose_data__offset = 0
 
-            L2 = self.__enclose_data[2 + j_eclose_data__offset]
-            P2 = self.numberSelection[3]
-            W2 = self.numberSelection[4]
-            B2 = self.numberSelection[5]
-            # E2 = str(ctx.Simple_name(1 + j_simple_name_offset))
-            # J2 = self.__jcouplings[1]
-            # if self.__jcoupling_types[1] == 'simple_name':
-            #     j_simple_name_offset += 1
-            if len(self.__jcoupling_types) > 1 and self.__jcoupling_types[1] == 'enclose_data':
-                j_eclose_data__offset += 1
-            # U2 = self.__enclose_data[3 + j_eclose_data__offset]
+                L1 = self.__enclose_data[0]
+                P1 = self.numberSelection[0]
+                W1 = self.numberSelection[1]
+                B1 = self.numberSelection[2]
+                # E1 = str(ctx.Simple_name(0))
+                # J1 = self.__jcouplings[0]
+                # if self.__jcoupling_types[0] == 'simple_name':
+                #     j_simple_name_offset += 1
+                if len(self.__jcoupling_types) > 0 and self.__jcoupling_types[0] == 'enclose_data':
+                    j_eclose_data__offset += 1
+                # U1 = self.__enclose_data[1 + j_eclose_data__offset]
 
-            L3 = self.__enclose_data[4 + j_eclose_data__offset]
-            P3 = self.numberSelection[6]
-            W3 = self.numberSelection[7]
-            B3 = self.numberSelection[8]
-            # E3 = str(ctx.Simple_name(2 + j_simple_name_offset))
-            # J3 = self.__jcouplings[2]
-            # if self.__jcoupling_types[2] == 'simple_name':
-            #     j_simple_name_offset += 1
-            if len(self.__jcoupling_types) > 2 and self.__jcoupling_types[2] == 'enclose_data':
-                j_eclose_data__offset += 1
-            # U3 = self.__enclose_data[5 + j_eclose_data__offset]
+                L2 = self.__enclose_data[2 + j_eclose_data__offset]
+                P2 = self.numberSelection[3]
+                W2 = self.numberSelection[4]
+                B2 = self.numberSelection[5]
+                # E2 = str(ctx.Simple_name(1 + j_simple_name_offset))
+                # J2 = self.__jcouplings[1]
+                # if self.__jcoupling_types[1] == 'simple_name':
+                #     j_simple_name_offset += 1
+                if len(self.__jcoupling_types) > 1 and self.__jcoupling_types[1] == 'enclose_data':
+                    j_eclose_data__offset += 1
+                # U2 = self.__enclose_data[3 + j_eclose_data__offset]
 
-            L4 = self.__enclose_data[6 + j_eclose_data__offset]
-            P4 = self.numberSelection[9]
-            W4 = self.numberSelection[10]
-            B4 = self.numberSelection[11]
-            # E4 = str(ctx.Simple_name(3 + j_simple_name_offset))
-            # J4 = self.__jcouplings[3]
-            # if self.__jcoupling_types[3] == 'simple_name':
-            #     j_simple_name_offset += 1
-            if len(self.__jcoupling_types) > 3 and self.__jcoupling_types[3] == 'enclose_data':
-                j_eclose_data__offset += 1
-            # U4 = self.__enclose_data[7 + j_eclose_data__offset]
+                L3 = self.__enclose_data[4 + j_eclose_data__offset]
+                P3 = self.numberSelection[6]
+                W3 = self.numberSelection[7]
+                B3 = self.numberSelection[8]
+                # E3 = str(ctx.Simple_name(2 + j_simple_name_offset))
+                # J3 = self.__jcouplings[2]
+                # if self.__jcoupling_types[2] == 'simple_name':
+                #     j_simple_name_offset += 1
+                if len(self.__jcoupling_types) > 2 and self.__jcoupling_types[2] == 'enclose_data':
+                    j_eclose_data__offset += 1
+                # U3 = self.__enclose_data[5 + j_eclose_data__offset]
 
-            vol = self.originalNumberSelection[12]
-            _int = self.originalNumberSelection[13]
-            # try:
-            #     stat = int(str(ctx.Integer(1)))
-            # except ValueError:
-            #     stat = None
-            if len(self.__enclose_data) > 8 + j_eclose_data__offset:
-                comment = self.__enclose_data[8 + j_eclose_data__offset]
-                if comment in emptyValue:
+                L4 = self.__enclose_data[6 + j_eclose_data__offset]
+                P4 = self.numberSelection[9]
+                W4 = self.numberSelection[10]
+                B4 = self.numberSelection[11]
+                # E4 = str(ctx.Simple_name(3 + j_simple_name_offset))
+                # J4 = self.__jcouplings[3]
+                # if self.__jcoupling_types[3] == 'simple_name':
+                #     j_simple_name_offset += 1
+                if len(self.__jcoupling_types) > 3 and self.__jcoupling_types[3] == 'enclose_data':
+                    j_eclose_data__offset += 1
+                # U4 = self.__enclose_data[7 + j_eclose_data__offset]
+
+                vol = self.originalNumberSelection[12]
+                _int = self.originalNumberSelection[13]
+                # try:
+                #     stat = int(str(ctx.Integer(1)))
+                # except ValueError:
+                #     stat = None
+                if len(self.__enclose_data) > 8 + j_eclose_data__offset:
+                    comment = self.__enclose_data[8 + j_eclose_data__offset]
+                    if comment in emptyValue:
+                        comment = None
+                else:
                     comment = None
-            else:
-                comment = None
-            # flag0 = int(str(ctx.Integer(2)))
+                # flag0 = int(str(ctx.Integer(2)))
+
+            except IndexError:
+                self.peaks4D -= 1
+                return
 
             if L1 in emptyValue:
                 L1 = None
@@ -709,7 +727,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            if len(self.numberSelection) == 0:
+            if len(self.numberSelection) == 0 or len(self.__enclose_data) < 2:
                 self.peaks2D -= 1
                 return
 
@@ -824,7 +842,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            if len(self.numberSelection) == 0:
+            if len(self.numberSelection) == 0 or len(self.__enclose_data) < 3:
                 self.peaks3D -= 1
                 return
 
@@ -959,7 +977,7 @@ class NmrViewPKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            if len(self.numberSelection) == 0:
+            if len(self.numberSelection) == 0 or len(self.__enclose_data) < 4:
                 self.peaks4D -= 1
                 return
 
